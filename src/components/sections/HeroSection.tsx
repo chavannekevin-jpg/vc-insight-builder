@@ -33,12 +33,15 @@ export const HeroSection = () => {
 
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto leading-relaxed font-light">
-          We're active early-stage investors who know exactly what VCs look for—because nobody will tell you that your baby is ugly.
-          Get the unfiltered truth about your startup before investors do.
+          We're active early-stage investors who know exactly what VCs look for.
+          Get the unfiltered truth about your startup—before investors do.
         </p>
 
         {/* CTA button with brutal design */}
         <div className="flex flex-col items-center gap-3 pt-8">
+          <p className="text-lg md:text-xl text-foreground font-medium italic">
+            Because nobody will tell you that your baby is ugly.
+          </p>
           <Button 
             size="lg" 
             className="text-xl px-12 py-8 bg-primary text-primary-foreground border-2 border-primary font-bold uppercase tracking-wider hover:translate-x-1 hover:translate-y-1 transition-transform"
