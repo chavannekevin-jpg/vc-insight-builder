@@ -2,17 +2,20 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Menu, X, LogIn } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "Product", path: "/product" },
-    { name: "Pricing", path: "/pricing" },
-    { name: "About", path: "/about" }
+    { name: t('nav.product'), path: "/product" },
+    { name: t('nav.pricing'), path: "/pricing" },
+    { name: t('nav.about'), path: "/about" }
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -46,6 +49,7 @@ export const Header = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
+            <LanguageSwitcher />
             <Button 
               onClick={() => navigate('/auth')}
               variant="outline"
@@ -53,7 +57,7 @@ export const Header = () => {
               className="gap-2"
             >
               <LogIn className="w-4 h-4" />
-              Sign In
+              {t('nav.login')}
             </Button>
             <Button 
               onClick={() => {
@@ -95,6 +99,7 @@ export const Header = () => {
                   {link.name}
                 </Link>
               ))}
+              <LanguageSwitcher />
               <Button 
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -104,7 +109,7 @@ export const Header = () => {
                 className="w-full gap-2"
               >
                 <LogIn className="w-4 h-4" />
-                Sign In
+                {t('nav.login')}
               </Button>
               <Button 
                 onClick={() => {

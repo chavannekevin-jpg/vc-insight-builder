@@ -1,12 +1,15 @@
 import { Button } from "../ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const Footer = () => {
+  const { t } = useLanguage();
+  
   const links = [
-    { label: "About", href: "/about" },
-    { label: "FAQ", href: "#" },
-    { label: "Terms", href: "#" },
-    { label: "Privacy", href: "#" },
-    { label: "Contact", href: "#" }
+    { label: t('footer.about'), href: "/about" },
+    { label: t('footer.faq'), href: "#" },
+    { label: t('footer.terms'), href: "#" },
+    { label: t('footer.privacy'), href: "#" },
+    { label: t('footer.contact'), href: "#" }
   ];
 
   return (
@@ -27,10 +30,10 @@ export const Footer = () => {
         
         <div className="text-center space-y-2">
           <p className="text-sm font-semibold text-foreground">
-            Built by Active Early-Stage VCs
+            {t('footer.built')}
           </p>
           <p className="text-xs text-muted-foreground">
-            © 2025 UglyBaby • Active Venture Capital Investors • Pre-Seed to Series A Specialists
+            {t('footer.copyright')}
           </p>
         </div>
       </div>
