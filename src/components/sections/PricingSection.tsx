@@ -5,42 +5,33 @@ export const PricingSection = () => {
   const pricingOptions = [
     {
       title: "Early_Access.exe",
-      subtitle: "Waitlist",
+      subtitle: "Discounted Early Access",
+      price: "€59.99",
+      originalPrice: "€119.99",
+      discount: "50% OFF",
       features: [
-        "Join the waitlist",
-        "Discounted early access",
-        "Be first to generate your memo",
-        "Receive product updates"
+        "Get your memo when platform launches",
+        "50% discount for early joiners",
+        "Priority access to new features",
+        "Email support included"
       ],
-      cta: "Register to Waitlist",
-      highlight: false,
-      color: "blue" as const
-    },
-    {
-      title: "Priority_Access.exe",
-      subtitle: "Skip the Line",
-      features: [
-        "Skip the waiting period",
-        "Immediate access when launched",
-        "Priority support",
-        "Early adopter benefits"
-      ],
-      cta: "Get Priority Access",
+      cta: "Join Early Access",
       highlight: true,
       color: "green" as const
     },
     {
-      title: "Manual_Memo.exe",
-      subtitle: "Premium Service",
+      title: "Skip_The_Line.exe",
+      subtitle: "Express Service",
+      price: "€159.99",
       features: [
-        "Manually created by experts",
-        "Available immediately",
-        "Personalized consultation",
-        "10+ years of VC experience"
+        "Receive your memo within one week",
+        "Jump ahead of the waitlist",
+        "Priority support",
+        "Early adopter benefits"
       ],
-      cta: "Request Manual Memo",
+      cta: "Skip the Line",
       highlight: false,
-      color: "purple" as const
+      color: "blue" as const
     }
   ];
 
@@ -52,7 +43,7 @@ export const PricingSection = () => {
           <p className="font-sans text-base text-muted-foreground">Choose the option that fits your timeline</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {pricingOptions.map((option, index) => (
             <Win98Card 
               key={index}
@@ -61,8 +52,19 @@ export const PricingSection = () => {
               className={option.highlight ? 'ring-2 ring-primary ring-offset-2' : ''}
             >
               <div className="space-y-6">
-                <div className="text-center pb-4 win98-inset p-2 bg-muted/30">
-                  <p className="font-sans text-sm font-semibold">{option.subtitle}</p>
+                <div className="text-center pb-4 win98-inset p-3 bg-muted/30">
+                  <p className="font-sans text-sm font-semibold mb-2">{option.subtitle}</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="font-pixel text-xl text-primary">{option.price}</span>
+                    {option.originalPrice && (
+                      <span className="font-sans text-xs text-muted-foreground line-through">{option.originalPrice}</span>
+                    )}
+                  </div>
+                  {option.discount && (
+                    <span className="inline-block mt-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs font-pixel">
+                      {option.discount}
+                    </span>
+                  )}
                 </div>
                 
                 <ul className="space-y-3 font-sans text-xs min-h-[140px]">
