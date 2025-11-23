@@ -34,7 +34,7 @@ export const WhyYouNeedThisSection = () => {
           {/* Opening statement - editorial style */}
           <div className="space-y-8 py-8">
             <p className="text-xl md:text-2xl text-foreground leading-relaxed font-light">
-              We've met thousands of founders across Europe—from pre-seed to Series A.
+              We're active early-stage VCs who've evaluated thousands of companies across Europe—from pre-seed to Series A.
               Different industries, different team sizes, different traction levels — but they all fail at the exact same thing:
             </p>
             
@@ -124,10 +124,13 @@ export const WhyYouNeedThisSection = () => {
           <ModernCard className="bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/40 shadow-2xl">
             <div className="text-center space-y-4 p-6">
               <h3 className="text-2xl font-serif font-bold text-foreground">
-                Most founding teams never get honest, investor-level feedback.
+                Most founding teams never get honest feedback from actual investors.
               </h3>
               <p className="text-xl font-bold text-primary">
-                We're here to actually tell you the truth.
+                We're VCs who actually tell you the truth.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Active early-stage investors • 100+ European investor network • Pre-seed to Series A specialists
               </p>
             </div>
           </ModernCard>

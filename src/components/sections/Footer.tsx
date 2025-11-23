@@ -25,9 +25,12 @@ export const Footer = () => {
           ))}
         </div>
         
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">
-            © 2025 VC Memorandum Generator • Built with 10+ years of venture capital experience
+        <div className="text-center space-y-2">
+          <p className="text-sm font-semibold text-foreground">
+            Built by Active Early-Stage VCs
+          </p>
+          <p className="text-xs text-muted-foreground">
+            © 2025 UglyBaby • Active Venture Capital Investors • Pre-Seed to Series A Specialists
           </p>
         </div>
       </div>

@@ -17,7 +17,7 @@ const About = () => {
           <div className="text-center mb-12">
             <h1 className="text-5xl md:text-6xl font-serif mb-6">About Us</h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Translating 10+ years of VC experience into tools that help growing startups succeed
+              Active early-stage VCs translating 10+ years of deal experience into tools that help growing startups succeed
             </p>
           </div>
 
@@ -28,33 +28,35 @@ const About = () => {
                   <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
                     <Target className="w-6 h-6 text-destructive" />
                   </div>
-                  <h2 className="text-3xl font-serif">The Problem We're Solving</h2>
+                  <h2 className="text-3xl font-serif">Who We Are</h2>
                 </div>
                 
                 <p>
-                  After working in the VC space for over ten years, meeting with thousands of founding teams, 
-                  and writing hundreds of investment memorandums, we've identified a critical gap in the startup ecosystem.
+                  We're active venture capital investors specializing in early-stage companies across Europe. 
+                  Over ten years, we've evaluated thousands of founding teams and deployed capital into pre-seed and seed rounds.
                 </p>
 
                 <p>
-                  Through coaching and advising multiple internationally recognized accelerators, 
-                  we've seen that <strong>most companies with real traction still fail to raise capital</strong> because they 
-                  don't speak the VC language, and don't frame their business the way investors need to see it.
+                  As active VCs sitting on the other side of the table, we've written hundreds of investment memorandums 
+                  for real deals—and we've identified a critical gap in how founders present themselves to investors.
                 </p>
 
                 <p className="text-muted-foreground italic pl-4 border-l-2 border-destructive">
-                  Teams get rejected without clarity, they frame their traction incorrectly, they miss the narrative that connects their metrics to venture scale...
+                  Most companies with real traction still get rejected because they don't speak the VC language. 
+                  They frame their metrics incorrectly, miss the narrative that connects traction to venture scale, 
+                  and present their business in ways that create doubt rather than conviction.
                 </p>
               </div>
 
               <div className="p-6 rounded-xl gradient-accent border border-primary/20 space-y-3">
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-6 h-6 text-primary" />
-                  <h2 className="text-2xl font-serif">Our Solution</h2>
+                  <h2 className="text-2xl font-serif">What We Built</h2>
                 </div>
                 <p>
-                  We've translated our experience into a structured framework that growing companies can use 
-                  to generate investor-grade materials that translate their traction into compelling investment narratives.
+                  As active investors who write checks, we've codified our evaluation framework—the same framework 
+                  we use to assess deals—into a structured system that helps growing companies generate investor-grade 
+                  materials that translate traction into compelling investment narratives.
                 </p>
               </div>
 
@@ -121,11 +123,11 @@ const About = () => {
               <div className="pt-6 border-t border-border flex items-center justify-center gap-8 flex-wrap">
                 <div className="text-center">
                   <TrendingUp className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <p className="text-sm font-semibold">10+ years in VC</p>
+                  <p className="text-sm font-semibold">Active Early-Stage VCs</p>
                 </div>
                 <div className="text-center">
                   <Users2 className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <p className="text-sm font-semibold">1000+ founders met</p>
+                  <p className="text-sm font-semibold">1000+ companies evaluated</p>
                 </div>
                 <div className="text-center">
                   <CheckCircle2 className="w-6 h-6 text-primary mx-auto mb-2" />
