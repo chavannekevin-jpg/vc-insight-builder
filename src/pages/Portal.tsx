@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Win98StartButton } from "@/components/Win98StartButton";
-import { Win98Card } from "@/components/Win98Card";
+import { Button } from "@/components/ui/button";
+import { ModernCard } from "@/components/ModernCard";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { LogOut, CheckCircle2 } from "lucide-react";
 
 const Portal = () => {
   const navigate = useNavigate();
@@ -812,115 +815,126 @@ const Portal = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header - Taskbar Style */}
-      <header className="bg-win98-taskbar border-b-2 border-win98-light shadow-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
-          <div className="win98-inset px-3 py-1 bg-background">
-            <h1 className="font-pixel text-[10px] mb-0.5">{companyName}</h1>
-            <p className="font-sans text-xs text-muted-foreground">{founderEmail}</p>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+      {/* Header */}
+      <header className="bg-card border-b border-border shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-xl font-serif">{companyName}</h1>
+            <p className="text-sm text-muted-foreground">{founderEmail}</p>
           </div>
-          <Win98StartButton onClick={handleLogout}>
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
+            <LogOut className="w-4 h-4 mr-2" />
             Logout
-          </Win98StartButton>
+          </Button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <Win98Card title="Investment_Memo_Builder.exe" accentColor="blue" className="mb-6">
-          <div className="text-center mb-6">
-            <h2 className="font-pixel text-base mb-3">Company Questionnaire</h2>
-            <p className="font-sans text-sm max-w-2xl mx-auto text-muted-foreground">
+      <main className="max-w-4xl mx-auto px-4 py-12">
+        <ModernCard className="mb-8 shadow-xl">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-serif mb-3">Company Questionnaire</h2>
+            <p className="text-base max-w-2xl mx-auto text-muted-foreground">
               Complete all sections to generate your VC-grade Investment Memorandum
             </p>
           </div>
 
           {/* Progress Indicator */}
-          <div className="flex justify-center items-center gap-2 mb-8">
+          <div className="flex items-center justify-between mb-8">
             {[1, 2, 3, 4, 5].map((step) => (
-              <div key={step} className="flex items-center">
-                <div 
-                  className={cn(
-                    "w-8 h-8 border-2 flex items-center justify-center font-pixel text-[10px] transition-all cursor-pointer",
-                    step === currentStep 
-                      ? 'win98-raised pastel-teal font-bold' 
-                      : step < currentStep
-                      ? 'win98-inset bg-win98-green/30'
-                      : 'win98-inset bg-muted'
-                  )}
-                  onClick={() => setCurrentStep(step)}
-                >
-                  {step < currentStep ? '✓' : step}
+              <div key={step} className="flex items-center flex-1">
+                <div className="flex flex-col items-center flex-1">
+                  <button
+                    onClick={() => setCurrentStep(step)}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                      currentStep === step 
+                        ? 'bg-primary border-primary text-primary-foreground' 
+                        : currentStep > step
+                        ? 'bg-success border-success text-success-foreground'
+                        : 'border-border text-muted-foreground hover:border-primary/50'
+                    }`}
+                  >
+                    {currentStep > step ? <CheckCircle2 className="w-5 h-5" /> : step}
+                  </button>
+                  <span className="text-xs mt-2 text-center hidden sm:block">
+                    {step === 1 && "Company"}
+                    {step === 2 && "Solution"}
+                    {step === 3 && "Market"}
+                    {step === 4 && "Traction"}
+                    {step === 5 && "Financials"}
+                  </span>
                 </div>
                 {step < 5 && (
-                  <div className={`w-8 h-0.5 ${step < currentStep ? 'bg-primary' : 'bg-border'}`} />
+                  <div className={`h-0.5 flex-1 ${currentStep > step ? 'bg-success' : 'bg-border'}`} />
                 )}
               </div>
             ))}
           </div>
 
           {/* Auto-save indicator */}
-          <div className="mb-6 text-center">
-            <div className="win98-inset px-3 py-1 bg-win98-yellow/20 inline-block">
-              <p className="font-sans text-xs">💾 Your progress is automatically saved</p>
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-success/10 border border-success/20">
+              <CheckCircle2 className="w-4 h-4 text-success" />
+              <p className="text-sm text-success">Your progress is automatically saved</p>
             </div>
           </div>
-        </Win98Card>
+        </ModernCard>
 
         {/* Form Content */}
-        <Win98Card accentColor="purple">
+        <ModernCard className="shadow-xl">
           <form onSubmit={(e) => e.preventDefault()}>
             {renderStepContent()}
 
             {/* Navigation Buttons */}
-            <div className="mt-8 pt-6 border-t-2 border-border flex justify-between items-center">
-              <Win98StartButton 
+            <div className="mt-8 pt-6 border-t border-border flex justify-between items-center">
+              <Button 
                 onClick={handlePrevious}
                 disabled={currentStep === 1}
                 type="button"
+                variant="outline"
               >
                 ← Previous
-              </Win98StartButton>
+              </Button>
 
-              <div className="font-sans text-xs text-muted-foreground">
+              <div className="text-sm text-muted-foreground">
                 Step {currentStep} of 5
               </div>
 
               {currentStep < 5 ? (
-                <Win98StartButton 
-                  variant="primary"
+                <Button 
                   onClick={handleNext}
                   type="button"
+                  className="gradient-primary"
                 >
                   Next →
-                </Win98StartButton>
+                </Button>
               ) : (
-                <Win98StartButton 
-                  variant="primary"
+                <Button 
                   onClick={handleSubmit}
                   type="button"
-                  size="large"
+                  size="lg"
+                  className="gradient-primary"
                 >
                   Submit & Generate Memo
-                </Win98StartButton>
+                </Button>
               )}
             </div>
           </form>
-        </Win98Card>
+        </ModernCard>
 
         {/* Help Card */}
-        <div className="mt-6">
-          <Win98Card title="Help.exe" accentColor="yellow">
-            <div className="space-y-2">
-              <p className="font-sans text-xs">
-                <span className="font-bold">💡 Tip:</span> Be specific and detailed in your answers. The more information you provide, the better your memorandum will be.
+        <div className="mt-8">
+          <ModernCard className="bg-muted/30">
+            <div className="space-y-3">
+              <p className="text-sm">
+                <span className="font-semibold">💡 Tip:</span> Be specific and detailed in your answers. The more information you provide, the better your memorandum will be.
               </p>
-              <p className="font-sans text-xs">
-                <span className="font-bold">📝 Note:</span> Fields marked with * are required. You can save and come back later to complete the form.
+              <p className="text-sm">
+                <span className="font-semibold">📝 Note:</span> Fields marked with * are required. You can save and come back later to complete the form.
               </p>
             </div>
-          </Win98Card>
+          </ModernCard>
         </div>
       </main>
     </div>

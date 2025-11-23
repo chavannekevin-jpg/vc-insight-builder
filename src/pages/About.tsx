@@ -1,19 +1,41 @@
-import { Win98Card } from "@/components/Win98Card";
-import { Win98StartButton } from "@/components/Win98StartButton";
+import { ModernCard } from "@/components/ModernCard";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/sections/Footer";
+import { ArrowLeft, CheckCircle2, Target, TrendingUp, Users2 } from "lucide-react";
 
 const About = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen">
-      <div className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <Win98Card title="About_Me.exe" accentColor="teal">
-            <div className="space-y-6 font-sans text-sm leading-relaxed">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+      <div className="py-20 px-4">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/')}
+            className="mb-8"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+
+          <div className="text-center mb-12">
+            <h1 className="text-5xl md:text-6xl font-serif mb-6">About Me</h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Translating 10+ years of VC experience into tools that help startups succeed
+            </p>
+          </div>
+
+          <ModernCard className="shadow-xl">
+            <div className="space-y-8 text-base leading-relaxed">
               <div className="space-y-4">
-                <h1 className="font-pixel text-lg mb-4">The Problem I'm Solving</h1>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
+                    <Target className="w-6 h-6 text-destructive" />
+                  </div>
+                  <h2 className="text-3xl font-serif">The Problem I'm Solving</h2>
+                </div>
                 
                 <p>
                   Having worked in the VC space for over ten years, met with thousands of founders, 
@@ -26,13 +48,16 @@ const About = () => {
                   do not speak the VC language, and do not look at their companies the way VCs look at their company.
                 </p>
 
-                <p className="text-muted-foreground italic">
+                <p className="text-muted-foreground italic pl-4 border-l-2 border-destructive">
                   They get rejected without clarity, they build the wrong investment models, they over-complexify their product...
                 </p>
               </div>
 
-              <div className="win98-inset p-4 bg-muted/20 space-y-3">
-                <h2 className="font-pixel text-base">My Solution</h2>
+              <div className="p-6 rounded-xl gradient-accent border border-primary/20 space-y-3">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-primary" />
+                  <h2 className="text-2xl font-serif">My Solution</h2>
+                </div>
                 <p>
                   I decided to translate my cognitive experience into a series of prompts that startups can use 
                   by inputting data about their company to extract multiple types of resources relevant to investors.
@@ -40,7 +65,7 @@ const About = () => {
               </div>
 
               <div className="space-y-4">
-                <h2 className="font-pixel text-base">The Investment Memorandum</h2>
+                <h2 className="text-3xl font-serif">The Investment Memorandum</h2>
                 
                 <p>
                   The first product I'm releasing is the <strong>"Investment Memorandum"</strong>. 
@@ -48,81 +73,94 @@ const About = () => {
                   investor prompt that will:
                 </p>
 
-                <ul className="space-y-2 ml-6 list-none">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary flex-shrink-0">→</span>
-                    <span>Best describe the company from an investor lens</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary flex-shrink-0">→</span>
-                    <span>Provide questions and feedback to adjust the model towards a more VC-suited approach</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary flex-shrink-0">→</span>
-                    <span>Help with narrative building and reflecting on better performance</span>
-                  </li>
+                <ul className="space-y-3 ml-6">
+                  {[
+                    "Best describe the company from an investor lens",
+                    "Provide questions and feedback to adjust the model towards a more VC-suited approach",
+                    "Help with narrative building and reflecting on better performance"
+                  ].map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
               <div className="space-y-4">
-                <h2 className="font-pixel text-base">Future Products</h2>
+                <h2 className="text-3xl font-serif">Future Products</h2>
                 
                 <p>
                   Companies will be able to request additional types of material later down the line, such as:
                 </p>
 
-                <div className="grid grid-cols-2 gap-3 mt-3">
-                  <div className="win98-raised p-3 bg-background">
-                    <span className="text-xs">📊 Pitch Decks</span>
-                  </div>
-                  <div className="win98-raised p-3 bg-background">
-                    <span className="text-xs">🎤 Pitch Scripts</span>
-                  </div>
-                  <div className="win98-raised p-3 bg-background">
-                    <span className="text-xs">📁 Data Room Structure</span>
-                  </div>
-                  <div className="win98-raised p-3 bg-background">
-                    <span className="text-xs">📈 Financial Models</span>
-                  </div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  {[
+                    { icon: "📊", label: "Pitch Decks" },
+                    { icon: "🎤", label: "Pitch Scripts" },
+                    { icon: "📁", label: "Data Room Structure" },
+                    { icon: "📈", label: "Financial Models" }
+                  ].map((item, idx) => (
+                    <div key={idx} className="p-4 rounded-lg border border-border bg-muted/30 hover:bg-muted/50 transition-colors">
+                      <span className="text-2xl mr-2">{item.icon}</span>
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </div>
+                  ))}
                 </div>
 
-                <p className="text-sm italic text-muted-foreground">
+                <p className="text-sm italic text-muted-foreground pt-2">
                   But for now, we're focused on building a professional VC investment memorandum about YOUR COMPANY.
                 </p>
               </div>
 
-              <div className="win98-inset p-4 bg-accent/10 space-y-3">
-                <h2 className="font-pixel text-base">Investor Network Access</h2>
+              <div className="p-6 rounded-xl bg-primary/5 border border-primary/20 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Users2 className="w-6 h-6 text-primary" />
+                  <h2 className="text-2xl font-serif">Investor Network Access</h2>
+                </div>
                 <p>
                   Once your company has joined the platform and generated your memorandum, 
                   you can pay a little extra to be showcased to my list of <strong>100+ European investors</strong>.
                 </p>
               </div>
 
-              <div className="pt-6 border-t border-border">
-                <p className="text-xs text-muted-foreground">
-                  <strong>10+ years in VC</strong> • <strong>1000+ founders met</strong> • <strong>100+ investment memorandums written</strong>
-                </p>
+              <div className="pt-6 border-t border-border flex items-center justify-center gap-8 flex-wrap">
+                <div className="text-center">
+                  <TrendingUp className="w-6 h-6 text-primary mx-auto mb-2" />
+                  <p className="text-sm font-semibold">10+ years in VC</p>
+                </div>
+                <div className="text-center">
+                  <Users2 className="w-6 h-6 text-primary mx-auto mb-2" />
+                  <p className="text-sm font-semibold">1000+ founders met</p>
+                </div>
+                <div className="text-center">
+                  <CheckCircle2 className="w-6 h-6 text-primary mx-auto mb-2" />
+                  <p className="text-sm font-semibold">100+ memos written</p>
+                </div>
               </div>
 
-              <div className="flex gap-3 pt-4">
-                <Win98StartButton onClick={() => navigate('/')} variant="default">
-                  ← Back to Home
-                </Win98StartButton>
-                <Win98StartButton 
+              <div className="flex gap-3 pt-6">
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate('/')}
+                  className="flex-1"
+                >
+                  Back to Home
+                </Button>
+                <Button 
                   onClick={() => {
                     navigate('/');
                     setTimeout(() => {
                       document.getElementById('waitlist-form')?.scrollIntoView({ behavior: 'smooth' });
                     }, 100);
                   }} 
-                  variant="primary"
+                  className="flex-1 gradient-primary"
                 >
                   Join Waitlist
-                </Win98StartButton>
+                </Button>
               </div>
             </div>
-          </Win98Card>
+          </ModernCard>
         </div>
       </div>
       <Footer />
