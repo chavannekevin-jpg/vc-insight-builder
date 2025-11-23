@@ -31,7 +31,7 @@ export const HowItWorksSection = () => {
 
   return (
     <section className="py-20 px-4">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-serif mb-4">Stop Guessing. Start Speaking VC</h2>
           <p className="text-lg text-muted-foreground">Built by active VCs who write checks at pre-seed and seed stage</p>

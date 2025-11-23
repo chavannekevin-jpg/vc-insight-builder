@@ -29,7 +29,7 @@ export const WhyYouNeedThisSection = () => {
           </p>
         </div>
 
-        <div className="space-y-8 max-w-4xl mx-auto">
+        <div className="space-y-8">
             
             <ModernCard className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-2 border-destructive/30 shadow-xl">
               <p className="text-xl md:text-2xl font-bold text-center text-foreground p-6">

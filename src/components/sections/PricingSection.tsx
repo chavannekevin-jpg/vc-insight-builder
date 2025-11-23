@@ -39,7 +39,7 @@ export const PricingSection = () => {
 
   return (
     <section className="py-20 px-4 bg-muted/30">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-serif mb-4">Choose Your Plan</h2>
           <p className="text-lg text-muted-foreground">Select the option that fits your timeline</p>
