@@ -290,9 +290,12 @@ export default function Portal() {
   );
 
   useEffect(() => {
+    console.log("🚀 Portal useEffect triggered");
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("🔐 Auth state changed:", event, "Session exists:", !!session);
         setSession(session);
         setUser(session?.user ?? null);
       }
@@ -300,10 +303,12 @@ export default function Portal() {
 
     // Check for existing session and load data
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("🔐 Initial session check:", !!session);
       setSession(session);
       setUser(session?.user ?? null);
 
       if (!session?.user) {
+        console.log("⚠️ No user session - redirecting to auth");
         toast({
           title: "Authentication Required",
           description: "Please sign in to access the portal.",
@@ -314,6 +319,7 @@ export default function Portal() {
         return;
       }
 
+      console.log("✅ User authenticated:", session.user.email);
       // Load company and responses from database
       loadCompanyData(session.user.id);
     });
@@ -322,30 +328,39 @@ export default function Portal() {
   }, [navigate, toast]);
 
   const loadCompanyData = async (userId: string) => {
+    console.log("🔍 loadCompanyData started for user:", userId);
     try {
       // Get company
+      console.log("📊 Querying companies table...");
       const { data: companies, error: companyError } = await supabase
         .from("companies")
         .select("id, name, stage")
         .eq("founder_id", userId)
         .maybeSingle();
 
+      console.log("📊 Companies query result:", { companies, error: companyError });
+
       if (companyError) throw companyError;
 
       // If no company exists, keep companyId null and show creation UI
       if (!companies) {
+        console.log("ℹ️ No company found - showing creation UI");
         setLoading(false);
         return;
       }
 
+      console.log("✅ Company found:", companies);
       setCompanyId(companies.id);
       setCompanyName(companies.name);
 
       // Load existing responses
+      console.log("📝 Querying memo_responses...");
       const { data: existingResponses, error: responsesError } = await supabase
         .from("memo_responses")
         .select("question_key, answer")
         .eq("company_id", companies.id);
+
+      console.log("📝 Memo responses result:", { count: existingResponses?.length, error: responsesError });
 
       if (responsesError) throw responsesError;
 
@@ -357,14 +372,16 @@ export default function Portal() {
       });
 
       setResponses(responsesMap);
+      console.log("✅ Loaded", Object.keys(responsesMap).length, "responses");
     } catch (error: any) {
-      console.error("Error loading company data:", error);
+      console.error("❌ Error loading company data:", error);
       toast({
         title: "Error",
         description: "Could not load your company data",
         variant: "destructive",
       });
     } finally {
+      console.log("🏁 loadCompanyData finished, setting loading to false");
       setLoading(false);
     }
   };
