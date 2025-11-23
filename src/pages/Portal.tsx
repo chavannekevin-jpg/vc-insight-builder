@@ -274,6 +274,8 @@ export default function Portal() {
   const [microFeedback, setMicroFeedback] = useState<string>("");
   const [showCelebration, setShowCelebration] = useState(false);
   const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
+  const [isFetchingFeedback, setIsFetchingFeedback] = useState(false);
+  const [feedbackTimeoutId, setFeedbackTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -318,6 +320,16 @@ export default function Portal() {
 
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
+
+  // Load AI feedback for current question when responses are loaded or question changes
+  useEffect(() => {
+    if (!loading && currentQuestion && responses[currentQuestion.key]) {
+      const existingAnswer = responses[currentQuestion.key];
+      if (existingAnswer.trim().length > 0) {
+        fetchAIFeedback(currentQuestion.key, currentQuestion.question, existingAnswer);
+      }
+    }
+  }, [currentStep, loading]);
 
   const loadCompanyData = async (userId: string) => {
     try {
@@ -367,24 +379,54 @@ export default function Portal() {
     }
   };
 
-  // Micro-feedback based on answer quality - HARSH MODE
-  const getMicroFeedback = (answer: string): string => {
-    const length = answer.trim().length;
-    if (length === 0) return "";
-    if (length < 50) return "That's it? 😒 Investors need WAY more detail";
-    if (length < 150) return "Still too shallow 📉 Keep writing, you're barely scratching the surface";
-    if (length < 300) return "Getting warmer... but still not enough 🔥 Dig deeper";
-    if (length < 500) return "Now we're talking 💪 But don't stop - more detail = more credibility";
-    return "Finally! 🎯 This is the depth investors actually read";
+  // Fetch AI VC coach feedback
+  const fetchAIFeedback = async (questionKey: string, question: string, answer: string) => {
+    if (!answer || answer.trim().length === 0) {
+      setMicroFeedback("");
+      return;
+    }
+
+    setIsFetchingFeedback(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('vc-coach-feedback', {
+        body: { question, answer, questionKey }
+      });
+
+      if (error) throw error;
+      
+      if (data?.feedback) {
+        setMicroFeedback(data.feedback);
+      }
+    } catch (error: any) {
+      console.error("Error fetching AI feedback:", error);
+      // Fallback to simple feedback
+      const length = answer.trim().length;
+      if (length < 100) {
+        setMicroFeedback("Keep going... investors need more detail here.");
+      } else {
+        setMicroFeedback("Good start. Can you add more specifics?");
+      }
+    } finally {
+      setIsFetchingFeedback(false);
+    }
   };
 
   const handleAnswerChange = async (questionKey: string, answer: string) => {
     const updatedResponses = { ...responses, [questionKey]: answer };
     setResponses(updatedResponses);
 
-    // Show micro-feedback
-    const feedback = getMicroFeedback(answer);
-    setMicroFeedback(feedback);
+    // Clear previous timeout
+    if (feedbackTimeoutId) {
+      clearTimeout(feedbackTimeoutId);
+    }
+
+    // Debounce AI feedback call
+    const timeoutId = setTimeout(() => {
+      const question = allQuestions.find(q => q.key === questionKey)?.question || "";
+      fetchAIFeedback(questionKey, question, answer);
+    }, 1500);
+    
+    setFeedbackTimeoutId(timeoutId);
 
     // Check if section is completed
     const currentSectionQuestions = allQuestions.filter(q => q.sectionTitle === currentQuestion.sectionTitle);
@@ -442,10 +484,17 @@ export default function Portal() {
   const handleNext = () => {
     if (currentStep < allQuestions.length - 1) {
       setIsAnimating(true);
-      setMicroFeedback(""); // Clear feedback on transition
+      setMicroFeedback("");
+      setIsFetchingFeedback(false);
       setTimeout(() => {
         setCurrentStep(currentStep + 1);
         setIsAnimating(false);
+        // Fetch AI feedback for existing answer
+        const nextQ = allQuestions[currentStep + 1];
+        const existingAnswer = responses[nextQ.key];
+        if (existingAnswer && existingAnswer.trim().length > 0) {
+          fetchAIFeedback(nextQ.key, nextQ.question, existingAnswer);
+        }
       }, 150);
     }
   };
@@ -453,9 +502,17 @@ export default function Portal() {
   const handlePrevious = () => {
     if (currentStep > 0) {
       setIsAnimating(true);
+      setMicroFeedback("");
+      setIsFetchingFeedback(false);
       setTimeout(() => {
         setCurrentStep(currentStep - 1);
         setIsAnimating(false);
+        // Fetch AI feedback for existing answer
+        const prevQ = allQuestions[currentStep - 1];
+        const existingAnswer = responses[prevQ.key];
+        if (existingAnswer && existingAnswer.trim().length > 0) {
+          fetchAIFeedback(prevQ.key, prevQ.question, existingAnswer);
+        }
       }, 150);
     }
   };
@@ -721,18 +778,25 @@ export default function Portal() {
                     autoFocus
                   />
 
-                  {/* Micro-feedback */}
-                  {microFeedback && (
-                    <div className="flex items-center gap-2 text-orange-400 text-sm font-medium animate-fade-in">
-                      <AlertCircle className="w-4 h-4 animate-pulse" />
+                  {/* AI VC Coach Feedback */}
+                  {isFetchingFeedback && (
+                    <div className="flex items-center gap-2 text-cyan-400 text-sm font-medium animate-fade-in">
+                      <Sparkles className="w-4 h-4 animate-pulse" />
+                      <span className="drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">AI Coach analyzing...</span>
+                    </div>
+                  )}
+                  
+                  {!isFetchingFeedback && microFeedback && (
+                    <div className="flex items-start gap-2 text-orange-400 text-sm font-medium animate-fade-in bg-orange-500/10 border border-orange-500/20 rounded-lg p-3">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 animate-pulse" />
                       <span className="drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]">{microFeedback}</span>
                     </div>
                   )}
 
-                  {hasAnswer && !microFeedback && (
+                  {hasAnswer && !microFeedback && !isFetchingFeedback && (
                     <div className="flex items-center gap-2 text-green-400 text-sm font-medium animate-fade-in">
                       <CheckCircle2 className="w-4 h-4" />
-                      <span className="drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]">Acceptable</span>
+                      <span className="drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]">Saved</span>
                     </div>
                   )}
                 </div>
@@ -758,9 +822,17 @@ export default function Portal() {
                     key={idx}
                     onClick={() => {
                       setIsAnimating(true);
+                      setMicroFeedback("");
+                      setIsFetchingFeedback(false);
                       setTimeout(() => {
                         setCurrentStep(idx);
                         setIsAnimating(false);
+                        // Fetch AI feedback for existing answer
+                        const targetQ = allQuestions[idx];
+                        const existingAnswer = responses[targetQ.key];
+                        if (existingAnswer && existingAnswer.trim().length > 0) {
+                          fetchAIFeedback(targetQ.key, targetQ.question, existingAnswer);
+                        }
                       }, 150);
                     }}
                     className={`h-2 rounded-full transition-all ${
