@@ -22,6 +22,11 @@ export default {
   				'VT323"',
   				'monospace'
   			],
+  			neon: [
+  				'Bebas Neue',
+  				'Impact',
+  				'sans-serif'
+  			],
   			sans: [
   				'Inter',
   				'ui-sans-serif',

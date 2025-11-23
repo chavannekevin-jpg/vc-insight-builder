@@ -39,7 +39,7 @@ export const HeroSection = () => {
 
         {/* CTA button with brutal design */}
         <div className="flex flex-col items-center gap-3 pt-8">
-          <p className="text-lg md:text-xl text-foreground font-medium italic">
+          <p className="text-2xl md:text-3xl text-primary font-neon uppercase tracking-wider text-neon">
             Because nobody will tell you that your baby is ugly.
           </p>
           <Button 
