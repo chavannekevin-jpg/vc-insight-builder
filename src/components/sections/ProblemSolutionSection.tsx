@@ -15,15 +15,14 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground leading-relaxed font-semibold">
-              You're getting ghosted, rejected, and ignored. Here's why nobody's telling you:
+              You're getting ghosted. Here's why:
             </p>
             
             <ul className="space-y-4">
               {[
-                "Your traction story doesn't translate to VC-scale potential",
-                "Your pitch deck focuses on features, not market dynamics",
-                "You're addressing real problems but not venture-scale opportunities",
-                "Your team's expertise isn't framed as competitive advantage"
+                "Your traction doesn't translate to VC-scale",
+                "You focus on features, not market dynamics",
+                "Your team isn't framed as competitive advantage"
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
                   <span className="text-destructive mt-0.5">✗</span>
@@ -50,15 +49,14 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground leading-relaxed font-semibold">
-              We're active VCs who've written hundreds of investment memos for real deals. Now you get our framework.
+              Active VCs. Our framework.
             </p>
             
             <ul className="space-y-4">
               {[
-                "Generate memos that VCs actually read",
-                "Get the brutal feedback you're not hearing",
-                "Learn what questions expose weak business models",
-                "Stop wasting time on pitches that'll never work"
+                "Memos VCs actually read",
+                "Brutal feedback you're not hearing",
+                "Fix your pitch before it fails"
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
                   <span className="text-success mt-0.5">✓</span>

@@ -5,26 +5,26 @@ export const HowItWorksSection = () => {
   const steps = [
     {
       number: "01",
-      title: "Dump Your Data",
-      description: "Answer the questions investors actually care about. Not the fluff you put in your deck.",
+      title: "Answer Real Questions",
+      description: "What investors care about. Not deck fluff.",
       icon: FileText
     },
     {
       number: "02",
       title: "Get Your Memo",
-      description: "We'll turn your answers into an investment memo built on 10+ years of writing them for actual deals.",
+      description: "10+ years of VC memos. Now yours.",
       icon: Lightbulb
     },
     {
       number: "03",
-      title: "Face the Hard Questions",
-      description: "Get the diagnostic feedback VCs think but don't tell you. Fix your model before the meeting.",
+      title: "Fix Your Model",
+      description: "Brutal feedback before the meeting.",
       icon: Target
     },
     {
       number: "04",
-      title: "Skip to Real Investors",
-      description: "Pay extra. Get fast-tracked to our network of 100+ European VCs who actually write checks.",
+      title: "Meet Real VCs",
+      description: "Fast-track to 100+ European investors.",
       icon: Users
     }
   ];
