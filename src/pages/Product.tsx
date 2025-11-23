@@ -27,8 +27,8 @@ const Product = () => {
     },
     {
       icon: Target,
-      title: "VC-Calibrated Analysis",
-      description: "Built on 10+ years of venture capital experience, analyzing what actually matters to investors."
+      title: "VC-Calibrated Framework",
+      description: "We've codified 10+ years of VC cognitive work into structured prompts that analyze what actually matters to investors."
     },
     {
       icon: MessageSquare,
@@ -73,8 +73,8 @@ const Product = () => {
             The Investment Memorandum
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Transform your startup into a VC-ready opportunity with a professionally crafted 
-            investment memorandum that speaks the language of investors.
+            Built from 10+ years of VC experience and hundreds of real deals, we've transformed our 
+            cognitive work into a structured framework that helps you present your startup the way investors need to see it.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
@@ -139,7 +139,7 @@ const Product = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { step: "01", title: "Answer Questions", desc: "Complete our structured questionnaire about your startup" },
-              { step: "02", title: "AI Processing", desc: "Our system analyzes your data with VC expertise" },
+              { step: "02", title: "Expert Framework", desc: "Your data is processed through our VC-calibrated framework built from 10+ years of experience" },
               { step: "03", title: "Review Output", desc: "Receive your memorandum with diagnostic feedback" },
               { step: "04", title: "Refine & Use", desc: "Iterate based on insights and present to investors" }
             ].map((item, index) => (
