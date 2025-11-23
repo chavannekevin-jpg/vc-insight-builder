@@ -7,54 +7,54 @@ export const HeroSection = () => {
   };
 
   return (
-    <section className="min-h-[85vh] flex items-center justify-center px-4 py-20 relative overflow-hidden">
-      {/* Background gradient */}
+    <section className="relative min-h-[90vh] flex items-center justify-center px-4 py-20 overflow-hidden">
+      {/* Animated gradient background */}
       <div className="absolute inset-0 gradient-hero -z-10" />
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 -z-10 animate-pulse" />
       
-      <div className="max-w-5xl text-center space-y-8 animate-fade-in">
-        <Badge variant="secondary" className="px-4 py-1.5 text-sm font-bold shadow-md hover:shadow-lg transition-shadow">
-          Built on 10+ Years of VC Experience
-        </Badge>
-        
-        <div className="space-y-6">
-          <h1 className="text-5xl md:text-7xl font-serif text-foreground leading-tight tracking-tight drop-shadow-sm">
-            VCs Won't Tell You{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent animate-scale-in font-bold">
-              What They Want
-            </span>{" "}
-            — But I Will
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium">
-            Generate a memo that speaks their language, not yours. 
-            Built from 10+ years of watching founders fail at fundraising.
-          </p>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-          <Button 
-            size="lg"
-            onClick={scrollToWaitlist}
-            className="w-full sm:w-auto px-8 py-6 text-lg gradient-primary hover:opacity-95 shadow-lg hover:shadow-glow"
-          >
-            Get In Early
-          </Button>
-          <Button 
-            size="lg"
-            variant="outline"
-            onClick={scrollToWaitlist}
-            className="w-full sm:w-auto px-8 py-6 text-lg font-bold"
-          >
-            Get It Now →
-          </Button>
+      {/* Neon glow decorative elements */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" style={{ boxShadow: 'var(--shadow-lg)' }} />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s', boxShadow: 'var(--shadow-neon-pink)' }} />
+      
+      <div className="max-w-5xl mx-auto text-center space-y-8 animate-fade-in">
+        {/* Badge with brutalist style */}
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-card border-2 border-primary" style={{ boxShadow: 'var(--shadow-lg)' }}>
+          <span className="text-sm font-bold text-primary uppercase tracking-wider">NEW</span>
+          <span className="text-sm text-foreground font-semibold">Investment Memorandum Builder</span>
         </div>
 
-        <div className="pt-12 flex items-center justify-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-primary pulse-glow" />
-          <p className="text-sm text-muted-foreground font-semibold">
-            Early Access Discount Available
-          </p>
+        {/* Main headline with neon effect */}
+        <h1 className="text-5xl md:text-7xl font-serif font-bold tracking-tight">
+          Stop Getting{" "}
+          <span className="text-primary text-neon">
+            Ghosted
+          </span>{" "}
+          by VCs
+        </h1>
+
+        {/* Subheadline */}
+        <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto leading-relaxed font-light">
+          Get the unfiltered truth about your startup—before investors do.
+          Build an Investment Memorandum that actually gets you funded.
+        </p>
+
+        {/* CTA buttons with brutal design */}
+        <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
+          <Button 
+            size="lg" 
+            className="text-lg px-8 py-6 bg-primary text-primary-foreground border-2 border-primary font-bold uppercase tracking-wider hover:translate-x-1 hover:translate-y-1 transition-transform"
+            onClick={scrollToWaitlist}
+            style={{ boxShadow: '4px 4px 0 hsl(var(--secondary))' }}
+          >
+            Build My Memo
+          </Button>
+          <Button 
+            size="lg" 
+            variant="outline" 
+            className="text-lg px-8 py-6 border-2 border-secondary text-secondary font-bold uppercase tracking-wider hover:bg-secondary hover:text-secondary-foreground transition-colors"
+            style={{ boxShadow: '4px 4px 0 hsl(var(--accent))' }}
+          >
+            See How It Works
+          </Button>
         </div>
       </div>
     </section>
