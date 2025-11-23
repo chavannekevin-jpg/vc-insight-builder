@@ -4,7 +4,7 @@ import { AlertCircle, CheckCircle2 } from "lucide-react";
 export const ProblemSolutionSection = () => {
   return (
     <section className="py-20 px-4 bg-muted/30">
-      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
+      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
         <ModernCard hover>
           <div className="space-y-6">
             <div className="flex items-center gap-3">
