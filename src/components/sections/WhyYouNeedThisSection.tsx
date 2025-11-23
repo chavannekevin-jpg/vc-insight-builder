@@ -31,37 +31,46 @@ export const WhyYouNeedThisSection = () => {
         </div>
 
         <div className="space-y-8 max-w-4xl mx-auto">
-          <ModernCard className="shadow-xl border-2">
-            <div className="space-y-6">
-              <p className="text-lg text-foreground leading-relaxed font-semibold">
-                I've met thousands of founders across Europe.
-                Different industries, different stages, different personalities — but they all fail at the exact same thing:
-              </p>
-              
-              <p className="text-2xl font-serif font-bold text-primary text-center py-4">
+          {/* Opening statement - editorial style */}
+          <div className="space-y-8 py-8">
+            <p className="text-xl md:text-2xl text-foreground leading-relaxed font-light">
+              I've met thousands of founders across Europe.
+              Different industries, different stages, different personalities — but they all fail at the exact same thing:
+            </p>
+            
+            <div className="py-8 px-6 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border-l-4 border-primary shadow-lg">
+              <p className="text-2xl md:text-3xl font-serif font-bold text-foreground leading-tight">
                 They have no idea how investors actually evaluate their company.
               </p>
+            </div>
 
-              <p className="text-base text-foreground leading-relaxed">
-                Every founder asks me the same questions.
-                Every founder makes the same mistakes.
-                And nobody will ever tell them why — because nobody wants to tell a founder their baby is ugly.
-              </p>
+            <div className="space-y-4 text-lg text-foreground/90 leading-relaxed">
+              <p>Every founder asks me the same questions.</p>
+              <p>Every founder makes the same mistakes.</p>
+              <p>And nobody will ever tell them why — because nobody wants to tell a founder their baby is ugly.</p>
+            </div>
 
-              <div className="py-4 space-y-2">
-                <p className="text-base text-muted-foreground">VCs won't say it.</p>
-                <p className="text-base text-muted-foreground">Accelerators won't say it.</p>
-                <p className="text-base text-muted-foreground">Mentors sugarcoat it.</p>
-                <p className="text-lg font-bold text-foreground pt-2">But the truth is simple:</p>
+            <div className="grid md:grid-cols-3 gap-6 py-6">
+              <div className="text-center p-4 rounded-lg bg-muted/50">
+                <p className="text-base text-muted-foreground font-semibold">VCs won't say it.</p>
               </div>
-
-              <div className="p-6 rounded-lg gradient-accent border-2 border-primary/30 shadow-md">
-                <p className="text-lg font-bold text-center text-foreground">
-                  If your story doesn't fit how VCs think, you're done before you even start.
-                </p>
+              <div className="text-center p-4 rounded-lg bg-muted/50">
+                <p className="text-base text-muted-foreground font-semibold">Accelerators won't say it.</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-muted/50">
+                <p className="text-base text-muted-foreground font-semibold">Mentors sugarcoat it.</p>
               </div>
             </div>
-          </ModernCard>
+
+            <div className="text-center py-8">
+              <p className="text-xl font-bold text-foreground mb-6">But the truth is simple:</p>
+              <ModernCard className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-2 border-destructive/30 shadow-xl">
+                <p className="text-xl md:text-2xl font-bold text-center text-foreground p-6">
+                  If your story doesn't fit how VCs think, you're done before you even start.
+                </p>
+              </ModernCard>
+            </div>
+          </div>
 
           <ModernCard className="shadow-xl border-2 border-destructive/30">
             <div className="space-y-6">
