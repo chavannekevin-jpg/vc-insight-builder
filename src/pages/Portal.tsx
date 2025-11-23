@@ -437,10 +437,10 @@ export default function Portal() {
     if (sectionAnswered === currentSectionQuestions.length && !completedSections.has(currentQuestion.sectionTitle)) {
       setCompletedSections(new Set(completedSections).add(currentQuestion.sectionTitle));
       setShowCelebration(true);
-      setTimeout(() => setShowCelebration(false), 3000);
+      setTimeout(() => setShowCelebration(false), 2000);
       toast({
-        title: `${currentQuestion.sectionTitle} Complete! 🎉`,
-        description: "You're crushing it! Keep this energy going.",
+        title: `${currentQuestion.sectionTitle} Complete`,
+        description: "Section saved. Moving to next.",
       });
     }
 
@@ -695,14 +695,14 @@ export default function Portal() {
             </div>
             <p className="text-xs text-white/50 mt-2">
               {progressPercentage === 100 
-                ? "🚀 Ready to generate your memo - You crushed it!"
+                ? "Ready to generate your memo"
                 : progressPercentage >= 75
-                  ? "🔥 Almost there! You're so close to the finish line!"
+                  ? "Almost complete"
                   : progressPercentage >= 50
-                    ? "⭐ Halfway there! The momentum is real!"
+                    ? "Halfway through"
                     : progressPercentage >= 25
-                      ? "💪 Strong start! Keep the energy flowing!"
-                      : `${progressPercentage}% complete - Every answer brings you closer!`
+                      ? "Good progress"
+                      : `${progressPercentage}% complete`
               }
             </p>
           </div>
@@ -714,14 +714,14 @@ export default function Portal() {
         {/* Section Completion Celebration */}
         {showCelebration && (
           <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none animate-fade-in">
-            <div className="text-center animate-scale-in">
-              <PartyPopper className="w-32 h-32 text-yellow-400 mx-auto mb-4 animate-bounce drop-shadow-[0_0_30px_rgba(250,204,21,0.8)]" />
-              <h2 className="text-4xl font-bold text-white mb-2 drop-shadow-[0_0_20px_rgba(236,72,153,0.8)]">
-                Section Complete! 🎉
-              </h2>
-              <p className="text-xl text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.6)]">
-                You're on fire! Keep going!
-              </p>
+            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl animate-scale-in">
+              <div className="flex items-center gap-3 text-white">
+                <CheckCircle2 className="w-8 h-8 text-green-400" />
+                <div>
+                  <h3 className="text-xl font-semibold">Section Complete</h3>
+                  <p className="text-sm text-white/70">Moving to next section</p>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -787,9 +787,9 @@ export default function Portal() {
                   )}
                   
                   {!isFetchingFeedback && microFeedback && (
-                    <div className="flex items-start gap-2 text-orange-400 text-sm font-medium animate-fade-in bg-orange-500/10 border border-orange-500/20 rounded-lg p-3">
-                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 animate-pulse" />
-                      <span className="drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]">{microFeedback}</span>
+                    <div className="flex items-start gap-3 text-blue-400 text-sm bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                      <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <span className="leading-relaxed">{microFeedback}</span>
                     </div>
                   )}
 
