@@ -33,8 +33,8 @@ export const HeroSection = () => {
 
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto leading-relaxed font-light">
-          We're active early-stage investors who know exactly what VCs look for.
-          Get the unfiltered truth about your startup—before investors do.
+          We're active early-stage investors who know exactly what VCs look for—because nobody will tell you that your baby is ugly.
+          Get the unfiltered truth about your startup before investors do.
         </p>
 
         {/* CTA button with brutal design */}
