@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'pixel': ['"Press Start 2P"', 'cursive'],
+        'retro': ['"VT323"', 'monospace'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -56,6 +60,14 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
+        },
+        win98: {
+          light: "hsl(var(--win98-light))",
+          dark: "hsl(var(--win98-dark))",
+          grey: "hsl(var(--win98-grey))",
+          desktop: "hsl(var(--win98-desktop))",
+          titleBar: "hsl(var(--win98-title-bar))",
+          titleText: "hsl(var(--win98-title-text))",
         },
       },
       borderRadius: {
