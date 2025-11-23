@@ -21,11 +21,13 @@ import {
   Award,
   DollarSign,
   BarChart3,
-  Sparkles
+  Sparkles,
+  Flame
 } from "lucide-react";
+import { SectionBadge } from "@/components/SectionBadge";
 
 const questionSections = {
-  "🎯 Problem": {
+  "Problem": {
     icon: AlertCircle,
     color: "text-red-500",
     questions: [
@@ -41,7 +43,7 @@ const questionSections = {
       },
     ]
   },
-  "💡 Solution": {
+  "Solution": {
     icon: Lightbulb,
     color: "text-yellow-500",
     questions: [
@@ -62,7 +64,7 @@ const questionSections = {
       },
     ]
   },
-  "🎪 Market": {
+  "Market": {
     icon: Target,
     color: "text-blue-500",
     questions: [
@@ -88,7 +90,7 @@ const questionSections = {
       },
     ]
   },
-  "⚔️ Competition": {
+  "Competition": {
     icon: Zap,
     color: "text-purple-500",
     questions: [
@@ -109,7 +111,7 @@ const questionSections = {
       },
     ]
   },
-  "🚀 Team": {
+  "Team": {
     icon: Users,
     color: "text-green-500",
     questions: [
@@ -140,7 +142,7 @@ const questionSections = {
       },
     ]
   },
-  "🏆 USP": {
+  "USP": {
     icon: Award,
     color: "text-orange-500",
     questions: [
@@ -176,7 +178,7 @@ const questionSections = {
       },
     ]
   },
-  "💰 Business Model": {
+  "Business Model": {
     icon: DollarSign,
     color: "text-emerald-500",
     questions: [
@@ -212,7 +214,7 @@ const questionSections = {
       },
     ]
   },
-  "📈 Traction": {
+  "Traction": {
     icon: BarChart3,
     color: "text-pink-500",
     questions: [
@@ -430,20 +432,33 @@ export default function Portal() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden">
+      {/* Animated background effects */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-500 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-500 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+
       {/* Header */}
-      <div className="border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-50 shadow-lg">
-        <div className="max-w-6xl mx-auto p-4 md:p-6">
+      <div className="border-b border-white/10 bg-black/40 backdrop-blur-xl sticky top-0 z-50 shadow-[0_0_50px_rgba(236,72,153,0.3)]">
+        <div className="max-w-4xl mx-auto p-4 md:p-6 relative">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-serif font-bold bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
-                🚀 Build Your Investment Memo
+            <div className="relative">
+              <h1 className="text-2xl md:text-3xl font-serif font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(236,72,153,0.5)] flex items-center gap-3">
+                <Flame className="w-8 h-8 text-pink-500 animate-pulse drop-shadow-[0_0_10px_rgba(236,72,153,0.8)]" />
+                Build Your Memo
               </h1>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-white/60 mt-1">
                 {companyName} • {user.email}
               </p>
             </div>
-            <Button onClick={handleLogout} variant="outline" size="sm">
+            <Button 
+              onClick={handleLogout} 
+              variant="outline" 
+              size="sm"
+              className="border-white/20 bg-white/5 text-white hover:bg-white/10 backdrop-blur-sm"
+            >
               Logout
             </Button>
           </div>
@@ -451,30 +466,25 @@ export default function Portal() {
           {/* Progress Bar */}
           <div className="mt-6">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-bold text-foreground">
-                {progressPercentage === 100 ? '🎉 All Done!' : '⚡ Overall Progress'}
+              <span className="text-sm font-bold text-white/90">
+                {progressPercentage === 100 ? 'Complete' : 'Progress'}
               </span>
-              <span className="text-sm font-mono text-primary font-bold bg-primary/10 px-3 py-1 rounded-full">
+              <span className="text-sm font-mono text-pink-400 font-bold bg-pink-500/20 px-3 py-1 rounded-full border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
                 {answeredQuestions} / {totalQuestions}
               </span>
             </div>
-            <div className="relative">
-              <Progress 
-                value={progressPercentage} 
-                className="h-4 bg-muted shadow-inner"
-              />
-              {progressPercentage === 100 && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-bold text-white drop-shadow-lg">
-                    READY TO LAUNCH! 🎊
-                  </span>
-                </div>
-              )}
+            <div className="relative h-3 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm border border-white/20">
+              <div 
+                className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 transition-all duration-500 shadow-[0_0_20px_rgba(236,72,153,0.6)]"
+                style={{ width: `${progressPercentage}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]" />
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
+            <p className="text-xs text-white/50 mt-2">
               {progressPercentage === 100 
-                ? "You're ready to generate your investment memo!"
-                : `${progressPercentage}% complete - Keep going! 💪`
+                ? "Ready to generate your memo"
+                : `${progressPercentage}% complete`
               }
             </p>
           </div>
@@ -482,7 +492,7 @@ export default function Portal() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto p-4 md:p-8 min-h-[calc(100vh-12rem)]">
+      <div className="max-w-4xl mx-auto p-4 md:p-8 min-h-[calc(100vh-12rem)] relative">
         {currentQuestion && (
           <div 
             key={currentStep}
@@ -491,54 +501,57 @@ export default function Portal() {
             }`}
           >
             {/* Section Badge */}
-            <div className="flex items-center gap-3 mb-8 animate-fade-in">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center border-2 shadow-lg ${
-                hasAnswer 
-                  ? 'bg-green-500/20 border-green-500/50' 
-                  : 'bg-primary/10 border-primary/30'
-              }`}>
-                <currentQuestion.sectionIcon className={`w-6 h-6 ${hasAnswer ? 'text-green-500' : currentQuestion.sectionColor}`} />
-              </div>
+            <div className="flex items-center gap-4 mb-8 animate-fade-in">
+              <SectionBadge 
+                icon={currentQuestion.sectionIcon}
+                title={currentQuestion.sectionTitle}
+                isComplete={hasAnswer}
+              />
               <div>
-                <p className="text-sm font-bold text-muted-foreground">
+                <p className="text-base font-bold text-white/90">
                   {currentQuestion.sectionTitle}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-white/50">
                   Question {currentStep + 1} of {totalQuestions}
                 </p>
               </div>
             </div>
 
             {/* Question Card */}
-            <div className="bg-card border-2 border-border rounded-2xl shadow-2xl p-8 md:p-12 animate-scale-in">
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  {hasAnswer ? (
-                    <CheckCircle2 className="w-8 h-8 text-green-500 flex-shrink-0 mt-1 animate-scale-in" />
-                  ) : (
-                    <Sparkles className="w-8 h-8 text-primary flex-shrink-0 mt-1 animate-pulse" />
+            <div className="relative group">
+              {/* Card glow */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-3xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity" />
+              
+              <div className="relative bg-gradient-to-br from-white/10 to-white/5 border-2 border-white/20 rounded-3xl shadow-2xl p-8 md:p-12 backdrop-blur-xl animate-scale-in">
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    {hasAnswer ? (
+                      <CheckCircle2 className="w-10 h-10 text-green-400 flex-shrink-0 mt-1 animate-scale-in drop-shadow-[0_0_10px_rgba(74,222,128,0.6)]" />
+                    ) : (
+                      <Sparkles className="w-10 h-10 text-pink-400 flex-shrink-0 mt-1 animate-pulse drop-shadow-[0_0_10px_rgba(236,72,153,0.6)]" />
+                    )}
+                    <div className="flex-1">
+                      <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+                        {currentQuestion.question}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <Textarea
+                    value={currentAnswer}
+                    onChange={(e) => handleAnswerChange(currentQuestion.key, e.target.value)}
+                    placeholder={currentQuestion.placeholder}
+                    className="min-h-[200px] md:min-h-[250px] text-base bg-black/40 border-2 border-white/20 focus:border-pink-500/50 focus:ring-4 focus:ring-pink-500/20 transition-all resize-none text-white placeholder:text-white/40 backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]"
+                    autoFocus
+                  />
+
+                  {hasAnswer && (
+                    <div className="flex items-center gap-2 text-green-400 text-sm font-medium animate-fade-in">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span className="drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]">Locked in</span>
+                    </div>
                   )}
-                  <div className="flex-1">
-                    <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
-                      {currentQuestion.question}
-                    </h2>
-                  </div>
                 </div>
-
-                <Textarea
-                  value={currentAnswer}
-                  onChange={(e) => handleAnswerChange(currentQuestion.key, e.target.value)}
-                  placeholder={currentQuestion.placeholder}
-                  className="min-h-[200px] md:min-h-[250px] text-base bg-background border-2 focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all resize-none text-foreground"
-                  autoFocus
-                />
-
-                {hasAnswer && (
-                  <div className="flex items-center gap-2 text-green-500 text-sm font-medium animate-fade-in">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Looking good! ✨</span>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -549,7 +562,7 @@ export default function Portal() {
                 disabled={currentStep === 0}
                 variant="outline"
                 size="lg"
-                className="gap-2"
+                className="gap-2 border-white/20 bg-white/5 text-white hover:bg-white/10 backdrop-blur-sm disabled:opacity-30"
               >
                 <ChevronLeft className="w-5 h-5" />
                 Previous
@@ -566,12 +579,12 @@ export default function Portal() {
                         setIsAnimating(false);
                       }, 150);
                     }}
-                    className={`w-2 h-2 rounded-full transition-all ${
+                    className={`h-2 rounded-full transition-all ${
                       idx === currentStep 
-                        ? 'bg-primary w-8' 
+                        ? 'bg-gradient-to-r from-pink-500 to-purple-500 w-8 shadow-[0_0_10px_rgba(236,72,153,0.6)]' 
                         : responses[allQuestions[idx].key]?.trim() 
-                          ? 'bg-green-500' 
-                          : 'bg-muted-foreground/30'
+                          ? 'bg-green-500 w-2 shadow-[0_0_8px_rgba(74,222,128,0.4)]' 
+                          : 'bg-white/20 w-2'
                     }`}
                     aria-label={`Go to question ${idx + 1}`}
                   />
@@ -583,7 +596,7 @@ export default function Portal() {
                   onClick={() => {
                     if (progressPercentage === 100) {
                       toast({
-                        title: "🎉 Ready to Generate!",
+                        title: "Ready to Generate!",
                         description: "All questions answered. Generating your investment memo...",
                       });
                     } else {
@@ -596,16 +609,16 @@ export default function Portal() {
                   }}
                   disabled={progressPercentage < 100}
                   size="lg"
-                  className="gap-2 gradient-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                  className="gap-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 border-0 text-white shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:shadow-[0_0_40px_rgba(236,72,153,0.7)] hover:scale-105 transition-all disabled:opacity-30 disabled:hover:scale-100"
                 >
                   <Rocket className="w-5 h-5" />
-                  Generate Memo
+                  Generate
                 </Button>
               ) : (
                 <Button
                   onClick={handleNext}
                   size="lg"
-                  className="gap-2 gradient-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                  className="gap-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 border-0 text-white shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:shadow-[0_0_40px_rgba(236,72,153,0.7)] hover:scale-105 transition-all"
                 >
                   Next
                   <ChevronRight className="w-5 h-5" />
@@ -614,8 +627,8 @@ export default function Portal() {
             </div>
 
             {/* Quick Jump Sections */}
-            <div className="mt-12 p-6 bg-muted/30 rounded-xl border border-border">
-              <p className="text-sm font-bold text-foreground mb-4">Jump to Section:</p>
+            <div className="mt-12 p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
+              <p className="text-sm font-bold text-white/90 mb-4">Jump to Section:</p>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(questionSections).map(([sectionTitle, section]) => {
                   const sectionQuestions = allQuestions.filter(q => q.sectionTitle === sectionTitle);
@@ -634,12 +647,12 @@ export default function Portal() {
                           setIsAnimating(false);
                         }, 150);
                       }}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 ${
+                      className={`px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 ${
                         isComplete
-                          ? 'bg-green-500/20 text-green-500 border-2 border-green-500/30'
+                          ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border-2 border-green-500/30 shadow-[0_0_15px_rgba(74,222,128,0.3)]'
                           : currentQuestion.sectionTitle === sectionTitle
-                            ? 'bg-primary/20 text-primary border-2 border-primary/30'
-                            : 'bg-background text-muted-foreground border-2 border-border hover:border-primary/30'
+                            ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-400 border-2 border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.3)]'
+                            : 'bg-white/5 text-white/60 border-2 border-white/10 hover:border-white/30'
                       }`}
                     >
                       {isComplete && '✓ '}

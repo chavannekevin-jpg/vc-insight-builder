@@ -270,4 +270,14 @@ All colors MUST be HSL.
       transform: translate3d(3px, 0, 0);
     }
   }
+
+  /* Shimmer animation for progress bar */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
 }
