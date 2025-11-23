@@ -1,5 +1,5 @@
-import { Win98StartButton } from "../Win98StartButton";
-import { Win98Card } from "../Win98Card";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 
 export const HeroSection = () => {
   const scrollToWaitlist = () => {
@@ -7,52 +7,53 @@ export const HeroSection = () => {
   };
 
   return (
-    <section className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="max-w-4xl text-center space-y-10">
+    <section className="min-h-[85vh] flex items-center justify-center px-4 py-20 relative overflow-hidden">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5 -z-10" />
+      
+      <div className="max-w-5xl text-center space-y-8 animate-fade-in">
+        <Badge variant="secondary" className="px-4 py-1.5 text-sm font-medium">
+          Built on 10+ Years of VC Experience
+        </Badge>
+        
         <div className="space-y-6">
-          <div className="inline-block">
-            <h1 className="font-pixel text-xl md:text-3xl leading-relaxed text-foreground mb-2">
-              Turn Your Startup Into a VC-Ready Startup
-            </h1>
-            <div className="flex gap-1 mt-6 justify-center">
-              <div className="w-16 h-1 pastel-pink"></div>
-              <div className="w-16 h-1 pastel-yellow"></div>
-              <div className="w-16 h-1 pastel-green"></div>
-              <div className="w-16 h-1 pastel-blue"></div>
-            </div>
-          </div>
-          <p className="font-sans text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-            Generate a VC-calibrated investment memorandum based on 10+ years of venture capital experience. 
+          <h1 className="text-5xl md:text-7xl font-serif text-foreground leading-tight tracking-tight">
+            Turn Your Startup Into a{" "}
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              VC-Ready
+            </span>{" "}
+            Startup
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light">
+            Generate a VC-calibrated investment memorandum based on proven venture capital expertise. 
             Stop getting rejected without clarity.
           </p>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
-          <Win98StartButton 
-            variant="primary"
-            size="large"
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
+          <Button 
+            size="lg"
             onClick={scrollToWaitlist}
-            className="w-full sm:w-auto min-w-[240px]"
+            className="w-full sm:w-auto px-8 py-6 text-lg gradient-primary hover:opacity-90 transition-opacity"
           >
-            <span className="flex items-center gap-2">
-              <span className="font-pixel text-xs">▶</span> Join the Waitlist
-            </span>
-          </Win98StartButton>
-          <Win98StartButton 
-            size="large"
+            Join the Waitlist
+          </Button>
+          <Button 
+            size="lg"
+            variant="outline"
             onClick={scrollToWaitlist}
-            className="w-full sm:w-auto min-w-[240px]"
+            className="w-full sm:w-auto px-8 py-6 text-lg hover:bg-accent hover:text-accent-foreground"
           >
-            Skip the Line
-          </Win98StartButton>
+            Skip the Line →
+          </Button>
         </div>
 
-        <div className="pt-8 inline-block">
-          <Win98Card accentColor="yellow">
-            <p className="font-sans text-sm font-medium flex items-center gap-2 justify-center">
-              <span className="text-lg">💾</span> Early Access Discount Available
-            </p>
-          </Win98Card>
+        <div className="pt-12 flex items-center justify-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          <p className="text-sm text-muted-foreground">
+            Early Access Discount Available
+          </p>
         </div>
       </div>
     </section>

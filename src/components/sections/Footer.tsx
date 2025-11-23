@@ -1,4 +1,4 @@
-import { Win98StartButton } from "../Win98StartButton";
+import { Button } from "../ui/button";
 
 export const Footer = () => {
   const links = [
@@ -10,22 +10,23 @@ export const Footer = () => {
   ];
 
   return (
-    <footer className="py-8 px-4 bg-win98-taskbar border-t-2 border-win98-light">
+    <footer className="py-12 px-4 border-t border-border bg-muted/30">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-wrap justify-center gap-3 mb-6">
+        <div className="flex flex-wrap justify-center gap-6 mb-8">
           {links.map((link, index) => (
-            <Win98StartButton
+            <Button
               key={index}
+              variant="ghost"
               onClick={() => window.location.href = link.href}
-              className="text-xs"
+              className="text-sm text-muted-foreground hover:text-foreground"
             >
               {link.label}
-            </Win98StartButton>
+            </Button>
           ))}
         </div>
         
-        <div className="text-center win98-inset p-2 bg-background inline-block mx-auto block">
-          <p className="font-sans text-xs">
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">
             © 2025 VC Memorandum Generator • Built with 10+ years of venture capital experience
           </p>
         </div>

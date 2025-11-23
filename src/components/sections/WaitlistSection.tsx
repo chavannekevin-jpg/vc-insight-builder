@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { Win98Card } from "../Win98Card";
-import { Win98StartButton } from "../Win98StartButton";
+import { ModernCard } from "../ModernCard";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Lock } from "lucide-react";
 
 export const WaitlistSection = () => {
   const [email, setEmail] = useState("");
@@ -33,53 +36,57 @@ export const WaitlistSection = () => {
   };
 
   return (
-    <section id="waitlist-form" className="py-16 px-4 bg-card/30">
+    <section id="waitlist-form" className="py-20 px-4">
       <div className="max-w-2xl mx-auto">
-        <Win98Card title="Registration_Form.exe" accentColor="teal" className="border-2 border-primary">
-          <div className="mb-8 text-center">
-            <p className="font-sans text-sm">
-              Register now to get early access and start building your investment memorandum
-            </p>
-          </div>
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-serif mb-4">Get Started Today</h2>
+          <p className="text-lg text-muted-foreground">
+            Register now to get early access and start building your investment memorandum
+          </p>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <ModernCard className="shadow-xl">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="font-sans text-xs font-bold block uppercase tracking-wide">
+              <Label htmlFor="email" className="text-sm font-medium">
                 Email Address *
-              </label>
-              <input
+              </Label>
+              <Input
+                id="email"
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full retro-input font-sans text-sm"
                 placeholder="founder@startup.com"
+                className="h-11"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="font-sans text-xs font-bold block uppercase tracking-wide">
+              <Label htmlFor="company" className="text-sm font-medium">
                 Company Name *
-              </label>
-              <input
+              </Label>
+              <Input
+                id="company"
                 type="text"
                 required
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full retro-input font-sans text-sm"
                 placeholder="Your Startup Inc."
+                className="h-11"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="font-sans text-xs font-bold block uppercase tracking-wide">
+              <Label htmlFor="stage" className="text-sm font-medium">
                 Stage *
-              </label>
+              </Label>
               <select
+                id="stage"
                 required
                 value={stage}
                 onChange={(e) => setStage(e.target.value)}
-                className="w-full retro-input font-sans text-sm"
+                className="w-full h-11 px-3 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <option value="">Select stage...</option>
                 <option value="idea">Idea Stage</option>
@@ -91,25 +98,25 @@ export const WaitlistSection = () => {
               </select>
             </div>
 
-            <div className="pt-4">
-              <Win98StartButton
+            <div className="pt-2">
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                variant="primary"
-                size="large"
-                className="w-full"
+                size="lg"
+                className="w-full gradient-primary hover:opacity-90 transition-opacity"
               >
-                {isSubmitting ? "Processing..." : "[ REGISTER TO WAITLIST ]"}
-              </Win98StartButton>
+                {isSubmitting ? "Processing..." : "Register to Waitlist"}
+              </Button>
             </div>
 
-            <div className="win98-inset p-3 bg-win98-yellow/20">
-              <p className="font-sans text-xs text-center">
-                🔒 Your information is secure and will only be used for waitlist purposes
+            <div className="flex items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 border border-border">
+              <Lock className="w-4 h-4 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">
+                Your information is secure and will only be used for waitlist purposes
               </p>
             </div>
           </form>
-        </Win98Card>
+        </ModernCard>
       </div>
     </section>
   );
