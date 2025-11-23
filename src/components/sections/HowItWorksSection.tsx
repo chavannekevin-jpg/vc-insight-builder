@@ -5,26 +5,26 @@ export const HowItWorksSection = () => {
   const steps = [
     {
       number: "01",
-      title: "Input Your Company Data",
-      description: "Fill in structured information about your startup, business model, traction, and vision.",
+      title: "Dump Your Data",
+      description: "Answer the questions investors actually care about. Not the fluff you put in your deck.",
       icon: FileText
     },
     {
       number: "02",
-      title: "Generate Your Investment Memorandum",
-      description: "Our system creates a professional VC-grade memorandum using 10+ years of investment expertise.",
+      title: "Get Your Memo",
+      description: "I'll turn your answers into an investment memo built on 10+ years of writing them for actual deals.",
       icon: Lightbulb
     },
     {
       number: "03",
-      title: "Receive Diagnostics & Feedback",
-      description: "Get questions that VCs would ask, identify model weaknesses, and discover improvement areas.",
+      title: "Face the Hard Questions",
+      description: "Get the diagnostic feedback VCs think but don't tell you. Fix your model before the meeting.",
       icon: Target
     },
     {
       number: "04",
-      title: "Get Showcased to Investors",
-      description: "Pay extra to be presented to our network of 100+ European investors.",
+      title: "Skip to Real Investors",
+      description: "Pay extra. Get fast-tracked to my network of 100+ European VCs who actually write checks.",
       icon: Users
     }
   ];
@@ -33,8 +33,8 @@ export const HowItWorksSection = () => {
     <section className="py-20 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-serif mb-4">How It Works</h2>
-          <p className="text-lg text-muted-foreground">Simple process, powerful results</p>
+          <h2 className="text-4xl md:text-5xl font-serif mb-4">Stop Guessing. Start Speaking VC</h2>
+          <p className="text-lg text-muted-foreground">Four steps to stop getting rejected</p>
         </div>
         
         <div className="grid md:grid-cols-2 gap-6">
@@ -62,7 +62,7 @@ export const HowItWorksSection = () => {
         <div className="text-center pt-12">
           <ModernCard className="inline-block">
             <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">Coming soon:</span> Pitch decks, scripts, data room structures, and more
+              <span className="font-semibold text-foreground">Coming later:</span> Pitch decks that don't suck, scripts, data rooms—the whole arsenal
             </p>
           </ModernCard>
         </div>

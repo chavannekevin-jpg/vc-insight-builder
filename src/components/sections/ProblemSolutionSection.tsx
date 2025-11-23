@@ -15,15 +15,15 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground leading-relaxed">
-              Most startups fail before they even become startups. Why?
+              You're getting ghosted, rejected, and ignored. Here's why nobody's telling you:
             </p>
             
             <ul className="space-y-4">
               {[
-                "They don't speak the VC language",
-                "They build wrong investment models",
-                "They over-complexify their product",
-                "They get rejected without clarity"
+                "You sound like a founder, not an investment",
+                "Your pitch deck is a fantasy novel, not a thesis",
+                "You're solving problems VCs don't care about",
+                "You think 'passion' is a business model"
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
                   <span className="text-destructive mt-0.5">✗</span>
@@ -34,7 +34,7 @@ export const ProblemSolutionSection = () => {
             
             <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20">
               <p className="text-sm text-muted-foreground italic">
-                Founders don't understand how VCs actually evaluate their companies.
+                VCs won't waste time teaching you. They'll just pass.
               </p>
             </div>
           </div>
@@ -50,15 +50,15 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground leading-relaxed">
-              A tool that translates 10+ years of VC cognitive experience into actionable outputs.
+              I've written hundreds of investment memos. Now you get the blueprint.
             </p>
             
             <ul className="space-y-4">
               {[
-                "Generate investor-grade memorandums",
-                "Get model-improving feedback",
-                "Receive diagnostic questions",
-                "Align with real VC expectations"
+                "Generate memos that VCs actually read",
+                "Get the brutal feedback you're not hearing",
+                "Learn what questions expose weak business models",
+                "Stop wasting time on pitches that'll never work"
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
                   <span className="text-success mt-0.5">✓</span>
@@ -69,7 +69,7 @@ export const ProblemSolutionSection = () => {
             
             <div className="p-4 rounded-lg gradient-accent border border-primary/20">
               <p className="text-sm font-medium text-foreground">
-                → View your company through an investor lens
+                → See your company the way they do, before they reject you
               </p>
             </div>
           </div>

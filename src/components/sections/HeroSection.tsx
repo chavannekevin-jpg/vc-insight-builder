@@ -18,16 +18,16 @@ export const HeroSection = () => {
         
         <div className="space-y-6">
           <h1 className="text-5xl md:text-7xl font-serif text-foreground leading-tight tracking-tight">
-            Turn Your Startup Into a{" "}
+            VCs Won't Tell You{" "}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              VC-Ready
+              What They Want
             </span>{" "}
-            Startup
+            — But I Will
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light">
-            Generate a VC-calibrated investment memorandum based on proven venture capital expertise. 
-            Stop getting rejected without clarity.
+            Generate a memo that speaks their language, not yours. 
+            Built from 10+ years of watching founders fail at fundraising.
           </p>
         </div>
         
@@ -37,7 +37,7 @@ export const HeroSection = () => {
             onClick={scrollToWaitlist}
             className="w-full sm:w-auto px-8 py-6 text-lg gradient-primary hover:opacity-90 transition-opacity"
           >
-            Join the Waitlist
+            Get In Early
           </Button>
           <Button 
             size="lg"
@@ -45,7 +45,7 @@ export const HeroSection = () => {
             onClick={scrollToWaitlist}
             className="w-full sm:w-auto px-8 py-6 text-lg hover:bg-accent hover:text-accent-foreground"
           >
-            Skip the Line →
+            Get It Now →
           </Button>
         </div>
 
