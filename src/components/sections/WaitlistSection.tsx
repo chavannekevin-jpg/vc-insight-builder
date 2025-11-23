@@ -19,20 +19,17 @@ export const WaitlistSection = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    setTimeout(() => {
-      toast({
-        title: "Welcome to UglyBaby!",
-        description: "You're now registered. Let's set up your company profile.",
-      });
-      
-      // Store registration data and redirect to portal
-      localStorage.setItem('founderEmail', email);
-      localStorage.setItem('companyName', companyName);
-      localStorage.setItem('companyStage', stage);
-      
-      navigate('/portal');
-    }, 1000);
+    // Store temporarily for auth page
+    sessionStorage.setItem("pendingEmail", email);
+    sessionStorage.setItem("pendingCompany", companyName);
+    sessionStorage.setItem("pendingStage", stage);
+
+    toast({
+      title: "Create Your Account",
+      description: "Sign up to get started with UglyBaby",
+    });
+    
+    navigate('/auth');
   };
 
   return (
