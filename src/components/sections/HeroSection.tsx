@@ -1,10 +1,7 @@
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 export const HeroSection = () => {
-  const { t } = useLanguage();
-  
   const scrollToWaitlist = () => {
     document.getElementById('waitlist-form')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -21,27 +18,28 @@ export const HeroSection = () => {
       <div className="max-w-5xl mx-auto text-center space-y-8 animate-fade-in">
         {/* Badge with brutalist style */}
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-card border-2 border-primary" style={{ boxShadow: 'var(--shadow-lg)' }}>
-          <span className="text-sm font-bold text-primary uppercase tracking-wider">{t('hero.badge')}</span>
+          <span className="text-sm font-bold text-primary uppercase tracking-wider">Built by VCs</span>
         </div>
 
         {/* Main headline with neon effect */}
         <h1 className="text-5xl md:text-7xl font-serif font-bold tracking-tight">
-          {t('hero.title.1')}{" "}
+          Stop Getting{" "}
           <span className="text-primary text-neon">
-            {t('hero.title.2')}
+            Ghosted
           </span>{" "}
-          {t('hero.title.3')}
+          by VCs
         </h1>
 
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto leading-relaxed font-light">
-          {t('hero.subtitle')}
+          We're active early-stage investors who know exactly what VCs look for.
+          Get the unfiltered truth about your startup—before investors do.
         </p>
 
         {/* CTA button with brutal design */}
         <div className="flex flex-col items-center gap-6 pt-8">
           <p className="text-2xl md:text-3xl text-primary font-neon uppercase tracking-wider text-neon">
-            {t('hero.punchline')}
+            Because nobody will tell you that your baby is ugly.
           </p>
           <Button 
             size="lg" 
@@ -49,10 +47,10 @@ export const HeroSection = () => {
             onClick={scrollToWaitlist}
             style={{ boxShadow: '6px 6px 0 hsl(var(--secondary))' }}
           >
-            {t('hero.cta')}
+            Build My Memo
           </Button>
           <p className="text-sm text-muted-foreground font-medium">
-            🔥 <span className="text-primary font-bold">{t('hero.discount')}</span>
+            🔥 <span className="text-primary font-bold">50% OFF</span> for early sign-ups
           </p>
         </div>
       </div>
