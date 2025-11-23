@@ -7,62 +7,248 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
 import { 
-  Building2, 
+  AlertCircle,
   Lightbulb, 
   TrendingUp, 
   Users, 
   Rocket,
   ChevronRight,
   CheckCircle2,
-  Circle
+  Circle,
+  Target,
+  Zap,
+  Award,
+  DollarSign,
+  BarChart3
 } from "lucide-react";
 
 const questionSections = {
-  "Company Basics & Problem": {
-    icon: Building2,
+  "🎯 Problem": {
+    icon: AlertCircle,
+    color: "text-red-500",
     questions: [
-      { key: "company_name", question: "What is your company name?", placeholder: "Enter your company name" },
-      { key: "problem", question: "What problem are you solving?", placeholder: "Describe the core problem your target customers face..." },
-      { key: "target_customer", question: "Who is your target customer?", placeholder: "Define your ideal customer profile (company size, industry, role, pain points)..." },
-      { key: "why_now", question: "Why now? What has changed in the market?", placeholder: "Market timing, trends, regulatory changes, or technology shifts that make this the right time..." },
+      { 
+        key: "problem_description", 
+        question: "Describe the problem", 
+        placeholder: "What's the pain point your customers face? Make it real, make it hurt." 
+      },
+      { 
+        key: "problem_workflow", 
+        question: "What is the main process, task, or workflow your product improves, replaces, or simplifies?", 
+        placeholder: "Walk us through the broken workflow. How does it work today vs. how it should work?" 
+      },
     ]
   },
-  "Solution & Product": {
+  "💡 Solution": {
     icon: Lightbulb,
+    color: "text-yellow-500",
     questions: [
-      { key: "solution", question: "Describe your solution", placeholder: "How does your product/service solve the problem? What does it do?" },
-      { key: "product_status", question: "What is your current product status?", placeholder: "Development stage: MVP, Beta, Live, Scaling... Include key features." },
-      { key: "unique_value", question: "What makes your solution unique?", placeholder: "Your competitive advantage, moat, or defensibility..." },
-      { key: "tech_stack", question: "Key technology or IP", placeholder: "Proprietary tech, patents, unique data, or technical advantages..." },
+      { 
+        key: "solution_description", 
+        question: "Description of your product/service", 
+        placeholder: "What have you built? Get specific about what it does." 
+      },
+      { 
+        key: "solution_features", 
+        question: "Describe the key features and brief explanations of how they work / why they matter", 
+        placeholder: "Break down 3-5 core features. What makes each one powerful?" 
+      },
+      { 
+        key: "solution_social_proof", 
+        question: "Social proof (early adoption, pilot results, churn, testimonials, metrics)", 
+        placeholder: "Show us the love. Who's using it? What results have you seen?" 
+      },
     ]
   },
-  "Business Model & Market": {
-    icon: TrendingUp,
+  "🎪 Market": {
+    icon: Target,
+    color: "text-blue-500",
     questions: [
-      { key: "business_model", question: "How do you make money?", placeholder: "Revenue model: SaaS, marketplace, transaction fees, licensing..." },
-      { key: "pricing", question: "What is your pricing strategy?", placeholder: "Price points, tiers, average deal size, contract length..." },
-      { key: "market_size", question: "What is your addressable market size?", placeholder: "TAM, SAM, SOM with sources. Be specific about your wedge market..." },
-      { key: "competition", question: "Who are your main competitors?", placeholder: "Direct and indirect competitors. How do you differentiate?" },
-      { key: "unit_economics", question: "What are your unit economics?", placeholder: "CAC, LTV, LTV:CAC ratio, gross margins, payback period..." },
+      { 
+        key: "market_target_customer", 
+        question: "Who is your target customer?", 
+        placeholder: "Get specific. Company size, industry, geography. Paint the picture." 
+      },
+      { 
+        key: "market_buying_persona", 
+        question: "Who is your buying persona?", 
+        placeholder: "Who signs the check? Title, priorities, pain points." 
+      },
+      { 
+        key: "market_current_acv", 
+        question: "What is your current pricing ideally ACV?", 
+        placeholder: "What are you charging today? Be transparent." 
+      },
+      { 
+        key: "market_projected_acv", 
+        question: "What is your projected ACV?", 
+        placeholder: "Where do you see pricing going as you scale?" 
+      },
     ]
   },
-  "Traction & Team": {
+  "⚔️ Competition": {
+    icon: Zap,
+    color: "text-purple-500",
+    questions: [
+      { 
+        key: "competition_mission", 
+        question: "What is your company mission / product / core value proposition?", 
+        placeholder: "Why do you exist? What's your North Star?" 
+      },
+      { 
+        key: "competition_competitors", 
+        question: "List the competitors you know", 
+        placeholder: "Who else is in the ring? Direct and indirect." 
+      },
+      { 
+        key: "competition_strength", 
+        question: "What do you think your strength is facing your competition?", 
+        placeholder: "What's your unfair advantage? Why will you win?" 
+      },
+    ]
+  },
+  "🚀 Team": {
     icon: Users,
+    color: "text-green-500",
     questions: [
-      { key: "traction", question: "What traction do you have?", placeholder: "Revenue, users, growth rate, key metrics, partnerships, LOIs..." },
-      { key: "team", question: "Tell us about your founding team", placeholder: "Founders' backgrounds, relevant experience, why you're uniquely positioned to win..." },
-      { key: "advisors", question: "Do you have advisors or key hires?", placeholder: "Strategic advisors, board members, or critical team members..." },
-      { key: "customers", question: "Key customers or case studies", placeholder: "Notable customers, use cases, or testimonials that validate your solution..." },
+      { 
+        key: "team_size", 
+        question: "Number of full-time employees / team structure", 
+        placeholder: "How many people? How are you organized?" 
+      },
+      { 
+        key: "team_functions", 
+        question: "Key team functions / outsourced support", 
+        placeholder: "Who does what? What's in-house vs. outsourced?" 
+      },
+      { 
+        key: "team_founders", 
+        question: "Founders (name, role, % ownership, background)", 
+        placeholder: "Introduce the founding team. Why are they perfect for this?" 
+      },
+      { 
+        key: "team_history", 
+        question: "Prior collaboration or history among team members", 
+        placeholder: "Have you worked together before? What's the chemistry?" 
+      },
+      { 
+        key: "team_ownership", 
+        question: "Total team/founder ownership (% FD)", 
+        placeholder: "What % of the company does the team own fully diluted?" 
+      },
     ]
   },
-  "Financials & Vision": {
-    icon: Rocket,
+  "🏆 USP": {
+    icon: Award,
+    color: "text-orange-500",
     questions: [
-      { key: "funding", question: "How much are you raising?", placeholder: "Target raise amount and current round stage..." },
-      { key: "use_of_funds", question: "How will you use the funds?", placeholder: "Allocation: product, sales, team, marketing... Be specific." },
-      { key: "previous_funding", question: "Previous funding raised", placeholder: "Angels, pre-seed, seed... with amounts and investors if any..." },
-      { key: "vision", question: "What is your 5-year vision?", placeholder: "Where will the company be in 5 years? Revenue, scale, market position..." },
-      { key: "risks", question: "What are the key risks?", placeholder: "Market, execution, competitive, regulatory risks and how you'll mitigate them..." },
+      { 
+        key: "usp_differentiators", 
+        question: "Key differentiators you already have or want to emphasize (3–5 max)", 
+        placeholder: "What makes you different? List your secret weapons." 
+      },
+      { 
+        key: "usp_distribution", 
+        question: "Distribution or network advantages", 
+        placeholder: "Do you have special access? Partnerships? Network effects?" 
+      },
+      { 
+        key: "usp_business_model", 
+        question: "Business model advantages (e.g., revenue share, SaaS, upsell, capital-efficient)", 
+        placeholder: "What's smart about how you make money?" 
+      },
+      { 
+        key: "usp_compliance", 
+        question: "Compliance / regulatory or local-market advantages (if relevant)", 
+        placeholder: "Any regulatory moats? Local advantages?" 
+      },
+      { 
+        key: "usp_data", 
+        question: "Data or insights layer potential", 
+        placeholder: "Do you collect unique data? Can it become a moat?" 
+      },
+      { 
+        key: "usp_customer_rationale", 
+        question: "Customer rationale (why clients pick you over competitors)", 
+        placeholder: "From the customer's mouth—why do they choose you?" 
+      },
+    ]
+  },
+  "💰 Business Model": {
+    icon: DollarSign,
+    color: "text-emerald-500",
+    questions: [
+      { 
+        key: "business_model_type", 
+        question: "Business model type (SaaS / Marketplace / etc.)", 
+        placeholder: "How does the business work? SaaS, marketplace, transaction-based?" 
+      },
+      { 
+        key: "business_model_revenue", 
+        question: "Revenue sources & pricing details", 
+        placeholder: "Where does money come from? Break down revenue streams." 
+      },
+      { 
+        key: "business_model_acv_growth", 
+        question: "ACV range or growth potential", 
+        placeholder: "What's the ACV range? How does it expand over time?" 
+      },
+      { 
+        key: "business_model_gtm", 
+        question: "GTM strategy (direct / partner / hybrid)", 
+        placeholder: "How do you sell? Sales team, partners, self-serve?" 
+      },
+      { 
+        key: "business_model_margins", 
+        question: "Margins or cost drivers", 
+        placeholder: "What are your gross margins? What drives costs?" 
+      },
+      { 
+        key: "business_model_future", 
+        question: "Future monetization ideas", 
+        placeholder: "What other ways could you make money down the line?" 
+      },
+    ]
+  },
+  "📈 Traction": {
+    icon: BarChart3,
+    color: "text-pink-500",
+    questions: [
+      { 
+        key: "traction_launch", 
+        question: "Launch date and initial milestones", 
+        placeholder: "When did you launch? What have you hit so far?" 
+      },
+      { 
+        key: "traction_revenue", 
+        question: "Current ARR / MRR and past values (for comparison)", 
+        placeholder: "Show us the revenue trajectory. Where were you? Where are you now?" 
+      },
+      { 
+        key: "traction_customers", 
+        question: "Number of customers, users, or partners", 
+        placeholder: "How many customers? How many users? Growing how fast?" 
+      },
+      { 
+        key: "traction_key_customers", 
+        question: "Key customer names or use cases", 
+        placeholder: "Any notable customers? Compelling use cases?" 
+      },
+      { 
+        key: "traction_efficiency", 
+        question: "Efficiency metrics (CAC, retention, margins)", 
+        placeholder: "What's your CAC? Retention rate? Unit economics looking good?" 
+      },
+      { 
+        key: "traction_funding", 
+        question: "Funding, investors, or advisors", 
+        placeholder: "Who's backed you? Any notable angels or advisors?" 
+      },
+      { 
+        key: "traction_milestones", 
+        question: "Notable milestones (expansion, regulation, product releases)", 
+        placeholder: "Any big wins? New markets? Product launches? Partnerships?" 
+      },
     ]
   },
 };
@@ -212,8 +398,8 @@ export default function Portal() {
         <div className="max-w-6xl mx-auto p-4 md:p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-serif font-bold text-primary">
-                Build Your Investment Memo
+              <h1 className="text-2xl md:text-3xl font-serif font-bold bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
+                🚀 Build Your Investment Memo
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 {companyName} • {user.email}
@@ -227,19 +413,31 @@ export default function Portal() {
           {/* Progress Bar */}
           <div className="mt-6">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-semibold text-foreground">
-                Overall Progress
+              <span className="text-sm font-bold text-foreground">
+                {progressPercentage === 100 ? '🎉 All Done!' : '⚡ Overall Progress'}
               </span>
-              <span className="text-sm font-mono text-primary font-bold">
+              <span className="text-sm font-mono text-primary font-bold bg-primary/10 px-3 py-1 rounded-full">
                 {answeredQuestions} / {totalQuestions}
               </span>
             </div>
-            <Progress 
-              value={progressPercentage} 
-              className="h-3 bg-muted shadow-inner"
-            />
+            <div className="relative">
+              <Progress 
+                value={progressPercentage} 
+                className="h-4 bg-muted shadow-inner"
+              />
+              {progressPercentage === 100 && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xs font-bold text-white drop-shadow-lg">
+                    READY TO LAUNCH! 🎊
+                  </span>
+                </div>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {progressPercentage}% complete
+              {progressPercentage === 100 
+                ? "You're ready to generate your investment memo!"
+                : `${progressPercentage}% complete - Keep going! 💪`
+              }
             </p>
           </div>
         </div>
@@ -255,14 +453,18 @@ export default function Portal() {
           const sectionTotal = section.questions.length;
           const isComplete = sectionAnswered === sectionTotal;
           const isOpen = selectedSection === sectionTitle;
+          const sectionProgress = Math.round((sectionAnswered / sectionTotal) * 100);
 
           return (
             <div
               key={sectionTitle}
-              className="bg-card border-2 border-border rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in"
-              style={{
-                boxShadow: isOpen ? '0 0 20px rgba(236, 72, 153, 0.2)' : undefined
-              }}
+              className={`bg-card border-2 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 animate-fade-in ${
+                isComplete 
+                  ? 'border-green-500/50 bg-gradient-to-r from-green-500/5 to-transparent' 
+                  : isOpen 
+                    ? 'border-primary/50 shadow-glow' 
+                    : 'border-border'
+              }`}
             >
               {/* Section Header */}
               <button
@@ -272,28 +474,51 @@ export default function Portal() {
                 className="w-full p-6 flex items-center justify-between hover:bg-accent/30 transition-all group"
               >
                 <div className="flex items-center gap-4 flex-1">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center border-2 border-primary/30 group-hover:scale-110 transition-transform shadow-md">
-                    <Icon className="w-6 h-6 text-primary" />
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center border-2 group-hover:scale-110 transition-transform shadow-lg ${
+                    isComplete 
+                      ? 'bg-green-500/20 border-green-500/50' 
+                      : 'bg-primary/10 border-primary/30'
+                  }`}>
+                    <Icon className={`w-7 h-7 ${isComplete ? 'text-green-500' : section.color}`} />
                   </div>
                   <div className="text-left flex-1">
-                    <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                    <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
                       {sectionTitle}
                     </h3>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-3 mt-2">
                       {isComplete ? (
-                        <CheckCircle2 className="w-4 h-4 text-success" />
+                        <div className="flex items-center gap-1.5">
+                          <CheckCircle2 className="w-5 h-5 text-green-500 animate-scale-in" />
+                          <span className="text-sm font-bold text-green-500">
+                            Completed! 🎉
+                          </span>
+                        </div>
                       ) : (
-                        <Circle className="w-4 h-4 text-muted-foreground" />
+                        <>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-bold text-primary">
+                              {sectionAnswered} / {sectionTotal}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              questions
+                            </span>
+                          </div>
+                          <div className="h-2 w-24 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-primary to-pink-500 transition-all duration-500"
+                              style={{ width: `${sectionProgress}%` }}
+                            />
+                          </div>
+                        </>
                       )}
-                      <span className="text-sm text-muted-foreground">
-                        {sectionAnswered} / {sectionTotal} completed
-                      </span>
                     </div>
                   </div>
                 </div>
                 <ChevronRight 
-                  className={`w-6 h-6 text-muted-foreground transition-transform duration-300 ${
-                    isOpen ? 'rotate-90' : ''
+                  className={`w-6 h-6 transition-all duration-300 ${
+                    isOpen 
+                      ? 'rotate-90 text-primary' 
+                      : 'text-muted-foreground'
                   }`}
                 />
               </button>
@@ -306,12 +531,16 @@ export default function Portal() {
                     return (
                       <div 
                         key={q.key} 
-                        className="space-y-3 animate-fade-in"
+                        className={`space-y-3 p-4 rounded-lg transition-all animate-fade-in ${
+                          hasAnswer 
+                            ? 'bg-green-500/5 border-2 border-green-500/20' 
+                            : 'bg-background/50 border-2 border-dashed border-muted'
+                        }`}
                         style={{ animationDelay: `${idx * 50}ms` }}
                       >
                         <div className="flex items-start gap-3">
                           {hasAnswer ? (
-                            <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-1" />
+                            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-1 animate-scale-in" />
                           ) : (
                             <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
                           )}
@@ -325,7 +554,7 @@ export default function Portal() {
                             handleAnswerChange(q.key, e.target.value)
                           }
                           placeholder={q.placeholder}
-                          className="min-h-[120px] bg-background border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                          className="min-h-[120px] bg-background border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
                         />
                       </div>
                     );
@@ -339,18 +568,37 @@ export default function Portal() {
         {/* Generate Button */}
         <div className="pt-8 pb-12 text-center">
           <div className="inline-block space-y-4">
-            <Button
-              size="lg"
-              disabled={progressPercentage < 100}
-              className="text-lg px-12 py-6 gradient-primary shadow-lg hover:shadow-xl disabled:opacity-50"
-            >
-              <Rocket className="w-5 h-5 mr-2" />
-              Generate Investment Memo
-            </Button>
-            {progressPercentage < 100 && (
-              <p className="text-sm text-muted-foreground">
-                Complete all sections to generate your memo
-              </p>
+            {progressPercentage === 100 ? (
+              <div className="space-y-4 animate-scale-in">
+                <div className="text-4xl animate-bounce">🎉</div>
+                <Button
+                  size="lg"
+                  className="text-xl px-16 py-8 gradient-primary shadow-xl hover:shadow-2xl hover:scale-105 transition-all"
+                >
+                  <Rocket className="w-6 h-6 mr-3" />
+                  Generate My Investment Memo
+                </Button>
+                <p className="text-sm text-green-500 font-bold">
+                  ✨ All questions answered! Let's create something amazing.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <Button
+                  size="lg"
+                  disabled
+                  className="text-lg px-12 py-6 opacity-50 cursor-not-allowed"
+                >
+                  <Rocket className="w-5 h-5 mr-2" />
+                  Generate Investment Memo
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  📝 Answer all {totalQuestions} questions to unlock your memo
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {totalQuestions - answeredQuestions} questions remaining
+                </p>
+              </div>
             )}
           </div>
         </div>
