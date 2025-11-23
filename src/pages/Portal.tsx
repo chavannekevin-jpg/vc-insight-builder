@@ -23,7 +23,11 @@ import {
   DollarSign,
   BarChart3,
   Sparkles,
-  Flame
+  Flame,
+  Star,
+  PartyPopper,
+  TrendingUp as TrendingUpIcon,
+  Eye
 } from "lucide-react";
 import { SectionBadge } from "@/components/SectionBadge";
 
@@ -267,6 +271,9 @@ export default function Portal() {
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [microFeedback, setMicroFeedback] = useState<string>("");
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -360,9 +367,39 @@ export default function Portal() {
     }
   };
 
+  // Micro-feedback based on answer quality
+  const getMicroFeedback = (answer: string): string => {
+    const length = answer.trim().length;
+    if (length === 0) return "";
+    if (length < 50) return "Good start! 💭 Add more detail to make it shine";
+    if (length < 150) return "Nice! 👍 You're building momentum";
+    if (length < 300) return "Excellent depth! 🌟 Investors love this level of detail";
+    return "Outstanding! 🔥 This is the kind of insight that wins deals";
+  };
+
   const handleAnswerChange = async (questionKey: string, answer: string) => {
     const updatedResponses = { ...responses, [questionKey]: answer };
     setResponses(updatedResponses);
+
+    // Show micro-feedback
+    const feedback = getMicroFeedback(answer);
+    setMicroFeedback(feedback);
+
+    // Check if section is completed
+    const currentSectionQuestions = allQuestions.filter(q => q.sectionTitle === currentQuestion.sectionTitle);
+    const sectionAnswered = currentSectionQuestions.filter(q => 
+      (q.key === questionKey ? answer.trim() : responses[q.key]?.trim())
+    ).length;
+    
+    if (sectionAnswered === currentSectionQuestions.length && !completedSections.has(currentQuestion.sectionTitle)) {
+      setCompletedSections(new Set(completedSections).add(currentQuestion.sectionTitle));
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 3000);
+      toast({
+        title: `${currentQuestion.sectionTitle} Complete! 🎉`,
+        description: "You're crushing it! Keep this energy going.",
+      });
+    }
 
     if (!companyId) return;
 
@@ -404,6 +441,7 @@ export default function Portal() {
   const handleNext = () => {
     if (currentStep < allQuestions.length - 1) {
       setIsAnimating(true);
+      setMicroFeedback(""); // Clear feedback on transition
       setTimeout(() => {
         setCurrentStep(currentStep + 1);
         setIsAnimating(false);
@@ -425,6 +463,10 @@ export default function Portal() {
   const isLastQuestion = currentStep === allQuestions.length - 1;
   const currentAnswer = responses[currentQuestion?.key] || "";
   const hasAnswer = currentAnswer.trim().length > 0;
+  
+  // Get next section for curiosity hook
+  const nextQuestion = currentStep < allQuestions.length - 1 ? allQuestions[currentStep + 1] : null;
+  const isChangingSection = nextQuestion && nextQuestion.sectionTitle !== currentQuestion?.sectionTitle;
 
   if (loading) {
     return (
@@ -595,8 +637,14 @@ export default function Portal() {
             </div>
             <p className="text-xs text-white/50 mt-2">
               {progressPercentage === 100 
-                ? "Ready to generate your memo"
-                : `${progressPercentage}% complete`
+                ? "🚀 Ready to generate your memo - You crushed it!"
+                : progressPercentage >= 75
+                  ? "🔥 Almost there! You're so close to the finish line!"
+                  : progressPercentage >= 50
+                    ? "⭐ Halfway there! The momentum is real!"
+                    : progressPercentage >= 25
+                      ? "💪 Strong start! Keep the energy flowing!"
+                      : `${progressPercentage}% complete - Every answer brings you closer!`
               }
             </p>
           </div>
@@ -605,6 +653,21 @@ export default function Portal() {
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto p-4 md:p-8 min-h-[calc(100vh-12rem)] relative">
+        {/* Section Completion Celebration */}
+        {showCelebration && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none animate-fade-in">
+            <div className="text-center animate-scale-in">
+              <PartyPopper className="w-32 h-32 text-yellow-400 mx-auto mb-4 animate-bounce drop-shadow-[0_0_30px_rgba(250,204,21,0.8)]" />
+              <h2 className="text-4xl font-bold text-white mb-2 drop-shadow-[0_0_20px_rgba(236,72,153,0.8)]">
+                Section Complete! 🎉
+              </h2>
+              <p className="text-xl text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.6)]">
+                You're on fire! Keep going!
+              </p>
+            </div>
+          </div>
+        )}
+        
         {currentQuestion && (
           <div 
             key={currentStep}
@@ -657,7 +720,15 @@ export default function Portal() {
                     autoFocus
                   />
 
-                  {hasAnswer && (
+                  {/* Micro-feedback */}
+                  {microFeedback && (
+                    <div className="flex items-center gap-2 text-cyan-400 text-sm font-medium animate-fade-in">
+                      <Star className="w-4 h-4 animate-pulse" />
+                      <span className="drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">{microFeedback}</span>
+                    </div>
+                  )}
+
+                  {hasAnswer && !microFeedback && (
                     <div className="flex items-center gap-2 text-green-400 text-sm font-medium animate-fade-in">
                       <CheckCircle2 className="w-4 h-4" />
                       <span className="drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]">Locked in</span>
@@ -752,11 +823,36 @@ export default function Portal() {
                   size="lg"
                   className="gap-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 border-0 text-white shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:shadow-[0_0_40px_rgba(236,72,153,0.7)] hover:scale-105 transition-all"
                 >
-                  Next
+                  {hasAnswer ? "Next" : "Skip"}
                   <ChevronRight className="w-5 h-5" />
                 </Button>
               )}
             </div>
+
+            {/* Curiosity Hook - Show when changing sections */}
+            {isChangingSection && hasAnswer && (
+              <div className="mt-6 p-6 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-cyan-500/20 border-2 border-purple-500/30 rounded-2xl backdrop-blur-sm animate-fade-in">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <Eye className="w-8 h-8 text-purple-400 animate-pulse drop-shadow-[0_0_10px_rgba(168,85,247,0.6)]" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                      Coming Up Next: {nextQuestion?.sectionTitle}
+                      <Sparkles className="w-5 h-5 text-yellow-400" />
+                    </h3>
+                    <p className="text-white/80 text-sm">
+                      {nextQuestion?.sectionTitle === "Market" && "Dive into your target market and pricing strategy..."}
+                      {nextQuestion?.sectionTitle === "Competition" && "Show us why you'll dominate the competition..."}
+                      {nextQuestion?.sectionTitle === "Team" && "Introduce the dream team behind your vision..."}
+                      {nextQuestion?.sectionTitle === "USP" && "Reveal your secret weapons and unique advantages..."}
+                      {nextQuestion?.sectionTitle === "Business Model" && "Break down how you'll make money and scale..."}
+                      {nextQuestion?.sectionTitle === "Traction" && "Show the traction that proves you're onto something big..."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Quick Jump Sections */}
             <div className="mt-12 p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
