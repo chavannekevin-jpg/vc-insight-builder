@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
@@ -318,9 +319,15 @@ export default function Portal() {
         .from("companies")
         .select("id, name, stage")
         .eq("founder_id", userId)
-        .single();
+        .maybeSingle();
 
       if (companyError) throw companyError;
+
+      // If no company exists, keep companyId null and show creation UI
+      if (!companies) {
+        setLoading(false);
+        return;
+      }
 
       setCompanyId(companies.id);
       setCompanyName(companies.name);
@@ -429,6 +436,111 @@ export default function Portal() {
 
   if (!session || !user) {
     return null;
+  }
+
+  // Show company creation UI if no company exists
+  if (!companyId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-8 shadow-2xl">
+          <div className="text-center mb-6">
+            <Flame className="w-16 h-16 text-pink-500 mx-auto mb-4 animate-pulse" />
+            <h2 className="text-2xl font-bold text-white mb-2">Create Your Company Profile</h2>
+            <p className="text-white/70 text-sm">Let's get started with your investment memo</p>
+          </div>
+          
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const name = formData.get('companyName') as string;
+            const stage = formData.get('stage') as string;
+            
+            if (!name || !stage) {
+              toast({
+                title: "Missing information",
+                description: "Please fill in all fields",
+                variant: "destructive",
+              });
+              return;
+            }
+
+            try {
+              const { data, error } = await supabase
+                .from("companies")
+                .insert({
+                  name,
+                  founder_id: user.id,
+                  stage,
+                })
+                .select()
+                .single();
+
+              if (error) throw error;
+
+              setCompanyId(data.id);
+              setCompanyName(data.name);
+              
+              toast({
+                title: "Company Created! 🎉",
+                description: "Let's build your investment memo",
+              });
+            } catch (error: any) {
+              console.error("Error creating company:", error);
+              toast({
+                title: "Error",
+                description: error.message || "Could not create company",
+                variant: "destructive",
+              });
+            }
+          }}>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  Company Name
+                </label>
+                <Input
+                  name="companyName"
+                  placeholder="Your amazing startup"
+                  className="bg-black/40 border-white/20 text-white placeholder:text-white/40"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  Stage
+                </label>
+                <select
+                  name="stage"
+                  className="w-full px-3 py-2 bg-black/40 border-2 border-white/20 rounded-lg text-white focus:border-pink-500/50 focus:ring-4 focus:ring-pink-500/20 transition-all"
+                  required
+                >
+                  <option value="idea">Idea</option>
+                  <option value="mvp">MVP</option>
+                  <option value="early">Early Stage</option>
+                  <option value="growth">Growth</option>
+                </select>
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full mt-6 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 text-white shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:shadow-[0_0_40px_rgba(236,72,153,0.7)] hover:scale-105 transition-all"
+            >
+              Create Company
+            </Button>
+          </form>
+
+          <Button
+            onClick={handleLogout}
+            variant="ghost"
+            className="w-full mt-4 text-white/60 hover:text-white hover:bg-white/5"
+          >
+            Logout
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
