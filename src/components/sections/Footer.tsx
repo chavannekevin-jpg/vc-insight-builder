@@ -1,3 +1,5 @@
+import { Win98StartButton } from "../Win98StartButton";
+
 export const Footer = () => {
   const links = [
     { label: "About", href: "#" },
@@ -8,23 +10,23 @@ export const Footer = () => {
   ];
 
   return (
-    <footer className="py-12 px-4 border-t border-border bg-card">
+    <footer className="py-8 px-4 bg-win98-taskbar border-t-2 border-win98-light">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-wrap justify-center gap-6 mb-6">
+        <div className="flex flex-wrap justify-center gap-3 mb-6">
           {links.map((link, index) => (
-            <a
+            <Win98StartButton
               key={index}
-              href={link.href}
-              className="font-sans text-sm font-medium hover:text-primary transition-colors px-4 py-2 rounded hover:bg-muted"
+              onClick={() => window.location.href = link.href}
+              className="text-xs"
             >
               {link.label}
-            </a>
+            </Win98StartButton>
           ))}
         </div>
         
-        <div className="text-center">
-          <p className="font-sans text-sm text-muted-foreground">
-            © 2025 VC Memorandum Generator. Built with 10+ years of venture capital experience.
+        <div className="text-center win98-inset p-2 bg-background inline-block mx-auto block">
+          <p className="font-sans text-xs">
+            © 2025 VC Memorandum Generator • Built with 10+ years of venture capital experience
           </p>
         </div>
       </div>

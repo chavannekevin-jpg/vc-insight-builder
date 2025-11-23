@@ -1,7 +1,10 @@
+import { Win98Card } from "../Win98Card";
+import { Win98StartButton } from "../Win98StartButton";
+
 export const PricingSection = () => {
   const pricingOptions = [
     {
-      title: "Early Access",
+      title: "Early_Access.exe",
       subtitle: "Waitlist",
       features: [
         "Join the waitlist",
@@ -10,10 +13,11 @@ export const PricingSection = () => {
         "Receive product updates"
       ],
       cta: "Register to Waitlist",
-      highlight: false
+      highlight: false,
+      color: "blue" as const
     },
     {
-      title: "Priority Access",
+      title: "Priority_Access.exe",
       subtitle: "Skip the Line",
       features: [
         "Skip the waiting period",
@@ -22,10 +26,11 @@ export const PricingSection = () => {
         "Early adopter benefits"
       ],
       cta: "Get Priority Access",
-      highlight: true
+      highlight: true,
+      color: "green" as const
     },
     {
-      title: "Manual Memorandum",
+      title: "Manual_Memo.exe",
       subtitle: "Premium Service",
       features: [
         "Manually created by experts",
@@ -34,47 +39,50 @@ export const PricingSection = () => {
         "10+ years of VC experience"
       ],
       cta: "Request Manual Memo",
-      highlight: false
+      highlight: false,
+      color: "purple" as const
     }
   ];
 
   return (
-    <section className="py-16 px-4 bg-muted/30">
+    <section className="py-16 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="font-pixel text-xl mb-4">Select Your Package</h2>
-          <p className="font-sans text-lg text-muted-foreground">Choose the option that fits your timeline</p>
+          <h2 className="font-pixel text-xl mb-4">Select_Package.exe</h2>
+          <p className="font-sans text-base text-muted-foreground">Choose the option that fits your timeline</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
           {pricingOptions.map((option, index) => (
-            <div 
-              key={index} 
-              className={`retro-card p-8 ${option.highlight ? 'border-2 border-primary' : ''} hover:translate-y-[-4px] transition-all`}
+            <Win98Card 
+              key={index}
+              title={option.title}
+              accentColor={option.color}
+              className={option.highlight ? 'ring-2 ring-primary ring-offset-2' : ''}
             >
               <div className="space-y-6">
-                <div className="text-center pb-4 border-b border-border">
-                  <h3 className="font-pixel text-sm mb-2">{option.title}</h3>
-                  <p className="font-sans text-base text-muted-foreground">{option.subtitle}</p>
+                <div className="text-center pb-4 win98-inset p-2 bg-muted/30">
+                  <p className="font-sans text-sm font-semibold">{option.subtitle}</p>
                 </div>
                 
-                <ul className="space-y-3 font-sans text-sm min-h-[160px]">
+                <ul className="space-y-3 font-sans text-xs min-h-[140px]">
                   {option.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-3">
+                    <li key={idx} className="flex items-start gap-2">
                       <span className="text-primary flex-shrink-0 mt-0.5">✓</span>
                       <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
 
-                <button 
+                <Win98StartButton 
                   onClick={() => document.getElementById('waitlist-form')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="w-full px-6 py-3 font-sans font-semibold text-sm rounded-lg border-2 border-foreground hover:border-primary bg-card hover:bg-card/80 transition-all shadow-[3px_3px_0_hsl(var(--retro-shadow))] hover:shadow-[5px_5px_0_hsl(var(--retro-shadow))] hover:translate-y-[-2px] active:translate-y-0"
+                  className="w-full text-xs"
+                  variant={option.highlight ? "primary" : "default"}
                 >
                   {option.cta}
-                </button>
+                </Win98StartButton>
               </div>
-            </div>
+            </Win98Card>
           ))}
         </div>
       </div>
