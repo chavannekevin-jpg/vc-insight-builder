@@ -20,10 +20,10 @@ export const ProblemSolutionSection = () => {
             
             <ul className="space-y-4">
               {[
-                "You sound like a founder, not an investment",
-                "Your pitch deck is a fantasy novel, not a thesis",
-                "You're solving problems VCs don't care about",
-                "You think 'passion' is a business model"
+                "Your traction story doesn't translate to VC-scale potential",
+                "Your pitch deck focuses on features, not market dynamics",
+                "You're addressing real problems but not venture-scale opportunities",
+                "Your team's expertise isn't framed as competitive advantage"
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
                   <span className="text-destructive mt-0.5">✗</span>
@@ -50,7 +50,7 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground leading-relaxed font-semibold">
-              UglyBaby has written hundreds of investment memos. Now you get the blueprint.
+              We've written hundreds of investment memos for real deals. Now you get the blueprint.
             </p>
             
             <ul className="space-y-4">

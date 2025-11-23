@@ -34,8 +34,8 @@ export const WhyYouNeedThisSection = () => {
           {/* Opening statement - editorial style */}
           <div className="space-y-8 py-8">
             <p className="text-xl md:text-2xl text-foreground leading-relaxed font-light">
-              UglyBaby has met thousands of founders across Europe.
-              Different industries, different stages, different personalities — but they all fail at the exact same thing:
+              We've met thousands of founders across Europe—from pre-seed to Series A.
+              Different industries, different team sizes, different traction levels — but they all fail at the exact same thing:
             </p>
             
             <div className="py-8 px-6 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border-l-4 border-primary shadow-lg">
@@ -45,8 +45,8 @@ export const WhyYouNeedThisSection = () => {
             </div>
 
             <div className="space-y-4 text-lg text-foreground/90 leading-relaxed">
-              <p>Every founder asks UB the same questions.</p>
-              <p>Every founder makes the same mistakes.</p>
+              <p>Every founding team asks us the same questions.</p>
+              <p>Every company makes the same mistakes.</p>
               <p>And nobody will ever tell them why — because nobody wants to tell a founder their baby is ugly.</p>
             </div>
 
@@ -83,7 +83,7 @@ export const WhyYouNeedThisSection = () => {
 
               <div className="space-y-4 pt-4">
                 <p className="font-bold text-foreground">
-                  It forces you to confront the stuff founders avoid:
+                  It forces you to confront the questions that separate fundable companies from everyone else:
                 </p>
                 {confrontations.map((question, idx) => (
                   <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
@@ -94,8 +94,8 @@ export const WhyYouNeedThisSection = () => {
               </div>
 
               <p className="text-base text-muted-foreground italic pt-4">
-                Most founders never pressure-test their thinking at this level.
-                Then they wonder why their pitch deck doesn't "hit."
+                Most teams never pressure-test their narrative at this level.
+                Then they wonder why investors pass despite strong traction.
               </p>
             </div>
           </ModernCard>
@@ -109,7 +109,7 @@ export const WhyYouNeedThisSection = () => {
 
               <div className="space-y-4 pt-4">
                 <p className="font-bold text-foreground">
-                  If you use this memo as the base for your pitch, deck, and fundraising narrative, you will:
+                  When you use this memo as the foundation for your fundraising narrative, you will:
                 </p>
                 {outcomes.map((outcome, idx) => (
                   <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/20">
@@ -124,10 +124,10 @@ export const WhyYouNeedThisSection = () => {
           <ModernCard className="bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/40 shadow-2xl">
             <div className="text-center space-y-4 p-6">
               <h3 className="text-2xl font-serif font-bold text-foreground">
-                Most founders never get honest, investor-level feedback.
+                Most founding teams never get honest, investor-level feedback.
               </h3>
               <p className="text-xl font-bold text-primary">
-                UglyBaby is the first to actually tell you the truth.
+                We're here to actually tell you the truth.
               </p>
             </div>
           </ModernCard>

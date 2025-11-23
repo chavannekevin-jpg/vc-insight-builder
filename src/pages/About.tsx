@@ -15,9 +15,9 @@ const About = () => {
         <div className="max-w-4xl mx-auto space-y-8">
 
           <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-6xl font-serif mb-6">About Me</h1>
+            <h1 className="text-5xl md:text-6xl font-serif mb-6">About Us</h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Translating 10+ years of VC experience into tools that help startups succeed
+              Translating 10+ years of VC experience into tools that help growing startups succeed
             </p>
           </div>
 
@@ -28,33 +28,33 @@ const About = () => {
                   <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
                     <Target className="w-6 h-6 text-destructive" />
                   </div>
-                  <h2 className="text-3xl font-serif">The Problem I'm Solving</h2>
+                  <h2 className="text-3xl font-serif">The Problem We're Solving</h2>
                 </div>
                 
                 <p>
-                  Having worked in the VC space for over ten years, met with thousands of founders, 
-                  and written hundreds of investment memorandums, I've identified a critical gap in the startup ecosystem.
+                  After working in the VC space for over ten years, meeting with thousands of founding teams, 
+                  and writing hundreds of investment memorandums, we've identified a critical gap in the startup ecosystem.
                 </p>
 
                 <p>
-                  Having coached, advised, and worked with multiple internationally recognized accelerators, 
-                  I have understood that <strong>most startups fail at actually becoming startups</strong> because they 
-                  do not speak the VC language, and do not look at their companies the way VCs look at their company.
+                  Through coaching and advising multiple internationally recognized accelerators, 
+                  we've seen that <strong>most companies with real traction still fail to raise capital</strong> because they 
+                  don't speak the VC language, and don't frame their business the way investors need to see it.
                 </p>
 
                 <p className="text-muted-foreground italic pl-4 border-l-2 border-destructive">
-                  They get rejected without clarity, they build the wrong investment models, they over-complexify their product...
+                  Teams get rejected without clarity, they frame their traction incorrectly, they miss the narrative that connects their metrics to venture scale...
                 </p>
               </div>
 
               <div className="p-6 rounded-xl gradient-accent border border-primary/20 space-y-3">
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-6 h-6 text-primary" />
-                  <h2 className="text-2xl font-serif">My Solution</h2>
+                  <h2 className="text-2xl font-serif">Our Solution</h2>
                 </div>
                 <p>
-                  I decided to translate my cognitive experience into a series of prompts that startups can use 
-                  by inputting data about their company to extract multiple types of resources relevant to investors.
+                  We've translated our experience into a structured framework that growing companies can use 
+                  to generate investor-grade materials that translate their traction into compelling investment narratives.
                 </p>
               </div>
 
@@ -62,16 +62,16 @@ const About = () => {
                 <h2 className="text-3xl font-serif">The Investment Memorandum</h2>
                 
                 <p>
-                  The first product I'm releasing is the <strong>"Investment Memorandum"</strong>. 
-                  By inputting information requested on my platform, startups will be able to generate a complete 
-                  investor prompt that will:
+                  Our first product is the <strong>"Investment Memorandum"</strong>. 
+                  By providing strategic information about your company, team, and traction, you'll generate a complete 
+                  investor-grade document that will:
                 </p>
 
                 <ul className="space-y-3 ml-6">
                   {[
-                    "Best describe the company from an investor lens",
-                    "Provide questions and feedback to adjust the model towards a more VC-suited approach",
-                    "Help with narrative building and reflecting on better performance"
+                    "Frame your company's traction and metrics through an investor lens",
+                    "Identify gaps between your current narrative and what VCs need to see",
+                    "Transform your team's expertise into competitive advantages"
                   ].map((item, idx) => (
                     <li key={idx} className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
@@ -85,7 +85,7 @@ const About = () => {
                 <h2 className="text-3xl font-serif">Future Products</h2>
                 
                 <p>
-                  Companies will be able to request additional types of material later down the line, such as:
+                  We'll be adding additional materials for fundraising teams, such as:
                 </p>
 
                 <div className="grid grid-cols-2 gap-4 mt-4">
@@ -113,8 +113,8 @@ const About = () => {
                   <h2 className="text-2xl font-serif">Investor Network Access</h2>
                 </div>
                 <p>
-                  Once your company has joined the platform and generated your memorandum, 
-                  you can pay a little extra to be showcased to my list of <strong>100+ European investors</strong>.
+                  Once your company has generated your memorandum, 
+                  you can pay extra to be showcased to our network of <strong>100+ European investors</strong> actively deploying capital.
                 </p>
               </div>
 
