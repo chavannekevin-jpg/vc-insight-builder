@@ -1,5 +1,3 @@
-import { Win98Window } from "../Win98Window";
-
 export const HowItWorksSection = () => {
   const steps = [
     {
@@ -25,33 +23,36 @@ export const HowItWorksSection = () => {
   ];
 
   return (
-    <section className="py-16 px-4 bg-background/50">
+    <section className="py-16 px-4">
       <div className="max-w-5xl mx-auto">
-        <Win98Window title="How_It_Works.exe">
-          <div className="space-y-8">
-            <h2 className="font-pixel text-xl text-center mb-8">PROCESS FLOWCHART</h2>
-            
-            <div className="grid gap-6">
-              {steps.map((step, index) => (
-                <div key={index} className="flex gap-4 items-start">
-                  <div className="win98-border bg-primary text-primary-foreground w-16 h-16 flex items-center justify-center flex-shrink-0">
-                    <span className="font-pixel text-sm">{step.number}</span>
-                  </div>
-                  <div className="flex-1 win98-border-inset bg-input p-4">
-                    <h3 className="font-pixel text-sm mb-2">{step.title}</h3>
-                    <p className="font-retro text-xl">{step.description}</p>
-                  </div>
+        <div className="text-center mb-12">
+          <h2 className="font-pixel text-xl mb-4">How It Works</h2>
+          <p className="font-sans text-lg text-muted-foreground">Simple process, powerful results</p>
+        </div>
+        
+        <div className="grid gap-6">
+          {steps.map((step, index) => (
+            <div key={index} className="retro-card p-6 flex gap-6 items-start hover:translate-y-[-2px] transition-transform">
+              <div className="flex-shrink-0">
+                <div className="w-16 h-16 gradient-retro rounded-lg flex items-center justify-center text-white shadow-[4px_4px_0_hsl(var(--retro-shadow))]">
+                  <span className="font-pixel text-sm">{step.number}</span>
                 </div>
-              ))}
+              </div>
+              <div className="flex-1">
+                <h3 className="font-pixel text-sm mb-3">{step.title}</h3>
+                <p className="font-sans text-base text-muted-foreground leading-relaxed">{step.description}</p>
+              </div>
             </div>
+          ))}
+        </div>
 
-            <div className="text-center pt-4">
-              <p className="font-retro text-xl text-muted-foreground">
-                → Later: Request pitch decks, scripts, data room structures, and more
-              </p>
-            </div>
+        <div className="text-center pt-8">
+          <div className="retro-card inline-block px-6 py-3">
+            <p className="font-sans text-sm text-muted-foreground">
+              → Later: Request pitch decks, scripts, data room structures, and more
+            </p>
           </div>
-        </Win98Window>
+        </div>
       </div>
     </section>
   );

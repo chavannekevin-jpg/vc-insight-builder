@@ -8,22 +8,22 @@ export const Footer = () => {
   ];
 
   return (
-    <footer className="py-8 px-4 border-t-4 border-foreground bg-card">
+    <footer className="py-12 px-4 border-t border-border bg-card">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-wrap justify-center gap-6 mb-4">
+        <div className="flex flex-wrap justify-center gap-6 mb-6">
           {links.map((link, index) => (
             <a
               key={index}
               href={link.href}
-              className="font-retro text-xl hover:text-primary transition-colors win98-border px-4 py-1 bg-background hover:bg-background/80"
+              className="font-sans text-sm font-medium hover:text-primary transition-colors px-4 py-2 rounded hover:bg-muted"
             >
               {link.label}
             </a>
           ))}
         </div>
         
-        <div className="text-center win98-border-inset bg-input p-4 inline-block mx-auto block">
-          <p className="font-retro text-lg">
+        <div className="text-center">
+          <p className="font-sans text-sm text-muted-foreground">
             © 2025 VC Memorandum Generator. Built with 10+ years of venture capital experience.
           </p>
         </div>

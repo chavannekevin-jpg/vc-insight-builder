@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         'pixel': ['"Press Start 2P"', 'cursive'],
         'retro': ['"VT323"', 'monospace'],
+        'sans': ['"Inter"', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
