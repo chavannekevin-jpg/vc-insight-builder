@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { Win98Card } from "../Win98Card";
+import { Win98StartButton } from "../Win98StartButton";
 
 export const WaitlistSection = () => {
   const [email, setEmail] = useState("");
@@ -31,19 +33,18 @@ export const WaitlistSection = () => {
   };
 
   return (
-    <section id="waitlist-form" className="py-16 px-4">
+    <section id="waitlist-form" className="py-16 px-4 bg-card/30">
       <div className="max-w-2xl mx-auto">
-        <div className="retro-card p-8 border-2 border-accent">
+        <Win98Card title="Registration_Form.exe" accentColor="teal" className="border-2 border-primary">
           <div className="mb-8 text-center">
-            <h2 className="font-pixel text-lg mb-3">Join the Waitlist</h2>
-            <p className="font-sans text-base text-muted-foreground">
+            <p className="font-sans text-sm">
               Register now to get early access and start building your investment memorandum
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="font-sans text-sm font-semibold block">
+              <label className="font-sans text-xs font-bold block uppercase tracking-wide">
                 Email Address *
               </label>
               <input
@@ -51,13 +52,13 @@ export const WaitlistSection = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full retro-input px-4 py-3 font-sans text-base"
+                className="w-full retro-input font-sans text-sm"
                 placeholder="founder@startup.com"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="font-sans text-sm font-semibold block">
+              <label className="font-sans text-xs font-bold block uppercase tracking-wide">
                 Company Name *
               </label>
               <input
@@ -65,20 +66,20 @@ export const WaitlistSection = () => {
                 required
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full retro-input px-4 py-3 font-sans text-base"
+                className="w-full retro-input font-sans text-sm"
                 placeholder="Your Startup Inc."
               />
             </div>
 
             <div className="space-y-2">
-              <label className="font-sans text-sm font-semibold block">
+              <label className="font-sans text-xs font-bold block uppercase tracking-wide">
                 Stage *
               </label>
               <select
                 required
                 value={stage}
                 onChange={(e) => setStage(e.target.value)}
-                className="w-full retro-input px-4 py-3 font-sans text-base"
+                className="w-full retro-input font-sans text-sm"
               >
                 <option value="">Select stage...</option>
                 <option value="idea">Idea Stage</option>
@@ -91,22 +92,24 @@ export const WaitlistSection = () => {
             </div>
 
             <div className="pt-4">
-              <button
+              <Win98StartButton
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full px-8 py-4 font-sans font-semibold text-base rounded-lg border-2 gradient-retro text-white hover:opacity-90 transition-all duration-200 shadow-[4px_4px_0_hsl(var(--retro-teal))] hover:shadow-[6px_6px_0_hsl(var(--retro-teal))] hover:translate-y-[-2px] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                variant="primary"
+                size="large"
+                className="w-full"
               >
-                {isSubmitting ? "Processing..." : "Register to Waitlist →"}
-              </button>
+                {isSubmitting ? "Processing..." : "[ REGISTER TO WAITLIST ]"}
+              </Win98StartButton>
             </div>
 
-            <div className="retro-card p-4 bg-muted">
-              <p className="font-sans text-sm text-center text-muted-foreground">
+            <div className="win98-inset p-3 bg-win98-yellow/20">
+              <p className="font-sans text-xs text-center">
                 🔒 Your information is secure and will only be used for waitlist purposes
               </p>
             </div>
           </form>
-        </div>
+        </Win98Card>
       </div>
     </section>
   );

@@ -8,41 +8,50 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Modern Retro Color Palette */
-    --background: 220 15% 97%; /* Soft warm white */
-    --foreground: 220 15% 15%; /* Soft dark text */
+    /* Light Windows 98 Inspired Palette */
+    --background: 180 25% 94%; /* Light teal-grey desktop */
+    --foreground: 0 0% 10%; /* Soft black text */
 
-    --card: 0 0% 100%; /* Clean white cards */
-    --card-foreground: 220 15% 15%;
+    --card: 0 0% 96%; /* Light grey window */
+    --card-foreground: 0 0% 10%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 15%;
+    --popover: 0 0% 96%;
+    --popover-foreground: 0 0% 10%;
 
-    --primary: 180 60% 45%; /* Modern teal */
+    --primary: 180 50% 55%; /* Light Win98 teal */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 92%; /* Soft grey */
-    --secondary-foreground: 220 15% 15%;
+    --secondary: 0 0% 88%; /* Light button grey */
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 220 15% 92%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 240 85% 65%; /* Softer blue accent */
-    --accent-foreground: 0 0% 100%;
+    --accent: 210 100% 75%; /* Light Windows blue */
+    --accent-foreground: 0 0% 10%;
 
-    --destructive: 0 75% 55%;
+    --destructive: 0 80% 65%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 88%;
+    --border: 0 0% 80%;
     --input: 0 0% 100%;
-    --ring: 180 60% 45%;
+    --ring: 180 50% 55%;
 
-    --radius: 0.5rem; /* Subtle rounded corners */
+    --radius: 0rem; /* No rounded corners - pure Win98 */
 
-    /* Retro accent variables */
-    --retro-teal: 180 60% 45%;
-    --retro-blue: 240 85% 65%;
-    --retro-shadow: 220 15% 85%;
+    /* Windows 98 Classic Colors */
+    --win98-teal: 180 50% 55%;
+    --win98-blue: 210 100% 75%;
+    --win98-pink: 320 70% 85%;
+    --win98-yellow: 48 100% 85%;
+    --win98-green: 140 60% 75%;
+    --win98-purple: 270 50% 85%;
+    --win98-light: 0 0% 100%; /* Window highlight */
+    --win98-dark: 0 0% 50%; /* Window shadow */
+    --win98-grey: 0 0% 75%; /* Standard button face */
+    --win98-taskbar: 0 0% 75%; /* Taskbar grey */
+    --win98-title-active: 0 60% 45%; /* Active window gradient start */
+    --win98-title-active-end: 210 88% 40%; /* Active window gradient end */
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -100,48 +109,77 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'VT323', monospace;
+    font-family: 'Inter', sans-serif;
+    image-rendering: crisp-edges;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Press Start 2P', cursive;
+    image-rendering: pixelated;
   }
 }
 
 @layer utilities {
-  /* Modern Retro Border Effects */
-  .retro-card {
-    background: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    box-shadow: 
-      4px 4px 0 hsl(var(--retro-shadow)),
-      0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s, box-shadow 0.2s;
+  /* Windows 98 3D Border System */
+  .win98-raised {
+    border-style: solid;
+    border-width: 2px;
+    border-top-color: hsl(var(--win98-light));
+    border-left-color: hsl(var(--win98-light));
+    border-bottom-color: hsl(var(--win98-dark));
+    border-right-color: hsl(var(--win98-dark));
+    background: hsl(var(--win98-grey));
   }
 
-  .retro-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-      6px 6px 0 hsl(var(--retro-shadow)),
-      0 4px 12px rgba(0, 0, 0, 0.08);
-  }
-
-  .retro-input {
+  .win98-inset {
+    border-style: solid;
+    border-width: 2px;
+    border-top-color: hsl(var(--win98-dark));
+    border-left-color: hsl(var(--win98-dark));
+    border-bottom-color: hsl(var(--win98-light));
+    border-right-color: hsl(var(--win98-light));
     background: hsl(var(--input));
-    border: 2px solid hsl(var(--border));
-    border-radius: calc(var(--radius) - 2px);
-    transition: all 0.2s;
   }
 
-  .retro-input:focus {
-    outline: none;
-    border-color: hsl(var(--primary));
-    box-shadow: 0 0 0 3px hsla(var(--primary) / 0.1);
+  .win98-window {
+    @apply win98-raised;
+    background: hsl(var(--card));
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .win98-title-bar {
+    background: linear-gradient(90deg, hsl(var(--win98-title-active)) 0%, hsl(var(--win98-title-active-end)) 100%);
+    color: white;
+    padding: 3px 4px;
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .win98-button {
+    @apply win98-raised;
+    padding: 4px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+
+  .win98-button:hover {
+    background: hsl(var(--win98-grey));
+    filter: brightness(1.05);
+  }
+
+  .win98-button:active {
+    @apply win98-inset;
   }
 
   .pixel-text {
     font-family: 'Press Start 2P', cursive;
+    image-rendering: pixelated;
   }
 
   .retro-text {
@@ -149,7 +187,40 @@ All colors MUST be HSL.
     font-size: 24px;
   }
 
-  .gradient-retro {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  /* Pastel Accents */
+  .pastel-pink {
+    background: hsl(var(--win98-pink));
+  }
+
+  .pastel-yellow {
+    background: hsl(var(--win98-yellow));
+  }
+
+  .pastel-green {
+    background: hsl(var(--win98-green));
+  }
+
+  .pastel-purple {
+    background: hsl(var(--win98-purple));
+  }
+
+  .pastel-blue {
+    background: hsl(var(--win98-blue));
+  }
+
+  .pastel-teal {
+    background: hsl(var(--win98-teal));
+  }
+
+  /* Classic Win98 input */
+  .retro-input {
+    @apply win98-inset;
+    padding: 6px 8px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .retro-input:focus {
+    outline: 1px dotted hsl(var(--foreground));
+    outline-offset: -3px;
   }
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ModernRetroButton } from "@/components/ModernRetroButton";
+import { Win98StartButton } from "@/components/Win98StartButton";
+import { Win98Card } from "@/components/Win98Card";
 import { useToast } from "@/hooks/use-toast";
 
 const Portal = () => {
@@ -40,25 +41,25 @@ const Portal = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b-2 border-border bg-card">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="font-pixel text-sm mb-1">{companyName}</h1>
-            <p className="font-sans text-sm text-muted-foreground">{founderEmail}</p>
+      {/* Header - Taskbar Style */}
+      <header className="bg-win98-taskbar border-b-2 border-win98-light shadow-md">
+        <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
+          <div className="win98-inset px-3 py-1 bg-background">
+            <h1 className="font-pixel text-xs mb-0.5">{companyName}</h1>
+            <p className="font-sans text-xs text-muted-foreground">{founderEmail}</p>
           </div>
-          <ModernRetroButton onClick={handleLogout} variant="default">
+          <Win98StartButton onClick={handleLogout}>
             Logout
-          </ModernRetroButton>
+          </Win98StartButton>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-12">
-        <div className="retro-card p-8 mb-8">
+        <Win98Card title="Company_Portal.exe" accentColor="blue" className="mb-8">
           <div className="text-center mb-8">
-            <h2 className="font-pixel text-2xl mb-4">Welcome to Your Portal</h2>
-            <p className="font-sans text-lg text-muted-foreground max-w-2xl mx-auto">
+            <h2 className="font-pixel text-lg mb-4">Welcome to Your Portal</h2>
+            <p className="font-sans text-sm max-w-2xl mx-auto">
               Complete your company profile to generate your VC-grade Investment Memorandum. 
               The information you provide will be used to create a comprehensive analysis of your startup.
             </p>
@@ -88,94 +89,93 @@ const Portal = () => {
 
           {/* Form Section - Placeholder */}
           <div className="max-w-3xl mx-auto">
-            <div className="retro-card p-8 bg-muted/30">
+            <Win98Card accentColor="purple">
               <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 win98-raised pastel-purple flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">📋</span>
                 </div>
-                <h3 className="font-pixel text-base">Company Information Form</h3>
-                <p className="font-sans text-base text-muted-foreground max-w-xl mx-auto">
+                <h3 className="font-pixel text-sm">Company Information Form</h3>
+                <p className="font-sans text-sm text-muted-foreground max-w-xl mx-auto">
                   The specific fields and questions for your company profile will be configured soon. 
                   This section will guide you through providing all necessary information for your investment memorandum.
                 </p>
                 
-                <div className="pt-6 space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-border">
-                    <span className="font-sans text-sm font-medium">Business Model & Value Proposition</span>
-                    <span className="font-pixel text-xs text-muted-foreground">Coming Soon</span>
+                <div className="pt-6 space-y-2">
+                  <div className="win98-inset p-3 bg-background flex items-center justify-between">
+                    <span className="font-sans text-xs font-medium">Business Model & Value Proposition</span>
+                    <span className="font-pixel text-[10px] text-muted-foreground">Coming Soon</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-border">
-                    <span className="font-sans text-sm font-medium">Market Analysis & Opportunity</span>
-                    <span className="font-pixel text-xs text-muted-foreground">Coming Soon</span>
+                  <div className="win98-inset p-3 bg-background flex items-center justify-between">
+                    <span className="font-sans text-xs font-medium">Market Analysis & Opportunity</span>
+                    <span className="font-pixel text-[10px] text-muted-foreground">Coming Soon</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-border">
-                    <span className="font-sans text-sm font-medium">Traction & Metrics</span>
-                    <span className="font-pixel text-xs text-muted-foreground">Coming Soon</span>
+                  <div className="win98-inset p-3 bg-background flex items-center justify-between">
+                    <span className="font-sans text-xs font-medium">Traction & Metrics</span>
+                    <span className="font-pixel text-[10px] text-muted-foreground">Coming Soon</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-border">
-                    <span className="font-sans text-sm font-medium">Team & Vision</span>
-                    <span className="font-pixel text-xs text-muted-foreground">Coming Soon</span>
+                  <div className="win98-inset p-3 bg-background flex items-center justify-between">
+                    <span className="font-sans text-xs font-medium">Team & Vision</span>
+                    <span className="font-pixel text-[10px] text-muted-foreground">Coming Soon</span>
                   </div>
                 </div>
               </div>
-            </div>
+            </Win98Card>
 
-            <div className="mt-8 flex justify-between">
-              <ModernRetroButton 
-                variant="default"
+            <div className="mt-6 flex justify-between">
+              <Win98StartButton 
                 onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
                 disabled={currentStep === 1}
               >
                 ← Previous
-              </ModernRetroButton>
-              <ModernRetroButton 
+              </Win98StartButton>
+              <Win98StartButton 
                 variant="primary"
                 onClick={() => setCurrentStep(Math.min(4, currentStep + 1))}
                 disabled={currentStep === 4}
               >
                 Next →
-              </ModernRetroButton>
+              </Win98StartButton>
             </div>
           </div>
-        </div>
+        </Win98Card>
 
         {/* Info Cards */}
         <div className="grid md:grid-cols-3 gap-6 mt-8">
-          <div className="retro-card p-6">
+          <Win98Card title="Save.exe" accentColor="yellow">
             <div className="text-center space-y-3">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 win98-raised pastel-yellow flex items-center justify-center mx-auto">
                 <span className="text-2xl">📝</span>
               </div>
-              <h3 className="font-pixel text-xs">Save Progress</h3>
-              <p className="font-sans text-sm text-muted-foreground">
+              <h3 className="font-pixel text-[10px]">Save Progress</h3>
+              <p className="font-sans text-xs text-muted-foreground">
                 Your information is automatically saved as you complete each section
               </p>
             </div>
-          </div>
+          </Win98Card>
 
-          <div className="retro-card p-6">
+          <Win98Card title="Feedback.exe" accentColor="pink">
             <div className="text-center space-y-3">
-              <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 win98-raised pastel-pink flex items-center justify-center mx-auto">
                 <span className="text-2xl">💡</span>
               </div>
-              <h3 className="font-pixel text-xs">Get Feedback</h3>
-              <p className="font-sans text-sm text-muted-foreground">
+              <h3 className="font-pixel text-[10px]">Get Feedback</h3>
+              <p className="font-sans text-xs text-muted-foreground">
                 Receive diagnostic questions and improvement suggestions as you fill in data
               </p>
             </div>
-          </div>
+          </Win98Card>
 
-          <div className="retro-card p-6">
+          <Win98Card title="Generate.exe" accentColor="green">
             <div className="text-center space-y-3">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 win98-raised pastel-green flex items-center justify-center mx-auto">
                 <span className="text-2xl">🚀</span>
               </div>
-              <h3 className="font-pixel text-xs">Generate Memo</h3>
-              <p className="font-sans text-sm text-muted-foreground">
+              <h3 className="font-pixel text-[10px]">Generate Memo</h3>
+              <p className="font-sans text-xs text-muted-foreground">
                 Once complete, generate your professional VC-grade memorandum instantly
               </p>
             </div>
-          </div>
+          </Win98Card>
         </div>
       </main>
     </div>
