@@ -19,7 +19,6 @@ export const HeroSection = () => {
         {/* Badge with brutalist style */}
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-card border-2 border-primary" style={{ boxShadow: 'var(--shadow-lg)' }}>
           <span className="text-sm font-bold text-primary uppercase tracking-wider">Built by VCs</span>
-          <span className="text-sm text-foreground font-semibold">Early-Stage Specialists</span>
         </div>
 
         {/* Main headline with neon effect */}
