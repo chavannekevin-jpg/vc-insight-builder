@@ -39,9 +39,9 @@ export const WaitlistSection = () => {
     <section id="waitlist-form" className="py-20 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-serif mb-4">Get Started Today</h2>
+          <h2 className="text-4xl md:text-5xl font-serif mb-4">Ready to Stop Getting Ghosted?</h2>
           <p className="text-lg text-muted-foreground">
-            Register now to get early access and start building your investment memorandum
+            Get in early. Get your memo when we launch. Or skip the line and get it now.
           </p>
         </div>
 
@@ -105,7 +105,7 @@ export const WaitlistSection = () => {
                 size="lg"
                 className="w-full gradient-primary hover:opacity-90 transition-opacity"
               >
-                {isSubmitting ? "Processing..." : "Register to Waitlist"}
+                {isSubmitting ? "Processing..." : "I'm Ready to Stop Failing"}
               </Button>
             </div>
 
