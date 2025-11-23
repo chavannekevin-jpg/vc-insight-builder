@@ -34,7 +34,7 @@ export const HeroSection = () => {
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto leading-relaxed font-light">
           Get the unfiltered truth about your startup—before investors do.
-          UglyBaby builds an Investment Memorandum that actually gets you funded.
+          We build an Investment Memorandum that actually gets you funded.
         </p>
 
         {/* CTA button with brutal design */}

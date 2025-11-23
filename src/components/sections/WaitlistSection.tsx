@@ -86,12 +86,11 @@ export const WaitlistSection = () => {
                 className="w-full h-11 px-3 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <option value="">Select stage...</option>
-                <option value="idea">Idea Stage</option>
-                <option value="mvp">MVP</option>
-                <option value="pre-seed">Pre-Seed</option>
-                <option value="seed">Seed</option>
-                <option value="series-a">Series A</option>
-                <option value="series-b+">Series B+</option>
+                <option value="pre-seed">Pre-Seed (Building team, early traction)</option>
+                <option value="seed">Seed (Product-market fit, scaling)</option>
+                <option value="series-a">Series A (Scaling operations)</option>
+                <option value="series-b+">Series B+ (Growth stage)</option>
+                <option value="mvp">MVP/Idea Stage</option>
               </select>
             </div>
 
