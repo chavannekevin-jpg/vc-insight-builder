@@ -274,6 +274,8 @@ export default function Portal() {
   const [microFeedback, setMicroFeedback] = useState<string>("");
   const [showCelebration, setShowCelebration] = useState(false);
   const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
+  const [vcFeedback, setVcFeedback] = useState<string>("");
+  const [loadingVcFeedback, setLoadingVcFeedback] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -443,6 +445,7 @@ export default function Portal() {
     if (currentStep < allQuestions.length - 1) {
       setIsAnimating(true);
       setMicroFeedback(""); // Clear feedback on transition
+      setVcFeedback(""); // Clear VC feedback
       setTimeout(() => {
         setCurrentStep(currentStep + 1);
         setIsAnimating(false);
@@ -453,10 +456,53 @@ export default function Portal() {
   const handlePrevious = () => {
     if (currentStep > 0) {
       setIsAnimating(true);
+      setMicroFeedback("");
+      setVcFeedback("");
       setTimeout(() => {
         setCurrentStep(currentStep - 1);
         setIsAnimating(false);
       }, 150);
+    }
+  };
+
+  const getVcFeedback = async () => {
+    if (!currentAnswer.trim()) {
+      toast({
+        title: "No answer to review",
+        description: "Write an answer first, then get VC feedback",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoadingVcFeedback(true);
+    setVcFeedback("");
+
+    try {
+      const { data, error } = await supabase.functions.invoke('vc-feedback', {
+        body: {
+          question: currentQuestion.question,
+          answer: currentAnswer,
+          sectionTitle: currentQuestion.sectionTitle,
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      setVcFeedback(data.feedback);
+    } catch (error: any) {
+      console.error("Error getting VC feedback:", error);
+      toast({
+        title: "VC Unavailable",
+        description: error.message || "Could not get feedback right now",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingVcFeedback(false);
     }
   };
 
@@ -733,6 +779,55 @@ export default function Portal() {
                     <div className="flex items-center gap-2 text-green-400 text-sm font-medium animate-fade-in">
                       <CheckCircle2 className="w-4 h-4" />
                       <span className="drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]">Acceptable</span>
+                    </div>
+                  )}
+
+                  {/* VC Feedback Button */}
+                  {hasAnswer && (
+                    <div className="mt-4">
+                      <Button
+                        onClick={getVcFeedback}
+                        disabled={loadingVcFeedback}
+                        size="sm"
+                        variant="outline"
+                        className="gap-2 border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all"
+                      >
+                        {loadingVcFeedback ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                            VC is thinking...
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle className="w-4 h-4" />
+                            Get VC Feedback
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* VC Feedback Display */}
+                  {vcFeedback && (
+                    <div className="mt-6 p-6 bg-red-950/30 border-2 border-red-500/30 rounded-2xl backdrop-blur-sm animate-fade-in">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center border-2 border-red-500/40">
+                            <AlertCircle className="w-6 h-6 text-red-400" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-lg font-bold text-red-400 mb-2 flex items-center gap-2">
+                            VC Reality Check
+                            <span className="text-xs font-normal text-red-400/60 bg-red-500/20 px-2 py-1 rounded-full">
+                              AI-Powered
+                            </span>
+                          </h4>
+                          <p className="text-white/90 text-sm leading-relaxed whitespace-pre-wrap">
+                            {vcFeedback}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
