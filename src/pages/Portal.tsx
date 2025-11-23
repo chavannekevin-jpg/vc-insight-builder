@@ -593,12 +593,32 @@ export default function Portal() {
 
               {isLastQuestion ? (
                 <Button
-                  onClick={() => {
+                  onClick={async () => {
                     if (progressPercentage === 100) {
-                      toast({
-                        title: "Ready to Generate!",
-                        description: "All questions answered. Generating your investment memo...",
-                      });
+                      try {
+                        // Create memo record
+                        const { error } = await supabase
+                          .from("memos")
+                          .insert({
+                            company_id: companyId,
+                            status: "submitted",
+                            content: null, // You'll fill this manually later
+                          });
+
+                        if (error) throw error;
+
+                        toast({
+                          title: "Memo Submitted! 🎉",
+                          description: "All your answers have been saved to the database. You can now extract and process them manually.",
+                        });
+                      } catch (error: any) {
+                        console.error("Error creating memo:", error);
+                        toast({
+                          title: "Error",
+                          description: "Could not submit memo. Your answers are still saved.",
+                          variant: "destructive",
+                        });
+                      }
                     } else {
                       toast({
                         title: "Almost there!",
