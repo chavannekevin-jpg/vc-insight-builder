@@ -7,13 +7,13 @@ export const PricingSection = () => {
   const pricingOptions = [
     {
       title: "Early_Access.exe",
-      subtitle: "Discounted Early Access",
+      subtitle: "Early Access - 50% Off",
       price: "€59.99",
       originalPrice: "€119.99",
       discount: "50% OFF",
       features: [
         "Get your memo when platform launches",
-        "50% discount for early joiners",
+        "Save €60 with early access pricing",
         "Priority access to new features",
         "Email support included"
       ],
