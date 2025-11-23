@@ -1,955 +1,360 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { ModernCard } from "@/components/ModernCard";
-import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { LogOut, CheckCircle2, Home } from "lucide-react";
-
-const Portal = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [companyName, setCompanyName] = useState("");
-  const [founderEmail, setFounderEmail] = useState("");
-  const [currentStep, setCurrentStep] = useState(1);
-
-  // Form data state - organized by sections
-  const [formData, setFormData] = useState({
-    // Company Basics
-    foundingDate: "",
-    location: "",
-    website: "",
-    legalStructure: "",
-    
-    // Problem & Solution
-    problemStatement: "",
-    targetCustomer: "",
-    whyNow: "",
-    solution: "",
-    valueProposition: "",
-    
-    // Product/Service
-    productDescription: "",
-    developmentStage: "",
-    keyFeatures: "",
-    competitiveAdvantage: "",
-    intellectualProperty: "",
-    
-    // Business Model
-    revenueModel: "",
-    pricingStrategy: "",
-    customerAcquisition: "",
-    unitEconomics: "",
-    keyMetrics: "",
-    
-    // Market
-    targetMarket: "",
-    marketSizeTAM: "",
-    marketSizeSAM: "",
-    marketSizeSOM: "",
-    marketTrends: "",
-    competitors: "",
-    differentiation: "",
-    
-    // Traction
-    currentRevenue: "",
-    userMetrics: "",
-    growthRate: "",
-    keyMilestones: "",
-    customerTestimonials: "",
-    partnerships: "",
-    
-    // Team
-    founderBackground: "",
-    keyTeamMembers: "",
-    advisors: "",
-    whyThisTeam: "",
-    
-    // Financials
-    currentFinancialStatus: "",
-    burnRate: "",
-    runway: "",
-    financialProjections: "",
-    
-    // Funding
-    amountRaising: "",
-    useOfFunds: "",
-    previousFunding: "",
-    currentValuation: "",
-    
-    // Vision & Strategy
-    longTermVision: "",
-    roadmap: "",
-    keyRisks: "",
-    exitStrategy: ""
-  });
-
-  useEffect(() => {
-    const storedEmail = localStorage.getItem('founderEmail');
-    const storedCompanyName = localStorage.getItem('companyName');
-    
-    if (!storedEmail || !storedCompanyName) {
-      toast({
-        title: "Access Denied",
-        description: "Please register first to access the portal.",
-        variant: "destructive"
-      });
-      navigate('/');
-      return;
-    }
-    
-    setFounderEmail(storedEmail);
-    setCompanyName(storedCompanyName);
-  }, [navigate, toast]);
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Auto-save to localStorage
-    localStorage.setItem(`formData_${field}`, value);
-  };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/');
-  };
-
-  const handleNext = () => {
-    if (currentStep < 5) {
-      setCurrentStep(currentStep + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const handleSubmit = () => {
-    toast({
-      title: "Questionnaire Submitted!",
-      description: "Your information has been saved. We'll start generating your memorandum.",
-    });
-    // Here you would send data to backend
-  };
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="space-y-8">
-            <h3 className="font-pixel text-sm mb-6">Section 1: Company Basics & Problem</h3>
-            
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Founding Date *
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={formData.foundingDate}
-                  onChange={(e) => handleInputChange('foundingDate', e.target.value)}
-                  className="w-full retro-input font-sans text-sm"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Location (City, Country) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  className="w-full retro-input font-sans text-sm"
-                  placeholder="e.g., London, UK"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Website URL
-                </label>
-                <input
-                  type="url"
-                  value={formData.website}
-                  onChange={(e) => handleInputChange('website', e.target.value)}
-                  className="w-full retro-input font-sans text-sm"
-                  placeholder="https://yourcompany.com"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Legal Structure *
-                </label>
-                <select
-                  required
-                  value={formData.legalStructure}
-                  onChange={(e) => handleInputChange('legalStructure', e.target.value)}
-                  className="w-full retro-input font-sans text-sm"
-                >
-                  <option value="">Select...</option>
-                  <option value="ltd">Limited Company (Ltd)</option>
-                  <option value="llc">LLC</option>
-                  <option value="c-corp">C-Corp</option>
-                  <option value="delaware-c-corp">Delaware C-Corp</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  What problem are you solving? * <span className="text-muted-foreground font-normal">(Be specific)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.problemStatement}
-                  onChange={(e) => handleInputChange('problemStatement', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[120px]"
-                  placeholder="Describe the problem your target customers face..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Who is your target customer? *
-                </label>
-                <textarea
-                  required
-                  value={formData.targetCustomer}
-                  onChange={(e) => handleInputChange('targetCustomer', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="Define your ideal customer profile..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Why now? * <span className="text-muted-foreground font-normal">(Market timing)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.whyNow}
-                  onChange={(e) => handleInputChange('whyNow', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="What has changed that makes this the right time for your solution?"
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="space-y-8">
-            <h3 className="font-pixel text-sm mb-6">Section 2: Solution & Product</h3>
-            
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Your Solution * <span className="text-muted-foreground font-normal">(How do you solve the problem?)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.solution}
-                  onChange={(e) => handleInputChange('solution', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[120px]"
-                  placeholder="Describe your solution in detail..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Unique Value Proposition * <span className="text-muted-foreground font-normal">(Why you vs alternatives?)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.valueProposition}
-                  onChange={(e) => handleInputChange('valueProposition', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="What makes your solution unique and better?"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Product Description *
-                </label>
-                <textarea
-                  required
-                  value={formData.productDescription}
-                  onChange={(e) => handleInputChange('productDescription', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[120px]"
-                  placeholder="Describe your product/service in detail..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Development Stage *
-                </label>
-                <select
-                  required
-                  value={formData.developmentStage}
-                  onChange={(e) => handleInputChange('developmentStage', e.target.value)}
-                  className="w-full retro-input font-sans text-sm"
-                >
-                  <option value="">Select...</option>
-                  <option value="concept">Concept/Idea</option>
-                  <option value="prototype">Prototype</option>
-                  <option value="mvp">MVP</option>
-                  <option value="beta">Beta/Live Testing</option>
-                  <option value="launched">Launched</option>
-                  <option value="scaling">Scaling</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Key Features <span className="text-muted-foreground font-normal">(List main features)</span>
-                </label>
-                <textarea
-                  value={formData.keyFeatures}
-                  onChange={(e) => handleInputChange('keyFeatures', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="• Feature 1&#10;• Feature 2&#10;• Feature 3"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Competitive Advantage * <span className="text-muted-foreground font-normal">(Your moat)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.competitiveAdvantage}
-                  onChange={(e) => handleInputChange('competitiveAdvantage', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="What makes it hard for competitors to replicate your success?"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Intellectual Property <span className="text-muted-foreground font-normal">(Patents, trademarks, etc.)</span>
-                </label>
-                <textarea
-                  value={formData.intellectualProperty}
-                  onChange={(e) => handleInputChange('intellectualProperty', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[80px]"
-                  placeholder="Any IP, patents pending, or proprietary technology?"
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-8">
-            <h3 className="font-pixel text-sm mb-6">Section 3: Business Model & Market</h3>
-            
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Revenue Model * <span className="text-muted-foreground font-normal">(How do you make money?)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.revenueModel}
-                  onChange={(e) => handleInputChange('revenueModel', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="Subscription, transaction fees, licensing, etc."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Pricing Strategy *
-                </label>
-                <textarea
-                  required
-                  value={formData.pricingStrategy}
-                  onChange={(e) => handleInputChange('pricingStrategy', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="Pricing tiers, average deal size, etc."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Customer Acquisition Strategy *
-                </label>
-                <textarea
-                  required
-                  value={formData.customerAcquisition}
-                  onChange={(e) => handleInputChange('customerAcquisition', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="How do you acquire customers? Channels, tactics, partnerships..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Unit Economics <span className="text-muted-foreground font-normal">(CAC, LTV, margins)</span>
-                </label>
-                <textarea
-                  value={formData.unitEconomics}
-                  onChange={(e) => handleInputChange('unitEconomics', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="Customer Acquisition Cost, Lifetime Value, LTV:CAC ratio, gross margins..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Target Market * <span className="text-muted-foreground font-normal">(Define your market)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.targetMarket}
-                  onChange={(e) => handleInputChange('targetMarket', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="Who are you selling to? Geography, industry, company size, etc."
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                    TAM <span className="text-muted-foreground font-normal">(Total Addressable)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.marketSizeTAM}
-                    onChange={(e) => handleInputChange('marketSizeTAM', e.target.value)}
-                    className="w-full retro-input font-sans text-sm"
-                    placeholder="$XB"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                    SAM <span className="text-muted-foreground font-normal">(Serviceable Available)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.marketSizeSAM}
-                    onChange={(e) => handleInputChange('marketSizeSAM', e.target.value)}
-                    className="w-full retro-input font-sans text-sm"
-                    placeholder="$XM"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                    SOM <span className="text-muted-foreground font-normal">(Serviceable Obtainable)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.marketSizeSOM}
-                    onChange={(e) => handleInputChange('marketSizeSOM', e.target.value)}
-                    className="w-full retro-input font-sans text-sm"
-                    placeholder="$XM"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Market Trends & Dynamics
-                </label>
-                <textarea
-                  value={formData.marketTrends}
-                  onChange={(e) => handleInputChange('marketTrends', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="What trends are driving market growth? Regulatory changes, technology shifts, etc."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Main Competitors * <span className="text-muted-foreground font-normal">(Direct & indirect)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.competitors}
-                  onChange={(e) => handleInputChange('competitors', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="List main competitors and alternatives customers use today"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Your Differentiation * <span className="text-muted-foreground font-normal">(How are you different?)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.differentiation}
-                  onChange={(e) => handleInputChange('differentiation', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="Why will customers choose you over competitors?"
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-8">
-            <h3 className="font-pixel text-sm mb-6">Section 4: Traction & Team</h3>
-            
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Current Revenue <span className="text-muted-foreground font-normal">(MRR, ARR, or one-time)</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.currentRevenue}
-                  onChange={(e) => handleInputChange('currentRevenue', e.target.value)}
-                  className="w-full retro-input font-sans text-sm"
-                  placeholder="e.g., $50K MRR, $600K ARR, or 'Pre-revenue'"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  User/Customer Metrics
-                </label>
-                <textarea
-                  value={formData.userMetrics}
-                  onChange={(e) => handleInputChange('userMetrics', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="Active users, paying customers, retention rates, engagement metrics..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Growth Rate <span className="text-muted-foreground font-normal">(Month-over-month or year-over-year)</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.growthRate}
-                  onChange={(e) => handleInputChange('growthRate', e.target.value)}
-                  className="w-full retro-input font-sans text-sm"
-                  placeholder="e.g., 15% MoM, 3x YoY"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Key Milestones Achieved
-                </label>
-                <textarea
-                  value={formData.keyMilestones}
-                  onChange={(e) => handleInputChange('keyMilestones', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="Product launches, major partnerships, awards, media coverage..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Customer Testimonials / Case Studies
-                </label>
-                <textarea
-                  value={formData.customerTestimonials}
-                  onChange={(e) => handleInputChange('customerTestimonials', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="Notable customers, success stories, testimonials..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Key Partnerships
-                </label>
-                <textarea
-                  value={formData.partnerships}
-                  onChange={(e) => handleInputChange('partnerships', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[80px]"
-                  placeholder="Strategic partners, distribution agreements, etc."
-                />
-              </div>
-
-              <div className="win98-inset p-3 bg-win98-blue/10 my-6">
-                <p className="font-sans text-xs font-bold mb-2">TEAM INFORMATION</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Founder(s) Background * <span className="text-muted-foreground font-normal">(Why are you uniquely positioned?)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.founderBackground}
-                  onChange={(e) => handleInputChange('founderBackground', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[120px]"
-                  placeholder="Relevant experience, domain expertise, previous companies, education..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Key Team Members
-                </label>
-                <textarea
-                  value={formData.keyTeamMembers}
-                  onChange={(e) => handleInputChange('keyTeamMembers', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="CTO, Head of Sales, etc. - their backgrounds and roles"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Advisors / Board Members
-                </label>
-                <textarea
-                  value={formData.advisors}
-                  onChange={(e) => handleInputChange('advisors', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[80px]"
-                  placeholder="Notable advisors, board members, mentors..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Why This Team? * <span className="text-muted-foreground font-normal">(What makes this team special?)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.whyThisTeam}
-                  onChange={(e) => handleInputChange('whyThisTeam', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="What unique combination of skills, experience, and passion does your team bring?"
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case 5:
-        return (
-          <div className="space-y-8">
-            <h3 className="font-pixel text-sm mb-6">Section 5: Financials & Vision</h3>
-            
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Current Financial Status
-                </label>
-                <textarea
-                  value={formData.currentFinancialStatus}
-                  onChange={(e) => handleInputChange('currentFinancialStatus', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[80px]"
-                  placeholder="Cash in bank, recent revenue trends..."
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                    Monthly Burn Rate
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.burnRate}
-                    onChange={(e) => handleInputChange('burnRate', e.target.value)}
-                    className="w-full retro-input font-sans text-sm"
-                    placeholder="e.g., $50K/month"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                    Runway <span className="text-muted-foreground font-normal">(Months)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.runway}
-                    onChange={(e) => handleInputChange('runway', e.target.value)}
-                    className="w-full retro-input font-sans text-sm"
-                    placeholder="e.g., 18 months"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Financial Projections <span className="text-muted-foreground font-normal">(Next 3 years)</span>
-                </label>
-                <textarea
-                  value={formData.financialProjections}
-                  onChange={(e) => handleInputChange('financialProjections', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="Revenue projections, key assumptions, path to profitability..."
-                />
-              </div>
-
-              <div className="win98-inset p-3 bg-win98-green/10 my-6">
-                <p className="font-sans text-xs font-bold mb-2">FUNDING INFORMATION</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Amount Raising * <span className="text-muted-foreground font-normal">(This round)</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.amountRaising}
-                  onChange={(e) => handleInputChange('amountRaising', e.target.value)}
-                  className="w-full retro-input font-sans text-sm"
-                  placeholder="e.g., €500K, $1M-$1.5M"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Use of Funds * <span className="text-muted-foreground font-normal">(How will you use the capital?)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.useOfFunds}
-                  onChange={(e) => handleInputChange('useOfFunds', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="Breakdown: e.g., 40% product development, 30% sales & marketing, 20% team, 10% operations"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Previous Funding
-                </label>
-                <textarea
-                  value={formData.previousFunding}
-                  onChange={(e) => handleInputChange('previousFunding', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[80px]"
-                  placeholder="Angels, pre-seed, seed rounds, notable investors..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Current Valuation / Terms <span className="text-muted-foreground font-normal">(If set)</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.currentValuation}
-                  onChange={(e) => handleInputChange('currentValuation', e.target.value)}
-                  className="w-full retro-input font-sans text-sm"
-                  placeholder="e.g., $5M post-money, SAFE with $8M cap"
-                />
-              </div>
-
-              <div className="win98-inset p-3 bg-win98-purple/10 my-6">
-                <p className="font-sans text-xs font-bold mb-2">VISION & STRATEGY</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Long-Term Vision * <span className="text-muted-foreground font-normal">(5-10 years)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.longTermVision}
-                  onChange={(e) => handleInputChange('longTermVision', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="Where do you see the company in 5-10 years? What's the ultimate goal?"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  12-24 Month Roadmap * <span className="text-muted-foreground font-normal">(Key milestones)</span>
-                </label>
-                <textarea
-                  required
-                  value={formData.roadmap}
-                  onChange={(e) => handleInputChange('roadmap', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="What are the key milestones you plan to achieve with this funding?"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Key Risks & Mitigation *
-                </label>
-                <textarea
-                  required
-                  value={formData.keyRisks}
-                  onChange={(e) => handleInputChange('keyRisks', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[100px]"
-                  placeholder="What are the biggest risks to your business and how are you addressing them?"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-sans text-xs font-bold block uppercase tracking-wide">
-                  Exit Strategy <span className="text-muted-foreground font-normal">(Optional)</span>
-                </label>
-                <textarea
-                  value={formData.exitStrategy}
-                  onChange={(e) => handleInputChange('exitStrategy', e.target.value)}
-                  className="w-full retro-input font-sans text-sm min-h-[80px]"
-                  placeholder="Potential acquirers, IPO plans, or strategic exits..."
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      {/* Header */}
-      <header className="bg-card border-b border-border shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate('/')}
-            >
-              <Home className="w-4 h-4 mr-2" />
-              Home
-            </Button>
-            <div className="border-l border-border h-8" />
-            <div>
-              <h1 className="text-lg font-serif">{companyName}</h1>
-              <p className="text-xs text-muted-foreground">{founderEmail}</p>
-            </div>
-          </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-12">
-        <ModernCard className="mb-8 shadow-xl">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-serif mb-3">Company Questionnaire</h2>
-            <p className="text-base max-w-2xl mx-auto text-muted-foreground">
-              Complete all sections to generate your VC-grade Investment Memorandum
-            </p>
-          </div>
-
-          {/* Progress Indicator */}
-          <div className="flex items-center justify-between mb-8">
-            {[1, 2, 3, 4, 5].map((step) => (
-              <div key={step} className="flex items-center flex-1">
-                <div className="flex flex-col items-center flex-1">
-                  <button
-                    onClick={() => setCurrentStep(step)}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
-                      currentStep === step 
-                        ? 'bg-primary border-primary text-primary-foreground' 
-                        : currentStep > step
-                        ? 'bg-success border-success text-success-foreground'
-                        : 'border-border text-muted-foreground hover:border-primary/50'
-                    }`}
-                  >
-                    {currentStep > step ? <CheckCircle2 className="w-5 h-5" /> : step}
-                  </button>
-                  <span className="text-xs mt-2 text-center hidden sm:block">
-                    {step === 1 && "Company"}
-                    {step === 2 && "Solution"}
-                    {step === 3 && "Market"}
-                    {step === 4 && "Traction"}
-                    {step === 5 && "Financials"}
-                  </span>
-                </div>
-                {step < 5 && (
-                  <div className={`h-0.5 flex-1 ${currentStep > step ? 'bg-success' : 'bg-border'}`} />
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Auto-save indicator */}
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-success/10 border border-success/20">
-              <CheckCircle2 className="w-4 h-4 text-success" />
-              <p className="text-sm text-success">Your progress is automatically saved</p>
-            </div>
-          </div>
-        </ModernCard>
-
-        {/* Form Content */}
-        <ModernCard className="shadow-xl">
-          <form onSubmit={(e) => e.preventDefault()}>
-            {renderStepContent()}
-
-            {/* Navigation Buttons */}
-            <div className="mt-8 pt-6 border-t border-border flex justify-between items-center">
-              <Button 
-                onClick={handlePrevious}
-                disabled={currentStep === 1}
-                type="button"
-                variant="outline"
-              >
-                ← Previous
-              </Button>
-
-              <div className="text-sm text-muted-foreground">
-                Step {currentStep} of 5
-              </div>
-
-              {currentStep < 5 ? (
-                <Button 
-                  onClick={handleNext}
-                  type="button"
-                  className="gradient-primary"
-                >
-                  Next →
-                </Button>
-              ) : (
-                <Button 
-                  onClick={handleSubmit}
-                  type="button"
-                  size="lg"
-                  className="gradient-primary"
-                >
-                  Submit & Generate Memo
-                </Button>
-              )}
-            </div>
-          </form>
-        </ModernCard>
-
-        {/* Help Card */}
-        <div className="mt-8">
-          <ModernCard className="bg-muted/30">
-            <div className="space-y-3">
-              <p className="text-sm">
-                <span className="font-semibold">💡 Tip:</span> Be specific and detailed in your answers. The more information you provide, the better your memorandum will be.
-              </p>
-              <p className="text-sm">
-                <span className="font-semibold">📝 Note:</span> Fields marked with * are required. You can save and come back later to complete the form.
-              </p>
-            </div>
-          </ModernCard>
-        </div>
-      </main>
-    </div>
-  );
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Session, User } from "@supabase/supabase-js";
+import { 
+  Building2, 
+  Lightbulb, 
+  TrendingUp, 
+  Users, 
+  Rocket,
+  ChevronRight,
+  CheckCircle2,
+  Circle
+} from "lucide-react";
+
+const questionSections = {
+  "Company Basics & Problem": {
+    icon: Building2,
+    questions: [
+      { key: "company_name", question: "What is your company name?", placeholder: "Enter your company name" },
+      { key: "problem", question: "What problem are you solving?", placeholder: "Describe the core problem your target customers face..." },
+      { key: "target_customer", question: "Who is your target customer?", placeholder: "Define your ideal customer profile (company size, industry, role, pain points)..." },
+      { key: "why_now", question: "Why now? What has changed in the market?", placeholder: "Market timing, trends, regulatory changes, or technology shifts that make this the right time..." },
+    ]
+  },
+  "Solution & Product": {
+    icon: Lightbulb,
+    questions: [
+      { key: "solution", question: "Describe your solution", placeholder: "How does your product/service solve the problem? What does it do?" },
+      { key: "product_status", question: "What is your current product status?", placeholder: "Development stage: MVP, Beta, Live, Scaling... Include key features." },
+      { key: "unique_value", question: "What makes your solution unique?", placeholder: "Your competitive advantage, moat, or defensibility..." },
+      { key: "tech_stack", question: "Key technology or IP", placeholder: "Proprietary tech, patents, unique data, or technical advantages..." },
+    ]
+  },
+  "Business Model & Market": {
+    icon: TrendingUp,
+    questions: [
+      { key: "business_model", question: "How do you make money?", placeholder: "Revenue model: SaaS, marketplace, transaction fees, licensing..." },
+      { key: "pricing", question: "What is your pricing strategy?", placeholder: "Price points, tiers, average deal size, contract length..." },
+      { key: "market_size", question: "What is your addressable market size?", placeholder: "TAM, SAM, SOM with sources. Be specific about your wedge market..." },
+      { key: "competition", question: "Who are your main competitors?", placeholder: "Direct and indirect competitors. How do you differentiate?" },
+      { key: "unit_economics", question: "What are your unit economics?", placeholder: "CAC, LTV, LTV:CAC ratio, gross margins, payback period..." },
+    ]
+  },
+  "Traction & Team": {
+    icon: Users,
+    questions: [
+      { key: "traction", question: "What traction do you have?", placeholder: "Revenue, users, growth rate, key metrics, partnerships, LOIs..." },
+      { key: "team", question: "Tell us about your founding team", placeholder: "Founders' backgrounds, relevant experience, why you're uniquely positioned to win..." },
+      { key: "advisors", question: "Do you have advisors or key hires?", placeholder: "Strategic advisors, board members, or critical team members..." },
+      { key: "customers", question: "Key customers or case studies", placeholder: "Notable customers, use cases, or testimonials that validate your solution..." },
+    ]
+  },
+  "Financials & Vision": {
+    icon: Rocket,
+    questions: [
+      { key: "funding", question: "How much are you raising?", placeholder: "Target raise amount and current round stage..." },
+      { key: "use_of_funds", question: "How will you use the funds?", placeholder: "Allocation: product, sales, team, marketing... Be specific." },
+      { key: "previous_funding", question: "Previous funding raised", placeholder: "Angels, pre-seed, seed... with amounts and investors if any..." },
+      { key: "vision", question: "What is your 5-year vision?", placeholder: "Where will the company be in 5 years? Revenue, scale, market position..." },
+      { key: "risks", question: "What are the key risks?", placeholder: "Market, execution, competitive, regulatory risks and how you'll mitigate them..." },
+    ]
+  },
 };
 
-export default Portal;
+export default function Portal() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState("");
+  const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  const [responses, setResponses] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
+    );
+
+    // Check for existing session and load data
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+
+      if (!session?.user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to access the portal.",
+          variant: "destructive",
+        });
+        navigate("/auth?redirect=/portal");
+        setLoading(false);
+        return;
+      }
+
+      // Load company and responses from database
+      loadCompanyData(session.user.id);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, toast]);
+
+  const loadCompanyData = async (userId: string) => {
+    try {
+      // Get company
+      const { data: companies, error: companyError } = await supabase
+        .from("companies")
+        .select("id, name, stage")
+        .eq("founder_id", userId)
+        .single();
+
+      if (companyError) throw companyError;
+
+      setCompanyId(companies.id);
+      setCompanyName(companies.name);
+
+      // Load existing responses
+      const { data: existingResponses, error: responsesError } = await supabase
+        .from("memo_responses")
+        .select("question_key, answer")
+        .eq("company_id", companies.id);
+
+      if (responsesError) throw responsesError;
+
+      const responsesMap: Record<string, string> = {};
+      existingResponses?.forEach((r) => {
+        if (r.answer) {
+          responsesMap[r.question_key] = r.answer;
+        }
+      });
+
+      setResponses(responsesMap);
+    } catch (error: any) {
+      console.error("Error loading company data:", error);
+      toast({
+        title: "Error",
+        description: "Could not load your company data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAnswerChange = async (questionKey: string, answer: string) => {
+    const updatedResponses = { ...responses, [questionKey]: answer };
+    setResponses(updatedResponses);
+
+    if (!companyId) return;
+
+    try {
+      // Save to database
+      await supabase
+        .from("memo_responses")
+        .upsert({
+          company_id: companyId,
+          question_key: questionKey,
+          answer: answer,
+        }, {
+          onConflict: "company_id,question_key",
+        });
+    } catch (error: any) {
+      console.error("Error saving response:", error);
+      toast({
+        title: "Save Error",
+        description: "Could not save your response",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const totalQuestions = Object.values(questionSections).flat().reduce((acc, section) => acc + section.questions.length, 0);
+  const answeredQuestions = Object.keys(responses).filter(
+    (key) => responses[key]?.trim()
+  ).length;
+
+  const progressPercentage = Math.round(
+    (answeredQuestions / totalQuestions) * 100
+  );
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-foreground text-lg animate-pulse">Loading your workspace...</div>
+      </div>
+    );
+  }
+
+  if (!session || !user) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+      {/* Header */}
+      <div className="border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-50 shadow-lg">
+        <div className="max-w-6xl mx-auto p-4 md:p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-serif font-bold text-primary">
+                Build Your Investment Memo
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {companyName} • {user.email}
+              </p>
+            </div>
+            <Button onClick={handleLogout} variant="outline" size="sm">
+              Logout
+            </Button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mt-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-semibold text-foreground">
+                Overall Progress
+              </span>
+              <span className="text-sm font-mono text-primary font-bold">
+                {answeredQuestions} / {totalQuestions}
+              </span>
+            </div>
+            <Progress 
+              value={progressPercentage} 
+              className="h-3 bg-muted shadow-inner"
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              {progressPercentage}% complete
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-4">
+        {Object.entries(questionSections).map(([sectionTitle, section]) => {
+          const Icon = section.icon;
+          const sectionAnswered = section.questions.filter((q) =>
+            responses[q.key]?.trim()
+          ).length;
+          const sectionTotal = section.questions.length;
+          const isComplete = sectionAnswered === sectionTotal;
+          const isOpen = selectedSection === sectionTitle;
+
+          return (
+            <div
+              key={sectionTitle}
+              className="bg-card border-2 border-border rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in"
+              style={{
+                boxShadow: isOpen ? '0 0 20px rgba(236, 72, 153, 0.2)' : undefined
+              }}
+            >
+              {/* Section Header */}
+              <button
+                onClick={() =>
+                  setSelectedSection(isOpen ? null : sectionTitle)
+                }
+                className="w-full p-6 flex items-center justify-between hover:bg-accent/30 transition-all group"
+              >
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center border-2 border-primary/30 group-hover:scale-110 transition-transform shadow-md">
+                    <Icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                      {sectionTitle}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      {isComplete ? (
+                        <CheckCircle2 className="w-4 h-4 text-success" />
+                      ) : (
+                        <Circle className="w-4 h-4 text-muted-foreground" />
+                      )}
+                      <span className="text-sm text-muted-foreground">
+                        {sectionAnswered} / {sectionTotal} completed
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <ChevronRight 
+                  className={`w-6 h-6 text-muted-foreground transition-transform duration-300 ${
+                    isOpen ? 'rotate-90' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Section Content */}
+              {isOpen && (
+                <div className="border-t-2 border-border bg-muted/20 p-6 space-y-6 animate-accordion-down">
+                  {section.questions.map((q, idx) => {
+                    const hasAnswer = responses[q.key]?.trim();
+                    return (
+                      <div 
+                        key={q.key} 
+                        className="space-y-3 animate-fade-in"
+                        style={{ animationDelay: `${idx * 50}ms` }}
+                      >
+                        <div className="flex items-start gap-3">
+                          {hasAnswer ? (
+                            <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-1" />
+                          ) : (
+                            <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
+                          )}
+                          <label className="block text-sm font-bold text-foreground flex-1">
+                            {q.question}
+                          </label>
+                        </div>
+                        <Textarea
+                          value={responses[q.key] || ""}
+                          onChange={(e) =>
+                            handleAnswerChange(q.key, e.target.value)
+                          }
+                          placeholder={q.placeholder}
+                          className="min-h-[120px] bg-background border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Generate Button */}
+        <div className="pt-8 pb-12 text-center">
+          <div className="inline-block space-y-4">
+            <Button
+              size="lg"
+              disabled={progressPercentage < 100}
+              className="text-lg px-12 py-6 gradient-primary shadow-lg hover:shadow-xl disabled:opacity-50"
+            >
+              <Rocket className="w-5 h-5 mr-2" />
+              Generate Investment Memo
+            </Button>
+            {progressPercentage < 100 && (
+              <p className="text-sm text-muted-foreground">
+                Complete all sections to generate your memo
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
