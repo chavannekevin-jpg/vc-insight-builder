@@ -11,9 +11,9 @@ export const HeroSection = () => {
       {/* Animated gradient background */}
       <div className="absolute inset-0 gradient-hero -z-10" />
       
-      {/* Neon glow decorative elements */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" style={{ boxShadow: 'var(--shadow-lg)' }} />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s', boxShadow: 'var(--shadow-neon-pink)' }} />
+      {/* Pink neon glow decorative elements */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" style={{ boxShadow: 'var(--shadow-neon-pink)' }} />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s', boxShadow: 'var(--shadow-neon-purple)' }} />
       
       <div className="max-w-5xl mx-auto text-center space-y-8 animate-fade-in">
         {/* Badge with brutalist style */}
