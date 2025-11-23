@@ -19,7 +19,7 @@ export const HeroSection = () => {
         {/* Badge with brutalist style */}
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-card border-2 border-primary" style={{ boxShadow: 'var(--shadow-lg)' }}>
           <span className="text-sm font-bold text-primary uppercase tracking-wider">NEW</span>
-          <span className="text-sm text-foreground font-semibold">Investment Memorandum Builder</span>
+          <span className="text-sm text-foreground font-semibold">UglyBaby</span>
         </div>
 
         {/* Main headline with neon effect */}
@@ -34,7 +34,7 @@ export const HeroSection = () => {
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto leading-relaxed font-light">
           Get the unfiltered truth about your startup—before investors do.
-          Build an Investment Memorandum that actually gets you funded.
+          UglyBaby builds an Investment Memorandum that actually gets you funded.
         </p>
 
         {/* CTA buttons with brutal design */}

@@ -10,62 +10,62 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Black & Pink Neon Palette */
-    --background: 0 0% 4%;
-    --foreground: 330 20% 98%;
+    /* Strip Club Neon Palette - Vibrant Pink on Dark */
+    --background: 0 0% 6%;
+    --foreground: 330 15% 95%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 330 20% 98%;
+    --card: 330 20% 10%;
+    --card-foreground: 330 15% 95%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 330 20% 98%;
+    --popover: 330 20% 10%;
+    --popover-foreground: 330 15% 95%;
 
-    --primary: 330 100% 60%;
-    --primary-foreground: 0 0% 4%;
-    --primary-glow: 330 100% 75%;
+    --primary: 330 100% 65%;
+    --primary-foreground: 0 0% 6%;
+    --primary-glow: 330 100% 80%;
 
-    --secondary: 280 100% 65%;
-    --secondary-foreground: 0 0% 4%;
+    --secondary: 280 100% 70%;
+    --secondary-foreground: 0 0% 6%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 330 10% 65%;
+    --muted: 330 15% 20%;
+    --muted-foreground: 330 10% 70%;
 
-    --accent: 310 100% 55%;
-    --accent-foreground: 0 0% 4%;
+    --accent: 310 100% 60%;
+    --accent-foreground: 0 0% 6%;
 
-    --destructive: 0 100% 60%;
-    --destructive-foreground: 330 20% 98%;
+    --destructive: 0 100% 65%;
+    --destructive-foreground: 330 15% 95%;
 
-    --success: 140 100% 45%;
-    --success-foreground: 0 0% 4%;
+    --success: 140 100% 50%;
+    --success-foreground: 0 0% 6%;
 
-    --warning: 35 100% 50%;
-    --warning-foreground: 0 0% 4%;
+    --warning: 35 100% 55%;
+    --warning-foreground: 0 0% 6%;
 
-    --border: 330 30% 20%;
-    --input: 330 30% 20%;
-    --ring: 330 100% 60%;
+    --border: 330 40% 25%;
+    --input: 330 40% 25%;
+    --ring: 330 100% 65%;
 
     --radius: 0.25rem;
 
-    /* Pink neon gradients on black */
-    --gradient-primary: linear-gradient(135deg, hsl(330 100% 60%), hsl(280 100% 65%));
-    --gradient-secondary: linear-gradient(135deg, hsl(310 100% 55%), hsl(330 100% 60%));
-    --gradient-accent: linear-gradient(135deg, hsl(330 100% 60% / 0.15), hsl(280 100% 65% / 0.1));
-    --gradient-hero: linear-gradient(180deg, hsl(0 0% 4%), hsl(330 40% 10%));
-    --gradient-rebel: linear-gradient(90deg, hsl(330 100% 60%), hsl(280 100% 65%), hsl(310 100% 55%));
+    /* Vibrant strip club neon gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(330 100% 65%), hsl(280 100% 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(310 100% 60%), hsl(330 100% 65%));
+    --gradient-accent: linear-gradient(135deg, hsl(330 100% 65% / 0.2), hsl(280 100% 70% / 0.15));
+    --gradient-hero: linear-gradient(180deg, hsl(0 0% 6%), hsl(330 50% 12%));
+    --gradient-rebel: linear-gradient(90deg, hsl(330 100% 65%), hsl(280 100% 70%), hsl(310 100% 60%));
 
-    /* Pink neon glow shadows */
-    --shadow-sm: 0 0 10px rgba(255, 51, 153, 0.3);
-    --shadow: 0 0 15px rgba(255, 51, 153, 0.35), 0 4px 6px -1px rgba(0, 0, 0, 0.7);
-    --shadow-md: 0 0 20px rgba(255, 51, 153, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.7);
-    --shadow-lg: 0 0 30px rgba(255, 51, 153, 0.5), 0 10px 15px -3px rgba(0, 0, 0, 0.8);
-    --shadow-xl: 0 0 40px rgba(255, 51, 153, 0.6), 0 20px 25px -5px rgba(0, 0, 0, 0.9);
-    --shadow-2xl: 0 0 50px rgba(255, 51, 153, 0.7), 0 32px 64px -16px rgba(0, 0, 0, 0.9);
-    --shadow-glow: 0 0 30px hsl(330 100% 60% / 0.5), 0 0 60px hsl(330 100% 60% / 0.25);
-    --shadow-glow-strong: 0 0 40px hsl(330 100% 60% / 0.7), 0 0 80px hsl(330 100% 60% / 0.35);
-    --shadow-neon-pink: 0 0 30px rgba(255, 51, 153, 0.6), 0 10px 20px rgba(255, 51, 153, 0.3);
-    --shadow-neon-purple: 0 0 30px rgba(191, 51, 255, 0.6), 0 10px 20px rgba(191, 51, 255, 0.3);
+    /* Brighter pink neon glow shadows */
+    --shadow-sm: 0 0 15px rgba(255, 51, 153, 0.4);
+    --shadow: 0 0 20px rgba(255, 51, 153, 0.45), 0 4px 6px -1px rgba(0, 0, 0, 0.7);
+    --shadow-md: 0 0 25px rgba(255, 51, 153, 0.5), 0 4px 6px -1px rgba(0, 0, 0, 0.7);
+    --shadow-lg: 0 0 35px rgba(255, 51, 153, 0.6), 0 10px 15px -3px rgba(0, 0, 0, 0.8);
+    --shadow-xl: 0 0 45px rgba(255, 51, 153, 0.7), 0 20px 25px -5px rgba(0, 0, 0, 0.9);
+    --shadow-2xl: 0 0 60px rgba(255, 51, 153, 0.8), 0 32px 64px -16px rgba(0, 0, 0, 0.9);
+    --shadow-glow: 0 0 40px hsl(330 100% 65% / 0.6), 0 0 70px hsl(330 100% 65% / 0.3);
+    --shadow-glow-strong: 0 0 50px hsl(330 100% 65% / 0.8), 0 0 90px hsl(330 100% 65% / 0.4);
+    --shadow-neon-pink: 0 0 40px rgba(255, 51, 153, 0.7), 0 10px 20px rgba(255, 51, 153, 0.4);
+    --shadow-neon-purple: 0 0 40px rgba(191, 51, 255, 0.7), 0 10px 20px rgba(191, 51, 255, 0.4);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 222 47% 11%;
@@ -84,40 +84,40 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* Same black & pink neon for dark mode */
-    --background: 0 0% 4%;
-    --foreground: 330 20% 98%;
+    /* Same vibrant strip club neon for dark mode */
+    --background: 0 0% 6%;
+    --foreground: 330 15% 95%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 330 20% 98%;
+    --card: 330 20% 10%;
+    --card-foreground: 330 15% 95%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 330 20% 98%;
+    --popover: 330 20% 10%;
+    --popover-foreground: 330 15% 95%;
 
-    --primary: 330 100% 60%;
-    --primary-foreground: 0 0% 4%;
+    --primary: 330 100% 65%;
+    --primary-foreground: 0 0% 6%;
 
-    --secondary: 280 100% 65%;
-    --secondary-foreground: 0 0% 4%;
+    --secondary: 280 100% 70%;
+    --secondary-foreground: 0 0% 6%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 330 10% 65%;
+    --muted: 330 15% 20%;
+    --muted-foreground: 330 10% 70%;
 
-    --accent: 310 100% 55%;
-    --accent-foreground: 0 0% 4%;
+    --accent: 310 100% 60%;
+    --accent-foreground: 0 0% 6%;
 
-    --destructive: 0 100% 60%;
-    --destructive-foreground: 330 20% 98%;
+    --destructive: 0 100% 65%;
+    --destructive-foreground: 330 15% 95%;
 
-    --success: 140 100% 45%;
-    --success-foreground: 0 0% 4%;
+    --success: 140 100% 50%;
+    --success-foreground: 0 0% 6%;
 
-    --warning: 35 100% 50%;
-    --warning-foreground: 0 0% 4%;
+    --warning: 35 100% 55%;
+    --warning-foreground: 0 0% 6%;
 
-    --border: 330 30% 20%;
-    --input: 330 30% 20%;
-    --ring: 330 100% 60%;
+    --border: 330 40% 25%;
+    --input: 330 40% 25%;
+    --ring: 330 100% 65%;
 
     --sidebar-background: 217 32% 15%;
     --sidebar-foreground: 210 40% 98%;

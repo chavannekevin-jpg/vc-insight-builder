@@ -22,7 +22,7 @@ export const WaitlistSection = () => {
     // Simulate form submission
     setTimeout(() => {
       toast({
-        title: "Welcome to the platform!",
+        title: "Welcome to UglyBaby!",
         description: "You're now registered. Let's set up your company profile.",
       });
       
@@ -39,7 +39,7 @@ export const WaitlistSection = () => {
     <section id="waitlist-form" className="py-20 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-serif mb-4">Get Your Investment Memo</h2>
+          <h2 className="text-4xl md:text-5xl font-serif mb-4">Get Your UglyBaby Memo</h2>
           <p className="text-lg text-muted-foreground">
             Join early for the discounted rate, or skip the line and get your memo within a week.
           </p>
