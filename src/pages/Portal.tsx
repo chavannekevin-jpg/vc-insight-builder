@@ -367,14 +367,15 @@ export default function Portal() {
     }
   };
 
-  // Micro-feedback based on answer quality
+  // Micro-feedback based on answer quality - HARSH MODE
   const getMicroFeedback = (answer: string): string => {
     const length = answer.trim().length;
     if (length === 0) return "";
-    if (length < 50) return "Good start! 💭 Add more detail to make it shine";
-    if (length < 150) return "Nice! 👍 You're building momentum";
-    if (length < 300) return "Excellent depth! 🌟 Investors love this level of detail";
-    return "Outstanding! 🔥 This is the kind of insight that wins deals";
+    if (length < 50) return "That's it? 😒 Investors need WAY more detail";
+    if (length < 150) return "Still too shallow 📉 Keep writing, you're barely scratching the surface";
+    if (length < 300) return "Getting warmer... but still not enough 🔥 Dig deeper";
+    if (length < 500) return "Now we're talking 💪 But don't stop - more detail = more credibility";
+    return "Finally! 🎯 This is the depth investors actually read";
   };
 
   const handleAnswerChange = async (questionKey: string, answer: string) => {
@@ -722,16 +723,16 @@ export default function Portal() {
 
                   {/* Micro-feedback */}
                   {microFeedback && (
-                    <div className="flex items-center gap-2 text-cyan-400 text-sm font-medium animate-fade-in">
-                      <Star className="w-4 h-4 animate-pulse" />
-                      <span className="drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">{microFeedback}</span>
+                    <div className="flex items-center gap-2 text-orange-400 text-sm font-medium animate-fade-in">
+                      <AlertCircle className="w-4 h-4 animate-pulse" />
+                      <span className="drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]">{microFeedback}</span>
                     </div>
                   )}
 
                   {hasAnswer && !microFeedback && (
                     <div className="flex items-center gap-2 text-green-400 text-sm font-medium animate-fade-in">
                       <CheckCircle2 className="w-4 h-4" />
-                      <span className="drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]">Locked in</span>
+                      <span className="drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]">Acceptable</span>
                     </div>
                   )}
                 </div>
