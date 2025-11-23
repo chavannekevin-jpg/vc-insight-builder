@@ -11,8 +11,8 @@ export const ModernCard = ({ children, className, hover = false }: ModernCardPro
   return (
     <div 
       className={cn(
-        "bg-card rounded-xl border border-border p-6 shadow-md transition-all duration-300",
-        hover && "hover-lift cursor-pointer",
+        "bg-card rounded-xl border-2 border-border p-6 shadow-lg transition-all duration-300",
+        hover && "hover-lift cursor-pointer hover:border-primary/50",
         className
       )}
     >

@@ -8,13 +8,13 @@ export const ProblemSolutionSection = () => {
         <ModernCard hover>
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-destructive/15 flex items-center justify-center shadow-md">
                 <AlertCircle className="w-6 h-6 text-destructive" />
               </div>
-              <h2 className="text-2xl font-serif">The Problem</h2>
+              <h2 className="text-2xl font-serif font-bold">The Problem</h2>
             </div>
             
-            <p className="text-base text-foreground leading-relaxed">
+            <p className="text-base text-foreground leading-relaxed font-semibold">
               You're getting ghosted, rejected, and ignored. Here's why nobody's telling you:
             </p>
             
@@ -43,13 +43,13 @@ export const ProblemSolutionSection = () => {
         <ModernCard hover>
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-success/15 flex items-center justify-center shadow-md">
                 <CheckCircle2 className="w-6 h-6 text-success" />
               </div>
-              <h2 className="text-2xl font-serif">The Solution</h2>
+              <h2 className="text-2xl font-serif font-bold">The Solution</h2>
             </div>
             
-            <p className="text-base text-foreground leading-relaxed">
+            <p className="text-base text-foreground leading-relaxed font-semibold">
               I've written hundreds of investment memos. Now you get the blueprint.
             </p>
             
@@ -67,8 +67,8 @@ export const ProblemSolutionSection = () => {
               ))}
             </ul>
             
-            <div className="p-4 rounded-lg gradient-accent border border-primary/20">
-              <p className="text-sm font-medium text-foreground">
+            <div className="p-4 rounded-lg gradient-accent border-2 border-primary/30 shadow-md">
+              <p className="text-sm font-bold text-foreground">
                 → See your company the way they do, before they reject you
               </p>
             </div>

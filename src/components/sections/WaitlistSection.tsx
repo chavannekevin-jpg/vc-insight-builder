@@ -45,10 +45,10 @@ export const WaitlistSection = () => {
           </p>
         </div>
 
-        <ModernCard className="shadow-xl">
+        <ModernCard className="shadow-2xl border-2">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
+              <Label htmlFor="email" className="text-sm font-bold">
                 Email Address *
               </Label>
               <Input
@@ -63,7 +63,7 @@ export const WaitlistSection = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="company" className="text-sm font-medium">
+              <Label htmlFor="company" className="text-sm font-bold">
                 Company Name *
               </Label>
               <Input
@@ -78,7 +78,7 @@ export const WaitlistSection = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="stage" className="text-sm font-medium">
+              <Label htmlFor="stage" className="text-sm font-bold">
                 Stage *
               </Label>
               <select
@@ -103,7 +103,7 @@ export const WaitlistSection = () => {
                 type="submit"
                 disabled={isSubmitting}
                 size="lg"
-                className="w-full gradient-primary hover:opacity-90 transition-opacity"
+                className="w-full gradient-primary shadow-lg hover:shadow-glow-strong"
               >
                 {isSubmitting ? "Processing..." : "I'm Ready to Stop Failing"}
               </Button>
