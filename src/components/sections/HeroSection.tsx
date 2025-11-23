@@ -37,23 +37,15 @@ export const HeroSection = () => {
           UglyBaby builds an Investment Memorandum that actually gets you funded.
         </p>
 
-        {/* CTA buttons with brutal design */}
-        <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
+        {/* CTA button with brutal design */}
+        <div className="flex justify-center pt-8">
           <Button 
             size="lg" 
-            className="text-lg px-8 py-6 bg-primary text-primary-foreground border-2 border-primary font-bold uppercase tracking-wider hover:translate-x-1 hover:translate-y-1 transition-transform"
+            className="text-xl px-12 py-8 bg-primary text-primary-foreground border-2 border-primary font-bold uppercase tracking-wider hover:translate-x-1 hover:translate-y-1 transition-transform"
             onClick={scrollToWaitlist}
-            style={{ boxShadow: '4px 4px 0 hsl(var(--secondary))' }}
+            style={{ boxShadow: '6px 6px 0 hsl(var(--secondary))' }}
           >
             Build My Memo
-          </Button>
-          <Button 
-            size="lg" 
-            variant="outline" 
-            className="text-lg px-8 py-6 border-2 border-secondary text-secondary font-bold uppercase tracking-wider hover:bg-secondary hover:text-secondary-foreground transition-colors"
-            style={{ boxShadow: '4px 4px 0 hsl(var(--accent))' }}
-          >
-            See How It Works
           </Button>
         </div>
       </div>
