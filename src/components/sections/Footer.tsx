@@ -2,7 +2,7 @@ import { Win98StartButton } from "../Win98StartButton";
 
 export const Footer = () => {
   const links = [
-    { label: "About", href: "#" },
+    { label: "About", href: "/about" },
     { label: "FAQ", href: "#" },
     { label: "Terms", href: "#" },
     { label: "Privacy", href: "#" },
