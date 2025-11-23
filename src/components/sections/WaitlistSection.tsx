@@ -33,7 +33,7 @@ export const WaitlistSection = () => {
   };
 
   return (
-    <section id="waitlist-form" className="py-20 px-4">
+    <section id="waitlist-form" className="py-20 px-6 sm:px-8 lg:px-12">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-serif mb-4">Get Your UglyBaby Memo</h2>

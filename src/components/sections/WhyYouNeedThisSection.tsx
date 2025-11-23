@@ -15,7 +15,7 @@ export const WhyYouNeedThisSection = () => {
   ];
 
   return (
-    <section className="py-20 px-4 relative overflow-hidden">
+    <section className="py-20 px-6 sm:px-8 lg:px-12 relative overflow-hidden">
       {/* Background accent */}
       <div className="absolute inset-0 gradient-hero -z-10" />
       
