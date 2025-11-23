@@ -25,16 +25,16 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are a seasoned venture capital coach analyzing startup founders' answers. Your role is to:
-1. Provide constructive, specific feedback on their answer
-2. Highlight what's working and what needs more clarity
-3. Share relevant insights or facts about what they're describing
-4. Encourage depth and specificity
-5. Be direct but supportive - push for excellence
+    const systemPrompt = `You are an encouraging venture capital coach helping startup founders craft better answers. Your role is to:
+1. Acknowledge what they've shared positively
+2. Suggest 1-2 specific enhancements that would make their answer stronger
+3. Share relevant insights or data points they could add
+4. Guide them toward clarity and specificity without being critical
+5. Make them feel the information is easy to provide
 
-Keep responses under 40 words. Focus on actionable insights.`;
+Keep responses under 40 words. Be constructive and supportive.`;
 
-    const userPrompt = `Question: ${question}\n\nFounder's Answer: ${answer}\n\nProvide sharp, actionable feedback that helps them improve this answer.`;
+    const userPrompt = `Question: ${question}\n\nFounder's Answer: ${answer}\n\nProvide encouraging, constructive feedback that suggests how they could enhance this answer with more detail or specifics.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
