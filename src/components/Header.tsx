@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -43,8 +44,17 @@ export const Header = () => {
             ))}
           </div>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
+          {/* CTA Buttons */}
+          <div className="hidden md:flex items-center gap-3">
+            <Button 
+              onClick={() => navigate('/auth')}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </Button>
             <Button 
               onClick={() => {
                 if (location.pathname !== '/') {
@@ -85,6 +95,17 @@ export const Header = () => {
                   {link.name}
                 </Link>
               ))}
+              <Button 
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  navigate('/auth');
+                }}
+                variant="outline"
+                className="w-full gap-2"
+              >
+                <LogIn className="w-4 h-4" />
+                Sign In
+              </Button>
               <Button 
                 onClick={() => {
                   setMobileMenuOpen(false);

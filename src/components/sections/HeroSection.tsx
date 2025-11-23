@@ -38,7 +38,7 @@ export const HeroSection = () => {
         </p>
 
         {/* CTA button with brutal design */}
-        <div className="flex justify-center pt-8">
+        <div className="flex flex-col items-center gap-3 pt-8">
           <Button 
             size="lg" 
             className="text-xl px-12 py-8 bg-primary text-primary-foreground border-2 border-primary font-bold uppercase tracking-wider hover:translate-x-1 hover:translate-y-1 transition-transform"
@@ -47,6 +47,9 @@ export const HeroSection = () => {
           >
             Build My Memo
           </Button>
+          <p className="text-sm text-muted-foreground font-medium">
+            🔥 <span className="text-primary font-bold">50% OFF</span> for early sign-ups
+          </p>
         </div>
       </div>
     </section>
