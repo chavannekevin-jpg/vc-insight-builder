@@ -11,10 +11,15 @@ export const ModernCard = ({ children, className, hover = false }: ModernCardPro
   return (
     <div 
       className={cn(
-        "bg-card rounded-xl border-2 border-border p-6 shadow-lg transition-all duration-300",
-        hover && "hover-lift cursor-pointer hover:border-primary/50",
+        "bg-card border-2 border-border p-6 transition-all duration-300",
+        hover && "cursor-pointer hover:border-primary hover:translate-x-1 hover:translate-y-1",
         className
       )}
+      style={{ 
+        boxShadow: hover 
+          ? '4px 4px 0 hsl(var(--primary)), 8px 8px 0 hsl(var(--muted))' 
+          : '4px 4px 0 hsl(var(--muted))' 
+      }}
     >
       {children}
     </div>

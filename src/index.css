@@ -10,59 +10,62 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Bold Aggressive Palette */
-    --background: 0 0% 100%;
-    --foreground: 220 50% 8%;
+    /* Rebellious Dark Neon Palette */
+    --background: 240 10% 8%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 50% 8%;
+    --card: 240 8% 12%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 50% 8%;
+    --popover: 240 8% 12%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 270 95% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 270 100% 70%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 240 10% 8%;
+    --primary-glow: 180 100% 70%;
 
-    --secondary: 220 15% 94%;
-    --secondary-foreground: 220 50% 8%;
+    --secondary: 330 100% 60%;
+    --secondary-foreground: 240 10% 8%;
 
-    --muted: 220 15% 94%;
-    --muted-foreground: 215 18% 40%;
+    --muted: 240 8% 18%;
+    --muted-foreground: 240 5% 65%;
 
-    --accent: 315 100% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 60 100% 50%;
+    --accent-foreground: 240 10% 8%;
 
-    --destructive: 0 90% 55%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 100% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --success: 142 76% 42%;
-    --success-foreground: 0 0% 100%;
+    --success: 140 100% 45%;
+    --success-foreground: 240 10% 8%;
 
     --warning: 35 100% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning-foreground: 240 10% 8%;
 
-    --border: 220 13% 88%;
-    --input: 220 13% 88%;
-    --ring: 270 95% 55%;
+    --border: 240 8% 25%;
+    --input: 240 8% 25%;
+    --ring: 180 100% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.25rem;
 
-    /* Aggressive gradient system */
-    --gradient-primary: linear-gradient(135deg, hsl(270 95% 55%), hsl(315 100% 55%));
-    --gradient-secondary: linear-gradient(135deg, hsl(220 15% 94%), hsl(220 13% 88%));
-    --gradient-accent: linear-gradient(135deg, hsl(270 95% 55% / 0.15), hsl(315 100% 55% / 0.1));
-    --gradient-hero: linear-gradient(180deg, hsl(270 95% 55% / 0.05), hsl(315 100% 55% / 0.02));
+    /* Rebellious neon gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(180 100% 50%), hsl(280 100% 60%));
+    --gradient-secondary: linear-gradient(135deg, hsl(330 100% 60%), hsl(60 100% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(180 100% 50% / 0.15), hsl(330 100% 60% / 0.1));
+    --gradient-hero: linear-gradient(180deg, hsl(240 10% 8%), hsl(280 40% 15%));
+    --gradient-rebel: linear-gradient(90deg, hsl(180 100% 50%), hsl(330 100% 60%), hsl(60 100% 50%));
 
-    /* Bold shadow system with glow */
-    --shadow-sm: 0 2px 4px 0 hsl(0 0% 0% / 0.08);
-    --shadow: 0 2px 8px 0 hsl(0 0% 0% / 0.12), 0 1px 3px -1px hsl(0 0% 0% / 0.1);
-    --shadow-md: 0 8px 16px -2px hsl(0 0% 0% / 0.15), 0 4px 8px -4px hsl(0 0% 0% / 0.12);
-    --shadow-lg: 0 16px 32px -4px hsl(0 0% 0% / 0.18), 0 8px 16px -8px hsl(0 0% 0% / 0.15);
-    --shadow-xl: 0 24px 48px -8px hsl(0 0% 0% / 0.22), 0 12px 24px -12px hsl(0 0% 0% / 0.18);
-    --shadow-2xl: 0 32px 64px -16px hsl(0 0% 0% / 0.3);
-    --shadow-glow: 0 0 30px hsl(270 95% 55% / 0.3), 0 0 60px hsl(315 100% 55% / 0.15);
-    --shadow-glow-strong: 0 0 40px hsl(270 95% 55% / 0.5), 0 0 80px hsl(315 100% 55% / 0.25);
+    /* Dramatic neon glow shadows */
+    --shadow-sm: 0 0 10px rgba(0, 255, 255, 0.3);
+    --shadow: 0 0 15px rgba(0, 255, 255, 0.35), 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 0 20px rgba(0, 255, 255, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 0 30px rgba(0, 255, 255, 0.5), 0 10px 15px -3px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 0 40px rgba(0, 255, 255, 0.6), 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+    --shadow-2xl: 0 0 50px rgba(0, 255, 255, 0.7), 0 32px 64px -16px rgba(0, 0, 0, 0.8);
+    --shadow-glow: 0 0 30px hsl(180 100% 50% / 0.5), 0 0 60px hsl(180 100% 50% / 0.25);
+    --shadow-glow-strong: 0 0 40px hsl(180 100% 50% / 0.7), 0 0 80px hsl(180 100% 50% / 0.35);
+    --shadow-neon-pink: 0 0 30px rgba(255, 20, 147, 0.6), 0 10px 20px rgba(255, 20, 147, 0.3);
+    --shadow-neon-yellow: 0 0 30px rgba(255, 255, 0, 0.6), 0 10px 20px rgba(255, 255, 0, 0.3);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 222 47% 11%;
@@ -81,39 +84,40 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    /* Keep same rebellious theme for dark mode */
+    --background: 240 10% 8%;
+    --foreground: 0 0% 98%;
 
-    --card: 217 32% 17%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 8% 12%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 217 32% 17%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 8% 12%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 240 10% 8%;
 
-    --secondary: 215 19% 25%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 330 100% 60%;
+    --secondary-foreground: 240 10% 8%;
 
-    --muted: 215 19% 25%;
-    --muted-foreground: 215 16% 65%;
+    --muted: 240 8% 18%;
+    --muted-foreground: 240 5% 65%;
 
-    --accent: 262 83% 58%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 60 100% 50%;
+    --accent-foreground: 240 10% 8%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 100% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
+    --success: 140 100% 45%;
+    --success-foreground: 240 10% 8%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 35 100% 50%;
+    --warning-foreground: 240 10% 8%;
 
-    --border: 215 19% 25%;
-    --input: 215 19% 25%;
-    --ring: 262 83% 58%;
+    --border: 240 8% 25%;
+    --input: 240 8% 25%;
+    --ring: 180 100% 50%;
 
     --sidebar-background: 217 32% 15%;
     --sidebar-foreground: 210 40% 98%;
@@ -156,7 +160,7 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
-  /* Bold gradient backgrounds */
+  /* Gradient backgrounds */
   .gradient-primary {
     background: var(--gradient-primary);
   }
@@ -171,6 +175,21 @@ All colors MUST be HSL.
 
   .gradient-hero {
     background: var(--gradient-hero);
+  }
+
+  .gradient-rebel {
+    background: var(--gradient-rebel);
+  }
+
+  /* Neon text effect */
+  .text-neon {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+  }
+
+  /* Brutal border effect */
+  .border-brutal {
+    border: 3px solid hsl(var(--primary));
+    box-shadow: 4px 4px 0 hsl(var(--secondary)), 8px 8px 0 hsl(var(--accent));
   }
 
   /* Glass effect */

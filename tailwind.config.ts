@@ -100,18 +100,22 @@ export default {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			},
-  			win98: {
-  				light: 'hsl(var(--win98-light))',
-  				dark: 'hsl(var(--win98-dark))',
-  				grey: 'hsl(var(--win98-grey))',
-  				teal: 'hsl(var(--win98-teal))',
-  				blue: 'hsl(var(--win98-blue))',
-  				pink: 'hsl(var(--win98-pink))',
-  				yellow: 'hsl(var(--win98-yellow))',
-  				green: 'hsl(var(--win98-green))',
-  				purple: 'hsl(var(--win98-purple))',
-  				taskbar: 'hsl(var(--win98-taskbar))'
-  			}
+			win98: {
+				light: 'hsl(var(--win98-light))',
+				dark: 'hsl(var(--win98-dark))',
+				grey: 'hsl(var(--win98-grey))',
+				teal: 'hsl(var(--win98-teal))',
+				blue: 'hsl(var(--win98-blue))',
+				pink: 'hsl(var(--win98-pink))',
+				yellow: 'hsl(var(--win98-yellow))',
+				green: 'hsl(var(--win98-green))',
+				purple: 'hsl(var(--win98-purple))',
+				taskbar: 'hsl(var(--win98-taskbar))'
+			},
+			success: {
+				DEFAULT: 'hsl(var(--success))',
+				foreground: 'hsl(var(--success-foreground))'
+			}
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
