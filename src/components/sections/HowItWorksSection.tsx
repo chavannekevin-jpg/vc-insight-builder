@@ -34,7 +34,7 @@ export const HowItWorksSection = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-serif mb-4">Stop Guessing. Start Speaking VC</h2>
-          <p className="text-lg text-muted-foreground">Four steps to stop getting rejected</p>
+          <p className="text-lg text-muted-foreground">Built by active VCs who write checks at pre-seed and seed stage</p>
         </div>
         
         <div className="grid md:grid-cols-2 gap-6">

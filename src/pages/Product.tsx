@@ -27,8 +27,8 @@ const Product = () => {
     },
     {
       icon: Target,
-      title: "VC-Calibrated Framework",
-      description: "We've codified 10+ years of VC cognitive work into structured prompts that analyze what actually matters to investors."
+      title: "Built by VCs, For Founders",
+      description: "We're active early-stage investors who've codified our evaluation framework from pre-seed to Series A deals across Europe."
     },
     {
       icon: MessageSquare,
@@ -67,7 +67,7 @@ const Product = () => {
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <Badge variant="secondary" className="mb-6 px-4 py-1.5">
-            Product Overview
+            Built by Active Early-Stage VCs
           </Badge>
           <h1 className="text-5xl md:text-6xl font-serif mb-6">
             The Investment Memorandum
@@ -76,6 +76,20 @@ const Product = () => {
             Built from 10+ years of VC experience and hundreds of real deals, we've transformed our 
             cognitive work into a structured framework that helps you present your startup the way investors need to see it.
           </p>
+          <div className="flex items-center justify-center gap-6 mb-8 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-primary" />
+              <span>Active VCs</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-primary" />
+              <span>Early-Stage Specialists</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-primary" />
+              <span>100+ European Investor Network</span>
+            </div>
+          </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg"
@@ -223,8 +237,22 @@ const Product = () => {
             <div className="space-y-6 py-8">
               <h2 className="text-3xl font-serif">Ready to Get Started?</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Join founders who are transforming their fundraising approach with VC-calibrated insights.
+                Join founders who are transforming their fundraising with frameworks built by active VCs who deploy capital at pre-seed and seed stage.
               </p>
+              <div className="flex items-center justify-center gap-6 py-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  <span>Active Investors</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  <span>Early-Stage Focus</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  <span>Real Deal Experience</span>
+                </div>
+              </div>
               <Button 
                 size="lg"
                 onClick={() => navigate('/')}

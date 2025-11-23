@@ -18,8 +18,8 @@ export const HeroSection = () => {
       <div className="max-w-5xl mx-auto text-center space-y-8 animate-fade-in">
         {/* Badge with brutalist style */}
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-card border-2 border-primary" style={{ boxShadow: 'var(--shadow-lg)' }}>
-          <span className="text-sm font-bold text-primary uppercase tracking-wider">NEW</span>
-          <span className="text-sm text-foreground font-semibold">UglyBaby</span>
+          <span className="text-sm font-bold text-primary uppercase tracking-wider">Built by VCs</span>
+          <span className="text-sm text-foreground font-semibold">Early-Stage Specialists</span>
         </div>
 
         {/* Main headline with neon effect */}
@@ -33,8 +33,8 @@ export const HeroSection = () => {
 
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto leading-relaxed font-light">
+          We're active early-stage investors who know exactly what VCs look for.
           Get the unfiltered truth about your startup—before investors do.
-          We build an Investment Memorandum that actually gets you funded.
         </p>
 
         {/* CTA button with brutal design */}
