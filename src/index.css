@@ -10,55 +10,59 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Modern Professional Palette */
+    /* Bold Aggressive Palette */
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --foreground: 220 50% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 220 50% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 220 50% 8%;
 
-    --primary: 262 83% 58%;
+    --primary: 270 95% 55%;
     --primary-foreground: 0 0% 100%;
+    --primary-glow: 270 100% 70%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 220 15% 94%;
+    --secondary-foreground: 220 50% 8%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 15% 94%;
+    --muted-foreground: 215 18% 40%;
 
-    --accent: 262 83% 58%;
+    --accent: 315 100% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 90% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 71% 45%;
+    --success: 142 76% 42%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 35 100% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 262 83% 58%;
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 270 95% 55%;
 
     --radius: 0.75rem;
 
-    /* Gradient tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(252 95% 65%));
-    --gradient-secondary: linear-gradient(135deg, hsl(220 14% 96%), hsl(220 13% 91%));
-    --gradient-accent: linear-gradient(135deg, hsl(262 83% 58% / 0.1), hsl(252 95% 65% / 0.05));
+    /* Aggressive gradient system */
+    --gradient-primary: linear-gradient(135deg, hsl(270 95% 55%), hsl(315 100% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(220 15% 94%), hsl(220 13% 88%));
+    --gradient-accent: linear-gradient(135deg, hsl(270 95% 55% / 0.15), hsl(315 100% 55% / 0.1));
+    --gradient-hero: linear-gradient(180deg, hsl(270 95% 55% / 0.05), hsl(315 100% 55% / 0.02));
 
-    /* Shadow system */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
-    --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.1);
-    --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.25);
+    /* Bold shadow system with glow */
+    --shadow-sm: 0 2px 4px 0 hsl(0 0% 0% / 0.08);
+    --shadow: 0 2px 8px 0 hsl(0 0% 0% / 0.12), 0 1px 3px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 8px 16px -2px hsl(0 0% 0% / 0.15), 0 4px 8px -4px hsl(0 0% 0% / 0.12);
+    --shadow-lg: 0 16px 32px -4px hsl(0 0% 0% / 0.18), 0 8px 16px -8px hsl(0 0% 0% / 0.15);
+    --shadow-xl: 0 24px 48px -8px hsl(0 0% 0% / 0.22), 0 12px 24px -12px hsl(0 0% 0% / 0.18);
+    --shadow-2xl: 0 32px 64px -16px hsl(0 0% 0% / 0.3);
+    --shadow-glow: 0 0 30px hsl(270 95% 55% / 0.3), 0 0 60px hsl(315 100% 55% / 0.15);
+    --shadow-glow-strong: 0 0 40px hsl(270 95% 55% / 0.5), 0 0 80px hsl(315 100% 55% / 0.25);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 222 47% 11%;
@@ -145,10 +149,14 @@ All colors MUST be HSL.
     font-weight: 400;
     letter-spacing: -0.02em;
   }
+
+  strong, b {
+    font-weight: 700;
+  }
 }
 
 @layer utilities {
-  /* Modern gradient backgrounds */
+  /* Bold gradient backgrounds */
   .gradient-primary {
     background: var(--gradient-primary);
   }
@@ -161,6 +169,10 @@ All colors MUST be HSL.
     background: var(--gradient-accent);
   }
 
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
   /* Glass effect */
   .glass {
     background: rgba(255, 255, 255, 0.7);
@@ -168,23 +180,75 @@ All colors MUST be HSL.
     -webkit-backdrop-filter: blur(10px);
   }
 
-  /* Shadow utilities */
+  /* Aggressive shadow utilities */
   .shadow-smooth {
     box-shadow: var(--shadow-md);
   }
 
-  /* Hover animations */
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-glow-strong {
+    box-shadow: var(--shadow-glow-strong);
+  }
+
+  /* Bold hover animations */
   .hover-lift {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .hover-lift:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: var(--shadow-xl);
+  }
+
+  /* Aggressive button effect */
+  .hover-punch {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hover-punch:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-glow);
   }
 
   /* Focus states */
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+
+  /* Pulse glow animation */
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: var(--shadow-glow);
+    }
+    50% {
+      box-shadow: var(--shadow-glow-strong);
+    }
+  }
+
+  /* Shake animation for emphasis */
+  .shake {
+    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  @keyframes shake {
+    10%, 90% {
+      transform: translate3d(-1px, 0, 0);
+    }
+    20%, 80% {
+      transform: translate3d(2px, 0, 0);
+    }
+    30%, 50%, 70% {
+      transform: translate3d(-3px, 0, 0);
+    }
+    40%, 60% {
+      transform: translate3d(3px, 0, 0);
+    }
   }
 }

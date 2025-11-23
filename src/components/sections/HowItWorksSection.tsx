@@ -44,13 +44,13 @@ export const HowItWorksSection = () => {
               <ModernCard key={index} hover>
                 <div className="flex gap-6 items-start">
                   <div className="flex-shrink-0">
-                    <div className="w-14 h-14 rounded-xl gradient-accent flex items-center justify-center border border-primary/20">
+                    <div className="w-14 h-14 rounded-xl gradient-accent flex items-center justify-center border-2 border-primary/30 shadow-md">
                       <Icon className="w-6 h-6 text-primary" />
                     </div>
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs font-semibold text-primary mb-2">{step.number}</div>
-                    <h3 className="font-semibold text-lg mb-2">{step.title}</h3>
+                    <div className="text-xs font-bold text-primary mb-2 tracking-wider">{step.number}</div>
+                    <h3 className="font-bold text-lg mb-2">{step.title}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
                   </div>
                 </div>
