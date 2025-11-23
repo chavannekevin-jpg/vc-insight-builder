@@ -1,5 +1,3 @@
-import { Win98Window } from "../Win98Window";
-
 export const PricingSection = () => {
   const pricingOptions = [
     {
@@ -41,24 +39,29 @@ export const PricingSection = () => {
   ];
 
   return (
-    <section className="py-16 px-4">
+    <section className="py-16 px-4 bg-muted/30">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="font-pixel text-2xl mb-4">SELECT YOUR PACKAGE</h2>
+          <h2 className="font-pixel text-xl mb-4">Select Your Package</h2>
+          <p className="font-sans text-lg text-muted-foreground">Choose the option that fits your timeline</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
           {pricingOptions.map((option, index) => (
-            <Win98Window key={index} title={option.title} className={option.highlight ? "ring-4 ring-primary" : ""}>
-              <div className="space-y-4">
-                <div className="win98-title-bar text-center mb-4">
-                  {option.subtitle}
+            <div 
+              key={index} 
+              className={`retro-card p-8 ${option.highlight ? 'border-2 border-primary' : ''} hover:translate-y-[-4px] transition-all`}
+            >
+              <div className="space-y-6">
+                <div className="text-center pb-4 border-b border-border">
+                  <h3 className="font-pixel text-sm mb-2">{option.title}</h3>
+                  <p className="font-sans text-base text-muted-foreground">{option.subtitle}</p>
                 </div>
                 
-                <ul className="space-y-3 font-retro text-lg min-h-[200px]">
+                <ul className="space-y-3 font-sans text-sm min-h-[160px]">
                   {option.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <span className="text-primary flex-shrink-0">▶</span>
+                    <li key={idx} className="flex items-start gap-3">
+                      <span className="text-primary flex-shrink-0 mt-0.5">✓</span>
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -66,12 +69,12 @@ export const PricingSection = () => {
 
                 <button 
                   onClick={() => document.getElementById('waitlist-form')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="w-full win98-border px-4 py-3 font-retro text-xl bg-card hover:bg-card/90 active:win98-border-inset transition-all"
+                  className="w-full px-6 py-3 font-sans font-semibold text-sm rounded-lg border-2 border-foreground hover:border-primary bg-card hover:bg-card/80 transition-all shadow-[3px_3px_0_hsl(var(--retro-shadow))] hover:shadow-[5px_5px_0_hsl(var(--retro-shadow))] hover:translate-y-[-2px] active:translate-y-0"
                 >
                   {option.cta}
                 </button>
               </div>
-            </Win98Window>
+            </div>
           ))}
         </div>
       </div>

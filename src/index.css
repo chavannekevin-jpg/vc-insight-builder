@@ -8,44 +8,41 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Windows 98 Color Palette */
-    --background: 180 25% 85%; /* Classic Win98 teal-grey desktop */
-    --foreground: 0 0% 0%; /* Pure black text */
+    /* Modern Retro Color Palette */
+    --background: 220 15% 97%; /* Soft warm white */
+    --foreground: 220 15% 15%; /* Soft dark text */
 
-    --card: 0 0% 75%; /* Win98 window grey */
-    --card-foreground: 0 0% 0%;
+    --card: 0 0% 100%; /* Clean white cards */
+    --card-foreground: 220 15% 15%;
 
-    --popover: 0 0% 75%;
-    --popover-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
 
-    --primary: 180 100% 25%; /* Win98 teal */
+    --primary: 180 60% 45%; /* Modern teal */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 75%; /* Button grey */
-    --secondary-foreground: 0 0% 0%;
+    --secondary: 220 15% 92%; /* Soft grey */
+    --secondary-foreground: 220 15% 15%;
 
-    --muted: 0 0% 50%; /* Disabled grey */
-    --muted-foreground: 0 0% 100%;
+    --muted: 220 15% 92%;
+    --muted-foreground: 220 10% 45%;
 
-    --accent: 240 100% 50%; /* Windows blue */
+    --accent: 240 85% 65%; /* Softer blue accent */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 100% 50%;
+    --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 0%;
+    --border: 220 15% 88%;
     --input: 0 0% 100%;
-    --ring: 180 100% 25%;
+    --ring: 180 60% 45%;
 
-    --radius: 0rem; /* No rounded corners for Win98 */
+    --radius: 0.5rem; /* Subtle rounded corners */
 
-    /* Custom Win98 variables */
-    --win98-light: 0 0% 100%; /* Highlight/raised edge */
-    --win98-dark: 0 0% 25%; /* Shadow/lowered edge */
-    --win98-grey: 0 0% 75%; /* Standard grey */
-    --win98-desktop: 180 25% 85%; /* Desktop background */
-    --win98-title-bar: 240 100% 50%; /* Active window title */
-    --win98-title-text: 0 0% 100%;
+    /* Retro accent variables */
+    --retro-teal: 180 60% 45%;
+    --retro-blue: 240 85% 65%;
+    --retro-shadow: 220 15% 85%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -104,7 +101,6 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
     font-family: 'VT323', monospace;
-    image-rendering: pixelated;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -113,47 +109,47 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
-  /* Windows 98 3D Border Effects */
-  .win98-border {
-    border: 2px solid;
-    border-color: hsl(var(--win98-light)) hsl(var(--win98-dark)) hsl(var(--win98-dark)) hsl(var(--win98-light));
-    box-shadow: 
-      inset 1px 1px 0 hsl(var(--win98-light)),
-      inset -1px -1px 0 hsl(var(--win98-dark));
-  }
-
-  .win98-border-inset {
-    border: 2px solid;
-    border-color: hsl(var(--win98-dark)) hsl(var(--win98-light)) hsl(var(--win98-light)) hsl(var(--win98-dark));
-    box-shadow: 
-      inset -1px -1px 0 hsl(var(--win98-light)),
-      inset 1px 1px 0 hsl(var(--win98-dark));
-  }
-
-  .win98-window {
-    @apply win98-border;
+  /* Modern Retro Border Effects */
+  .retro-card {
     background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow: 
+      4px 4px 0 hsl(var(--retro-shadow)),
+      0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
   }
 
-  .win98-title-bar {
-    background: linear-gradient(90deg, hsl(var(--win98-title-bar)) 0%, hsl(240 100% 40%) 100%);
-    color: hsl(var(--win98-title-text));
-    padding: 2px 4px;
-    font-family: 'VT323', monospace;
-    font-size: 18px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  .retro-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      6px 6px 0 hsl(var(--retro-shadow)),
+      0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .retro-input {
+    background: hsl(var(--input));
+    border: 2px solid hsl(var(--border));
+    border-radius: calc(var(--radius) - 2px);
+    transition: all 0.2s;
+  }
+
+  .retro-input:focus {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 3px hsla(var(--primary) / 0.1);
   }
 
   .pixel-text {
     font-family: 'Press Start 2P', cursive;
-    image-rendering: pixelated;
   }
 
   .retro-text {
     font-family: 'VT323', monospace;
     font-size: 24px;
+  }
+
+  .gradient-retro {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
   }
 }
