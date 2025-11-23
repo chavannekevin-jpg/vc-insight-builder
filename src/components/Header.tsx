@@ -21,11 +21,11 @@ export const Header = () => {
       <nav className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <span className="text-white font-bold text-lg">M</span>
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 bg-card border-2 border-primary flex items-center justify-center" style={{ boxShadow: 'var(--shadow-md)' }}>
+              <span className="text-primary font-bold text-lg group-hover:text-neon transition-all">UB</span>
             </div>
-            <span className="font-serif text-xl hidden sm:inline">Memo</span>
+            <span className="font-serif text-2xl hidden sm:inline text-primary text-neon tracking-tight">UglyBaby</span>
           </Link>
 
           {/* Desktop Navigation */}
