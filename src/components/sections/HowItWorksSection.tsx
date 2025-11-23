@@ -12,7 +12,7 @@ export const HowItWorksSection = () => {
     {
       number: "02",
       title: "Get Your Memo",
-      description: "I'll turn your answers into an investment memo built on 10+ years of writing them for actual deals.",
+      description: "UglyBaby will turn your answers into an investment memo built on 10+ years of writing them for actual deals.",
       icon: Lightbulb
     },
     {
@@ -24,7 +24,7 @@ export const HowItWorksSection = () => {
     {
       number: "04",
       title: "Skip to Real Investors",
-      description: "Pay extra. Get fast-tracked to my network of 100+ European VCs who actually write checks.",
+      description: "Pay extra. Get fast-tracked to UB's network of 100+ European VCs who actually write checks.",
       icon: Users
     }
   ];

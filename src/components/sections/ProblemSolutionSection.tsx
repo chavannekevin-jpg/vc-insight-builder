@@ -50,7 +50,7 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground leading-relaxed font-semibold">
-              I've written hundreds of investment memos. Now you get the blueprint.
+              UglyBaby has written hundreds of investment memos. Now you get the blueprint.
             </p>
             
             <ul className="space-y-4">

@@ -34,7 +34,7 @@ export const WhyYouNeedThisSection = () => {
           {/* Opening statement - editorial style */}
           <div className="space-y-8 py-8">
             <p className="text-xl md:text-2xl text-foreground leading-relaxed font-light">
-              I've met thousands of founders across Europe.
+              UglyBaby has met thousands of founders across Europe.
               Different industries, different stages, different personalities — but they all fail at the exact same thing:
             </p>
             
@@ -45,7 +45,7 @@ export const WhyYouNeedThisSection = () => {
             </div>
 
             <div className="space-y-4 text-lg text-foreground/90 leading-relaxed">
-              <p>Every founder asks me the same questions.</p>
+              <p>Every founder asks UB the same questions.</p>
               <p>Every founder makes the same mistakes.</p>
               <p>And nobody will ever tell them why — because nobody wants to tell a founder their baby is ugly.</p>
             </div>
@@ -127,7 +127,7 @@ export const WhyYouNeedThisSection = () => {
                 Most founders never get honest, investor-level feedback.
               </h3>
               <p className="text-xl font-bold text-primary">
-                This is the first time someone actually tells you the truth.
+                UglyBaby is the first to actually tell you the truth.
               </p>
             </div>
           </ModernCard>
