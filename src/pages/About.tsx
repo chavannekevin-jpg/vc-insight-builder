@@ -2,6 +2,7 @@ import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/sections/Footer";
+import { Header } from "@/components/Header";
 import { ArrowLeft, CheckCircle2, Target, TrendingUp, Users2 } from "lucide-react";
 
 const About = () => {
@@ -9,16 +10,9 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+      <Header />
       <div className="py-20 px-4">
         <div className="max-w-4xl mx-auto space-y-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/')}
-            className="mb-8"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
 
           <div className="text-center mb-12">
             <h1 className="text-5xl md:text-6xl font-serif mb-6">About Me</h1>
@@ -141,20 +135,14 @@ const About = () => {
 
               <div className="flex gap-3 pt-6">
                 <Button 
-                  variant="outline"
-                  onClick={() => navigate('/')}
-                  className="flex-1"
-                >
-                  Back to Home
-                </Button>
-                <Button 
                   onClick={() => {
                     navigate('/');
                     setTimeout(() => {
                       document.getElementById('waitlist-form')?.scrollIntoView({ behavior: 'smooth' });
                     }, 100);
                   }} 
-                  className="flex-1 gradient-primary"
+                  className="w-full gradient-primary"
+                  size="lg"
                 >
                   Join Waitlist
                 </Button>

@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { LogOut, CheckCircle2 } from "lucide-react";
+import { LogOut, CheckCircle2, Home } from "lucide-react";
 
 const Portal = () => {
   const navigate = useNavigate();
@@ -819,9 +819,20 @@ const Portal = () => {
       {/* Header */}
       <header className="bg-card border-b border-border shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-serif">{companyName}</h1>
-            <p className="text-sm text-muted-foreground">{founderEmail}</p>
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate('/')}
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Home
+            </Button>
+            <div className="border-l border-border h-8" />
+            <div>
+              <h1 className="text-lg font-serif">{companyName}</h1>
+              <p className="text-xs text-muted-foreground">{founderEmail}</p>
+            </div>
           </div>
           <Button variant="ghost" size="sm" onClick={handleLogout}>
             <LogOut className="w-4 h-4 mr-2" />
