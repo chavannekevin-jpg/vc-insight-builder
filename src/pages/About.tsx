@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/sections/Footer";
 import { Header } from "@/components/Header";
-import { ArrowLeft, CheckCircle2, Target, TrendingUp, Users2 } from "lucide-react";
+import { Linkedin, ArrowRight, Target, TrendingUp, Users2, Briefcase, MessageSquare } from "lucide-react";
 
 const About = () => {
   const navigate = useNavigate();
@@ -11,150 +11,173 @@ const About = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header />
+      
+      {/* Hero Section */}
       <div className="py-20 px-4">
-        <div className="max-w-4xl mx-auto space-y-8">
-
-          <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-6xl font-serif mb-6">About Us</h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Active early-stage VCs translating 10+ years of deal experience into tools that help growing startups succeed
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16 animate-fade-in">
+            <h1 className="text-5xl md:text-6xl font-serif mb-6">
+              Hi, I'm <span className="text-primary">Kevin Chavanne</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
+              Nordic VC at Tenity • 10 Years in Early-Stage Investing
             </p>
           </div>
 
-          <ModernCard className="shadow-xl">
+          {/* Main Content Card */}
+          <ModernCard className="shadow-xl mb-8">
             <div className="space-y-8 text-base leading-relaxed">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
-                    <Target className="w-6 h-6 text-destructive" />
-                  </div>
-                  <h2 className="text-3xl font-serif">Who We Are</h2>
+              {/* Personal Story */}
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <h2 className="text-3xl font-serif text-foreground">Why I Built This</h2>
+                  
+                  <p className="text-lg">
+                    I'm tired of watching founders fail.
+                  </p>
+
+                  <p>
+                    After <strong>10 years in VC</strong>, reviewing thousands of pitches and writing hundreds of investment memos, 
+                    I keep seeing the same pattern: talented founders with real traction getting rejected because they don't speak our language.
+                  </p>
+
+                  <p className="text-muted-foreground italic pl-4 border-l-2 border-primary">
+                    They're asking me the same questions. Making the same mistakes. Getting ghosted for the same reasons.
+                  </p>
+
+                  <p>
+                    So I built this platform. Not as another course or generic template, but as a way to give you <strong>direct access 
+                    to the frameworks I use every single day</strong> to evaluate startups and write investment memos.
+                  </p>
                 </div>
-                
-                <p>
-                  We're active venture capital investors specializing in early-stage companies across Europe. 
-                  Over ten years, we've evaluated thousands of founding teams and deployed capital into pre-seed and seed rounds.
-                </p>
 
-                <p>
-                  As active VCs sitting on the other side of the table, we've written hundreds of investment memorandums 
-                  for real deals—and we've identified a critical gap in how founders present themselves to investors.
-                </p>
-
-                <p className="text-muted-foreground italic pl-4 border-l-2 border-destructive">
-                  Most companies with real traction still get rejected because they don't speak the VC language. 
-                  They frame their metrics incorrectly, miss the narrative that connects traction to venture scale, 
-                  and present their business in ways that create doubt rather than conviction.
-                </p>
-              </div>
-
-              <div className="p-6 rounded-xl gradient-accent border border-primary/20 space-y-3">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-primary" />
-                  <h2 className="text-2xl font-serif">What We Built</h2>
-                </div>
-                <p>
-                  As active investors who write checks, we've codified our evaluation framework—the same framework 
-                  we use to assess deals—into a structured system that helps growing companies generate investor-grade 
-                  materials that translate traction into compelling investment narratives.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <h2 className="text-3xl font-serif">The Investment Memorandum</h2>
-                
-                <p>
-                  Our first product is the <strong>"Investment Memorandum"</strong>. 
-                  By providing strategic information about your company, team, and traction, you'll generate a complete 
-                  investor-grade document that will:
-                </p>
-
-                <ul className="space-y-3 ml-6">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6">
                   {[
-                    "Frame your company's traction and metrics through an investor lens",
-                    "Identify gaps between your current narrative and what VCs need to see",
-                    "Transform your team's expertise into competitive advantages"
-                  ].map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="space-y-4">
-                <h2 className="text-3xl font-serif">Future Products</h2>
-                
-                <p>
-                  We'll be adding additional materials for fundraising teams, such as:
-                </p>
-
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  {[
-                    { icon: TrendingUp, label: "Pitch Decks", color: "text-primary" },
-                    { icon: Target, label: "Pitch Scripts", color: "text-secondary" },
-                    { icon: CheckCircle2, label: "Data Room Structure", color: "text-accent" },
-                    { icon: Users2, label: "Financial Models", color: "text-success" }
-                  ].map((item, idx) => {
-                    const Icon = item.icon;
+                    { icon: Briefcase, value: "10+", label: "Years in VC" },
+                    { icon: TrendingUp, value: "1000+", label: "Pitches Reviewed" },
+                    { icon: Target, value: "50+", label: "Investments Made" },
+                    { icon: Users2, value: "100+", label: "Memos Written" }
+                  ].map((stat, idx) => {
+                    const Icon = stat.icon;
                     return (
-                      <div key={idx} className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-muted/30 to-muted/10 hover:border-primary/30 hover:shadow-glow transition-all duration-300 backdrop-blur-sm">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center group-hover:shadow-glow transition-shadow duration-300">
-                            <Icon className={`w-5 h-5 ${item.color}`} />
-                          </div>
-                          <span className="text-sm font-medium">{item.label}</span>
-                        </div>
+                      <div key={idx} className="text-center p-4 rounded-lg bg-gradient-to-br from-primary/5 to-secondary/5 border border-border/50">
+                        <Icon className="w-6 h-6 text-primary mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                        <p className="text-xs text-muted-foreground">{stat.label}</p>
                       </div>
                     );
                   })}
                 </div>
-
-                <p className="text-sm italic text-muted-foreground pt-2">
-                  But for now, we're focused on building a professional VC investment memorandum about YOUR COMPANY.
-                </p>
               </div>
 
+              {/* What You Get */}
               <div className="p-6 rounded-xl bg-primary/5 border border-primary/20 space-y-3">
-                <div className="flex items-center gap-3">
-                  <Users2 className="w-6 h-6 text-primary" />
-                  <h2 className="text-2xl font-serif">Investor Network Access</h2>
-                </div>
+                <h2 className="text-2xl font-serif text-foreground">What You Get</h2>
                 <p>
-                  Once your company has generated your memorandum, 
-                  you can pay extra to be showcased to our network of <strong>100+ European investors</strong> actively deploying capital.
+                  This isn't theory from someone who's never written a check. This is the <strong>exact evaluation framework</strong> I use 
+                  when I'm sitting across the table from you, deciding whether to invest or pass.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  The same questions. The same structure. The same clarity that turns a "maybe" into a "yes."
                 </p>
               </div>
 
-              <div className="pt-6 border-t border-border flex items-center justify-center gap-8 flex-wrap">
-                <div className="text-center">
-                  <TrendingUp className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <p className="text-sm font-semibold">Active Early-Stage VCs</p>
+              {/* My Background */}
+              <div className="space-y-4">
+                <h2 className="text-3xl font-serif text-foreground">My Background</h2>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Briefcase className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="font-semibold">Nordic VC at Tenity</p>
+                      <p className="text-sm text-muted-foreground">Leading early-stage investments across Europe</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Target className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="font-semibold">Pre-Seed & Seed Specialist</p>
+                      <p className="text-sm text-muted-foreground">Focusing on B2B SaaS, Fintech, and Deep Tech</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <MessageSquare className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="font-semibold">Active Mentor & Advisor</p>
+                      <p className="text-sm text-muted-foreground">Helping founders navigate the fundraising journey</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <Users2 className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <p className="text-sm font-semibold">1000+ companies evaluated</p>
-                </div>
-                <div className="text-center">
-                  <CheckCircle2 className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <p className="text-sm font-semibold">100+ memos written</p>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-6">
-                <Button 
-                  onClick={() => navigate('/')} 
-                  className="w-full gradient-primary shadow-glow hover:shadow-glow-strong"
-                  size="lg"
-                >
-                  View Plans
-                </Button>
               </div>
             </div>
           </ModernCard>
+
+          {/* LinkedIn CTA Cards */}
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <ModernCard className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 hover:shadow-glow transition-all duration-300">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                  <Linkedin className="w-8 h-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-serif mb-2">Connect on LinkedIn</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Follow my insights on fundraising, VC trends, and startup growth
+                  </p>
+                </div>
+                <Button 
+                  className="w-full gradient-primary shadow-glow"
+                  size="lg"
+                  onClick={() => window.open('https://www.linkedin.com/in/kevinchavanne/', '_blank')}
+                >
+                  <Linkedin className="w-4 h-4 mr-2" />
+                  Follow Me
+                </Button>
+              </div>
+            </ModernCard>
+
+            <ModernCard className="bg-gradient-to-br from-secondary/5 to-secondary/10 border-secondary/20 hover:shadow-glow transition-all duration-300">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center mx-auto">
+                  <MessageSquare className="w-8 h-8 text-secondary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-serif mb-2">Let's Talk</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Have questions? Want to discuss your fundraise? Reach out directly
+                  </p>
+                </div>
+                <Button 
+                  variant="outline"
+                  className="w-full border-secondary/30 hover:bg-secondary/10"
+                  size="lg"
+                  onClick={() => window.open('https://www.linkedin.com/in/kevinchavanne/', '_blank')}
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Send Message
+                </Button>
+              </div>
+            </ModernCard>
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="text-center p-8 rounded-xl bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 border border-primary/20">
+            <p className="text-lg mb-4">
+              Ready to see your startup through a VC's eyes?
+            </p>
+            <Button 
+              size="lg"
+              className="gradient-primary shadow-glow hover:shadow-glow-strong"
+              onClick={() => navigate('/')}
+            >
+              Get Started Now
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </div>
       </div>
+      
       <Footer />
     </div>
   );
