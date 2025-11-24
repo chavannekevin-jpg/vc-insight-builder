@@ -176,18 +176,13 @@ export default function FreemiumHub() {
         )}
 
         {/* Educational content - Unlocked */}
-        <div className="space-y-8">
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <BookOpen className="w-6 h-6 text-primary" />
-              <h2 className="text-3xl font-bold">PlayBook</h2>
-            </div>
-            <p className="text-muted-foreground text-lg max-w-3xl">
-              Learn the frameworks that VCs use to evaluate startups. Start with any article that interests you.
-            </p>
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <BookOpen className="w-6 h-6 text-primary" />
+            <h2 className="text-2xl font-bold">Free Educational Content</h2>
           </div>
           
-          <div className="space-y-4 max-w-4xl">
+          <div className="grid md:grid-cols-2 gap-6">
             {articles.map((item) => {
               // Dynamically import icon
               const getIcon = (iconName: string) => {
@@ -206,28 +201,27 @@ export default function FreemiumHub() {
               const Icon = getIcon(item.icon);
               
               return (
-                <div 
-                  key={item.id} 
-                  onClick={() => navigate(`/hub/${item.slug}`)}
-                  className="group cursor-pointer border border-border rounded-lg p-8 hover:border-primary/50 hover:bg-muted/30 transition-all duration-200"
-                >
-                  <div className="flex items-start gap-6">
-                    <div className="p-4 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors flex-shrink-0">
-                      <Icon className="w-7 h-7 text-primary" />
-                    </div>
-                    <div className="flex-1 space-y-3 min-w-0">
-                      <h3 className="text-2xl font-bold group-hover:text-primary transition-colors leading-tight">
-                        {item.title}
-                      </h3>
-                      <p className="text-muted-foreground text-lg leading-relaxed">
-                        {item.description}
-                      </p>
-                      <div className="flex items-center gap-2 text-primary font-medium pt-1">
-                        <span className="text-sm">Read article</span>
-                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <div key={item.id} onClick={() => navigate(`/hub/${item.slug}`)}>
+                  <ModernCard 
+                    hover 
+                    className="p-6 cursor-pointer group"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                        <Icon className="w-6 h-6 text-primary" />
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
+                          {item.title}
+                        </h3>
+                        <p className="text-muted-foreground">{item.description}</p>
+                        <div className="flex items-center gap-2 text-primary font-medium pt-2">
+                          <span>Read now</span>
+                          <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </ModernCard>
                 </div>
               );
             })}
