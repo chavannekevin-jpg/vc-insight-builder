@@ -43,8 +43,7 @@ export const PricingSection = () => {
       features: [
         "Express memo delivered within one week",
         "Memo pushed to our network of 100+ global investors",
-        "Direct introductions to VCs/investors if they show interest",
-        "Priority support throughout the process"
+        "Direct introductions to VCs/investors if they show interest"
       ],
       cta: "Get VIP Access →",
       highlight: false,
