@@ -17,11 +17,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Plus, Edit, Trash2, ArrowLeft, Bold, Italic, List, ListOrdered, Quote, Code, Heading1, Heading2, Heading3 } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { marked } from "marked";
-import { useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -61,71 +58,6 @@ const AdminArticles = () => {
     published: false,
   });
 
-  const previewHtml = useMemo(() => {
-    if (!formData.content) return "<p><em>No content to preview</em></p>";
-    return marked(formData.content, { breaks: true, gfm: true });
-  }, [formData.content]);
-
-  const insertMarkdown = (syntax: string, placeholder: string = "") => {
-    const textarea = document.getElementById("content") as HTMLTextAreaElement;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = formData.content.substring(start, end) || placeholder;
-    const beforeText = formData.content.substring(0, start);
-    const afterText = formData.content.substring(end);
-
-    let newText = "";
-    let cursorOffset = 0;
-
-    switch (syntax) {
-      case "h1":
-        newText = `${beforeText}# ${selectedText}${afterText}`;
-        cursorOffset = start + 2;
-        break;
-      case "h2":
-        newText = `${beforeText}## ${selectedText}${afterText}`;
-        cursorOffset = start + 3;
-        break;
-      case "h3":
-        newText = `${beforeText}### ${selectedText}${afterText}`;
-        cursorOffset = start + 4;
-        break;
-      case "bold":
-        newText = `${beforeText}**${selectedText}**${afterText}`;
-        cursorOffset = start + 2;
-        break;
-      case "italic":
-        newText = `${beforeText}_${selectedText}_${afterText}`;
-        cursorOffset = start + 1;
-        break;
-      case "code":
-        newText = `${beforeText}\`${selectedText}\`${afterText}`;
-        cursorOffset = start + 1;
-        break;
-      case "quote":
-        newText = `${beforeText}> ${selectedText}${afterText}`;
-        cursorOffset = start + 2;
-        break;
-      case "ul":
-        newText = `${beforeText}- ${selectedText}${afterText}`;
-        cursorOffset = start + 2;
-        break;
-      case "ol":
-        newText = `${beforeText}1. ${selectedText}${afterText}`;
-        cursorOffset = start + 3;
-        break;
-      default:
-        return;
-    }
-
-    setFormData({ ...formData, content: newText });
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(cursorOffset, cursorOffset + selectedText.length);
-    }, 0);
-  };
 
   useEffect(() => {
     checkAuth();
@@ -358,204 +290,79 @@ const AdminArticles = () => {
                 Create Article
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingArticle ? "Edit Article" : "Create New Article"}
                 </DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="slug">Slug (URL path) *</Label>
-                  <Input
-                    id="slug"
-                    value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    placeholder="how-vcs-evaluate"
-                  />
+              <div className="space-y-6 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Title *</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="How VCs Evaluate Startups"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="slug">URL Slug *</Label>
+                    <Input
+                      id="slug"
+                      value={formData.slug}
+                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                      placeholder="how-vcs-evaluate"
+                    />
+                  </div>
                 </div>
+                
                 <div className="space-y-2">
-                  <Label htmlFor="title">Title *</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="How VCs Evaluate Startups"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description *</Label>
+                  <Label htmlFor="description">Short Description *</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Learn the fundamental framework VCs use..."
-                    rows={3}
+                    placeholder="A brief summary of what this article covers..."
+                    rows={2}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="icon">Icon Name</Label>
-                  <Input
-                    id="icon"
-                    value={formData.icon}
-                    onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                    placeholder="BookOpen, Target, Users, etc."
+                  <Label htmlFor="content">Article Content (Markdown) *</Label>
+                  <Textarea
+                    id="content"
+                    value={formData.content}
+                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    placeholder={"# Main Heading\n\nWrite your content here using Markdown...\n\n## Subheading\n- Bullet point\n- Another point\n\n**Bold text** and _italic text_"}
+                    rows={12}
+                    className="font-mono text-sm"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Use Lucide React icon names (e.g., BookOpen, Target, Users)
+                    Supports Markdown: # Headings, **bold**, _italic_, - lists, &gt; quotes
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="content">Content (Markdown supported) *</Label>
-                  <Tabs defaultValue="edit" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="edit">Edit</TabsTrigger>
-                      <TabsTrigger value="preview">Preview</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="edit" className="space-y-2">
-                      <div className="flex flex-wrap gap-1 p-2 bg-muted rounded-t-md border border-b-0">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertMarkdown("h1", "Heading 1")}
-                          title="Heading 1"
-                        >
-                          <Heading1 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertMarkdown("h2", "Heading 2")}
-                          title="Heading 2"
-                        >
-                          <Heading2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertMarkdown("h3", "Heading 3")}
-                          title="Heading 3"
-                        >
-                          <Heading3 className="w-4 h-4" />
-                        </Button>
-                        <div className="w-px h-6 bg-border mx-1" />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertMarkdown("bold", "bold text")}
-                          title="Bold"
-                        >
-                          <Bold className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertMarkdown("italic", "italic text")}
-                          title="Italic"
-                        >
-                          <Italic className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertMarkdown("code", "code")}
-                          title="Inline Code"
-                        >
-                          <Code className="w-4 h-4" />
-                        </Button>
-                        <div className="w-px h-6 bg-border mx-1" />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertMarkdown("ul", "list item")}
-                          title="Bullet List"
-                        >
-                          <List className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertMarkdown("ol", "list item")}
-                          title="Numbered List"
-                        >
-                          <ListOrdered className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertMarkdown("quote", "quote")}
-                          title="Quote"
-                        >
-                          <Quote className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <Textarea
-                        id="content"
-                        value={formData.content}
-                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                        placeholder="Write your article content here using Markdown...
-
-# Main Heading
-## Subheading
-### Section
-
-**Bold text** or _italic text_
-
-- Bullet point
-- Another point
-
-1. Numbered list
-2. Second item
-
-> Quote or callout
-
-`inline code`"
-                        rows={16}
-                        className="font-mono text-sm rounded-t-none"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Use the toolbar above to format your content, or write Markdown directly.
-                      </p>
-                    </TabsContent>
-                    <TabsContent value="preview" className="min-h-[400px] p-6 border rounded-md">
-                      <div className="prose prose-slate dark:prose-invert max-w-none
-                        prose-headings:font-bold
-                        prose-h1:text-3xl prose-h1:mb-4
-                        prose-h2:text-2xl prose-h2:mb-3 prose-h2:text-primary
-                        prose-h3:text-xl prose-h3:mb-2
-                        prose-p:mb-4 prose-p:leading-relaxed
-                        prose-strong:font-semibold
-                        prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded
-                        prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-4"
-                        dangerouslySetInnerHTML={{ __html: previewHtml }}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="published"
-                    checked={formData.published}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, published: checked })
-                    }
-                  />
-                  <Label htmlFor="published">Published</Label>
-                </div>
-                <div className="flex justify-end gap-3">
-                  <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave}>Save Article</Button>
+                
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="published"
+                      checked={formData.published}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, published: checked })
+                      }
+                    />
+                    <Label htmlFor="published" className="cursor-pointer">Publish immediately</Label>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSave}>
+                      {editingArticle ? "Update" : "Create"} Article
+                    </Button>
+                  </div>
                 </div>
               </div>
             </DialogContent>
