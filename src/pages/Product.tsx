@@ -28,7 +28,7 @@ const Product = () => {
     {
       icon: Target,
       title: "Built by VCs, For Founders",
-      description: "We're active early-stage investors who've codified our evaluation framework from pre-seed to Series A deals across Europe."
+      description: "We're active early-stage investors who've codified our evaluation framework from pre-seed to Series A deals worldwide."
     },
     {
       icon: MessageSquare,
@@ -43,7 +43,7 @@ const Product = () => {
     {
       icon: Users,
       title: "Investor Network Access",
-      description: "Optional showcase to 100+ European investors once your memorandum is complete."
+      description: "Optional showcase to 100+ global investors once your memorandum is complete."
     },
     {
       icon: BarChart3,
