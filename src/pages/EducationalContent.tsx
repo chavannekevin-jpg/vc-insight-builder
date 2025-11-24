@@ -36,9 +36,11 @@ export default function EducationalContent() {
     const lines = article.content.split('\n');
     const parsed: { title: string; content: string }[] = [];
     let currentSection: { title: string; content: string } | null = null;
+    let hasH2Sections = false;
     
     lines.forEach(line => {
       if (line.startsWith('## ')) {
+        hasH2Sections = true;
         if (currentSection) {
           parsed.push(currentSection);
         }
@@ -60,6 +62,11 @@ export default function EducationalContent() {
     
     if (currentSection) {
       parsed.push(currentSection);
+    }
+    
+    // If no H2 sections found, treat entire content as intro
+    if (!hasH2Sections && parsed.length === 0) {
+      parsed.push({ title: 'intro', content: article.content });
     }
     
     return parsed.map(section => ({
@@ -144,8 +151,32 @@ export default function EducationalContent() {
             </div>
           </header>
 
-          {/* Intro Content (if exists) */}
-          {sections.find(s => s.title === 'intro') && (
+          {/* Intro Content */}
+          {sections.find(s => s.title === 'intro') && sections.filter(s => s.title !== 'intro').length === 0 ? (
+            // If only intro (no H2 sections), show full content
+            <div className="max-w-3xl mx-auto">
+              <div className="prose prose-xl dark:prose-invert max-w-none
+                prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24
+                prose-h3:text-xl prose-h3:mb-6 prose-h3:mt-8 prose-h3:leading-[1.4]
+                prose-p:text-xl prose-p:leading-[2] prose-p:mb-8 prose-p:text-foreground/90
+                prose-strong:text-foreground prose-strong:font-semibold
+                prose-em:text-foreground/80 prose-em:italic
+                prose-ul:my-6 prose-ul:space-y-3 prose-ul:pl-6
+                prose-ol:my-6 prose-ol:space-y-3 prose-ol:pl-6
+                prose-li:text-xl prose-li:leading-[2] prose-li:text-foreground/90 prose-li:my-2 prose-li:pl-2
+                prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 
+                prose-blockquote:py-6 prose-blockquote:px-8 prose-blockquote:my-8 prose-blockquote:rounded-r-xl
+                prose-blockquote:italic prose-blockquote:text-lg prose-blockquote:leading-[1.9]
+                prose-code:text-primary prose-code:bg-primary/10 prose-code:px-2.5 prose-code:py-1.5 
+                prose-code:rounded-md prose-code:text-base prose-code:font-normal prose-code:before:content-none prose-code:after:content-none
+                prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-pre:p-6 prose-pre:my-8 prose-pre:rounded-xl
+                prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-4
+                prose-img:rounded-xl prose-img:shadow-lg prose-img:my-10 prose-img:border prose-img:border-border/50"
+                dangerouslySetInnerHTML={{ __html: sections.find(s => s.title === 'intro')?.html || '' }}
+              />
+            </div>
+          ) : sections.find(s => s.title === 'intro') ? (
+            // If intro exists with sections, show just intro
             <div className="max-w-3xl mx-auto">
               <div className="prose prose-xl dark:prose-invert max-w-none
                 prose-p:text-xl prose-p:leading-[2] prose-p:mb-8 prose-p:text-foreground/90
@@ -153,14 +184,15 @@ export default function EducationalContent() {
                 dangerouslySetInnerHTML={{ __html: sections.find(s => s.title === 'intro')?.html || '' }}
               />
             </div>
-          )}
+          ) : null}
 
-          {/* Collapsible Sections */}
-          <div className="max-w-3xl mx-auto space-y-6">
-            <Accordion type="multiple" className="space-y-6" defaultValue={sections.filter(s => s.title !== 'intro').map((_, i) => `section-${i}`)}>
-              {sections
-                .filter(section => section.title !== 'intro')
-                .map((section, index) => (
+          {/* Collapsible Sections (only if H2 sections exist) */}
+          {sections.filter(s => s.title !== 'intro').length > 0 && (
+            <div className="max-w-3xl mx-auto space-y-6">
+              <Accordion type="multiple" className="space-y-6" defaultValue={sections.filter(s => s.title !== 'intro').map((_, i) => `section-${i}`)}>
+                {sections
+                  .filter(section => section.title !== 'intro')
+                  .map((section, index) => (
                   <AccordionItem 
                     key={index} 
                     value={`section-${index}`}
@@ -198,9 +230,10 @@ export default function EducationalContent() {
                       />
                     </AccordionContent>
                   </AccordionItem>
-                ))}
-            </Accordion>
-          </div>
+                  ))}
+              </Accordion>
+            </div>
+          )}
 
           {/* Call to Action */}
           <div className="max-w-4xl mx-auto pt-12">
