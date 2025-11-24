@@ -1,7 +1,7 @@
 import { ModernCard } from "../ModernCard";
+import { Check } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { Check } from "lucide-react";
 
 export const PricingSection = () => {
   const pricingOptions = [
