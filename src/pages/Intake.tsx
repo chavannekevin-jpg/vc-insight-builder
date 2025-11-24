@@ -10,18 +10,6 @@ import { ModernCard } from "@/components/ModernCard";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
-const CATEGORIES = [
-  "SaaS",
-  "Fintech",
-  "Marketplace",
-  "Consumer",
-  "AI/ML",
-  "Healthcare",
-  "Education",
-  "E-commerce",
-  "Other"
-];
-
 const STAGES = [
   "Pre-product",
   "MVP",
@@ -36,10 +24,9 @@ export default function Intake() {
   
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
-    category: "",
+    email: "",
     stage: "",
-    biggestChallenge: ""
+    problemSolution: ""
   });
 
   useEffect(() => {
@@ -70,24 +57,20 @@ export default function Intake() {
       toast({ title: "Please enter your startup name", variant: "destructive" });
       return;
     }
-    if (currentStep === 2 && !formData.description) {
-      toast({ title: "Please describe what your startup does", variant: "destructive" });
+    if (currentStep === 2 && !formData.email) {
+      toast({ title: "Please enter your email address", variant: "destructive" });
       return;
     }
-    if (currentStep === 3 && !formData.category) {
-      toast({ title: "Please select a category", variant: "destructive" });
-      return;
-    }
-    if (currentStep === 4 && !formData.stage) {
+    if (currentStep === 3 && !formData.stage) {
       toast({ title: "Please select your current stage", variant: "destructive" });
       return;
     }
-    if (currentStep === 5 && !formData.biggestChallenge) {
-      toast({ title: "Please share your biggest challenge", variant: "destructive" });
+    if (currentStep === 4 && !formData.problemSolution) {
+      toast({ title: "Please describe your problem and solution", variant: "destructive" });
       return;
     }
 
-    if (currentStep < 6) {
+    if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -105,10 +88,10 @@ export default function Intake() {
       const { error } = await supabase.from("companies").insert({
         founder_id: session.user.id,
         name: formData.name,
-        description: formData.description,
-        category: formData.category,
+        description: formData.problemSolution,
+        category: null,
         stage: formData.stage,
-        biggest_challenge: formData.biggestChallenge
+        biggest_challenge: null
       });
 
       if (error) throw error;
@@ -149,17 +132,18 @@ export default function Intake() {
         return (
           <div className="space-y-4">
             <div className="text-center space-y-2 mb-8">
-              <h2 className="text-3xl font-serif font-bold">What does {formData.name} do?</h2>
-              <p className="text-muted-foreground">One sentence is perfect</p>
+              <h2 className="text-3xl font-serif font-bold">What's your email address?</h2>
+              <p className="text-muted-foreground">We'll use this to keep in touch</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Startup Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="e.g., We help small businesses automate their invoicing"
-                className="text-lg min-h-[120px]"
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="founder@startup.com"
+                className="text-lg"
                 autoFocus
               />
             </div>
@@ -167,29 +151,6 @@ export default function Intake() {
         );
 
       case 3:
-        return (
-          <div className="space-y-4">
-            <div className="text-center space-y-2 mb-8">
-              <h2 className="text-3xl font-serif font-bold">Which category describes you best?</h2>
-              <p className="text-muted-foreground">This helps us understand your market</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                <SelectTrigger className="text-lg">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        );
-
-      case 4:
         return (
           <div className="space-y-4">
             <div className="text-center space-y-2 mb-8">
@@ -212,28 +173,28 @@ export default function Intake() {
           </div>
         );
 
-      case 5:
+      case 4:
         return (
           <div className="space-y-4">
             <div className="text-center space-y-2 mb-8">
-              <h2 className="text-3xl font-serif font-bold">What's your biggest current challenge?</h2>
-              <p className="text-muted-foreground">This will help us tailor content for you</p>
+              <h2 className="text-3xl font-serif font-bold">Describe your problem and solution</h2>
+              <p className="text-muted-foreground">What problem are you solving and how?</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="challenge">Biggest Challenge</Label>
+              <Label htmlFor="problemSolution">Problem & Solution</Label>
               <Textarea
-                id="challenge"
-                value={formData.biggestChallenge}
-                onChange={(e) => setFormData({ ...formData, biggestChallenge: e.target.value })}
-                placeholder="e.g., Finding product-market fit, hiring the right team, raising funding..."
-                className="text-lg min-h-[120px]"
+                id="problemSolution"
+                value={formData.problemSolution}
+                onChange={(e) => setFormData({ ...formData, problemSolution: e.target.value })}
+                placeholder="e.g., Small businesses waste hours on manual invoicing. We automate the entire process with AI, saving them 10+ hours per week."
+                className="text-lg min-h-[150px]"
                 autoFocus
               />
             </div>
           </div>
         );
 
-      case 6:
+      case 5:
         return (
           <div className="space-y-6 text-center">
             <div className="flex justify-center">
@@ -265,9 +226,9 @@ export default function Intake() {
       
       <div className="w-full max-w-2xl space-y-8 animate-fade-in">
         {/* Progress indicator */}
-        {currentStep < 6 && (
+        {currentStep < 5 && (
           <div className="flex justify-center gap-2 mb-8">
-            {[1, 2, 3, 4, 5].map((step) => (
+            {[1, 2, 3, 4].map((step) => (
               <div
                 key={step}
                 className={`h-2 rounded-full transition-all duration-300 ${
@@ -285,7 +246,7 @@ export default function Intake() {
         <ModernCard className="p-8">
           {renderStep()}
           
-          {currentStep < 6 && (
+          {currentStep < 5 && (
             <div className="flex justify-between pt-8">
               <Button
                 variant="outline"
