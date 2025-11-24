@@ -17,9 +17,14 @@ export const HeroSection = () => {
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse opacity-50" style={{ animationDelay: '1s' }} />
       
       <div className="max-w-5xl mx-auto text-center space-y-8 animate-fade-in">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-card/95 backdrop-blur-sm border border-primary/30 rounded-lg shadow-lg">
-          <span className="text-sm font-bold text-primary uppercase tracking-wider">Built by VCs</span>
+        {/* Badge with personal branding */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-card/95 backdrop-blur-sm border border-primary/30 rounded-lg shadow-lg">
+            <span className="text-sm font-bold text-primary uppercase tracking-wider">Built by VCs</span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            by <span className="text-foreground font-semibold">Kevin Chavanne</span> • Nordic VC @ Tenity • 10+ Years Experience
+          </p>
         </div>
 
         {/* Main headline */}
@@ -31,9 +36,10 @@ export const HeroSection = () => {
           by VCs
         </h1>
 
-        {/* Subheadline */}
+        {/* Subheadline with personal perspective */}
         <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          Get the clarity only VCs have. See your startup the way VCs do — our memo structures your narrative for investment-readiness.
+          <span className="text-foreground font-semibold">I've reviewed thousands of pitches</span> and invested in dozens. 
+          Now I'm giving you the same clarity VCs have internally — see your startup the way we do with a memo that structures your narrative for investment-readiness.
         </p>
 
         {/* CTA section */}
