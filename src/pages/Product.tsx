@@ -64,44 +64,65 @@ const Product = () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <Badge variant="secondary" className="mb-6 px-4 py-1.5">
-            Built by Active Early-Stage VCs
-          </Badge>
-          <h1 className="text-5xl md:text-6xl font-serif mb-6">
+      <section className="py-20 px-4 relative overflow-hidden">
+        {/* Background gradient effects */}
+        <div className="absolute inset-0 gradient-hero -z-10" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl -z-10" />
+        
+        <div className="max-w-6xl mx-auto text-center relative">
+          <div className="animate-fade-in">
+            <Badge 
+              variant="secondary" 
+              className="mb-6 px-6 py-2 text-sm font-bold border-2 border-primary/30 bg-primary/10 shadow-glow backdrop-blur-sm"
+            >
+              <Zap className="w-3 h-3 mr-2 inline-block text-primary" />
+              Built by Active Early-Stage VCs
+            </Badge>
+          </div>
+          
+          <h1 className="text-6xl md:text-7xl font-bold mb-6 animate-fade-in bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent leading-tight">
             The Investment Memorandum
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+          
+          <p className="text-xl md:text-2xl text-foreground/80 max-w-4xl mx-auto mb-10 leading-relaxed animate-fade-in font-medium">
             Built from 10+ years of VC experience and hundreds of real deals, we've transformed our 
             cognitive work into a structured framework that helps you present your startup the way investors need to see it.
           </p>
-          <div className="flex items-center justify-center gap-6 mb-8 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-primary" />
-              <span>Active VCs</span>
+          
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mb-12 animate-fade-in">
+            <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-card/80 border border-primary/20 backdrop-blur-sm shadow-lg">
+              <div className="p-1.5 rounded-lg bg-primary/20">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-sm font-semibold text-foreground">Active VCs</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-primary" />
-              <span>Early-Stage Specialists</span>
+            <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-card/80 border border-primary/20 backdrop-blur-sm shadow-lg">
+              <div className="p-1.5 rounded-lg bg-primary/20">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-sm font-semibold text-foreground">Early-Stage Specialists</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-primary" />
-              <span>100+ European Investor Network</span>
+            <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-card/80 border border-primary/20 backdrop-blur-sm shadow-lg">
+              <div className="p-1.5 rounded-lg bg-primary/20">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-sm font-semibold text-foreground">100+ Global Investor Network</span>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
             <Button 
               size="lg"
               onClick={() => navigate('/')}
-              className="gradient-primary"
+              className="gradient-primary hover-neon-pulse text-lg px-8 py-6 font-bold shadow-glow"
             >
-              Get Started
+              Get Started →
             </Button>
             <Button 
               size="lg"
               variant="outline"
               onClick={() => navigate('/about')}
+              className="text-lg px-8 py-6 font-semibold border-2 hover:border-primary/50 hover:shadow-lg transition-all duration-300"
             >
               Learn More
             </Button>
