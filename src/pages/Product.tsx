@@ -207,8 +207,14 @@ const Product = () => {
       {/* Key Benefits */}
       <section className="py-20 px-4 bg-muted/30">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-serif mb-4">Why It Matters</h2>
+          <div className="text-center mb-16 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 backdrop-blur-xl mb-6">
+              <Target className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">Key Benefits</span>
+            </div>
+            <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              Why It Matters
+            </h2>
           </div>
 
           <ModernCard className="shadow-xl">
@@ -240,9 +246,15 @@ const Product = () => {
       {/* Future Products */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-serif mb-4">Coming Soon</h2>
-            <p className="text-lg text-muted-foreground">
+          <div className="text-center mb-16 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 backdrop-blur-xl mb-6">
+              <Lightbulb className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">Future Features</span>
+            </div>
+            <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              Coming Soon
+            </h2>
+            <p className="text-xl md:text-2xl text-foreground/80 max-w-3xl mx-auto font-medium">
               More tools to support your fundraising journey
             </p>
           </div>
@@ -268,8 +280,14 @@ const Product = () => {
         <div className="max-w-4xl mx-auto text-center">
           <ModernCard className="shadow-xl">
             <div className="space-y-6 py-8">
-              <h2 className="text-3xl font-serif">Ready to Get Started?</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 backdrop-blur-xl mb-6">
+                <Zap className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-primary">Take Action</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Ready to Get Started?
+              </h2>
+              <p className="text-lg md:text-xl text-foreground/80 max-w-2xl mx-auto">
                 Join founders who are transforming their fundraising with frameworks built by active VCs who deploy capital at pre-seed and seed stage.
               </p>
               <div className="flex items-center justify-center gap-6 py-4 text-sm text-muted-foreground">
