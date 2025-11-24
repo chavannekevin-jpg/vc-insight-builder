@@ -1,6 +1,4 @@
 import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-import { Flame } from "lucide-react";
 
 export const HeroSection = () => {
   const scrollToPricing = () => {
@@ -49,7 +47,7 @@ export const HeroSection = () => {
         {/* CTA section */}
         <div className="flex flex-col items-center gap-6 pt-8">
           <p className="text-xl md:text-2xl text-foreground font-sans font-medium tracking-tight max-w-2xl">
-            Because nobody will tell you that your baby is ugly.
+            Get the investment memo VCs wish they could write about your startup.
           </p>
           <Button 
             size="lg" 
@@ -58,12 +56,9 @@ export const HeroSection = () => {
           >
             Start for Free →
           </Button>
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg backdrop-blur-sm">
-            <Flame className="w-4 h-4 text-primary" />
-            <span className="text-sm text-muted-foreground font-medium">
-              <span className="text-primary font-bold">50% OFF</span> for early sign-ups
-            </span>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            Free educational content • Upgrade to get your personalized memo
+          </p>
         </div>
       </div>
     </section>
