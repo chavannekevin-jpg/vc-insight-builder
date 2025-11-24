@@ -37,7 +37,7 @@ export const ProblemSolutionSection = () => {
             
             <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 backdrop-blur-sm">
               <p className="text-sm text-foreground/80 italic">
-                VCs won't waste time teaching you. They'll just pass.
+                <strong>I won't waste time in meetings teaching you</strong>—and neither will other VCs. We'll just pass and move on to the next pitch.
               </p>
             </div>
           </div>

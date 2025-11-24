@@ -9,7 +9,7 @@ export const PricingSection = () => {
   
   const pricingOptions = [
     {
-      title: "Early_Access.exe",
+      title: "Early Access",
       subtitle: "Early Access - 50% Off",
       price: "€29.99",
       originalPrice: "€59.99",
@@ -24,27 +24,27 @@ export const PricingSection = () => {
       color: "green" as const
     },
     {
-      title: "Skip_The_Line.exe",
+      title: "Express Service",
       subtitle: "Express Service",
       price: "€159.99",
       features: [
         "Expert-crafted memo delivered within one week",
-        "Personally curated by our team during early access",
+        "Personally reviewed by Kevin during early access",
         "Full automation coming soon—get priority access now",
-        "Company profile shared to our VC network (optional)"
+        "Company profile shared to Kevin's VC network (optional)"
       ],
       cta: "Fast Track to Clarity →",
       highlight: false,
       color: "blue" as const
     },
     {
-      title: "VIP_Fast_Track.exe",
+      title: "VIP Package",
       subtitle: "Ultra Premium Package",
       price: "€399",
       features: [
         "Express memo delivered within one week",
-        "Memo pushed to our network of 100+ global investors",
-        "Direct introductions to VCs/investors if they show interest"
+        "Memo pushed to Kevin's network of 100+ global investors",
+        "Direct introductions from Kevin to VCs/investors if they show interest"
       ],
       cta: "Get VIP Access →",
       highlight: false,
