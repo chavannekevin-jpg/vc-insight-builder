@@ -113,7 +113,7 @@ export default function EducationalContent() {
               prose-h1:text-4xl prose-h1:mb-10 prose-h1:mt-20 prose-h1:leading-[1.3] prose-h1:pb-6
               prose-h2:text-3xl prose-h2:mb-8 prose-h2:mt-20 prose-h2:text-primary prose-h2:leading-[1.35] prose-h2:pt-4
               prose-h3:text-2xl prose-h3:mb-6 prose-h3:mt-16 prose-h3:leading-[1.4]
-              prose-p:text-lg prose-p:leading-[2] prose-p:mb-8 prose-p:text-foreground/90
+              prose-p:text-lg prose-p:leading-[2] prose-p:mb-12 prose-p:text-foreground/90
               prose-strong:text-foreground prose-strong:font-semibold
               prose-em:text-foreground/80 prose-em:italic
               prose-ul:my-10 prose-ul:space-y-4 prose-ul:pl-6
