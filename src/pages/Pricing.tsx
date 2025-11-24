@@ -9,39 +9,26 @@ import { Check, Zap, Clock, Users } from "lucide-react";
 const Pricing = () => {
   const navigate = useNavigate();
 
-  const scrollToWaitlist = () => {
-    navigate('/');
-    setTimeout(() => {
-      const element = document.getElementById('waitlist-form');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  };
-
   const pricingPlans = [
     {
-      name: "Early Access",
-      subtitle: "Join the Waitlist",
-      price: "€59.99",
-      originalPrice: "€119.99",
+      name: "Early_Access.exe",
+      subtitle: "Early Access - 50% Off",
+      price: "€29.99",
+      originalPrice: "€59.99",
       discount: "50% OFF",
       description: "Discounted price for early joiners",
       icon: Clock,
       features: [
         "Get your memo when platform launches",
-        "50% discount for early joiners",
-        "Priority access to new features",
-        "Email support included",
-        "Lifetime updates to your memo",
-        "Community access"
+        "Save €30 with early access pricing",
+        "Company profile shared to our VC network (optional)"
       ],
       cta: "Join Early Access",
       popular: true,
       color: "primary"
     },
     {
-      name: "Skip the Line",
+      name: "Skip_The_Line.exe",
       subtitle: "Express Service",
       price: "€159.99",
       description: "Get your memo within one week",
@@ -49,10 +36,7 @@ const Pricing = () => {
       features: [
         "Receive your memo within one week",
         "Jump ahead of the waitlist",
-        "Priority support",
-        "Early adopter benefits",
-        "Direct access to platform",
-        "Premium insights included"
+        "Company profile shared to our VC network (optional)"
       ],
       cta: "Skip the Line",
       popular: false,
@@ -169,7 +153,7 @@ const Pricing = () => {
                     </ul>
 
                     <Button 
-                      onClick={scrollToWaitlist}
+                      onClick={() => navigate(`/auth?plan=${encodeURIComponent(plan.name)}&price=${encodeURIComponent(plan.price)}`)}
                       className={plan.popular ? "w-full gradient-primary" : "w-full"}
                       variant={plan.popular ? "default" : "outline"}
                       size="lg"
@@ -249,17 +233,17 @@ const Pricing = () => {
             <div className="space-y-6 py-8">
               <h2 className="text-3xl font-serif">Ready to Transform Your Fundraising?</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Join the waitlist today and get 50% off your investment memorandum.
+                Choose the plan that fits your timeline and get your investment memorandum.
               </p>
               <Button 
                 size="lg"
-                onClick={scrollToWaitlist}
-                className="gradient-primary px-8"
+                onClick={() => navigate('/')}
+                className="gradient-primary px-8 shadow-glow hover:shadow-glow-strong"
               >
-                Get Started Now
+                View All Plans
               </Button>
               <p className="text-xs text-muted-foreground">
-                14-day money-back guarantee • No credit card required to join waitlist
+                14-day money-back guarantee • Secure payment processing
               </p>
             </div>
           </ModernCard>

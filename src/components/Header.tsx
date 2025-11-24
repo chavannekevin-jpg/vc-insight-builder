@@ -48,22 +48,21 @@ export const Header = () => {
           <div className="hidden md:flex items-center gap-3">
             <Button 
               onClick={() => navigate('/auth')}
-              variant="outline"
               size="sm"
-              className="gap-2"
+              className="gap-2 relative group overflow-hidden bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/30 hover:border-primary/50 backdrop-blur-xl transition-all duration-300 hover:shadow-glow"
             >
-              <LogIn className="w-4 h-4" />
-              Sign In
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <LogIn className="w-4 h-4 relative z-10 text-primary" />
+              <span className="relative z-10 text-foreground font-semibold">Sign In</span>
             </Button>
             <Button 
               onClick={() => {
-                if (location.pathname !== '/') {
-                  window.location.href = '/#waitlist-form';
-                } else {
-                  document.getElementById('waitlist-form')?.scrollIntoView({ behavior: 'smooth' });
+                const pricingSection = document.getElementById('pricing-section');
+                if (pricingSection) {
+                  pricingSection.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="gradient-primary"
+              className="gradient-primary shadow-glow hover:shadow-glow-strong"
             >
               Get Started
             </Button>
@@ -100,22 +99,21 @@ export const Header = () => {
                   setMobileMenuOpen(false);
                   navigate('/auth');
                 }}
-                variant="outline"
-                className="w-full gap-2"
+                className="w-full gap-2 relative group overflow-hidden bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/30 hover:border-primary/50 backdrop-blur-xl transition-all duration-300"
               >
-                <LogIn className="w-4 h-4" />
-                Sign In
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <LogIn className="w-4 h-4 relative z-10 text-primary" />
+                <span className="relative z-10 text-foreground font-semibold">Sign In</span>
               </Button>
               <Button 
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  if (location.pathname !== '/') {
-                    window.location.href = '/#waitlist-form';
-                  } else {
-                    document.getElementById('waitlist-form')?.scrollIntoView({ behavior: 'smooth' });
+                  const pricingSection = document.getElementById('pricing-section');
+                  if (pricingSection) {
+                    pricingSection.scrollIntoView({ behavior: 'smooth' });
                   }
                 }}
-                className="gradient-primary w-full"
+                className="gradient-primary w-full shadow-glow"
               >
                 Get Started
               </Button>
