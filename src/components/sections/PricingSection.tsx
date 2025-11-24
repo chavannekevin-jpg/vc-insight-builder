@@ -35,6 +35,21 @@ export const PricingSection = () => {
       cta: "Fast Track to Clarity →",
       highlight: false,
       color: "blue" as const
+    },
+    {
+      title: "VIP_Fast_Track.exe",
+      subtitle: "Ultra Premium Package",
+      price: "€399",
+      features: [
+        "Express memo delivered within one week",
+        "Memo pushed to our network of 100+ global investors",
+        "Direct introductions to VCs/investors if they show interest",
+        "Priority support throughout the process"
+      ],
+      cta: "Get VIP Access →",
+      highlight: false,
+      color: "accent" as const,
+      badge: "Most Exclusive"
     }
   ];
 
@@ -46,11 +61,25 @@ export const PricingSection = () => {
     <section id="pricing-section" className="py-20 px-6 sm:px-8 lg:px-12 bg-muted/30">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-serif mb-4">Choose Your Plan</h2>
-          <p className="text-lg text-muted-foreground">Select the option that fits your timeline</p>
+          <h2 
+            className="text-4xl md:text-5xl font-serif mb-4"
+            style={{ 
+              textShadow: '0 0 20px hsl(var(--primary) / 0.5), 0 0 40px hsl(var(--primary) / 0.3), 0 0 60px hsl(var(--primary) / 0.2)'
+            }}
+          >
+            Choose Your Plan
+          </h2>
+          <p 
+            className="text-lg text-muted-foreground"
+            style={{ 
+              textShadow: '0 0 15px hsl(var(--primary) / 0.3), 0 0 30px hsl(var(--primary) / 0.2)'
+            }}
+          >
+            Select the option that fits your timeline
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {pricingOptions.map((option, index) => (
             <ModernCard 
               key={index}
@@ -59,6 +88,9 @@ export const PricingSection = () => {
               <div className="space-y-6">
                 {option.highlight && (
                   <Badge className="gradient-primary text-white border-0">Most Popular</Badge>
+                )}
+                {option.badge && (
+                  <Badge className="bg-accent text-white border-0">{option.badge}</Badge>
                 )}
                 
                 <div>
