@@ -82,13 +82,6 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "memo_responses_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "company_responses_view"
-            referencedColumns: ["company_id"]
-          },
         ]
       }
       memos: {
@@ -123,13 +116,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "memos_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "company_responses_view"
-            referencedColumns: ["company_id"]
           },
         ]
       }
@@ -177,19 +163,7 @@ export type Database = {
       }
     }
     Views: {
-      company_responses_view: {
-        Row: {
-          answer: string | null
-          company_created_at: string | null
-          company_id: string | null
-          company_name: string | null
-          company_stage: string | null
-          founder_email: string | null
-          question_key: string | null
-          response_updated_at: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       has_role: {
