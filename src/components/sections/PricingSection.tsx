@@ -28,8 +28,8 @@ export const PricingSection = () => {
       subtitle: "Express Service",
       price: "€159.99",
       features: [
-        "AI-crafted memo delivered within one week",
-        "Expertly curated by our team during early access",
+        "Expert-crafted memo delivered within one week",
+        "Personally curated by our team during early access",
         "Full automation coming soon—get priority access now",
         "Company profile shared to our VC network (optional)"
       ],
