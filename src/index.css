@@ -186,6 +186,12 @@ All colors MUST be HSL.
     text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
   }
 
+  /* Pink neon glow text */
+  .neon-pink {
+    color: hsl(330 100% 65%);
+    text-shadow: 0 0 10px hsl(330 100% 65% / 0.8), 0 0 20px hsl(330 100% 65% / 0.6), 0 0 30px hsl(330 100% 65% / 0.4);
+  }
+
   /* Brutal border effect */
   .border-brutal {
     border: 3px solid hsl(var(--primary));

@@ -24,9 +24,9 @@ export const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 rounded-lg flex items-center justify-center shadow-md transition-all duration-300 group-hover:shadow-glow">
-              <span className="text-neon neon-text font-bold text-lg transition-all duration-300">UB</span>
+              <span className="neon-pink font-bold text-lg transition-all duration-300">UB</span>
             </div>
-            <span className="font-serif text-2xl hidden sm:inline text-neon neon-text tracking-tight">UglyBaby</span>
+            <span className="font-serif text-2xl hidden sm:inline neon-pink tracking-tight">UglyBaby</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -48,7 +48,7 @@ export const Header = () => {
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={() => navigate('/auth')}
-              className="text-neon neon-text hover:shadow-glow-strong transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
+              className="neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
             >
               <LogIn className="w-4 h-4" />
               Sign In
@@ -97,7 +97,7 @@ export const Header = () => {
                   setMobileMenuOpen(false);
                   navigate('/auth');
                 }}
-                className="w-full text-neon neon-text hover:shadow-glow-strong transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
+                className="w-full neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
               >
                 <LogIn className="w-4 h-4" />
                 Sign In
