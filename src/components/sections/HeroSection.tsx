@@ -23,7 +23,7 @@ export const HeroSection = () => {
             <span className="text-sm font-bold text-primary uppercase tracking-wider">Built by VCs</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            by <span className="text-foreground font-semibold">Kevin Chavanne</span> • Nordic VC @ Tenity • 10+ Years Experience
+            by <span className="text-foreground font-semibold">Kevin Chavanne</span> • 10+ Years in Venture Capital
           </p>
         </div>
 
