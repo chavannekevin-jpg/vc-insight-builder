@@ -28,7 +28,7 @@ const Pricing = () => {
       color: "primary"
     },
     {
-      name: "Skip_The_Line.exe",
+      name: "Skip The Line",
       subtitle: "Express Service",
       price: "€159.99",
       description: "Get your memo within one week",
