@@ -3,15 +3,15 @@ import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export const ProblemSolutionSection = () => {
   return (
-    <section className="py-20 px-6 sm:px-8 lg:px-12 bg-muted/30">
-      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
+    <section className="py-24 px-6 sm:px-8 lg:px-12 bg-muted/20">
+      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10">
         <ModernCard hover>
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-destructive/15 flex items-center justify-center shadow-md">
-                <AlertCircle className="w-6 h-6 text-destructive" />
+          <div className="space-y-7">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-destructive/10 flex items-center justify-center shadow-sm">
+                <AlertCircle className="w-7 h-7 text-destructive" />
               </div>
-              <h2 className="text-2xl font-serif font-bold">The Problem</h2>
+              <h2 className="text-3xl font-serif font-bold">The Problem</h2>
             </div>
             
             <p className="text-base text-foreground leading-relaxed font-semibold">
@@ -40,12 +40,12 @@ export const ProblemSolutionSection = () => {
         </ModernCard>
 
         <ModernCard hover>
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-success/15 flex items-center justify-center shadow-md">
-                <CheckCircle2 className="w-6 h-6 text-success" />
+          <div className="space-y-7">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-success/10 flex items-center justify-center shadow-sm">
+                <CheckCircle2 className="w-7 h-7 text-success" />
               </div>
-              <h2 className="text-2xl font-serif font-bold">The Solution</h2>
+              <h2 className="text-3xl font-serif font-bold">The Solution</h2>
             </div>
             
             <p className="text-base text-foreground leading-relaxed font-semibold">

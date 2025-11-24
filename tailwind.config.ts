@@ -41,13 +41,10 @@ export default {
   				'sans-serif'
   			],
   			serif: [
-  				'Lora',
-  				'ui-serif',
-  				'Georgia',
-  				'Cambria',
-  				'Times New Roman',
-  				'Times',
-  				'serif'
+  				'Space Grotesk',
+  				'-apple-system',
+  				'system-ui',
+  				'sans-serif'
   			],
   			mono: [
   				'Space Mono',

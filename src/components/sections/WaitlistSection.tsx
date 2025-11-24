@@ -33,19 +33,19 @@ export const WaitlistSection = () => {
   };
 
   return (
-    <section id="waitlist-form" className="py-20 px-6 sm:px-8 lg:px-12">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-serif mb-4">Get Your UglyBaby Memo</h2>
-          <p className="text-lg text-muted-foreground">
+    <section id="waitlist-form" className="py-24 px-6 sm:px-8 lg:px-12">
+      <div className="max-w-xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-6xl font-serif mb-6 font-bold tracking-tight">Get Your UglyBaby Memo</h2>
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
             Join early for the discounted rate, or skip the line and get your memo within a week.
           </p>
         </div>
 
-        <ModernCard className="shadow-2xl border-2">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-bold">
+        <ModernCard className="shadow-xl">
+          <form onSubmit={handleSubmit} className="space-y-7">
+            <div className="space-y-3">
+              <Label htmlFor="email" className="text-sm font-semibold">
                 Email Address *
               </Label>
               <Input
@@ -55,12 +55,12 @@ export const WaitlistSection = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="founder@startup.com"
-                className="h-11"
+                className="h-12 rounded-xl"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="company" className="text-sm font-bold">
+            <div className="space-y-3">
+              <Label htmlFor="company" className="text-sm font-semibold">
                 Company Name *
               </Label>
               <Input
@@ -70,12 +70,12 @@ export const WaitlistSection = () => {
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="Your Startup Inc."
-                className="h-11"
+                className="h-12 rounded-xl"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="stage" className="text-sm font-bold">
+            <div className="space-y-3">
+              <Label htmlFor="stage" className="text-sm font-semibold">
                 Stage *
               </Label>
               <select
@@ -83,7 +83,7 @@ export const WaitlistSection = () => {
                 required
                 value={stage}
                 onChange={(e) => setStage(e.target.value)}
-                className="w-full h-11 px-3 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                className="w-full h-12 px-4 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all"
               >
                 <option value="">Select stage...</option>
                 <option value="pre-seed">Pre-Seed (Building team, early traction)</option>
@@ -94,18 +94,18 @@ export const WaitlistSection = () => {
               </select>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-4">
               <Button
                 type="submit"
                 disabled={isSubmitting}
                 size="lg"
-                className="w-full gradient-primary shadow-lg hover:shadow-glow-strong"
+                className="w-full h-14 gradient-primary shadow-lg hover:shadow-xl transition-all duration-500 font-semibold text-base rounded-2xl hover:scale-105"
               >
                 {isSubmitting ? "Processing..." : "Join Waitlist"}
               </Button>
             </div>
 
-            <div className="flex items-center justify-center gap-2 p-4 rounded-lg bg-muted/50 border border-border">
+            <div className="flex items-center justify-center gap-2 p-4 rounded-xl bg-muted/30 border border-border/50">
               <Lock className="w-4 h-4 text-muted-foreground" />
               <p className="text-xs text-muted-foreground">
                 Your information is secure and will only be used for waitlist purposes

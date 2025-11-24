@@ -15,21 +15,21 @@ export const WhyYouNeedThisSection = () => {
   ];
 
   return (
-    <section className="py-20 px-6 sm:px-8 lg:px-12 relative overflow-hidden">
+    <section className="py-24 px-6 sm:px-8 lg:px-12 relative overflow-hidden">
       {/* Background accent */}
-      <div className="absolute inset-0 gradient-hero -z-10" />
+      <div className="absolute inset-0 gradient-hero opacity-50 -z-10" />
       
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-12 animate-fade-in">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-16 animate-fade-in">
+          <h2 className="text-4xl md:text-6xl font-serif font-bold mb-6 tracking-tight">
             Why This Memo
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Active VCs who've evaluated thousands of European startups. They all fail at the same thing:
           </p>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-10">
             
             <ModernCard className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-2 border-destructive/30 shadow-xl">
               <p className="text-xl md:text-2xl font-bold text-center text-foreground p-6">
