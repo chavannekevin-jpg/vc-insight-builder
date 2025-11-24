@@ -177,82 +177,69 @@ const Pricing = () => {
       </section>
 
       {/* Add-ons */}
-      <section className="py-20 px-4 relative overflow-hidden">
-        {/* Premium background effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 -z-10" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/20 rounded-full blur-3xl -z-10" />
-        
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12 animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 border-2 border-accent/40 backdrop-blur-xl mb-6">
-              <Zap className="w-4 h-4 text-accent" />
-              <span className="text-sm font-bold text-accent">ULTRA PREMIUM</span>
-            </div>
-            <h2 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-accent via-primary to-secondary bg-clip-text text-transparent">
-              VIP Fast Track
-            </h2>
-            <p className="text-xl text-foreground/80 font-medium">
+      <section className="py-12 px-4 bg-muted/30">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 px-4 py-1.5 bg-accent/20 text-accent border border-accent/40">
+              Ultra Premium
+            </Badge>
+            <h2 className="text-3xl font-bold mb-3">VIP Fast Track</h2>
+            <p className="text-base text-muted-foreground">
               Maximum exposure, maximum impact
             </p>
           </div>
 
-          <ModernCard className="relative overflow-hidden border-2 border-accent/40 shadow-[0_0_50px_rgba(236,72,153,0.3)]">
-            {/* Premium glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-primary/5 to-secondary/5 -z-10" />
-            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 rounded-full blur-3xl -z-10" />
-            
-            <div className="relative space-y-8 p-8">
-              {/* Badge */}
-              <div className="flex justify-between items-start">
-                <Badge className="bg-accent/20 text-accent border-2 border-accent/40 px-4 py-1.5 text-xs font-bold">
-                  {premiumPlan.badge}
+          <div className="max-w-2xl mx-auto">
+            <ModernCard className="relative border-2 border-accent/40 shadow-[0_0_30px_rgba(236,72,153,0.2)]">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-accent text-white border-0 px-4 py-1">
+                  Most Exclusive
                 </Badge>
-                <div className="text-right">
-                  <div className="text-5xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
-                    {premiumPlan.price}
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl gradient-accent flex items-center justify-center">
+                    <Users className="w-6 h-6 text-primary" />
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">One-time payment</p>
+                  <div>
+                    <h3 className="text-2xl font-serif">{premiumPlan.name}</h3>
+                    <p className="text-sm text-muted-foreground">{premiumPlan.subtitle}</p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Description */}
-              <div>
-                <h3 className="text-2xl font-bold mb-2">{premiumPlan.name}</h3>
-                <p className="text-base text-foreground/70">{premiumPlan.description}</p>
-              </div>
-
-              {/* Features */}
-              <div className="space-y-4">
-                {premiumPlan.features.map((feature, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-start gap-3 p-4 rounded-xl bg-accent/5 border border-accent/20 hover:bg-accent/10 hover:border-accent/30 transition-all duration-300"
-                  >
-                    <div className="p-1 rounded-full bg-accent/20 mt-0.5">
-                      <Check className="w-4 h-4 text-accent" />
-                    </div>
-                    <span className="text-sm text-foreground/90 leading-relaxed font-medium">{feature}</span>
+                <div>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-4xl font-bold">{premiumPlan.price}</span>
                   </div>
-                ))}
-              </div>
+                  <p className="text-sm text-muted-foreground">{premiumPlan.description}</p>
+                </div>
 
-              {/* Disclaimer */}
-              <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
-                <p className="text-xs text-muted-foreground italic text-center">
-                  * We facilitate high-quality introductions based on investor interest. Results depend on your startup's fit with investor criteria.
-                </p>
-              </div>
+                <ul className="space-y-3 py-6">
+                  {premiumPlan.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-sm">
+                      <Check className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                      <span className="text-muted-foreground">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
 
-              {/* CTA */}
-              <Button 
-                size="lg"
-                onClick={() => navigate('/')}
-                className="w-full gradient-accent hover-neon-pulse text-lg py-6 font-bold shadow-glow"
-              >
-                {premiumPlan.cta} →
-              </Button>
-            </div>
-          </ModernCard>
+                <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
+                  <p className="text-xs text-muted-foreground italic">
+                    * Your memo will be sent to our investor network. While we cannot guarantee investor interest, we facilitate introductions when there's a match.
+                  </p>
+                </div>
+
+                <Button 
+                  onClick={() => navigate(`/auth?plan=${encodeURIComponent(premiumPlan.name)}&price=${encodeURIComponent(premiumPlan.price)}`)}
+                  className="w-full gradient-accent"
+                  size="lg"
+                >
+                  {premiumPlan.cta}
+                </Button>
+              </div>
+            </ModernCard>
+          </div>
         </div>
       </section>
 
