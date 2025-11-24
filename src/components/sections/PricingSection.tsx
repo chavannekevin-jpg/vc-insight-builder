@@ -19,7 +19,7 @@ export const PricingSection = () => {
         "Save €30 with early access pricing",
         "Company profile shared to our VC network (optional)"
       ],
-      cta: "Join Early Access",
+      cta: "Unlock Your VC Insights →",
       highlight: true,
       color: "green" as const
     },
@@ -32,7 +32,7 @@ export const PricingSection = () => {
         "Jump ahead of the waitlist",
         "Company profile shared to our VC network (optional)"
       ],
-      cta: "Skip the Line",
+      cta: "Fast Track to Clarity →",
       highlight: false,
       color: "blue" as const
     }
@@ -87,7 +87,7 @@ export const PricingSection = () => {
 
                 <Button 
                   onClick={() => handleSelectPlan(option.title, option.price)}
-                  className={option.highlight ? "w-full gradient-primary" : "w-full"}
+                  className={option.highlight ? "w-full gradient-primary hover-neon-pulse" : "w-full hover-neon-pulse"}
                   variant={option.highlight ? "default" : "outline"}
                   size="lg"
                 >
