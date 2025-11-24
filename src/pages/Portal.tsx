@@ -1027,8 +1027,8 @@ export default function Portal() {
                             description: "Now choose your plan to get your VC memo.",
                           });
                           
-                          // Navigate to pricing page
-                          navigate("/pricing");
+                          // Navigate to checkout page
+                          navigate("/checkout");
                         } catch (error: any) {
                           console.error("Error creating memo:", error);
                           toast({

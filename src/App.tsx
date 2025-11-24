@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import About from "./pages/About";
 import Product from "./pages/Product";
 import Pricing from "./pages/Pricing";
+import Checkout from "./pages/Checkout";
 import Admin from "./pages/Admin";
 import AdminCompanyDetail from "./pages/AdminCompanyDetail";
 import Intake from "./pages/Intake";
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/product" element={<Product />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
