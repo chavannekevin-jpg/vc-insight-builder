@@ -25,48 +25,14 @@ interface Company {
   biggest_challenge: string;
 }
 
-const EDUCATIONAL_CONTENT = [
-  {
-    id: "how-vcs-evaluate",
-    title: "How VCs Evaluate Startups",
-    description: "Learn the fundamental framework VCs use to assess every startup",
-    icon: Target,
-    locked: false,
-    path: "/hub/how-vcs-evaluate"
-  },
-  {
-    id: "four-pillars",
-    title: "The 4 Pillars: Market, Traction, Team, Defensibility",
-    description: "Deep dive into what VCs really care about",
-    icon: BookOpen,
-    locked: false,
-    path: "/hub/four-pillars"
-  },
-  {
-    id: "investment-committees",
-    title: "How Investment Committees Work",
-    description: "Inside the room where funding decisions happen",
-    icon: Users,
-    locked: false,
-    path: "/hub/investment-committees"
-  },
-  {
-    id: "vc-memos",
-    title: "What Memos Are and Why They Matter",
-    description: "The internal document that makes or breaks your deal",
-    icon: FileText,
-    locked: false,
-    path: "/hub/vc-memos"
-  },
-  {
-    id: "why-vcs-reject",
-    title: "Why VCs Reject Founders",
-    description: "Pattern recognition from 10+ years of rejections",
-    icon: XCircle,
-    locked: false,
-    path: "/hub/why-vcs-reject"
-  }
-];
+interface EducationalArticle {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  icon: string;
+  published: boolean;
+}
 
 const MEMO_BENEFITS = [
   {
@@ -92,6 +58,7 @@ const MEMO_BENEFITS = [
 export default function FreemiumHub() {
   const navigate = useNavigate();
   const [company, setCompany] = useState<Company | null>(null);
+  const [articles, setArticles] = useState<EducationalArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -114,6 +81,18 @@ export default function FreemiumHub() {
       }
 
       setCompany(companies[0]);
+      
+      // Load published articles
+      const { data: articlesData } = await supabase
+        .from("educational_articles")
+        .select("id, slug, title, description, icon, published")
+        .eq("published", true)
+        .order("created_at", { ascending: true });
+      
+      if (articlesData) {
+        setArticles(articlesData);
+      }
+      
       setLoading(false);
     };
 
@@ -204,10 +183,25 @@ export default function FreemiumHub() {
           </div>
           
           <div className="grid md:grid-cols-2 gap-6">
-            {EDUCATIONAL_CONTENT.map((item) => {
-              const Icon = item.icon;
+            {articles.map((item) => {
+              // Dynamically import icon
+              const getIcon = (iconName: string) => {
+                const icons: Record<string, any> = {
+                  BookOpen,
+                  Target,
+                  Users,
+                  TrendingUp,
+                  Shield,
+                  FileText,
+                  XCircle
+                };
+                return icons[iconName] || BookOpen;
+              };
+              
+              const Icon = getIcon(item.icon);
+              
               return (
-                <div key={item.id} onClick={() => navigate(item.path)}>
+                <div key={item.id} onClick={() => navigate(`/hub/${item.slug}`)}>
                   <ModernCard 
                     hover 
                     className="p-6 cursor-pointer group"

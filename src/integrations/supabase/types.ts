@@ -58,6 +58,42 @@ export type Database = {
           },
         ]
       }
+      educational_articles: {
+        Row: {
+          content: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          published: boolean
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          description: string
+          icon?: string
+          id?: string
+          published?: boolean
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          published?: boolean
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       memo_responses: {
         Row: {
           answer: string | null
