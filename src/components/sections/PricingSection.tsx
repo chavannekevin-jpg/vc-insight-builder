@@ -2,8 +2,11 @@ import { ModernCard } from "../ModernCard";
 import { Check } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
+import { useNavigate } from "react-router-dom";
 
 export const PricingSection = () => {
+  const navigate = useNavigate();
+  
   const pricingOptions = [
     {
       title: "Early_Access.exe",
@@ -37,8 +40,12 @@ export const PricingSection = () => {
     }
   ];
 
+  const handleSelectPlan = (planTitle: string, planPrice: string) => {
+    navigate(`/auth?plan=${encodeURIComponent(planTitle)}&price=${encodeURIComponent(planPrice)}`);
+  };
+
   return (
-    <section className="py-20 px-6 sm:px-8 lg:px-12 bg-muted/30">
+    <section id="pricing-section" className="py-20 px-6 sm:px-8 lg:px-12 bg-muted/30">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-serif mb-4">Choose Your Plan</h2>
@@ -81,7 +88,7 @@ export const PricingSection = () => {
                 </ul>
 
                 <Button 
-                  onClick={() => document.getElementById('waitlist-form')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => handleSelectPlan(option.title, option.price)}
                   className={option.highlight ? "w-full gradient-primary" : "w-full"}
                   variant={option.highlight ? "default" : "outline"}
                   size="lg"

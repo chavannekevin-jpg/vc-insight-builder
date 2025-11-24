@@ -2,8 +2,8 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 
 export const HeroSection = () => {
-  const scrollToWaitlist = () => {
-    document.getElementById('waitlist-form')?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToPricing = () => {
+    document.getElementById('pricing-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -44,7 +44,7 @@ export const HeroSection = () => {
           <Button 
             size="lg" 
             className="text-lg px-10 py-6 gradient-primary shadow-glow hover:shadow-glow-strong transition-all duration-300 font-bold uppercase tracking-wider hover-lift"
-            onClick={scrollToWaitlist}
+            onClick={scrollToPricing}
           >
             Build My Memo
           </Button>

@@ -3,14 +3,17 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Session, User } from "@supabase/supabase-js";
+import { Lock, Sparkles, ArrowLeft } from "lucide-react";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [companyName, setCompanyName] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [stage, setStage] = useState("");
+  const [isSignUp, setIsSignUp] = useState(true);
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -18,18 +21,18 @@ export default function Auth() {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
 
+  const selectedPlan = searchParams.get('plan');
+  const selectedPrice = searchParams.get('price');
+
   useEffect(() => {
     // Pre-fill from session storage if coming from waitlist
     const pendingEmail = sessionStorage.getItem("pendingEmail");
     const pendingCompany = sessionStorage.getItem("pendingCompany");
+    const pendingStage = sessionStorage.getItem("pendingStage");
     
-    if (pendingEmail) {
-      setEmail(pendingEmail);
-      setIsSignUp(true);
-    }
-    if (pendingCompany) {
-      setCompanyName(pendingCompany);
-    }
+    if (pendingEmail) setEmail(pendingEmail);
+    if (pendingCompany) setCompanyName(pendingCompany);
+    if (pendingStage) setStage(pendingStage);
 
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -62,7 +65,7 @@ export default function Auth() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !companyName) {
+    if (!email || !password || !companyName || !stage) {
       toast({
         title: "Missing information",
         description: "Please fill in all fields",
@@ -90,9 +93,6 @@ export default function Auth() {
       if (signUpError) throw signUpError;
 
       if (signUpData.user) {
-        // Get stage from session storage or default
-        const stage = sessionStorage.getItem("pendingStage") || "idea";
-        
         // Create company record
         const { error: companyError } = await supabase
           .from("companies")
@@ -166,83 +166,167 @@ export default function Auth() {
 
   if (session && user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-foreground">Redirecting...</div>
+      <div className="min-h-screen gradient-hero flex items-center justify-center">
+        <div className="text-foreground flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+          <span>Redirecting to your portal...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">UglyBaby</h1>
+    <div className="min-h-screen gradient-hero flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-20 left-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse opacity-30" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse opacity-30" style={{ animationDelay: '1s' }} />
+      
+      <div className="w-full max-w-lg relative z-10">
+        {/* Back button */}
+        <Button
+          variant="ghost"
+          className="mb-6 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate('/')}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to home
+        </Button>
+
+        {/* Header */}
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 backdrop-blur-xl mb-4">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-primary">
+              {selectedPlan ? selectedPlan.replace('_', ' ') : 'Get Started'}
+            </span>
+          </div>
+          
+          <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            {isSignUp ? "Create Your Account" : "Welcome Back"}
+          </h1>
+          
+          {selectedPrice && (
+            <p className="text-2xl font-bold text-foreground mb-2">
+              {selectedPrice}
+            </p>
+          )}
+          
           <p className="text-muted-foreground">
-            {isSignUp ? "Create your account" : "Sign in to your account"}
+            {isSignUp ? "Join the revolution of transparent startup feedback" : "Sign in to continue your journey"}
           </p>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-6">
-          <form onSubmit={isSignUp ? handleSignUp : handleSignIn}>
-            {isSignUp && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2 text-foreground">
-                  Company Name
-                </label>
+        {/* Form Card */}
+        <div className="relative group">
+          <div className="absolute inset-0 gradient-primary opacity-20 blur-xl group-hover:opacity-30 transition-opacity duration-300" />
+          <div className="relative bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-glow">
+            <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-6">
+              
+              {isSignUp && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="company" className="text-sm font-bold text-foreground">
+                      Company Name *
+                    </Label>
+                    <Input
+                      id="company"
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="Your Startup Inc."
+                      className="h-12 bg-background/50 border-border/50 focus:border-primary transition-colors"
+                      required={isSignUp}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="stage" className="text-sm font-bold text-foreground">
+                      Stage *
+                    </Label>
+                    <select
+                      id="stage"
+                      value={stage}
+                      onChange={(e) => setStage(e.target.value)}
+                      className="w-full h-12 px-4 rounded-md border border-border/50 bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                      required={isSignUp}
+                    >
+                      <option value="">Select your stage...</option>
+                      <option value="pre-seed">Pre-Seed (Building team, early traction)</option>
+                      <option value="seed">Seed (Product-market fit, scaling)</option>
+                      <option value="series-a">Series A (Scaling operations)</option>
+                      <option value="series-b+">Series B+ (Growth stage)</option>
+                      <option value="mvp">MVP/Idea Stage</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-bold text-foreground">
+                  Email Address *
+                </Label>
                 <Input
-                  type="text"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="Your startup name"
-                  required={isSignUp}
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="founder@startup.com"
+                  className="h-12 bg-background/50 border-border/50 focus:border-primary transition-colors"
+                  required
                 />
               </div>
-            )}
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-foreground">
-                Email
-              </label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-              />
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-bold text-foreground">
+                  Password *
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••"
+                  className="h-12 bg-background/50 border-border/50 focus:border-primary transition-colors"
+                  required
+                />
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  size="lg"
+                  className="w-full h-12 gradient-primary shadow-glow hover:shadow-glow-strong transition-all duration-300 font-bold uppercase tracking-wider"
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 animate-pulse" />
+                      <span>Processing...</span>
+                    </div>
+                  ) : (
+                    isSignUp ? "Create Account" : "Sign In"
+                  )}
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-center gap-2 p-4 rounded-xl bg-muted/30 border border-border/30">
+                <Lock className="w-4 h-4 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">
+                  Your information is secure and encrypted
+                </p>
+              </div>
+            </form>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-primary hover:text-primary-glow transition-colors font-semibold"
+              >
+                {isSignUp
+                  ? "Already have an account? Sign in"
+                  : "Don't have an account? Sign up"}
+              </button>
             </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2 text-foreground">
-                Password
-              </label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? "Please wait..." : isSignUp ? "Sign Up" : "Sign In"}
-            </Button>
-          </form>
-
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-primary hover:underline"
-            >
-              {isSignUp
-                ? "Already have an account? Sign in"
-                : "Don't have an account? Sign up"}
-            </button>
           </div>
         </div>
       </div>
