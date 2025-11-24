@@ -1,5 +1,6 @@
 import { ModernCard } from "../ModernCard";
 import { Linkedin } from "lucide-react";
+import kevinPhoto from "@/assets/kevin-chavanne.jpg";
 
 export const WhyTrustMeSection = () => {
   return (
@@ -12,13 +13,13 @@ export const WhyTrustMeSection = () => {
           {/* Photo Section */}
           <div className="md:col-span-2">
             <ModernCard className="overflow-hidden">
-              <div className="aspect-square bg-muted/50 flex items-center justify-center">
-                <div className="text-center space-y-2">
-                  <div className="w-32 h-32 rounded-full bg-primary/10 mx-auto flex items-center justify-center">
-                    <span className="text-4xl font-serif text-primary">KC</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Photo coming soon</p>
-                </div>
+              <div className="aspect-square bg-muted/50 flex items-center justify-center relative">
+                <img 
+                  src={kevinPhoto} 
+                  alt="Kevin Chavanne - Nordic VC at Tenity" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
               </div>
             </ModernCard>
           </div>
