@@ -29,11 +29,11 @@ export const HeroSection = () => {
 
         {/* Main headline */}
         <h1 className="text-5xl md:text-7xl font-serif font-bold tracking-tight leading-tight">
-          Stop Getting{" "}
+          I've Rejected Thousands.{" "}
           <span className="text-primary text-neon">
-            Ghosted
+            Here's How
           </span>{" "}
-          by VCs
+          to Not Be Next.
         </h1>
 
         {/* Subheadline with personal perspective */}
