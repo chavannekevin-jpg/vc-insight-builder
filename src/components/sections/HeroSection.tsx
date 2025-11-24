@@ -54,9 +54,9 @@ export const HeroSection = () => {
           <Button 
             size="lg" 
             className="text-lg px-10 py-6 gradient-primary shadow-glow hover-neon-pulse transition-all duration-300 font-bold uppercase tracking-wider"
-            onClick={scrollToPricing}
+            onClick={() => window.location.href = '/auth'}
           >
-            Level Up Your Startup →
+            Start for Free →
           </Button>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg backdrop-blur-sm">
             <Flame className="w-4 h-4 text-primary" />

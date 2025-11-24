@@ -16,7 +16,10 @@ export type Database = {
     Tables: {
       companies: {
         Row: {
+          biggest_challenge: string | null
+          category: string | null
           created_at: string
+          description: string | null
           founder_id: string
           id: string
           name: string
@@ -24,7 +27,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          biggest_challenge?: string | null
+          category?: string | null
           created_at?: string
+          description?: string | null
           founder_id: string
           id?: string
           name: string
@@ -32,7 +38,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          biggest_challenge?: string | null
+          category?: string | null
           created_at?: string
+          description?: string | null
           founder_id?: string
           id?: string
           name?: string

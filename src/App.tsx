@@ -11,6 +11,9 @@ import Product from "./pages/Product";
 import Pricing from "./pages/Pricing";
 import Admin from "./pages/Admin";
 import AdminCompanyDetail from "./pages/AdminCompanyDetail";
+import Intake from "./pages/Intake";
+import FreemiumHub from "./pages/FreemiumHub";
+import EducationalContent from "./pages/EducationalContent";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +28,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/portal" element={<Portal />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/intake" element={<Intake />} />
+          <Route path="/hub" element={<FreemiumHub />} />
+          <Route path="/hub/:slug" element={<EducationalContent />} />
           <Route path="/about" element={<About />} />
           <Route path="/product" element={<Product />} />
           <Route path="/pricing" element={<Pricing />} />
