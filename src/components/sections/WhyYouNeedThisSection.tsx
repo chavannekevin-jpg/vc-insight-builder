@@ -2,10 +2,10 @@ import { AlertCircle, Zap, TrendingUp } from "lucide-react";
 
 export const WhyYouNeedThisSection = () => {
   const confrontations = [
-    "Is your market VC-scale?",
-    "Is your traction meaningful?",
-    "Are you defensible?",
-    "Does your narrative make sense?"
+    "Can this reach €100M+ ARR with a believable path?",
+    "What unfair advantage makes this team win this market?",
+    "What compounding defensibility grows with the startup?",
+    "Does the economic engine make sense at scale?"
   ];
 
   const outcomes = [
@@ -29,7 +29,7 @@ export const WhyYouNeedThisSection = () => {
             Why This Memo
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Active VCs who've evaluated thousands of European startups. They all fail at the same thing:
+            Think like an investor, win investors.
           </p>
         </div>
 
@@ -45,7 +45,7 @@ export const WhyYouNeedThisSection = () => {
                 <h3 className="text-2xl font-bold">The Core Issue</h3>
               </div>
               <p className="text-xl text-foreground/90 leading-relaxed">
-                They don't know how investors evaluate their company.
+                Startups have no idea how VCs evaluate their company.
               </p>
             </div>
           </div>
@@ -71,18 +71,18 @@ export const WhyYouNeedThisSection = () => {
           </div>
 
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-success/20 to-primary/20 opacity-10 blur-xl group-hover:opacity-20 transition-opacity duration-300" />
-            <div className="relative bg-card/80 backdrop-blur-xl border-2 border-success/40 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="absolute inset-0 bg-success/20 opacity-20 blur-xl group-hover:opacity-30 transition-opacity duration-300" />
+            <div className="relative bg-card/80 backdrop-blur-xl border-2 border-success/40 rounded-2xl p-8 shadow-[0_0_30px_rgba(34,197,94,0.2)] hover:shadow-[0_0_50px_rgba(34,197,94,0.4)] transition-all duration-300">
               <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 rounded-xl bg-success/20 border border-success/30">
+                <div className="p-3 rounded-xl bg-success/20 border border-success/40 shadow-[0_0_20px_rgba(34,197,94,0.3)]">
                   <TrendingUp className="w-6 h-6 text-success" />
                 </div>
-                <h3 className="text-xl font-bold">What you get</h3>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-success to-success/70 bg-clip-text text-transparent">What you get</h3>
               </div>
               <div className="space-y-3">
                 {outcomes.map((outcome, idx) => (
-                  <div key={idx} className="flex items-start gap-4 p-4 rounded-xl bg-success/5 border border-success/20 hover:bg-success/10 hover:border-success/30 transition-all duration-300 group/outcome">
-                    <div className="mt-0.5 w-5 h-5 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 group-hover/outcome:bg-success/30 transition-colors duration-300">
+                  <div key={idx} className="flex items-start gap-4 p-4 rounded-xl bg-success/5 border border-success/30 hover:bg-success/10 hover:border-success/40 hover:shadow-[0_0_20px_rgba(34,197,94,0.2)] transition-all duration-300 group/outcome">
+                    <div className="mt-0.5 w-5 h-5 rounded-full bg-success/30 flex items-center justify-center flex-shrink-0 group-hover/outcome:bg-success/40 group-hover/outcome:shadow-[0_0_10px_rgba(34,197,94,0.4)] transition-all duration-300">
                       <span className="text-success font-bold text-xs">✓</span>
                     </div>
                     <span className="text-sm font-medium text-foreground/90 leading-relaxed">{outcome}</span>

@@ -1,5 +1,6 @@
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
+import { Flame } from "lucide-react";
 
 export const HeroSection = () => {
   const scrollToPricing = () => {
@@ -38,7 +39,7 @@ export const HeroSection = () => {
 
         {/* CTA section */}
         <div className="flex flex-col items-center gap-6 pt-8">
-          <p className="text-xl md:text-2xl text-foreground font-serif italic max-w-2xl">
+          <p className="text-xl md:text-2xl text-foreground font-sans font-medium tracking-tight max-w-2xl">
             Because nobody will tell you that your baby is ugly.
           </p>
           <Button 
@@ -49,8 +50,9 @@ export const HeroSection = () => {
             Build My Memo
           </Button>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg backdrop-blur-sm">
+            <Flame className="w-4 h-4 text-primary" />
             <span className="text-sm text-muted-foreground font-medium">
-              🔥 <span className="text-primary font-bold">50% OFF</span> for early sign-ups
+              <span className="text-primary font-bold">50% OFF</span> for early sign-ups
             </span>
           </div>
         </div>

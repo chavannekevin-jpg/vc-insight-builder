@@ -17,8 +17,7 @@ export const PricingSection = () => {
       features: [
         "Get your memo when platform launches",
         "Save €30 with early access pricing",
-        "Priority access to new features",
-        "Email support included"
+        "Company profile shared to our VC network (optional)"
       ],
       cta: "Join Early Access",
       highlight: true,
@@ -31,8 +30,7 @@ export const PricingSection = () => {
       features: [
         "Receive your memo within one week",
         "Jump ahead of the waitlist",
-        "Priority support",
-        "Early adopter benefits"
+        "Company profile shared to our VC network (optional)"
       ],
       cta: "Skip the Line",
       highlight: false,
