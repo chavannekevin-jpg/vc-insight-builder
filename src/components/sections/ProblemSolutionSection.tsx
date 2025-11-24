@@ -1,77 +1,83 @@
-import { ModernCard } from "../ModernCard";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export const ProblemSolutionSection = () => {
   return (
-    <section className="py-20 px-6 sm:px-8 lg:px-12 bg-muted/30">
+    <section className="py-20 px-6 sm:px-8 lg:px-12 relative overflow-hidden">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-muted/20 -z-10" />
+      
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-        <ModernCard hover>
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-destructive/15 flex items-center justify-center shadow-md">
+        {/* Problem Card */}
+        <div className="relative group">
+          <div className="absolute inset-0 bg-destructive/10 opacity-20 blur-xl group-hover:opacity-30 transition-opacity duration-300" />
+          <div className="relative bg-card/80 backdrop-blur-xl border-2 border-destructive/40 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-3 rounded-xl bg-destructive/20 border border-destructive/40 shadow-glow">
                 <AlertCircle className="w-6 h-6 text-destructive" />
               </div>
-              <h2 className="text-2xl font-serif font-bold">The Problem</h2>
+              <h2 className="text-2xl font-bold">The Problem</h2>
             </div>
             
-            <p className="text-base text-foreground leading-relaxed font-semibold">
+            <p className="text-base text-foreground/90 leading-relaxed font-semibold mb-6">
               You're getting ghosted. Here's why:
             </p>
             
-            <ul className="space-y-4">
+            <ul className="space-y-4 mb-6">
               {[
                 "Your traction doesn't translate to VC-scale",
                 "You focus on features, not market dynamics",
                 "Your team isn't framed as competitive advantage"
               ].map((item, idx) => (
-                <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
-                  <span className="text-destructive mt-0.5">✗</span>
-                  <span>{item}</span>
+                <li key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-destructive/5 border border-destructive/20 hover:bg-destructive/10 hover:border-destructive/30 transition-all duration-300">
+                  <span className="text-destructive mt-0.5 font-bold">✗</span>
+                  <span className="text-sm text-foreground/80">{item}</span>
                 </li>
               ))}
             </ul>
             
-            <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20">
-              <p className="text-sm text-muted-foreground italic">
+            <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 backdrop-blur-sm">
+              <p className="text-sm text-foreground/80 italic">
                 VCs won't waste time teaching you. They'll just pass.
               </p>
             </div>
           </div>
-        </ModernCard>
+        </div>
 
-        <ModernCard hover>
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-success/15 flex items-center justify-center shadow-md">
-                <CheckCircle2 className="w-6 h-6 text-success" />
+        {/* Solution Card */}
+        <div className="relative group">
+          <div className="absolute inset-0 gradient-primary opacity-20 blur-xl group-hover:opacity-30 transition-opacity duration-300" />
+          <div className="relative bg-card/80 backdrop-blur-xl border-2 border-primary/40 rounded-2xl p-8 shadow-glow hover:shadow-glow-strong transition-all duration-300">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-3 rounded-xl gradient-primary shadow-glow">
+                <CheckCircle2 className="w-6 h-6 text-primary-foreground" />
               </div>
-              <h2 className="text-2xl font-serif font-bold">The Solution</h2>
+              <h2 className="text-2xl font-bold">The Solution</h2>
             </div>
             
-            <p className="text-base text-foreground leading-relaxed font-semibold">
+            <p className="text-base text-foreground/90 leading-relaxed font-semibold mb-6">
               Active VCs. Our framework.
             </p>
             
-            <ul className="space-y-4">
+            <ul className="space-y-4 mb-6">
               {[
                 "Memos VCs actually read",
                 "Brutal feedback you're not hearing",
                 "Fix your pitch before it fails"
               ].map((item, idx) => (
-                <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
-                  <span className="text-success mt-0.5">✓</span>
-                  <span>{item}</span>
+                <li key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300">
+                  <span className="text-primary mt-0.5 font-bold">✓</span>
+                  <span className="text-sm text-foreground/80">{item}</span>
                 </li>
               ))}
             </ul>
             
-            <div className="p-4 rounded-lg gradient-accent border-2 border-primary/30 shadow-md">
+            <div className="p-4 rounded-xl gradient-accent border-2 border-primary/40 shadow-glow backdrop-blur-sm">
               <p className="text-sm font-bold text-foreground">
                 → See your company the way they do, before they reject you
               </p>
             </div>
           </div>
-        </ModernCard>
+        </div>
       </div>
     </section>
   );
