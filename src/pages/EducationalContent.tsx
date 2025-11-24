@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Crown } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 
 const CONTENT: Record<string, { title: string; content: string }> = {
   "how-vcs-evaluate": {
@@ -52,7 +52,7 @@ Understanding these patterns helps you position your startup more effectively.
 
 ---
 
-**Next up**: Learn about the 4 Pillars that VCs use to evaluate every startup in detail.
+**Ready to see YOUR memo?** Get a complete investment memo written about your startup from a VC's perspective.
     `
   },
   "four-pillars": {
@@ -128,7 +128,7 @@ Weak moats:
 
 ---
 
-**Remember**: You need to be strong in at least 3 out of 4 pillars to be fundable.
+**Remember**: You need to be strong in at least 3 out of 4 pillars to be fundable. Get your investment memo to see where your startup stands.
     `
   },
   "investment-committees": {
@@ -193,7 +193,7 @@ Things that make partners say "no":
 
 ---
 
-**The bottom line**: Your champion needs to convince their partners. Give them everything they need to win that argument.
+**The bottom line**: Your champion needs to convince their partners. Get your investment memo to see what arguments they'll use to sell (or reject) your startup.
     `
   },
   "vc-memos": {
@@ -260,7 +260,7 @@ Things that hurt memos:
 
 ---
 
-**Your mission**: Build a startup that writes a great memo. Upgrade to see what your memo looks like.
+**Your mission**: Build a startup that writes a great memo. Get your investment memo to see what your memo looks like today.
     `
   },
   "why-vcs-reject": {
@@ -362,7 +362,7 @@ It's not about luck—it's about preparation.
 
 ---
 
-**Ready to see where your startup stands?** Upgrade to get your personalized VC Memo and Founder Score.
+**Ready to see where your startup stands?** Get your personalized investment memo to understand how VCs will evaluate your company.
     `
   }
 };
@@ -433,18 +433,18 @@ export default function EducationalContent() {
 
         {/* Upgrade CTA */}
         <ModernCard className="p-8 text-center space-y-4 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/30">
-          <Crown className="w-12 h-12 text-primary mx-auto" />
-          <h3 className="text-2xl font-bold">Ready for Your Personalized Analysis?</h3>
+          <FileText className="w-12 h-12 text-primary mx-auto" />
+          <h3 className="text-2xl font-bold">Apply This to Your Startup</h3>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Upgrade to get a complete VC memo written specifically about your startup, 
-            plus your Founder Score and AI-powered feedback.
+            Now that you understand how VCs think, see how they evaluate YOUR startup. 
+            Get a complete investment memo written from a VC's perspective about your company.
           </p>
           <Button 
             size="lg"
             className="gradient-primary font-bold"
             onClick={() => navigate("/pricing")}
           >
-            Upgrade to Generate Your Memo
+            Get My Investment Memo →
           </Button>
         </ModernCard>
       </div>

@@ -6,7 +6,6 @@ import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Lock, 
   BookOpen, 
   Target, 
   Users, 
@@ -14,7 +13,6 @@ import {
   Shield, 
   FileText, 
   XCircle,
-  Crown,
   ChevronRight
 } from "lucide-react";
 
@@ -70,27 +68,24 @@ const EDUCATIONAL_CONTENT = [
   }
 ];
 
-const PREMIUM_FEATURES = [
+const MEMO_BENEFITS = [
   {
-    id: "personalized-memo",
-    title: "Your Personalized VC Memo",
-    description: "Get a complete investment memo written from a VC's perspective about your startup",
-    icon: FileText,
-    locked: true
+    id: "what-vcs-see",
+    title: "See What VCs See",
+    description: "Understand exactly how investors evaluate your startup",
+    icon: Target
   },
   {
-    id: "founder-score",
-    title: "Founder Score",
-    description: "See how your startup stacks up across all key dimensions",
-    icon: TrendingUp,
-    locked: true
+    id: "identify-gaps",
+    title: "Identify Your Gaps",
+    description: "Discover weaknesses before investors do",
+    icon: Shield
   },
   {
-    id: "ai-feedback",
-    title: "AI-Powered Personalized Feedback",
-    description: "Real-time feedback as you build your pitch and memo",
-    icon: Shield,
-    locked: true
+    id: "strengthen-pitch",
+    title: "Strengthen Your Pitch",
+    description: "Build a compelling narrative that resonates with VCs",
+    icon: TrendingUp
   }
 ];
 
@@ -141,14 +136,14 @@ export default function FreemiumHub() {
       <div className="bg-primary/10 border-b border-primary/30 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Crown className="w-5 h-5 text-primary" />
+            <FileText className="w-5 h-5 text-primary" />
             <p className="text-sm font-medium">
-              Ready for the real VC view of your startup?{" "}
-              <span className="text-primary font-bold">Unlock your personalized memo →</span>
+              Ready to see how VCs evaluate {company?.name}?{" "}
+              <span className="text-primary font-bold">Get your investment memo →</span>
             </p>
           </div>
           <Button size="sm" className="gradient-primary" onClick={() => navigate("/pricing")}>
-            Upgrade Now
+            Get Your Memo
           </Button>
         </div>
       </div>
@@ -173,8 +168,8 @@ export default function FreemiumHub() {
             </div>
           )}
           <p className="text-lg text-muted-foreground max-w-3xl">
-            Learn the frameworks that VCs use every day to evaluate startups. These are the same principles 
-            that will be applied to your personalized memo when you upgrade.
+            Learn the frameworks that VCs use every day to evaluate startups. Once you understand how they think, 
+            you'll see exactly why getting your own investment memo is essential before you pitch.
           </p>
         </div>
 
@@ -216,51 +211,94 @@ export default function FreemiumHub() {
           </div>
         </div>
 
-        {/* Premium features - Locked */}
+        {/* What You Get With The Memo */}
         <div className="space-y-6">
           <div className="flex items-center gap-3">
-            <Lock className="w-6 h-6 text-muted-foreground" />
-            <h2 className="text-2xl font-bold">Premium Features</h2>
-            <Badge className="gradient-primary">Upgrade Required</Badge>
+            <FileText className="w-6 h-6 text-primary" />
+            <h2 className="text-2xl font-bold">What You Get With Your Investment Memo</h2>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6">
-            {PREMIUM_FEATURES.map((item) => {
-              const Icon = item.icon;
-              return (
-                <ModernCard key={item.id} className="p-6 relative overflow-hidden opacity-75">
-                  <div className="absolute top-4 right-4">
-                    <Lock className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="p-3 rounded-lg bg-muted inline-block">
-                      <Icon className="w-6 h-6 text-muted-foreground" />
+          <ModernCard className="p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/30">
+            <div className="grid md:grid-cols-3 gap-8 mb-8">
+              {MEMO_BENEFITS.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.id} className="space-y-3">
+                    <div className="p-3 rounded-lg bg-primary/10 inline-block">
+                      <Icon className="w-6 h-6 text-primary" />
                     </div>
                     <div className="space-y-2">
-                      <h3 className="text-xl font-bold">{item.title}</h3>
-                      <p className="text-muted-foreground">{item.description}</p>
+                      <h3 className="text-lg font-bold">{item.title}</h3>
+                      <p className="text-muted-foreground text-sm">{item.description}</p>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      className="w-full mt-4"
-                      onClick={() => navigate("/pricing")}
-                    >
-                      Unlock with Premium
-                    </Button>
                   </div>
-                </ModernCard>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+            
+            <div className="border-t border-border pt-8 space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold">Your Investment Memo Includes:</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Complete VC Analysis</p>
+                      <p className="text-sm text-muted-foreground">Market, team, traction, and competitive positioning</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Risk Assessment</p>
+                      <p className="text-sm text-muted-foreground">What investors will question and worry about</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Investment Thesis</p>
+                      <p className="text-sm text-muted-foreground">Why a VC would (or wouldn't) invest in you</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Action Items</p>
+                      <p className="text-sm text-muted-foreground">Specific steps to strengthen your position</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="text-center pt-4">
+                <Button 
+                  size="lg"
+                  className="gradient-primary shadow-glow hover-neon-pulse font-bold"
+                  onClick={() => navigate("/pricing")}
+                >
+                  Get Your Investment Memo →
+                </Button>
+              </div>
+            </div>
+          </ModernCard>
         </div>
 
         {/* CTA section */}
         <ModernCard className="p-8 text-center space-y-6 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/30">
           <div className="space-y-3">
-            <h2 className="text-3xl font-serif font-bold">Ready to See How VCs View Your Startup?</h2>
+            <h2 className="text-3xl font-serif font-bold">Ready to See the VC Perspective on {company?.name}?</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Upgrade to get your personalized VC memo, Founder Score, and AI-powered feedback 
-              tailored specifically for {company?.name}.
+              Get a complete investment memo written from a VC's point of view. 
+              See your startup through the eyes of the investors you're trying to convince.
             </p>
           </div>
           <Button 
@@ -268,7 +306,7 @@ export default function FreemiumHub() {
             className="text-lg px-10 py-6 gradient-primary shadow-glow hover-neon-pulse transition-all duration-300 font-bold uppercase tracking-wider"
             onClick={() => navigate("/pricing")}
           >
-            Upgrade to Generate Your Memo
+            Get My Investment Memo →
           </Button>
         </ModernCard>
       </div>
@@ -277,11 +315,11 @@ export default function FreemiumHub() {
       <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border p-4 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Crown className="w-5 h-5 text-primary" />
-            <span className="text-sm font-medium">Want the full VC perspective on your startup?</span>
+            <FileText className="w-5 h-5 text-primary" />
+            <span className="text-sm font-medium">Get your personalized VC investment memo for {company?.name}</span>
           </div>
           <Button className="gradient-primary" onClick={() => navigate("/pricing")}>
-            Unlock Full Access
+            Get Your Memo
           </Button>
         </div>
       </div>
