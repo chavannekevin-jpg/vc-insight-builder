@@ -11,7 +11,7 @@ const Pricing = () => {
 
   const pricingPlans = [
     {
-      name: "Early_Access.exe",
+      name: "Early Access",
       subtitle: "Early Access - 50% Off",
       price: "€29.99",
       originalPrice: "€59.99",
