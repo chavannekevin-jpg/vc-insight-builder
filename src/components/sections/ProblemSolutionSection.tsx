@@ -10,7 +10,7 @@ export const ProblemSolutionSection = () => {
         {/* Problem Card */}
         <div className="relative group">
           <div className="absolute inset-0 bg-destructive/10 opacity-20 blur-xl group-hover:opacity-30 transition-opacity duration-300" />
-          <div className="relative bg-card/80 backdrop-blur-xl border-2 border-destructive/40 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="relative bg-card/80 backdrop-blur-xl border-2 border-destructive/40 rounded-2xl p-8 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
             <div className="flex items-center gap-4 mb-6">
               <div className="p-3 rounded-xl bg-destructive/20 border border-destructive/40 shadow-glow">
                 <AlertCircle className="w-6 h-6 text-destructive" />
@@ -19,14 +19,14 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground/90 leading-relaxed font-semibold mb-6">
-              You're getting ghosted. Here's why:
+              The problem isn't just features or traction—it's misalignment with how VCs evaluate startups.
             </p>
             
             <ul className="space-y-4 mb-6">
               {[
-                "Your traction doesn't translate to VC-scale",
-                "You focus on features, not market dynamics",
-                "Your team isn't framed as competitive advantage"
+                "Traction ≠ VC traction – Your growth looks great on paper, but it doesn't map to the metrics VCs care about.",
+                "Features over fundamentals – You obsess over product details, while investors are scanning for market potential, defensibility, and scalability.",
+                "Small deals, small impact – Low ACV means growth looks slow, even if adoption is strong."
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-destructive/5 border border-destructive/20 hover:bg-destructive/10 hover:border-destructive/30 transition-all duration-300">
                   <span className="text-destructive mt-0.5 font-bold">✗</span>
@@ -46,7 +46,7 @@ export const ProblemSolutionSection = () => {
         {/* Solution Card */}
         <div className="relative group">
           <div className="absolute inset-0 gradient-primary opacity-20 blur-xl group-hover:opacity-30 transition-opacity duration-300" />
-          <div className="relative bg-card/80 backdrop-blur-xl border-2 border-primary/40 rounded-2xl p-8 shadow-glow hover:shadow-glow-strong transition-all duration-300">
+          <div className="relative bg-card/80 backdrop-blur-xl border-2 border-primary/40 rounded-2xl p-8 shadow-glow hover:shadow-glow-strong hover:scale-[1.02] transition-all duration-300">
             <div className="flex items-center gap-4 mb-6">
               <div className="p-3 rounded-xl gradient-primary shadow-glow">
                 <CheckCircle2 className="w-6 h-6 text-primary-foreground" />
@@ -55,13 +55,13 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground/90 leading-relaxed font-semibold mb-6">
-              Active VCs. Our framework.
+              Brutal clarity. Immediate impact.
             </p>
             
             <ul className="space-y-4 mb-6">
               {[
-                "Memos VCs actually read",
-                "Brutal feedback you're not hearing",
+                "a memo a VC would present to the IC",
+                "structured to be the backbone of your narrative",
                 "Fix your pitch before it fails"
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300">

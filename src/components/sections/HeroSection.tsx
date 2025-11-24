@@ -33,8 +33,7 @@ export const HeroSection = () => {
 
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          We're active early-stage investors who know exactly what VCs look for.
-          Get the unfiltered truth about your startup—before investors do.
+          Get the clarity only VCs have. See your startup the way VCs do — our memo structures your narrative for investment-readiness.
         </p>
 
         {/* CTA section */}
@@ -44,10 +43,10 @@ export const HeroSection = () => {
           </p>
           <Button 
             size="lg" 
-            className="text-lg px-10 py-6 gradient-primary shadow-glow hover:shadow-glow-strong transition-all duration-300 font-bold uppercase tracking-wider hover-lift"
+            className="text-lg px-10 py-6 gradient-primary shadow-glow hover:shadow-glow-strong transition-all duration-300 font-bold uppercase tracking-wider hover-lift pulse-glow"
             onClick={scrollToPricing}
           >
-            Build My Memo
+            Level Up Your Startup →
           </Button>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg backdrop-blur-sm">
             <Flame className="w-4 h-4 text-primary" />
