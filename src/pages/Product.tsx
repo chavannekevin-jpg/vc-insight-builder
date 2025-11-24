@@ -73,7 +73,7 @@ const Product = () => {
           <div className="animate-fade-in">
             <Badge 
               variant="secondary" 
-              className="mb-6 px-6 py-2 text-sm font-bold border-2 border-primary/30 bg-primary/10 shadow-glow backdrop-blur-sm"
+              className="mb-6 px-6 py-2 text-sm font-bold border-2 border-primary/30 bg-primary/10 shadow-glow backdrop-blur-sm text-foreground"
             >
               <Zap className="w-3 h-3 mr-2 inline-block text-primary" />
               Built by Active Early-Stage VCs
