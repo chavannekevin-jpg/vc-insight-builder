@@ -55,13 +55,13 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground/90 leading-relaxed font-semibold mb-6">
-              Active VCs. Our framework.
+              Brutal clarity. Immediate impact.
             </p>
             
             <ul className="space-y-4 mb-6">
               {[
-                "Memos VCs actually read",
-                "Brutal feedback you're not hearing",
+                "a memo a VC would present to the IC",
+                "structured to be the backbone of your narrative",
                 "Fix your pitch before it fails"
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300">
