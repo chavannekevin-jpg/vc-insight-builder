@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { 
   BookOpen, 
   Target, 
@@ -232,94 +233,102 @@ export default function FreemiumHub() {
         {/* My Company Section */}
         {company && responses.length > 0 && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FileText className="w-6 h-6 text-primary" />
-                <h2 className="text-2xl font-bold">My Company</h2>
-              </div>
-              <Button 
-                variant="outline"
-                onClick={() => navigate("/portal")}
-              >
-                Edit Responses
-              </Button>
-            </div>
-            
-            <ModernCard className="p-8 space-y-8">
-              {/* Company Overview */}
-              <div className="space-y-4 pb-6 border-b border-border">
-                <h3 className="text-xl font-bold">Company Overview</h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground font-medium">Company Name</p>
-                    <p className="text-foreground">{company.name}</p>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="my-company" className="border rounded-lg px-6">
+                <AccordionTrigger className="hover:no-underline py-6">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-6 h-6 text-primary" />
+                    <h2 className="text-2xl font-bold">My Company</h2>
                   </div>
-                  {company.description && (
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground font-medium">Description</p>
-                      <p className="text-foreground">{company.description}</p>
+                </AccordionTrigger>
+                <AccordionContent className="pb-6">
+                  <div className="pt-4 space-y-8">
+                    <div className="flex justify-end">
+                      <Button 
+                        variant="outline"
+                        onClick={() => navigate("/portal")}
+                      >
+                        Edit Responses
+                      </Button>
                     </div>
-                  )}
-                  {company.category && (
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground font-medium">Category</p>
-                      <p className="text-foreground">{company.category}</p>
-                    </div>
-                  )}
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground font-medium">Stage</p>
-                    <p className="text-foreground">{company.stage}</p>
-                  </div>
-                  {company.biggest_challenge && (
-                    <div className="space-y-2 md:col-span-2">
-                      <p className="text-sm text-muted-foreground font-medium">Biggest Challenge</p>
-                      <p className="text-foreground">{company.biggest_challenge}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Questionnaire Responses by Section */}
-              <div className="space-y-8">
-                <h3 className="text-xl font-bold">Questionnaire Responses</h3>
-                
-                {["Problem", "Solution", "Market", "Competition", "Team", "USP", "Business Model", "Traction"].map((sectionName) => {
-                  const sectionResponses = responses.filter(r => 
-                    QUESTION_LABELS[r.question_key]?.section === sectionName
-                  );
-                  
-                  if (sectionResponses.length === 0) return null;
-                  
-                  return (
-                    <div key={sectionName} className="space-y-4">
-                      <h4 className="text-lg font-bold text-primary">{sectionName}</h4>
-                      <div className="space-y-4 pl-4 border-l-2 border-primary/30">
-                        {sectionResponses.map((response) => {
-                          const label = QUESTION_LABELS[response.question_key];
-                          if (!label || !response.answer) return null;
-                          
-                          return (
-                            <div key={response.question_key} className="space-y-2">
-                              <p className="text-sm font-medium text-muted-foreground">{label.title}</p>
-                              <p className="text-foreground whitespace-pre-wrap">{response.answer}</p>
-                            </div>
-                          );
-                        })}
+                    
+                    {/* Company Overview */}
+                    <div className="space-y-4 pb-6 border-b border-border">
+                      <h3 className="text-xl font-bold">Company Overview</h3>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground font-medium">Company Name</p>
+                          <p className="text-foreground">{company.name}</p>
+                        </div>
+                        {company.description && (
+                          <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground font-medium">Description</p>
+                            <p className="text-foreground">{company.description}</p>
+                          </div>
+                        )}
+                        {company.category && (
+                          <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground font-medium">Category</p>
+                            <p className="text-foreground">{company.category}</p>
+                          </div>
+                        )}
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground font-medium">Stage</p>
+                          <p className="text-foreground">{company.stage}</p>
+                        </div>
+                        {company.biggest_challenge && (
+                          <div className="space-y-2 md:col-span-2">
+                            <p className="text-sm text-muted-foreground font-medium">Biggest Challenge</p>
+                            <p className="text-foreground">{company.biggest_challenge}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  );
-                })}
-                
-                {responses.length === 0 && (
-                  <div className="text-center py-8 space-y-4">
-                    <p className="text-muted-foreground">You haven't filled out the questionnaire yet.</p>
-                    <Button onClick={() => navigate("/portal")}>
-                      Start Questionnaire
-                    </Button>
+
+                    {/* Questionnaire Responses by Section */}
+                    <div className="space-y-8">
+                      <h3 className="text-xl font-bold">Questionnaire Responses</h3>
+                      
+                      {["Problem", "Solution", "Market", "Competition", "Team", "USP", "Business Model", "Traction"].map((sectionName) => {
+                        const sectionResponses = responses.filter(r => 
+                          QUESTION_LABELS[r.question_key]?.section === sectionName
+                        );
+                        
+                        if (sectionResponses.length === 0) return null;
+                        
+                        return (
+                          <div key={sectionName} className="space-y-4">
+                            <h4 className="text-lg font-bold text-primary">{sectionName}</h4>
+                            <div className="space-y-4 pl-4 border-l-2 border-primary/30">
+                              {sectionResponses.map((response) => {
+                                const label = QUESTION_LABELS[response.question_key];
+                                if (!label || !response.answer) return null;
+                                
+                                return (
+                                  <div key={response.question_key} className="space-y-2">
+                                    <p className="text-sm font-medium text-muted-foreground">{label.title}</p>
+                                    <p className="text-foreground whitespace-pre-wrap">{response.answer}</p>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      
+                      {responses.length === 0 && (
+                        <div className="text-center py-8 space-y-4">
+                          <p className="text-muted-foreground">You haven't filled out the questionnaire yet.</p>
+                          <Button onClick={() => navigate("/portal")}>
+                            Start Questionnaire
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-            </ModernCard>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         )}
 
