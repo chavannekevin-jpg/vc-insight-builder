@@ -17,8 +17,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, ArrowLeft, Bold, Italic, List, ListOrdered, Quote, Code, Heading1, Heading2, Heading3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Dialog,
   DialogContent,
@@ -57,6 +60,67 @@ const AdminArticles = () => {
     icon: "BookOpen",
     published: false,
   });
+
+  const insertMarkdown = (syntax: string, placeholder: string = "") => {
+    const textarea = document.getElementById("content") as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = formData.content.substring(start, end) || placeholder;
+    const beforeText = formData.content.substring(0, start);
+    const afterText = formData.content.substring(end);
+
+    let newText = "";
+    let cursorOffset = 0;
+
+    switch (syntax) {
+      case "h1":
+        newText = `${beforeText}# ${selectedText}${afterText}`;
+        cursorOffset = start + 2;
+        break;
+      case "h2":
+        newText = `${beforeText}## ${selectedText}${afterText}`;
+        cursorOffset = start + 3;
+        break;
+      case "h3":
+        newText = `${beforeText}### ${selectedText}${afterText}`;
+        cursorOffset = start + 4;
+        break;
+      case "bold":
+        newText = `${beforeText}**${selectedText}**${afterText}`;
+        cursorOffset = start + 2;
+        break;
+      case "italic":
+        newText = `${beforeText}_${selectedText}_${afterText}`;
+        cursorOffset = start + 1;
+        break;
+      case "code":
+        newText = `${beforeText}\`${selectedText}\`${afterText}`;
+        cursorOffset = start + 1;
+        break;
+      case "quote":
+        newText = `${beforeText}> ${selectedText}${afterText}`;
+        cursorOffset = start + 2;
+        break;
+      case "ul":
+        newText = `${beforeText}- ${selectedText}${afterText}`;
+        cursorOffset = start + 2;
+        break;
+      case "ol":
+        newText = `${beforeText}1. ${selectedText}${afterText}`;
+        cursorOffset = start + 3;
+        break;
+      default:
+        return;
+    }
+
+    setFormData({ ...formData, content: newText });
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(cursorOffset, cursorOffset + selectedText.length);
+    }, 0);
+  };
 
   useEffect(() => {
     checkAuth();
@@ -338,14 +402,141 @@ const AdminArticles = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="content">Content (Markdown supported) *</Label>
-                  <Textarea
-                    id="content"
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    placeholder="Write your article content here..."
-                    rows={12}
-                    className="font-mono text-sm"
-                  />
+                  <Tabs defaultValue="edit" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="edit">Edit</TabsTrigger>
+                      <TabsTrigger value="preview">Preview</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="edit" className="space-y-2">
+                      <div className="flex flex-wrap gap-1 p-2 bg-muted rounded-t-md border border-b-0">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => insertMarkdown("h1", "Heading 1")}
+                          title="Heading 1"
+                        >
+                          <Heading1 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => insertMarkdown("h2", "Heading 2")}
+                          title="Heading 2"
+                        >
+                          <Heading2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => insertMarkdown("h3", "Heading 3")}
+                          title="Heading 3"
+                        >
+                          <Heading3 className="w-4 h-4" />
+                        </Button>
+                        <div className="w-px h-6 bg-border mx-1" />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => insertMarkdown("bold", "bold text")}
+                          title="Bold"
+                        >
+                          <Bold className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => insertMarkdown("italic", "italic text")}
+                          title="Italic"
+                        >
+                          <Italic className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => insertMarkdown("code", "code")}
+                          title="Inline Code"
+                        >
+                          <Code className="w-4 h-4" />
+                        </Button>
+                        <div className="w-px h-6 bg-border mx-1" />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => insertMarkdown("ul", "list item")}
+                          title="Bullet List"
+                        >
+                          <List className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => insertMarkdown("ol", "list item")}
+                          title="Numbered List"
+                        >
+                          <ListOrdered className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => insertMarkdown("quote", "quote")}
+                          title="Quote"
+                        >
+                          <Quote className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <Textarea
+                        id="content"
+                        value={formData.content}
+                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                        placeholder="Write your article content here using Markdown...
+
+# Main Heading
+## Subheading
+### Section
+
+**Bold text** or _italic text_
+
+- Bullet point
+- Another point
+
+1. Numbered list
+2. Second item
+
+> Quote or callout
+
+`inline code`"
+                        rows={16}
+                        className="font-mono text-sm rounded-t-none"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Use the toolbar above to format your content, or write Markdown directly.
+                      </p>
+                    </TabsContent>
+                    <TabsContent value="preview" className="min-h-[400px] p-6 border rounded-md">
+                      <div className="prose prose-slate dark:prose-invert max-w-none
+                        prose-headings:font-bold
+                        prose-h1:text-3xl prose-h1:mb-4
+                        prose-h2:text-2xl prose-h2:mb-3 prose-h2:text-primary
+                        prose-h3:text-xl prose-h3:mb-2
+                        prose-p:mb-4 prose-p:leading-relaxed
+                        prose-strong:font-semibold
+                        prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded
+                        prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-4">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {formData.content || "_No content to preview_"}
+                        </ReactMarkdown>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
