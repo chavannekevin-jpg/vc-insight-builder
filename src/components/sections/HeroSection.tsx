@@ -37,10 +37,17 @@ export const HeroSection = () => {
         </h1>
 
         {/* Subheadline with personal perspective */}
-        <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          <span className="text-foreground font-semibold">I've reviewed thousands of pitches</span> and invested in dozens. 
-          Now I'm giving you the same clarity VCs have internally — see your startup the way we do with a memo that structures your narrative for investment-readiness.
-        </p>
+        <div className="max-w-3xl mx-auto space-y-4">
+          <p className="text-xl md:text-2xl text-foreground font-semibold leading-relaxed">
+            I'm tired of watching founders fail.
+          </p>
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+            After <span className="text-foreground font-semibold">10 years in VC</span>, reviewing thousands of pitches, I keep hearing the same questions. Founders making the same mistakes. Getting rejected for the same reasons.
+          </p>
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+            <span className="text-primary font-semibold">So I built this.</span> A simple platform that gives you access to my decade of VC knowledge — the same frameworks, questions, and clarity I use to evaluate startups every single day.
+          </p>
+        </div>
 
         {/* CTA section */}
         <div className="flex flex-col items-center gap-6 pt-8">
