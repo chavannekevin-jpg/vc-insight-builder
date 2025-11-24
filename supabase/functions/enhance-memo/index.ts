@@ -11,29 +11,46 @@ serve(async (req) => {
   }
 
   try {
-    const { company, responses } = await req.json();
+    const { company, sections } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Enhance each response using AI
     const enhanced: Record<string, string> = {};
 
-    for (const [key, content] of Object.entries(responses)) {
-      if (!content || typeof content !== "string" || content.trim().length === 0) {
+    // Process each section
+    for (const [sectionName, sectionResponses] of Object.entries(sections)) {
+      if (!sectionResponses || typeof sectionResponses !== "object") {
         continue;
       }
 
-      const prompt = `You are a professional VC memo writer. Enhance the following startup response to be more concise, impactful, and professional while maintaining the core message. Keep it under 150 words. Return ONLY the enhanced text, no explanations or preambles.
+      // Combine all responses in the section
+      const combinedContent = Object.values(sectionResponses as Record<string, string>)
+        .filter(Boolean)
+        .join("\n\n");
 
-Context: This is for "${key}" section in a VC investment memo for ${company.name} (${company.stage} stage, ${company.category} category).
+      if (!combinedContent.trim()) {
+        continue;
+      }
 
-Original response:
-${content}
+      const prompt = `You are a professional VC investment memo writer. Take the following startup information for the "${sectionName}" section and create a clear, concise, and compelling narrative. 
 
-Enhanced version:`;
+Requirements:
+- Synthesize all the information into a cohesive 2-4 paragraph narrative
+- Use professional, direct language that VCs expect
+- Highlight key metrics, traction, and competitive advantages
+- Keep it between 150-250 words
+- Focus on facts and concrete details
+- Return ONLY the enhanced narrative, no preambles or explanations
+
+Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.
+
+Raw information:
+${combinedContent}
+
+Professional memo section:`;
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -46,7 +63,7 @@ Enhanced version:`;
           messages: [
             {
               role: "system",
-              content: "You are a professional VC memo writer. Enhance startup responses to be concise, impactful, and professional.",
+              content: "You are a professional VC investment memo writer. Create clear, concise, compelling narratives from startup information.",
             },
             {
               role: "user",
@@ -54,21 +71,21 @@ Enhanced version:`;
             },
           ],
           temperature: 0.7,
-          max_tokens: 300,
+          max_tokens: 500,
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`AI API error for ${key}:`, response.status, errorText);
-        continue; // Skip this one, keep original
+        console.error(`AI API error for ${sectionName}:`, response.status, errorText);
+        continue;
       }
 
       const data = await response.json();
       const enhancedText = data.choices?.[0]?.message?.content?.trim();
 
       if (enhancedText) {
-        enhanced[key] = enhancedText;
+        enhanced[sectionName] = enhancedText;
       }
     }
 

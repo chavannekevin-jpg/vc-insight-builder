@@ -109,13 +109,30 @@ export default function CompanyProfile() {
   const handleEnhanceContent = async () => {
     setEnhancing(true);
     try {
+      // Group responses by section
+      const sectionData: Record<string, Record<string, string>> = {};
+      
+      ["Problem", "Solution", "Market", "Competition", "Team", "USP", "Business Model", "Traction"].forEach(
+        (sectionName) => {
+          const sectionResponses = responses.filter(
+            (r) => QUESTION_LABELS[r.question_key]?.section === sectionName
+          );
+          
+          if (sectionResponses.length > 0) {
+            sectionData[sectionName] = {};
+            sectionResponses.forEach((response) => {
+              if (response.answer) {
+                sectionData[sectionName][response.question_key] = response.answer;
+              }
+            });
+          }
+        }
+      );
+
       const { data, error } = await supabase.functions.invoke("enhance-memo", {
         body: {
           company,
-          responses: responses.reduce((acc, r) => {
-            acc[r.question_key] = r.answer;
-            return acc;
-          }, {} as Record<string, string>),
+          sections: sectionData,
         },
       });
 
@@ -124,7 +141,7 @@ export default function CompanyProfile() {
       setEnhancedContent(data.enhanced);
       toast({
         title: "Content Enhanced! ✨",
-        description: "Your responses have been professionally refined.",
+        description: "Your memo has been professionally refined.",
       });
     } catch (error: any) {
       console.error("Enhancement error:", error);
@@ -231,39 +248,28 @@ export default function CompanyProfile() {
 
             if (sectionResponses.length === 0) return null;
 
+            // Use enhanced content if available, otherwise combine all responses
+            const displayContent = enhancedContent[sectionName] || 
+              sectionResponses.map(r => r.answer).filter(Boolean).join("\n\n");
+
             return (
               <div key={sectionName} className="bg-card border border-border rounded-lg p-8 space-y-6">
-                <h2 className="text-2xl font-serif font-bold border-b border-border pb-4">
-                  {sectionName}
-                </h2>
+                <div className="flex items-center justify-between border-b border-border pb-4">
+                  <h2 className="text-2xl font-serif font-bold">
+                    {sectionName}
+                  </h2>
+                  {enhancedContent[sectionName] && (
+                    <Badge variant="outline" className="text-xs gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      AI Enhanced
+                    </Badge>
+                  )}
+                </div>
 
-                <div className="space-y-6">
-                  {sectionResponses.map((response) => {
-                    const label = QUESTION_LABELS[response.question_key];
-                    if (!label || !response.answer) return null;
-
-                    const displayContent =
-                      enhancedContent[response.question_key] || response.answer;
-
-                    return (
-                      <div key={response.question_key} className="space-y-3">
-                        <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wide">
-                          {label.title}
-                        </h3>
-                        <div className="prose prose-slate max-w-none">
-                          <p className="text-foreground leading-relaxed whitespace-pre-wrap">
-                            {displayContent}
-                          </p>
-                        </div>
-                        {enhancedContent[response.question_key] && (
-                          <Badge variant="outline" className="text-xs gap-1">
-                            <Sparkles className="w-3 h-3" />
-                            AI Enhanced
-                          </Badge>
-                        )}
-                      </div>
-                    );
-                  })}
+                <div className="prose prose-slate max-w-none">
+                  <p className="text-foreground text-base leading-relaxed whitespace-pre-wrap">
+                    {displayContent}
+                  </p>
                 </div>
               </div>
             );
