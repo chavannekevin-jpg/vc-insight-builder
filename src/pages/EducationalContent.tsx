@@ -78,61 +78,77 @@ export default function EducationalContent() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <div className="max-w-5xl mx-auto px-6 py-12 space-y-8">
-        <Button variant="outline" onClick={() => navigate("/hub")} className="gap-2">
+      <div className="max-w-4xl mx-auto px-6 sm:px-8 lg:px-12 py-16 space-y-12">
+        <Button variant="outline" onClick={() => navigate("/hub")} className="gap-2 mb-4">
           <ArrowLeft className="w-4 h-4" />
           Back to Learning Hub
         </Button>
 
-        <article className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg">
+        <article className="space-y-16">
           {/* Article Header */}
-          <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background p-12 border-b border-border">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 rounded-xl bg-primary/20 backdrop-blur-sm">
-                <BookOpen className="w-6 h-6 text-primary" />
-              </div>
-              <span className="text-sm font-medium text-primary uppercase tracking-wide">
+          <header className="space-y-8 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+              <BookOpen className="w-4 h-4 text-primary" />
+              <span className="text-xs font-medium text-primary uppercase tracking-wider">
                 Educational Content
               </span>
             </div>
-            <h1 className="text-5xl font-bold mb-4 leading-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text">
-              {article.title}
-            </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed max-w-3xl">
-              {article.description}
-            </p>
-          </div>
+            
+            <div className="space-y-6 max-w-3xl mx-auto">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+                {article.title}
+              </h1>
+              <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
+                {article.description}
+              </p>
+            </div>
+            
+            <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent mx-auto" />
+          </header>
 
           {/* Article Content */}
-          <div className="p-12">
-            <div className="prose prose-lg prose-slate dark:prose-invert max-w-none
-              prose-headings:font-bold prose-headings:tracking-tight
-              prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-12 prose-h1:pb-4 prose-h1:border-b prose-h1:border-border
-              prose-h2:text-3xl prose-h2:mb-4 prose-h2:mt-10 prose-h2:text-primary
-              prose-h3:text-2xl prose-h3:mb-3 prose-h3:mt-8
-              prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-p:text-foreground/90
+          <div className="max-w-2xl mx-auto">
+            <div className="prose prose-lg sm:prose-xl dark:prose-invert max-w-none
+              prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24
+              prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-16 prose-h1:leading-tight
+              prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-14 prose-h2:text-primary prose-h2:leading-tight
+              prose-h3:text-2xl prose-h3:mb-5 prose-h3:mt-12 prose-h3:leading-snug
+              prose-p:text-lg prose-p:leading-[1.8] prose-p:mb-6 prose-p:text-foreground/90
               prose-strong:text-foreground prose-strong:font-semibold
-              prose-ul:my-6 prose-ul:space-y-2
-              prose-ol:my-6 prose-ol:space-y-2
-              prose-li:text-foreground/90 prose-li:leading-relaxed
+              prose-em:text-foreground/80
+              prose-ul:my-8 prose-ul:space-y-3
+              prose-ol:my-8 prose-ol:space-y-3
+              prose-li:text-lg prose-li:leading-[1.8] prose-li:text-foreground/90 prose-li:my-2
               prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 
-              prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:my-6 prose-blockquote:rounded-r-lg
-              prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
-              prose-pre:bg-muted prose-pre:border prose-pre:border-border
-              prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-              prose-img:rounded-lg prose-img:shadow-md"
+              prose-blockquote:py-6 prose-blockquote:px-8 prose-blockquote:my-10 prose-blockquote:rounded-r-xl
+              prose-blockquote:italic prose-blockquote:text-lg
+              prose-code:text-primary prose-code:bg-primary/10 prose-code:px-2 prose-code:py-1 
+              prose-code:rounded prose-code:text-base prose-code:font-normal prose-code:before:content-none prose-code:after:content-none
+              prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-pre:p-6 prose-pre:my-8
+              prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-4
+              prose-img:rounded-xl prose-img:shadow-lg prose-img:my-10"
               dangerouslySetInnerHTML={{ __html: htmlContent }}
             />
           </div>
 
           {/* Call to Action */}
-          <div className="bg-gradient-to-br from-primary/5 to-background p-12 border-t border-border text-center">
-            <div className="max-w-2xl mx-auto space-y-6">
-              <h3 className="text-2xl font-bold">Ready to create your investment memo?</h3>
-              <p className="text-muted-foreground text-lg">
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-gradient-to-br from-primary/5 via-primary/10 to-background 
+              border border-primary/20 rounded-2xl p-8 sm:p-12 text-center space-y-6 shadow-lg">
+              <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <BookOpen className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-bold leading-tight">
+                Ready to create your investment memo?
+              </h3>
+              <p className="text-muted-foreground text-lg leading-relaxed max-w-xl mx-auto">
                 Apply what you've learned and build a professional memo that will impress investors.
               </p>
-              <Button size="lg" onClick={() => navigate("/portal")} className="gradient-primary text-lg px-8 py-6">
+              <Button 
+                size="lg" 
+                onClick={() => navigate("/portal")} 
+                className="gradient-primary text-lg px-10 py-6 h-auto mt-4 shadow-lg hover:shadow-xl transition-shadow"
+              >
                 Start Building Your Memo →
               </Button>
             </div>
