@@ -1,20 +1,21 @@
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Flame } from "lucide-react";
-
 export const HeroSection = () => {
   const scrollToPricing = () => {
-    document.getElementById('pricing-section')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('pricing-section')?.scrollIntoView({
+      behavior: 'smooth'
+    });
   };
-
-  return (
-    <section className="relative min-h-[90vh] flex items-center justify-center px-6 sm:px-8 lg:px-12 py-20 overflow-hidden">
+  return <section className="relative min-h-[90vh] flex items-center justify-center px-6 sm:px-8 lg:px-12 py-20 overflow-hidden">
       {/* Animated gradient background */}
       <div className="absolute inset-0 gradient-hero -z-10" />
       
       {/* Subtle glow decorative elements */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse opacity-50" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse opacity-50" style={{ animationDelay: '1s' }} />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse opacity-50" style={{
+      animationDelay: '1s'
+    }} />
       
       <div className="max-w-5xl mx-auto text-center space-y-8 animate-fade-in">
         {/* Badge with personal branding */}
@@ -23,7 +24,7 @@ export const HeroSection = () => {
             <span className="text-sm font-bold text-primary uppercase tracking-wider">Built by VCs</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            by <span className="text-foreground font-semibold">Kevin Chavanne</span> • Nordic VC @ Tenity • 10+ Years Experience
+            by Kevin Chavanne • Nordic VC • 10+ Years Experience <span className="text-foreground font-semibold">Kevin Chavanne</span> • Nordic VC @ Tenity • 10+ Years Experience
           </p>
         </div>
 
@@ -42,7 +43,7 @@ export const HeroSection = () => {
             I'm tired of watching founders fail.
           </p>
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-            After <span className="text-foreground font-semibold">10 years in VC</span>, reviewing thousands of pitches, I see the same mistakes over and over. <span className="text-primary font-semibold">So I built this</span> — a simple platform that gives you access to the same frameworks and clarity I use to evaluate startups every day.
+            After 10 years in VC, reviewing thousands of startups, I see the same mistakes over and over. So I built this — a simple platform that gives you access to the same frameworks and clarity I use to evaluate startups every day. <span className="text-foreground font-semibold">10 years in VC</span>, reviewing thousands of pitches, I see the same mistakes over and over. <span className="text-primary font-semibold">So I built this</span> — a simple platform that gives you access to the same frameworks and clarity I use to evaluate startups every day.
           </p>
         </div>
 
@@ -51,11 +52,7 @@ export const HeroSection = () => {
           <p className="text-xl md:text-2xl text-foreground font-sans font-medium tracking-tight max-w-2xl">
             Because nobody will tell you that your baby is ugly.
           </p>
-          <Button 
-            size="lg" 
-            className="text-lg px-10 py-6 gradient-primary shadow-glow hover-neon-pulse transition-all duration-300 font-bold uppercase tracking-wider"
-            onClick={scrollToPricing}
-          >
+          <Button size="lg" className="text-lg px-10 py-6 gradient-primary shadow-glow hover-neon-pulse transition-all duration-300 font-bold uppercase tracking-wider" onClick={scrollToPricing}>
             Level Up Your Startup →
           </Button>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg backdrop-blur-sm">
@@ -66,6 +63,5 @@ export const HeroSection = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
