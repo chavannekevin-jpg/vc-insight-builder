@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Edit, Sparkles, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { FileText, Edit, Sparkles, Loader2, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Company {
@@ -68,6 +70,10 @@ export default function CompanyProfile() {
   const [enhancedContent, setEnhancedContent] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [enhancing, setEnhancing] = useState(false);
+  const [editingCompanyName, setEditingCompanyName] = useState(false);
+  const [editingSection, setEditingSection] = useState<string | null>(null);
+  const [editedCompanyName, setEditedCompanyName] = useState("");
+  const [editedSectionContent, setEditedSectionContent] = useState("");
 
   useEffect(() => {
     const loadCompanyData = async () => {
@@ -100,11 +106,90 @@ export default function CompanyProfile() {
         setResponses(memoResponses);
       }
 
+      setEditedCompanyName(companies[0].name);
       setLoading(false);
     };
 
     loadCompanyData();
   }, [navigate]);
+
+  const handleSaveCompanyName = async () => {
+    if (!company || !editedCompanyName.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from("companies")
+        .update({ name: editedCompanyName })
+        .eq("id", company.id);
+
+      if (error) throw error;
+
+      setCompany({ ...company, name: editedCompanyName });
+      setEditingCompanyName(false);
+      toast({
+        title: "Company name updated",
+        description: "Your changes have been saved.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Update failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveSection = async (sectionName: string) => {
+    if (!company || !editedSectionContent.trim()) return;
+
+    try {
+      // Get all responses for this section
+      const sectionResponses = responses.filter(
+        (r) => QUESTION_LABELS[r.question_key]?.section === sectionName
+      );
+
+      if (sectionResponses.length === 0) return;
+
+      // Update the first response with the edited content
+      const firstResponse = sectionResponses[0];
+      const { error } = await supabase
+        .from("memo_responses")
+        .update({ answer: editedSectionContent })
+        .eq("company_id", company.id)
+        .eq("question_key", firstResponse.question_key);
+
+      if (error) throw error;
+
+      // Update local state
+      setResponses(
+        responses.map((r) =>
+          r.question_key === firstResponse.question_key
+            ? { ...r, answer: editedSectionContent }
+            : r
+        )
+      );
+
+      // Update enhanced content if it exists
+      if (enhancedContent[sectionName]) {
+        setEnhancedContent({
+          ...enhancedContent,
+          [sectionName]: editedSectionContent,
+        });
+      }
+
+      setEditingSection(null);
+      toast({
+        title: "Section updated",
+        description: "Your changes have been saved.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Update failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleEnhanceContent = async () => {
     setEnhancing(true);
@@ -176,7 +261,7 @@ export default function CompanyProfile() {
             </Button>
             <div className="flex items-center gap-3">
               <FileText className="w-8 h-8 text-primary" />
-              <h1 className="text-4xl font-serif font-bold">Investment Memo</h1>
+              <h1 className="text-4xl font-serif font-bold">My Company Details</h1>
             </div>
           </div>
           <div className="flex gap-3">
@@ -193,13 +278,13 @@ export default function CompanyProfile() {
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  AI Enhance
+                  AI Enhance All
                 </>
               )}
             </Button>
             <Button variant="outline" onClick={() => navigate("/portal")} className="gap-2">
               <Edit className="w-4 h-4" />
-              Edit
+              Edit Questionnaire
             </Button>
           </div>
         </div>
@@ -207,7 +292,43 @@ export default function CompanyProfile() {
         {/* Company Overview - Memo Style */}
         <div className="bg-card border border-border rounded-lg p-8 space-y-6">
           <div className="border-b border-border pb-6">
-            <h2 className="text-3xl font-serif font-bold mb-2">{company?.name}</h2>
+            {editingCompanyName ? (
+              <div className="flex items-center gap-3">
+                <Input
+                  value={editedCompanyName}
+                  onChange={(e) => setEditedCompanyName(e.target.value)}
+                  className="text-3xl font-serif font-bold h-auto py-2"
+                  autoFocus
+                />
+                <Button size="sm" onClick={handleSaveCompanyName} className="gap-2">
+                  <Check className="w-4 h-4" />
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setEditedCompanyName(company?.name || "");
+                    setEditingCompanyName(false);
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-serif font-bold">{company?.name}</h2>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setEditingCompanyName(true)}
+                  className="gap-2"
+                >
+                  <Edit className="w-4 h-4" />
+                  Edit
+                </Button>
+              </div>
+            )}
             <div className="flex gap-3 mt-4">
               {company?.category && (
                 <Badge variant="secondary" className="text-sm px-3 py-1">
@@ -258,19 +379,62 @@ export default function CompanyProfile() {
                   <h2 className="text-2xl font-serif font-bold">
                     {sectionName}
                   </h2>
-                  {enhancedContent[sectionName] && (
-                    <Badge variant="outline" className="text-xs gap-1">
-                      <Sparkles className="w-3 h-3" />
-                      AI Enhanced
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {enhancedContent[sectionName] && (
+                      <Badge variant="outline" className="text-xs gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        AI Enhanced
+                      </Badge>
+                    )}
+                    {editingSection === sectionName ? (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() => handleSaveSection(sectionName)}
+                          className="gap-2"
+                        >
+                          <Check className="w-4 h-4" />
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingSection(null)}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setEditingSection(sectionName);
+                          setEditedSectionContent(displayContent);
+                        }}
+                        className="gap-2"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
-                <div className="prose prose-slate max-w-none">
-                  <p className="text-foreground text-base leading-relaxed whitespace-pre-wrap">
-                    {displayContent}
-                  </p>
-                </div>
+                {editingSection === sectionName ? (
+                  <Textarea
+                    value={editedSectionContent}
+                    onChange={(e) => setEditedSectionContent(e.target.value)}
+                    className="min-h-[300px] text-base leading-relaxed"
+                    autoFocus
+                  />
+                ) : (
+                  <div className="prose prose-slate max-w-none">
+                    <p className="text-foreground text-base leading-relaxed whitespace-pre-wrap">
+                      {displayContent}
+                    </p>
+                  </div>
+                )}
               </div>
             );
           }
