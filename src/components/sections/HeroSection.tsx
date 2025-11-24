@@ -33,8 +33,7 @@ export const HeroSection = () => {
 
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          We're active early-stage investors who know exactly what VCs look for.
-          Get the unfiltered truth about your startup—before investors do.
+          Get the clarity only VCs have. See your startup the way VCs do — our memo structures your narrative for investment-readiness.
         </p>
 
         {/* CTA section */}
