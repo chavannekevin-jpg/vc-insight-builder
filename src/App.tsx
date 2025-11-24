@@ -10,6 +10,7 @@ import About from "./pages/About";
 import Product from "./pages/Product";
 import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
+import CompanyProfile from "./pages/CompanyProfile";
 import Admin from "./pages/Admin";
 import AdminCompanyDetail from "./pages/AdminCompanyDetail";
 import Intake from "./pages/Intake";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/intake" element={<Intake />} />
           <Route path="/hub" element={<FreemiumHub />} />
           <Route path="/hub/:slug" element={<EducationalContent />} />
+          <Route path="/company" element={<CompanyProfile />} />
           <Route path="/about" element={<About />} />
           <Route path="/product" element={<Product />} />
           <Route path="/pricing" element={<Pricing />} />
