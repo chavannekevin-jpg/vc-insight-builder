@@ -398,6 +398,7 @@ export default function Portal() {
   const [feedbackTimeoutId, setFeedbackTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [founderScore, setFounderScore] = useState(0);
   const [showNeonFlash, setShowNeonFlash] = useState(false);
+  const [memoSubmitted, setMemoSubmitted] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -1025,6 +1026,8 @@ export default function Portal() {
                             title: "Memo Submitted! 🎉",
                             description: "Your memo is getting ready. Let's see what VCs have to say about you.",
                           });
+                          
+                          setMemoSubmitted(true);
                         } catch (error: any) {
                           console.error("Error creating memo:", error);
                           toast({
@@ -1121,6 +1124,106 @@ export default function Portal() {
                   );
                 })}
               </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Premium Upgrade Section - Show after memo submission */}
+        {memoSubmitted && (
+          <div className="mt-12 space-y-8 animate-fade-in">
+            <div className="text-center space-y-4 mb-8">
+              <PartyPopper className="w-16 h-16 mx-auto text-pink-500 animate-pulse drop-shadow-[0_0_15px_rgba(236,72,153,0.8)]" />
+              <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
+                Want Your Memo Faster + Investor Network Access?
+              </h2>
+              <p className="text-lg text-white/70 max-w-2xl mx-auto">
+                Skip the wait and get your memo delivered within one week. Or get the VIP treatment with direct introductions to Kevin's investor network.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Express Service - €159.99 */}
+              <div className="bg-white/5 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-8 space-y-6 hover:border-purple-500/50 transition-all">
+                <div>
+                  <h3 className="text-2xl font-serif font-bold text-white mb-2">Express Service</h3>
+                  <div className="flex items-baseline gap-2 mb-4">
+                    <span className="text-4xl font-bold text-purple-400">€159.99</span>
+                  </div>
+                </div>
+                
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3 text-sm">
+                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-white/80">Expert-crafted memo delivered within one week</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm">
+                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-white/80">Personally reviewed by Kevin during early access</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm">
+                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-white/80">Full automation coming soon—get priority access now</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm">
+                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-white/80">Company profile shared to Kevin's VC network (optional)</span>
+                  </li>
+                </ul>
+
+                <Button 
+                  onClick={() => navigate("/auth?plan=Express Service&price=€159.99")}
+                  className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 border-0 shadow-[0_0_30px_rgba(168,85,247,0.5)]"
+                  size="lg"
+                >
+                  Fast Track to Clarity →
+                </Button>
+              </div>
+
+              {/* VIP Package - €399 */}
+              <div className="bg-gradient-to-br from-pink-500/10 to-purple-500/10 backdrop-blur-sm border-2 border-pink-500/50 rounded-2xl p-8 space-y-6 relative overflow-hidden">
+                <div className="absolute top-4 right-4">
+                  <Crown className="w-8 h-8 text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.6)]" />
+                </div>
+                
+                <div>
+                  <div className="inline-block bg-pink-500/20 text-pink-400 text-xs font-bold px-3 py-1 rounded-full border border-pink-500/30 mb-3">
+                    MOST EXCLUSIVE
+                  </div>
+                  <h3 className="text-2xl font-serif font-bold text-white mb-2">VIP Package</h3>
+                  <div className="flex items-baseline gap-2 mb-4">
+                    <span className="text-4xl font-bold text-pink-400">€399</span>
+                  </div>
+                </div>
+                
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3 text-sm">
+                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-white/80">Express memo delivered within one week</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm">
+                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-white/80">Memo pushed to Kevin's network of 100+ global investors</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm">
+                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-white/80">Direct introductions from Kevin to VCs/investors if they show interest</span>
+                  </li>
+                </ul>
+
+                <Button 
+                  onClick={() => navigate("/auth?plan=VIP Package&price=€399")}
+                  className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 border-0 shadow-[0_0_30px_rgba(236,72,153,0.5)]"
+                  size="lg"
+                >
+                  Get VIP Access →
+                </Button>
+              </div>
+            </div>
+
+            <div className="text-center pt-4">
+              <p className="text-sm text-white/50">
+                Your €29.99 memo will be ready when the platform launches. These upgrades give you immediate access + more.
+              </p>
             </div>
           </div>
         )}
