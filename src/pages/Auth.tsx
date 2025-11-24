@@ -11,8 +11,6 @@ import { Lock, Sparkles, ArrowLeft } from "lucide-react";
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [stage, setStage] = useState("");
   const [isSignUp, setIsSignUp] = useState(true);
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
@@ -25,15 +23,6 @@ export default function Auth() {
   const selectedPrice = searchParams.get('price');
 
   useEffect(() => {
-    // Pre-fill from session storage if coming from waitlist
-    const pendingEmail = sessionStorage.getItem("pendingEmail");
-    const pendingCompany = sessionStorage.getItem("pendingCompany");
-    const pendingStage = sessionStorage.getItem("pendingStage");
-    
-    if (pendingEmail) setEmail(pendingEmail);
-    if (pendingCompany) setCompanyName(pendingCompany);
-    if (pendingStage) setStage(pendingStage);
-
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -42,7 +31,7 @@ export default function Auth() {
         
         // Redirect authenticated users
         if (session?.user) {
-          const redirect = searchParams.get('redirect') || '/portal';
+          const redirect = searchParams.get('redirect') || '/intake';
           setTimeout(() => navigate(redirect), 0);
         }
       }
@@ -54,7 +43,7 @@ export default function Auth() {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        const redirect = searchParams.get('redirect') || '/portal';
+        const redirect = searchParams.get('redirect') || '/intake';
         navigate(redirect);
       }
     });
@@ -65,7 +54,7 @@ export default function Auth() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !companyName || !stage) {
+    if (!email || !password) {
       toast({
         title: "Missing information",
         description: "Please fill in all fields",
@@ -77,41 +66,22 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/portal`;
+      const redirectUrl = `${window.location.origin}/intake`;
       
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: {
-            company_name: companyName,
-          },
         },
       });
 
       if (signUpError) throw signUpError;
 
       if (signUpData.user) {
-        // Create company record
-        const { error: companyError } = await supabase
-          .from("companies")
-          .insert({
-            name: companyName,
-            founder_id: signUpData.user.id,
-            stage: stage,
-          });
-
-        if (companyError) throw companyError;
-
-        // Clear session storage
-        sessionStorage.removeItem("pendingEmail");
-        sessionStorage.removeItem("pendingCompany");
-        sessionStorage.removeItem("pendingStage");
-
         toast({
           title: "Welcome to UglyBaby!",
-          description: "Your account has been created. Redirecting to portal...",
+          description: "Complete your profile in the next step...",
         });
       }
     } catch (error: any) {
@@ -222,45 +192,6 @@ export default function Auth() {
           <div className="relative bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-glow">
             <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-6">
               
-              {isSignUp && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="company" className="text-sm font-bold text-foreground">
-                      Company Name *
-                    </Label>
-                    <Input
-                      id="company"
-                      type="text"
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      placeholder="Your Startup Inc."
-                      className="h-12 bg-background/50 border-border/50 focus:border-primary transition-colors"
-                      required={isSignUp}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="stage" className="text-sm font-bold text-foreground">
-                      Stage *
-                    </Label>
-                    <select
-                      id="stage"
-                      value={stage}
-                      onChange={(e) => setStage(e.target.value)}
-                      className="w-full h-12 px-4 rounded-md border border-border/50 bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                      required={isSignUp}
-                    >
-                      <option value="">Select your stage...</option>
-                      <option value="pre-seed">Pre-Seed (Building team, early traction)</option>
-                      <option value="seed">Seed (Product-market fit, scaling)</option>
-                      <option value="series-a">Series A (Scaling operations)</option>
-                      <option value="series-b+">Series B+ (Growth stage)</option>
-                      <option value="mvp">MVP/Idea Stage</option>
-                    </select>
-                  </div>
-                </>
-              )}
-
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-bold text-foreground">
                   Email Address *
