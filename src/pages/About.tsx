@@ -92,16 +92,23 @@ const About = () => {
 
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   {[
-                    { icon: "📊", label: "Pitch Decks" },
-                    { icon: "🎤", label: "Pitch Scripts" },
-                    { icon: "📁", label: "Data Room Structure" },
-                    { icon: "📈", label: "Financial Models" }
-                  ].map((item, idx) => (
-                    <div key={idx} className="p-4 rounded-lg border border-border bg-muted/30 hover:bg-muted/50 transition-colors">
-                      <span className="text-2xl mr-2">{item.icon}</span>
-                      <span className="text-sm font-medium">{item.label}</span>
-                    </div>
-                  ))}
+                    { icon: TrendingUp, label: "Pitch Decks", color: "text-primary" },
+                    { icon: Target, label: "Pitch Scripts", color: "text-secondary" },
+                    { icon: CheckCircle2, label: "Data Room Structure", color: "text-accent" },
+                    { icon: Users2, label: "Financial Models", color: "text-success" }
+                  ].map((item, idx) => {
+                    const Icon = item.icon;
+                    return (
+                      <div key={idx} className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-muted/30 to-muted/10 hover:border-primary/30 hover:shadow-glow transition-all duration-300 backdrop-blur-sm">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center group-hover:shadow-glow transition-shadow duration-300">
+                            <Icon className={`w-5 h-5 ${item.color}`} />
+                          </div>
+                          <span className="text-sm font-medium">{item.label}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <p className="text-sm italic text-muted-foreground pt-2">
@@ -137,16 +144,11 @@ const About = () => {
 
               <div className="flex gap-3 pt-6">
                 <Button 
-                  onClick={() => {
-                    navigate('/');
-                    setTimeout(() => {
-                      document.getElementById('waitlist-form')?.scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
-                  }} 
-                  className="w-full gradient-primary"
+                  onClick={() => navigate('/')} 
+                  className="w-full gradient-primary shadow-glow hover:shadow-glow-strong"
                   size="lg"
                 >
-                  Join Waitlist
+                  View Plans
                 </Button>
               </div>
             </div>
