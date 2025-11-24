@@ -5,7 +5,6 @@ import { Header } from "@/components/Header";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { 
   BookOpen, 
   Target, 
@@ -25,50 +24,6 @@ interface Company {
   stage: string;
   biggest_challenge: string;
 }
-
-interface MemoResponse {
-  question_key: string;
-  answer: string;
-}
-
-const QUESTION_LABELS: Record<string, { section: string; title: string }> = {
-  problem_description: { section: "Problem", title: "What Makes People Suffer?" },
-  problem_workflow: { section: "Problem", title: "Show Us The Broken System" },
-  solution_description: { section: "Solution", title: "Your Weapon of Choice" },
-  solution_features: { section: "Solution", title: "Unlock Your Arsenal" },
-  solution_social_proof: { section: "Solution", title: "Show Me You Have Believers" },
-  market_target_customer: { section: "Market", title: "Who's Paying The Bills?" },
-  market_buying_persona: { section: "Market", title: "The Money Person" },
-  market_current_acv: { section: "Market", title: "Your Price Tag Today" },
-  market_projected_acv: { section: "Market", title: "Your Future Price Tag" },
-  competition_mission: { section: "Competition", title: "Your Battle Cry" },
-  competition_competitors: { section: "Competition", title: "Name Your Enemies" },
-  competition_strength: { section: "Competition", title: "Your Secret Weapon" },
-  team_size: { section: "Team", title: "Headcount Power" },
-  team_functions: { section: "Team", title: "Who's In Your Elite Squad?" },
-  team_founders: { section: "Team", title: "Meet The Founding Legends" },
-  team_history: { section: "Team", title: "Team Chemistry Check" },
-  team_ownership: { section: "Team", title: "Skin In The Game" },
-  usp_differentiators: { section: "USP", title: "Your Unfair Advantages" },
-  usp_distribution: { section: "USP", title: "Network Effect Unlocked?" },
-  usp_business_model: { section: "USP", title: "The Money Machine Design" },
-  usp_compliance: { section: "USP", title: "Your Regulatory Moat" },
-  usp_data: { section: "USP", title: "Data Gold Mine?" },
-  usp_customer_rationale: { section: "USP", title: "Why Customers Choose You" },
-  business_model_type: { section: "Business Model", title: "How You Print Money" },
-  business_model_revenue: { section: "Business Model", title: "Revenue Breakdown" },
-  business_model_acv_growth: { section: "Business Model", title: "Growth Trajectory" },
-  business_model_gtm: { section: "Business Model", title: "Sales War Room Strategy" },
-  business_model_margins: { section: "Business Model", title: "Margin Magic" },
-  business_model_future: { section: "Business Model", title: "Future Money Moves" },
-  traction_launch: { section: "Traction", title: "Launch & First Wins" },
-  traction_revenue: { section: "Traction", title: "Show Me You Have Momentum" },
-  traction_customers: { section: "Traction", title: "Army Size" },
-  traction_key_customers: { section: "Traction", title: "Name Drop Your Stars" },
-  traction_efficiency: { section: "Traction", title: "Unit Economics Flex" },
-  traction_funding: { section: "Traction", title: "Who Believes In You?" },
-  traction_milestones: { section: "Traction", title: "Major Victory Lap" },
-};
 
 const EDUCATIONAL_CONTENT = [
   {
@@ -137,7 +92,6 @@ const MEMO_BENEFITS = [
 export default function FreemiumHub() {
   const navigate = useNavigate();
   const [company, setCompany] = useState<Company | null>(null);
-  const [responses, setResponses] = useState<MemoResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -160,17 +114,6 @@ export default function FreemiumHub() {
       }
 
       setCompany(companies[0]);
-      
-      // Load questionnaire responses
-      const { data: memoResponses } = await supabase
-        .from("memo_responses")
-        .select("question_key, answer")
-        .eq("company_id", companies[0].id);
-      
-      if (memoResponses) {
-        setResponses(memoResponses);
-      }
-      
       setLoading(false);
     };
 
@@ -231,104 +174,25 @@ export default function FreemiumHub() {
         </div>
 
         {/* My Company Section */}
-        {company && responses.length > 0 && (
+        {company && (
           <div className="space-y-6">
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="my-company" className="border rounded-lg px-6">
-                <AccordionTrigger className="hover:no-underline py-6">
-                  <div className="flex items-center gap-3">
-                    <FileText className="w-6 h-6 text-primary" />
-                    <h2 className="text-2xl font-bold">My Company</h2>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-6">
-                  <div className="pt-4 space-y-8">
-                    <div className="flex justify-end">
-                      <Button 
-                        variant="outline"
-                        onClick={() => navigate("/portal")}
-                      >
-                        Edit Responses
-                      </Button>
-                    </div>
-                    
-                    {/* Company Overview */}
-                    <div className="space-y-4 pb-6 border-b border-border">
-                      <h3 className="text-xl font-bold">Company Overview</h3>
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <p className="text-sm text-muted-foreground font-medium">Company Name</p>
-                          <p className="text-foreground">{company.name}</p>
-                        </div>
-                        {company.description && (
-                          <div className="space-y-2">
-                            <p className="text-sm text-muted-foreground font-medium">Description</p>
-                            <p className="text-foreground">{company.description}</p>
-                          </div>
-                        )}
-                        {company.category && (
-                          <div className="space-y-2">
-                            <p className="text-sm text-muted-foreground font-medium">Category</p>
-                            <p className="text-foreground">{company.category}</p>
-                          </div>
-                        )}
-                        <div className="space-y-2">
-                          <p className="text-sm text-muted-foreground font-medium">Stage</p>
-                          <p className="text-foreground">{company.stage}</p>
-                        </div>
-                        {company.biggest_challenge && (
-                          <div className="space-y-2 md:col-span-2">
-                            <p className="text-sm text-muted-foreground font-medium">Biggest Challenge</p>
-                            <p className="text-foreground">{company.biggest_challenge}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Questionnaire Responses by Section */}
-                    <div className="space-y-8">
-                      <h3 className="text-xl font-bold">Questionnaire Responses</h3>
-                      
-                      {["Problem", "Solution", "Market", "Competition", "Team", "USP", "Business Model", "Traction"].map((sectionName) => {
-                        const sectionResponses = responses.filter(r => 
-                          QUESTION_LABELS[r.question_key]?.section === sectionName
-                        );
-                        
-                        if (sectionResponses.length === 0) return null;
-                        
-                        return (
-                          <div key={sectionName} className="space-y-4">
-                            <h4 className="text-lg font-bold text-primary">{sectionName}</h4>
-                            <div className="space-y-4 pl-4 border-l-2 border-primary/30">
-                              {sectionResponses.map((response) => {
-                                const label = QUESTION_LABELS[response.question_key];
-                                if (!label || !response.answer) return null;
-                                
-                                return (
-                                  <div key={response.question_key} className="space-y-2">
-                                    <p className="text-sm font-medium text-muted-foreground">{label.title}</p>
-                                    <p className="text-foreground whitespace-pre-wrap">{response.answer}</p>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
-                      
-                      {responses.length === 0 && (
-                        <div className="text-center py-8 space-y-4">
-                          <p className="text-muted-foreground">You haven't filled out the questionnaire yet.</p>
-                          <Button onClick={() => navigate("/portal")}>
-                            Start Questionnaire
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+            <div className="flex items-center justify-between p-6 bg-card border border-border rounded-lg hover:border-primary/50 transition-colors">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <FileText className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">My Company</h2>
+                  <p className="text-sm text-muted-foreground">
+                    View your investment memo
+                  </p>
+                </div>
+              </div>
+              <Button onClick={() => navigate("/company")} className="gap-2">
+                View Memo
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         )}
 
