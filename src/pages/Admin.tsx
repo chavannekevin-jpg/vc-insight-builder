@@ -177,6 +177,28 @@ const Admin = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          <div onClick={() => navigate("/admin/articles")} className="cursor-pointer">
+            <ModernCard className="hover:border-primary/50 transition-colors h-full">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Educational Content
+              </h2>
+              <p className="text-muted-foreground">
+                Create and manage educational articles
+              </p>
+            </ModernCard>
+          </div>
+          
+          <ModernCard>
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              Founder Submissions
+            </h2>
+            <p className="text-muted-foreground">
+              View questionnaire submissions below
+            </p>
+          </ModernCard>
+        </div>
+
         <ModernCard className="mb-8">
           <h2 className="text-3xl font-bold text-foreground mb-2">
             Founder Submissions

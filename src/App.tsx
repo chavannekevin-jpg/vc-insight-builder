@@ -12,6 +12,7 @@ import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
 import CompanyProfile from "./pages/CompanyProfile";
 import Admin from "./pages/Admin";
+import AdminArticles from "./pages/AdminArticles";
 import AdminCompanyDetail from "./pages/AdminCompanyDetail";
 import Intake from "./pages/Intake";
 import FreemiumHub from "./pages/FreemiumHub";
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/articles" element={<AdminArticles />} />
           <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
