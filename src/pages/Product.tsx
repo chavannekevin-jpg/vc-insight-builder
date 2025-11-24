@@ -133,9 +133,15 @@ const Product = () => {
       {/* What You Get */}
       <section className="py-20 px-4 bg-muted/30">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-serif mb-4">What You Get</h2>
-            <p className="text-lg text-muted-foreground">
+          <div className="text-center mb-16 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 backdrop-blur-xl mb-6">
+              <TrendingUp className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">Your Complete Package</span>
+            </div>
+            <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              What You Get
+            </h2>
+            <p className="text-xl md:text-2xl text-foreground/80 max-w-3xl mx-auto font-medium">
               A comprehensive toolkit to transform your fundraising approach
             </p>
           </div>
