@@ -110,23 +110,23 @@ export default function EducationalContent() {
           <div className="max-w-2xl mx-auto">
             <div className="prose prose-lg sm:prose-xl dark:prose-invert max-w-none
               prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24
-              prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-16 prose-h1:leading-tight
-              prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-14 prose-h2:text-primary prose-h2:leading-tight
-              prose-h3:text-2xl prose-h3:mb-5 prose-h3:mt-12 prose-h3:leading-snug
-              prose-p:text-lg prose-p:leading-[1.8] prose-p:mb-6 prose-p:text-foreground/90
+              prose-h1:text-4xl prose-h1:mb-10 prose-h1:mt-20 prose-h1:leading-[1.3] prose-h1:pb-6
+              prose-h2:text-3xl prose-h2:mb-8 prose-h2:mt-20 prose-h2:text-primary prose-h2:leading-[1.35] prose-h2:pt-4
+              prose-h3:text-2xl prose-h3:mb-6 prose-h3:mt-16 prose-h3:leading-[1.4]
+              prose-p:text-lg prose-p:leading-[2] prose-p:mb-8 prose-p:text-foreground/90
               prose-strong:text-foreground prose-strong:font-semibold
-              prose-em:text-foreground/80
-              prose-ul:my-8 prose-ul:space-y-3
-              prose-ol:my-8 prose-ol:space-y-3
-              prose-li:text-lg prose-li:leading-[1.8] prose-li:text-foreground/90 prose-li:my-2
+              prose-em:text-foreground/80 prose-em:italic
+              prose-ul:my-10 prose-ul:space-y-4 prose-ul:pl-6
+              prose-ol:my-10 prose-ol:space-y-4 prose-ol:pl-6
+              prose-li:text-lg prose-li:leading-[2] prose-li:text-foreground/90 prose-li:my-3 prose-li:pl-2
               prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 
-              prose-blockquote:py-6 prose-blockquote:px-8 prose-blockquote:my-10 prose-blockquote:rounded-r-xl
-              prose-blockquote:italic prose-blockquote:text-lg
-              prose-code:text-primary prose-code:bg-primary/10 prose-code:px-2 prose-code:py-1 
-              prose-code:rounded prose-code:text-base prose-code:font-normal prose-code:before:content-none prose-code:after:content-none
-              prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-pre:p-6 prose-pre:my-8
+              prose-blockquote:py-8 prose-blockquote:px-10 prose-blockquote:my-12 prose-blockquote:rounded-r-xl
+              prose-blockquote:italic prose-blockquote:text-xl prose-blockquote:leading-[1.9]
+              prose-code:text-primary prose-code:bg-primary/10 prose-code:px-2.5 prose-code:py-1.5 
+              prose-code:rounded-md prose-code:text-base prose-code:font-normal prose-code:before:content-none prose-code:after:content-none
+              prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-pre:p-8 prose-pre:my-12 prose-pre:rounded-xl
               prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-4
-              prose-img:rounded-xl prose-img:shadow-lg prose-img:my-10"
+              prose-img:rounded-xl prose-img:shadow-lg prose-img:my-14 prose-img:border prose-img:border-border/50"
               dangerouslySetInnerHTML={{ __html: htmlContent }}
             />
           </div>
