@@ -20,8 +20,8 @@ import { Badge } from "@/components/ui/badge";
 import { LogOut, Plus, Edit, Trash2, ArrowLeft, Bold, Italic, List, ListOrdered, Quote, Code, Heading1, Heading2, Heading3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { marked } from "marked";
+import { useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -60,6 +60,11 @@ const AdminArticles = () => {
     icon: "BookOpen",
     published: false,
   });
+
+  const previewHtml = useMemo(() => {
+    if (!formData.content) return "<p><em>No content to preview</em></p>";
+    return marked(formData.content, { breaks: true, gfm: true });
+  }, [formData.content]);
 
   const insertMarkdown = (syntax: string, placeholder: string = "") => {
     const textarea = document.getElementById("content") as HTMLTextAreaElement;
@@ -530,11 +535,9 @@ const AdminArticles = () => {
                         prose-p:mb-4 prose-p:leading-relaxed
                         prose-strong:font-semibold
                         prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded
-                        prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-4">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {formData.content || "_No content to preview_"}
-                        </ReactMarkdown>
-                      </div>
+                        prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-4"
+                        dangerouslySetInnerHTML={{ __html: previewHtml }}
+                      />
                     </TabsContent>
                   </Tabs>
                 </div>
