@@ -29,7 +29,7 @@ export const HeroSection = () => {
 
         {/* Main headline */}
         <h1 className="text-5xl md:text-7xl font-serif font-bold tracking-tight leading-tight">
-          I've Rejected Thousands.{" "}
+          I've Rejected Thousands.<br />
           <span className="text-primary text-neon">
             Here's How
           </span>{" "}
@@ -37,15 +37,12 @@ export const HeroSection = () => {
         </h1>
 
         {/* Subheadline with personal perspective */}
-        <div className="max-w-3xl mx-auto space-y-4">
+        <div className="max-w-3xl mx-auto space-y-3">
           <p className="text-xl md:text-2xl text-foreground font-semibold leading-relaxed">
             I'm tired of watching founders fail.
           </p>
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-            After <span className="text-foreground font-semibold">10 years in VC</span>, reviewing thousands of pitches, I keep hearing the same questions. Founders making the same mistakes. Getting rejected for the same reasons.
-          </p>
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-            <span className="text-primary font-semibold">So I built this.</span> A simple platform that gives you access to my decade of VC knowledge — the same frameworks, questions, and clarity I use to evaluate startups every single day.
+            After <span className="text-foreground font-semibold">10 years in VC</span>, reviewing thousands of pitches, I see the same mistakes over and over. <span className="text-primary font-semibold">So I built this</span> — a simple platform that gives you access to the same frameworks and clarity I use to evaluate startups every day.
           </p>
         </div>
 
