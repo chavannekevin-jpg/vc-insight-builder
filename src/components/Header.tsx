@@ -18,15 +18,15 @@ export const Header = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border shadow-sm">
-      <nav className="max-w-7xl mx-auto px-4 py-4">
+    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/50 shadow-sm">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-card border-2 border-primary flex items-center justify-center" style={{ boxShadow: 'var(--shadow-md)' }}>
-              <span className="text-primary font-bold text-lg group-hover:text-neon transition-all">UB</span>
+            <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 rounded-lg flex items-center justify-center shadow-md transition-all duration-300 group-hover:shadow-glow">
+              <span className="text-primary font-bold text-lg transition-all duration-300">UB</span>
             </div>
-            <span className="font-serif text-2xl hidden sm:inline text-primary text-neon tracking-tight">UglyBaby</span>
+            <span className="font-serif text-2xl hidden sm:inline text-foreground tracking-tight">UglyBaby</span>
           </Link>
 
           {/* Desktop Navigation */}
