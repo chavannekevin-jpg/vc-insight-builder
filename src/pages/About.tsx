@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/sections/Footer";
 import { Header } from "@/components/Header";
 import { Linkedin, ArrowRight, Target, TrendingUp, Users2, Briefcase, MessageSquare } from "lucide-react";
+import kevinPhoto from "@/assets/kevin-chavanne.jpg";
 
 const About = () => {
   const navigate = useNavigate();
@@ -16,6 +17,18 @@ const About = () => {
       <div className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16 animate-fade-in">
+            {/* Profile Photo */}
+            <div className="mb-8 flex justify-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-2xl animate-pulse" />
+                <img 
+                  src={kevinPhoto} 
+                  alt="Kevin Chavanne" 
+                  className="relative w-48 h-48 md:w-56 md:h-56 rounded-full object-cover border-4 border-primary/20 shadow-2xl hover-scale"
+                />
+              </div>
+            </div>
+            
             <h1 className="text-5xl md:text-6xl font-serif mb-6">
               Hi, I'm <span className="text-primary">Kevin Chavanne</span>
             </h1>
