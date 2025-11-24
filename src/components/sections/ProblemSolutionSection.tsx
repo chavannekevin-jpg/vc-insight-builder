@@ -19,14 +19,14 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground/90 leading-relaxed font-semibold mb-6">
-              You're getting ghosted. Here's why:
+              The problem isn't just features or traction—it's misalignment with how VCs evaluate startups.
             </p>
             
             <ul className="space-y-4 mb-6">
               {[
-                "Your traction doesn't translate to VC-scale",
-                "You focus on features, not market dynamics",
-                "Your team isn't framed as competitive advantage"
+                "Traction ≠ VC traction – Your growth looks great on paper, but it doesn't map to the metrics VCs care about.",
+                "Features over fundamentals – You obsess over product details, while investors are scanning for market potential, defensibility, and scalability.",
+                "Small deals, small impact – Low ACV means growth looks slow, even if adoption is strong."
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-destructive/5 border border-destructive/20 hover:bg-destructive/10 hover:border-destructive/30 transition-all duration-300">
                   <span className="text-destructive mt-0.5 font-bold">✗</span>
