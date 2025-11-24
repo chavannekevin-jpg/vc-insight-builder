@@ -13,7 +13,11 @@ import {
   Users,
   BarChart3,
   MessageSquare,
-  Zap
+  Zap,
+  Presentation,
+  Mic,
+  FolderOpen,
+  Calculator
 } from "lucide-react";
 
 const Product = () => {
@@ -53,10 +57,10 @@ const Product = () => {
   ];
 
   const futureFeatures = [
-    { icon: "📊", title: "Pitch Deck Generator", status: "Coming Soon" },
-    { icon: "🎤", title: "Pitch Script Writer", status: "Coming Soon" },
-    { icon: "📁", title: "Data Room Builder", status: "Coming Soon" },
-    { icon: "📈", title: "Financial Model Templates", status: "Coming Soon" }
+    { icon: Presentation, title: "Pitch Deck Generator", status: "Coming Soon", color: "blue" as const },
+    { icon: Mic, title: "Pitch Script Writer", status: "Coming Soon", color: "purple" as const },
+    { icon: FolderOpen, title: "Data Room Builder", status: "Coming Soon", color: "green" as const },
+    { icon: Calculator, title: "Financial Model Templates", status: "Coming Soon", color: "pink" as const }
   ];
 
   return (
@@ -260,17 +264,26 @@ const Product = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {futureFeatures.map((feature, index) => (
-              <ModernCard key={index} className="text-center">
-                <div className="space-y-3">
-                  <div className="text-4xl">{feature.icon}</div>
-                  <h3 className="font-semibold text-sm">{feature.title}</h3>
-                  <Badge variant="secondary" className="text-xs">
-                    {feature.status}
-                  </Badge>
-                </div>
-              </ModernCard>
-            ))}
+            {futureFeatures.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <ModernCard key={index} hover className="text-center relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="relative space-y-4">
+                    <div className="w-16 h-16 mx-auto rounded-2xl gradient-accent flex items-center justify-center shadow-glow group-hover:shadow-glow-strong transition-all duration-300 group-hover:scale-110">
+                      <Icon className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="font-bold text-base text-foreground">{feature.title}</h3>
+                    <Badge 
+                      variant="secondary" 
+                      className="text-xs px-3 py-1 bg-primary/10 text-primary border border-primary/30"
+                    >
+                      {feature.status}
+                    </Badge>
+                  </div>
+                </ModernCard>
+              );
+            })}
           </div>
         </div>
       </section>
