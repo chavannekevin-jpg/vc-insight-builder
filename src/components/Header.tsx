@@ -23,10 +23,10 @@ export const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 bg-gradient-to-br from-primary/15 to-secondary/15 border border-primary/20 rounded-2xl flex items-center justify-center shadow-sm transition-all duration-500 group-hover:shadow-md group-hover:scale-105">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 rounded-lg flex items-center justify-center shadow-md transition-all duration-300 group-hover:shadow-glow">
               <span className="text-primary font-bold text-lg transition-all duration-300">UB</span>
             </div>
-            <span className="font-serif text-2xl hidden sm:inline text-foreground tracking-tight font-semibold">UglyBaby</span>
+            <span className="font-serif text-2xl hidden sm:inline text-foreground tracking-tight">UglyBaby</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -50,7 +50,7 @@ export const Header = () => {
               onClick={() => navigate('/auth')}
               variant="outline"
               size="sm"
-              className="gap-2 rounded-xl h-10 px-5 font-medium transition-all duration-300"
+              className="gap-2"
             >
               <LogIn className="w-4 h-4" />
               Sign In
@@ -63,7 +63,7 @@ export const Header = () => {
                   document.getElementById('waitlist-form')?.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="gradient-primary rounded-xl h-10 px-6 font-semibold shadow-md hover:shadow-lg transition-all duration-500 hover:scale-105"
+              className="gradient-primary"
             >
               Get Started
             </Button>
