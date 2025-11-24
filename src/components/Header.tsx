@@ -35,8 +35,8 @@ export const Header = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive(link.path) ? "text-primary" : "text-muted-foreground"
+                className={`text-sm font-medium transition-all duration-300 ${
+                  isActive(link.path) ? "neon-pink" : "text-muted-foreground hover:neon-pink"
                 }`}
               >
                 {link.name}
@@ -85,8 +85,8 @@ export const Header = () => {
                   key={link.path}
                   to={link.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive(link.path) ? "text-primary" : "text-muted-foreground"
+                  className={`text-sm font-medium transition-all duration-300 ${
+                    isActive(link.path) ? "neon-pink" : "text-muted-foreground hover:neon-pink"
                   }`}
                 >
                   {link.name}
