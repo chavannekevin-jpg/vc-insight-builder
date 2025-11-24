@@ -780,7 +780,7 @@ export default function Portal() {
 
           <button
             onClick={handleLogout}
-            className="w-full mt-4 text-white/60 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
+            className="w-full mt-4 neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
           >
             <LogOut className="w-4 h-4" />
             Logout
@@ -821,7 +821,7 @@ export default function Portal() {
               <FounderScoreDisplay score={founderScore} className="text-white" />
               <button
                 onClick={handleLogout}
-                className="text-white/90 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
+                className="neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
               >
                 <LogOut className="w-4 h-4" />
                 Logout
