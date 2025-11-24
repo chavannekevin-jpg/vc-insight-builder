@@ -78,15 +78,15 @@ export default function EducationalContent() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <div className="max-w-5xl mx-auto px-6 sm:px-10 lg:px-16 py-24 space-y-20">
+      <div className="max-w-4xl mx-auto px-6 sm:px-10 lg:px-16 py-24 space-y-20">
         <Button variant="ghost" onClick={() => navigate("/hub")} className="gap-2 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-4 h-4" />
           Back to Hub
         </Button>
 
-        <article className="space-y-24">
+        <article className="space-y-24 mx-auto">
           {/* Article Header */}
-          <header className="space-y-10 max-w-3xl">
+          <header className="space-y-10 mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10">
               <BookOpen className="w-3.5 h-3.5 text-primary" />
               <span className="text-xs font-medium text-primary/80 uppercase tracking-wide">
@@ -98,7 +98,7 @@ export default function EducationalContent() {
               {article.title}
             </h1>
             
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
               {article.description}
             </p>
           </header>
