@@ -36,7 +36,8 @@ import {
   Database,
   Trophy,
   Heart,
-  Brain
+  Brain,
+  LogOut
 } from "lucide-react";
 import { SectionBadge } from "@/components/SectionBadge";
 import { FounderScoreDisplay } from "@/components/FounderScoreDisplay";
@@ -777,13 +778,13 @@ export default function Portal() {
             </Button>
           </form>
 
-          <Button
+          <button
             onClick={handleLogout}
-            variant="ghost"
-            className="w-full mt-4 text-white/60 hover:text-white hover:bg-white/5"
+            className="w-full mt-4 text-white/60 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
           >
+            <LogOut className="w-4 h-4" />
             Logout
-          </Button>
+          </button>
         </div>
       </div>
     );
@@ -818,14 +819,13 @@ export default function Portal() {
             </div>
             <div className="flex items-center gap-4">
               <FounderScoreDisplay score={founderScore} className="text-white" />
-              <Button 
-                onClick={handleLogout} 
-                variant="outline" 
-                size="sm"
-                className="border-white/20 bg-white/5 text-white hover:bg-white/10 backdrop-blur-sm"
+              <button
+                onClick={handleLogout}
+                className="text-white/90 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
               >
+                <LogOut className="w-4 h-4" />
                 Logout
-              </Button>
+              </button>
             </div>
           </div>
 
