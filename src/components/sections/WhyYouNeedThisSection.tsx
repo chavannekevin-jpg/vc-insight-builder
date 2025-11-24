@@ -1,11 +1,27 @@
-import { AlertCircle, Zap, TrendingUp } from "lucide-react";
+import { AlertCircle, Zap, TrendingUp, Target, Shield, Users, DollarSign } from "lucide-react";
 
 export const WhyYouNeedThisSection = () => {
   const confrontations = [
-    "Can this reach €100M+ ARR with a believable path?",
-    "What unfair advantage makes this team win this market?",
-    "What compounding defensibility grows with the startup?",
-    "Does the economic engine make sense at scale?"
+    {
+      question: "Can this company reach €100M+ ARR?",
+      challenge: "Level up your growth story.",
+      icon: TrendingUp
+    },
+    {
+      question: "What unfair advantage makes this team win?",
+      challenge: "Sharpen your competitive edge.",
+      icon: Target
+    },
+    {
+      question: "What compounding defensibility grows with you?",
+      challenge: "Build your moat strategy.",
+      icon: Shield
+    },
+    {
+      question: "Does the economic engine make sense at scale?",
+      challenge: "Master your unit economics.",
+      icon: DollarSign
+    }
   ];
 
   const outcomes = [
@@ -50,23 +66,35 @@ export const WhyYouNeedThisSection = () => {
             </div>
           </div>
 
-          <div className="relative group">
-            <div className="absolute inset-0 gradient-secondary opacity-10 blur-xl group-hover:opacity-20 transition-opacity duration-300" />
-            <div className="relative bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-8 hover:border-primary/30 transition-all duration-300">
-              <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                <div className="w-8 h-1 gradient-primary rounded-full" />
-                The questions that separate fundable companies
-              </h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                {confrontations.map((question, idx) => (
-                  <div key={idx} className="group/item flex items-start gap-3 p-4 rounded-xl bg-muted/30 border border-border/30 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300">
-                    <div className="mt-1 w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0 group-hover/item:shadow-glow transition-shadow duration-300">
-                      <span className="text-primary font-bold text-sm">{idx + 1}</span>
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold mb-8 flex items-center gap-3">
+              <div className="w-8 h-1 gradient-primary rounded-full" />
+              The questions that separate fundable companies
+            </h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              {confrontations.map((item, idx) => {
+                const IconComponent = item.icon;
+                return (
+                  <div key={idx} className="relative group/card">
+                    <div className="absolute inset-0 gradient-primary opacity-20 blur-lg group-hover/card:opacity-40 transition-opacity duration-300" />
+                    <div className="relative bg-card/90 backdrop-blur-xl border-2 border-primary/40 rounded-xl p-6 shadow-glow hover:shadow-glow-strong transition-all duration-300 hover:scale-[1.02]">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="p-3 rounded-lg gradient-primary shadow-glow flex-shrink-0">
+                          <IconComponent className="w-5 h-5 text-primary-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-base font-bold text-foreground mb-2 leading-snug">
+                            {item.question}
+                          </p>
+                          <p className="text-sm text-primary font-semibold">
+                            {item.challenge}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <span className="text-sm font-medium text-foreground/90 leading-relaxed">{question}</span>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
 
