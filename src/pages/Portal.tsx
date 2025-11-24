@@ -27,9 +27,20 @@ import {
   Star,
   PartyPopper,
   TrendingUp as TrendingUpIcon,
-  Eye
+  Eye,
+  Shield,
+  Crown,
+  ThumbsUp,
+  Network,
+  Lock,
+  Database,
+  Trophy,
+  Heart,
+  Brain
 } from "lucide-react";
 import { SectionBadge } from "@/components/SectionBadge";
+import { FounderScoreDisplay } from "@/components/FounderScoreDisplay";
+import { LevelCard } from "@/components/LevelCard";
 
 const questionSections = {
   "Problem": {
@@ -37,12 +48,18 @@ const questionSections = {
     color: "text-red-500",
     questions: [
       { 
-        key: "problem_description", 
+        key: "problem_description",
+        title: "What Makes People Suffer?",
+        tldr: "Define the pain point that keeps your customers up at night",
+        icon: AlertCircle,
         question: "Describe the problem", 
         placeholder: "What's the pain point your customers face? Make it real, make it hurt." 
       },
       { 
-        key: "problem_workflow", 
+        key: "problem_workflow",
+        title: "Show Us The Broken System",
+        tldr: "How do people struggle through this problem today?",
+        icon: Target,
         question: "What is the main process, task, or workflow your product improves, replaces, or simplifies?", 
         placeholder: "Walk us through the broken workflow. How does it work today vs. how it should work?" 
       },
@@ -53,17 +70,26 @@ const questionSections = {
     color: "text-yellow-500",
     questions: [
       { 
-        key: "solution_description", 
+        key: "solution_description",
+        title: "Your Weapon of Choice",
+        tldr: "The solution that changes the game",
+        icon: Zap,
         question: "Description of your product/service", 
         placeholder: "What have you built? Get specific about what it does." 
       },
       { 
-        key: "solution_features", 
+        key: "solution_features",
+        title: "Unlock Your Arsenal",
+        tldr: "Key features that make magic happen",
+        icon: Sparkles,
         question: "Describe the key features and brief explanations of how they work / why they matter", 
         placeholder: "Break down 3-5 core features. What makes each one powerful?" 
       },
       { 
-        key: "solution_social_proof", 
+        key: "solution_social_proof",
+        title: "Show Me You Have Believers",
+        tldr: "Who's already singing your praises?",
+        icon: ThumbsUp,
         question: "Social proof (early adoption, pilot results, churn, testimonials, metrics)", 
         placeholder: "Show us the love. Who's using it? What results have you seen?" 
       },
@@ -74,22 +100,34 @@ const questionSections = {
     color: "text-blue-500",
     questions: [
       { 
-        key: "market_target_customer", 
+        key: "market_target_customer",
+        title: "Who's Paying The Bills?",
+        tldr: "Your ideal customer in crystal clear detail",
+        icon: Users,
         question: "Who is your target customer?", 
         placeholder: "Get specific. Company size, industry, geography. Paint the picture." 
       },
       { 
-        key: "market_buying_persona", 
+        key: "market_buying_persona",
+        title: "The Money Person",
+        tldr: "Who actually signs the checks?",
+        icon: Crown,
         question: "Who is your buying persona?", 
         placeholder: "Who signs the check? Title, priorities, pain points." 
       },
       { 
-        key: "market_current_acv", 
+        key: "market_current_acv",
+        title: "Your Price Tag Today",
+        tldr: "What customers pay you right now",
+        icon: DollarSign,
         question: "What is your current pricing ideally ACV?", 
         placeholder: "What are you charging today? Be transparent." 
       },
       { 
-        key: "market_projected_acv", 
+        key: "market_projected_acv",
+        title: "Your Future Price Tag",
+        tldr: "Where the money's heading",
+        icon: TrendingUp,
         question: "What is your projected ACV?", 
         placeholder: "Where do you see pricing going as you scale?" 
       },
@@ -100,17 +138,26 @@ const questionSections = {
     color: "text-purple-500",
     questions: [
       { 
-        key: "competition_mission", 
+        key: "competition_mission",
+        title: "Your Battle Cry",
+        tldr: "Why you exist beyond making money",
+        icon: Heart,
         question: "What is your company mission / product / core value proposition?", 
         placeholder: "Why do you exist? What's your North Star?" 
       },
       { 
-        key: "competition_competitors", 
+        key: "competition_competitors",
+        title: "Name Your Enemies",
+        tldr: "Who you're fighting against",
+        icon: Shield,
         question: "List the competitors you know", 
         placeholder: "Who else is in the ring? Direct and indirect." 
       },
       { 
-        key: "competition_strength", 
+        key: "competition_strength",
+        title: "Your Secret Weapon",
+        tldr: "Why you'll win this fight",
+        icon: Flame,
         question: "What do you think your strength is facing your competition?", 
         placeholder: "What's your unfair advantage? Why will you win?" 
       },
@@ -121,27 +168,42 @@ const questionSections = {
     color: "text-green-500",
     questions: [
       { 
-        key: "team_size", 
+        key: "team_size",
+        title: "Headcount Power",
+        tldr: "Size of your army",
+        icon: Users,
         question: "Number of full-time employees / team structure", 
         placeholder: "How many people? How are you organized?" 
       },
       { 
-        key: "team_functions", 
+        key: "team_functions",
+        title: "Who's In Your Elite Squad?",
+        tldr: "What roles cover your bases",
+        icon: Award,
         question: "Key team functions / outsourced support", 
         placeholder: "Who does what? What's in-house vs. outsourced?" 
       },
       { 
-        key: "team_founders", 
+        key: "team_founders",
+        title: "Meet The Founding Legends",
+        tldr: "The people who started this",
+        icon: Crown,
         question: "Founders (name, role, % ownership, background)", 
         placeholder: "Introduce the founding team. Why are they perfect for this?" 
       },
       { 
-        key: "team_history", 
+        key: "team_history",
+        title: "Team Chemistry Check",
+        tldr: "How long you've been rolling together",
+        icon: Heart,
         question: "Prior collaboration or history among team members", 
         placeholder: "Have you worked together before? What's the chemistry?" 
       },
       { 
-        key: "team_ownership", 
+        key: "team_ownership",
+        title: "Skin In The Game",
+        tldr: "Who owns what",
+        icon: Award,
         question: "Total team/founder ownership (% FD)", 
         placeholder: "What % of the company does the team own fully diluted?" 
       },
@@ -152,32 +214,50 @@ const questionSections = {
     color: "text-orange-500",
     questions: [
       { 
-        key: "usp_differentiators", 
+        key: "usp_differentiators",
+        title: "Your Unfair Advantages",
+        tldr: "What others can't copy",
+        icon: Star,
         question: "Key differentiators you already have or want to emphasize (3–5 max)", 
         placeholder: "What makes you different? List your secret weapons." 
       },
       { 
-        key: "usp_distribution", 
+        key: "usp_distribution",
+        title: "Network Effect Unlocked?",
+        tldr: "How you reach and keep customers",
+        icon: Network,
         question: "Distribution or network advantages", 
         placeholder: "Do you have special access? Partnerships? Network effects?" 
       },
       { 
-        key: "usp_business_model", 
+        key: "usp_business_model",
+        title: "The Money Machine Design",
+        tldr: "How you capture value differently",
+        icon: Zap,
         question: "Business model advantages (e.g., revenue share, SaaS, upsell, capital-efficient)", 
         placeholder: "What's smart about how you make money?" 
       },
       { 
-        key: "usp_compliance", 
+        key: "usp_compliance",
+        title: "Your Regulatory Moat",
+        tldr: "Barriers that protect you",
+        icon: Lock,
         question: "Compliance / regulatory or local-market advantages (if relevant)", 
         placeholder: "Any regulatory moats? Local advantages?" 
       },
       { 
-        key: "usp_data", 
+        key: "usp_data",
+        title: "Data Gold Mine?",
+        tldr: "Proprietary data that gives you power",
+        icon: Database,
         question: "Data or insights layer potential", 
         placeholder: "Do you collect unique data? Can it become a moat?" 
       },
       { 
-        key: "usp_customer_rationale", 
+        key: "usp_customer_rationale",
+        title: "Why Customers Choose You",
+        tldr: "The real reasons they switched",
+        icon: ThumbsUp,
         question: "Customer rationale (why clients pick you over competitors)", 
         placeholder: "From the customer's mouth—why do they choose you?" 
       },
@@ -188,32 +268,50 @@ const questionSections = {
     color: "text-emerald-500",
     questions: [
       { 
-        key: "business_model_type", 
+        key: "business_model_type",
+        title: "How You Print Money",
+        tldr: "Your revenue model explained",
+        icon: DollarSign,
         question: "Business model type (SaaS / Marketplace / etc.)", 
         placeholder: "How does the business work? SaaS, marketplace, transaction-based?" 
       },
       { 
-        key: "business_model_revenue", 
+        key: "business_model_revenue",
+        title: "Revenue Breakdown",
+        tldr: "Where the money comes from",
+        icon: BarChart3,
         question: "Revenue sources & pricing details", 
         placeholder: "Where does money come from? Break down revenue streams." 
       },
       { 
-        key: "business_model_acv_growth", 
+        key: "business_model_acv_growth",
+        title: "Growth Trajectory",
+        tldr: "How fast you're scaling",
+        icon: TrendingUp,
         question: "ACV range or growth potential", 
         placeholder: "What's the ACV range? How does it expand over time?" 
       },
       { 
-        key: "business_model_gtm", 
+        key: "business_model_gtm",
+        title: "Sales War Room Strategy",
+        tldr: "How you capture market share",
+        icon: Target,
         question: "GTM strategy (direct / partner / hybrid)", 
         placeholder: "How do you sell? Sales team, partners, self-serve?" 
       },
       { 
-        key: "business_model_margins", 
+        key: "business_model_margins",
+        title: "Margin Magic",
+        tldr: "The unit economics that matter",
+        icon: Sparkles,
         question: "Margins or cost drivers", 
         placeholder: "What are your gross margins? What drives costs?" 
       },
       { 
-        key: "business_model_future", 
+        key: "business_model_future",
+        title: "Future Money Moves",
+        tldr: "New ways to monetize",
+        icon: Rocket,
         question: "Future monetization ideas", 
         placeholder: "What other ways could you make money down the line?" 
       },
@@ -224,37 +322,58 @@ const questionSections = {
     color: "text-pink-500",
     questions: [
       { 
-        key: "traction_launch", 
+        key: "traction_launch",
+        title: "Launch & First Wins",
+        tldr: "When you first entered the arena",
+        icon: Rocket,
         question: "Launch date and initial milestones", 
         placeholder: "When did you launch? What have you hit so far?" 
       },
       { 
-        key: "traction_revenue", 
+        key: "traction_revenue",
+        title: "Show Me You Have Momentum",
+        tldr: "Revenue numbers that speak volumes",
+        icon: DollarSign,
         question: "Current ARR / MRR and past values (for comparison)", 
         placeholder: "Show us the revenue trajectory. Where were you? Where are you now?" 
       },
       { 
-        key: "traction_customers", 
+        key: "traction_customers",
+        title: "Army Size",
+        tldr: "How many are in your customer base",
+        icon: Users,
         question: "Number of customers, users, or partners", 
         placeholder: "How many customers? How many users? Growing how fast?" 
       },
       { 
-        key: "traction_key_customers", 
+        key: "traction_key_customers",
+        title: "Name Drop Your Stars",
+        tldr: "The logos that matter",
+        icon: Star,
         question: "Key customer names or use cases", 
         placeholder: "Any notable customers? Compelling use cases?" 
       },
       { 
-        key: "traction_efficiency", 
+        key: "traction_efficiency",
+        title: "Unit Economics Flex",
+        tldr: "Proof your model works",
+        icon: BarChart3,
         question: "Efficiency metrics (CAC, retention, margins)", 
         placeholder: "What's your CAC? Retention rate? Unit economics looking good?" 
       },
       { 
-        key: "traction_funding", 
+        key: "traction_funding",
+        title: "Who Believes In You?",
+        tldr: "The investors who backed you",
+        icon: Trophy,
         question: "Funding, investors, or advisors", 
         placeholder: "Who's backed you? Any notable angels or advisors?" 
       },
       { 
-        key: "traction_milestones", 
+        key: "traction_milestones",
+        title: "Major Victory Lap",
+        tldr: "Wins that prove you're for real",
+        icon: Crown,
         question: "Notable milestones (expansion, regulation, product releases)", 
         placeholder: "Any big wins? New markets? Product launches? Partnerships?" 
       },
@@ -276,6 +395,8 @@ export default function Portal() {
   const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
   const [isFetchingFeedback, setIsFetchingFeedback] = useState(false);
   const [feedbackTimeoutId, setFeedbackTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [founderScore, setFounderScore] = useState(0);
+  const [showNeonFlash, setShowNeonFlash] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -476,6 +597,27 @@ export default function Portal() {
     (answeredQuestions / totalQuestions) * 100
   );
 
+  // Calculate Founder Score
+  useEffect(() => {
+    const completionScore = (answeredQuestions / totalQuestions) * 60;
+    const qualityBonus = calculateQualityBonus();
+    setFounderScore(Math.round(completionScore + qualityBonus));
+  }, [responses]);
+
+  const calculateQualityBonus = () => {
+    let bonus = 0;
+    Object.entries(responses).forEach(([key, answer]) => {
+      if (!answer || answer.trim().length === 0) return;
+      
+      const wordCount = answer.trim().split(/\s+/).length;
+      if (wordCount < 20) bonus += 0; // Too short
+      else if (wordCount < 50) bonus += 0.5; // Minimal
+      else if (wordCount < 100) bonus += 0.8; // Good
+      else bonus += 1.1; // Excellent
+    });
+    return Math.min(bonus, 40); // Cap at 40 points
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
@@ -483,6 +625,10 @@ export default function Portal() {
 
   const handleNext = () => {
     if (currentStep < allQuestions.length - 1) {
+      // Trigger neon flash
+      setShowNeonFlash(true);
+      setTimeout(() => setShowNeonFlash(false), 200);
+      
       setIsAnimating(true);
       setMicroFeedback("");
       setIsFetchingFeedback(false);
@@ -645,6 +791,11 @@ export default function Portal() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden">
+      {/* Neon Flash Effect */}
+      {showNeonFlash && (
+        <div className="fixed inset-0 bg-neon-pink/20 pointer-events-none animate-pulse z-50" />
+      )}
+
       {/* Animated background effects */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-500 rounded-full blur-[120px] animate-pulse" />
@@ -656,23 +807,26 @@ export default function Portal() {
       <div className="border-b border-white/10 bg-black/40 backdrop-blur-xl sticky top-0 z-50 shadow-[0_0_50px_rgba(236,72,153,0.3)]">
         <div className="max-w-4xl mx-auto p-4 md:p-6 relative">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="relative">
+            <div className="relative flex-1">
               <h1 className="text-2xl md:text-3xl font-serif font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(236,72,153,0.5)] flex items-center gap-3">
                 <Flame className="w-8 h-8 text-pink-500 animate-pulse drop-shadow-[0_0_10px_rgba(236,72,153,0.8)]" />
                 Build Your Memo
               </h1>
               <p className="text-sm text-white/60 mt-1">
-                {companyName} • {user.email}
+                Level {currentStep + 1} of {totalQuestions} • {companyName}
               </p>
             </div>
-            <Button 
-              onClick={handleLogout} 
-              variant="outline" 
-              size="sm"
-              className="border-white/20 bg-white/5 text-white hover:bg-white/10 backdrop-blur-sm"
-            >
-              Logout
-            </Button>
+            <div className="flex items-center gap-4">
+              <FounderScoreDisplay score={founderScore} className="text-white" />
+              <Button 
+                onClick={handleLogout} 
+                variant="outline" 
+                size="sm"
+                className="border-white/20 bg-white/5 text-white hover:bg-white/10 backdrop-blur-sm"
+              >
+                Logout
+              </Button>
+            </div>
           </div>
 
           {/* Progress Bar */}
@@ -751,57 +905,44 @@ export default function Portal() {
             </div>
 
             {/* Question Card */}
-            <div className="relative group">
-              {/* Card glow */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-3xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity" />
-              
-              <div className="relative bg-gradient-to-br from-white/10 to-white/5 border-2 border-white/20 rounded-3xl shadow-2xl p-8 md:p-12 backdrop-blur-xl animate-scale-in">
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    {hasAnswer ? (
-                      <CheckCircle2 className="w-10 h-10 text-green-400 flex-shrink-0 mt-1 animate-scale-in drop-shadow-[0_0_10px_rgba(74,222,128,0.6)]" />
-                    ) : (
-                      <Sparkles className="w-10 h-10 text-pink-400 flex-shrink-0 mt-1 animate-pulse drop-shadow-[0_0_10px_rgba(236,72,153,0.6)]" />
-                    )}
-                    <div className="flex-1">
-                      <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
-                        {currentQuestion.question}
-                      </h2>
-                    </div>
+            <LevelCard
+              levelNumber={currentStep + 1}
+              title={currentQuestion.title}
+              tldr={currentQuestion.tldr}
+              icon={currentQuestion.icon}
+            >
+              <div className="space-y-6">
+                <Textarea
+                  value={currentAnswer}
+                  onChange={(e) => handleAnswerChange(currentQuestion.key, e.target.value)}
+                  placeholder={currentQuestion.placeholder}
+                  className="min-h-[200px] md:min-h-[250px] text-base bg-black/40 border-2 border-white/20 focus:border-pink-500/50 focus:ring-4 focus:ring-pink-500/20 transition-all resize-none text-white placeholder:text-white/40 backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]"
+                  autoFocus
+                />
+
+                {/* AI VC Coach Feedback */}
+                {isFetchingFeedback && (
+                  <div className="flex items-center gap-2 text-cyan-400 text-sm font-medium animate-fade-in">
+                    <Brain className="w-4 h-4 animate-pulse" />
+                    <span className="drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">AI Coach analyzing...</span>
                   </div>
+                )}
+                
+                {!isFetchingFeedback && microFeedback && (
+                  <div className="flex items-start gap-3 text-blue-400 text-sm bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                    <Brain className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span className="leading-relaxed">{microFeedback}</span>
+                  </div>
+                )}
 
-                  <Textarea
-                    value={currentAnswer}
-                    onChange={(e) => handleAnswerChange(currentQuestion.key, e.target.value)}
-                    placeholder={currentQuestion.placeholder}
-                    className="min-h-[200px] md:min-h-[250px] text-base bg-black/40 border-2 border-white/20 focus:border-pink-500/50 focus:ring-4 focus:ring-pink-500/20 transition-all resize-none text-white placeholder:text-white/40 backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]"
-                    autoFocus
-                  />
-
-                  {/* AI VC Coach Feedback */}
-                  {isFetchingFeedback && (
-                    <div className="flex items-center gap-2 text-cyan-400 text-sm font-medium animate-fade-in">
-                      <Sparkles className="w-4 h-4 animate-pulse" />
-                      <span className="drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">AI Coach analyzing...</span>
-                    </div>
-                  )}
-                  
-                  {!isFetchingFeedback && microFeedback && (
-                    <div className="flex items-start gap-3 text-blue-400 text-sm bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-                      <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                      <span className="leading-relaxed">{microFeedback}</span>
-                    </div>
-                  )}
-
-                  {hasAnswer && !microFeedback && !isFetchingFeedback && (
-                    <div className="flex items-center gap-2 text-green-400 text-sm font-medium animate-fade-in">
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span className="drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]">Saved</span>
-                    </div>
-                  )}
-                </div>
+                {hasAnswer && !microFeedback && !isFetchingFeedback && (
+                  <div className="flex items-center gap-2 text-green-400 text-sm font-medium animate-fade-in">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span className="drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]">Saved</span>
+                  </div>
+                )}
               </div>
-            </div>
+            </LevelCard>
 
             {/* Navigation */}
             <div className="flex items-center justify-between mt-8 gap-4">
@@ -848,48 +989,66 @@ export default function Portal() {
               </div>
 
               {isLastQuestion ? (
-                <Button
-                  onClick={async () => {
-                    if (progressPercentage === 100) {
-                      try {
-                        // Create memo record
-                        const { error } = await supabase
-                          .from("memos")
-                          .insert({
-                            company_id: companyId,
-                            status: "submitted",
-                            content: null, // You'll fill this manually later
+                <div className="flex flex-col items-end gap-4">
+                  <div className="text-right">
+                    <p className="text-white/90 mb-2">
+                      Your Founder Score: <span className={`text-2xl font-bold ${
+                        founderScore >= 86 ? "text-neon-pink" :
+                        founderScore >= 71 ? "text-green-400" :
+                        founderScore >= 41 ? "text-yellow-400" : "text-red-400"
+                      }`}>{founderScore}</span>
+                    </p>
+                    <p className="text-sm text-white/60 italic">
+                      {founderScore >= 96 ? "🔥 LEGENDARY. Go raise that money!" :
+                       founderScore >= 86 ? "Impressive. Top 10% territory." :
+                       founderScore >= 71 ? "Strong! You've got a real shot here." :
+                       founderScore >= 51 ? "Solid. VCs won't slam the door on you." :
+                       "Needs work. But you finished!"}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={async () => {
+                      if (progressPercentage === 100) {
+                        try {
+                          // Create memo record
+                          const { error } = await supabase
+                            .from("memos")
+                            .insert({
+                              company_id: companyId,
+                              status: "submitted",
+                              content: null,
+                            });
+
+                          if (error) throw error;
+
+                          toast({
+                            title: "Memo Submitted! 🎉",
+                            description: "Your memo is getting ready. Let's see what VCs have to say about you.",
                           });
-
-                        if (error) throw error;
-
+                        } catch (error: any) {
+                          console.error("Error creating memo:", error);
+                          toast({
+                            title: "Error",
+                            description: "Could not submit memo. Your answers are still saved.",
+                            variant: "destructive",
+                          });
+                        }
+                      } else {
                         toast({
-                          title: "Memo Submitted! 🎉",
-                          description: "All your answers have been saved to the database. You can now extract and process them manually.",
-                        });
-                      } catch (error: any) {
-                        console.error("Error creating memo:", error);
-                        toast({
-                          title: "Error",
-                          description: "Could not submit memo. Your answers are still saved.",
+                          title: "Almost there!",
+                          description: `Please answer all questions (${answeredQuestions}/${totalQuestions} complete)`,
                           variant: "destructive",
                         });
                       }
-                    } else {
-                      toast({
-                        title: "Almost there!",
-                        description: `Please answer all questions (${answeredQuestions}/${totalQuestions} complete)`,
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                  disabled={progressPercentage < 100}
-                  size="lg"
-                  className="gap-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 border-0 text-white shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:shadow-[0_0_40px_rgba(236,72,153,0.7)] hover:scale-105 transition-all disabled:opacity-30 disabled:hover:scale-100"
-                >
-                  <Rocket className="w-5 h-5" />
-                  Generate
-                </Button>
+                    }}
+                    disabled={progressPercentage < 100}
+                    size="lg"
+                    className="gap-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 border-0 text-white shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:shadow-[0_0_40px_rgba(236,72,153,0.7)] hover:scale-105 transition-all disabled:opacity-30 disabled:hover:scale-100"
+                  >
+                    <Rocket className="w-5 h-5" />
+                    Generate My VC-Ready Memo
+                  </Button>
+                </div>
               ) : (
                 <Button
                   onClick={handleNext}
