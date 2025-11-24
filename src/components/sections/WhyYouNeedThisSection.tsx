@@ -1,4 +1,4 @@
-import { AlertCircle, Zap, TrendingUp, Target, Shield, Users, DollarSign } from "lucide-react";
+import { AlertCircle, Zap, TrendingUp, Target, Shield, DollarSign, FileText, Lightbulb, Eye, Network } from "lucide-react";
 
 export const WhyYouNeedThisSection = () => {
   const confrontations = [
@@ -25,9 +25,31 @@ export const WhyYouNeedThisSection = () => {
   ];
 
   const outcomes = [
-    "Remove blind spots that kill deals",
-    "Answer objections before the meeting",
-    "Stand out from founders repeating mistakes"
+    {
+      icon: FileText,
+      title: "Your Personalized VC Memo",
+      description: "a multi-page, VC-style document that investors actually use to decide on funding. Objective, unbiased, and designed to reveal strengths, risks, and growth potential — giving you the same insights VCs rely on."
+    },
+    {
+      icon: Target,
+      title: "Actionable Feedback",
+      description: "clear, practical guidance on blind spots, weaknesses, and potential objections so you can fix them before pitching."
+    },
+    {
+      icon: Eye,
+      title: "VC Lens on Your Story",
+      description: "your startup reframed as a VC-ready investment case, making your value and growth potential obvious."
+    },
+    {
+      icon: Lightbulb,
+      title: "Your Investment Thesis",
+      description: "the core narrative a VC would pitch to other investors, forming the backbone of every deal discussion."
+    },
+    {
+      icon: Network,
+      title: "Optional Exposure",
+      description: "the ability to share your profile with our VC network for early visibility (optional, at your discretion)."
+    }
   ];
 
   return (
@@ -106,15 +128,21 @@ export const WhyYouNeedThisSection = () => {
                 </div>
                 <h3 className="text-xl font-bold bg-gradient-to-r from-success to-success/70 bg-clip-text text-transparent">What you get</h3>
               </div>
-              <div className="space-y-3">
-                {outcomes.map((outcome, idx) => (
-                  <div key={idx} className="flex items-start gap-4 p-4 rounded-xl bg-success/5 border border-success/30 hover:bg-success/10 hover:border-success/40 hover:shadow-[0_0_20px_rgba(34,197,94,0.2)] transition-all duration-300 group/outcome">
-                    <div className="mt-0.5 w-5 h-5 rounded-full bg-success/30 flex items-center justify-center flex-shrink-0 group-hover/outcome:bg-success/40 group-hover/outcome:shadow-[0_0_10px_rgba(34,197,94,0.4)] transition-all duration-300">
-                      <span className="text-success font-bold text-xs">✓</span>
+              <div className="space-y-4">
+                {outcomes.map((outcome, idx) => {
+                  const Icon = outcome.icon;
+                  return (
+                    <div key={idx} className="flex items-start gap-4 p-5 rounded-xl bg-success/5 border border-success/30 hover:bg-success/10 hover:border-success/40 hover:shadow-[0_0_20px_rgba(34,197,94,0.2)] transition-all duration-300 group/outcome">
+                      <div className="p-2 rounded-lg bg-success/20 border border-success/40 flex-shrink-0 mt-0.5">
+                        <Icon className="w-4 h-4 text-success" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-sm text-foreground mb-1">{outcome.title}</h4>
+                        <p className="text-xs text-foreground/70 leading-relaxed">{outcome.description}</p>
+                      </div>
                     </div>
-                    <span className="text-sm font-medium text-foreground/90 leading-relaxed">{outcome}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
