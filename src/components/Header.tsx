@@ -24,9 +24,9 @@ export const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 rounded-lg flex items-center justify-center shadow-md transition-all duration-300 group-hover:shadow-glow">
-              <span className="text-primary font-bold text-lg transition-all duration-300">UB</span>
+              <span className="text-neon neon-text font-bold text-lg transition-all duration-300">UB</span>
             </div>
-            <span className="font-serif text-2xl hidden sm:inline text-foreground tracking-tight">UglyBaby</span>
+            <span className="font-serif text-2xl hidden sm:inline text-neon neon-text tracking-tight">UglyBaby</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -46,15 +46,13 @@ export const Header = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Button 
+            <button
               onClick={() => navigate('/auth')}
-              size="sm"
-              className="gap-2 relative group overflow-hidden bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/30 hover:border-primary/50 backdrop-blur-xl transition-all duration-300 hover:shadow-glow"
+              className="text-neon neon-text hover:shadow-glow-strong transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <LogIn className="w-4 h-4 relative z-10 text-primary" />
-              <span className="relative z-10 text-foreground font-semibold">Sign In</span>
-            </Button>
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </button>
             <Button 
               onClick={() => {
                 const pricingSection = document.getElementById('pricing-section');
@@ -94,17 +92,16 @@ export const Header = () => {
                   {link.name}
                 </Link>
               ))}
-              <Button 
+              <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   navigate('/auth');
                 }}
-                className="w-full gap-2 relative group overflow-hidden bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/30 hover:border-primary/50 backdrop-blur-xl transition-all duration-300"
+                className="w-full text-neon neon-text hover:shadow-glow-strong transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <LogIn className="w-4 h-4 relative z-10 text-primary" />
-                <span className="relative z-10 text-foreground font-semibold">Sign In</span>
-              </Button>
+                <LogIn className="w-4 h-4" />
+                Sign In
+              </button>
               <Button 
                 onClick={() => {
                   setMobileMenuOpen(false);
