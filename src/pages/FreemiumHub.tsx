@@ -142,7 +142,7 @@ export default function FreemiumHub() {
               <span className="text-primary font-bold">Get your investment memo →</span>
             </p>
           </div>
-          <Button size="sm" className="gradient-primary" onClick={() => navigate("/auth?plan=Early Access&price=€29.99")}>
+          <Button size="sm" className="gradient-primary" onClick={() => navigate("/portal")}>
             Get Your Memo
           </Button>
         </div>
@@ -283,7 +283,7 @@ export default function FreemiumHub() {
                 <Button 
                   size="lg"
                   className="gradient-primary shadow-glow hover-neon-pulse font-bold"
-                  onClick={() => navigate("/auth?plan=Early Access&price=€29.99")}
+                  onClick={() => navigate("/portal")}
                 >
                   Get Your Investment Memo →
                 </Button>
@@ -304,7 +304,7 @@ export default function FreemiumHub() {
           <Button 
             size="lg"
             className="text-lg px-10 py-6 gradient-primary shadow-glow hover-neon-pulse transition-all duration-300 font-bold uppercase tracking-wider"
-            onClick={() => navigate("/auth?plan=Early Access&price=€29.99")}
+            onClick={() => navigate("/portal")}
           >
             Get My Investment Memo →
           </Button>
@@ -318,7 +318,7 @@ export default function FreemiumHub() {
             <FileText className="w-5 h-5 text-primary" />
             <span className="text-sm font-medium">Get your personalized VC investment memo for {company?.name}</span>
           </div>
-          <Button className="gradient-primary" onClick={() => navigate("/auth?plan=Early Access&price=€29.99")}>
+          <Button className="gradient-primary" onClick={() => navigate("/portal")}>
             Get Your Memo
           </Button>
         </div>
