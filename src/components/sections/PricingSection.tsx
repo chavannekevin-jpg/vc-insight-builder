@@ -38,14 +38,14 @@ export const PricingSection = () => {
   ];
 
   return (
-    <section className="py-20 px-6 sm:px-8 lg:px-12 bg-muted/30">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-serif mb-4">Choose Your Plan</h2>
-          <p className="text-lg text-muted-foreground">Select the option that fits your timeline</p>
+    <section className="py-24 px-6 sm:px-8 lg:px-12 bg-muted/20">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-20">
+          <h2 className="text-4xl md:text-6xl font-serif mb-6 font-bold tracking-tight">Choose Your Plan</h2>
+          <p className="text-lg md:text-xl text-muted-foreground">Select the option that fits your timeline</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
           {pricingOptions.map((option, index) => (
             <ModernCard 
               key={index}
