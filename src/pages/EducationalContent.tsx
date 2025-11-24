@@ -1,12 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, Loader2, BookOpen } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { marked } from "marked";
 
 interface Article {
   id: string;
@@ -23,6 +22,11 @@ export default function EducationalContent() {
   const navigate = useNavigate();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const htmlContent = useMemo(() => {
+    if (!article) return "";
+    return marked(article.content, { breaks: true, gfm: true });
+  }, [article]);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -116,11 +120,9 @@ export default function EducationalContent() {
               prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
               prose-pre:bg-muted prose-pre:border prose-pre:border-border
               prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-              prose-img:rounded-lg prose-img:shadow-md">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {article.content}
-              </ReactMarkdown>
-            </div>
+              prose-img:rounded-lg prose-img:shadow-md"
+              dangerouslySetInnerHTML={{ __html: htmlContent }}
+            />
           </div>
 
           {/* Call to Action */}
