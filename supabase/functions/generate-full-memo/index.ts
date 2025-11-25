@@ -163,13 +163,14 @@ serve(async (req) => {
       const customPrompt = customPrompts[sectionName];
       
       const prompt = customPrompt 
-        ? `${customPrompt}\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.\n\nRaw information:\n${combinedContent}\n\nReturn ONLY valid JSON with the following structure (no markdown, no code blocks):\n{\n  "paragraphs": [{"text": "...", "emphasis": "high|medium|normal"}],\n  "highlights": [{"metric": "90%", "label": "Description"}],\n  "keyPoints": ["Point 1", "Point 2"]\n}`
+        ? `${customPrompt}\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.\n\nRaw information:\n${combinedContent}\n\nReturn ONLY valid JSON with the following structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "...", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "Description"}],\n    "keyPoints": ["Point 1", "Point 2"]\n  },\n  "vcReflection": {\n    "analysis": "Detailed VC analysis text here",\n    "questions": ["Question 1?", "Question 2?", "Question 3?"],\n    "benchmarking": "Optional benchmarking insights",\n    "conclusion": "Investment synopsis text here"\n  }\n}`
         : `You are a professional VC investment memo writer. Take the following startup information for the "${sectionName}" section and create a clear, concise, and compelling narrative in structured JSON format.
 
 Requirements:
 - Create 2-4 well-structured paragraphs with varying emphasis levels
 - Extract key metrics and statistics as highlights (if any exist in the data)
 - Identify 3-5 key takeaway points
+- Provide VC perspective with analysis, questions, and conclusion
 - Use professional, direct language that VCs expect
 - Focus on facts and concrete details
 - Keep total content between 150-300 words
@@ -181,20 +182,32 @@ ${combinedContent}
 
 Return ONLY valid JSON with this exact structure (no markdown, no code blocks, no preambles):
 {
-  "paragraphs": [
-    {"text": "Opening paragraph text here", "emphasis": "high"},
-    {"text": "Supporting details here", "emphasis": "medium"},
-    {"text": "Additional context", "emphasis": "normal"}
-  ],
-  "highlights": [
-    {"metric": "90%", "label": "Market growth rate"},
-    {"metric": "$10M", "label": "Revenue run rate"}
-  ],
-  "keyPoints": [
-    "First key takeaway",
-    "Second key takeaway",
-    "Third key takeaway"
-  ]
+  "narrative": {
+    "paragraphs": [
+      {"text": "Opening paragraph text here", "emphasis": "high"},
+      {"text": "Supporting details here", "emphasis": "medium"},
+      {"text": "Additional context", "emphasis": "normal"}
+    ],
+    "highlights": [
+      {"metric": "90%", "label": "Market growth rate"},
+      {"metric": "$10M", "label": "Revenue run rate"}
+    ],
+    "keyPoints": [
+      "First key takeaway",
+      "Second key takeaway",
+      "Third key takeaway"
+    ]
+  },
+  "vcReflection": {
+    "analysis": "Brief VC perspective on this section",
+    "questions": [
+      "Key question investors would ask?",
+      "Another important question?",
+      "Third critical question?"
+    ],
+    "benchmarking": "How this compares to market benchmarks or similar companies",
+    "conclusion": "Investment implication or synthesis"
+  }
 }`;
 
       console.log(`Generating section: ${sectionName}`);
@@ -238,13 +251,24 @@ Return ONLY valid JSON with this exact structure (no markdown, no code blocks, n
         try {
           // Parse to validate it's proper JSON
           const structuredContent = JSON.parse(enhancedText);
-          enhancedSections[sectionName] = structuredContent;
+          
+          // Support both new format (with narrative/vcReflection) and legacy format
+          if (structuredContent.narrative || structuredContent.vcReflection) {
+            enhancedSections[sectionName] = structuredContent;
+          } else {
+            // Legacy format - wrap in narrative
+            enhancedSections[sectionName] = {
+              narrative: structuredContent
+            };
+          }
         } catch (parseError) {
           console.error(`Failed to parse JSON for ${sectionName}:`, parseError);
           // Fallback to basic structure if parsing fails
           enhancedSections[sectionName] = {
-            paragraphs: [{ text: enhancedText, emphasis: "normal" }],
-            keyPoints: []
+            narrative: {
+              paragraphs: [{ text: enhancedText, emphasis: "normal" }],
+              keyPoints: []
+            }
           };
         }
       }
