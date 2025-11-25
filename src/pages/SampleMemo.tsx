@@ -3,6 +3,10 @@ import { MemoSection } from "@/components/memo/MemoSection";
 import { MemoParagraph } from "@/components/memo/MemoParagraph";
 import { MemoKeyPoints } from "@/components/memo/MemoKeyPoints";
 import { MemoHighlight } from "@/components/memo/MemoHighlight";
+import { MemoVCReflection } from "@/components/memo/MemoVCReflection";
+import { MemoVCQuestions } from "@/components/memo/MemoVCQuestions";
+import { MemoBenchmarking } from "@/components/memo/MemoBenchmarking";
+import { MemoAIConclusion } from "@/components/memo/MemoAIConclusion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -117,6 +121,20 @@ const SampleMemo = () => {
             "Enterprise solutions require €500K+ and 6-18 month implementations",
             "Mid-market segment is underserved: too small for SAP, too complex for spreadsheets"
           ]} />
+
+          <MemoVCReflection text="From an investor perspective, this is a classic 'hair on fire' problem in a massive, underserved market. The €260B global cost of unplanned downtime creates clear economic urgency. What's particularly compelling is the wedge: mid-market manufacturers are sophisticated enough to understand they're bleeding money, but not large enough to justify enterprise solutions. The 73% statistic on manual data collection is striking—this level of operational blindness would be unacceptable in virtually any other industry. The challenge will be evangelizing a new category (operational intelligence as a service) rather than competing in an established one." />
+
+          <MemoVCQuestions questions={[
+            "What's preventing customers from building this internally with off-the-shelf IoT sensors and open-source analytics?",
+            "How defensible is the solution if Siemens or Rockwell launch a simplified mid-market SKU at 50% lower price?",
+            "What's the actual sales cycle you're seeing? 'Capital purchase' objections could extend runway requirements significantly.",
+            "Are manufacturing customers willing to share operational data for cross-customer ML improvements, or will privacy concerns limit your network effects?",
+            "What happens if a pilot customer experiences a major failure that your system didn't predict? How do liability and warranty expectations work?"
+          ]} />
+
+          <MemoBenchmarking text="Historical comparisons show mixed outcomes in manufacturing SaaS: Tulip (raised $175M, valued at $1B+) successfully targeted similar mid-market segment with no-code manufacturing apps, while players like Sight Machine struggled to escape enterprise sales complexity. The key differentiator appears to be deployment speed—Tulip's '2 days to first app' mirrors FlowMetrics' '2-3 day installation' approach. However, predictive maintenance specifically has seen commoditization: AWS, Azure, and GCP all offer pre-built ML models, which could pressure FlowMetrics' IP advantage over time." />
+
+          <MemoAIConclusion text="The problem is validated and economically significant. FlowMetrics has identified a genuine gap in an enormous market. The critical question is execution: can they build a repeatable sales motion and establish technical moat before well-capitalized competitors notice the opportunity? At pre-seed, the focus should be on proving unit economics (CAC, LTV, sales cycle) with next 10 customers rather than platform expansion." />
         </MemoSection>
 
         {/* Solution */}
@@ -142,6 +160,18 @@ const SampleMemo = () => {
             "€2,500/month per line—10x cheaper than enterprise alternatives",
             "Average ROI in 4-6 months through reduced downtime and improved OEE"
           ]} />
+
+          <MemoVCReflection text="The solution architecture is smart: hardware-as-a-service eliminates upfront capex objections while maintaining control over sensor quality and future upgrades. The '94% accuracy' claim for predictive maintenance is impressive if validated—this would be best-in-class. The €2,500/month price point feels right for mid-market: low enough to avoid budget committee scrutiny, high enough to support quality delivery. The key risk is whether 'actionable intelligence' is genuinely differentiated or just better UX around commodity ML models. If competitors can replicate the ML with 6-12 months of effort, this becomes a services business rather than a platform play." />
+
+          <MemoVCQuestions questions={[
+            "Can you share validation data for the '94% prediction accuracy'? What's the methodology and sample size?",
+            "What percentage of downtime events are actually predictable 48-72 hours in advance vs. sudden catastrophic failures?",
+            "How much of the value prop is the ML predictions vs. just having real-time visibility that manual logs don't provide?",
+            "What's included in the €2,500/month? How many sensors, what support SLA, who maintains hardware when it fails?",
+            "If a customer churns after 12 months, what happens to the installed hardware? Does retrieval cost eat into unit economics?"
+          ]} />
+
+          <MemoAIConclusion text="The solution is well-designed for the target customer: plug-and-play, fast ROI, transparent pricing. The product-market fit hypothesis is strong. However, differentiation beyond 'easier to use' needs more evidence. Investors will want to see whether the ML predictions genuinely save money vs. customers just valuing the real-time dashboards." />
         </MemoSection>
 
         {/* Market Opportunity */}
@@ -204,6 +234,20 @@ const SampleMemo = () => {
             "8 qualified pipeline opportunities (€240K potential ARR)",
             "NPS of 72 demonstrates strong product-market fit"
           ]} />
+
+          <MemoVCReflection text="The traction story is credible for pre-seed. Three paying customers across different verticals reduces single-industry risk. The 100% renewal rate and expansion to additional production lines are exactly what you want to see at this stage—customers voting with their wallets after seeing the product work. The NPS of 72 is strong (anything above 50 is excellent for B2B SaaS). The €45K revenue over 12 months translates to roughly €15K per customer annually, which is below the stated €60K ACV—this suggests pilots were discounted or limited scope, which is normal. The qualified pipeline of €240K is substantial relative to the raise size." />
+
+          <MemoVCQuestions questions={[
+            "What was the actual pricing for pilot customers vs. the standard €2,500/month per line? Were these heavily discounted proofs-of-concept?",
+            "Of the 8 qualified opportunities, how many are inbound vs. outbound? What's the common objection when deals don't close?",
+            "Can you share one specific example of documented ROI? What was the baseline vs. post-FlowMetrics performance?",
+            "The founders are handling all sales—what's the typical time investment per deal? Will this scale with one sales hire?",
+            "What's the churn risk? If one pilot churns in the next 6 months, how does that impact the funding narrative?"
+          ]} />
+
+          <MemoBenchmarking text="Comparing to similar B2B SaaS at pre-seed: $50K ARR with 3 customers and strong expansion signals is solid. Companies like Segment and Twilio had comparable early traction. The 4.2-month payback is faster than typical industrial software (usually 12-18 months), suggesting genuine value delivery. However, the pipeline qualification definition ('completed demo + budget confirmed') may be optimistic—manufacturing purchases often involve longer technical validation than this suggests. The 23 inbound demo requests are encouraging but converting these to qualified pipeline typically takes 3-6 months in this segment." />
+
+          <MemoAIConclusion text="Traction validates the core hypothesis: there are customers willing to pay for this solution, and it delivers measurable value. The renewal and expansion patterns are particularly strong signals. The key question is sales scalability: can this motion work beyond founder-led sales? The qualified pipeline suggests yes, but execution risk remains high until a sales hire proves the playbook is repeatable." />
         </MemoSection>
 
         {/* Business Model */}
