@@ -65,19 +65,19 @@ export const HeroSection = () => {
               onClick={() => navigate('/auth')}
               className="px-8 py-4 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-105"
             >
-              Explore the VC Brain →
+              Access the Hub & Library →
             </button>
             <button
-              onClick={() => navigate('/hub')}
+              onClick={() => navigate('/about')}
               className="px-8 py-4 rounded-lg bg-muted border border-border text-foreground font-semibold text-lg hover:bg-muted/80 transition-all"
             >
-              Browse Resources
+              Learn More
             </button>
           </div>
 
           {/* Social proof hint */}
           <p className="text-sm text-muted-foreground pt-2">
-            100% free. No credit card. No bullshit.
+            Create a free account to access the complete knowledge library
           </p>
         </div>
       </div>

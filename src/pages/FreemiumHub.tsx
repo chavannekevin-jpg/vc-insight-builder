@@ -135,7 +135,7 @@ export default function FreemiumHub() {
     const loadCompany = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        navigate("/auth");
+        navigate("/auth?redirect=/hub");
         return;
       }
 
@@ -218,6 +218,15 @@ export default function FreemiumHub() {
               <p className="text-xl text-muted-foreground leading-relaxed max-w-3xl font-light">
                 Master the frameworks VCs use to evaluate startups. Learn how they think, what they look for, and why they say no.
               </p>
+              <div className="pt-4">
+                <Button 
+                  onClick={() => navigate("/pricing")}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+                  size="lg"
+                >
+                  Upgrade to Full Access
+                </Button>
+              </div>
             </div>
           </div>
         </div>
