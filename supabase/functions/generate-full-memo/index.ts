@@ -231,7 +231,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no code blocks, n
             },
           ],
           temperature: 0.7,
-          max_tokens: 700,
+          max_tokens: 3000,
         }),
       });
 
