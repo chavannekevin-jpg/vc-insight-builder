@@ -24,9 +24,10 @@ export const HeroSection = () => {
           </div>
 
           {/* Main headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
-            I've Rejected <span 
-              className="text-primary font-bold"
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.15] max-w-5xl mx-auto">
+            <span className="inline-block">I've Rejected</span>{" "}
+            <span 
+              className="text-primary font-bold inline-block"
               style={{ 
                 textShadow: '0 0 10px hsl(var(--primary) / 0.6), 0 0 20px hsl(var(--primary) / 0.4), 0 0 30px hsl(var(--primary) / 0.2)'
               }}
@@ -34,7 +35,7 @@ export const HeroSection = () => {
               Thousands of Founders
             </span>
             <br />
-            Here's How Not to Be Next
+            <span className="inline-block">Here's How Not to Be Next</span>
           </h1>
 
           {/* Subheadline */}
