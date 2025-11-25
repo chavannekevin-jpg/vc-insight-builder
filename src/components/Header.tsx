@@ -9,6 +9,7 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [hubDropdownOpen, setHubDropdownOpen] = useState(false);
+  const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -90,6 +91,43 @@ export const Header = () => {
     }
   ];
 
+  const toolsSections = [
+    {
+      category: "Calculators",
+      items: [
+        { label: "Raise Calculator", path: "/raise-calculator", description: "Calculate how much to raise" },
+        { label: "Valuation Calculator", path: "/valuation-calculator", description: "Estimate your valuation" }
+      ]
+    },
+    {
+      category: "Resources",
+      items: [
+        { label: "Sample Memo", path: "/sample-memo", description: "Preview a full investment memo", public: true },
+        { label: "Educational Hub", path: "/hub", description: "Access learning resources" }
+      ]
+    }
+  ];
+
+  const handleToolClick = (path: string, isPublic?: boolean) => {
+    setToolsDropdownOpen(false);
+    if (!isAuthenticated && !isPublic) {
+      toast.info("Please sign in to access this tool");
+      navigate('/auth');
+    } else {
+      navigate(path);
+    }
+  };
+
+  const handleHubLinkClick = (path: string) => {
+    setHubDropdownOpen(false);
+    if (!isAuthenticated) {
+      toast.info("Please sign in to access VC Brain");
+      navigate('/auth');
+    } else {
+      navigate(path);
+    }
+  };
+
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -107,7 +145,8 @@ export const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => {
-              if (link.name === "Hub" && isAuthenticated) {
+              // Hub dropdown - visible to everyone
+              if (link.name === "Hub") {
                 return (
                   <div
                     key={link.path}
@@ -115,19 +154,24 @@ export const Header = () => {
                     onMouseEnter={() => setHubDropdownOpen(true)}
                     onMouseLeave={() => setHubDropdownOpen(false)}
                   >
-                    <Link
-                      to={link.path}
+                    <button
+                      onClick={() => isAuthenticated ? navigate(link.path) : navigate('/auth')}
                       className={`text-sm font-medium transition-all duration-300 flex items-center gap-1 ${
                         isActive(link.path) ? "neon-pink" : "text-muted-foreground hover:neon-pink"
                       }`}
                     >
                       {link.name}
                       <ChevronDown className="w-3 h-3" />
-                    </Link>
+                    </button>
                     
-                    {/* Dropdown Menu */}
+                    {/* Hub Dropdown Menu */}
                     {hubDropdownOpen && (
                       <div className="absolute top-full left-0 mt-2 w-[600px] bg-card border border-border rounded-lg shadow-xl z-50 p-4">
+                        {!isAuthenticated && (
+                          <div className="mb-3 px-2 py-2 bg-primary/10 border border-primary/30 rounded-lg">
+                            <p className="text-xs text-primary font-semibold">🔒 Sign in to access VC Brain resources</p>
+                          </div>
+                        )}
                         <div className="grid grid-cols-2 gap-4">
                           {vcBrainSections.map((section) => (
                             <div key={section.category} className="space-y-2">
@@ -136,14 +180,13 @@ export const Header = () => {
                               </h4>
                               <div className="space-y-1">
                                 {section.items.map((item) => (
-                                  <Link
+                                  <button
                                     key={item.path}
-                                    to={item.path}
-                                    className="block px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded transition-colors"
-                                    onClick={() => setHubDropdownOpen(false)}
+                                    onClick={() => handleHubLinkClick(item.path)}
+                                    className="w-full text-left px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded transition-colors"
                                   >
                                     {item.label}
-                                  </Link>
+                                  </button>
                                 ))}
                               </div>
                             </div>
@@ -166,6 +209,63 @@ export const Header = () => {
                 </Link>
               );
             })}
+            
+            {/* Tools Dropdown - visible to everyone */}
+            <div
+              className="relative"
+              onMouseEnter={() => setToolsDropdownOpen(true)}
+              onMouseLeave={() => setToolsDropdownOpen(false)}
+            >
+              <button
+                className="text-sm font-medium transition-all duration-300 flex items-center gap-1 text-muted-foreground hover:neon-pink"
+              >
+                Tools
+                <ChevronDown className="w-3 h-3" />
+              </button>
+              
+              {/* Tools Dropdown Menu */}
+              {toolsDropdownOpen && (
+                <div className="absolute top-full left-0 mt-2 w-[400px] bg-card border border-border rounded-lg shadow-xl z-50 p-4">
+                  {!isAuthenticated && (
+                    <div className="mb-3 px-2 py-2 bg-primary/10 border border-primary/30 rounded-lg">
+                      <p className="text-xs text-primary font-semibold">🔒 Sign in to access all tools</p>
+                    </div>
+                  )}
+                  <div className="space-y-4">
+                    {toolsSections.map((section) => (
+                      <div key={section.category} className="space-y-2">
+                        <h4 className="text-xs font-semibold text-primary uppercase tracking-wider px-2">
+                          {section.category}
+                        </h4>
+                        <div className="space-y-1">
+                          {section.items.map((item) => (
+                            <button
+                              key={item.path}
+                              onClick={() => handleToolClick(item.path, item.public)}
+                              className="w-full text-left px-2 py-2 rounded hover:bg-muted/50 transition-colors group"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="text-sm text-foreground font-medium group-hover:text-primary transition-colors">
+                                    {item.label}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {item.description}
+                                  </p>
+                                </div>
+                                {!item.public && !isAuthenticated && (
+                                  <span className="text-xs text-primary">🔒</span>
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* CTA Buttons */}
