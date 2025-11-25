@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Search, Book, TrendingUp, AlertTriangle, Wrench, ChevronRight, ChevronDown } from "lucide-react";
+import { Search, Book, TrendingUp, AlertTriangle, Wrench, ChevronRight, ChevronDown, Home } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -157,9 +157,20 @@ export default function VCBrainHub() {
       {/* Top Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="flex items-center justify-between px-6 py-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">VC Brain Hub</h1>
-            <p className="text-sm text-muted-foreground">The Brutally Honest Founder Roadmap</p>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigate('/hub')}
+              className="border-primary/30 hover:bg-primary/10 hover:border-primary transition-all"
+              title="Back to Hub"
+            >
+              <Home className="w-5 h-5 text-primary" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">VC Brain Hub</h1>
+              <p className="text-sm text-muted-foreground">The Brutally Honest Founder Roadmap</p>
+            </div>
           </div>
           <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => navigate('/pricing')}> Get Your Investment Memo</Button>
         </div>
