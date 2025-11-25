@@ -19,19 +19,18 @@ const DEMO_COMPANY_ID = '00000000-0000-0000-0000-000000000001';
 const SampleMemo = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
 
   useEffect(() => {
-    fetchOrGenerateMemo();
+    fetchMemo();
   }, []);
 
-  const fetchOrGenerateMemo = async () => {
+  const fetchMemo = async () => {
     try {
       setLoading(true);
 
-      // Try to fetch existing memo
+      // Fetch the pre-generated demo memo
       const { data: existingMemo, error: fetchError } = await supabase
         .from('memos')
         .select('structured_content, company:companies(*)')
@@ -43,44 +42,23 @@ const SampleMemo = () => {
       if (existingMemo && existingMemo.structured_content) {
         setMemoContent(existingMemo.structured_content as unknown as MemoStructuredContent);
         setCompanyInfo(existingMemo.company);
-        setLoading(false);
-        return;
-      }
-
-      // If no memo exists, generate it
-      setGenerating(true);
-      const { data: generatedData, error: generateError } = await supabase.functions.invoke('generate-full-memo', {
-        body: { companyId: DEMO_COMPANY_ID }
-      });
-
-      if (generateError) throw generateError;
-
-      if (generatedData?.structuredContent) {
-        setMemoContent(generatedData.structuredContent);
-        setCompanyInfo(generatedData.company);
+      } else {
+        toast.error('Sample memo not yet generated. Please contact support.');
       }
     } catch (error: any) {
       console.error('Error loading sample memo:', error);
       toast.error('Failed to load sample memo');
     } finally {
       setLoading(false);
-      setGenerating(false);
     }
   };
 
-  if (loading || generating) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <Sparkles className="w-12 h-12 text-primary animate-pulse mx-auto" />
-          <div className="space-y-2">
-            <p className="text-lg font-medium">
-              {generating ? 'Generating sample memo with AI...' : 'Loading sample memo...'}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              This showcases the actual memo generation process
-            </p>
-          </div>
+          <p className="text-lg font-medium">Loading sample memo...</p>
         </div>
       </div>
     );
