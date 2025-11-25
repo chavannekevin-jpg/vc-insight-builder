@@ -137,7 +137,7 @@ export default function FreemiumHub() {
             
             <div className="space-y-6">
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
-                Your VC Learning Hub
+                Inside the Investor's Brain
               </h1>
               <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl">
                 Master the frameworks VCs use to evaluate startups. Learn how they think, what they look for, and why they say no.
