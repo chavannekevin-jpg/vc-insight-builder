@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ModernCard } from "@/components/ModernCard";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Home } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const STAGES = [
@@ -66,6 +66,41 @@ export default function Intake() {
 
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleSaveAndExit = async () => {
+    if (!formData.name) {
+      toast({ title: "Please enter at least your startup name before saving", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({ title: "Please sign in first", variant: "destructive" });
+        navigate("/auth");
+        return;
+      }
+
+      const { error } = await supabase.from("companies").insert({
+        founder_id: session.user.id,
+        name: formData.name,
+        description: formData.problemSolution || null,
+        category: null,
+        stage: formData.stage || null,
+        biggest_challenge: null
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Progress saved! You can continue later." });
+      navigate("/hub");
+    } catch (error: any) {
+      toast({ title: "Error saving your information", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -197,6 +232,21 @@ export default function Intake() {
       <div className="absolute inset-0 gradient-hero -z-10 opacity-30" />
       
       <div className="w-full max-w-2xl space-y-8 animate-fade-in">
+        {/* Save & Exit button */}
+        {currentStep < 4 && (
+          <div className="flex justify-center">
+            <Button
+              variant="ghost"
+              onClick={handleSaveAndExit}
+              disabled={loading}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <Home className="w-4 h-4" />
+              Save & Return to Hub
+            </Button>
+          </div>
+        )}
+
         {/* Progress indicator */}
         {currentStep < 4 && (
           <div className="flex justify-center gap-2 mb-8">
