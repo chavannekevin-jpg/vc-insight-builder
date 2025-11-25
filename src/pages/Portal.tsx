@@ -37,7 +37,8 @@ import {
   Trophy,
   Heart,
   Brain,
-  LogOut
+  LogOut,
+  Home
 } from "lucide-react";
 import { SectionBadge } from "@/components/SectionBadge";
 import { FounderScoreDisplay } from "@/components/FounderScoreDisplay";
@@ -779,13 +780,22 @@ export default function Portal() {
             </Button>
           </form>
 
-          <button
-            onClick={handleLogout}
-            className="w-full mt-4 text-white/60 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => navigate('/hub')}
+              className="flex-1 text-white/60 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
+            >
+              <Home className="w-4 h-4" />
+              Hub
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex-1 text-white/60 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -820,6 +830,13 @@ export default function Portal() {
             </div>
             <div className="flex items-center gap-4">
               <FounderScoreDisplay score={founderScore} className="text-white" />
+              <button
+                onClick={() => navigate('/hub')}
+                className="text-white/90 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
+              >
+                <Home className="w-4 h-4" />
+                Hub
+              </button>
               <button
                 onClick={handleLogout}
                 className="text-white/90 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
