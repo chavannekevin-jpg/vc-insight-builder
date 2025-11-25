@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { CompanyBadge } from "@/components/CompanyBadge";
 import { marked } from "marked";
 import { 
   FileText, 
@@ -109,6 +110,8 @@ export default function FreemiumHub() {
   const [articles, setArticles] = useState<EducationalArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>("stage-guides");
+  const [tagline, setTagline] = useState<string>("");
+  const [taglineLoading, setTaglineLoading] = useState(false);
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -156,6 +159,32 @@ export default function FreemiumHub() {
       }
       
       setLoading(false);
+      
+      // Generate AI tagline
+      if (companies[0]) {
+        setTaglineLoading(true);
+        try {
+          const { data: taglineData, error: taglineError } = await supabase.functions.invoke(
+            'generate-company-tagline',
+            {
+              body: {
+                companyName: companies[0].name,
+                description: companies[0].description,
+                stage: companies[0].stage
+              }
+            }
+          );
+          
+          if (taglineError) throw taglineError;
+          if (taglineData?.tagline) {
+            setTagline(taglineData.tagline);
+          }
+        } catch (error) {
+          console.error('Error generating tagline:', error);
+        } finally {
+          setTaglineLoading(false);
+        }
+      }
     };
 
     loadCompany();
@@ -181,10 +210,12 @@ export default function FreemiumHub() {
         <div className="max-w-7xl mx-auto px-8 py-16">
           <div className="max-w-4xl space-y-8">
             {company && (
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-primary">{company.name}</span>
-              </div>
+              <CompanyBadge 
+                name={company.name}
+                sector={company.category || "Tech"}
+                tagline={tagline}
+                isLoading={taglineLoading}
+              />
             )}
             
             <div className="space-y-6">
