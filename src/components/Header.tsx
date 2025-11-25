@@ -97,7 +97,7 @@ export const Header = () => {
               }}
               className="gradient-primary shadow-glow hover:shadow-glow-strong"
             >
-              Get Started
+              Get your Memo
             </Button>
           </div>
 
@@ -160,7 +160,7 @@ export const Header = () => {
                 }}
                 className="gradient-primary w-full shadow-glow"
               >
-                Get Started
+                Get your Memo
               </Button>
             </div>
           </div>
