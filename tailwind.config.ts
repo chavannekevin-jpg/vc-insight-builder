@@ -14,6 +14,19 @@ export default {
   	},
   	extend: {
   		fontFamily: {
+  			display: [
+  				'Syne',
+  				'ui-sans-serif',
+  				'system-ui',
+  				'sans-serif'
+  			],
+  			body: [
+  				'Space Grotesk',
+  				'Inter',
+  				'ui-sans-serif',
+  				'system-ui',
+  				'sans-serif'
+  			],
   			pixel: [
   				'Press Start 2P"',
   				'cursive'
