@@ -140,23 +140,25 @@ serve(async (req) => {
       const customPrompt = customPrompts[sectionName];
       
       const prompt = customPrompt 
-        ? `${customPrompt}\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.\n\nRaw information:\n${combinedContent}\n\nProfessional memo section:`
+        ? `${customPrompt}\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.\n\nRaw information:\n${combinedContent}\n\nWrite in professional markdown format with proper formatting:`
         : `You are a professional VC investment memo writer. Take the following startup information for the "${sectionName}" section and create a clear, concise, and compelling narrative. 
 
 Requirements:
-- Synthesize all the information into a cohesive 2-4 paragraph narrative
+- Synthesize all the information into a cohesive narrative with 2-4 paragraphs
 - Use professional, direct language that VCs expect
+- Format using clean markdown: **bold** for emphasis, bullet points for lists, line breaks between paragraphs
 - Highlight key metrics, traction, and competitive advantages
-- Keep it between 150-250 words
+- Keep it between 150-300 words
 - Focus on facts and concrete details
-- Return ONLY the enhanced narrative, no preambles or explanations
+- Use proper markdown formatting for readability
+- Return ONLY the enhanced narrative in markdown, no preambles or meta-commentary
 
 Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.
 
 Raw information:
 ${combinedContent}
 
-Professional memo section:`;
+Write the professional memo section in clean markdown format:`;
 
       console.log(`Generating section: ${sectionName}`);
 

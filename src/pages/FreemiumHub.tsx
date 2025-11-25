@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { marked } from "marked";
 import { 
   BookOpen, 
   Target, 
@@ -338,21 +339,21 @@ export default function FreemiumHub() {
                       <div className="space-y-4">
                         {(() => {
                           try {
-                            const sections = JSON.parse(memo.content);
-                            return sections.slice(0, 3).map((section: { title: string; content: string }, index: number) => (
+                            const parsedContent = JSON.parse(memo.content);
+                            const sections = Object.entries(parsedContent.sections).slice(0, 3);
+                            return sections.map(([title, content]: [string, any], index: number) => (
                               <div
                                 key={index}
-                                className="p-6 bg-card/50 border border-border/50 rounded-xl"
+                                className="p-6 bg-card/50 border border-border/50 rounded-xl hover:border-primary/20 transition-all"
                               >
                                 <h3 className="text-lg font-bold mb-3 text-primary">
-                                  {section.title}
+                                  {title}
                                 </h3>
                                 <div 
-                                  className="text-sm text-muted-foreground prose prose-sm max-w-none line-clamp-3"
+                                  className="text-sm text-muted-foreground prose prose-sm max-w-none line-clamp-4
+                                    prose-p:my-1 prose-strong:text-foreground/90"
                                   dangerouslySetInnerHTML={{ 
-                                    __html: section.content
-                                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                      .replace(/\n\n/g, '<br/><br/>')
+                                    __html: marked(content as string, { breaks: true, gfm: true })
                                   }}
                                 />
                               </div>
