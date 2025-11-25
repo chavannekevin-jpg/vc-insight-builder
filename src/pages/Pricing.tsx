@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Check, X, Zap, BookOpen, Sparkles, Users } from "lucide-react";
+import { WaitlistBanner } from "@/components/WaitlistBanner";
+import { useWaitlistMode } from "@/hooks/useWaitlistMode";
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const { data: waitlistMode } = useWaitlistMode();
 
   const pricingPlans = [
     {
@@ -32,8 +35,11 @@ const Pricing = () => {
     {
       name: "Investment Memo Builder",
       subtitle: "Your Fundraising Weapon",
-      price: "€29.99",
-      description: "Professional memo that VCs actually read",
+      price: waitlistMode?.isActive ? "€29.99" : "€59.99",
+      originalPrice: waitlistMode?.isActive ? "€59.99" : null,
+      description: waitlistMode?.isActive 
+        ? "50% OFF Pre-Launch • Professional memo VCs read" 
+        : "Professional memo that VCs actually read",
       icon: Sparkles,
       features: [
         { text: "Everything in Freemium", included: true, bold: true },
@@ -44,9 +50,10 @@ const Pricing = () => {
         { text: "Unlimited memo updates", included: false },
         { text: "Network exposure to 400+ investors", included: false }
       ],
-      cta: "Build My Memo",
+      cta: waitlistMode?.isActive ? "Join Waitlist - 50% Off" : "Build My Memo",
       popular: true,
-      color: "primary"
+      color: "primary",
+      waitlistBadge: waitlistMode?.isActive
     },
     {
       name: "Network Access",
@@ -95,6 +102,7 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header />
+      <WaitlistBanner />
 
       {/* Hero Section */}
       <section className="py-20 px-4">
@@ -124,10 +132,10 @@ const Pricing = () => {
                   key={index}
                   className={`relative ${plan.popular ? 'ring-2 ring-primary shadow-xl scale-105 md:scale-105' : ''}`}
                 >
-                  {plan.popular && (
+                   {plan.popular && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                       <Badge className="gradient-primary text-white border-0 px-4 py-1">
-                        Most Popular
+                        {plan.waitlistBadge ? "50% OFF - Early Access" : "Most Popular"}
                       </Badge>
                     </div>
                   )}
@@ -145,6 +153,9 @@ const Pricing = () => {
 
                     <div>
                       <div className="flex items-baseline gap-2 mb-2">
+                        {plan.originalPrice && (
+                          <span className="text-2xl font-bold line-through text-muted-foreground/50">{plan.originalPrice}</span>
+                        )}
                         <span className="text-4xl font-bold">{plan.price}</span>
                         {plan.name === "Freemium" && (
                           <span className="text-sm text-muted-foreground">/forever</span>
@@ -153,6 +164,12 @@ const Pricing = () => {
                           <span className="text-sm text-muted-foreground">/one-time</span>
                         )}
                       </div>
+                      {plan.waitlistBadge && (
+                        <Badge variant="secondary" className="mb-2">
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          Limited Time: 50% Off
+                        </Badge>
+                      )}
                       <p className="text-sm text-muted-foreground">{plan.description}</p>
                     </div>
 
