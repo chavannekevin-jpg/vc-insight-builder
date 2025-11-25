@@ -272,6 +272,9 @@ export default function ValuationCalculator() {
                 <li><strong>Back-solving from fantasy revenue:</strong> Claiming €50M ARR in year three doesn't justify a €20M valuation today if you 
                 have zero customers.</li>
                 <li><strong>Valuation shopping:</strong> Asking 30 VCs for offers and picking the highest bid signals desperation, not leverage.</li>
+                <li><strong>Over-raising at inflated valuations:</strong> Raising €2M at a €20M pre-seed valuation might feel like winning, but you've just 
+                committed to hitting metrics that justify a €60M+ Series A. If you miss those targets, you're facing a brutal down round—or worse, a capped bridge 
+                that dilutes you into irrelevance. Over-raising creates expectations you can't meet.</li>
               </ul>
 
               <h2 className="text-2xl font-bold mt-8">Red Flags That Kill Deals</h2>
@@ -297,6 +300,19 @@ export default function ValuationCalculator() {
                 <li><strong>Capital efficiency:</strong> Reaching €500k ARR on €200k raised signals execution strength.</li>
                 <li><strong>Market timing:</strong> Interest rates, IPO windows, and macro sentiment all affect pricing power.</li>
               </ul>
+
+              <h2 className="text-2xl font-bold mt-8">Why Over-Raising Kills Companies</h2>
+              <p>
+                Here's the trap most founders don't see coming: raising at an inflated valuation forces you into a performance treadmill you can't escape. 
+                If you raise €1.5M at a €15M pre-money when you should have raised at €5M, you've just committed to 3-4x growth metrics to justify your next round. 
+                Miss those benchmarks, and investors won't price you higher—they'll price you <strong>lower</strong>. Down rounds destroy morale, trigger 
+                anti-dilution provisions, and signal failure to the market. Worse, bridge rounds at flat or down valuations mean you give up more equity 
+                for less capital, eroding founder ownership while tanking credibility with future investors.
+              </p>
+              <p>
+                The smarter play? Raise at a fair valuation you can exceed. Beating expectations builds momentum. Missing them kills companies. 
+                European VCs reward capital efficiency and milestone delivery—not ego-driven valuations that collapse under scrutiny.
+              </p>
 
               <h2 className="text-2xl font-bold mt-8">The Bottom Line</h2>
               <p>
@@ -432,13 +448,33 @@ export default function ValuationCalculator() {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">Pre-Money Valuation</p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-sm text-muted-foreground">Pre-Money Valuation</p>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">The company valuation BEFORE the investment. This is what the company is worth before new money comes in.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                       <p className="text-4xl font-bold text-primary">{formatCurrency(preMoney)}</p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">Post-Money</p>
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm text-muted-foreground">Post-Money</p>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">The company valuation AFTER the investment. Pre-Money + Investment Amount = Post-Money.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
                         <p className="text-xl font-bold">{formatCurrency(postMoney)}</p>
                       </div>
                       <div>
