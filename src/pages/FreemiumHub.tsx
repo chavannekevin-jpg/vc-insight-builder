@@ -86,6 +86,7 @@ export default function FreemiumHub() {
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [caseStudiesOpen, setCaseStudiesOpen] = useState(false);
   const [progressOpen, setProgressOpen] = useState(true);
+  const [memoOpen, setMemoOpen] = useState(false);
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -290,6 +291,99 @@ export default function FreemiumHub() {
                 </CollapsibleContent>
               </Collapsible>
             </section>
+            
+            {/* My Memo Section - Only show if memo exists */}
+            {memo && (
+              <section>
+                <Collapsible open={memoOpen} onOpenChange={setMemoOpen}>
+                  <CollapsibleTrigger asChild>
+                    <button className="w-full group">
+                      <div className="flex items-center justify-between p-6 bg-card border border-border rounded-2xl hover:border-primary/30 transition-all duration-300 hover:shadow-lg">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 rounded-xl bg-gradient-primary shadow-lg">
+                            <FileText className="w-7 h-7 text-primary-foreground" />
+                          </div>
+                          <div className="text-left">
+                            <h2 className="text-3xl font-bold group-hover:text-primary transition-colors">
+                              My Memo
+                            </h2>
+                            <p className="text-muted-foreground mt-1">
+                              Your personalized investment memorandum
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronDown 
+                          className={`w-6 h-6 text-muted-foreground transition-transform duration-300 ${
+                            memoOpen ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </div>
+                    </button>
+                  </CollapsibleTrigger>
+                  
+                  <CollapsibleContent className="pt-6">
+                    <div className="space-y-6">
+                      {/* Quick Actions */}
+                      <div className="flex gap-3">
+                        <Button 
+                          onClick={() => navigate(`/memo?companyId=${company?.id}`)}
+                          className="gradient-primary shadow-glow"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          View Full Memo
+                        </Button>
+                      </div>
+                      
+                      {/* Memo Sections Preview */}
+                      <div className="space-y-4">
+                        {(() => {
+                          try {
+                            const sections = JSON.parse(memo.content);
+                            return sections.slice(0, 3).map((section: { title: string; content: string }, index: number) => (
+                              <div
+                                key={index}
+                                className="p-6 bg-card/50 border border-border/50 rounded-xl"
+                              >
+                                <h3 className="text-lg font-bold mb-3 text-primary">
+                                  {section.title}
+                                </h3>
+                                <div 
+                                  className="text-sm text-muted-foreground prose prose-sm max-w-none line-clamp-3"
+                                  dangerouslySetInnerHTML={{ 
+                                    __html: section.content
+                                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                      .replace(/\n\n/g, '<br/><br/>')
+                                  }}
+                                />
+                              </div>
+                            ));
+                          } catch (e) {
+                            return (
+                              <div className="p-6 bg-card/50 border border-border/50 rounded-xl">
+                                <p className="text-muted-foreground">
+                                  Your memo is ready. Click "View Full Memo" to see all sections.
+                                </p>
+                              </div>
+                            );
+                          }
+                        })()}
+                        
+                        {/* See More CTA */}
+                        <div className="text-center pt-2">
+                          <Button 
+                            variant="ghost" 
+                            onClick={() => navigate(`/memo?companyId=${company?.id}`)}
+                            className="text-primary hover:text-primary"
+                          >
+                            View All Sections →
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </section>
+            )}
             
             {/* PlayBook Section - Collapsible */}
             <section>
