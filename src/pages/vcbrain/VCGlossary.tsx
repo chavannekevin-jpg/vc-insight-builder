@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 export default function VCGlossary() {
   const navigate = useNavigate();
@@ -89,6 +90,15 @@ export default function VCGlossary() {
 
   return (
     <div className="space-y-8">
+      <Button
+        variant="ghost"
+        onClick={() => navigate('/hub')}
+        className="mb-4"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back to Hub
+      </Button>
+
       <div>
         <h1 className="text-4xl font-bold text-foreground mb-4">
           VC Glossary: Translate the Bullshit
