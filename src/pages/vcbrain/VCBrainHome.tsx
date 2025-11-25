@@ -1,9 +1,32 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Book, TrendingUp, AlertTriangle, Wrench, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function VCBrainHome() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth?redirect=/vcbrain");
+        return;
+      }
+      setLoading(false);
+    };
+    checkAuth();
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   const sections = [
     {
