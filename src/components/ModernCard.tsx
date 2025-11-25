@@ -5,11 +5,13 @@ interface ModernCardProps {
   children: ReactNode;
   className?: string;
   hover?: boolean;
+  onClick?: () => void;
 }
 
-export const ModernCard = ({ children, className, hover = false }: ModernCardProps) => {
+export const ModernCard = ({ children, className, hover = false, onClick }: ModernCardProps) => {
   return (
     <div 
+      onClick={onClick}
       className={cn(
         "bg-card/95 backdrop-blur-sm border border-border/50 p-6 rounded-2xl transition-all duration-300",
         hover && "cursor-pointer hover:border-primary/50 hover:shadow-lg hover:-translate-y-1",

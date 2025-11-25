@@ -121,15 +121,25 @@ export default function PreSeedGuide() {
             {deckSlides.map((slide, index) => (
               <ModernCard 
                 key={index} 
-                className="p-6 hover:border-primary/40 transition-all duration-300"
+                className="p-6 hover:border-primary/40 transition-all duration-300 cursor-pointer"
                 hover
+                onClick={() => {
+                  if (slide.number === 2) {
+                    navigate("/problem-slide-guide");
+                  }
+                }}
               >
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg">
                     <span className="text-primary-foreground font-bold text-xl">{slide.number}</span>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold mb-2">{slide.title}</h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xl font-bold mb-2">{slide.title}</h3>
+                      {slide.number === 2 && (
+                        <ArrowLeft className="w-5 h-5 text-primary rotate-180" />
+                      )}
+                    </div>
                     {slide.description && (
                       <p className="text-muted-foreground">{slide.description}</p>
                     )}
