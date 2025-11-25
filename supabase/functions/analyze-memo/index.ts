@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.84.0';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,11 +12,37 @@ serve(async (req) => {
   }
 
   try {
-    const { memoContent, companyInfo } = await req.json();
+    const { memoContent, companyInfo, memoId } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    if (!memoId) {
+      throw new Error("memoId is required");
+    }
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check if analysis already exists for this memo
+    const { data: existingAnalysis } = await supabase
+      .from('memo_analyses')
+      .select('analysis')
+      .eq('memo_id', memoId)
+      .maybeSingle();
+
+    if (existingAnalysis) {
+      console.log("Returning cached analysis for memo:", memoId);
+      return new Response(
+        JSON.stringify(existingAnalysis.analysis),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     // Create a comprehensive prompt for the AI to analyze the memo
@@ -151,6 +178,21 @@ CRITICAL INSTRUCTIONS:
       console.error("Failed to parse AI response:", analysisText.substring(0, 500));
       console.error("Parse error:", parseError);
       throw new Error("Failed to parse AI analysis - response may be incomplete");
+    }
+
+    // Save analysis to database
+    const { error: saveError } = await supabase
+      .from('memo_analyses')
+      .insert({
+        memo_id: memoId,
+        analysis: analysis
+      });
+
+    if (saveError) {
+      console.error("Failed to save analysis:", saveError);
+      // Don't throw - still return the analysis even if save fails
+    } else {
+      console.log("Analysis saved to database for memo:", memoId);
     }
 
     return new Response(
