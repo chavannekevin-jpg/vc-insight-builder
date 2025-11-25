@@ -52,7 +52,7 @@ const MEMO_CONCEPT = {
   title: "The Investment Memorandum",
   subtitle: "The Internal Doc VCs Write About You",
   tagline: "I've taken the cognitive process used inside Investment Committees and turned it into a methodology you can access.",
-  pitch: "Generate your own Investment Memorandum—built exactly how a VC would structure and justify your deal. It exposes weaknesses, highlights strengths, and shows what needs fixing before fundraising. Precise. Objective. Critical. Written in the language VCs actually use to make funding decisions."
+  pitch: "Answer a few simple questions about your startup. My framework does the rest—generating a complete Investment Memorandum exactly how a VC would write it. It exposes weaknesses, highlights strengths, and shows what needs fixing before fundraising. Precise. Objective. Critical. Written in the language VCs actually use to make funding decisions."
 };
 
 const VC_BRAIN_SECTIONS = [
