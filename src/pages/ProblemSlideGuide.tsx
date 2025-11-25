@@ -21,54 +21,54 @@ export default function ProblemSlideGuide() {
   const investorCriteria = [
     {
       icon: Target,
-      title: "Clear Problem Statement",
-      description: "Is the problem described in simple, specific, concrete terms? If an investor cannot summarize the problem in one sentence, the slide has failed."
+      title: "Crystal Clear Problem",
+      description: "Can you say it in 10 words? If an investor needs to re-read your problem statement, you've already lost them. Simplicity wins. Complexity kills."
     },
     {
       icon: Zap,
-      title: "Urgency — Why Now?",
-      description: "Has something shifted that makes solving this problem timely? Without 'why now,' your company can look like a 'nice to have' rather than a must-have."
+      title: "Urgent Timing",
+      description: "Something just changed. The market shifted. Tech enabled it. Behavior evolved. Without urgency, you're pitching a solution to yesterday's problem."
     },
     {
       icon: MessageSquare,
-      title: "Specific Evidence",
-      description: "Data points, customer quotes, examples, operator insights. Evidence is what differentiates a real pain point from a founder's opinion."
+      title: "Real Evidence",
+      description: "Stop telling. Start showing. Numbers, quotes, case studies—anything that proves this isn't just your theory. Evidence separates founders from dreamers."
     },
     {
       icon: DollarSign,
-      title: "Quantified Impact",
-      description: "What is the tangible cost of not solving this? Investors want to see numbers—lost revenue, churn, inefficiency, operational drag."
+      title: "Expensive Pain",
+      description: "How much does inaction cost? Time? Money? Growth? Make the pain quantifiable. If it's not expensive enough to fix, it's not worth building a company around."
     }
   ];
 
   const mistakes = [
     {
-      title: "Being Too General",
+      title: "Vague Bullshit",
       bad: "\"Hiring is hard\"",
-      why: "Who struggles? How? Why? What is the actual pain? This says nothing."
+      why: "Hard for who? Small businesses? Fortune 500s? Engineers? Baristas? Generic statements make investors tune out instantly."
     },
     {
-      title: "Fluff Instead of Proof",
-      bad: "\"Customers hate this\" or \"The market is huge\"",
-      why: "Replace vague claims with real stats or quotes. These statements are meaningless."
+      title: "Marketing Speak",
+      bad: "\"Everyone wants this\" or \"Revolutionary disruption\"",
+      why: "Buzzwords and hype don't replace data. Show proof or expect skepticism."
     },
     {
-      title: "Overloading With Jargon",
-      bad: "Industry buzzwords and complex terminology",
-      why: "If someone outside your industry cannot understand the slide, it's a problem. Clarity > complexity."
+      title: "Insider Language",
+      bad: "\"Leveraging ML pipelines for cross-functional synergy\"",
+      why: "Your mom should understand your problem slide. If she can't, neither can most investors. Speak human."
     },
     {
-      title: "Too Many Minor Problems",
-      bad: "A laundry list of issues",
-      why: "Focus on one core pain that is severe and expensive. Everything else distracts from the narrative."
+      title: "Kitchen Sink Syndrome",
+      bad: "Eight different problems across three slides",
+      why: "Pick ONE painful problem. Master it. Everything else is noise that dilutes your message and confuses your story."
     }
   ];
 
   const bestPractices = [
-    "Anchor the problem in urgency — Why is this painful right now?",
-    "Use the customer's voice — Quotes feel real. Artificial summaries feel invented.",
-    "Stay laser-focused — Pick the single problem your company exists to solve.",
-    "Aim for an investor reaction of: \"Yes, this is real, and it sounds painful.\""
+    "Make timing obvious — What changed? Why does this problem hurt more today than last year? Urgency creates value.",
+    "Let customers speak — One real quote beats ten slides of your interpretation. Authenticity can't be faked.",
+    "One problem, obsessively — Multi-problem decks signal unfocused founders. Pick your battle. Own it completely.",
+    "Trigger recognition — When investors think 'damn, that IS painful,' you've won. That's the only reaction that matters."
   ];
 
   return (
@@ -105,7 +105,7 @@ export default function ProblemSlideGuide() {
                 </span>
               </h1>
               <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl font-light">
-                The first real test of your pitch. If investors don't immediately understand what's broken, why it matters, and why it must be solved now—they will stop paying attention.
+                This is where 80% of founders lose the room. If investors don't instantly feel the pain you're describing, nothing else in your deck matters. Period.
               </p>
             </div>
           </div>
@@ -127,11 +127,11 @@ export default function ProblemSlideGuide() {
                 <div className="flex-1">
                   <h2 className="text-4xl font-bold mb-4">What Is the Problem Slide?</h2>
                   <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-                    Your problem slide exists to answer one fundamental question:
+                    Strip away the bullshit. Your problem slide answers one question:
                   </p>
                   <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent border border-primary/20">
                     <p className="text-2xl font-bold text-foreground leading-relaxed">
-                      Is there a pain that is real, urgent, and worth paying to solve?
+                      Is this pain expensive enough that someone will actually pay to make it go away?
                     </p>
                   </div>
                 </div>
@@ -142,38 +142,38 @@ export default function ProblemSlideGuide() {
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <div className="w-2 h-2 rounded-full bg-primary" />
                   </div>
-                  <h3 className="font-bold text-lg mb-2">State the core problem clearly</h3>
-                  <p className="text-muted-foreground leading-relaxed">No jargon. No fluff. One focused pain point.</p>
+                  <h3 className="font-bold text-lg mb-2">Name the enemy</h3>
+                  <p className="text-muted-foreground leading-relaxed">One sentence. No buzzwords. No abstractions. If a 10-year-old can't understand it, rewrite it.</p>
                 </div>
                 
                 <div className="p-6 rounded-2xl bg-gradient-to-br from-card to-card/50 border border-border/50 hover:border-primary/30 transition-all duration-300 group">
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <div className="w-2 h-2 rounded-full bg-primary" />
                   </div>
-                  <h3 className="font-bold text-lg mb-2">Show why this problem matters now</h3>
-                  <p className="text-muted-foreground leading-relaxed">What has changed in the market, customer behavior, or technology that makes this urgent?</p>
+                  <h3 className="font-bold text-lg mb-2">Prove why now</h3>
+                  <p className="text-muted-foreground leading-relaxed">Markets shift. Tech enables. Behavior changes. Show what's different today that wasn't possible or urgent 18 months ago.</p>
                 </div>
                 
                 <div className="p-6 rounded-2xl bg-gradient-to-br from-card to-card/50 border border-border/50 hover:border-primary/30 transition-all duration-300 group">
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <div className="w-2 h-2 rounded-full bg-primary" />
                   </div>
-                  <h3 className="font-bold text-lg mb-2">Ground the problem in real-world evidence</h3>
-                  <p className="text-muted-foreground leading-relaxed">Use data points, anecdotes, or examples that demonstrate the pain actually exists.</p>
+                  <h3 className="font-bold text-lg mb-2">Show receipts</h3>
+                  <p className="text-muted-foreground leading-relaxed">Data. Quotes. Examples. Anything that proves this problem exists outside your head. Opinions don't fund companies. Evidence does.</p>
                 </div>
                 
                 <div className="p-6 rounded-2xl bg-gradient-to-br from-card to-card/50 border border-border/50 hover:border-primary/30 transition-all duration-300 group">
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <div className="w-2 h-2 rounded-full bg-primary" />
                   </div>
-                  <h3 className="font-bold text-lg mb-2">Hint at the opportunity</h3>
-                  <p className="text-muted-foreground leading-relaxed">When the pain is quantified—revenue lost, time wasted, cost incurred—the business potential becomes obvious.</p>
+                  <h3 className="font-bold text-lg mb-2">Quantify the damage</h3>
+                  <p className="text-muted-foreground leading-relaxed">Put a dollar sign or time cost on the pain. Lost revenue. Wasted hours. Failed conversions. Make it feel expensive.</p>
                 </div>
               </div>
 
               <div className="mt-10 p-6 rounded-2xl bg-gradient-to-r from-destructive/10 via-destructive/5 to-transparent border border-destructive/20">
                 <p className="text-foreground leading-relaxed text-lg">
-                  Avoid general industry rants or aspirational statements. This slide is not about the future you imagine. <span className="text-destructive font-bold">It is about the pain happening today.</span>
+                  Stop selling vision. Start selling pain. This isn't about what could be. <span className="text-destructive font-bold">It's about what's broken right now.</span>
                 </p>
               </div>
             </div>
@@ -183,9 +183,9 @@ export default function ProblemSlideGuide() {
         {/* What Investors Look For */}
         <section>
           <div className="mb-12 text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">What Investors Look For</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">What Investors Actually Check</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              When reviewing problem slides, investors assess four things:
+              Forget the fluff. Here's what they're really looking for:
             </p>
           </div>
           
@@ -217,7 +217,7 @@ export default function ProblemSlideGuide() {
 
           <div className="mt-12 p-8 rounded-3xl bg-gradient-to-br from-destructive/10 via-destructive/5 to-transparent border border-destructive/20 text-center">
             <p className="text-foreground font-semibold text-xl leading-relaxed">
-              If any of these four elements are missing, investors will assume the opportunity is <span className="text-destructive font-bold">weak or unvalidated.</span>
+              Miss even ONE of these? <span className="text-destructive font-bold">Your deck gets archived.</span> Investors see hundreds of decks. They're looking for reasons to say no.
             </p>
           </div>
         </section>
@@ -225,8 +225,8 @@ export default function ProblemSlideGuide() {
         {/* Good vs Bad Examples */}
         <section>
           <div className="mb-12 text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Good vs. Bad Examples</h2>
-            <p className="text-xl text-muted-foreground">See the difference that clarity and evidence make</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Real vs. Bullshit</h2>
+            <p className="text-xl text-muted-foreground">The difference between getting funded and getting ghosted</p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8">
@@ -238,7 +238,7 @@ export default function ProblemSlideGuide() {
                   <div className="p-3 rounded-2xl bg-success/20 border border-success/40">
                     <CheckCircle2 className="w-7 h-7 text-success" />
                   </div>
-                  <h3 className="text-2xl font-bold text-success">Strong Example</h3>
+                  <h3 className="text-2xl font-bold text-success">What Works</h3>
                 </div>
                 
                 <div className="p-6 rounded-2xl bg-background/90 backdrop-blur-sm border border-success/20 mb-6 relative overflow-hidden">
@@ -250,19 +250,19 @@ export default function ProblemSlideGuide() {
                 </div>
                 
                 <div className="space-y-4">
-                  <p className="text-sm font-bold text-success uppercase tracking-wider">Why it works:</p>
+                  <p className="text-sm font-bold text-success uppercase tracking-wider">Why this kills:</p>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3 p-3 rounded-xl bg-background/50">
                       <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground leading-relaxed">Clear segment (early-stage hardware startups)</span>
+                      <span className="text-muted-foreground leading-relaxed">Specific target (not "startups"—early-stage HARDWARE startups)</span>
                     </div>
                     <div className="flex items-start gap-3 p-3 rounded-xl bg-background/50">
                       <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground leading-relaxed">Quantified pain (55% of capital, 6-9 months wasted)</span>
+                      <span className="text-muted-foreground leading-relaxed">Hard numbers (55% capital burn, 6-9 months delay)</span>
                     </div>
                     <div className="flex items-start gap-3 p-3 rounded-xl bg-background/50">
                       <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground leading-relaxed">Urgency (competitors moving faster creates time pressure)</span>
+                      <span className="text-muted-foreground leading-relaxed">Competitive urgency (speed = survival)</span>
                     </div>
                   </div>
                 </div>
@@ -277,7 +277,7 @@ export default function ProblemSlideGuide() {
                   <div className="p-3 rounded-2xl bg-destructive/20 border border-destructive/40">
                     <XCircle className="w-7 h-7 text-destructive" />
                   </div>
-                  <h3 className="text-2xl font-bold text-destructive">Weak Example</h3>
+                  <h3 className="text-2xl font-bold text-destructive">What Gets Ignored</h3>
                 </div>
                 
                 <div className="p-6 rounded-2xl bg-background/90 backdrop-blur-sm border border-destructive/20 mb-6 relative overflow-hidden">
@@ -289,23 +289,23 @@ export default function ProblemSlideGuide() {
                 </div>
                 
                 <div className="space-y-4">
-                  <p className="text-sm font-bold text-destructive uppercase tracking-wider">Why it fails:</p>
+                  <p className="text-sm font-bold text-destructive uppercase tracking-wider">Why this dies:</p>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3 p-3 rounded-xl bg-background/50">
                       <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground leading-relaxed">Vague — who exactly is affected?</span>
+                      <span className="text-muted-foreground leading-relaxed">Zero specificity — "manufacturing" could mean anything</span>
                     </div>
                     <div className="flex items-start gap-3 p-3 rounded-xl bg-background/50">
                       <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground leading-relaxed">No evidence — just broad claims</span>
+                      <span className="text-muted-foreground leading-relaxed">Pure assertion — no proof anything is actually broken</span>
                     </div>
                     <div className="flex items-start gap-3 p-3 rounded-xl bg-background/50">
                       <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground leading-relaxed">No urgency — why solve this now?</span>
+                      <span className="text-muted-foreground leading-relaxed">Buzzword soup — "digital" and "adapt" mean nothing</span>
                     </div>
                     <div className="flex items-start gap-3 p-3 rounded-xl bg-background/50">
                       <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground leading-relaxed">Nothing concrete — no data or specifics</span>
+                      <span className="text-muted-foreground leading-relaxed">No urgency — why does this need solving TODAY?</span>
                     </div>
                   </div>
                 </div>
@@ -317,8 +317,8 @@ export default function ProblemSlideGuide() {
         {/* Common Mistakes */}
         <section>
           <div className="mb-12 text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Common Mistakes Founders Make</h2>
-            <p className="text-xl text-muted-foreground">Avoid these pitfalls that kill investor interest</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">How Founders Kill Their Own Decks</h2>
+            <p className="text-xl text-muted-foreground">Stop doing these four things immediately</p>
           </div>
           
           <div className="grid md:grid-cols-2 gap-6">
@@ -362,8 +362,8 @@ export default function ProblemSlideGuide() {
                   <TrendingUp className="w-8 h-8 text-success" />
                 </div>
                 <div>
-                  <h2 className="text-4xl font-bold">Best Practices</h2>
-                  <p className="text-lg text-muted-foreground mt-1">For a High-Impact Problem Slide</p>
+                  <h2 className="text-4xl font-bold">How to Actually Win</h2>
+                  <p className="text-lg text-muted-foreground mt-1">Four rules that separate funded founders from the rest</p>
                 </div>
               </div>
               
@@ -383,10 +383,10 @@ export default function ProblemSlideGuide() {
 
               <div className="mt-10 p-8 rounded-2xl bg-background/90 backdrop-blur-sm border border-success/30 text-center">
                 <p className="text-foreground text-2xl font-bold leading-relaxed">
-                  If your problem slide triggers: <span className="text-transparent bg-clip-text bg-gradient-to-r from-success to-success/70">"Yes, this is real, and it sounds painful"</span>
+                  When investors think: <span className="text-transparent bg-clip-text bg-gradient-to-r from-success to-success/70">"Fuck, that IS painful"</span>
                 </p>
                 <p className="text-muted-foreground text-lg mt-3">
-                  The rest of your deck becomes much easier to believe.
+                  Everything else gets easier. That's the only reaction that matters.
                 </p>
               </div>
             </div>
@@ -407,20 +407,20 @@ export default function ProblemSlideGuide() {
               </div>
               
               <div className="space-y-4">
-                <h2 className="text-4xl md:text-5xl font-bold">The Foundation of Your Pitch</h2>
+                <h2 className="text-4xl md:text-5xl font-bold">This Slide Makes or Breaks You</h2>
                 <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                  The problem slide is not a formality—it is the foundation of your entire pitch. When the problem is specific, urgent, and backed by evidence, investors immediately understand the opportunity.
+                  Get the problem slide right and everything else clicks. Get it wrong and it doesn't matter how brilliant your solution is—investors have already moved on.
                 </p>
               </div>
               
               <div className="max-w-3xl mx-auto p-8 rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
                 <p className="text-foreground text-2xl md:text-3xl font-bold leading-relaxed mb-4">
-                  Start with a real pain.<br />
-                  Prove it exists.<br />
-                  Make it feel expensive.
+                  Pick ONE brutal problem.<br />
+                  Prove it's costing real money.<br />
+                  Show why it's urgent.
                 </p>
                 <p className="text-muted-foreground text-lg">
-                  Do that, and your pitch becomes dramatically stronger.
+                  Nail this, and the rest writes itself.
                 </p>
               </div>
               
