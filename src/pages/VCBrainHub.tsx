@@ -4,112 +4,156 @@ import { Search, Book, TrendingUp, AlertTriangle, Wrench, ChevronRight, ChevronD
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-
 interface NavSection {
   title: string;
-  items: { label: string; path: string; }[];
+  items: {
+    label: string;
+    path: string;
+  }[];
 }
-
-const navigationSections: NavSection[] = [
-  {
-    title: "Stage Guides",
-    items: [
-      { label: "Angel Stage", path: "/vcbrain/angel" },
-      { label: "Pre-Seed Stage", path: "/vcbrain/pre-seed" },
-      { label: "Seed Stage", path: "/vcbrain/seed" },
-      { label: "Stage Comparison", path: "/vcbrain/stage-comparison" },
-    ],
-  },
-  {
-    title: "Pitch Deck Library",
-    items: [
-      { label: "Problem Slide", path: "/vcbrain/deck/problem" },
-      { label: "Solution Slide", path: "/vcbrain/deck/solution" },
-      { label: "Product Slide", path: "/vcbrain/deck/product" },
-      { label: "Market Slide", path: "/vcbrain/deck/market" },
-      { label: "Competition Slide", path: "/vcbrain/deck/competition" },
-      { label: "Traction Slide", path: "/vcbrain/deck/traction" },
-      { label: "Financials Slide", path: "/vcbrain/deck/financials" },
-      { label: "Team Slide", path: "/vcbrain/deck/team" },
-      { label: "Vision Slide", path: "/vcbrain/deck/vision" },
-      { label: "Ask Slide", path: "/vcbrain/deck/ask" },
-      { label: "GTM Slide", path: "/vcbrain/deck/gtm" },
-      { label: "Executive Summary", path: "/vcbrain/deck/executive-summary" },
-    ],
-  },
-  {
-    title: "Tactical Guides",
-    items: [
-      { label: "What Angels Really Want", path: "/vcbrain/guides/angels" },
-      { label: "Early Traction That Matters", path: "/vcbrain/guides/traction" },
-      { label: "Fake TAMs Exposed", path: "/vcbrain/guides/tam" },
-      { label: "Building Demos That Sell", path: "/vcbrain/guides/demos" },
-      { label: "Pitching Without Hype", path: "/vcbrain/guides/pitching" },
-      { label: "Why Startups Actually Die", path: "/vcbrain/guides/death" },
-      { label: "Founder-Market Fit", path: "/vcbrain/guides/founder-fit" },
-      { label: "Fundraising Timeline Reality", path: "/vcbrain/guides/timeline" },
-    ],
-  },
-  {
-    title: "Founder Mistakes",
-    items: [
-      { label: "Top 10 Fatal Errors", path: "/vcbrain/mistakes/fatal" },
-      { label: "Red Flags VCs Spot", path: "/vcbrain/mistakes/red-flags" },
-      { label: "Deck Disasters", path: "/vcbrain/mistakes/deck-disasters" },
-      { label: "Email Pitch Fails", path: "/vcbrain/mistakes/email-fails" },
-    ],
-  },
-  {
-    title: "Tools & Resources",
-    items: [
-      { label: "VC Glossary", path: "/vcbrain/tools/glossary" },
-      { label: "Red Flag Database", path: "/vcbrain/tools/red-flags" },
-      { label: "Pitch Readiness Checklist", path: "/vcbrain/tools/checklist" },
-      { label: "Investor Scorecard", path: "/vcbrain/tools/scorecard" },
-    ],
-  },
-];
-
+const navigationSections: NavSection[] = [{
+  title: "Stage Guides",
+  items: [{
+    label: "Angel Stage",
+    path: "/vcbrain/angel"
+  }, {
+    label: "Pre-Seed Stage",
+    path: "/vcbrain/pre-seed"
+  }, {
+    label: "Seed Stage",
+    path: "/vcbrain/seed"
+  }, {
+    label: "Stage Comparison",
+    path: "/vcbrain/stage-comparison"
+  }]
+}, {
+  title: "Pitch Deck Library",
+  items: [{
+    label: "Problem Slide",
+    path: "/vcbrain/deck/problem"
+  }, {
+    label: "Solution Slide",
+    path: "/vcbrain/deck/solution"
+  }, {
+    label: "Product Slide",
+    path: "/vcbrain/deck/product"
+  }, {
+    label: "Market Slide",
+    path: "/vcbrain/deck/market"
+  }, {
+    label: "Competition Slide",
+    path: "/vcbrain/deck/competition"
+  }, {
+    label: "Traction Slide",
+    path: "/vcbrain/deck/traction"
+  }, {
+    label: "Financials Slide",
+    path: "/vcbrain/deck/financials"
+  }, {
+    label: "Team Slide",
+    path: "/vcbrain/deck/team"
+  }, {
+    label: "Vision Slide",
+    path: "/vcbrain/deck/vision"
+  }, {
+    label: "Ask Slide",
+    path: "/vcbrain/deck/ask"
+  }, {
+    label: "GTM Slide",
+    path: "/vcbrain/deck/gtm"
+  }, {
+    label: "Executive Summary",
+    path: "/vcbrain/deck/executive-summary"
+  }]
+}, {
+  title: "Tactical Guides",
+  items: [{
+    label: "What Angels Really Want",
+    path: "/vcbrain/guides/angels"
+  }, {
+    label: "Early Traction That Matters",
+    path: "/vcbrain/guides/traction"
+  }, {
+    label: "Fake TAMs Exposed",
+    path: "/vcbrain/guides/tam"
+  }, {
+    label: "Building Demos That Sell",
+    path: "/vcbrain/guides/demos"
+  }, {
+    label: "Pitching Without Hype",
+    path: "/vcbrain/guides/pitching"
+  }, {
+    label: "Why Startups Actually Die",
+    path: "/vcbrain/guides/death"
+  }, {
+    label: "Founder-Market Fit",
+    path: "/vcbrain/guides/founder-fit"
+  }, {
+    label: "Fundraising Timeline Reality",
+    path: "/vcbrain/guides/timeline"
+  }]
+}, {
+  title: "Founder Mistakes",
+  items: [{
+    label: "Top 10 Fatal Errors",
+    path: "/vcbrain/mistakes/fatal"
+  }, {
+    label: "Red Flags VCs Spot",
+    path: "/vcbrain/mistakes/red-flags"
+  }, {
+    label: "Deck Disasters",
+    path: "/vcbrain/mistakes/deck-disasters"
+  }, {
+    label: "Email Pitch Fails",
+    path: "/vcbrain/mistakes/email-fails"
+  }]
+}, {
+  title: "Tools & Resources",
+  items: [{
+    label: "VC Glossary",
+    path: "/vcbrain/tools/glossary"
+  }, {
+    label: "Red Flag Database",
+    path: "/vcbrain/tools/red-flags"
+  }, {
+    label: "Pitch Readiness Checklist",
+    path: "/vcbrain/tools/checklist"
+  }, {
+    label: "Investor Scorecard",
+    path: "/vcbrain/tools/scorecard"
+  }]
+}];
 export default function VCBrainHub() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [expandedSections, setExpandedSections] = useState<string[]>(
-    navigationSections.map(s => s.title)
-  );
+  const [expandedSections, setExpandedSections] = useState<string[]>(navigationSections.map(s => s.title));
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (!session) {
         navigate("/auth?redirect=/vcbrain");
         return;
       }
       setLoading(false);
     };
-    
     checkAuth();
   }, [navigate]);
-
   const toggleSection = (title: string) => {
-    setExpandedSections(prev =>
-      prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]
-    );
+    setExpandedSections(prev => prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]);
   };
-
   const isActive = (path: string) => location.pathname === path;
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
+  return <div className="min-h-screen bg-background flex flex-col">
       {/* Top Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="flex items-center justify-between px-6 py-4">
@@ -117,13 +161,7 @@ export default function VCBrainHub() {
             <h1 className="text-2xl font-bold text-foreground">VC Brain Hub</h1>
             <p className="text-sm text-muted-foreground">The Brutally Honest Founder Roadmap</p>
           </div>
-          <Button 
-            size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
-            onClick={() => navigate('/pricing')}
-          >
-            Buy the Investment Memo
-          </Button>
+          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => navigate('/pricing')}> Get Your Investment Memo</Button>
         </div>
       </header>
 
@@ -131,38 +169,17 @@ export default function VCBrainHub() {
         {/* Left Sidebar */}
         <aside className="w-72 border-r border-border bg-card/50 backdrop-blur-sm overflow-y-auto sticky top-[73px] h-[calc(100vh-73px)]">
           <div className="p-4 space-y-6">
-            {navigationSections.map((section) => (
-              <div key={section.title}>
-                <button
-                  onClick={() => toggleSection(section.title)}
-                  className="w-full flex items-center justify-between text-sm font-semibold text-foreground hover:text-primary transition-colors mb-2"
-                >
+            {navigationSections.map(section => <div key={section.title}>
+                <button onClick={() => toggleSection(section.title)} className="w-full flex items-center justify-between text-sm font-semibold text-foreground hover:text-primary transition-colors mb-2">
                   <span>{section.title}</span>
-                  {expandedSections.includes(section.title) ? (
-                    <ChevronDown className="w-4 h-4" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4" />
-                  )}
+                  {expandedSections.includes(section.title) ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                 </button>
-                {expandedSections.includes(section.title) && (
-                  <div className="space-y-1 ml-2">
-                    {section.items.map((item) => (
-                      <button
-                        key={item.path}
-                        onClick={() => navigate(item.path)}
-                        className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-all ${
-                          isActive(item.path)
-                            ? "bg-primary/10 text-primary font-medium"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                        }`}
-                      >
+                {expandedSections.includes(section.title) && <div className="space-y-1 ml-2">
+                    {section.items.map(item => <button key={item.path} onClick={() => navigate(item.path)} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-all ${isActive(item.path) ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}>
                         {item.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+                      </button>)}
+                  </div>}
+              </div>)}
           </div>
         </aside>
 
@@ -173,13 +190,7 @@ export default function VCBrainHub() {
             <div className="mb-8">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="What startup truth do you want to face today?"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-12 text-base bg-card border-border"
-                />
+                <Input type="text" placeholder="What startup truth do you want to face today?" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10 h-12 text-base bg-card border-border" />
               </div>
             </div>
 
@@ -214,10 +225,7 @@ export default function VCBrainHub() {
                   <span className="text-foreground">Real examples of what works</span>
                 </li>
               </ul>
-              <Button 
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
-                onClick={() => navigate('/pricing')}
-              >
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => navigate('/pricing')}>
                 Get the Template
               </Button>
               <p className="text-xs text-muted-foreground text-center">
@@ -227,6 +235,5 @@ export default function VCBrainHub() {
           </aside>
         </main>
       </div>
-    </div>
-  );
+    </div>;
 }
