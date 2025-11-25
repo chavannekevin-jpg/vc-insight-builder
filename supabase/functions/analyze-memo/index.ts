@@ -82,8 +82,9 @@ CRITICAL INSTRUCTIONS:
 - List 3-4 key strengths
 - List 2-3 key risks
 - Provide 3-4 next step recommendations
-- For EACH section in the memo, provide 2-3 specific recommendations based on that section's content
-- Section recommendations should be actionable and specific to what was discussed in that section`;
+- For EACH section in the memo, provide 2 specific, concise recommendations (keep each recommendation under 30 words)
+- Section recommendations should be actionable and specific to what was discussed in that section
+- Keep all text concise to ensure complete response`;
 
     console.log("Analyzing memo with AI...");
 
@@ -106,7 +107,7 @@ CRITICAL INSTRUCTIONS:
           },
         ],
         temperature: 0.7,
-        max_tokens: 2000,
+        max_tokens: 4000,
       }),
     });
 
@@ -129,11 +130,23 @@ CRITICAL INSTRUCTIONS:
     let analysis;
     try {
       // Remove markdown code blocks if present
-      const jsonText = analysisText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      let jsonText = analysisText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      
+      // Check if response was truncated and try to close the JSON
+      if (!jsonText.endsWith('}')) {
+        console.log("Response appears truncated, attempting to recover...");
+        // Try to find the last complete object and close it
+        const lastCompleteObject = jsonText.lastIndexOf('}');
+        if (lastCompleteObject > 0) {
+          jsonText = jsonText.substring(0, lastCompleteObject + 1);
+        }
+      }
+      
       analysis = JSON.parse(jsonText);
     } catch (parseError) {
-      console.error("Failed to parse AI response:", analysisText);
-      throw new Error("Failed to parse AI analysis");
+      console.error("Failed to parse AI response:", analysisText.substring(0, 500));
+      console.error("Parse error:", parseError);
+      throw new Error("Failed to parse AI analysis - response may be incomplete");
     }
 
     return new Response(
