@@ -278,12 +278,28 @@ export default function FreemiumHub() {
                     <Button 
                       onClick={() => navigate("/sample-memo")}
                       variant="outline"
-                      className="flex-1 border-primary/30 hover:bg-primary/5"
+                      className="relative flex-1 border-2 border-primary/50 hover:bg-primary/10 hover:border-primary transition-all duration-300 group overflow-hidden"
                       size="lg"
                     >
-                      <FileText className="w-4 h-4 mr-2" />
-                      View Sample
+                      {/* Animated background gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      
+                      {/* NEW badge */}
+                      <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-bold rounded-full shadow-lg">
+                        PREVIEW
+                      </div>
+                      
+                      <div className="relative flex items-center justify-center">
+                        <FileText className="w-4 h-4 mr-2 text-primary" />
+                        <span className="font-semibold">See Sample First</span>
+                      </div>
                     </Button>
+                  </div>
+                  
+                  {/* Benefit callout for sample */}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
+                    <div className="w-1 h-1 rounded-full bg-primary/50" />
+                    <span>Preview the AI-powered analysis before creating yours</span>
                   </div>
                 </div>
               </div>
@@ -420,7 +436,62 @@ export default function FreemiumHub() {
 
           {/* RIGHT PANEL: Tools & Templates */}
           <div className="space-y-6">
-            <div className="sticky top-6">
+            <div className="sticky top-6 space-y-6">
+              {/* Featured: Sample Memo Preview Card */}
+              <div className="relative overflow-hidden rounded-2xl border-2 border-primary/30 shadow-xl">
+                {/* Animated gradient background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-background" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/30 rounded-full blur-3xl animate-pulse" />
+                
+                {/* Featured badge */}
+                <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-bold rounded-full shadow-lg">
+                  ✨ FEATURED
+                </div>
+                
+                <div className="relative p-6 space-y-4">
+                  {/* Header */}
+                  <div className="flex items-start gap-3">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/20 shadow-lg">
+                      <FileText className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-foreground mb-1">See a Sample Memo</h3>
+                      <p className="text-sm text-muted-foreground">Preview before you create</p>
+                    </div>
+                  </div>
+                  
+                  {/* Value props */}
+                  <div className="space-y-2.5">
+                    <div className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                      <p className="text-sm text-foreground leading-snug">See VC-focused analysis in action</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                      <p className="text-sm text-foreground leading-snug">8+ comprehensive sections with AI insights</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                      <p className="text-sm text-foreground leading-snug">Understand the full memo structure</p>
+                    </div>
+                  </div>
+                  
+                  {/* CTA */}
+                  <Button
+                    onClick={() => navigate("/sample-memo")}
+                    className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
+                    size="lg"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    View Sample Memo
+                  </Button>
+                  
+                  <p className="text-xs text-center text-muted-foreground italic">
+                    No signup required • Takes 2 minutes to review
+                  </p>
+                </div>
+              </div>
+              
               {/* Tools Section */}
               <div className="p-6 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl">
                 <div className="flex items-center gap-3 mb-6">
