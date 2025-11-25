@@ -1,54 +1,49 @@
-import { AlertCircle, Zap, TrendingUp, Target, Shield, DollarSign, FileText, Lightbulb, Eye, Network } from "lucide-react";
+import { AlertCircle, Zap, TrendingUp, Target, Shield, DollarSign, FileText, Lightbulb, Eye } from "lucide-react";
 
 export const WhyYouNeedThisSection = () => {
   const confrontations = [
     {
       question: "Can this company reach €100M+ ARR?",
-      challenge: "Level up your growth story.",
+      challenge: "Learn how VCs model growth trajectories",
       icon: TrendingUp
     },
     {
       question: "What unfair advantage makes this team win?",
-      challenge: "Sharpen your competitive edge.",
+      challenge: "Understand defensibility evaluation",
       icon: Target
     },
     {
       question: "What compounding defensibility grows with you?",
-      challenge: "Build your moat strategy.",
+      challenge: "Master moat strategy frameworks",
       icon: Shield
     },
     {
       question: "Does the economic engine make sense at scale?",
-      challenge: "Master your unit economics.",
+      challenge: "Decode unit economics thinking",
       icon: DollarSign
     }
   ];
 
-  const outcomes = [
+  const benefits = [
     {
-      icon: FileText,
-      title: "Your Personalized VC Memo",
-      description: "a multi-page, VC-style document that investors actually use to decide on funding. Objective, unbiased, and designed to reveal strengths, risks, and growth potential — giving you the same insights VCs rely on."
+      icon: Lightbulb,
+      title: "The VC Framework",
+      description: "The exact evaluation criteria and decision-making process used by professional investors to assess startups"
     },
     {
       icon: Target,
-      title: "Actionable Feedback",
-      description: "clear, practical guidance on blind spots, weaknesses, and potential objections so you can fix them before pitching."
+      title: "Real Patterns",
+      description: "Understand why pitches get rejected and what actually separates fundable companies from the rest"
+    },
+    {
+      icon: FileText,
+      title: "Practical Tools",
+      description: "Templates, guides, and resources built from reviewing thousands of pitches over 10 years"
     },
     {
       icon: Eye,
-      title: "VC Lens on Your Story",
-      description: "your startup reframed as a VC-ready investment case, making your value and growth potential obvious."
-    },
-    {
-      icon: Lightbulb,
-      title: "Your Investment Thesis",
-      description: "the core narrative a VC would pitch to other investors, forming the backbone of every deal discussion."
-    },
-    {
-      icon: Network,
-      title: "Optional Exposure",
-      description: "the ability to share your profile with our VC network for early visibility (optional, at your discretion)."
+      title: "Insider Perspective",
+      description: "See your company through a VC's eyes before you pitch—fix problems before meetings, not after rejections"
     }
   ];
 
@@ -61,13 +56,13 @@ export const WhyYouNeedThisSection = () => {
         <div className="text-center mb-16 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 backdrop-blur-xl mb-6">
             <AlertCircle className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-primary">The Reality Check</span>
+            <span className="text-sm font-semibold text-primary">The Reality</span>
           </div>
           <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            Why This Memo
+            Why You Need This
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Think like an investor, win investors.
+            Stop wasting time. Learn how we actually think.
           </p>
         </div>
 
@@ -83,7 +78,7 @@ export const WhyYouNeedThisSection = () => {
                 <h3 className="text-2xl font-bold">The Core Issue</h3>
               </div>
               <p className="text-xl text-foreground/90 leading-relaxed">
-                Startups have no idea how VCs evaluate their company.
+                Founders have no idea how VCs evaluate their company. So they pitch blind, get rejected, and repeat.
               </p>
             </div>
           </div>
@@ -126,19 +121,19 @@ export const WhyYouNeedThisSection = () => {
                 <div className="p-3 rounded-xl bg-success/20 border border-success/40 shadow-[0_0_20px_rgba(34,197,94,0.3)]">
                   <TrendingUp className="w-6 h-6 text-success" />
                 </div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-success to-success/70 bg-clip-text text-transparent">What you get</h3>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-success to-success/70 bg-clip-text text-transparent">What's inside the platform</h3>
               </div>
               <div className="space-y-4">
-                {outcomes.map((outcome, idx) => {
-                  const Icon = outcome.icon;
+                {benefits.map((benefit, idx) => {
+                  const Icon = benefit.icon;
                   return (
                     <div key={idx} className="flex items-start gap-4 p-5 rounded-xl bg-success/5 border border-success/30 hover:bg-success/10 hover:border-success/40 hover:shadow-[0_0_20px_rgba(34,197,94,0.2)] transition-all duration-300 group/outcome">
                       <div className="p-2 rounded-lg bg-success/20 border border-success/40 flex-shrink-0 mt-0.5">
                         <Icon className="w-4 h-4 text-success" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-bold text-sm text-foreground mb-1">{outcome.title}</h4>
-                        <p className="text-xs text-foreground/70 leading-relaxed">{outcome.description}</p>
+                        <h4 className="font-bold text-sm text-foreground mb-1">{benefit.title}</h4>
+                        <p className="text-xs text-foreground/70 leading-relaxed">{benefit.description}</p>
                       </div>
                     </div>
                   );

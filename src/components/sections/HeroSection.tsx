@@ -57,22 +57,22 @@ export const HeroSection = () => {
           {/* CTA buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <button
-              onClick={() => navigate('/hub')}
+              onClick={() => navigate('/auth')}
               className="px-8 py-4 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-105"
             >
-              Explore Framework
+              Explore the VC Brain →
             </button>
             <button
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/hub')}
               className="px-8 py-4 rounded-lg bg-muted border border-border text-foreground font-semibold text-lg hover:bg-muted/80 transition-all"
             >
-              Create Free Account
+              Browse Resources
             </button>
           </div>
 
           {/* Social proof hint */}
           <p className="text-sm text-muted-foreground pt-2">
-            Join founders already using this framework to raise their pre-seed rounds
+            100% free. No credit card. No bullshit.
           </p>
         </div>
       </div>

@@ -1,30 +1,30 @@
-import { BookOpen, Lightbulb, FileText, Zap } from "lucide-react";
+import { BookOpen, Lightbulb, Target, Zap } from "lucide-react";
 
 export const HowItWorksSection = () => {
   const steps = [
     {
       number: "01",
-      title: "Start with Free Resources",
-      description: "Access guides, templates, and frameworks immediately. No payment required.",
-      icon: BookOpen
-    },
-    {
-      number: "02",
-      title: "Learn the VC Framework",
-      description: "Understand how VCs think, what they look for, and why most pitches get rejected.",
-      icon: Lightbulb
-    },
-    {
-      number: "03",
-      title: "Build Your Foundation",
-      description: "Use the methodology to strengthen your pitch, business model, and narrative.",
+      title: "Create Your Account",
+      description: "Sign up in 30 seconds. Zero payment info required. Full access, immediately.",
       icon: Zap
     },
     {
+      number: "02",
+      title: "Access the Framework",
+      description: "Learn how VCs actually think. The real criteria. The unspoken rules. The patterns behind every rejection.",
+      icon: BookOpen
+    },
+    {
+      number: "03",
+      title: "Use the Tools",
+      description: "Guides, templates, and resources built from reviewing thousands of pitches. The stuff that actually works.",
+      icon: Target
+    },
+    {
       number: "04",
-      title: "Get Your Premium Memo",
-      description: "When you're ready, get a personalized VC-quality investment memo for your startup.",
-      icon: FileText
+      title: "Stop Wasting Time",
+      description: "Fix your pitch before the meeting. Understand what VCs want before you ask for their money.",
+      icon: Lightbulb
     }
   ];
 
@@ -69,13 +69,13 @@ export const HowItWorksSection = () => {
 
         <div className="text-center mt-12">
           <p className="text-muted-foreground mb-4">
-            No commitment required. Start learning today.
+            Completely free. Forever. No catch.
           </p>
           <button
             onClick={() => window.location.href = '/auth'}
             className="px-8 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all"
           >
-            Get Started Free
+            Unlock the VC Brain →
           </button>
         </div>
       </div>

@@ -32,7 +32,7 @@ export const WhyTrustMeSection = () => {
                 textShadow: '0 0 20px hsl(var(--primary) / 0.5), 0 0 40px hsl(var(--primary) / 0.3)'
               }}
             >
-              I've Spent Years Teaching Founders How VCs Think. Now I've Built This So I Don't Have To.
+              10 Years Reviewing Pitches. Now I'm Sharing Everything.
             </h2>
             
             <div className="space-y-4 text-foreground/90 leading-relaxed">
@@ -53,7 +53,11 @@ export const WhyTrustMeSection = () => {
               </p>
               
               <p>
-                That's why I built this tool—to give you the same clarity VCs have internally, so you walk into every meeting prepared, focused, and investment-ready. This is the memo structure I use. These are the questions I ask. This is how we evaluate you.
+                So I built this platform. Everything I teach in workshops, every framework I use to evaluate startups, every pattern I've seen in thousands of pitches—it's all here. Free. For you to use.
+              </p>
+              
+              <p className="font-semibold">
+                Stop guessing. Start speaking VC.
               </p>
             </div>
 
