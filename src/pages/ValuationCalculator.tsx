@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,8 @@ import {
   Sparkles
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { WaitlistModal } from "@/components/WaitlistModal";
+import { useWaitlistMode, useUserWaitlistStatus } from "@/hooks/useWaitlistMode";
 
 type SignalLevel = "realistic" | "aggressive" | "inflated" | "conservative";
 
@@ -28,7 +30,12 @@ export default function ValuationCalculator() {
   const { toast } = useToast();
   
   const [companyId, setCompanyId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+
+  const { data: waitlistMode } = useWaitlistMode();
+  const { data: userWaitlistStatus } = useUserWaitlistStatus(userId || undefined, companyId || undefined);
   
   const [raiseAmount, setRaiseAmount] = useState(500000);
   const [dilution, setDilution] = useState([15]);
@@ -45,6 +52,8 @@ export default function ValuationCalculator() {
     const loadCompany = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
+
+      setUserId(session.user.id);
 
       const { data: companies } = await supabase
         .from("companies")
@@ -489,7 +498,13 @@ export default function ValuationCalculator() {
                           Numbers don't raise capital. Stories do.
                         </p>
                         <Button 
-                          onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
+                          onClick={() => {
+                            if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
+                              setShowWaitlistModal(true);
+                            } else {
+                              companyId && navigate(`/memo?companyId=${companyId}`);
+                            }
+                          }}
                           variant="outline"
                           size="sm"
                           className="w-full text-xs border-destructive/40 hover:bg-destructive/20"
@@ -602,7 +617,13 @@ export default function ValuationCalculator() {
                       </div>
                     </div>
                     <Button 
-                      onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
+                      onClick={() => {
+                        if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
+                          setShowWaitlistModal(true);
+                        } else {
+                          companyId && navigate(`/memo?companyId=${companyId}`);
+                        }
+                      }}
                       variant="destructive"
                       className="w-full font-bold"
                       size="lg"
@@ -612,10 +633,16 @@ export default function ValuationCalculator() {
                   </CardContent>
                 </Card>
               </div>
-            </div>
+             </div>
           </div>
         </div>
       </div>
+
+      <WaitlistModal 
+        open={showWaitlistModal} 
+        onOpenChange={setShowWaitlistModal}
+        companyId={companyId || undefined}
+      />
     </TooltipProvider>
   );
 }

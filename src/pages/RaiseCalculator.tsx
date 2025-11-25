@@ -66,6 +66,8 @@ export default function RaiseCalculator() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
+      setUserId(session.user.id);
+
       const { data: companies } = await supabase
         .from("companies")
         .select("id")
@@ -596,7 +598,13 @@ export default function RaiseCalculator() {
                       Can you actually justify this raise?
                     </p>
                     <Button 
-                      onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
+                      onClick={() => {
+                        if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
+                          setShowWaitlistModal(true);
+                        } else {
+                          companyId && navigate(`/memo?companyId=${companyId}`);
+                        }
+                      }}
                       variant="outline"
                       size="sm"
                       className="w-full text-xs border-destructive/40 hover:bg-destructive/20"
@@ -784,7 +792,13 @@ export default function RaiseCalculator() {
                   </div>
                 </div>
                 <Button 
-                  onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
+                  onClick={() => {
+                    if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
+                      setShowWaitlistModal(true);
+                    } else {
+                      companyId && navigate(`/memo?companyId=${companyId}`);
+                    }
+                  }}
                   variant="destructive"
                   className="w-full font-bold"
                   size="lg"
@@ -796,6 +810,12 @@ export default function RaiseCalculator() {
           </div>
         </div>
       </div>
+
+      <WaitlistModal 
+        open={showWaitlistModal} 
+        onOpenChange={setShowWaitlistModal}
+        companyId={companyId || undefined}
+      />
     </div>
     </TooltipProvider>
   );
