@@ -9,42 +9,51 @@ export const PricingSection = () => {
   
   const pricingOptions = [
     {
-      title: "Early Access",
-      subtitle: "Early Access - 50% Off",
-      price: "€29.99",
-      originalPrice: "€59.99",
-      discount: "50% OFF",
+      title: "Free Access",
+      subtitle: "Freemium Hub",
+      price: "€0",
+      isPermanentlyFree: true,
       features: [
-        "Get your memo when platform launches",
-        "Save €30 with early access pricing",
-        "Company profile shared to our VC network (optional)"
+        "Full access to all guides and templates",
+        "Complete VC framework and methodology",
+        "Pre-Seed Deck Guide",
+        "PlayBook articles and resources",
+        "Track your progress",
+        "Community support"
       ],
-      cta: "Unlock Your VC Insights →",
-      highlight: true,
-      color: "green" as const
-    },
-    {
-      title: "Express Service",
-      subtitle: "Express Service",
-      price: "€159.99",
-      features: [
-        "Expert-crafted memo delivered within one week",
-        "Personally reviewed by Kevin during early access",
-        "Full automation coming soon—get priority access now",
-        "Company profile shared to Kevin's VC network (optional)"
-      ],
-      cta: "Fast Track to Clarity →",
+      cta: "Get Started Free →",
       highlight: false,
       color: "blue" as const
     },
     {
+      title: "Premium Memo",
+      subtitle: "Personalized Investment Memo",
+      price: "€59.99",
+      originalPrice: "€119.99",
+      discount: "Early Access - 50% OFF",
+      features: [
+        "Everything in Free, plus:",
+        "AI-powered personalized memo",
+        "VC-quality analysis of your startup",
+        "Actionable feedback and insights",
+        "Pitch strengthening recommendations",
+        "Company profile shared to VC network (optional)"
+      ],
+      cta: "Upgrade to Premium →",
+      highlight: true,
+      color: "green" as const
+    },
+    {
       title: "VIP Package",
-      subtitle: "Ultra Premium Package",
+      subtitle: "Premium + Network Access",
       price: "€399",
       features: [
-        "Express memo delivered within one week",
-        "Memo pushed to Kevin's network of 100+ global investors",
-        "Direct introductions from Kevin to VCs/investors if they show interest"
+        "Everything in Premium, plus:",
+        "Priority memo delivery (1 week)",
+        "Direct push to 100+ global investors",
+        "Personal introductions from Kevin",
+        "Priority support",
+        "Early access to new features"
       ],
       cta: "Get VIP Access →",
       highlight: false,
@@ -53,29 +62,26 @@ export const PricingSection = () => {
     }
   ];
 
-  const handleSelectPlan = (planTitle: string, planPrice: string) => {
-    navigate(`/auth?plan=${encodeURIComponent(planTitle)}&price=${encodeURIComponent(planPrice)}`);
+  const handleSelectPlan = (option: typeof pricingOptions[0]) => {
+    if (option.isPermanentlyFree) {
+      navigate('/auth');
+    } else {
+      navigate(`/auth?plan=${encodeURIComponent(option.title)}&price=${encodeURIComponent(option.price)}`);
+    }
   };
 
   return (
-    <section id="pricing-section" className="py-20 px-6 sm:px-8 lg:px-12 bg-muted/30">
-      <div className="max-w-5xl mx-auto">
+    <section id="pricing-section" className="py-24 bg-muted/30">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 
-            className="text-4xl md:text-5xl font-serif mb-4"
-            style={{ 
-              textShadow: '0 0 20px hsl(var(--primary) / 0.5), 0 0 40px hsl(var(--primary) / 0.3), 0 0 60px hsl(var(--primary) / 0.2)'
-            }}
-          >
-            Choose Your Plan
+          <div className="inline-block px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
+            <span className="text-sm font-medium text-primary">Flexible Pricing</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+            Start Free, Upgrade When Ready
           </h2>
-          <p 
-            className="text-lg text-muted-foreground"
-            style={{ 
-              textShadow: '0 0 15px hsl(var(--primary) / 0.3), 0 0 30px hsl(var(--primary) / 0.2)'
-            }}
-          >
-            Select the option that fits your timeline
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Get full access to resources and frameworks for free. Pay only when you want the personalized memo.
           </p>
         </div>
 
@@ -91,6 +97,9 @@ export const PricingSection = () => {
                 )}
                 {option.badge && (
                   <Badge className="bg-accent text-white border-0">{option.badge}</Badge>
+                )}
+                {option.isPermanentlyFree && (
+                  <Badge className="bg-green-500 text-white border-0">Always Free</Badge>
                 )}
                 
                 <div>
@@ -108,7 +117,7 @@ export const PricingSection = () => {
                   )}
                 </div>
                 
-                <ul className="space-y-3 min-h-[140px]">
+                <ul className="space-y-3 min-h-[180px]">
                   {option.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-3 text-sm">
                       <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
@@ -118,7 +127,7 @@ export const PricingSection = () => {
                 </ul>
 
                 <Button 
-                  onClick={() => handleSelectPlan(option.title, option.price)}
+                  onClick={() => handleSelectPlan(option)}
                   className={option.highlight ? "w-full gradient-primary hover-neon-pulse" : "w-full hover-neon-pulse"}
                   variant={option.highlight ? "default" : "outline"}
                   size="lg"
@@ -128,6 +137,12 @@ export const PricingSection = () => {
               </div>
             </ModernCard>
           ))}
+        </div>
+
+        <div className="text-center mt-12 space-y-4">
+          <p className="text-sm text-muted-foreground">
+            All plans include access to future updates and improvements
+          </p>
         </div>
       </div>
     </section>

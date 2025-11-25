@@ -1,63 +1,78 @@
-import { Button } from "../ui/button";
+import { useNavigate } from "react-router-dom";
 
 export const HeroSection = () => {
-  const scrollToPricing = () => {
-    document.getElementById('pricing-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const navigate = useNavigate();
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center px-6 sm:px-8 lg:px-12 py-20 overflow-hidden">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 gradient-hero -z-10" />
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background/95 to-muted/20">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse delay-700" />
+      </div>
+
+      {/* Decorative glows */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       
-      {/* Subtle glow decorative elements */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse opacity-50" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse opacity-50" style={{ animationDelay: '1s' }} />
-      
-      <div className="max-w-5xl mx-auto text-center space-y-8 animate-fade-in">
-        {/* Badge with personal branding */}
-        <div className="flex flex-col items-center gap-2">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-card/95 backdrop-blur-sm border border-primary/30 rounded-lg shadow-lg">
-            <span className="text-sm font-bold text-primary uppercase tracking-wider">Built by VCs</span>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+            <span className="text-sm font-medium text-primary">10 Years as a VC</span>
+            <span className="text-muted-foreground">•</span>
+            <span className="text-sm text-muted-foreground">Thousands of Pitches Reviewed</span>
           </div>
-          <p className="text-sm text-muted-foreground">
-            by <span className="text-foreground font-semibold">Kevin Chavanne</span> • 10+ Years in Venture Capital
-          </p>
-        </div>
 
-        {/* Main headline */}
-        <h1 className="text-5xl md:text-7xl font-serif font-bold tracking-tight leading-tight">
-          I've Rejected Thousands.<br />
-          <span className="text-primary text-neon">
-            Here's How
-          </span>{" "}
-          to Not Be Next.
-        </h1>
+          {/* Main headline */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+            I've Rejected{" "}
+            <span className="bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
+              Thousands of Founders
+            </span>
+            <br />
+            Here's How Not to Be Next
+          </h1>
 
-        {/* Subheadline with personal perspective */}
-        <div className="max-w-3xl mx-auto space-y-3">
-          <p className="text-xl md:text-2xl text-foreground font-semibold leading-relaxed">
-            I'm tired of watching founders fail.
+          {/* Subheadline */}
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            After 10 years of seeing the same mistakes over and over, I built a complete platform with my investment framework, resources, and tools—so you can leverage what actually works to raise capital.
           </p>
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-            After <span className="text-foreground font-semibold">10 years in VC</span>, reviewing thousands of pitches, I see the same mistakes over and over. <span className="text-primary font-semibold">So I built this</span> — a simple platform that gives you access to the same frameworks and clarity I use to evaluate startups every day.
-          </p>
-        </div>
 
-        {/* CTA section */}
-        <div className="flex flex-col items-center gap-6 pt-8">
-          <p className="text-xl md:text-2xl text-foreground font-sans font-medium tracking-tight max-w-2xl">
-            Get the investment memo VCs wish they could write about your startup.
-          </p>
-          <Button 
-            size="lg" 
-            className="text-lg px-10 py-6 gradient-primary shadow-glow hover-neon-pulse transition-all duration-300 font-bold uppercase tracking-wider"
-            onClick={() => window.location.href = '/auth'}
-          >
-            Start for Free →
-          </Button>
-          <p className="text-sm text-muted-foreground">
-            Free educational content • Upgrade to get your personalized memo
+          {/* Three-tier value prop */}
+          <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto pt-4">
+            <div className="p-4 rounded-lg bg-muted/50 border border-border/50 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-primary mb-1">Free Hub</div>
+              <div className="text-sm text-muted-foreground">Guides, resources & frameworks</div>
+            </div>
+            <div className="p-4 rounded-lg bg-muted/50 border border-border/50 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-primary mb-1">Methodology</div>
+              <div className="text-sm text-muted-foreground">My proven investment framework</div>
+            </div>
+            <div className="p-4 rounded-lg bg-muted/50 border border-border/50 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-primary mb-1">Premium Memo</div>
+              <div className="text-sm text-muted-foreground">AI-powered personalized output</div>
+            </div>
+          </div>
+
+          {/* CTA buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <button
+              onClick={() => navigate('/hub')}
+              className="px-8 py-4 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-105"
+            >
+              Explore Framework
+            </button>
+            <button
+              onClick={() => navigate('/auth')}
+              className="px-8 py-4 rounded-lg bg-muted border border-border text-foreground font-semibold text-lg hover:bg-muted/80 transition-all"
+            >
+              Create Free Account
+            </button>
+          </div>
+
+          {/* Social proof hint */}
+          <p className="text-sm text-muted-foreground pt-2">
+            Join founders already using this framework to raise their pre-seed rounds
           </p>
         </div>
       </div>
