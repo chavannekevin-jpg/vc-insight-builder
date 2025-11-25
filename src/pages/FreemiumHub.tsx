@@ -406,28 +406,6 @@ export default function FreemiumHub() {
                 ))}
               </div>
             </div>
-
-            {/* Progress Stats */}
-            <div className="p-6 bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl mt-8">
-              <div className="flex items-center gap-3 mb-4">
-                <BarChart3 className="w-5 h-5 text-primary" />
-                <h3 className="text-lg font-bold">My Progress</h3>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Articles Read</p>
-                  <p className="text-2xl font-bold">0 / {articles.length}</p>
-                  <div className="w-full bg-muted rounded-full h-1.5 mt-2">
-                    <div className="bg-gradient-primary h-1.5 rounded-full" style={{ width: '0%' }} />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Learning Streak</p>
-                  <p className="text-2xl font-bold">0 days</p>
-                  <p className="text-xs text-muted-foreground mt-2">Start learning</p>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* RIGHT PANEL: Tools & Templates */}
