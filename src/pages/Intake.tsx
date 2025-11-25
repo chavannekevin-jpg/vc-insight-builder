@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ModernCard } from "@/components/ModernCard";
 import { ArrowRight, Sparkles, Home } from "lucide-react";
@@ -104,7 +105,7 @@ export default function Intake() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleProceedToPayment = async () => {
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -114,21 +115,18 @@ export default function Intake() {
         return;
       }
 
-      const { error } = await supabase.from("companies").insert({
-        founder_id: session.user.id,
+      // Store questionnaire data in sessionStorage to be saved after payment
+      sessionStorage.setItem('pendingCompanyData', JSON.stringify({
         name: formData.name,
         description: formData.problemSolution,
-        category: null,
         stage: formData.stage,
-        biggest_challenge: null
-      });
+        founder_id: session.user.id
+      }));
 
-      if (error) throw error;
-
-      toast({ title: "Welcome aboard! 🚀" });
-      navigate("/hub");
+      // Navigate to payment page
+      navigate("/waitlist-checkout");
     } catch (error: any) {
-      toast({ title: "Error saving your information", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -207,18 +205,34 @@ export default function Intake() {
             <div className="flex justify-center">
               <Sparkles className="w-16 h-16 text-primary animate-pulse" />
             </div>
-            <h2 className="text-4xl font-serif font-bold">Great — you're in.</h2>
-            <p className="text-xl text-muted-foreground">Let's level you up.</p>
+            <h2 className="text-4xl font-serif font-bold">Almost there!</h2>
+            <p className="text-xl text-muted-foreground">Secure your spot with our early access discount</p>
+            <div className="bg-primary/10 border border-primary/30 rounded-lg p-6 space-y-3">
+              <p className="text-2xl font-bold text-primary">
+                <span className="line-through text-muted-foreground text-xl mr-2">€59.99</span>
+                €29.99
+              </p>
+              <Badge variant="secondary" className="text-sm">
+                <Sparkles className="w-3 h-3 mr-1" />
+                50% OFF Pre-Launch
+              </Badge>
+              <p className="text-sm text-muted-foreground">
+                Complete your profile and get instant access to the Investment Memorandum Generator
+              </p>
+            </div>
             <div className="pt-4">
               <Button 
                 size="lg" 
-                onClick={handleSubmit}
+                onClick={handleProceedToPayment}
                 disabled={loading}
                 className="text-lg px-10 py-6 gradient-primary shadow-glow hover-neon-pulse transition-all duration-300 font-bold uppercase tracking-wider"
               >
-                {loading ? "Setting things up..." : "Enter Freemium Hub →"}
+                {loading ? "Processing..." : "Proceed to Payment →"}
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Your information will be saved after payment confirmation
+            </p>
           </div>
         );
 
