@@ -15,14 +15,14 @@ export default {
   	extend: {
   		fontFamily: {
   			display: [
-  				'Syne',
+  				'Outfit',
+  				'Plus Jakarta Sans',
   				'ui-sans-serif',
   				'system-ui',
   				'sans-serif'
   			],
   			body: [
-  				'Space Grotesk',
-  				'Inter',
+  				'Plus Jakarta Sans',
   				'ui-sans-serif',
   				'system-ui',
   				'sans-serif'
@@ -41,7 +41,7 @@ export default {
   				'sans-serif'
   			],
   			sans: [
-  				'Inter',
+  				'Plus Jakarta Sans',
   				'ui-sans-serif',
   				'system-ui',
   				'-apple-system',
