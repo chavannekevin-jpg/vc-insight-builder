@@ -54,8 +54,8 @@ export const HeroSection = () => {
               <div className="text-sm text-muted-foreground">My proven investment framework</div>
             </div>
             <div className="p-4 rounded-lg bg-muted/50 border border-border/50 backdrop-blur-sm">
-              <div className="text-2xl font-bold text-primary mb-1">Premium Memo</div>
-              <div className="text-sm text-muted-foreground">AI-powered personalized output</div>
+              <div className="text-2xl font-bold text-primary mb-1">VC Memo</div>
+              <div className="text-sm text-muted-foreground">Tailor made to your business</div>
             </div>
           </div>
 
