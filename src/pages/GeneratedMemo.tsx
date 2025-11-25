@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, ArrowLeft, Sparkles, FileText, Target, TrendingUp, AlertCircle, Lightbulb, CheckCircle2, Star } from "lucide-react";
+import { Download, ArrowLeft, Sparkles, FileText, Target, TrendingUp, AlertCircle, Lightbulb, CheckCircle2, Star, Users, DollarSign, Rocket, Shield } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { marked } from "marked";
 
@@ -20,9 +20,17 @@ interface CompanyInfo {
   description: string;
 }
 
-interface KeyInsight {
-  text: string;
-  type: 'strength' | 'opportunity' | 'risk';
+interface ExtractedInsight {
+  icon: any;
+  label: string;
+  value: string;
+  color: string;
+}
+
+interface ActionItem {
+  category: string;
+  action: string;
+  priority: 'high' | 'medium' | 'low';
 }
 
 export default function GeneratedMemo() {
@@ -34,7 +42,8 @@ export default function GeneratedMemo() {
   const [generating, setGenerating] = useState(false);
   const [sections, setSections] = useState<MemoSection[]>([]);
   const [company, setCompany] = useState<CompanyInfo | null>(null);
-  const [keyInsights, setKeyInsights] = useState<KeyInsight[]>([]);
+  const [insights, setInsights] = useState<ExtractedInsight[]>([]);
+  const [actionItems, setActionItems] = useState<ActionItem[]>([]);
 
   useEffect(() => {
     const loadOrGenerateMemo = async () => {
@@ -49,7 +58,6 @@ export default function GeneratedMemo() {
       }
 
       try {
-        // First check if memo already exists in database - get the most recent one
         const { data: existingMemo, error: memoError } = await supabase
           .from("memos")
           .select("content")
@@ -62,7 +70,6 @@ export default function GeneratedMemo() {
           console.error("Error fetching memo:", memoError);
         }
 
-        // If memo exists, load it
         if (existingMemo && existingMemo.content) {
           const parsedContent = JSON.parse(existingMemo.content);
           const formattedSections: MemoSection[] = Object.entries(parsedContent.sections).map(
@@ -73,11 +80,13 @@ export default function GeneratedMemo() {
           );
           setSections(formattedSections);
 
-          // Extract key insights from memo content
-          const insights = extractKeyInsights(formattedSections);
-          setKeyInsights(insights);
+          // Extract real insights and actions from memo content
+          const extractedInsights = extractIntelligentInsights(formattedSections);
+          setInsights(extractedInsights);
+          
+          const extractedActions = extractActionItems(formattedSections);
+          setActionItems(extractedActions);
 
-          // Fetch company info
           const { data: companyData } = await supabase
             .from("companies")
             .select("name, stage, category, description")
@@ -92,7 +101,6 @@ export default function GeneratedMemo() {
           return;
         }
 
-        // If no memo exists, generate it
         setGenerating(true);
         const { data, error } = await supabase.functions.invoke("generate-full-memo", {
           body: { companyId }
@@ -109,8 +117,11 @@ export default function GeneratedMemo() {
           );
           setSections(formattedSections);
           
-          const insights = extractKeyInsights(formattedSections);
-          setKeyInsights(insights);
+          const extractedInsights = extractIntelligentInsights(formattedSections);
+          setInsights(extractedInsights);
+          
+          const extractedActions = extractActionItems(formattedSections);
+          setActionItems(extractedActions);
         }
 
         if (data.company) {
@@ -132,38 +143,154 @@ export default function GeneratedMemo() {
     loadOrGenerateMemo();
   }, [companyId, navigate]);
 
-  const extractKeyInsights = (sections: MemoSection[]): KeyInsight[] => {
-    const insights: KeyInsight[] = [];
+  const extractIntelligentInsights = (sections: MemoSection[]): ExtractedInsight[] => {
+    const insights: ExtractedInsight[] = [];
     
     sections.forEach(section => {
       const content = section.content.toLowerCase();
       
-      // Extract strengths
-      if (section.title === 'USP' || section.title === 'Solution' || content.includes('advantage') || content.includes('unique')) {
-        insights.push({
-          text: `Strong ${section.title.toLowerCase()} positioning with competitive differentiation`,
-          type: 'strength'
+      // Extract market size
+      if (section.title === 'Market') {
+        const marketMatch = content.match(/\$\s*(\d+(?:\.\d+)?)\s*(?:billion|bn|million|mn|trillion|tn)/i);
+        if (marketMatch) {
+          insights.push({
+            icon: TrendingUp,
+            label: 'Market Opportunity',
+            value: marketMatch[0].replace(/\$\s*/, '$'),
+            color: 'text-primary'
+          });
+        }
+      }
+      
+      // Extract team size or key team info
+      if (section.title === 'Team') {
+        const teamMatch = content.match(/(\d+)\s*(?:years?|decades?)\s*(?:of\s*)?(?:experience|expertise)/i);
+        if (teamMatch) {
+          insights.push({
+            icon: Users,
+            label: 'Team Experience',
+            value: `${teamMatch[1]}+ years combined`,
+            color: 'text-success'
+          });
+        }
+      }
+      
+      // Extract traction metrics
+      if (section.title === 'Traction') {
+        const revenueMatch = content.match(/\$\s*(\d+(?:,\d+)?(?:\.\d+)?)\s*(?:k|m|million|thousand)/i);
+        const userMatch = content.match(/(\d+(?:,\d+)?(?:\.\d+)?)\s*(?:k|m|million|thousand)?\s*(?:users?|customers?|clients?)/i);
+        const growthMatch = content.match(/(\d+(?:\.\d+)?)\s*%\s*(?:growth|increase)/i);
+        
+        if (revenueMatch) {
+          insights.push({
+            icon: DollarSign,
+            label: 'Revenue Milestone',
+            value: revenueMatch[0],
+            color: 'text-success'
+          });
+        }
+        if (userMatch) {
+          insights.push({
+            icon: Users,
+            label: 'User Base',
+            value: userMatch[0],
+            color: 'text-primary'
+          });
+        }
+        if (growthMatch) {
+          insights.push({
+            icon: Rocket,
+            label: 'Growth Rate',
+            value: `${growthMatch[1]}% growth`,
+            color: 'text-primary'
+          });
+        }
+      }
+      
+      // Extract competitive advantage
+      if (section.title === 'USP' || content.includes('unique') || content.includes('differentiat')) {
+        if (content.includes('proprietary') || content.includes('patent')) {
+          insights.push({
+            icon: Shield,
+            label: 'Competitive Moat',
+            value: 'Proprietary technology',
+            color: 'text-accent'
+          });
+        }
+      }
+    });
+    
+    return insights;
+  };
+
+  const extractActionItems = (sections: MemoSection[]): ActionItem[] => {
+    const actions: ActionItem[] = [];
+    
+    sections.forEach(section => {
+      const content = section.content.toLowerCase();
+      
+      // Extract challenges and convert to actions
+      if (content.includes('challenge') || content.includes('risk') || content.includes('concern')) {
+        if (section.title === 'Competition') {
+          actions.push({
+            category: 'Market Position',
+            action: 'Conduct detailed competitive analysis and identify clear differentiation points',
+            priority: 'high'
+          });
+        }
+        if (section.title === 'Market') {
+          actions.push({
+            category: 'Market Validation',
+            action: 'Validate market assumptions with customer interviews and pilot programs',
+            priority: 'high'
+          });
+        }
+      }
+      
+      // Extract growth opportunities
+      if (section.title === 'Traction' && (content.includes('early') || content.includes('growing'))) {
+        actions.push({
+          category: 'Growth Strategy',
+          action: 'Develop scalable acquisition channels and optimize unit economics',
+          priority: 'high'
         });
       }
       
-      // Extract opportunities
-      if (section.title === 'Market' || content.includes('opportunity') || content.includes('growth')) {
-        insights.push({
-          text: `Significant market opportunity identified in ${section.title.toLowerCase()}`,
-          type: 'opportunity'
+      if (section.title === 'Team' && (content.includes('need') || content.includes('hire') || content.includes('expand'))) {
+        actions.push({
+          category: 'Team Building',
+          action: 'Identify and recruit key hires in critical functional areas',
+          priority: 'medium'
         });
       }
       
-      // Extract risks/challenges
-      if (section.title === 'Competition' || content.includes('challenge') || content.includes('risk')) {
-        insights.push({
-          text: `Key considerations in ${section.title.toLowerCase()} landscape`,
-          type: 'risk'
+      // Business model actions
+      if (section.title === 'Business Model') {
+        actions.push({
+          category: 'Business Model',
+          action: 'Stress-test financial projections and refine pricing strategy',
+          priority: 'medium'
         });
       }
     });
     
-    return insights.slice(0, 6); // Limit to 6 insights
+    // Add default strategic actions if none extracted
+    if (actions.length === 0) {
+      actions.push(
+        {
+          category: 'Due Diligence',
+          action: 'Prepare detailed data room with financial metrics and customer references',
+          priority: 'high'
+        },
+        {
+          category: 'Narrative',
+          action: 'Refine pitch deck to align with key insights from this memo',
+          priority: 'medium'
+        }
+      );
+    }
+    
+    return actions.slice(0, 4); // Limit to 4 most relevant actions
   };
 
   const handleDownloadPDF = () => {
@@ -207,85 +334,84 @@ export default function GeneratedMemo() {
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Hero Section with Dramatic Gradient */}
-      <section className="relative overflow-hidden border-b border-border/50">
-        <div className="absolute inset-0 gradient-hero -z-10" />
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+      {/* Lighter Hero Section */}
+      <section className="relative overflow-hidden border-b border-border/30">
+        <div className="absolute inset-0 gradient-hero opacity-30 -z-10" />
         
-        <div className="max-w-6xl mx-auto px-6 md:px-8 py-16 md:py-20 relative">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 py-12 md:py-16 relative">
           <Button
             variant="ghost"
-            className="mb-8 hover:bg-card/50 transition-all group font-body"
+            className="mb-6 hover:bg-card/30 transition-all group font-body"
             onClick={() => navigate("/hub")}
           >
             <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
             Back to Hub
           </Button>
           
-          <div className="space-y-8 animate-fade-in">
-            {/* Company Badges */}
-            <div className="flex items-center gap-3 flex-wrap">
-              {company && (
-                <>
-                  <Badge className="text-sm px-5 py-2 bg-gradient-primary border-0 text-primary-foreground shadow-glow font-body font-semibold">
-                    {company.name}
-                  </Badge>
-                  <Badge variant="outline" className="text-sm px-5 py-2 border-primary/40 bg-card/50 backdrop-blur-sm font-body">
-                    {company.stage}
-                  </Badge>
-                  {company.category && (
-                    <Badge variant="outline" className="text-sm px-5 py-2 border-accent/40 bg-card/50 backdrop-blur-sm font-body">
-                      {company.category}
+          <div className="grid lg:grid-cols-3 gap-8 items-start">
+            {/* Left: Title and badges */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="flex items-center gap-3 flex-wrap">
+                {company && (
+                  <>
+                    <Badge className="text-xs px-3 py-1 bg-gradient-primary border-0 text-primary-foreground font-body font-medium">
+                      {company.name}
                     </Badge>
-                  )}
-                </>
-              )}
+                    <Badge variant="outline" className="text-xs px-3 py-1 border-primary/30 bg-card/30 backdrop-blur-sm font-body">
+                      {company.stage}
+                    </Badge>
+                    {company.category && (
+                      <Badge variant="outline" className="text-xs px-3 py-1 border-accent/30 bg-card/30 backdrop-blur-sm font-body">
+                        {company.category}
+                      </Badge>
+                    )}
+                  </>
+                )}
+              </div>
+              
+              <div>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight tracking-tight">
+                  Investment Memorandum
+                </h1>
+              </div>
             </div>
             
-            {/* Title with Neon Effect */}
-            <div>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold leading-tight tracking-tight mb-4">
-                Investment Memorandum
-              </h1>
-              <div className="h-1.5 w-32 gradient-primary rounded-full shadow-glow" />
-            </div>
-            
-            {/* Export Buttons */}
-            <div className="flex gap-4 pt-6">
+            {/* Right: Export actions */}
+            <div className="flex lg:flex-col gap-3 lg:items-end">
               <Button
+                size="sm"
                 variant="outline"
-                className="gap-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all hover:shadow-glow font-body"
+                className="gap-2 border-primary/20 hover:bg-primary/5 hover:border-primary/40 transition-all font-body"
                 onClick={handleDownloadPDF}
               >
-                <Download className="w-4 h-4" />
-                Export PDF
+                <Download className="w-3.5 h-3.5" />
+                PDF
               </Button>
               <Button
+                size="sm"
                 variant="outline"
-                className="gap-2 border-accent/30 hover:bg-accent/10 hover:border-accent/50 transition-all font-body"
+                className="gap-2 border-accent/20 hover:bg-accent/5 hover:border-accent/40 transition-all font-body"
                 onClick={handleDownloadDOCX}
               >
-                <FileText className="w-4 h-4" />
-                Export DOCX
+                <FileText className="w-3.5 h-3.5" />
+                DOCX
               </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Memo Content with Beautiful Cards */}
-      <div className="max-w-6xl mx-auto px-6 md:px-8 py-16 md:py-24">
+      {/* Main Content - More Breathable */}
+      <div className="max-w-7xl mx-auto px-6 md:px-8 py-12 md:py-16">
         {sections.length === 0 ? (
           <div className="text-center py-20">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mb-6">
-              <FileText className="w-10 h-10 text-muted-foreground" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 mb-6">
+              <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
-            <p className="text-muted-foreground text-xl mb-8 font-body">
+            <p className="text-muted-foreground text-lg mb-6 font-body">
               No content generated. Please complete your company profile first.
             </p>
             <Button
-              size="lg"
               className="gradient-primary shadow-glow hover-neon-pulse font-body"
               onClick={() => navigate("/company")}
             >
@@ -293,109 +419,85 @@ export default function GeneratedMemo() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-16">
-            {/* Key Insights Section */}
-            {keyInsights.length > 0 && (
-              <section className="relative animate-fade-in">
-                <div className="mb-8">
-                  <h2 className="text-4xl md:text-5xl font-display font-bold mb-3">
-                    Key Insights
-                  </h2>
-                  <p className="text-muted-foreground text-lg font-body">
-                    Critical takeaways from the investment analysis
-                  </p>
-                </div>
+          <div className="space-y-12">
+            {/* Key Metrics - Extracted from actual memo */}
+            {insights.length > 0 && (
+              <section className="animate-fade-in">
+                <h2 className="text-2xl md:text-3xl font-display font-bold mb-6">
+                  Key Metrics
+                </h2>
                 
-                <div className="grid md:grid-cols-2 gap-4">
-                  {keyInsights.map((insight, idx) => (
-                    <div
-                      key={idx}
-                      className={`group relative p-6 rounded-2xl border transition-all duration-300 hover:shadow-lg ${
-                        insight.type === 'strength' 
-                          ? 'bg-success/5 border-success/30 hover:border-success/50' 
-                          : insight.type === 'opportunity'
-                          ? 'bg-primary/5 border-primary/30 hover:border-primary/50'
-                          : 'bg-warning/5 border-warning/30 hover:border-warning/50'
-                      }`}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-xl shrink-0 ${
-                          insight.type === 'strength' 
-                            ? 'bg-success/20 text-success' 
-                            : insight.type === 'opportunity'
-                            ? 'bg-primary/20 text-primary'
-                            : 'bg-warning/20 text-warning'
-                        }`}>
-                          {insight.type === 'strength' ? <CheckCircle2 className="w-5 h-5" /> : 
-                           insight.type === 'opportunity' ? <Target className="w-5 h-5" /> : 
-                           <AlertCircle className="w-5 h-5" />}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {insights.map((insight, idx) => {
+                    const Icon = insight.icon;
+                    return (
+                      <div
+                        key={idx}
+                        className="group relative p-5 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm hover:border-primary/30 transition-all duration-300 hover:shadow-lg"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className={`flex items-center justify-center w-9 h-9 rounded-lg bg-card ${insight.color}`}>
+                            <Icon className="w-4.5 h-4.5" />
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <p className={`font-body text-sm font-semibold mb-1 uppercase tracking-wide ${
-                            insight.type === 'strength' ? 'text-success' : 
-                            insight.type === 'opportunity' ? 'text-primary' : 
-                            'text-warning'
-                          }`}>
-                            {insight.type}
-                          </p>
-                          <p className="font-body text-foreground/90">
-                            {insight.text}
-                          </p>
-                        </div>
+                        <p className="text-xs text-muted-foreground font-body mb-1 uppercase tracking-wide">
+                          {insight.label}
+                        </p>
+                        <p className="text-xl font-display font-bold">
+                          {insight.value}
+                        </p>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             )}
 
-            {/* Executive Summary Card */}
+            {/* Executive Summary - Lighter */}
             {company?.description && (
-              <section className="relative group animate-fade-in">
-                <div className="absolute inset-0 gradient-primary opacity-5 rounded-3xl blur-xl group-hover:opacity-10 transition-opacity" />
-                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-3xl p-8 md:p-10 hover:border-primary/30 transition-all duration-300 shadow-lg hover:shadow-glow">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-primary text-primary-foreground font-bold text-xl shadow-glow">
-                      <Sparkles className="w-7 h-7" />
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight">Executive Summary</h2>
+              <section className="animate-fade-in">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-primary text-primary-foreground shadow-glow">
+                    <Sparkles className="w-5 h-5" />
                   </div>
-                  <p className="text-lg md:text-xl leading-relaxed text-foreground/90 pl-[72px] font-body">
+                  <h2 className="text-2xl md:text-3xl font-display font-bold">Executive Summary</h2>
+                </div>
+                <div className="pl-0 md:pl-[52px]">
+                  <p className="text-base md:text-lg leading-relaxed text-foreground/80 font-body">
                     {company.description}
                   </p>
                 </div>
               </section>
             )}
             
-            {/* Memo Sections as Beautiful Cards */}
-            {sections.map((section, index) => (
-              <section 
-                key={index} 
-                className="relative group animate-slide-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="absolute inset-0 gradient-accent opacity-0 rounded-3xl blur-xl group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-3xl p-8 md:p-10 hover:border-primary/30 transition-all duration-300 shadow-lg hover:shadow-glow">
-                  <div className="flex items-center gap-4 mb-8">
-                    <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-primary text-primary-foreground font-display font-bold text-2xl shadow-glow shrink-0">
+            {/* Memo Sections - Lighter and More Breathable */}
+            <div className="space-y-12">
+              {sections.map((section, index) => (
+                <section 
+                  key={index} 
+                  className="animate-slide-up"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-primary text-primary-foreground font-display font-bold text-lg shadow-glow">
                       {index + 1}
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight">{section.title}</h2>
+                    <h2 className="text-2xl md:text-3xl font-display font-bold">{section.title}</h2>
                   </div>
                   
-                  <div className="pl-0 md:pl-[72px]">
+                  <div className="pl-0 md:pl-[52px]">
                     <div 
-                      className="prose prose-lg prose-slate dark:prose-invert max-w-none
+                      className="prose prose-base prose-slate dark:prose-invert max-w-none
                         prose-headings:font-display prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground
-                        prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8 first:prose-h3:mt-0
-                        prose-p:font-body prose-p:text-foreground/90 prose-p:leading-relaxed prose-p:text-lg prose-p:mb-5
-                        prose-strong:text-foreground prose-strong:font-semibold prose-strong:text-primary prose-strong:font-body
-                        prose-ul:my-5 prose-ul:list-disc prose-ul:pl-6
-                        prose-ol:my-5 prose-ol:list-decimal prose-ol:pl-6
-                        prose-li:font-body prose-li:text-foreground/90 prose-li:my-2 prose-li:text-lg
+                        prose-h3:text-xl prose-h3:mb-3 prose-h3:mt-6 first:prose-h3:mt-0
+                        prose-p:font-body prose-p:text-foreground/80 prose-p:leading-relaxed prose-p:text-base prose-p:mb-4
+                        prose-strong:text-foreground prose-strong:font-semibold prose-strong:text-primary/90 prose-strong:font-body
+                        prose-ul:my-4 prose-ul:list-disc prose-ul:pl-5
+                        prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-5
+                        prose-li:font-body prose-li:text-foreground/80 prose-li:my-1.5 prose-li:text-base
                         prose-a:text-primary prose-a:no-underline hover:prose-a:text-primary/80 hover:prose-a:underline prose-a:underline-offset-4
-                        prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:font-body
-                        prose-code:text-primary prose-code:bg-muted prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:font-mono"
+                        prose-blockquote:border-l-2 prose-blockquote:border-primary/40 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:font-body prose-blockquote:text-foreground/70
+                        prose-code:text-primary prose-code:bg-muted/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono"
                       dangerouslySetInnerHTML={{ 
                         __html: marked(section.content, { 
                           breaks: true,
@@ -404,104 +506,73 @@ export default function GeneratedMemo() {
                       }}
                     />
                   </div>
-                </div>
-              </section>
-            ))}
+                </section>
+              ))}
+            </div>
 
-            {/* Investment Recommendation Section */}
-            <section className="relative group animate-fade-in">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-3xl blur-2xl opacity-50" />
-              <div className="relative bg-gradient-to-br from-card/90 to-card/70 backdrop-blur-sm border-2 border-primary/30 rounded-3xl p-8 md:p-10 shadow-glow">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-primary text-primary-foreground shadow-glow">
-                    <Star className="w-7 h-7" />
+            {/* Recommended Actions - Based on actual content */}
+            {actionItems.length > 0 && (
+              <section className="animate-fade-in">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-primary text-primary-foreground shadow-glow">
+                    <Target className="w-5 h-5" />
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-display font-bold">Investment Considerations</h2>
+                  <h2 className="text-2xl md:text-3xl font-display font-bold">Recommended Actions</h2>
                 </div>
                 
-                <div className="space-y-6 pl-0 md:pl-[72px]">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 mb-4">
-                        <TrendingUp className="w-5 h-5 text-success" />
-                        <h3 className="text-xl font-display font-bold text-success">Why Invest</h3>
+                <div className="pl-0 md:pl-[52px] grid sm:grid-cols-2 gap-4">
+                  {actionItems.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="group relative p-5 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm hover:border-primary/30 transition-all"
+                    >
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className={`px-2 py-0.5 rounded text-xs font-body font-medium ${
+                          item.priority === 'high' 
+                            ? 'bg-primary/20 text-primary' 
+                            : item.priority === 'medium'
+                            ? 'bg-accent/20 text-accent'
+                            : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {item.priority}
+                        </div>
+                        <span className="text-xs text-muted-foreground font-body uppercase tracking-wide">
+                          {item.category}
+                        </span>
                       </div>
-                      <ul className="space-y-3 font-body text-foreground/90">
-                        <li className="flex items-start gap-3">
-                          <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                          <span>Strong market positioning and competitive advantages</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                          <span>Clear path to scalability and revenue growth</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                          <span>Experienced team with domain expertise</span>
-                        </li>
-                      </ul>
+                      <p className="font-body text-foreground/90 text-sm leading-relaxed">
+                        {item.action}
+                      </p>
                     </div>
-                    
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Lightbulb className="w-5 h-5 text-primary" />
-                        <h3 className="text-xl font-display font-bold text-primary">Next Steps</h3>
-                      </div>
-                      <ul className="space-y-3 font-body text-foreground/90">
-                        <li className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-                            <span className="text-xs font-bold text-primary">1</span>
-                          </div>
-                          <span>Schedule deep-dive sessions with key team members</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-                            <span className="text-xs font-bold text-primary">2</span>
-                          </div>
-                          <span>Review detailed financial projections and unit economics</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-                            <span className="text-xs font-bold text-primary">3</span>
-                          </div>
-                          <span>Conduct technical and market validation due diligence</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
-            </section>
+              </section>
+            )}
           </div>
         )}
       </div>
 
-      {/* Footer CTA with Gradient Background */}
-      <section className="relative border-t border-border/50 overflow-hidden">
-        <div className="absolute inset-0 gradient-hero opacity-50" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-primary/20 rounded-full blur-[120px]" />
+      {/* Lighter Footer CTA */}
+      <section className="relative border-t border-border/30 overflow-hidden">
+        <div className="absolute inset-0 gradient-hero opacity-20" />
         
-        <div className="relative max-w-6xl mx-auto px-6 md:px-8 py-20 md:py-24 text-center space-y-8">
-          <div className="space-y-4">
-            <h2 className="text-4xl md:text-5xl font-display font-bold">Ready to Iterate?</h2>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-body">
-              Update your company profile to refine your investment memo and strengthen your narrative.
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-16 text-center">
+          <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">Ready to Iterate?</h2>
+          <p className="text-base text-muted-foreground max-w-xl mx-auto mb-8 font-body">
+            Update your company profile to refine your investment memo and strengthen your narrative.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
-              size="lg"
               onClick={() => navigate("/company")}
-              className="gradient-primary shadow-glow hover-neon-pulse font-body font-bold text-lg px-8 py-6"
+              className="gradient-primary shadow-glow hover-neon-pulse font-body font-medium px-6"
             >
-              <Sparkles className="w-5 h-5 mr-2" />
+              <Sparkles className="w-4 h-4 mr-2" />
               Update Profile
             </Button>
             <Button
-              size="lg"
               variant="outline"
               onClick={() => navigate("/hub")}
-              className="border-primary/30 hover:bg-primary/10 hover:border-primary/50 text-lg px-8 py-6 font-body"
+              className="border-primary/20 hover:bg-primary/5 hover:border-primary/40 font-body px-6"
             >
               Back to Hub
             </Button>
