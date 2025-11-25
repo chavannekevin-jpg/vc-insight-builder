@@ -99,28 +99,48 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    if (existingMemo && existingMemo.content) {
-      // Return existing memo
-      const parsedContent = JSON.parse(existingMemo.content);
-      return new Response(
-        JSON.stringify({ 
-          enhanced: parsedContent.sections,
-          company: {
-            name: company.name,
-            stage: company.stage,
-            category: company.category,
-            description: company.description
-          },
-          memoId: existingMemo.id,
-          fromCache: true
-        }), 
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+    if (existingMemo && (existingMemo.structured_content || existingMemo.content)) {
+      // Return existing memo - prefer structured_content
+      if (existingMemo.structured_content) {
+        return new Response(
+          JSON.stringify({ 
+            structuredContent: existingMemo.structured_content,
+            company: {
+              name: company.name,
+              stage: company.stage,
+              category: company.category,
+              description: company.description
+            },
+            memoId: existingMemo.id,
+            fromCache: true
+          }), 
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      } else if (existingMemo.content) {
+        // Legacy markdown format - return as-is for backward compatibility
+        const parsedContent = JSON.parse(existingMemo.content);
+        return new Response(
+          JSON.stringify({ 
+            enhanced: parsedContent.sections,
+            company: {
+              name: company.name,
+              stage: company.stage,
+              category: company.category,
+              description: company.description
+            },
+            memoId: existingMemo.id,
+            fromCache: true
+          }), 
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
     }
 
-    const enhancedSections: Record<string, string> = {};
+    const enhancedSections: Record<string, any> = {};
 
     // Process each section in order
     for (const sectionName of sectionOrder) {
@@ -143,25 +163,39 @@ serve(async (req) => {
       const customPrompt = customPrompts[sectionName];
       
       const prompt = customPrompt 
-        ? `${customPrompt}\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.\n\nRaw information:\n${combinedContent}\n\nWrite in professional markdown format with proper formatting:`
-        : `You are a professional VC investment memo writer. Take the following startup information for the "${sectionName}" section and create a clear, concise, and compelling narrative. 
+        ? `${customPrompt}\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.\n\nRaw information:\n${combinedContent}\n\nReturn ONLY valid JSON with the following structure (no markdown, no code blocks):\n{\n  "paragraphs": [{"text": "...", "emphasis": "high|medium|normal"}],\n  "highlights": [{"metric": "90%", "label": "Description"}],\n  "keyPoints": ["Point 1", "Point 2"]\n}`
+        : `You are a professional VC investment memo writer. Take the following startup information for the "${sectionName}" section and create a clear, concise, and compelling narrative in structured JSON format.
 
 Requirements:
-- Synthesize all the information into a cohesive narrative with 2-4 paragraphs
+- Create 2-4 well-structured paragraphs with varying emphasis levels
+- Extract key metrics and statistics as highlights (if any exist in the data)
+- Identify 3-5 key takeaway points
 - Use professional, direct language that VCs expect
-- Format using clean markdown: **bold** for emphasis, bullet points for lists, line breaks between paragraphs
-- Highlight key metrics, traction, and competitive advantages
-- Keep it between 150-300 words
 - Focus on facts and concrete details
-- Use proper markdown formatting for readability
-- Return ONLY the enhanced narrative in markdown, no preambles or meta-commentary
+- Keep total content between 150-300 words
 
 Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.
 
 Raw information:
 ${combinedContent}
 
-Write the professional memo section in clean markdown format:`;
+Return ONLY valid JSON with this exact structure (no markdown, no code blocks, no preambles):
+{
+  "paragraphs": [
+    {"text": "Opening paragraph text here", "emphasis": "high"},
+    {"text": "Supporting details here", "emphasis": "medium"},
+    {"text": "Additional context", "emphasis": "normal"}
+  ],
+  "highlights": [
+    {"metric": "90%", "label": "Market growth rate"},
+    {"metric": "$10M", "label": "Revenue run rate"}
+  ],
+  "keyPoints": [
+    "First key takeaway",
+    "Second key takeaway",
+    "Third key takeaway"
+  ]
+}`;
 
       console.log(`Generating section: ${sectionName}`);
 
@@ -176,7 +210,7 @@ Write the professional memo section in clean markdown format:`;
           messages: [
             {
               role: "system",
-              content: "You are a professional VC investment memo writer. Create clear, concise, compelling narratives from startup information.",
+              content: "You are a professional VC investment memo writer. Return structured JSON data for component-based rendering. Always respond with valid JSON only, no markdown formatting.",
             },
             {
               role: "user",
@@ -184,7 +218,7 @@ Write the professional memo section in clean markdown format:`;
             },
           ],
           temperature: 0.7,
-          max_tokens: 500,
+          max_tokens: 700,
         }),
       });
 
@@ -195,18 +229,35 @@ Write the professional memo section in clean markdown format:`;
       }
 
       const data = await response.json();
-      const enhancedText = data.choices?.[0]?.message?.content?.trim();
+      let enhancedText = data.choices?.[0]?.message?.content?.trim();
 
       if (enhancedText) {
-        enhancedSections[sectionName] = enhancedText;
+        // Clean up any markdown code blocks if present
+        enhancedText = enhancedText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        
+        try {
+          // Parse to validate it's proper JSON
+          const structuredContent = JSON.parse(enhancedText);
+          enhancedSections[sectionName] = structuredContent;
+        } catch (parseError) {
+          console.error(`Failed to parse JSON for ${sectionName}:`, parseError);
+          // Fallback to basic structure if parsing fails
+          enhancedSections[sectionName] = {
+            paragraphs: [{ text: enhancedText, emphasis: "normal" }],
+            keyPoints: []
+          };
+        }
       }
     }
 
-    // Save memo to database
-    const memoContent = JSON.stringify({
-      sections: enhancedSections,
+    // Save memo to database with structured content
+    const structuredContent = {
+      sections: Object.entries(enhancedSections).map(([title, content]) => ({
+        title,
+        ...(typeof content === 'string' ? { paragraphs: [{ text: content, emphasis: "normal" }] } : content)
+      })),
       generatedAt: new Date().toISOString()
-    });
+    };
 
     let memoId: string;
 
@@ -215,7 +266,7 @@ Write the professional memo section in clean markdown format:`;
       await supabaseClient
         .from("memos")
         .update({ 
-          content: memoContent,
+          structured_content: structuredContent,
           status: "completed"
         })
         .eq("id", existingMemo.id);
@@ -226,7 +277,7 @@ Write the professional memo section in clean markdown format:`;
         .from("memos")
         .insert({
           company_id: companyId,
-          content: memoContent,
+          structured_content: structuredContent,
           status: "completed"
         })
         .select('id')
@@ -240,7 +291,7 @@ Write the professional memo section in clean markdown format:`;
 
     return new Response(
       JSON.stringify({ 
-        enhanced: enhancedSections,
+        structuredContent: structuredContent,
         company: {
           name: company.name,
           stage: company.stage,

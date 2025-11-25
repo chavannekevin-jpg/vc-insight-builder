@@ -7,6 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Download, ArrowLeft, Sparkles, FileText, Target, TrendingUp, AlertCircle, Lightbulb, CheckCircle2, Zap, Building2, Cog } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { marked } from "marked";
+import { MemoSection as MemoSectionComponent } from "@/components/memo/MemoSection";
+import { MemoParagraph } from "@/components/memo/MemoParagraph";
+import { MemoHighlight } from "@/components/memo/MemoHighlight";
+import { MemoKeyPoints } from "@/components/memo/MemoKeyPoints";
+import type { MemoStructuredContent, MemoStructuredSection } from "@/types/memo";
 
 interface MemoSection {
   title: string;
@@ -63,6 +68,7 @@ export default function GeneratedMemo() {
   const [generating, setGenerating] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [sections, setSections] = useState<MemoSection[]>([]);
+  const [structuredSections, setStructuredSections] = useState<MemoStructuredSection[]>([]);
   const [company, setCompany] = useState<CompanyInfo | null>(null);
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
 
@@ -81,7 +87,7 @@ export default function GeneratedMemo() {
       try {
         const { data: existingMemo, error: memoError } = await supabase
           .from("memos")
-          .select("content, id")
+          .select("content, structured_content, id")
           .eq("company_id", companyId)
           .order("created_at", { ascending: false })
           .limit(1)
@@ -91,15 +97,22 @@ export default function GeneratedMemo() {
           console.error("Error fetching memo:", memoError);
         }
 
-        if (existingMemo && existingMemo.content) {
-          const parsedContent = JSON.parse(existingMemo.content);
-          const formattedSections: MemoSection[] = Object.entries(parsedContent.sections).map(
-            ([title, content]) => ({
-              title,
-              content: content as string
-            })
-          );
-          setSections(formattedSections);
+        if (existingMemo && (existingMemo.structured_content || existingMemo.content)) {
+          // Prefer structured content if available
+          if (existingMemo.structured_content) {
+            const structuredData = existingMemo.structured_content as unknown as MemoStructuredContent;
+            setStructuredSections(structuredData.sections);
+          } else if (existingMemo.content) {
+            // Fallback to legacy markdown format
+            const parsedContent = JSON.parse(existingMemo.content);
+            const formattedSections: MemoSection[] = Object.entries(parsedContent.sections).map(
+              ([title, content]) => ({
+                title,
+                content: content as string
+              })
+            );
+            setSections(formattedSections);
+          }
 
           const { data: companyData } = await supabase
             .from("companies")
@@ -124,9 +137,13 @@ export default function GeneratedMemo() {
               // Generate new analysis if none exists
               setAnalyzing(true);
               try {
+                const memoContent = existingMemo.structured_content 
+                  ? existingMemo.structured_content
+                  : JSON.parse(existingMemo.content!).sections;
+                  
                 const { data: analysisData, error: analysisError } = await supabase.functions.invoke("analyze-memo", {
                   body: {
-                    memoContent: parsedContent.sections,
+                    memoContent,
                     companyInfo: companyData,
                     memoId: existingMemo.id
                   }
@@ -162,7 +179,32 @@ export default function GeneratedMemo() {
 
         if (error) throw error;
 
-        if (data.enhanced && data.company) {
+        if (data.structuredContent && data.company) {
+          // New structured format
+          setStructuredSections(data.structuredContent.sections);
+          setCompany(data.company);
+          
+          // Analyze newly generated memo
+          setAnalyzing(true);
+          try {
+            const { data: analysisData, error: analysisError } = await supabase.functions.invoke("analyze-memo", {
+              body: {
+                memoContent: data.structuredContent,
+                companyInfo: data.company,
+                memoId: data.memoId
+              }
+            });
+
+            if (!analysisError && analysisData) {
+              setAiAnalysis(analysisData);
+            }
+          } catch (analysisError) {
+            console.error("Failed to analyze memo:", analysisError);
+          } finally {
+            setAnalyzing(false);
+          }
+        } else if (data.enhanced && data.company) {
+          // Legacy markdown format
           const formattedSections: MemoSection[] = Object.entries(data.enhanced).map(
             ([title, content]) => ({
               title,
@@ -508,7 +550,75 @@ export default function GeneratedMemo() {
             
             {/* Memo Sections */}
             <div className="space-y-12">
-              {sections.map((section, index) => {
+              {structuredSections.length > 0 ? (
+                // New structured format rendering
+                structuredSections.map((section, index) => {
+                  const sectionRecs = aiAnalysis?.sectionRecommendations?.[section.title] || [];
+                  
+                  return (
+                    <div key={index} className="space-y-4">
+                      <MemoSectionComponent title={section.title}>
+                        {section.paragraphs && section.paragraphs.length > 0 && (
+                          <div className="space-y-4">
+                            {section.paragraphs.map((para, pIdx) => (
+                              <MemoParagraph key={pIdx} text={para.text} emphasis={para.emphasis} />
+                            ))}
+                          </div>
+                        )}
+                        
+                        {section.highlights && section.highlights.length > 0 && (
+                          <div className="grid md:grid-cols-3 gap-4 mt-6">
+                            {section.highlights.map((highlight, hIdx) => (
+                              <MemoHighlight key={hIdx} metric={highlight.metric} label={highlight.label} />
+                            ))}
+                          </div>
+                        )}
+                        
+                        {section.keyPoints && section.keyPoints.length > 0 && (
+                          <MemoKeyPoints points={section.keyPoints} />
+                        )}
+                      </MemoSectionComponent>
+                      
+                      {/* AI Section Recommendations */}
+                      {sectionRecs.length > 0 && (
+                        <div className="p-6 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="p-2 rounded-lg bg-primary/10">
+                              <Lightbulb className="w-4 h-4 text-primary" />
+                            </div>
+                            <h4 className="text-base font-display font-bold text-foreground">Enhancement Ideas</h4>
+                          </div>
+                          <div className="space-y-3">
+                            {sectionRecs.map((rec, idx) => (
+                              <div key={idx} className="p-4 rounded-xl bg-background/60 backdrop-blur-sm border border-border/30 hover:border-primary/40 transition-all">
+                                <div className="flex items-start gap-3">
+                                  <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-body font-medium shrink-0 ${
+                                    rec.type === 'opportunity' ? 'bg-success/10 text-success border border-success/20' :
+                                    rec.type === 'concern' ? 'bg-warning/10 text-warning border border-warning/20' :
+                                    'bg-primary/10 text-primary border border-primary/20'
+                                  }`}>
+                                    {rec.type === 'validation_needed' ? 'To Validate' : rec.type}
+                                  </span>
+                                  <div className="flex-1 space-y-1.5">
+                                    <p className="text-sm font-body font-medium text-foreground leading-relaxed">
+                                      {rec.recommendation}
+                                    </p>
+                                    <p className="text-xs font-body text-muted-foreground leading-relaxed">
+                                      {rec.rationale}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                // Legacy markdown format rendering
+                sections.map((section, index) => {
                 const sectionRecs = aiAnalysis?.sectionRecommendations?.[section.title] || [];
                 
                 return (
@@ -580,9 +690,10 @@ export default function GeneratedMemo() {
                         </div>
                       )}
                     </div>
-                  </section>
-                );
-              })}
+                    </section>
+                  );
+                })
+              )}
             </div>
 
             {/* AI-Generated Next Steps */}
