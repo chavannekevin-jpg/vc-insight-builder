@@ -111,6 +111,7 @@ serve(async (req) => {
             category: company.category,
             description: company.description
           },
+          memoId: existingMemo.id,
           fromCache: true
         }), 
         {
@@ -207,6 +208,8 @@ Write the professional memo section in clean markdown format:`;
       generatedAt: new Date().toISOString()
     });
 
+    let memoId: string;
+
     if (existingMemo) {
       // Update existing memo
       await supabaseClient
@@ -216,15 +219,23 @@ Write the professional memo section in clean markdown format:`;
           status: "completed"
         })
         .eq("id", existingMemo.id);
+      memoId = existingMemo.id;
     } else {
       // Create new memo
-      await supabaseClient
+      const { data: newMemo, error: insertError } = await supabaseClient
         .from("memos")
         .insert({
           company_id: companyId,
           content: memoContent,
           status: "completed"
-        });
+        })
+        .select('id')
+        .single();
+
+      if (insertError || !newMemo) {
+        throw new Error("Failed to save memo");
+      }
+      memoId = newMemo.id;
     }
 
     return new Response(
@@ -235,7 +246,8 @@ Write the professional memo section in clean markdown format:`;
           stage: company.stage,
           category: company.category,
           description: company.description
-        }
+        },
+        memoId: memoId
       }), 
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

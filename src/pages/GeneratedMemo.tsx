@@ -81,7 +81,7 @@ export default function GeneratedMemo() {
       try {
         const { data: existingMemo, error: memoError } = await supabase
           .from("memos")
-          .select("content")
+          .select("content, id")
           .eq("company_id", companyId)
           .order("created_at", { ascending: false })
           .limit(1)
@@ -116,7 +116,8 @@ export default function GeneratedMemo() {
               const { data: analysisData, error: analysisError } = await supabase.functions.invoke("analyze-memo", {
                 body: {
                   memoContent: parsedContent.sections,
-                  companyInfo: companyData
+                  companyInfo: companyData,
+                  memoId: existingMemo.id
                 }
               });
 
@@ -165,7 +166,8 @@ export default function GeneratedMemo() {
             const { data: analysisData, error: analysisError } = await supabase.functions.invoke("analyze-memo", {
               body: {
                 memoContent: data.enhanced,
-                companyInfo: data.company
+                companyInfo: data.company,
+                memoId: data.memoId
               }
             });
 

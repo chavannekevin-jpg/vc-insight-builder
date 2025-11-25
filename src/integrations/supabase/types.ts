@@ -94,6 +94,38 @@ export type Database = {
         }
         Relationships: []
       }
+      memo_analyses: {
+        Row: {
+          analysis: Json
+          created_at: string
+          id: string
+          memo_id: string
+          updated_at: string
+        }
+        Insert: {
+          analysis: Json
+          created_at?: string
+          id?: string
+          memo_id: string
+          updated_at?: string
+        }
+        Update: {
+          analysis?: Json
+          created_at?: string
+          id?: string
+          memo_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_memo"
+            columns: ["memo_id"]
+            isOneToOne: false
+            referencedRelation: "memos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memo_prompts: {
         Row: {
           created_at: string
