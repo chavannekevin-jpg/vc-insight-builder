@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Search, Book, TrendingUp, AlertTriangle, Wrench, ChevronRight, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NavSection {
   title: string;
@@ -76,6 +77,20 @@ export default function VCBrainHub() {
     navigationSections.map(s => s.title)
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth?redirect=/vcbrain");
+        return;
+      }
+      setLoading(false);
+    };
+    
+    checkAuth();
+  }, [navigate]);
 
   const toggleSection = (title: string) => {
     setExpandedSections(prev =>
@@ -84,6 +99,14 @@ export default function VCBrainHub() {
   };
 
   const isActive = (path: string) => location.pathname === path;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
