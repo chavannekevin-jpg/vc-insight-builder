@@ -26,7 +26,12 @@ export const HeroSection = () => {
           {/* Main headline */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
             I've Rejected{" "}
-            <span className="bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
+            <span 
+              className="text-primary font-bold"
+              style={{ 
+                textShadow: '0 0 20px hsl(var(--primary)), 0 0 40px hsl(var(--primary)), 0 0 60px hsl(var(--primary)), 0 0 80px hsl(var(--primary))'
+              }}
+            >
               Thousands of Founders
             </span>
             <br />
