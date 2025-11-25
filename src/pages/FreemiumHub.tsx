@@ -469,17 +469,12 @@ export default function FreemiumHub() {
               </Collapsible>
             </section>
 
-            {/* Resources & Tools Section - Coming Soon */}
+            {/* Resources & Tools Section */}
             <section>
               <Collapsible open={resourcesOpen} onOpenChange={setResourcesOpen}>
                 <CollapsibleTrigger asChild>
                   <button className="w-full group">
-                    <div className="flex items-center justify-between p-6 bg-card border border-border rounded-2xl hover:border-primary/30 transition-all duration-300 hover:shadow-lg relative overflow-hidden">
-                      <div className="absolute top-3 right-3">
-                        <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
-                          Coming Soon
-                        </span>
-                      </div>
+                    <div className="flex items-center justify-between p-6 bg-card border border-border rounded-2xl hover:border-primary/30 transition-all duration-300 hover:shadow-lg">
                       <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-gradient-primary shadow-lg">
                           <Calculator className="w-7 h-7 text-primary-foreground" />
@@ -503,51 +498,85 @@ export default function FreemiumHub() {
                 </CollapsibleTrigger>
                 
                 <CollapsibleContent className="pt-6">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
-                      <div className="flex items-start gap-4">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <Calculator className="w-5 h-5 text-primary" />
+                  <div className="space-y-4">
+                    <div
+                      onClick={() => navigate("/pre-seed-guide")}
+                      className="group cursor-pointer p-6 bg-card/50 border border-border/50 rounded-xl hover:border-primary/30 hover:shadow-lg transition-all duration-300"
+                    >
+                      <div className="flex items-start gap-5">
+                        <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-primary shadow-lg group-hover:shadow-glow transition-shadow">
+                          <Lightbulb className="w-6 h-6 text-primary-foreground" />
                         </div>
-                        <div>
-                          <h3 className="font-bold mb-2">Valuation Calculator</h3>
-                          <p className="text-sm text-muted-foreground">Calculate pre/post-money valuation and dilution</p>
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <h3 className="text-lg font-bold group-hover:text-primary transition-colors">
+                            Pre-Seed Deck Guide
+                          </h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            Learn what to include (and what to avoid) when building your pre-seed deck
+                          </p>
                         </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
                       </div>
                     </div>
                     
-                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
-                      <div className="flex items-start gap-4">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <FileText className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold mb-2">Pitch Deck Template</h3>
-                          <p className="text-sm text-muted-foreground">VC-approved slide deck structure</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
-                      <div className="flex items-start gap-4">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <TrendingUp className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold mb-2">Financial Model</h3>
-                          <p className="text-sm text-muted-foreground">5-year projection template with unit economics</p>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
+                        <div className="flex items-start gap-4">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <Calculator className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold mb-2">Valuation Calculator</h3>
+                            <p className="text-sm text-muted-foreground">Calculate pre/post-money valuation and dilution</p>
+                            <div className="mt-2">
+                              <span className="text-xs text-primary">Coming Soon</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
-                      <div className="flex items-start gap-4">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <Shield className="w-5 h-5 text-primary" />
+                      
+                      <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
+                        <div className="flex items-start gap-4">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <FileText className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold mb-2">Pitch Deck Template</h3>
+                            <p className="text-sm text-muted-foreground">VC-approved slide deck structure</p>
+                            <div className="mt-2">
+                              <span className="text-xs text-primary">Coming Soon</span>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-bold mb-2">Due Diligence Checklist</h3>
-                          <p className="text-sm text-muted-foreground">Prepare for investor questions</p>
+                      </div>
+                      
+                      <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
+                        <div className="flex items-start gap-4">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <TrendingUp className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold mb-2">Financial Model</h3>
+                            <p className="text-sm text-muted-foreground">5-year projection template with unit economics</p>
+                            <div className="mt-2">
+                              <span className="text-xs text-primary">Coming Soon</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
+                        <div className="flex items-start gap-4">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <Shield className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold mb-2">Due Diligence Checklist</h3>
+                            <p className="text-sm text-muted-foreground">Prepare for investor questions</p>
+                            <div className="mt-2">
+                              <span className="text-xs text-primary">Coming Soon</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
