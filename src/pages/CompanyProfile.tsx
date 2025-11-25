@@ -67,7 +67,6 @@ export default function CompanyProfile() {
   const { toast } = useToast();
   const [company, setCompany] = useState<Company | null>(null);
   const [responses, setResponses] = useState<MemoResponse[]>([]);
-  const [enhancedContent, setEnhancedContent] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [enhancing, setEnhancing] = useState(false);
   const [editingCompanyName, setEditingCompanyName] = useState(false);
@@ -169,14 +168,6 @@ export default function CompanyProfile() {
         )
       );
 
-      // Update enhanced content if it exists
-      if (enhancedContent[sectionName]) {
-        setEnhancedContent({
-          ...enhancedContent,
-          [sectionName]: editedSectionContent,
-        });
-      }
-
       setEditingSection(null);
       toast({
         title: "Section updated",
@@ -263,7 +254,6 @@ export default function CompanyProfile() {
       }
       
       setResponses(updatedResponses);
-      setEnhancedContent(enhancedData.enhanced);
       
       toast({
         title: "Content Enhanced & Saved! ✨",
@@ -410,9 +400,8 @@ export default function CompanyProfile() {
 
             if (sectionResponses.length === 0) return null;
 
-            // Use enhanced content if available, otherwise combine all responses
-            const displayContent = enhancedContent[sectionName] || 
-              sectionResponses.map(r => r.answer).filter(Boolean).join("\n\n");
+            // Get the first response which contains the section content (either original or AI-enhanced)
+            const displayContent = sectionResponses[0]?.answer || "";
 
             return (
               <div key={sectionName} className="bg-card border border-border rounded-lg p-8 space-y-6">
@@ -421,12 +410,6 @@ export default function CompanyProfile() {
                     {sectionName}
                   </h2>
                   <div className="flex items-center gap-2">
-                    {enhancedContent[sectionName] && (
-                      <Badge variant="outline" className="text-xs gap-1">
-                        <Sparkles className="w-3 h-3" />
-                        AI Enhanced
-                      </Badge>
-                    )}
                     {editingSection === sectionName ? (
                       <>
                         <Button
