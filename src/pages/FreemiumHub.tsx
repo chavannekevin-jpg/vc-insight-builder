@@ -13,8 +13,16 @@ import {
   Shield, 
   FileText, 
   XCircle,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  Sparkles,
+  GraduationCap
 } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface Company {
   id: string;
@@ -60,6 +68,7 @@ export default function FreemiumHub() {
   const [company, setCompany] = useState<Company | null>(null);
   const [articles, setArticles] = useState<EducationalArticle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [playbookOpen, setPlaybookOpen] = useState(false);
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -108,236 +117,239 @@ export default function FreemiumHub() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Upgrade banner */}
-      <div className="bg-primary/10 border-b border-primary/30 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <FileText className="w-5 h-5 text-primary" />
-            <p className="text-sm font-medium">
-              Ready to see how VCs evaluate {company?.name}?{" "}
-              <span className="text-primary font-bold">Get your investment memo →</span>
-            </p>
-          </div>
-          <Button size="sm" className="gradient-primary" onClick={() => navigate("/portal")}>
-            Get Your Memo
-          </Button>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
-        {/* Welcome section */}
-        <div className="space-y-4">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold">
-            Welcome to Your VC Learning Hub
-          </h1>
-          {company && (
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="text-base px-4 py-2">
-                {company.name}
-              </Badge>
-              <Badge variant="outline" className="text-base px-4 py-2">
-                {company.category || "N/A"}
-              </Badge>
-              <Badge variant="outline" className="text-base px-4 py-2">
-                {company.stage}
-              </Badge>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden border-b border-border/50">
+        <div className="absolute inset-0 gradient-hero -z-10" />
+        <div className="absolute top-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse opacity-50" />
+        
+        <div className="max-w-7xl mx-auto px-8 py-20">
+          <div className="max-w-4xl space-y-8">
+            <div className="flex items-center gap-3">
+              {company && (
+                <Badge variant="outline" className="text-sm px-4 py-1.5 border-primary/30">
+                  {company.name}
+                </Badge>
+              )}
             </div>
-          )}
-          <p className="text-lg text-muted-foreground max-w-3xl">
-            Learn the frameworks that VCs use every day to evaluate startups. Once you understand how they think, 
-            you'll see exactly why getting your own investment memo is essential before you pitch.
-          </p>
-        </div>
-
-        {/* My Company Section */}
-        {company && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between p-6 bg-card border border-border rounded-lg hover:border-primary/50 transition-colors">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <FileText className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold">My Company</h2>
-                  <p className="text-sm text-muted-foreground">
-                    View your investment memo
-                  </p>
-                </div>
-              </div>
-              <Button onClick={() => navigate("/company")} className="gap-2">
-                View Memo
-                <ChevronRight className="w-4 h-4" />
+            
+            <div className="space-y-6">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
+                Your VC Learning Hub
+              </h1>
+              <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl">
+                Master the frameworks VCs use to evaluate startups. Learn how they think, what they look for, and why they say no.
+              </p>
+            </div>
+            
+            <div className="flex flex-wrap gap-4 pt-4">
+              <Button 
+                size="lg"
+                className="gradient-primary shadow-glow hover-neon-pulse font-bold text-lg px-8 py-6"
+                onClick={() => navigate("/portal")}
+              >
+                Get Your Investment Memo
               </Button>
+              {company && (
+                <Button 
+                  size="lg"
+                  variant="outline"
+                  className="border-primary/30 hover:bg-primary/10 text-lg px-8 py-6"
+                  onClick={() => navigate("/company")}
+                >
+                  View My Memo
+                </Button>
+              )}
             </div>
           </div>
-        )}
+        </div>
+      </section>
 
-        {/* Educational content - Unlocked */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <BookOpen className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-bold">Free Educational Content</h2>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-6">
-            {articles.map((item) => {
-              // Dynamically import icon
-              const getIcon = (iconName: string) => {
-                const icons: Record<string, any> = {
-                  BookOpen,
-                  Target,
-                  Users,
-                  TrendingUp,
-                  Shield,
-                  FileText,
-                  XCircle
-                };
-                return icons[iconName] || BookOpen;
-              };
-              
-              const Icon = getIcon(item.icon);
-              
-              return (
-                <div key={item.id} onClick={() => navigate(`/hub/${item.slug}`)}>
-                  <ModernCard 
-                    hover 
-                    className="p-6 cursor-pointer group"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                        <Icon className="w-6 h-6 text-primary" />
+      <div className="max-w-7xl mx-auto px-8 py-20">
+        <div className="grid lg:grid-cols-3 gap-12">
+          {/* Main Content Area */}
+          <div className="lg:col-span-2 space-y-16">
+            
+            {/* PlayBook Section - Collapsible */}
+            <section className="space-y-6">
+              <Collapsible open={playbookOpen} onOpenChange={setPlaybookOpen}>
+                <CollapsibleTrigger asChild>
+                  <button className="w-full group">
+                    <div className="flex items-center justify-between p-6 bg-card border border-border rounded-2xl hover:border-primary/30 transition-all duration-300 hover:shadow-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-xl bg-gradient-primary shadow-lg">
+                          <GraduationCap className="w-7 h-7 text-primary-foreground" />
+                        </div>
+                        <div className="text-left">
+                          <h2 className="text-3xl font-bold group-hover:text-primary transition-colors">
+                            PlayBook
+                          </h2>
+                          <p className="text-muted-foreground mt-1">
+                            {articles.length} essential guides to VC thinking
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1 space-y-2">
-                        <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
-                          {item.title}
-                        </h3>
-                        <p className="text-muted-foreground">{item.description}</p>
-                        <div className="flex items-center gap-2 text-primary font-medium pt-2">
-                          <span>Read now</span>
-                          <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <ChevronDown 
+                        className={`w-6 h-6 text-muted-foreground transition-transform duration-300 ${
+                          playbookOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </div>
+                  </button>
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent className="pt-6">
+                  <div className="space-y-4">
+                    {articles.map((item, index) => {
+                      const getIcon = (iconName: string) => {
+                        const icons: Record<string, any> = {
+                          BookOpen, Target, Users, TrendingUp, Shield, FileText, XCircle
+                        };
+                        return icons[iconName] || BookOpen;
+                      };
+                      
+                      const Icon = getIcon(item.icon);
+                      
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => navigate(`/hub/${item.slug}`)}
+                          className="group cursor-pointer p-6 bg-card/50 border border-border/50 rounded-xl hover:border-primary/30 hover:shadow-lg transition-all duration-300"
+                        >
+                          <div className="flex items-start gap-5">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                              <span className="text-lg font-bold text-primary">{index + 1}</span>
+                            </div>
+                            <div className="flex-1 min-w-0 space-y-2">
+                              <h3 className="text-lg font-bold group-hover:text-primary transition-colors">
+                                {item.title}
+                              </h3>
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {item.description}
+                              </p>
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </section>
+
+            {/* Benefits Section */}
+            <section className="space-y-8">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-xl">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  <span className="text-sm font-bold text-primary uppercase tracking-wider">
+                    What You Get
+                  </span>
+                </div>
+                <h2 className="text-4xl font-bold">
+                  Your Investment Memo Advantage
+                </h2>
+              </div>
+              
+              <div className="grid gap-6">
+                {MEMO_BENEFITS.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div 
+                      key={item.id}
+                      className="p-6 bg-card border border-border/50 rounded-2xl hover:border-primary/30 hover:shadow-lg transition-all duration-300"
+                    >
+                      <div className="flex items-start gap-5">
+                        <div className="p-3 rounded-xl bg-gradient-primary shadow-lg flex-shrink-0">
+                          <Icon className="w-6 h-6 text-primary-foreground" />
+                        </div>
+                        <div className="space-y-2">
+                          <h3 className="text-xl font-bold">{item.title}</h3>
+                          <p className="text-muted-foreground leading-relaxed">
+                            {item.description}
+                          </p>
                         </div>
                       </div>
                     </div>
-                  </ModernCard>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            </section>
           </div>
-        </div>
 
-        {/* What You Get With The Memo */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <FileText className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-bold">What You Get With Your Investment Memo</h2>
-          </div>
-          
-          <ModernCard className="p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/30">
-            <div className="grid md:grid-cols-3 gap-8 mb-8">
-              {MEMO_BENEFITS.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div key={item.id} className="space-y-3">
-                    <div className="p-3 rounded-lg bg-primary/10 inline-block">
-                      <Icon className="w-6 h-6 text-primary" />
+          {/* Sidebar */}
+          <div className="space-y-8">
+            {/* Quick Access Card */}
+            {company && (
+              <div className="p-6 bg-card border border-border/50 rounded-2xl sticky top-24 space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <FileText className="w-5 h-5 text-primary" />
                     </div>
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-bold">{item.title}</h3>
-                      <p className="text-muted-foreground text-sm">{item.description}</p>
-                    </div>
+                    <h3 className="text-lg font-bold">Quick Access</h3>
                   </div>
-                );
-              })}
-            </div>
-            
-            <div className="border-t border-border pt-8 space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-xl font-bold">Your Investment Memo Includes:</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <div className="w-2 h-2 rounded-full bg-primary" />
+                  
+                  <div className="space-y-3">
+                    <div className="p-4 bg-background/50 rounded-xl space-y-2">
+                      <p className="text-sm text-muted-foreground">Your Company</p>
+                      <p className="font-bold text-lg">{company.name}</p>
+                      <div className="flex gap-2 pt-2">
+                        <Badge variant="outline" className="text-xs">
+                          {company.stage}
+                        </Badge>
+                        {company.category && (
+                          <Badge variant="outline" className="text-xs">
+                            {company.category}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium">Complete VC Analysis</p>
-                      <p className="text-sm text-muted-foreground">Market, team, traction, and competitive positioning</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <div className="w-2 h-2 rounded-full bg-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Risk Assessment</p>
-                      <p className="text-sm text-muted-foreground">What investors will question and worry about</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <div className="w-2 h-2 rounded-full bg-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Investment Thesis</p>
-                      <p className="text-sm text-muted-foreground">Why a VC would (or wouldn't) invest in you</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <div className="w-2 h-2 rounded-full bg-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Action Items</p>
-                      <p className="text-sm text-muted-foreground">Specific steps to strengthen your position</p>
-                    </div>
+                    
+                    <Button 
+                      className="w-full gradient-primary shadow-glow"
+                      onClick={() => navigate("/company")}
+                    >
+                      View My Memo
+                    </Button>
                   </div>
                 </div>
+                
+                <div className="border-t border-border pt-6 space-y-4">
+                  <h4 className="font-bold">What's Included:</h4>
+                  <ul className="space-y-3 text-sm">
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                      <span className="text-muted-foreground">Complete VC Analysis</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                      <span className="text-muted-foreground">Risk Assessment</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                      <span className="text-muted-foreground">Investment Thesis</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                      <span className="text-muted-foreground">Action Items</span>
+                    </li>
+                  </ul>
+                  
+                  <Button 
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => navigate("/portal")}
+                  >
+                    Get Your Memo
+                  </Button>
+                </div>
               </div>
-              
-              <div className="text-center pt-4">
-                <Button 
-                  size="lg"
-                  className="gradient-primary shadow-glow hover-neon-pulse font-bold"
-                  onClick={() => navigate("/portal")}
-                >
-                  Get Your Investment Memo →
-                </Button>
-              </div>
-            </div>
-          </ModernCard>
-        </div>
-
-        {/* CTA section */}
-        <ModernCard className="p-8 text-center space-y-6 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/30">
-          <div className="space-y-3">
-            <h2 className="text-3xl font-serif font-bold">Ready to See the VC Perspective on {company?.name}?</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get a complete investment memo written from a VC's point of view. 
-              See your startup through the eyes of the investors you're trying to convince.
-            </p>
+            )}
           </div>
-          <Button 
-            size="lg"
-            className="text-lg px-10 py-6 gradient-primary shadow-glow hover-neon-pulse transition-all duration-300 font-bold uppercase tracking-wider"
-            onClick={() => navigate("/portal")}
-          >
-            Get My Investment Memo →
-          </Button>
-        </ModernCard>
-      </div>
-
-      {/* Floating bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border p-4 z-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <FileText className="w-5 h-5 text-primary" />
-            <span className="text-sm font-medium">Get your personalized VC investment memo for {company?.name}</span>
-          </div>
-          <Button className="gradient-primary" onClick={() => navigate("/portal")}>
-            Get Your Memo
-          </Button>
         </div>
       </div>
     </div>
