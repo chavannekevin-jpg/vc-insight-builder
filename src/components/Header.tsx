@@ -1,12 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, LogIn } from "lucide-react";
+import { Menu, X, LogIn, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Error signing out");
+    } else {
+      toast.success("Signed out successfully");
+      navigate('/');
+    }
+  };
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -48,11 +73,20 @@ export const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <button
-              onClick={() => navigate('/auth')}
+              onClick={isAuthenticated ? handleSignOut : () => navigate('/auth')}
               className="neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
             >
-              <LogIn className="w-4 h-4" />
-              Sign In
+              {isAuthenticated ? (
+                <>
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4" />
+                  Sign In
+                </>
+              )}
             </button>
             <Button 
               onClick={() => {
@@ -96,12 +130,25 @@ export const Header = () => {
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  navigate('/auth');
+                  if (isAuthenticated) {
+                    handleSignOut();
+                  } else {
+                    navigate('/auth');
+                  }
                 }}
                 className="w-full neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
               >
-                <LogIn className="w-4 h-4" />
-                Sign In
+                {isAuthenticated ? (
+                  <>
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="w-4 h-4" />
+                    Sign In
+                  </>
+                )}
               </button>
               <Button 
                 onClick={() => {
