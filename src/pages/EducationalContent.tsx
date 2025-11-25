@@ -5,7 +5,6 @@ import { Header } from "@/components/Header";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, Loader2, BookOpen, ChevronDown } from "lucide-react";
-import { marked } from "marked";
 import {
   Accordion,
   AccordionContent,
@@ -32,47 +31,59 @@ export default function EducationalContent() {
   const sections = useMemo(() => {
     if (!article) return [];
     
-    // Split content by H2 headings (##)
-    const lines = article.content.split('\n');
-    const parsed: { title: string; content: string }[] = [];
-    let currentSection: { title: string; content: string } | null = null;
-    let hasH2Sections = false;
+    // Parse HTML content and split by <h2> tags
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(article.content, 'text/html');
+    const h2Elements = doc.querySelectorAll('h2');
     
-    lines.forEach(line => {
-      if (line.startsWith('## ')) {
-        hasH2Sections = true;
-        if (currentSection) {
-          parsed.push(currentSection);
-        }
-        currentSection = {
-          title: line.replace('## ', '').trim(),
-          content: ''
-        };
-      } else if (currentSection) {
-        currentSection.content += line + '\n';
-      } else {
-        // Content before first H2 (intro)
-        if (!parsed.length || parsed[0].title !== 'intro') {
-          parsed.unshift({ title: 'intro', content: line + '\n' });
-        } else {
-          parsed[0].content += line + '\n';
-        }
+    if (h2Elements.length === 0) {
+      // No H2 sections found, treat entire content as intro
+      return [{
+        title: 'intro',
+        html: article.content
+      }];
+    }
+    
+    const parsed: { title: string; html: string }[] = [];
+    
+    // Get intro content (everything before first h2)
+    const firstH2 = h2Elements[0];
+    let introContent = '';
+    let node = doc.body.firstChild;
+    
+    while (node && node !== firstH2) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        introContent += (node as Element).outerHTML;
+      } else if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+        introContent += node.textContent;
       }
+      node = node.nextSibling;
+    }
+    
+    if (introContent.trim()) {
+      parsed.push({ title: 'intro', html: introContent });
+    }
+    
+    // Process each H2 section
+    h2Elements.forEach((h2) => {
+      const title = h2.textContent?.trim() || '';
+      let sectionContent = '';
+      let nextNode = h2.nextSibling;
+      
+      // Collect all content until the next h2 or end
+      while (nextNode && nextNode.nodeName.toLowerCase() !== 'h2') {
+        if (nextNode.nodeType === Node.ELEMENT_NODE) {
+          sectionContent += (nextNode as Element).outerHTML;
+        } else if (nextNode.nodeType === Node.TEXT_NODE && nextNode.textContent?.trim()) {
+          sectionContent += nextNode.textContent;
+        }
+        nextNode = nextNode.nextSibling;
+      }
+      
+      parsed.push({ title, html: sectionContent });
     });
     
-    if (currentSection) {
-      parsed.push(currentSection);
-    }
-    
-    // If no H2 sections found, treat entire content as intro
-    if (!hasH2Sections && parsed.length === 0) {
-      parsed.push({ title: 'intro', content: article.content });
-    }
-    
-    return parsed.map(section => ({
-      ...section,
-      html: marked(section.content, { breaks: true, gfm: true })
-    }));
+    return parsed;
   }, [article]);
 
   useEffect(() => {
