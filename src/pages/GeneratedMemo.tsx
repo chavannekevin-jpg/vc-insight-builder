@@ -50,7 +50,7 @@ interface AIAnalysis {
   sectionRecommendations?: Record<string, SectionRecommendation[]>;
   investmentInsights: InvestmentInsight[];
   keyStrengths: string[];
-  keyRisks: string[];
+  areasForImprovement: string[];
   nextStepRecommendations: NextStepRecommendation[];
 }
 
@@ -407,8 +407,8 @@ export default function GeneratedMemo() {
               </section>
             )}
 
-            {/* Key Strengths & Risks - Side by Side */}
-            {aiAnalysis && (aiAnalysis.keyStrengths?.length > 0 || aiAnalysis.keyRisks?.length > 0) && (
+            {/* Key Strengths & Areas for Improvement - Side by Side */}
+            {aiAnalysis && (aiAnalysis.keyStrengths?.length > 0 || aiAnalysis.areasForImprovement?.length > 0) && (
               <section className="animate-fade-in">
                 <div className="grid md:grid-cols-2 gap-6">
                   {aiAnalysis.keyStrengths && aiAnalysis.keyStrengths.length > 0 && (
@@ -428,17 +428,17 @@ export default function GeneratedMemo() {
                     </div>
                   )}
                   
-                  {aiAnalysis.keyRisks && aiAnalysis.keyRisks.length > 0 && (
+                  {aiAnalysis.areasForImprovement && aiAnalysis.areasForImprovement.length > 0 && (
                     <div>
                       <div className="flex items-center gap-2 mb-4">
-                        <AlertCircle className="w-5 h-5 text-warning" />
-                        <h3 className="text-xl font-display font-bold">Key Risks</h3>
+                        <Lightbulb className="w-5 h-5 text-primary" />
+                        <h3 className="text-xl font-display font-bold">Areas for Improvement</h3>
                       </div>
                       <ul className="space-y-3">
-                        {aiAnalysis.keyRisks.map((risk, idx) => (
-                          <li key={idx} className="flex items-start gap-2 p-3 rounded-lg bg-warning/5 border border-warning/20">
-                            <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
-                            <span className="font-body text-sm text-foreground/90">{risk}</span>
+                        {aiAnalysis.areasForImprovement.map((area, idx) => (
+                          <li key={idx} className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                            <Lightbulb className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                            <span className="font-body text-sm text-foreground/90">{area}</span>
                           </li>
                         ))}
                       </ul>
