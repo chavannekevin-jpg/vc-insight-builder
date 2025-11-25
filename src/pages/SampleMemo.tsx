@@ -115,17 +115,21 @@ const SampleMemo = () => {
           </div>
 
           {/* Note about sample */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30 rounded-2xl p-6 shadow-sm">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+          <div className="relative overflow-hidden bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-amber-500/10 border-2 border-amber-500/30 rounded-2xl p-6 shadow-sm">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl" />
             <div className="relative flex items-start gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-primary" />
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-amber-600" />
               </div>
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-primary">AI-Generated Sample</p>
-                <p className="text-sm text-foreground/80 leading-relaxed">
-                  This memo showcases our actual AI methodology using fictional data. Your personalized memo will follow 
-                  this exact format with VC-focused insights tailored to your startup.
+              <div className="space-y-2">
+                <p className="text-sm font-bold text-amber-600 uppercase tracking-wide">Sample Preview</p>
+                <p className="text-sm text-foreground leading-relaxed">
+                  This is a <strong>partial sample</strong> showcasing our AI methodology with fictional data. 
+                  Your full personalized memo will include <strong>8+ comprehensive sections</strong> covering Problem, Solution, Market, 
+                  Competition, Team, Business Model, Traction, and USP—each with the same depth of VC-focused analysis and insights.
+                </p>
+                <p className="text-xs text-muted-foreground italic pt-1">
+                  Note: Only a subset of sections is shown here for demonstration purposes.
                 </p>
               </div>
             </div>
