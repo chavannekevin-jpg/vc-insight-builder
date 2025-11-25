@@ -320,9 +320,13 @@ All colors MUST be HSL.
     min-height: 1em;
   }
 
-  /* Preserve font families from rich text editor */
-  .prose [style*="font-family"] {
-    font-family: inherit !important;
+  /* Override any font families from rich text editor - use site fonts */
+  .prose * {
+    font-family: 'Inter', sans-serif !important;
+  }
+
+  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    font-family: 'DM Serif Display', serif !important;
   }
 
   /* Preserve text alignment from rich text editor */
