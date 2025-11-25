@@ -110,31 +110,43 @@ export default function GeneratedMemo() {
           if (companyData) {
             setCompany(companyData);
             
-            // Analyze memo with AI
-            setAnalyzing(true);
-            try {
-              const { data: analysisData, error: analysisError } = await supabase.functions.invoke("analyze-memo", {
-                body: {
-                  memoContent: parsedContent.sections,
-                  companyInfo: companyData,
-                  memoId: existingMemo.id
-                }
-              });
+            // First, check if cached analysis exists
+            const { data: cachedAnalysis } = await supabase
+              .from("memo_analyses")
+              .select("analysis")
+              .eq("memo_id", existingMemo.id)
+              .maybeSingle();
 
-              if (analysisError) {
-                console.error("Analysis error:", analysisError);
-                toast({
-                  title: "Analysis unavailable",
-                  description: "Showing memo without AI insights",
-                  variant: "destructive"
+            if (cachedAnalysis?.analysis) {
+              // Use cached analysis
+              setAiAnalysis(cachedAnalysis.analysis as unknown as AIAnalysis);
+            } else {
+              // Generate new analysis if none exists
+              setAnalyzing(true);
+              try {
+                const { data: analysisData, error: analysisError } = await supabase.functions.invoke("analyze-memo", {
+                  body: {
+                    memoContent: parsedContent.sections,
+                    companyInfo: companyData,
+                    memoId: existingMemo.id
+                  }
                 });
-              } else if (analysisData) {
-                setAiAnalysis(analysisData);
+
+                if (analysisError) {
+                  console.error("Analysis error:", analysisError);
+                  toast({
+                    title: "Analysis unavailable",
+                    description: "Showing memo without AI insights",
+                    variant: "destructive"
+                  });
+                } else if (analysisData) {
+                  setAiAnalysis(analysisData);
+                }
+              } catch (analysisError) {
+                console.error("Failed to analyze memo:", analysisError);
+              } finally {
+                setAnalyzing(false);
               }
-            } catch (analysisError) {
-              console.error("Failed to analyze memo:", analysisError);
-            } finally {
-              setAnalyzing(false);
             }
           }
           
