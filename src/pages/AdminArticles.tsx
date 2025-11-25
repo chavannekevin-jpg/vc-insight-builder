@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import {
   Table,
   TableBody,
@@ -330,18 +331,12 @@ const AdminArticles = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="content">Article Content (Markdown) *</Label>
-                  <Textarea
-                    id="content"
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    placeholder={"# Main Heading\n\nWrite your content here using Markdown...\n\n## Subheading\n- Bullet point\n- Another point\n\n**Bold text** and _italic text_"}
-                    rows={12}
-                    className="font-mono text-sm"
+                  <Label htmlFor="content">Article Content *</Label>
+                  <RichTextEditor
+                    content={formData.content}
+                    onChange={(content) => setFormData({ ...formData, content })}
+                    placeholder="Start writing your article..."
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Supports Markdown: # Headings, **bold**, _italic_, - lists, &gt; quotes
-                  </p>
                 </div>
                 
                 <div className="flex items-center justify-between pt-2 border-t">
