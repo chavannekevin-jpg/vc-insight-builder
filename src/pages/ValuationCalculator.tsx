@@ -568,6 +568,33 @@ export default function ValuationCalculator() {
                     </Button>
                   </CardContent>
                 </Card>
+
+                {/* Provocative CTA to Memo */}
+                <Card className="border-2 border-destructive/40 bg-gradient-to-br from-destructive/10 to-transparent">
+                  <CardContent className="p-6 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-6 h-6 text-destructive flex-shrink-0 mt-1" />
+                      <div className="space-y-2">
+                        <h3 className="font-bold text-lg">Great. You Have a Valuation. Now Prove You Deserve It.</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          A number on a spreadsheet is meaningless. VCs don't invest in valuations—they invest in teams, traction, 
+                          market timing, and narrative strength. Your valuation only matters if the fundamentals back it up.
+                        </p>
+                        <p className="text-sm font-semibold text-foreground">
+                          Generate your Investment Memorandum and find out if your story justifies the price tag—or if you're delusional.
+                        </p>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
+                      variant="destructive"
+                      className="w-full font-bold"
+                      size="lg"
+                    >
+                      Build My Memo & Get Real
+                    </Button>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>

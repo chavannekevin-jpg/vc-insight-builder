@@ -743,6 +743,33 @@ export default function RaiseCalculator() {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Provocative CTA to Memo */}
+            <Card className="border-2 border-destructive/40 bg-gradient-to-br from-destructive/10 to-transparent">
+              <CardContent className="p-6 space-y-3">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-6 h-6 text-destructive flex-shrink-0 mt-1" />
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-lg">You Know How Much You Need. Can You Actually Raise It?</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Numbers are easy. Convincing investors is hard. Having a raise plan means nothing if your narrative, team, traction, 
+                      and market positioning don't justify the round. Most founders overestimate their fundability by 6-12 months.
+                    </p>
+                    <p className="text-sm font-semibold text-foreground">
+                      Generate your Investment Memorandum and see if VCs would actually write the check—or if you're wasting your time.
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
+                  variant="destructive"
+                  className="w-full font-bold"
+                  size="lg"
+                >
+                  Build My Memo & Face Reality
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
