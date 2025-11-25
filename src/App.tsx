@@ -4,6 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import VCBrainHub from "./pages/VCBrainHub";
+import VCBrainHome from "./pages/vcbrain/VCBrainHome";
+import AngelStage from "./pages/vcbrain/AngelStage";
+import ProblemSlide from "./pages/vcbrain/ProblemSlide";
 import Portal from "./pages/Portal";
 import Auth from "./pages/Auth";
 import About from "./pages/About";
@@ -40,6 +44,11 @@ const App = () => (
           <Route path="/intake" element={<Intake />} />
           <Route path="/hub" element={<FreemiumHub />} />
           <Route path="/hub/:slug" element={<EducationalContent />} />
+          <Route path="/vcbrain" element={<VCBrainHub />}>
+            <Route index element={<VCBrainHome />} />
+            <Route path="angel" element={<AngelStage />} />
+            <Route path="deck/problem" element={<ProblemSlide />} />
+          </Route>
           <Route path="/pre-seed-guide" element={<PreSeedGuide />} />
           <Route path="/problem-slide-guide" element={<ProblemSlideGuide />} />
           <Route path="/solution-slide-guide" element={<SolutionSlideGuide />} />
