@@ -346,29 +346,35 @@ export default function GeneratedMemo() {
             {/* Structured Company Info - From AI Analysis */}
             {aiAnalysis?.structuredInfo && (
               <section className="animate-fade-in">
-                <div className="grid md:grid-cols-3 gap-6">
-                  <div className="p-5 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Building2 className="w-4 h-4 text-primary" />
-                      <span className="text-xs text-muted-foreground font-body uppercase tracking-wide">Industry</span>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="p-6 rounded-2xl border border-border/40 bg-gradient-to-br from-primary/5 to-primary/10 hover:shadow-md transition-all">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Building2 className="w-4 h-4 text-primary" />
+                      </div>
+                      <span className="text-xs text-muted-foreground font-body uppercase tracking-wider font-semibold">Industry</span>
                     </div>
-                    <p className="text-lg font-display font-bold">{aiAnalysis.structuredInfo.industry}</p>
+                    <p className="text-lg font-display font-bold text-foreground">{aiAnalysis.structuredInfo.industry}</p>
                   </div>
                   
-                  <div className="p-5 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Cog className="w-4 h-4 text-accent" />
-                      <span className="text-xs text-muted-foreground font-body uppercase tracking-wide">Process Improved</span>
+                  <div className="p-6 rounded-2xl border border-border/40 bg-gradient-to-br from-accent/5 to-accent/10 hover:shadow-md transition-all">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-2 rounded-lg bg-accent/10">
+                        <Cog className="w-4 h-4 text-accent" />
+                      </div>
+                      <span className="text-xs text-muted-foreground font-body uppercase tracking-wider font-semibold">Process Improved</span>
                     </div>
-                    <p className="text-sm font-body text-foreground/90">{aiAnalysis.structuredInfo.processImproved}</p>
+                    <p className="text-sm font-body text-foreground/90 leading-relaxed">{aiAnalysis.structuredInfo.processImproved}</p>
                   </div>
                   
-                  <div className="p-5 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm md:col-span-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Zap className="w-4 h-4 text-warning" />
-                      <span className="text-xs text-muted-foreground font-body uppercase tracking-wide">One-Liner</span>
+                  <div className="p-6 rounded-2xl border border-border/40 bg-gradient-to-br from-warning/5 to-warning/10 hover:shadow-md transition-all">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-2 rounded-lg bg-warning/10">
+                        <Zap className="w-4 h-4 text-warning" />
+                      </div>
+                      <span className="text-xs text-muted-foreground font-body uppercase tracking-wider font-semibold">One-Liner</span>
                     </div>
-                    <p className="text-sm font-body font-medium text-foreground/90">{aiAnalysis.structuredInfo.oneLiner}</p>
+                    <p className="text-sm font-body font-medium text-foreground/90 leading-relaxed">{aiAnalysis.structuredInfo.oneLiner}</p>
                   </div>
                 </div>
               </section>
@@ -377,38 +383,53 @@ export default function GeneratedMemo() {
             {/* AI Investment Insights */}
             {aiAnalysis?.investmentInsights && aiAnalysis.investmentInsights.length > 0 && (
               <section className="animate-fade-in">
-                <h2 className="text-2xl md:text-3xl font-display font-bold mb-6">
-                  Investment Analysis
-                </h2>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2.5 rounded-xl bg-primary/10">
+                    <Target className="w-5 h-5 text-primary" />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-display font-bold">
+                    Investment Analysis
+                  </h2>
+                </div>
                 
-                <div className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
                   {aiAnalysis.investmentInsights.map((insight, idx) => (
                     <div
                       key={idx}
-                      className={`p-5 rounded-xl border transition-all ${
+                      className={`group p-6 rounded-2xl border transition-all hover:shadow-lg ${
                         insight.sentiment === 'positive'
-                          ? 'bg-success/5 border-success/30'
+                          ? 'bg-gradient-to-br from-success/5 to-success/10 border-success/30 hover:border-success/50'
                           : insight.sentiment === 'concern'
-                          ? 'bg-warning/5 border-warning/30'
-                          : 'bg-card/30 border-border/50'
+                          ? 'bg-gradient-to-br from-warning/5 to-warning/10 border-warning/30 hover:border-warning/50'
+                          : 'bg-gradient-to-br from-card/30 to-card/50 border-border/50 hover:border-border/70'
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-4 mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-body font-medium uppercase tracking-wide text-muted-foreground">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="secondary" className="text-xs px-2.5 py-1 font-semibold">
                             {insight.category}
-                          </span>
+                          </Badge>
                           {insight.significance === 'high' && (
-                            <Badge variant="outline" className="text-xs px-2 py-0 border-primary/40 text-primary">
+                            <Badge className="text-xs px-2.5 py-1 bg-primary/10 text-primary border-primary/30">
                               High Priority
                             </Badge>
                           )}
                         </div>
-                        {insight.sentiment === 'positive' ? (
-                          <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
-                        ) : insight.sentiment === 'concern' ? (
-                          <AlertCircle className="w-4 h-4 text-warning shrink-0" />
-                        ) : null}
+                        <div className={`p-2 rounded-lg ${
+                          insight.sentiment === 'positive' 
+                            ? 'bg-success/10' 
+                            : insight.sentiment === 'concern' 
+                            ? 'bg-warning/10' 
+                            : 'bg-muted/50'
+                        }`}>
+                          {insight.sentiment === 'positive' ? (
+                            <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                          ) : insight.sentiment === 'concern' ? (
+                            <AlertCircle className="w-4 h-4 text-warning shrink-0" />
+                          ) : (
+                            <Target className="w-4 h-4 text-muted-foreground shrink-0" />
+                          )}
+                        </div>
                       </div>
                       <p className="font-body text-foreground/90 text-sm leading-relaxed">
                         {insight.insight}
@@ -424,36 +445,44 @@ export default function GeneratedMemo() {
               <section className="animate-fade-in">
                 <div className="grid md:grid-cols-2 gap-6">
                   {aiAnalysis.keyStrengths && aiAnalysis.keyStrengths.length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <CheckCircle2 className="w-5 h-5 text-success" />
+                    <div className="p-6 rounded-2xl border border-success/30 bg-gradient-to-br from-success/5 to-success/10">
+                      <div className="flex items-center gap-3 mb-5">
+                        <div className="p-2.5 rounded-xl bg-success/10">
+                          <CheckCircle2 className="w-5 h-5 text-success" />
+                        </div>
                         <h3 className="text-xl font-display font-bold">Key Strengths</h3>
                       </div>
-                      <ul className="space-y-3">
+                      <div className="space-y-3">
                         {aiAnalysis.keyStrengths.map((strength, idx) => (
-                          <li key={idx} className="flex items-start gap-2 p-3 rounded-lg bg-success/5 border border-success/20">
-                            <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                            <span className="font-body text-sm text-foreground/90">{strength}</span>
-                          </li>
+                          <div key={idx} className="flex items-start gap-3 p-4 rounded-xl bg-background/60 backdrop-blur-sm border border-success/20 hover:border-success/40 transition-all">
+                            <div className="p-1.5 rounded-lg bg-success/10 shrink-0">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-success" />
+                            </div>
+                            <span className="font-body text-sm text-foreground/90 leading-relaxed">{strength}</span>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   )}
                   
                   {aiAnalysis.areasForImprovement && aiAnalysis.areasForImprovement.length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <Lightbulb className="w-5 h-5 text-primary" />
-                        <h3 className="text-xl font-display font-bold">Areas for Improvement</h3>
+                    <div className="p-6 rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
+                      <div className="flex items-center gap-3 mb-5">
+                        <div className="p-2.5 rounded-xl bg-primary/10">
+                          <Lightbulb className="w-5 h-5 text-primary" />
+                        </div>
+                        <h3 className="text-xl font-display font-bold">Growth Opportunities</h3>
                       </div>
-                      <ul className="space-y-3">
+                      <div className="space-y-3">
                         {aiAnalysis.areasForImprovement.map((area, idx) => (
-                          <li key={idx} className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
-                            <Lightbulb className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                            <span className="font-body text-sm text-foreground/90">{area}</span>
-                          </li>
+                          <div key={idx} className="flex items-start gap-3 p-4 rounded-xl bg-background/60 backdrop-blur-sm border border-primary/20 hover:border-primary/40 transition-all">
+                            <div className="p-1.5 rounded-lg bg-primary/10 shrink-0">
+                              <Lightbulb className="w-3.5 h-3.5 text-primary" />
+                            </div>
+                            <span className="font-body text-sm text-foreground/90 leading-relaxed">{area}</span>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -518,29 +547,33 @@ export default function GeneratedMemo() {
                       
                       {/* AI Section Recommendations */}
                       {sectionRecs.length > 0 && (
-                        <div className="p-5 rounded-xl border border-border/50 bg-card/20 backdrop-blur-sm">
+                        <div className="p-6 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
                           <div className="flex items-center gap-2 mb-4">
-                            <Lightbulb className="w-4 h-4 text-primary" />
-                            <h4 className="text-sm font-display font-bold text-foreground">AI Recommendations</h4>
+                            <div className="p-2 rounded-lg bg-primary/10">
+                              <Lightbulb className="w-4 h-4 text-primary" />
+                            </div>
+                            <h4 className="text-base font-display font-bold text-foreground">Enhancement Ideas</h4>
                           </div>
                           <div className="space-y-3">
                             {sectionRecs.map((rec, idx) => (
-                              <div key={idx} className="space-y-1.5">
-                                <div className="flex items-start gap-2">
-                                  <span className={`inline-flex px-2 py-0.5 rounded text-xs font-body font-medium shrink-0 ${
-                                    rec.type === 'opportunity' ? 'bg-success/10 text-success' :
-                                    rec.type === 'concern' ? 'bg-warning/10 text-warning' :
-                                    'bg-primary/10 text-primary'
+                              <div key={idx} className="p-4 rounded-xl bg-background/60 backdrop-blur-sm border border-border/30 hover:border-primary/40 transition-all">
+                                <div className="flex items-start gap-3">
+                                  <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-body font-medium shrink-0 ${
+                                    rec.type === 'opportunity' ? 'bg-success/10 text-success border border-success/20' :
+                                    rec.type === 'concern' ? 'bg-warning/10 text-warning border border-warning/20' :
+                                    'bg-primary/10 text-primary border border-primary/20'
                                   }`}>
-                                    {rec.type === 'validation_needed' ? 'Validation' : rec.type}
+                                    {rec.type === 'validation_needed' ? 'To Validate' : rec.type}
                                   </span>
-                                  <p className="text-sm font-body text-foreground/90 leading-relaxed flex-1">
-                                    {rec.recommendation}
-                                  </p>
+                                  <div className="flex-1 space-y-1.5">
+                                    <p className="text-sm font-body font-medium text-foreground leading-relaxed">
+                                      {rec.recommendation}
+                                    </p>
+                                    <p className="text-xs font-body text-muted-foreground leading-relaxed">
+                                      {rec.rationale}
+                                    </p>
+                                  </div>
                                 </div>
-                                <p className="text-xs font-body text-muted-foreground leading-relaxed pl-[60px]">
-                                  {rec.rationale}
-                                </p>
                               </div>
                             ))}
                           </div>
@@ -556,34 +589,44 @@ export default function GeneratedMemo() {
             {aiAnalysis?.nextStepRecommendations && aiAnalysis.nextStepRecommendations.length > 0 && (
               <section className="animate-fade-in">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-primary text-primary-foreground shadow-glow">
-                    <Target className="w-5 h-5" />
+                  <div className="p-2.5 rounded-xl bg-primary/10">
+                    <Target className="w-5 h-5 text-primary" />
                   </div>
                   <h2 className="text-2xl md:text-3xl font-display font-bold">Recommended Next Steps</h2>
                 </div>
                 
-                <div className="pl-0 md:pl-[52px] space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
                   {aiAnalysis.nextStepRecommendations.map((rec, idx) => (
                     <div
                       key={idx}
-                      className="p-5 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm hover:border-primary/30 transition-all"
+                      className={`group p-6 rounded-2xl border transition-all hover:shadow-lg ${
+                        rec.priority === 'high' 
+                          ? 'bg-gradient-to-br from-primary/5 to-primary/10 border-primary/30 hover:border-primary/50' 
+                          : rec.priority === 'medium'
+                          ? 'bg-gradient-to-br from-accent/5 to-accent/10 border-accent/30 hover:border-accent/50'
+                          : 'bg-gradient-to-br from-muted/5 to-muted/10 border-border/30 hover:border-border/50'
+                      }`}
                     >
-                      <div className="flex items-start justify-between gap-4 mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className={`px-2 py-0.5 rounded text-xs font-body font-medium ${
-                            rec.priority === 'high' 
-                              ? 'bg-primary/20 text-primary' 
-                              : rec.priority === 'medium'
-                              ? 'bg-accent/20 text-accent'
-                              : 'bg-muted text-muted-foreground'
-                          }`}>
-                            {rec.priority}
-                          </div>
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <Badge className={`text-xs px-2.5 py-1 font-semibold ${
+                          rec.priority === 'high' 
+                            ? 'bg-primary/10 text-primary border-primary/30' 
+                            : rec.priority === 'medium'
+                            ? 'bg-accent/10 text-accent border-accent/30'
+                            : 'bg-muted/50 text-muted-foreground border-border/30'
+                        }`}>
+                          {rec.priority.toUpperCase()} PRIORITY
+                        </Badge>
+                        <div className={`p-2 rounded-lg ${
+                          rec.priority === 'high' ? 'bg-primary/10' : rec.priority === 'medium' ? 'bg-accent/10' : 'bg-muted/20'
+                        }`}>
+                          <Target className={`w-4 h-4 ${
+                            rec.priority === 'high' ? 'text-primary' : rec.priority === 'medium' ? 'text-accent' : 'text-muted-foreground'
+                          } shrink-0`} />
                         </div>
-                        <Lightbulb className="w-4 h-4 text-primary shrink-0" />
                       </div>
-                      <h4 className="font-body font-semibold text-foreground mb-2">{rec.action}</h4>
-                      <p className="font-body text-sm text-muted-foreground leading-relaxed">
+                      <h4 className="font-body font-bold text-foreground mb-2 text-base">{rec.action}</h4>
+                      <p className="font-body text-sm text-foreground/80 leading-relaxed">
                         {rec.rationale}
                       </p>
                     </div>
