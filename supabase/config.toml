@@ -15,6 +15,7 @@ verify_jwt = false
 [functions.analyze-memo]
 verify_jwt = false
 
-[functions.extract-problem-solution]
+[functions.auto-generate-profile]
 verify_jwt = false
+
 
