@@ -355,10 +355,6 @@ export default function FreemiumHub() {
                         <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                         View Sample
                       </Button>
-                      
-                      <p className="text-[10px] text-center text-muted-foreground">
-                        No signup • 2 min review
-                      </p>
                     </div>
                   </div>
                 </div>
