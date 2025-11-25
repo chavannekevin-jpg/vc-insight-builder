@@ -306,4 +306,32 @@ All colors MUST be HSL.
       transform: translateX(100%);
     }
   }
+
+  /* Rich text editor content styling - ensures proper paragraph spacing */
+  .prose p {
+    margin-bottom: 1em;
+  }
+
+  .prose p + p {
+    margin-top: 1em;
+  }
+
+  .prose p:empty {
+    min-height: 1em;
+  }
+
+  /* Preserve font families from rich text editor */
+  .prose [style*="font-family"] {
+    font-family: inherit !important;
+  }
+
+  /* Preserve text alignment from rich text editor */
+  .prose [style*="text-align"] {
+    text-align: inherit !important;
+  }
+
+  /* Preserve font sizes from rich text editor */
+  .prose [style*="font-size"] {
+    font-size: inherit !important;
+  }
 }
