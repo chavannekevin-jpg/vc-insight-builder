@@ -43,11 +43,13 @@ export default function GeneratedMemo() {
       }
 
       try {
-        // First check if memo already exists in database
+        // First check if memo already exists in database - get the most recent one
         const { data: existingMemo, error: memoError } = await supabase
           .from("memos")
           .select("content")
           .eq("company_id", companyId)
+          .order("created_at", { ascending: false })
+          .limit(1)
           .maybeSingle();
 
         if (memoError) {
