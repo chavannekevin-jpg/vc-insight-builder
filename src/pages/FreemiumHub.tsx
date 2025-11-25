@@ -159,7 +159,7 @@ export default function FreemiumHub() {
                   className="border-primary/30 hover:bg-primary/10 text-lg px-8 py-6"
                   onClick={() => navigate("/company")}
                 >
-                  View My Memo
+                  My Company Profile
                 </Button>
               )}
             </div>
@@ -313,7 +313,7 @@ export default function FreemiumHub() {
                       className="w-full gradient-primary shadow-glow"
                       onClick={() => navigate("/company")}
                     >
-                      View My Memo
+                      My Company Profile
                     </Button>
                   </div>
                 </div>
