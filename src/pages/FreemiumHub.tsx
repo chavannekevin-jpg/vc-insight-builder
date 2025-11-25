@@ -409,6 +409,7 @@ export default function FreemiumHub() {
           {/* RIGHT PANEL: Tools & Templates */}
           <div className="space-y-6">
             <div className="sticky top-6">
+              {/* Tools Section */}
               <div className="p-6 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
@@ -416,11 +417,27 @@ export default function FreemiumHub() {
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold">Tools</h2>
-                    <p className="text-sm text-muted-foreground">Coming soon</p>
+                    <p className="text-sm text-muted-foreground">Practical calculators</p>
                   </div>
                 </div>
                 
                 <div className="space-y-3">
+                  <button
+                    onClick={() => navigate('/raise-education')}
+                    className="w-full p-4 bg-card border border-border/50 rounded-lg hover:border-primary/20 hover:bg-primary/5 transition-all group"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                        <Calculator className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="text-left space-y-1 flex-1">
+                        <h3 className="text-sm font-bold">Raise Estimator</h3>
+                        <p className="text-xs text-muted-foreground">Calculate how much to raise based on milestones, burn, and market risk</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </button>
+                  
                   <div className="p-4 bg-card/50 border border-border/50 rounded-lg opacity-60">
                     <div className="flex items-start gap-3">
                       <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
@@ -428,7 +445,7 @@ export default function FreemiumHub() {
                       </div>
                       <div className="space-y-1">
                         <h3 className="text-sm font-bold">Valuation Calculator</h3>
-                        <p className="text-xs text-muted-foreground">Pre/post-money & dilution</p>
+                        <p className="text-xs text-muted-foreground">Coming soon</p>
                       </div>
                     </div>
                   </div>
