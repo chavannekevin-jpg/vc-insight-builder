@@ -34,8 +34,10 @@ export default function CompanyProfileEdit() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [companyId, setCompanyId] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [companyDescription, setCompanyDescription] = useState("");
   const [sectionData, setSectionData] = useState<SectionData>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -71,6 +73,7 @@ export default function CompanyProfileEdit() {
       const company = companies[0];
       setCompanyId(company.id);
       setCompanyName(company.name);
+      setCompanyDescription(company.description || "");
 
       // Load all memo responses for this company
       const { data: responses, error: responsesError } = await supabase
@@ -103,6 +106,14 @@ export default function CompanyProfileEdit() {
       });
 
       setSectionData(grouped);
+      
+      // Auto-generate problem and solution if they're empty but we have onboarding description
+      const hasProblem = !!grouped["problem_description"];
+      const hasSolution = !!grouped["solution_description"];
+      
+      if (company.description && (!hasProblem || !hasSolution)) {
+        await autoGenerateProblemSolution(company.id, company.name, company.description, grouped);
+      }
     } catch (error) {
       console.error("Error:", error);
       toast({
@@ -112,6 +123,62 @@ export default function CompanyProfileEdit() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const autoGenerateProblemSolution = async (
+    compId: string,
+    name: string,
+    description: string,
+    currentData: SectionData
+  ) => {
+    setGenerating(true);
+    try {
+      console.log("Auto-generating problem and solution from onboarding data...");
+      
+      const { data, error } = await supabase.functions.invoke("extract-problem-solution", {
+        body: {
+          companyDescription: description,
+          companyName: name
+        }
+      });
+
+      if (error) throw error;
+
+      const updates: SectionData = { ...currentData };
+
+      // Only update sections that are empty
+      if (!currentData["problem_description"] && data.problem) {
+        updates["problem_description"] = data.problem;
+        await supabase.from("memo_responses").insert({
+          company_id: compId,
+          question_key: "problem_description",
+          answer: data.problem
+        });
+      }
+
+      if (!currentData["solution_description"] && data.solution) {
+        updates["solution_description"] = data.solution;
+        await supabase.from("memo_responses").insert({
+          company_id: compId,
+          question_key: "solution_description",
+          answer: data.solution
+        });
+      }
+
+      // No need to call Promise.all anymore
+
+      setSectionData(updates);
+      
+      toast({
+        title: "Profile Auto-Generated",
+        description: "Problem and Solution sections have been pre-filled from your onboarding info."
+      });
+    } catch (error: any) {
+      console.error("Error auto-generating:", error);
+      // Don't show error toast, this is a nice-to-have feature
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -200,10 +267,17 @@ export default function CompanyProfileEdit() {
     }));
   };
 
-  if (loading) {
+  if (loading || generating) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+          {generating && (
+            <p className="text-sm text-muted-foreground">
+              Generating your profile from onboarding data...
+            </p>
+          )}
+        </div>
       </div>
     );
   }

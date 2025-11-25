@@ -14,3 +14,7 @@ verify_jwt = false
 
 [functions.analyze-memo]
 verify_jwt = false
+
+[functions.extract-problem-solution]
+verify_jwt = false
+
