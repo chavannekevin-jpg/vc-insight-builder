@@ -7,7 +7,14 @@ import Index from "./pages/Index";
 import VCBrainHub from "./pages/VCBrainHub";
 import VCBrainHome from "./pages/vcbrain/VCBrainHome";
 import AngelStage from "./pages/vcbrain/AngelStage";
+import PreSeedStage from "./pages/vcbrain/PreSeedStage";
+import SeedStage from "./pages/vcbrain/SeedStage";
 import ProblemSlide from "./pages/vcbrain/ProblemSlide";
+import SolutionSlide from "./pages/vcbrain/SolutionSlide";
+import ProductSlide from "./pages/vcbrain/ProductSlide";
+import MarketSlide from "./pages/vcbrain/MarketSlide";
+import TractionSlide from "./pages/vcbrain/TractionSlide";
+import TeamSlide from "./pages/vcbrain/TeamSlide";
 import Portal from "./pages/Portal";
 import Auth from "./pages/Auth";
 import About from "./pages/About";
@@ -47,7 +54,14 @@ const App = () => (
           <Route path="/vcbrain" element={<VCBrainHub />}>
             <Route index element={<VCBrainHome />} />
             <Route path="angel" element={<AngelStage />} />
+            <Route path="pre-seed" element={<PreSeedStage />} />
+            <Route path="seed" element={<SeedStage />} />
             <Route path="deck/problem" element={<ProblemSlide />} />
+            <Route path="deck/solution" element={<SolutionSlide />} />
+            <Route path="deck/product" element={<ProductSlide />} />
+            <Route path="deck/market" element={<MarketSlide />} />
+            <Route path="deck/traction" element={<TractionSlide />} />
+            <Route path="deck/team" element={<TeamSlide />} />
           </Route>
           <Route path="/pre-seed-guide" element={<PreSeedGuide />} />
           <Route path="/problem-slide-guide" element={<ProblemSlideGuide />} />
