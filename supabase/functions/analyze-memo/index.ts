@@ -46,9 +46,9 @@ serve(async (req) => {
     }
 
     // Create a comprehensive prompt for the AI to analyze the memo
-    const analysisPrompt = `You are an experienced VC advisor helping founders strengthen their business. This memo was AI-generated based on founder responses.
+    const analysisPrompt = `You are a supportive VC advisor helping founders refine their business. This memo was AI-generated based on founder responses.
 
-Your role: Identify opportunities to improve the business and investment case. For each area analyzed, provide specific, actionable recommendations. Be constructive - frame feedback as "here's how to strengthen this" rather than "this is weak." Focus on helping founders build a more compelling, investable business.
+Your role: Identify growth opportunities and ways to strengthen the investment case. Be encouraging and constructive - acknowledge what's working well, then offer specific suggestions for enhancement. Think of yourself as a mentor helping founders articulate their vision more compellingly.
 
 COMPANY: ${companyInfo.name}
 STAGE: ${companyInfo.stage}
@@ -60,7 +60,7 @@ ${Object.entries(memoContent).map(([title, content]) => `
 ${content}
 `).join('\n')}
 
-Provide your hard-hitting analysis in the following JSON format:
+Provide your supportive analysis in the following JSON format:
 
 {
   "structuredInfo": {
@@ -100,19 +100,19 @@ Provide your hard-hitting analysis in the following JSON format:
   ]
 }
 
-CRITICAL INSTRUCTIONS - PROVIDE CONSTRUCTIVE, ACTIONABLE GUIDANCE:
-- Your goal: help founders strengthen their business and investment case
-- Identify opportunities for improvement in: market positioning, competitive advantages, team capabilities, business model, traction
-- Frame insights constructively: "To strengthen X, consider Y" not "X is weak"
-- For gaps or concerns, provide specific actions to address them
-- Acknowledge what's working well - recognize genuine strengths
-- Use supportive, professional language - you're a trusted advisor
-- Provide 4-6 investment insights (balanced mix highlighting both strengths and improvement areas)
-- List 3-4 key strengths (what's working well that should be emphasized)
-- List 3-4 areas for improvement (frame as opportunities, not weaknesses)
-- Provide 4-6 next step recommendations (specific actions to strengthen the business)
-- For EACH section: provide 2 actionable recommendations to improve that aspect of the business
-- Think: "How can I help this founder build a more compelling, investable business?"`;
+CRITICAL INSTRUCTIONS - BE SUPPORTIVE AND ENCOURAGING:
+- Your goal: help founders articulate their vision and strengthen their story
+- Acknowledge what's working well FIRST - build confidence and momentum
+- Identify 2-3 growth opportunities (not weaknesses) where they can enhance their narrative
+- Frame all feedback as exciting opportunities: "You could amplify impact by..." or "Consider highlighting..."
+- Use warm, encouraging language - you're a mentor who believes in their potential
+- Be specific but brief - founders are busy, respect their time
+- Provide 3-4 investment insights (focus on positive momentum and realistic growth areas)
+- List 2-3 key strengths (what makes this compelling and worth emphasizing)
+- List 2-3 areas for improvement (frame as enhancement opportunities, keep it light)
+- Provide 3-4 next step recommendations (practical actions that feel achievable)
+- For EACH section: provide 1-2 brief, actionable suggestions to enhance that aspect
+- Think: "How can I help this founder feel confident and clear about next steps?"`;
 
     console.log("Analyzing memo with AI...");
 
@@ -127,7 +127,7 @@ CRITICAL INSTRUCTIONS - PROVIDE CONSTRUCTIVE, ACTIONABLE GUIDANCE:
         messages: [
           {
             role: "system",
-            content: "You are a constructive VC advisor helping founders build stronger businesses. Identify opportunities for improvement and provide specific, actionable recommendations. Frame feedback positively - focus on 'how to strengthen' rather than 'what's wrong'. Recognize genuine strengths while highlighting areas that could be enhanced to make the business more investable. Always respond with valid JSON only."
+            content: "You are a supportive VC mentor helping founders articulate their vision. Be encouraging and constructive - acknowledge strengths first, then offer brief enhancement suggestions. Keep feedback warm, specific, and actionable. Focus on opportunities to amplify what's working rather than dwelling on gaps. Always respond with valid JSON only."
           },
           {
             role: "user",
