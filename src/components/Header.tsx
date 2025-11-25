@@ -197,17 +197,7 @@ export const Header = () => {
                   </div>
                 );
               }
-              return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`text-sm font-medium transition-all duration-300 ${
-                    isActive(link.path) ? "neon-pink" : "text-muted-foreground hover:neon-pink"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              );
+              return null;
             })}
             
             {/* Tools Dropdown - visible to everyone */}
@@ -266,6 +256,22 @@ export const Header = () => {
                 </div>
               )}
             </div>
+            
+            {/* Other nav links (Product, Pricing, About) */}
+            {navLinks.map((link) => {
+              if (link.name === "Hub") return null;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`text-sm font-medium transition-all duration-300 ${
+                    isActive(link.path) ? "neon-pink" : "text-muted-foreground hover:neon-pink"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </div>
 
           {/* CTA Buttons */}
