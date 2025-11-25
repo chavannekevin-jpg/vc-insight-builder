@@ -30,6 +30,7 @@ import Product from "./pages/Product";
 import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
 import CompanyProfile from "./pages/CompanyProfile";
+import CompanyProfileEdit from "./pages/CompanyProfileEdit";
 import Admin from "./pages/Admin";
 import AdminArticles from "./pages/AdminArticles";
 import AdminCompanyDetail from "./pages/AdminCompanyDetail";
@@ -84,6 +85,7 @@ const App = () => (
           <Route path="/solution-slide-guide" element={<SolutionSlideGuide />} />
           <Route path="/memo" element={<GeneratedMemo />} />
           <Route path="/company" element={<CompanyProfile />} />
+          <Route path="/company/profile/edit" element={<CompanyProfileEdit />} />
           <Route path="/about" element={<About />} />
           <Route path="/product" element={<Product />} />
           <Route path="/pricing" element={<Pricing />} />
