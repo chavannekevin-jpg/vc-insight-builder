@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
+import { WaitlistModal } from "@/components/WaitlistModal";
+import { useWaitlistMode, useUserWaitlistStatus } from "@/hooks/useWaitlistMode";
 
 export default function RaiseCalculator() {
   const navigate = useNavigate();
@@ -29,7 +31,12 @@ export default function RaiseCalculator() {
   
   // State
   const [companyId, setCompanyId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+
+  const { data: waitlistMode } = useWaitlistMode();
+  const { data: userWaitlistStatus } = useUserWaitlistStatus(userId || undefined, companyId || undefined);
   
   // Inputs
   const [monthlyBurn, setMonthlyBurn] = useState(40000);

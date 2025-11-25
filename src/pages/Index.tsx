@@ -5,11 +5,13 @@ import { HowItWorksSection } from "@/components/sections/HowItWorksSection";
 import { WhyTrustMeSection } from "@/components/sections/WhyTrustMeSection";
 import { Footer } from "@/components/sections/Footer";
 import { Header } from "@/components/Header";
+import { WaitlistBanner } from "@/components/WaitlistBanner";
 
 const Index = () => {
   return (
     <div className="min-h-screen">
       <Header />
+      <WaitlistBanner />
       <HeroSection />
       <ProblemSolutionSection />
       <WhyYouNeedThisSection />
