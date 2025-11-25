@@ -107,12 +107,11 @@ export default function CompanyProfileEdit() {
 
       setSectionData(grouped);
       
-      // Auto-generate problem and solution if they're empty but we have onboarding description
-      const hasProblem = !!grouped["problem_description"];
-      const hasSolution = !!grouped["solution_description"];
+      // Auto-generate all sections if we have onboarding description and sections are mostly empty
+      const completedSections = Object.keys(grouped).filter(k => grouped[k]?.trim()).length;
       
-      if (company.description && (!hasProblem || !hasSolution)) {
-        await autoGenerateProblemSolution(company.id, company.name, company.description, grouped);
+      if (company.description && completedSections < 3) {
+        await autoGenerateAllSections(company.id, company.name, company.description, company.stage, grouped);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -126,57 +125,68 @@ export default function CompanyProfileEdit() {
     }
   };
 
-  const autoGenerateProblemSolution = async (
+  const autoGenerateAllSections = async (
     compId: string,
     name: string,
     description: string,
+    stage: string,
     currentData: SectionData
   ) => {
     setGenerating(true);
     try {
-      console.log("Auto-generating problem and solution from onboarding data...");
+      console.log("Auto-generating profile from onboarding data and web context...");
       
-      const { data, error } = await supabase.functions.invoke("extract-problem-solution", {
+      const { data, error } = await supabase.functions.invoke("auto-generate-profile", {
         body: {
           companyDescription: description,
-          companyName: name
+          companyName: name,
+          stage: stage
         }
       });
 
       if (error) throw error;
 
       const updates: SectionData = { ...currentData };
+      const sectionMapping = {
+        "problem_description": data.problem,
+        "solution_description": data.solution,
+        "market_target_customer": data.market,
+        "competition_mission": data.competition,
+        "team_founders": data.team,
+        "usp_differentiators": data.usp,
+        "business_model_type": data.business_model,
+        "traction_revenue": data.traction
+      };
 
       // Only update sections that are empty
-      if (!currentData["problem_description"] && data.problem) {
-        updates["problem_description"] = data.problem;
-        await supabase.from("memo_responses").insert({
-          company_id: compId,
-          question_key: "problem_description",
-          answer: data.problem
-        });
+      for (const [key, value] of Object.entries(sectionMapping)) {
+        if (!currentData[key] && value) {
+          updates[key] = value;
+          await supabase.from("memo_responses").insert({
+            company_id: compId,
+            question_key: key,
+            answer: value
+          });
+        }
       }
-
-      if (!currentData["solution_description"] && data.solution) {
-        updates["solution_description"] = data.solution;
-        await supabase.from("memo_responses").insert({
-          company_id: compId,
-          question_key: "solution_description",
-          answer: data.solution
-        });
-      }
-
-      // No need to call Promise.all anymore
 
       setSectionData(updates);
       
+      const sectionsGenerated = Object.keys(sectionMapping).filter(
+        k => !currentData[k] && sectionMapping[k as keyof typeof sectionMapping]
+      ).length;
+      
       toast({
-        title: "Profile Auto-Generated",
-        description: "Problem and Solution sections have been pre-filled from your onboarding info."
+        title: "Profile Auto-Generated! ✨",
+        description: `${sectionsGenerated} sections pre-filled using AI analysis and web research.`
       });
     } catch (error: any) {
       console.error("Error auto-generating:", error);
-      // Don't show error toast, this is a nice-to-have feature
+      toast({
+        title: "Auto-generation partially completed",
+        description: "Some sections were filled. You can edit or complete the rest manually.",
+        variant: "default"
+      });
     } finally {
       setGenerating(false);
     }
@@ -273,9 +283,12 @@ export default function CompanyProfileEdit() {
         <div className="text-center space-y-4">
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
           {generating && (
-            <p className="text-sm text-muted-foreground">
-              Generating your profile from onboarding data...
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Analyzing your startup...</p>
+              <p className="text-xs text-muted-foreground">
+                AI is researching online and generating your profile sections
+              </p>
+            </div>
           )}
         </div>
       </div>
