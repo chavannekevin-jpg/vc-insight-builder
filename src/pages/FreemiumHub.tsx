@@ -267,51 +267,56 @@ export default function FreemiumHub() {
       <div className="max-w-[1800px] mx-auto px-8 py-12">
         <div className="grid lg:grid-cols-3 gap-8 items-start">
           
-          {/* LEFT PANEL: Quick Actions */}
+          {/* LEFT PANEL: Company Overview */}
           <div className="space-y-6">
             <div className="sticky top-6 space-y-4">
-              {memo && company && (
+              {company && (
                 <div className="p-6 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-primary shadow-lg">
-                      <FileText className="w-6 h-6 text-foreground" />
+                      <Sparkles className="w-6 h-6 text-foreground" />
                     </div>
-                    <h2 className="text-xl font-bold">Your Memo</h2>
+                    <h2 className="text-xl font-bold">Company Profile</h2>
                   </div>
                   
-                  <div className="space-y-3">
-                    {(() => {
-                      try {
-                        const parsedContent = JSON.parse(memo.content);
-                        const sections = Object.entries(parsedContent.sections).slice(0, 2);
-                        return sections.map(([title, content]: [string, any], index: number) => (
-                          <div
-                            key={index}
-                            className="p-3 bg-card/50 border border-border/50 rounded-lg hover:border-primary/20 transition-all cursor-pointer"
-                            onClick={() => navigate(`/memo?companyId=${company.id}`)}
-                          >
-                            <h3 className="text-xs font-bold mb-1 text-primary">
-                              {title}
-                            </h3>
-                            <div 
-                              className="text-xs text-muted-foreground prose prose-sm max-w-none line-clamp-2"
-                              dangerouslySetInnerHTML={{ 
-                                __html: marked(content as string, { breaks: true, gfm: true })
-                              }}
-                            />
-                          </div>
-                        ));
-                      } catch (e) {
-                        return null;
-                      }
-                    })()}
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">Company Name</h3>
+                      <p className="text-sm font-medium">{company.name}</p>
+                    </div>
+                    
+                    {company.category && (
+                      <div>
+                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">Category</h3>
+                        <Badge variant="secondary" className="text-xs">{company.category}</Badge>
+                      </div>
+                    )}
+                    
+                    <div>
+                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">Stage</h3>
+                      <Badge variant="outline" className="text-xs">{company.stage}</Badge>
+                    </div>
+                    
+                    {company.description && (
+                      <div>
+                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">Description</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{company.description}</p>
+                      </div>
+                    )}
+                    
+                    {company.biggest_challenge && (
+                      <div>
+                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">Biggest Challenge</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{company.biggest_challenge}</p>
+                      </div>
+                    )}
                     
                     <Button 
-                      onClick={() => navigate(`/memo?companyId=${company.id}`)}
+                      onClick={() => navigate('/intake')}
                       className="w-full mt-2"
                       variant="outline"
                     >
-                      View Full Memo
+                      Edit Company Details
                     </Button>
                   </div>
                 </div>
