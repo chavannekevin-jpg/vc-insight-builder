@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,12 +17,19 @@ import {
   ArrowLeft,
   CheckCircle2,
   XCircle,
-  Info
+  Info,
+  Sparkles
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RaiseCalculator() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  // State
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
   
   // Inputs
   const [monthlyBurn, setMonthlyBurn] = useState(40000);
@@ -44,6 +52,26 @@ export default function RaiseCalculator() {
   const [totalRunway, setTotalRunway] = useState(0);
   const [arrStatus, setARRStatus] = useState("");
   const [milestoneReady, setMilestoneReady] = useState(false);
+
+  // Load company data
+  useEffect(() => {
+    const loadCompany = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: companies } = await supabase
+        .from("companies")
+        .select("id")
+        .eq("founder_id", session.user.id)
+        .limit(1);
+
+      if (companies && companies.length > 0) {
+        setCompanyId(companies[0].id);
+      }
+    };
+
+    loadCompany();
+  }, []);
 
   // Market risk multipliers
   const marketMultipliers: Record<string, number> = {
@@ -146,6 +174,80 @@ export default function RaiseCalculator() {
       return `€${(value / 1000000).toFixed(2)}M`;
     }
     return `€${(value / 1000).toFixed(0)}k`;
+  };
+
+  const handleConfirmRaise = async () => {
+    if (!companyId) {
+      toast({
+        title: "Error",
+        description: "No company found. Please create a company profile first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsConfirming(true);
+
+    try {
+      // Save raise amount
+      const { error: raiseError } = await supabase
+        .from("memo_responses")
+        .upsert({
+          company_id: companyId,
+          question_key: "raise_amount",
+          answer: `${formatCurrency(recommendedRaise)}`
+        }, {
+          onConflict: "company_id,question_key"
+        });
+
+      if (raiseError) throw raiseError;
+
+      // Save implied valuation
+      const { error: valuationError } = await supabase
+        .from("memo_responses")
+        .upsert({
+          company_id: companyId,
+          question_key: "valuation_pre_money",
+          answer: `${formatCurrency(impliedValuation)}`
+        }, {
+          onConflict: "company_id,question_key"
+        });
+
+      if (valuationError) throw valuationError;
+
+      // Save runway
+      const { error: runwayError } = await supabase
+        .from("memo_responses")
+        .upsert({
+          company_id: companyId,
+          question_key: "runway_months",
+          answer: `${totalRunway} months`
+        }, {
+          onConflict: "company_id,question_key"
+        });
+
+      if (runwayError) throw runwayError;
+
+      toast({
+        title: "Success",
+        description: "Your raise plan has been saved to your company profile.",
+      });
+
+      // Navigate back to hub after short delay
+      setTimeout(() => {
+        navigate("/hub");
+      }, 1500);
+
+    } catch (error) {
+      console.error("Error saving raise data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save your raise plan. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsConfirming(false);
+    }
   };
 
   return (
@@ -618,6 +720,27 @@ export default function RaiseCalculator() {
                   <span className="text-muted-foreground">Buffer</span>
                   <span className="font-medium">{formatCurrency(recommendedRaise - (monthlyBurn * totalRunway) - oneOffCosts)}</span>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Confirmation Button */}
+            <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-transparent shadow-glow">
+              <CardContent className="p-6 space-y-4">
+                <div className="text-center space-y-2">
+                  <Sparkles className="w-8 h-8 text-primary mx-auto" />
+                  <h3 className="font-bold text-lg">Confirm Your Raise Plan</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Save these values to your company profile and sync them to your investment memorandum.
+                  </p>
+                </div>
+                <Button 
+                  onClick={handleConfirmRaise}
+                  disabled={isConfirming || !companyId}
+                  className="w-full gradient-primary shadow-glow hover-neon-pulse font-bold"
+                  size="lg"
+                >
+                  {isConfirming ? "Saving..." : "Confirm & Save to Profile"}
+                </Button>
               </CardContent>
             </Card>
           </div>

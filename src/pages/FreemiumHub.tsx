@@ -425,33 +425,33 @@ export default function FreemiumHub() {
                 <div className="space-y-3">
                   <button
                     onClick={() => navigate('/raise-education')}
-                    className="w-full p-4 bg-card border border-border/50 rounded-lg hover:border-primary/20 hover:bg-primary/5 transition-all group"
+                    className="w-full p-4 bg-card border border-primary/30 rounded-lg hover:border-primary hover:bg-primary/5 transition-all group shadow-glow hover:shadow-glow-strong"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                      <div className="p-2 rounded-lg bg-primary/20 flex-shrink-0 group-hover:bg-primary/30 transition-colors shadow-[0_0_15px_rgba(255,51,153,0.3)]">
                         <Calculator className="w-4 h-4 text-primary" />
                       </div>
                       <div className="text-left space-y-1 flex-1">
-                        <h3 className="text-sm font-bold">Raise Estimator</h3>
+                        <h3 className="text-sm font-bold text-primary">Raise Estimator</h3>
                         <p className="text-xs text-muted-foreground">Calculate how much to raise based on milestones, burn, and market risk</p>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                      <ChevronRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-all" />
                     </div>
                   </button>
                   
                   <button
                     onClick={() => navigate('/valuation-calculator')}
-                    className="w-full p-4 bg-card border border-border/50 rounded-lg hover:border-primary/20 hover:bg-primary/5 transition-all group"
+                    className="w-full p-4 bg-card border border-primary/30 rounded-lg hover:border-primary hover:bg-primary/5 transition-all group shadow-glow hover:shadow-glow-strong"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                      <div className="p-2 rounded-lg bg-primary/20 flex-shrink-0 group-hover:bg-primary/30 transition-colors shadow-[0_0_15px_rgba(255,51,153,0.3)]">
                         <Euro className="w-4 h-4 text-primary" />
                       </div>
                       <div className="text-left space-y-1 flex-1">
-                        <h3 className="text-sm font-bold">Valuation Calculator</h3>
+                        <h3 className="text-sm font-bold text-primary">Valuation Calculator</h3>
                         <p className="text-xs text-muted-foreground">Understand what your startup is really worth</p>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                      <ChevronRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-all" />
                     </div>
                   </button>
                   

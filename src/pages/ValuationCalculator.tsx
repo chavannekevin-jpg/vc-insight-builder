@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +16,20 @@ import {
   Info,
   CheckCircle2,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 type SignalLevel = "realistic" | "aggressive" | "inflated" | "conservative";
 
 export default function ValuationCalculator() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
+  
   const [raiseAmount, setRaiseAmount] = useState(500000);
   const [dilution, setDilution] = useState([15]);
   const [targetPreMoney, setTargetPreMoney] = useState<number | null>(null);
@@ -29,6 +39,26 @@ export default function ValuationCalculator() {
   const [actualDilution, setActualDilution] = useState(0);
   const [signal, setSignal] = useState<SignalLevel>("realistic");
   const [interpretation, setInterpretation] = useState("");
+
+  // Load company data
+  useEffect(() => {
+    const loadCompany = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: companies } = await supabase
+        .from("companies")
+        .select("id")
+        .eq("founder_id", session.user.id)
+        .limit(1);
+
+      if (companies && companies.length > 0) {
+        setCompanyId(companies[0].id);
+      }
+    };
+
+    loadCompany();
+  }, []);
 
   useEffect(() => {
     calculateValuation();
@@ -119,6 +149,80 @@ export default function ValuationCalculator() {
       case "realistic": return <CheckCircle2 className="w-5 h-5" />;
       case "aggressive": return <AlertTriangle className="w-5 h-5" />;
       case "inflated": return <XCircle className="w-5 h-5" />;
+    }
+  };
+
+  const handleConfirmValuation = async () => {
+    if (!companyId) {
+      toast({
+        title: "Error",
+        description: "No company found. Please create a company profile first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsConfirming(true);
+
+    try {
+      // Save pre-money valuation
+      const { error: preMoneyError } = await supabase
+        .from("memo_responses")
+        .upsert({
+          company_id: companyId,
+          question_key: "valuation_pre_money",
+          answer: `${formatCurrency(preMoney)}`
+        }, {
+          onConflict: "company_id,question_key"
+        });
+
+      if (preMoneyError) throw preMoneyError;
+
+      // Save post-money valuation
+      const { error: postMoneyError } = await supabase
+        .from("memo_responses")
+        .upsert({
+          company_id: companyId,
+          question_key: "valuation_post_money",
+          answer: `${formatCurrency(postMoney)}`
+        }, {
+          onConflict: "company_id,question_key"
+        });
+
+      if (postMoneyError) throw postMoneyError;
+
+      // Save dilution percentage
+      const { error: dilutionError } = await supabase
+        .from("memo_responses")
+        .upsert({
+          company_id: companyId,
+          question_key: "dilution_percentage",
+          answer: `${actualDilution.toFixed(1)}%`
+        }, {
+          onConflict: "company_id,question_key"
+        });
+
+      if (dilutionError) throw dilutionError;
+
+      toast({
+        title: "Success",
+        description: "Your valuation has been saved to your company profile.",
+      });
+
+      // Navigate back to hub after short delay
+      setTimeout(() => {
+        navigate("/hub");
+      }, 1500);
+
+    } catch (error) {
+      console.error("Error saving valuation data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save your valuation. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsConfirming(false);
     }
   };
 
@@ -405,6 +509,27 @@ export default function ValuationCalculator() {
                         </p>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* Confirmation Button */}
+                <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-transparent shadow-glow">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="text-center space-y-2">
+                      <Sparkles className="w-8 h-8 text-primary mx-auto" />
+                      <h3 className="font-bold text-lg">Confirm Your Valuation</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Save these values to your company profile and sync them to your investment memorandum.
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={handleConfirmValuation}
+                      disabled={isConfirming || !companyId}
+                      className="w-full gradient-primary shadow-glow hover-neon-pulse font-bold"
+                      size="lg"
+                    >
+                      {isConfirming ? "Saving..." : "Confirm & Save to Profile"}
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
