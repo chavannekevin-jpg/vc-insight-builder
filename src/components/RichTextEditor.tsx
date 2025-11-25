@@ -3,9 +3,16 @@ import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { FontFamily } from '@tiptap/extension-font-family';
-import { Bold, Italic, UnderlineIcon, Heading1, Heading2, Heading3, List, ListOrdered } from 'lucide-react';
+import { Bold, Italic, UnderlineIcon, Heading1, Heading2, Heading3, List, ListOrdered, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface RichTextEditorProps {
   content: string;
@@ -32,6 +39,7 @@ export const RichTextEditor = ({ content, onChange, placeholder }: RichTextEdito
     editorProps: {
       attributes: {
         class: 'prose prose-sm max-w-none focus:outline-none min-h-[300px] p-4',
+        style: 'font-size: 16px',
       },
     },
   });
@@ -66,9 +74,14 @@ export const RichTextEditor = ({ content, onChange, placeholder }: RichTextEdito
     </Button>
   );
 
+  const getFontSize = () => {
+    const fontSize = editor.getAttributes('textStyle').fontSize;
+    return fontSize || '16px';
+  };
+
   return (
     <div className="border rounded-md">
-      <div className="flex gap-1 p-2 border-b bg-muted/30 flex-wrap">
+      <div className="flex gap-1 p-2 border-b bg-muted/30 flex-wrap items-center">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive('bold')}
@@ -88,7 +101,36 @@ export const RichTextEditor = ({ content, onChange, placeholder }: RichTextEdito
           label="Underline"
         />
         
-        <div className="w-px h-6 bg-border mx-1 self-center" />
+        <div className="w-px h-6 bg-border mx-1" />
+        
+        <Select
+          value={getFontSize()}
+          onValueChange={(value) => {
+            if (value === 'default') {
+              editor.chain().focus().unsetMark('textStyle').run();
+            } else {
+              editor.chain().focus().setMark('textStyle', { fontSize: value }).run();
+            }
+          }}
+        >
+          <SelectTrigger className="w-[100px] h-8 text-xs">
+            <Type className="h-3 w-3 mr-1" />
+            <SelectValue placeholder="Size" />
+          </SelectTrigger>
+          <SelectContent className="bg-background border-border z-50">
+            <SelectItem value="default">Normal</SelectItem>
+            <SelectItem value="12px">Small</SelectItem>
+            <SelectItem value="14px">14px</SelectItem>
+            <SelectItem value="16px">16px</SelectItem>
+            <SelectItem value="18px">18px</SelectItem>
+            <SelectItem value="20px">20px</SelectItem>
+            <SelectItem value="24px">Large</SelectItem>
+            <SelectItem value="32px">X-Large</SelectItem>
+            <SelectItem value="40px">XX-Large</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        <div className="w-px h-6 bg-border mx-1" />
         
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -109,7 +151,7 @@ export const RichTextEditor = ({ content, onChange, placeholder }: RichTextEdito
           label="Heading 3"
         />
         
-        <div className="w-px h-6 bg-border mx-1 self-center" />
+        <div className="w-px h-6 bg-border mx-1" />
         
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
