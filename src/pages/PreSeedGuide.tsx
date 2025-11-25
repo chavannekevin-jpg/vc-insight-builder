@@ -126,6 +126,8 @@ export default function PreSeedGuide() {
                 onClick={() => {
                   if (slide.number === 2) {
                     navigate("/problem-slide-guide");
+                  } else if (slide.number === 3) {
+                    navigate("/solution-slide-guide");
                   }
                 }}
               >
@@ -136,7 +138,7 @@ export default function PreSeedGuide() {
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <h3 className="text-xl font-bold mb-2">{slide.title}</h3>
-                      {slide.number === 2 && (
+                      {(slide.number === 2 || slide.number === 3) && (
                         <ArrowLeft className="w-5 h-5 text-primary rotate-180" />
                       )}
                     </div>

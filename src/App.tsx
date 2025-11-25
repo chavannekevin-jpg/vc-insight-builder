@@ -22,6 +22,7 @@ import EducationalContent from "./pages/EducationalContent";
 import GeneratedMemo from "./pages/GeneratedMemo";
 import PreSeedGuide from "./pages/PreSeedGuide";
 import ProblemSlideGuide from "./pages/ProblemSlideGuide";
+import SolutionSlideGuide from "./pages/SolutionSlideGuide";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/hub/:slug" element={<EducationalContent />} />
           <Route path="/pre-seed-guide" element={<PreSeedGuide />} />
           <Route path="/problem-slide-guide" element={<ProblemSlideGuide />} />
+          <Route path="/solution-slide-guide" element={<SolutionSlideGuide />} />
           <Route path="/memo" element={<GeneratedMemo />} />
           <Route path="/company" element={<CompanyProfile />} />
           <Route path="/about" element={<About />} />
