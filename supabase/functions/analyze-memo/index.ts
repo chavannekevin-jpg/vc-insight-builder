@@ -41,6 +41,15 @@ Based on this memo, provide your analysis in the following JSON format:
     "processImproved": "The core process or workflow this company improves (one sentence)",
     "oneLiner": "A compelling one-sentence description that captures the investment opportunity"
   },
+  "sectionRecommendations": {
+    "[Section Title]": [
+      {
+        "recommendation": "Specific actionable recommendation for this section",
+        "rationale": "Why this matters based on the content",
+        "type": "opportunity" | "concern" | "validation_needed"
+      }
+    ]
+  },
   "investmentInsights": [
     {
       "category": "Market Opportunity" | "Competitive Position" | "Execution Risk" | "Team Quality" | "Business Model" | "Traction",
@@ -72,7 +81,9 @@ CRITICAL INSTRUCTIONS:
 - Provide 4-6 investment insights
 - List 3-4 key strengths
 - List 2-3 key risks
-- Provide 3-4 next step recommendations`;
+- Provide 3-4 next step recommendations
+- For EACH section in the memo, provide 2-3 specific recommendations based on that section's content
+- Section recommendations should be actionable and specific to what was discussed in that section`;
 
     console.log("Analyzing memo with AI...");
 

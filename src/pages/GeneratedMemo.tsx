@@ -39,8 +39,15 @@ interface NextStepRecommendation {
   priority: 'high' | 'medium' | 'low';
 }
 
+interface SectionRecommendation {
+  recommendation: string;
+  rationale: string;
+  type: 'opportunity' | 'concern' | 'validation_needed';
+}
+
 interface AIAnalysis {
   structuredInfo: StructuredInfo;
+  sectionRecommendations?: Record<string, SectionRecommendation[]>;
   investmentInsights: InvestmentInsight[];
   keyStrengths: string[];
   keyRisks: string[];
@@ -458,42 +465,77 @@ export default function GeneratedMemo() {
             
             {/* Memo Sections */}
             <div className="space-y-12">
-              {sections.map((section, index) => (
-                <section 
-                  key={index} 
-                  className="animate-slide-up"
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                >
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-primary text-primary-foreground font-display font-bold text-lg shadow-glow">
-                      {index + 1}
+              {sections.map((section, index) => {
+                const sectionRecs = aiAnalysis?.sectionRecommendations?.[section.title] || [];
+                
+                return (
+                  <section 
+                    key={index} 
+                    className="animate-slide-up"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-primary text-primary-foreground font-display font-bold text-lg shadow-glow">
+                        {index + 1}
+                      </div>
+                      <h2 className="text-2xl md:text-3xl font-display font-bold">{section.title}</h2>
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-display font-bold">{section.title}</h2>
-                  </div>
-                  
-                  <div className="pl-0 md:pl-[52px]">
-                    <div 
-                      className="prose prose-base prose-slate dark:prose-invert max-w-none
-                        prose-headings:font-display prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground
-                        prose-h3:text-xl prose-h3:mb-3 prose-h3:mt-6 first:prose-h3:mt-0
-                        prose-p:font-body prose-p:text-foreground/80 prose-p:leading-relaxed prose-p:text-base prose-p:mb-4
-                        prose-strong:text-foreground prose-strong:font-semibold prose-strong:text-primary/90 prose-strong:font-body
-                        prose-ul:my-4 prose-ul:list-disc prose-ul:pl-5
-                        prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-5
-                        prose-li:font-body prose-li:text-foreground/80 prose-li:my-1.5 prose-li:text-base
-                        prose-a:text-primary prose-a:no-underline hover:prose-a:text-primary/80 hover:prose-a:underline prose-a:underline-offset-4
-                        prose-blockquote:border-l-2 prose-blockquote:border-primary/40 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:font-body prose-blockquote:text-foreground/70
-                        prose-code:text-primary prose-code:bg-muted/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono"
-                      dangerouslySetInnerHTML={{ 
-                        __html: marked(section.content, { 
-                          breaks: true,
-                          gfm: true 
-                        }) 
-                      }}
-                    />
-                  </div>
-                </section>
-              ))}
+                    
+                    <div className="pl-0 md:pl-[52px] space-y-4">
+                      <div 
+                        className="prose prose-base prose-slate dark:prose-invert max-w-none
+                          prose-headings:font-display prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground
+                          prose-h3:text-xl prose-h3:mb-3 prose-h3:mt-6 first:prose-h3:mt-0
+                          prose-p:font-body prose-p:text-foreground/80 prose-p:leading-relaxed prose-p:text-base prose-p:mb-4
+                          prose-strong:text-foreground prose-strong:font-semibold prose-strong:text-primary/90 prose-strong:font-body
+                          prose-ul:my-4 prose-ul:list-disc prose-ul:pl-5
+                          prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-5
+                          prose-li:font-body prose-li:text-foreground/80 prose-li:my-1.5 prose-li:text-base
+                          prose-a:text-primary prose-a:no-underline hover:prose-a:text-primary/80 hover:prose-a:underline prose-a:underline-offset-4
+                          prose-blockquote:border-l-2 prose-blockquote:border-primary/40 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:font-body prose-blockquote:text-foreground/70
+                          prose-code:text-primary prose-code:bg-muted/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono"
+                        dangerouslySetInnerHTML={{ 
+                          __html: marked(section.content, { 
+                            breaks: true,
+                            gfm: true 
+                          }) 
+                        }}
+                      />
+                      
+                      {/* AI Section Recommendations */}
+                      {sectionRecs.length > 0 && (
+                        <div className="p-5 rounded-xl border border-border/50 bg-card/20 backdrop-blur-sm">
+                          <div className="flex items-center gap-2 mb-4">
+                            <Lightbulb className="w-4 h-4 text-primary" />
+                            <h4 className="text-sm font-display font-bold text-foreground">AI Recommendations</h4>
+                          </div>
+                          <div className="space-y-3">
+                            {sectionRecs.map((rec, idx) => (
+                              <div key={idx} className="space-y-1.5">
+                                <div className="flex items-start gap-2">
+                                  <span className={`inline-flex px-2 py-0.5 rounded text-xs font-body font-medium shrink-0 ${
+                                    rec.type === 'opportunity' ? 'bg-success/10 text-success' :
+                                    rec.type === 'concern' ? 'bg-warning/10 text-warning' :
+                                    'bg-primary/10 text-primary'
+                                  }`}>
+                                    {rec.type === 'validation_needed' ? 'Validation' : rec.type}
+                                  </span>
+                                  <p className="text-sm font-body text-foreground/90 leading-relaxed flex-1">
+                                    {rec.recommendation}
+                                  </p>
+                                </div>
+                                <p className="text-xs font-body text-muted-foreground leading-relaxed pl-[60px]">
+                                  {rec.rationale}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                );
+              })}
             </div>
 
             {/* AI-Generated Next Steps */}
