@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, BookOpen, Sparkles } from "lucide-react";
+import { marked } from "marked";
 
 interface Article {
   id: string;
@@ -24,16 +25,25 @@ export default function EducationalContent() {
   const sections = useMemo(() => {
     if (!article) return [];
     
+    // Detect if content is Markdown or HTML
+    const isMarkdown = article.content.includes('##') || 
+                      (!article.content.includes('<p>') && !article.content.includes('<h2>'));
+    
+    // Convert Markdown to HTML if needed
+    let htmlContent = isMarkdown 
+      ? marked(article.content, { breaks: true, gfm: true }) as string
+      : article.content;
+    
     // Parse HTML content and split by <h2> tags
     const parser = new DOMParser();
-    const doc = parser.parseFromString(article.content, 'text/html');
+    const doc = parser.parseFromString(htmlContent, 'text/html');
     const h2Elements = doc.querySelectorAll('h2');
     
     if (h2Elements.length === 0) {
       // No H2 sections found, treat entire content as intro
       return [{
         title: 'intro',
-        html: article.content
+        html: htmlContent
       }];
     }
     
