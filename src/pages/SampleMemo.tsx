@@ -115,9 +115,9 @@ const SampleMemo = () => {
           </div>
 
           {/* Note about sample */}
-          <div className="relative overflow-hidden gradient-accent border-2 border-primary/40 rounded-2xl p-6 shadow-glow hover:shadow-glow-strong transition-all duration-300">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-secondary/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="relative overflow-hidden gradient-accent border border-primary/20 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
             <div className="relative flex items-start gap-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-lg gradient-primary flex items-center justify-center shadow-glow">
                 <Sparkles className="w-6 h-6 text-primary-foreground animate-pulse" />
@@ -265,6 +265,26 @@ const SampleMemo = () => {
             );
           })}
 
+          {/* Mid-page CTA - appears after viewing some sections */}
+          <div className="my-16 relative overflow-hidden gradient-primary rounded-3xl p-8 border-2 border-primary/30 shadow-glow-strong animate-fade-in hover-lift">
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary-foreground/10 rounded-full blur-2xl" />
+            <div className="relative z-10 text-center space-y-4">
+              <h3 className="text-3xl font-bold text-primary-foreground">Ready to Unlock Your Full Memo?</h3>
+              <p className="text-primary-foreground/90 text-lg max-w-2xl mx-auto">
+                Get all 8+ sections with complete analysis, VC perspectives, market benchmarking, and investor questions tailored to your startup.
+              </p>
+              <Button 
+                size="lg" 
+                variant="secondary"
+                className="mt-4 text-lg font-bold px-10 py-6 shadow-xl hover:scale-105 transition-transform"
+                onClick={() => navigate('/memo-builder')}
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                Create Your Personalized Memo
+              </Button>
+            </div>
+          </div>
+
             {/* Placeholder Locked Sections */}
             {['USP & Competitive Moats', 'Go-to-Market Strategy', 'Funding & Investment Thesis'].map((title, idx) => (
               <MemoSection key={`locked-${idx}`} title={title} index={memoContent.sections.length + idx}>
@@ -326,36 +346,78 @@ const SampleMemo = () => {
             ))}
 
           {/* Call to Action */}
-          <div className="mt-24 relative overflow-hidden rounded-3xl border-2 border-primary/50 shadow-glow-strong animate-fade-in hover-neon-pulse" style={{ animationDelay: '0.5s' }}>
+          <div className="mt-24 relative overflow-hidden rounded-3xl border-2 border-primary/40 shadow-glow-strong animate-fade-in hover-neon-pulse" style={{ animationDelay: '0.5s' }}>
             <div className="absolute inset-0 gradient-accent" />
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/30 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
             
             <div className="relative p-12 text-center space-y-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-primary shadow-glow mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-primary shadow-glow mb-4 pulse-glow">
                 <Sparkles className="w-8 h-8 text-primary-foreground animate-pulse" />
               </div>
-              <h2 className="text-3xl font-bold neon-pink">Ready to Create Your Memo?</h2>
+              <h2 className="text-4xl font-bold neon-pink mb-2">Ready to Create Your Memo?</h2>
               <p className="text-foreground max-w-2xl mx-auto text-lg leading-relaxed">
                 Get the same depth of VC-focused analysis tailored to your startup. Our AI-powered platform 
                 helps you craft a compelling investment memorandum that resonates with investors.
               </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto my-8 text-sm">
+                <div className="flex items-center justify-center gap-2 text-foreground">
+                  <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Complete in Minutes</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-foreground">
+                  <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>VC-Grade Analysis</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-foreground">
+                  <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Impress Investors</span>
+                </div>
+              </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
                 <Button
                   size="lg"
                   onClick={() => navigate('/memo-builder')}
-                  className="gradient-primary hover:shadow-glow-strong px-8 py-6 text-lg font-bold shadow-glow transition-all duration-300 hover-punch"
+                  className="gradient-primary hover:shadow-glow-strong px-10 py-7 text-xl font-bold shadow-glow transition-all duration-300 hover-punch"
                 >
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Create Your Memo
+                  <Sparkles className="w-6 h-6 mr-2 pulse-glow" />
+                  Create Your Memo Now
                 </Button>
                 <Button
                   variant="outline"
                   size="lg"
-                  onClick={() => navigate('/vcbrain')}
-                  className="px-8 py-6 text-lg border-2 border-primary/40 hover:bg-primary/10 hover:border-primary neon-pink font-semibold transition-all"
+                  onClick={() => navigate('/pricing')}
+                  className="px-8 py-7 text-lg border-2 border-primary/40 hover:bg-primary/10 hover:border-primary neon-pink font-semibold transition-all"
                 >
-                  Explore Resources
+                  View Pricing
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sticky Bottom CTA Bar */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t-2 border-primary/30 shadow-glow-strong animate-fade-in">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="hidden md:block">
+                <p className="text-sm font-bold neon-pink">Impressed by what you see?</p>
+                <p className="text-xs text-muted-foreground">Create your complete memo with all sections unlocked</p>
+              </div>
+              <div className="flex gap-3 ml-auto">
+                <Button 
+                  size="lg" 
+                  className="gradient-primary hover:shadow-glow-strong transition-all font-bold px-8 shadow-glow whitespace-nowrap"
+                  onClick={() => navigate('/memo-builder')}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Create Your Memo
                 </Button>
               </div>
             </div>
