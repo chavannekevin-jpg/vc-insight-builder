@@ -177,7 +177,7 @@ const Admin = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           <div onClick={() => navigate("/admin/articles")} className="cursor-pointer">
             <ModernCard className="hover:border-primary/50 transition-colors h-full">
               <h2 className="text-2xl font-bold text-foreground mb-2">
@@ -185,6 +185,17 @@ const Admin = () => {
               </h2>
               <p className="text-muted-foreground">
                 Create and manage educational articles
+              </p>
+            </ModernCard>
+          </div>
+
+          <div onClick={() => navigate("/admin/memo-builder")} className="cursor-pointer">
+            <ModernCard className="hover:border-primary/50 transition-colors h-full">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Memo Builder
+              </h2>
+              <p className="text-muted-foreground">
+                Generate professional memos from submissions
               </p>
             </ModernCard>
           </div>
