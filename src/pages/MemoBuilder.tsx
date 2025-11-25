@@ -27,7 +27,7 @@ interface Response {
 }
 
 const sectionMapping: Record<string, string[]> = {
-  problem: ["problemStatement", "biggest_challenge"],
+  problem: ["problem_description", "problem_workflow"],
 };
 
 const MemoBuilder = () => {

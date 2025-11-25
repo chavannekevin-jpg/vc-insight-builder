@@ -192,6 +192,8 @@ export default function CompanyProfile() {
   };
 
   const handleEnhanceContent = async () => {
+    if (!company) return;
+    
     setEnhancing(true);
     try {
       // Group responses by section
@@ -223,10 +225,49 @@ export default function CompanyProfile() {
 
       if (error) throw error;
 
-      setEnhancedContent(data.enhanced);
+      const enhancedData = data as { enhanced: Record<string, string> };
+
+      // Save enhanced content to database
+      const updatedResponses = [...responses];
+      
+      for (const [sectionName, enhancedText] of Object.entries(enhancedData.enhanced)) {
+        const sectionResponses = responses.filter(
+          (r) => QUESTION_LABELS[r.question_key]?.section === sectionName
+        );
+        
+        if (sectionResponses.length > 0) {
+          // Update the first response in the section with the enhanced content
+          const firstResponse = sectionResponses[0];
+          
+          const { error: updateError } = await supabase
+            .from("memo_responses")
+            .update({ answer: enhancedText })
+            .eq("company_id", company.id)
+            .eq("question_key", firstResponse.question_key);
+
+          if (updateError) {
+            console.error(`Error saving enhanced ${sectionName}:`, updateError);
+          } else {
+            // Update local state
+            const index = updatedResponses.findIndex(
+              (r) => r.question_key === firstResponse.question_key
+            );
+            if (index !== -1) {
+              updatedResponses[index] = {
+                ...updatedResponses[index],
+                answer: enhancedText,
+              };
+            }
+          }
+        }
+      }
+      
+      setResponses(updatedResponses);
+      setEnhancedContent(enhancedData.enhanced);
+      
       toast({
-        title: "Content Enhanced! ✨",
-        description: "Your memo has been professionally refined.",
+        title: "Content Enhanced & Saved! ✨",
+        description: "Your memo has been professionally refined and saved to the database.",
       });
     } catch (error: any) {
       console.error("Enhancement error:", error);
