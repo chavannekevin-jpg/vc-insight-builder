@@ -122,14 +122,14 @@ const SampleMemo = () => {
                 <Sparkles className="w-5 h-5 text-amber-600" />
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-bold text-amber-600 uppercase tracking-wide">Sample Preview - Limited Sections Unlocked</p>
+                <p className="text-sm font-bold text-amber-600 uppercase tracking-wide">Sample Preview - Limited Content Unlocked</p>
                 <p className="text-sm text-foreground leading-relaxed">
-                  This is a <strong>partial sample</strong> with fictional data. Some sections are blurred to protect our proprietary prompts. 
-                  Your full personalized memo includes <strong>8+ comprehensive sections</strong>: Problem, Solution, Market, 
-                  Competition, Team, USP, Business Model, Traction, Go-to-Market, and Investment Thesis—each with deep VC-focused analysis.
+                  This is a <strong>partial sample</strong> with fictional data. Premium analysis elements are blurred to protect our proprietary methodology 
+                  (including market benchmarking, VC perspectives, and investor questions). Your full personalized memo includes <strong>8+ comprehensive sections</strong> 
+                  with complete, unblurred insights: Problem, Solution, Market, Competition, Team, USP, Business Model, Traction, Go-to-Market, and Investment Thesis.
                 </p>
                 <p className="text-xs text-muted-foreground italic pt-1">
-                  🔒 Several sections are locked in this preview to showcase the full memo structure.
+                  🔒 Several sections and premium subsections are locked to showcase structure while protecting IP.
                 </p>
               </div>
             </div>
@@ -139,11 +139,14 @@ const SampleMemo = () => {
         {/* Memo Sections */}
         <div className="space-y-16">
           {memoContent.sections.map((section, index) => {
-            const shouldBlur = ['Solution', 'Competition'].includes(section.title);
+            const shouldBlurEntireSection = ['Solution', 'Competition'].includes(section.title);
+            const shouldBlurBenchmarking = section.title === 'Problem';
+            const shouldBlurVCReflection = section.title === 'Market';
+            const shouldBlurQuestions = section.title === 'Traction';
             
             return (
               <MemoSection key={index} title={section.title} index={index}>
-                {shouldBlur && (
+                {shouldBlurEntireSection && (
                   <div className="absolute inset-0 z-10 bg-background/40 backdrop-blur-md rounded-3xl flex items-center justify-center">
                     <div className="bg-card/95 border-2 border-primary/30 rounded-2xl p-6 shadow-xl text-center max-w-md mx-auto">
                       <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
@@ -161,7 +164,7 @@ const SampleMemo = () => {
                     </div>
                   </div>
                 )}
-                <div className={shouldBlur ? 'blur-sm pointer-events-none select-none' : ''}>
+                <div className={shouldBlurEntireSection ? 'blur-sm pointer-events-none select-none' : ''}>
                   {/* Narrative Content */}
                   {(section.narrative || section.paragraphs || section.highlights || section.keyPoints) && (
                     <div className="space-y-8">
@@ -203,14 +206,53 @@ const SampleMemo = () => {
                         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
                       </div>
                       
-                      <MemoVCReflection text={section.vcReflection.analysis} />
+                      {/* VC Analysis - blur for Market section */}
+                      <div className={shouldBlurVCReflection ? 'relative' : ''}>
+                        {shouldBlurVCReflection && (
+                          <div className="absolute inset-0 z-10 bg-background/40 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                            <div className="bg-card/95 border border-primary/30 rounded-xl px-4 py-3 shadow-lg text-center">
+                              <p className="text-xs font-semibold text-primary mb-1">🔒 Premium Analysis</p>
+                              <p className="text-xs text-muted-foreground">Available in your personalized memo</p>
+                            </div>
+                          </div>
+                        )}
+                        <div className={shouldBlurVCReflection ? 'blur-sm select-none' : ''}>
+                          <MemoVCReflection text={section.vcReflection.analysis} />
+                        </div>
+                      </div>
                       
+                      {/* Investor Questions - blur for Traction section */}
                       {section.vcReflection.questions && section.vcReflection.questions.length > 0 && (
-                        <MemoVCQuestions questions={section.vcReflection.questions} />
+                        <div className={shouldBlurQuestions ? 'relative' : ''}>
+                          {shouldBlurQuestions && (
+                            <div className="absolute inset-0 z-10 bg-background/40 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                              <div className="bg-card/95 border border-primary/30 rounded-xl px-4 py-3 shadow-lg text-center">
+                                <p className="text-xs font-semibold text-primary mb-1">🔒 Premium Analysis</p>
+                                <p className="text-xs text-muted-foreground">Available in your personalized memo</p>
+                              </div>
+                            </div>
+                          )}
+                          <div className={shouldBlurQuestions ? 'blur-sm select-none' : ''}>
+                            <MemoVCQuestions questions={section.vcReflection.questions} />
+                          </div>
+                        </div>
                       )}
                       
+                      {/* Benchmarking - blur for Problem section */}
                       {section.vcReflection.benchmarking && (
-                        <MemoBenchmarking text={section.vcReflection.benchmarking} />
+                        <div className={shouldBlurBenchmarking ? 'relative' : ''}>
+                          {shouldBlurBenchmarking && (
+                            <div className="absolute inset-0 z-10 bg-background/40 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                              <div className="bg-card/95 border border-primary/30 rounded-xl px-4 py-3 shadow-lg text-center">
+                                <p className="text-xs font-semibold text-primary mb-1">🔒 Premium Analysis</p>
+                                <p className="text-xs text-muted-foreground">Available in your personalized memo</p>
+                              </div>
+                            </div>
+                          )}
+                          <div className={shouldBlurBenchmarking ? 'blur-sm select-none' : ''}>
+                            <MemoBenchmarking text={section.vcReflection.benchmarking} />
+                          </div>
+                        </div>
                       )}
                       
                       <MemoAIConclusion text={section.vcReflection.conclusion} />
