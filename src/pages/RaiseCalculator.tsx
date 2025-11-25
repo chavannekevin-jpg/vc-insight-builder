@@ -18,6 +18,7 @@ import {
   XCircle,
   Info
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function RaiseCalculator() {
   const navigate = useNavigate();
@@ -148,8 +149,9 @@ export default function RaiseCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <TooltipProvider>
+      <div className="min-h-screen bg-background">
+        <Header />
       
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex items-center gap-4 mb-8">
@@ -175,7 +177,17 @@ export default function RaiseCalculator() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="burn">Monthly Burn (€)</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="burn">Monthly Burn (€)</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">Your total monthly operational costs including salaries, rent, software, and other recurring expenses.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <Input
                     id="burn"
                     type="number"
@@ -187,7 +199,17 @@ export default function RaiseCalculator() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="oneoff">One-Off Costs (€)</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="oneoff">One-Off Costs (€)</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">Non-recurring expenses like legal setup, compliance costs, equipment purchases, or initial marketing campaigns.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <Input
                     id="oneoff"
                     type="number"
@@ -209,7 +231,17 @@ export default function RaiseCalculator() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="revstart">Revenue Start Month</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="revstart">Revenue Start Month</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">The month when you expect to start generating revenue. Enter 0 if already generating revenue, or the projected month number.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <Input
                     id="revstart"
                     type="number"
@@ -221,7 +253,17 @@ export default function RaiseCalculator() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="currentmrr">Current MRR (€)</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="currentmrr">Current MRR (€)</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">Monthly Recurring Revenue: your current predictable monthly revenue from subscriptions or recurring contracts.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <Input
                     id="currentmrr"
                     type="number"
@@ -233,7 +275,17 @@ export default function RaiseCalculator() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="growth">Monthly MRR Growth (%)</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="growth">Monthly MRR Growth (%)</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">Expected percentage growth in MRR each month. Pre-seed startups typically target 10-20% monthly growth.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <Input
                     id="growth"
                     type="number"
@@ -246,7 +298,17 @@ export default function RaiseCalculator() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="arrtarget">Seed ARR Target (€)</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="arrtarget">Seed ARR Target (€)</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">Annual Recurring Revenue target for your next seed round. European VCs typically expect €700k–€1.2M ARR at seed stage.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <Input
                     id="arrtarget"
                     type="number"
@@ -267,7 +329,17 @@ export default function RaiseCalculator() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="milestone">Milestone Goal</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="milestone">Milestone Goal</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">The key achievement you need to reach to be fundable for your next round. This determines your base runway.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <Select value={milestone} onValueChange={setMilestone}>
                     <SelectTrigger id="milestone">
                       <SelectValue />
@@ -282,7 +354,17 @@ export default function RaiseCalculator() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="market">Market Risk</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="market">Market Risk</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">Different industries require different runway. Regulated sectors or hardware need more time than B2B SaaS.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <Select value={marketRisk} onValueChange={setMarketRisk}>
                     <SelectTrigger id="market">
                       <SelectValue />
@@ -299,7 +381,17 @@ export default function RaiseCalculator() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="execution">Execution Speed</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="execution">Execution Speed</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">Your team's expected velocity. Fast teams can reach milestones quicker; slower execution needs more runway buffer.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <Select value={executionSpeed} onValueChange={setExecutionSpeed}>
                     <SelectTrigger id="execution">
                       <SelectValue />
@@ -322,7 +414,17 @@ export default function RaiseCalculator() {
               <CardContent className="space-y-6">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label>Dilution</Label>
+                    <div className="flex items-center gap-2">
+                      <Label>Dilution</Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">Percentage of equity you'll give to investors. EU standard is 10-20% per round. This determines your implied valuation.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                     <span className="text-sm font-bold">{dilution[0]}%</span>
                   </div>
                   <Slider
@@ -336,7 +438,17 @@ export default function RaiseCalculator() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="buffer">Buffer Mode</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="buffer">Buffer Mode</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">Extra cushion beyond calculated runway. VC-Ready (25%) gives more room for delays or hiring adjustments.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <Select value={bufferMode} onValueChange={setBufferMode}>
                     <SelectTrigger id="buffer">
                       <SelectValue />
@@ -512,5 +624,6 @@ export default function RaiseCalculator() {
         </div>
       </div>
     </div>
+    </TooltipProvider>
   );
 }
