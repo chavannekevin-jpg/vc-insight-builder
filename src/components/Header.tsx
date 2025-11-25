@@ -213,19 +213,19 @@ export const Header = () => {
               {/* Hub Dropdown Menu */}
               {hubDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 mt-1 w-[600px] bg-card border border-border rounded-lg shadow-xl z-[100] p-4"
+                  className="absolute top-full left-0 mt-2 w-[600px] bg-card border border-border/50 rounded-2xl shadow-2xl z-[100] p-6"
                   onMouseEnter={handleHubMouseEnter}
                   onMouseLeave={handleHubMouseLeave}
                 >
                   {!isAuthenticated && (
-                    <div className="mb-3 px-2 py-2 bg-primary/10 border border-primary/30 rounded-lg">
+                    <div className="mb-4 px-3 py-2.5 bg-primary/10 border border-primary/30 rounded-xl">
                       <p className="text-xs text-primary font-semibold">🔒 Sign in to access VC Brain resources</p>
                     </div>
                   )}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-6">
                     {vcBrainSections.map((section) => (
-                      <div key={section.category} className="space-y-2">
-                        <h4 className="text-xs font-semibold text-primary uppercase tracking-wider px-2">
+                      <div key={section.category} className="space-y-3">
+                        <h4 className="text-xs font-semibold text-primary uppercase tracking-wider px-3">
                           {section.category}
                         </h4>
                         <div className="space-y-1">
@@ -233,7 +233,7 @@ export const Header = () => {
                             <button
                               key={item.path}
                               onClick={() => handleHubLinkClick(item.path)}
-                              className="w-full text-left px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded transition-colors"
+                              className="w-full text-left px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl transition-all duration-200"
                             >
                               {item.label}
                             </button>
@@ -262,19 +262,19 @@ export const Header = () => {
               {/* Tools Dropdown Menu */}
               {toolsDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 mt-1 w-[400px] bg-card border border-border rounded-lg shadow-xl z-[100] p-4"
+                  className="absolute top-full left-0 mt-2 w-[400px] bg-card border border-border/50 rounded-2xl shadow-2xl z-[100] p-6"
                   onMouseEnter={handleToolsMouseEnter}
                   onMouseLeave={handleToolsMouseLeave}
                 >
                   {!isAuthenticated && (
-                    <div className="mb-3 px-2 py-2 bg-primary/10 border border-primary/30 rounded-lg">
+                    <div className="mb-4 px-3 py-2.5 bg-primary/10 border border-primary/30 rounded-xl">
                       <p className="text-xs text-primary font-semibold">🔒 Sign in to access all tools</p>
                     </div>
                   )}
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {toolsSections.map((section) => (
-                      <div key={section.category} className="space-y-2">
-                        <h4 className="text-xs font-semibold text-primary uppercase tracking-wider px-2">
+                      <div key={section.category} className="space-y-3">
+                        <h4 className="text-xs font-semibold text-primary uppercase tracking-wider px-3">
                           {section.category}
                         </h4>
                         <div className="space-y-1">
@@ -282,14 +282,14 @@ export const Header = () => {
                             <button
                               key={item.path}
                               onClick={() => handleToolClick(item.path, item.public)}
-                              className="w-full text-left px-2 py-2 rounded hover:bg-muted/50 transition-colors group"
+                              className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-all duration-200 group"
                             >
                               <div className="flex items-start justify-between gap-2">
                                 <div>
                                   <p className="text-sm text-foreground font-medium group-hover:text-primary transition-colors">
                                     {item.label}
                                   </p>
-                                  <p className="text-xs text-muted-foreground">
+                                  <p className="text-xs text-muted-foreground mt-0.5">
                                     {item.description}
                                   </p>
                                 </div>
