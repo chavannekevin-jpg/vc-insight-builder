@@ -19,7 +19,8 @@ import {
   Wrench,
   TrendingUp,
   Shield,
-  Edit
+  Edit,
+  Euro
 } from "lucide-react";
 
 interface Company {
@@ -438,17 +439,21 @@ export default function FreemiumHub() {
                     </div>
                   </button>
                   
-                  <div className="p-4 bg-card/50 border border-border/50 rounded-lg opacity-60">
+                  <button
+                    onClick={() => navigate('/valuation-calculator')}
+                    className="w-full p-4 bg-card border border-border/50 rounded-lg hover:border-primary/20 hover:bg-primary/5 transition-all group"
+                  >
                     <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
-                        <Calculator className="w-4 h-4 text-primary" />
+                      <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                        <Euro className="w-4 h-4 text-primary" />
                       </div>
-                      <div className="space-y-1">
+                      <div className="text-left space-y-1 flex-1">
                         <h3 className="text-sm font-bold">Valuation Calculator</h3>
-                        <p className="text-xs text-muted-foreground">Coming soon</p>
+                        <p className="text-xs text-muted-foreground">Understand what your startup is really worth</p>
                       </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                     </div>
-                  </div>
+                  </button>
                   
                   <div className="p-4 bg-card/50 border border-border/50 rounded-lg opacity-60">
                     <div className="flex items-start gap-3">
