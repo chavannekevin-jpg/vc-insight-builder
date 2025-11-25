@@ -25,11 +25,12 @@ export default function GeneratedMemo() {
   const companyId = searchParams.get("companyId");
   
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
   const [sections, setSections] = useState<MemoSection[]>([]);
   const [company, setCompany] = useState<CompanyInfo | null>(null);
 
   useEffect(() => {
-    const generateMemo = async () => {
+    const loadOrGenerateMemo = async () => {
       if (!companyId) {
         toast({
           title: "Error",
@@ -41,6 +42,45 @@ export default function GeneratedMemo() {
       }
 
       try {
+        // First check if memo already exists in database
+        const { data: existingMemo, error: memoError } = await supabase
+          .from("memos")
+          .select("content")
+          .eq("company_id", companyId)
+          .maybeSingle();
+
+        if (memoError) {
+          console.error("Error fetching memo:", memoError);
+        }
+
+        // If memo exists, load it
+        if (existingMemo && existingMemo.content) {
+          const parsedContent = JSON.parse(existingMemo.content);
+          const formattedSections: MemoSection[] = Object.entries(parsedContent.sections).map(
+            ([title, content]) => ({
+              title,
+              content: content as string
+            })
+          );
+          setSections(formattedSections);
+
+          // Fetch company info
+          const { data: companyData } = await supabase
+            .from("companies")
+            .select("name, stage, category, description")
+            .eq("id", companyId)
+            .single();
+
+          if (companyData) {
+            setCompany(companyData);
+          }
+          
+          setLoading(false);
+          return;
+        }
+
+        // If no memo exists, generate it
+        setGenerating(true);
         const { data, error } = await supabase.functions.invoke("generate-full-memo", {
           body: { companyId }
         });
@@ -61,18 +101,19 @@ export default function GeneratedMemo() {
           setCompany(data.company);
         }
       } catch (error: any) {
-        console.error("Error generating memo:", error);
+        console.error("Error with memo:", error);
         toast({
-          title: "Failed to generate memo",
+          title: "Failed to load memo",
           description: error.message,
           variant: "destructive"
         });
       } finally {
         setLoading(false);
+        setGenerating(false);
       }
     };
 
-    generateMemo();
+    loadOrGenerateMemo();
   }, [companyId, navigate]);
 
   const handleDownloadPDF = () => {
@@ -89,7 +130,7 @@ export default function GeneratedMemo() {
     });
   };
 
-  if (loading) {
+  if (loading || generating) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -99,8 +140,12 @@ export default function GeneratedMemo() {
               <Sparkles className="w-8 h-8 text-primary" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold">Generating Your Investment Memo</h2>
-              <p className="text-muted-foreground">This may take a minute as we analyze each section...</p>
+              <h2 className="text-2xl font-bold">
+                {generating ? "Generating Your Investment Memo" : "Loading Your Memo"}
+              </h2>
+              <p className="text-muted-foreground">
+                {generating ? "This may take a minute as we analyze each section..." : "Please wait..."}
+              </p>
             </div>
           </div>
         </div>

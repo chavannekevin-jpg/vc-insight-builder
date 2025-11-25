@@ -39,6 +39,13 @@ interface Company {
   biggest_challenge: string;
 }
 
+interface Memo {
+  id: string;
+  company_id: string;
+  content: string;
+  status: string;
+}
+
 interface EducationalArticle {
   id: string;
   slug: string;
@@ -72,6 +79,7 @@ const MEMO_BENEFITS = [
 export default function FreemiumHub() {
   const navigate = useNavigate();
   const [company, setCompany] = useState<Company | null>(null);
+  const [memo, setMemo] = useState<Memo | null>(null);
   const [articles, setArticles] = useState<EducationalArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [playbookOpen, setPlaybookOpen] = useState(false);
@@ -99,6 +107,17 @@ export default function FreemiumHub() {
       }
 
       setCompany(companies[0]);
+      
+      // Check if memo exists for this company
+      const { data: memoData } = await supabase
+        .from("memos")
+        .select("*")
+        .eq("company_id", companies[0].id)
+        .maybeSingle();
+      
+      if (memoData) {
+        setMemo(memoData);
+      }
       
       // Load published articles
       const { data: articlesData } = await supabase
@@ -161,7 +180,7 @@ export default function FreemiumHub() {
                   onClick={() => navigate(`/memo?companyId=${company.id}`)}
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
-                  Generate Memo
+                  {memo ? "See Memo" : "Generate Memo"}
                 </Button>
               )}
               <Button 

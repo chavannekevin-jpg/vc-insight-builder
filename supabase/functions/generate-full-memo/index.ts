@@ -90,6 +90,33 @@ serve(async (req) => {
       }
     });
 
+    // Check if memo already exists
+    const { data: existingMemo } = await supabaseClient
+      .from("memos")
+      .select("*")
+      .eq("company_id", companyId)
+      .maybeSingle();
+
+    if (existingMemo && existingMemo.content) {
+      // Return existing memo
+      const parsedContent = JSON.parse(existingMemo.content);
+      return new Response(
+        JSON.stringify({ 
+          enhanced: parsedContent.sections,
+          company: {
+            name: company.name,
+            stage: company.stage,
+            category: company.category,
+            description: company.description
+          },
+          fromCache: true
+        }), 
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const enhancedSections: Record<string, string> = {};
 
     // Process each section in order
@@ -168,6 +195,32 @@ Professional memo section:`;
       if (enhancedText) {
         enhancedSections[sectionName] = enhancedText;
       }
+    }
+
+    // Save memo to database
+    const memoContent = JSON.stringify({
+      sections: enhancedSections,
+      generatedAt: new Date().toISOString()
+    });
+
+    if (existingMemo) {
+      // Update existing memo
+      await supabaseClient
+        .from("memos")
+        .update({ 
+          content: memoContent,
+          status: "completed"
+        })
+        .eq("id", existingMemo.id);
+    } else {
+      // Create new memo
+      await supabaseClient
+        .from("memos")
+        .insert({
+          company_id: companyId,
+          content: memoContent,
+          status: "completed"
+        });
     }
 
     return new Response(
