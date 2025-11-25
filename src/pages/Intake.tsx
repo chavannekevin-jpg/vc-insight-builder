@@ -11,10 +11,9 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const STAGES = [
-  "Pre-product",
-  "MVP",
-  "Early traction",
-  "Scaling"
+  "Pre Seed",
+  "Seed",
+  "Series A"
 ];
 
 export default function Intake() {
@@ -24,7 +23,6 @@ export default function Intake() {
   
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
     stage: "",
     problemSolution: ""
   });
@@ -57,20 +55,16 @@ export default function Intake() {
       toast({ title: "Please enter your startup name", variant: "destructive" });
       return;
     }
-    if (currentStep === 2 && !formData.email) {
-      toast({ title: "Please enter your email address", variant: "destructive" });
-      return;
-    }
-    if (currentStep === 3 && !formData.stage) {
+    if (currentStep === 2 && !formData.stage) {
       toast({ title: "Please select your current stage", variant: "destructive" });
       return;
     }
-    if (currentStep === 4 && !formData.problemSolution) {
+    if (currentStep === 3 && !formData.problemSolution) {
       toast({ title: "Please describe your problem and solution", variant: "destructive" });
       return;
     }
 
-    if (currentStep < 5) {
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -132,28 +126,6 @@ export default function Intake() {
         return (
           <div className="space-y-4">
             <div className="text-center space-y-2 mb-8">
-              <h2 className="text-3xl font-serif font-bold">What's your email address?</h2>
-              <p className="text-muted-foreground">We'll use this to keep in touch</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="founder@startup.com"
-                className="text-lg"
-                autoFocus
-              />
-            </div>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-4">
-            <div className="text-center space-y-2 mb-8">
               <h2 className="text-3xl font-serif font-bold">What stage are you at?</h2>
               <p className="text-muted-foreground">Be honest — we're here to help</p>
             </div>
@@ -173,7 +145,7 @@ export default function Intake() {
           </div>
         );
 
-      case 4:
+      case 3:
         return (
           <div className="space-y-4">
             <div className="text-center space-y-2 mb-8">
@@ -194,7 +166,7 @@ export default function Intake() {
           </div>
         );
 
-      case 5:
+      case 4:
         return (
           <div className="space-y-6 text-center">
             <div className="flex justify-center">
@@ -226,9 +198,9 @@ export default function Intake() {
       
       <div className="w-full max-w-2xl space-y-8 animate-fade-in">
         {/* Progress indicator */}
-        {currentStep < 5 && (
+        {currentStep < 4 && (
           <div className="flex justify-center gap-2 mb-8">
-            {[1, 2, 3, 4].map((step) => (
+            {[1, 2, 3].map((step) => (
               <div
                 key={step}
                 className={`h-2 rounded-full transition-all duration-300 ${
@@ -246,7 +218,7 @@ export default function Intake() {
         <ModernCard className="p-8">
           {renderStep()}
           
-          {currentStep < 5 && (
+          {currentStep < 4 && (
             <div className="flex justify-between pt-8">
               <Button
                 variant="outline"
