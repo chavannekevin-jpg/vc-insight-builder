@@ -46,9 +46,9 @@ serve(async (req) => {
     }
 
     // Create a comprehensive prompt for the AI to analyze the memo
-    const analysisPrompt = `You are an experienced VC partner analyzing a company for investment potential. This memo was AI-generated based on founder responses, so focus your analysis on THE COMPANY, not the memo quality.
+    const analysisPrompt = `You are an experienced VC advisor helping founders strengthen their business. This memo was AI-generated based on founder responses.
 
-Your role: Evaluate the business opportunity with healthy skepticism. Question assumptions, identify risks, and determine if this is investable. Be direct and honest, but remember you're assessing the BUSINESS (market, team, traction, model), not the document itself.
+Your role: Identify opportunities to improve the business and investment case. For each area analyzed, provide specific, actionable recommendations. Be constructive - frame feedback as "here's how to strengthen this" rather than "this is weak." Focus on helping founders build a more compelling, investable business.
 
 COMPANY: ${companyInfo.name}
 STAGE: ${companyInfo.stage}
@@ -88,8 +88,8 @@ Provide your hard-hitting analysis in the following JSON format:
   "keyStrengths": [
     "Specific strength with supporting evidence from memo (1 sentence each)"
   ],
-  "keyRisks": [
-    "Specific risk or concern with context (1 sentence each)"
+  "areasForImprovement": [
+    "Specific area that could be strengthened, with actionable suggestions (1-2 sentences each)"
   ],
   "nextStepRecommendations": [
     {
@@ -100,20 +100,19 @@ Provide your hard-hitting analysis in the following JSON format:
   ]
 }
 
-CRITICAL INSTRUCTIONS - ANALYZE THE COMPANY, NOT THE MEMO:
-- This memo was AI-generated - focus on the BUSINESS, not documentation quality
-- Evaluate: market opportunity, competitive positioning, team capability, business model viability
-- Be skeptical of business claims (market size, growth rates, competitive advantages)
-- Challenge assumptions about customer adoption, unit economics, and scaling
-- Identify gaps in the business case - what's missing or unclear about the opportunity?
-- Use direct, professional language - be honest but not inflammatory
-- Balance criticism with recognition - if something is strong, acknowledge it
-- Provide 4-6 investment insights (mix of opportunities and concerns about the business)
-- List 2-4 key strengths (genuine competitive advantages or market opportunities)
-- List 3-5 key risks (business/market/execution risks, not memo quality issues)
-- Provide 3-4 next step recommendations (due diligence to validate or disprove the thesis)
-- For EACH section: provide 2 actionable recommendations to strengthen the business case
-- Think: "Is this business model sound? Is the market real? Can this team execute?"`;
+CRITICAL INSTRUCTIONS - PROVIDE CONSTRUCTIVE, ACTIONABLE GUIDANCE:
+- Your goal: help founders strengthen their business and investment case
+- Identify opportunities for improvement in: market positioning, competitive advantages, team capabilities, business model, traction
+- Frame insights constructively: "To strengthen X, consider Y" not "X is weak"
+- For gaps or concerns, provide specific actions to address them
+- Acknowledge what's working well - recognize genuine strengths
+- Use supportive, professional language - you're a trusted advisor
+- Provide 4-6 investment insights (balanced mix highlighting both strengths and improvement areas)
+- List 3-4 key strengths (what's working well that should be emphasized)
+- List 3-4 areas for improvement (frame as opportunities, not weaknesses)
+- Provide 4-6 next step recommendations (specific actions to strengthen the business)
+- For EACH section: provide 2 actionable recommendations to improve that aspect of the business
+- Think: "How can I help this founder build a more compelling, investable business?"`;
 
     console.log("Analyzing memo with AI...");
 
@@ -128,7 +127,7 @@ CRITICAL INSTRUCTIONS - ANALYZE THE COMPANY, NOT THE MEMO:
         messages: [
           {
             role: "system",
-            content: "You are an experienced VC partner. This memo was AI-generated, so analyze THE COMPANY, not the memo. Assess the business opportunity with healthy skepticism - question market assumptions, evaluate competitive positioning, identify execution risks. Be direct and honest about concerns while recognizing genuine strengths. Always respond with valid JSON only."
+            content: "You are a constructive VC advisor helping founders build stronger businesses. Identify opportunities for improvement and provide specific, actionable recommendations. Frame feedback positively - focus on 'how to strengthen' rather than 'what's wrong'. Recognize genuine strengths while highlighting areas that could be enhanced to make the business more investable. Always respond with valid JSON only."
           },
           {
             role: "user",
