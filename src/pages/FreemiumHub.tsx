@@ -19,7 +19,11 @@ import {
   Calculator,
   BarChart3,
   Lightbulb,
-  CheckCircle2
+  CheckCircle2,
+  Layers,
+  PresentationIcon,
+  AlertTriangle,
+  Wrench
 } from "lucide-react";
 
 interface Company {
@@ -68,12 +72,64 @@ const MEMO_BENEFITS = [
   }
 ];
 
+const VC_BRAIN_SECTIONS = [
+  {
+    id: "stage-guides",
+    title: "Stage Guides",
+    icon: Layers,
+    description: "Angel, Pre-Seed, Seed—what VCs expect",
+    items: [
+      { label: "Angel Stage", path: "/vcbrain/angel" },
+      { label: "Pre-Seed Stage", path: "/vcbrain/pre-seed" },
+      { label: "Seed Stage", path: "/vcbrain/seed" },
+    ]
+  },
+  {
+    id: "pitch-deck",
+    title: "Pitch Deck Library",
+    icon: PresentationIcon,
+    description: "Every slide dissected",
+    items: [
+      { label: "Problem Slide", path: "/vcbrain/deck/problem" },
+      { label: "Solution Slide", path: "/vcbrain/deck/solution" },
+      { label: "Product Slide", path: "/vcbrain/deck/product" },
+      { label: "Market Slide", path: "/vcbrain/deck/market" },
+      { label: "Traction Slide", path: "/vcbrain/deck/traction" },
+      { label: "Team Slide", path: "/vcbrain/deck/team" },
+    ]
+  },
+  {
+    id: "tactical",
+    title: "Tactical Guides",
+    icon: AlertTriangle,
+    description: "Real advice, no fluff",
+    items: [
+      { label: "What Angels Really Want", path: "/vcbrain/guides/angels" },
+      { label: "Early Traction That Matters", path: "/vcbrain/guides/traction" },
+      { label: "Fake TAMs Exposed", path: "/vcbrain/guides/tam" },
+      { label: "Why Startups Die", path: "/vcbrain/guides/death" },
+    ]
+  },
+  {
+    id: "resources",
+    title: "Resources",
+    icon: Wrench,
+    description: "Checklists, scorecards, databases",
+    items: [
+      { label: "VC Glossary", path: "/vcbrain/tools/glossary" },
+      { label: "Red Flag Database", path: "/vcbrain/tools/red-flags" },
+      { label: "Pitch Readiness Checklist", path: "/vcbrain/tools/checklist" },
+    ]
+  }
+];
+
 export default function FreemiumHub() {
   const navigate = useNavigate();
   const [company, setCompany] = useState<Company | null>(null);
   const [memo, setMemo] = useState<Memo | null>(null);
   const [articles, setArticles] = useState<EducationalArticle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedSection, setExpandedSection] = useState<string | null>("stage-guides");
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -263,75 +319,83 @@ export default function FreemiumHub() {
                   <GraduationCap className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">PlayBook</h2>
-                  <p className="text-sm text-muted-foreground">{articles.length + 1} essential guides</p>
+                  <h2 className="text-2xl font-bold">Knowledge Library</h2>
+                  <p className="text-sm text-muted-foreground">Everything you need to think like a VC</p>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              {/* Pre-Seed Guide as first card */}
-              <div
-                onClick={() => navigate("/pre-seed-guide")}
-                className="group cursor-pointer p-6 bg-card/80 backdrop-blur-sm border border-primary/30 rounded-xl hover:border-primary/50 hover:shadow-lg transition-all duration-300"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 group-hover:scale-105 transition-transform">
-                    <Lightbulb className="w-6 h-6 text-primary" />
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-bold group-hover:text-primary transition-colors">
-                        Pre-Seed Deck Guide
-                      </h3>
-                      <Badge variant="secondary" className="text-xs">Featured</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      Stop the deck theater. Learn what to include (and brutally exclude) when building your pre-seed pitch.
-                    </p>
-                    <div className="flex items-center gap-2 pt-1">
-                      <CheckCircle2 className="w-3 h-3 text-success" />
-                      <span className="text-xs text-muted-foreground">9 slides • Problem & Solution deep dives</span>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
-                </div>
-              </div>
-
-              {/* Regular articles */}
-              {articles.map((item, index) => {
-                const getIcon = (iconName: string) => {
-                  const icons: Record<string, any> = {
-                    BookOpen, Target, Users, TrendingUp, Shield, FileText, XCircle
-                  };
-                  return icons[iconName] || BookOpen;
-                };
-                
-                const Icon = getIcon(item.icon);
+            {/* VC Brain Sections - Collapsible */}
+            <div className="space-y-3">
+              {VC_BRAIN_SECTIONS.map((section) => {
+                const SectionIcon = section.icon;
+                const isExpanded = expandedSection === section.id;
                 
                 return (
+                  <div key={section.id} className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => setExpandedSection(isExpanded ? null : section.id)}
+                      className="w-full p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors"
+                    >
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <SectionIcon className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <h3 className="text-base font-bold">{section.title}</h3>
+                        <p className="text-xs text-muted-foreground">{section.description}</p>
+                      </div>
+                      <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                    </button>
+                    
+                    {isExpanded && (
+                      <div className="border-t border-border/50 px-4 py-2 bg-card/30">
+                        {section.items.map((item, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => navigate(item.path)}
+                            className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/10 rounded-lg transition-colors flex items-center justify-between group"
+                          >
+                            <span className="text-foreground group-hover:text-primary">{item.label}</span>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Curated Articles */}
+            <div className="mt-8">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-primary" />
+                Featured Articles
+              </h3>
+              <div className="space-y-3">
+                {articles.map((item, index) => (
                   <div
                     key={item.id}
                     onClick={() => navigate(`/hub/${item.slug}`)}
-                    className="group cursor-pointer p-5 bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl hover:border-primary/30 hover:shadow-md transition-all duration-300"
+                    className="group cursor-pointer p-4 bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg hover:border-primary/30 hover:shadow-md transition-all duration-300"
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                        <span className="text-sm font-bold text-primary">{index + 1}</span>
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                        {index + 1}
                       </div>
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <h3 className="text-base font-bold group-hover:text-primary transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-bold group-hover:text-primary transition-colors mb-1">
                           {item.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        </h4>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
                           {item.description}
                         </p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
                     </div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
 
             {/* Progress Stats */}
