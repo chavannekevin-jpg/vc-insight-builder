@@ -46,13 +46,9 @@ interface EducationalArticle {
 
 const MEMO_CONCEPT = {
   title: "The Investment Memorandum",
-  subtitle: "Your startup, analyzed through the VC lens",
-  description: [
-    "I've taken the cognitive process I use as a VC—the exact mental model and internal evaluation workflow used inside Investment Committees—and translated it into a structured methodology founders can access.",
-    "This methodology enables you to generate your own Investment Memorandum, built the same way a VC would structure and justify a deal.",
-    "This memo becomes your most powerful asset: a presentation-ready, investor-grade narrative written in VC language. It exposes the real weaknesses in your company, highlights strengths, outlines the investment case, and identifies the areas that need improvement before fundraising.",
-    "When you purchase the memo, you're essentially receiving the internal document a VC would write about you if they were preparing to pitch your startup to their partners. It is precise, objective, critical, and aligned with how funding decisions are actually made."
-  ]
+  subtitle: "The Internal Doc VCs Write About You",
+  tagline: "I've taken the cognitive process used inside Investment Committees and turned it into a methodology you can access.",
+  pitch: "Generate your own Investment Memorandum—built exactly how a VC would structure and justify your deal. It exposes weaknesses, highlights strengths, and shows what needs fixing before fundraising. Precise. Objective. Critical. Written in the language VCs actually use to make funding decisions."
 };
 
 const VC_BRAIN_SECTIONS = [
@@ -191,7 +187,7 @@ export default function FreemiumHub() {
               </div>
             )}
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               <h1 className="text-5xl md:text-6xl font-bold leading-[1.1] tracking-tight">
                 Inside the<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary to-primary/70">
@@ -201,14 +197,35 @@ export default function FreemiumHub() {
               <p className="text-xl text-muted-foreground leading-relaxed max-w-3xl font-light">
                 Master the frameworks VCs use to evaluate startups. Learn how they think, what they look for, and why they say no.
               </p>
-              <div className="pt-4">
-                <Button 
-                  onClick={() => company && navigate(`/memo?companyId=${company.id}`)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
-                  size="lg"
-                >
-                  Generate My Memo
-                </Button>
+              
+              {/* Investment Memo Concept */}
+              <div className="pt-6 space-y-4 max-w-3xl">
+                <div className="p-6 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl space-y-4">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-6 h-6 text-primary" />
+                    <div>
+                      <h2 className="text-2xl font-bold">{MEMO_CONCEPT.title}</h2>
+                      <p className="text-sm text-muted-foreground">{MEMO_CONCEPT.subtitle}</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {MEMO_CONCEPT.tagline}
+                  </p>
+                  
+                  <p className="text-sm text-foreground leading-relaxed">
+                    {MEMO_CONCEPT.pitch}
+                  </p>
+                  
+                  <Button 
+                    onClick={() => company && navigate(`/memo?companyId=${company.id}`)}
+                    className="w-full gradient-primary shadow-glow hover-neon-pulse font-bold"
+                    size="lg"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {memo ? "View My Memo" : "Generate My Memo"}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -219,75 +236,55 @@ export default function FreemiumHub() {
       <div className="max-w-[1800px] mx-auto px-8 py-12">
         <div className="grid lg:grid-cols-3 gap-8 items-start">
           
-          {/* LEFT PANEL: Investment Memo Concept */}
+          {/* LEFT PANEL: Quick Actions */}
           <div className="space-y-6">
-            <div className="sticky top-6">
-              <div className="p-6 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-gradient-primary shadow-lg">
-                    <FileText className="w-6 h-6 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold">{MEMO_CONCEPT.title}</h2>
-                    <p className="text-sm text-muted-foreground mt-1">{MEMO_CONCEPT.subtitle}</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-6">
-                  {/* The Transformation */}
-                  <div className="space-y-4">
-                    {MEMO_CONCEPT.description.map((paragraph, idx) => (
-                      <p key={idx} className="text-sm text-foreground leading-relaxed">
-                        {paragraph}
-                      </p>
-                    ))}
+            <div className="sticky top-6 space-y-4">
+              {memo && company && (
+                <div className="p-6 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-3 rounded-xl bg-gradient-primary shadow-lg">
+                      <FileText className="w-6 h-6 text-primary-foreground" />
+                    </div>
+                    <h2 className="text-xl font-bold">Your Memo</h2>
                   </div>
                   
-                  {/* CTA */}
-                  {company && (
-                    <div className="pt-4 border-t border-border/50">
-                      <Button 
-                        onClick={() => navigate(`/memo?companyId=${company.id}`)}
-                        className="w-full gradient-primary shadow-glow hover-neon-pulse font-bold"
-                        size="lg"
-                      >
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        {memo ? "View My Memo" : "Generate My Memo"}
-                      </Button>
-                      
-                      {memo && (
-                        <div className="mt-4 space-y-3">
-                          {(() => {
-                            try {
-                              const parsedContent = JSON.parse(memo.content);
-                              const sections = Object.entries(parsedContent.sections).slice(0, 2);
-                              return sections.map(([title, content]: [string, any], index: number) => (
-                                <div
-                                  key={index}
-                                  className="p-3 bg-card/50 border border-border/50 rounded-lg hover:border-primary/20 transition-all cursor-pointer"
-                                  onClick={() => navigate(`/memo?companyId=${company.id}`)}
-                                >
-                                  <h3 className="text-xs font-bold mb-1 text-primary">
-                                    {title}
-                                  </h3>
-                                  <div 
-                                    className="text-xs text-muted-foreground prose prose-sm max-w-none line-clamp-2"
-                                    dangerouslySetInnerHTML={{ 
-                                      __html: marked(content as string, { breaks: true, gfm: true })
-                                    }}
-                                  />
-                                </div>
-                              ));
-                            } catch (e) {
-                              return null;
-                            }
-                          })()}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  <div className="space-y-3">
+                    {(() => {
+                      try {
+                        const parsedContent = JSON.parse(memo.content);
+                        const sections = Object.entries(parsedContent.sections).slice(0, 2);
+                        return sections.map(([title, content]: [string, any], index: number) => (
+                          <div
+                            key={index}
+                            className="p-3 bg-card/50 border border-border/50 rounded-lg hover:border-primary/20 transition-all cursor-pointer"
+                            onClick={() => navigate(`/memo?companyId=${company.id}`)}
+                          >
+                            <h3 className="text-xs font-bold mb-1 text-primary">
+                              {title}
+                            </h3>
+                            <div 
+                              className="text-xs text-muted-foreground prose prose-sm max-w-none line-clamp-2"
+                              dangerouslySetInnerHTML={{ 
+                                __html: marked(content as string, { breaks: true, gfm: true })
+                              }}
+                            />
+                          </div>
+                        ));
+                      } catch (e) {
+                        return null;
+                      }
+                    })()}
+                    
+                    <Button 
+                      onClick={() => navigate(`/memo?companyId=${company.id}`)}
+                      className="w-full mt-2"
+                      variant="outline"
+                    >
+                      View Full Memo
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
