@@ -249,7 +249,7 @@ export default function FreemiumHub() {
               
               {/* Investment Memo Concept */}
               <div className="pt-6 space-y-4">
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-[2fr_1fr] gap-6">
                   {/* Investment Memorandum Card */}
                   <div className="p-6 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl space-y-4 hover-lift">
                     <div className="flex items-center gap-3">
@@ -303,52 +303,51 @@ export default function FreemiumHub() {
                   </div>
 
                   {/* Sample Memo Preview Card */}
-                  <div className="relative overflow-hidden rounded-2xl border-2 border-primary/40 shadow-glow hover-lift">
-                    <div className="absolute inset-0 gradient-accent" />
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/30 rounded-full blur-3xl animate-pulse" />
-                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-secondary/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+                  <div className="relative overflow-hidden rounded-2xl border border-border/50 shadow-md hover:shadow-lg transition-shadow">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-primary/4 to-background" />
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl" />
                     
-                    <div className="absolute top-4 right-4 px-3 py-1 gradient-primary text-primary-foreground text-xs font-bold rounded-full shadow-glow">
-                      ✨ FEATURED
+                    <div className="absolute top-3 right-3 px-2.5 py-0.5 bg-primary/20 text-primary text-xs font-bold rounded-full border border-primary/30">
+                      ✨ SAMPLE
                     </div>
                     
-                    <div className="relative p-6 space-y-4">
-                      <div className="flex items-start gap-3">
-                        <div className="p-3 rounded-xl gradient-primary border border-primary/30 shadow-glow">
-                          <FileText className="w-6 h-6 text-primary-foreground" />
+                    <div className="relative p-5 space-y-3">
+                      <div className="flex items-start gap-2">
+                        <div className="p-2 rounded-lg bg-primary/15 border border-primary/20">
+                          <FileText className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="text-xl font-bold neon-pink mb-1">See a Sample Memo</h3>
-                          <p className="text-sm text-foreground">Preview before you create</p>
+                          <h3 className="text-base font-bold text-foreground mb-0.5">See a Sample</h3>
+                          <p className="text-xs text-muted-foreground">Preview first</p>
                         </div>
                       </div>
                       
-                      <div className="space-y-2.5">
-                        <div className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                          <p className="text-sm text-foreground leading-snug">See VC-focused analysis in action</p>
+                      <div className="space-y-2">
+                        <div className="flex items-start gap-1.5">
+                          <div className="w-1 h-1 rounded-full bg-primary/70 mt-1.5 flex-shrink-0" />
+                          <p className="text-xs text-foreground leading-snug">VC analysis preview</p>
                         </div>
-                        <div className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                          <p className="text-sm text-foreground leading-snug">8+ comprehensive sections with AI insights</p>
+                        <div className="flex items-start gap-1.5">
+                          <div className="w-1 h-1 rounded-full bg-primary/70 mt-1.5 flex-shrink-0" />
+                          <p className="text-xs text-foreground leading-snug">8+ sections</p>
                         </div>
-                        <div className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                          <p className="text-sm text-foreground leading-snug">Understand the full memo structure</p>
+                        <div className="flex items-start gap-1.5">
+                          <div className="w-1 h-1 rounded-full bg-primary/70 mt-1.5 flex-shrink-0" />
+                          <p className="text-xs text-foreground leading-snug">Full structure</p>
                         </div>
                       </div>
                       
                       <Button
                         onClick={() => navigate("/sample-memo")}
-                        className="w-full gradient-primary hover:shadow-glow-strong shadow-glow font-bold"
-                        size="lg"
+                        className="w-full bg-primary/90 hover:bg-primary text-primary-foreground font-semibold"
+                        size="sm"
                       >
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        View Sample Memo
+                        <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                        View Sample
                       </Button>
                       
-                      <p className="text-xs text-center text-muted-foreground italic">
-                        No signup required • Takes 2 minutes to review
+                      <p className="text-[10px] text-center text-muted-foreground">
+                        No signup • 2 min review
                       </p>
                     </div>
                   </div>
