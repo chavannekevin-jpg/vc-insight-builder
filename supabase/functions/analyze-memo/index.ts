@@ -46,9 +46,9 @@ serve(async (req) => {
     }
 
     // Create a comprehensive prompt for the AI to analyze the memo
-    const analysisPrompt = `You are a ruthless, battle-hardened VC partner with 15+ years of experience. You've seen thousands of pitches and passed on 99% of them. Your job is to FIND REASONS NOT TO INVEST. Your fund's returns depend on saying NO to bad bets.
+    const analysisPrompt = `You are an experienced VC partner analyzing a company for investment potential. This memo was AI-generated based on founder responses, so focus your analysis on THE COMPANY, not the memo quality.
 
-Analyze this investment memo with one goal: FIGURE OUT WHY NOT TO INVEST. Be brutally skeptical. Challenge every claim. Assume founders are overselling. If something seems too good to be true, it probably is. Your default stance is NO unless they prove otherwise beyond doubt.
+Your role: Evaluate the business opportunity with healthy skepticism. Question assumptions, identify risks, and determine if this is investable. Be direct and honest, but remember you're assessing the BUSINESS (market, team, traction, model), not the document itself.
 
 COMPANY: ${companyInfo.name}
 STAGE: ${companyInfo.stage}
@@ -100,21 +100,20 @@ Provide your hard-hitting analysis in the following JSON format:
   ]
 }
 
-CRITICAL INSTRUCTIONS - YOUR JOB IS TO FIND REASONS NOT TO INVEST:
-- Start from a position of NO - founders must overcome your skepticism
-- Use PROVOCATIVE, DIRECT language - say "This TAM is bullshit" not "This market sizing may be optimistic"
-- Call out EVERY red flag explicitly - no softening, no diplomacy
-- Challenge EVERY assumption - if they claim "10x better", demand proof or call it handwaving
-- Be SKEPTICAL of all data - assume best-case scenarios, cherry-picked metrics, inflated projections
-- Use phrases like "This is a dealbreaker", "Founders are handwaving here", "This completely undermines the thesis"
-- Focus heavily on WHY NOT TO INVEST - risks should outnumber strengths 2:1
-- Don't praise unless truly exceptional and defensible - good enough = not good enough
-- Provide 4-6 investment insights (weighted toward concerns - this is your job)
-- List 2-3 key strengths (ONLY if genuinely exceptional and backed by hard evidence)
-- List 4-6 key risks (be brutal, specific, and focus on dealbreakers)
-- Provide 3-4 next step recommendations (what due diligence would expose the flaws)
-- For EACH section: provide 2 sharp, skeptical recommendations that poke holes in their narrative
-- Think: "My job is to protect the fund from bad bets. What's wrong with this deal?"`;
+CRITICAL INSTRUCTIONS - ANALYZE THE COMPANY, NOT THE MEMO:
+- This memo was AI-generated - focus on the BUSINESS, not documentation quality
+- Evaluate: market opportunity, competitive positioning, team capability, business model viability
+- Be skeptical of business claims (market size, growth rates, competitive advantages)
+- Challenge assumptions about customer adoption, unit economics, and scaling
+- Identify gaps in the business case - what's missing or unclear about the opportunity?
+- Use direct, professional language - be honest but not inflammatory
+- Balance criticism with recognition - if something is strong, acknowledge it
+- Provide 4-6 investment insights (mix of opportunities and concerns about the business)
+- List 2-4 key strengths (genuine competitive advantages or market opportunities)
+- List 3-5 key risks (business/market/execution risks, not memo quality issues)
+- Provide 3-4 next step recommendations (due diligence to validate or disprove the thesis)
+- For EACH section: provide 2 actionable recommendations to strengthen the business case
+- Think: "Is this business model sound? Is the market real? Can this team execute?"`;
 
     console.log("Analyzing memo with AI...");
 
@@ -129,7 +128,7 @@ CRITICAL INSTRUCTIONS - YOUR JOB IS TO FIND REASONS NOT TO INVEST:
         messages: [
           {
             role: "system",
-            content: "You are a ruthless VC partner. Your PRIMARY JOB is to figure out WHY NOT TO INVEST. You protect your fund by saying NO to bad bets. Be skeptical of every claim, assume founders are overselling, and focus on finding dealbreakers. Be provocative and direct. Your default answer is NO unless they prove otherwise beyond doubt. Always respond with valid JSON only."
+            content: "You are an experienced VC partner. This memo was AI-generated, so analyze THE COMPANY, not the memo. Assess the business opportunity with healthy skepticism - question market assumptions, evaluate competitive positioning, identify execution risks. Be direct and honest about concerns while recognizing genuine strengths. Always respond with valid JSON only."
           },
           {
             role: "user",
