@@ -243,7 +243,7 @@ export default function FreemiumHub() {
                 <div className="p-6 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-primary shadow-lg">
-                      <FileText className="w-6 h-6 text-primary-foreground" />
+                      <FileText className="w-6 h-6 text-foreground" />
                     </div>
                     <h2 className="text-xl font-bold">Your Memo</h2>
                   </div>
