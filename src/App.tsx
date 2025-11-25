@@ -14,6 +14,7 @@ import CompanyProfile from "./pages/CompanyProfile";
 import Admin from "./pages/Admin";
 import AdminArticles from "./pages/AdminArticles";
 import AdminCompanyDetail from "./pages/AdminCompanyDetail";
+import AdminPrompts from "./pages/AdminPrompts";
 import MemoBuilder from "./pages/MemoBuilder";
 import Intake from "./pages/Intake";
 import FreemiumHub from "./pages/FreemiumHub";
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/articles" element={<AdminArticles />} />
+          <Route path="/admin/prompts" element={<AdminPrompts />} />
           <Route path="/admin/memo-builder" element={<MemoBuilder />} />
           <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
