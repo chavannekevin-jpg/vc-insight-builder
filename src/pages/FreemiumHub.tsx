@@ -154,12 +154,23 @@ export default function FreemiumHub() {
             </div>
             
             <div className="flex flex-wrap gap-4 pt-4">
+              {company && (
+                <Button 
+                  size="lg"
+                  className="gradient-primary shadow-glow hover-neon-pulse font-bold text-lg px-8 py-6"
+                  onClick={() => navigate(`/memo?companyId=${company.id}`)}
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Generate Memo
+                </Button>
+              )}
               <Button 
                 size="lg"
-                className="gradient-primary shadow-glow hover-neon-pulse font-bold text-lg px-8 py-6"
+                variant="outline"
+                className="border-primary/30 hover:bg-primary/10 text-lg px-8 py-6"
                 onClick={() => navigate("/portal")}
               >
-                Get Your Investment Memo
+                Get Full Access
               </Button>
               {company && (
                 <Button 
