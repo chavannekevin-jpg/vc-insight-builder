@@ -266,14 +266,25 @@ export default function FreemiumHub() {
                     {MEMO_CONCEPT.pitch}
                   </p>
                   
-                  <Button 
-                    onClick={() => company && navigate(`/memo?companyId=${company.id}`)}
-                    className="w-full gradient-primary shadow-glow hover-neon-pulse font-bold"
-                    size="lg"
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {memo ? "View My Memo" : "Generate My Memo"}
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button 
+                      onClick={() => company && navigate(`/memo?companyId=${company.id}`)}
+                      className="flex-1 gradient-primary shadow-glow hover-neon-pulse font-bold"
+                      size="lg"
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      {memo ? "View My Memo" : "Generate My Memo"}
+                    </Button>
+                    <Button 
+                      onClick={() => navigate("/sample-memo")}
+                      variant="outline"
+                      className="flex-1 border-primary/30 hover:bg-primary/5"
+                      size="lg"
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      View Sample
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
