@@ -213,7 +213,7 @@ export const Header = () => {
               {/* Hub Dropdown Menu */}
               {hubDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 mt-1 w-[600px] bg-card/98 backdrop-blur-md border border-border rounded-lg shadow-xl z-[100] p-4"
+                  className="absolute top-full left-0 mt-1 w-[600px] bg-card border border-border rounded-lg shadow-xl z-[100] p-4"
                   onMouseEnter={handleHubMouseEnter}
                   onMouseLeave={handleHubMouseLeave}
                 >
@@ -262,7 +262,7 @@ export const Header = () => {
               {/* Tools Dropdown Menu */}
               {toolsDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 mt-1 w-[400px] bg-card/98 backdrop-blur-md border border-border rounded-lg shadow-xl z-[100] p-4"
+                  className="absolute top-full left-0 mt-1 w-[400px] bg-card border border-border rounded-lg shadow-xl z-[100] p-4"
                   onMouseEnter={handleToolsMouseEnter}
                   onMouseLeave={handleToolsMouseLeave}
                 >
