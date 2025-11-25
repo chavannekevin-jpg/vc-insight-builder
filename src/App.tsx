@@ -20,6 +20,7 @@ import Intake from "./pages/Intake";
 import FreemiumHub from "./pages/FreemiumHub";
 import EducationalContent from "./pages/EducationalContent";
 import GeneratedMemo from "./pages/GeneratedMemo";
+import PreSeedGuide from "./pages/PreSeedGuide";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/intake" element={<Intake />} />
           <Route path="/hub" element={<FreemiumHub />} />
           <Route path="/hub/:slug" element={<EducationalContent />} />
+          <Route path="/pre-seed-guide" element={<PreSeedGuide />} />
           <Route path="/memo" element={<GeneratedMemo />} />
           <Route path="/company" element={<CompanyProfile />} />
           <Route path="/about" element={<About />} />
