@@ -31,6 +31,8 @@ import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
 import CompanyProfile from "./pages/CompanyProfile";
 import CompanyProfileEdit from "./pages/CompanyProfileEdit";
+import RaiseEducation from "./pages/RaiseEducation";
+import RaiseCalculator from "./pages/RaiseCalculator";
 import Admin from "./pages/Admin";
 import AdminArticles from "./pages/AdminArticles";
 import AdminCompanyDetail from "./pages/AdminCompanyDetail";
@@ -86,6 +88,8 @@ const App = () => (
           <Route path="/memo" element={<GeneratedMemo />} />
           <Route path="/company" element={<CompanyProfile />} />
           <Route path="/company/profile/edit" element={<CompanyProfileEdit />} />
+          <Route path="/raise-education" element={<RaiseEducation />} />
+          <Route path="/raise-calculator" element={<RaiseCalculator />} />
           <Route path="/about" element={<About />} />
           <Route path="/product" element={<Product />} />
           <Route path="/pricing" element={<Pricing />} />
