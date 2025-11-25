@@ -28,25 +28,34 @@ export default function WaitlistCheckout() {
       setUserId(user.id);
     };
 
-    const fetchCompany = async () => {
-      if (!companyId) return;
-      const { data } = await supabase
-        .from("companies")
-        .select("name")
-        .eq("id", companyId)
-        .single();
-      if (data) setCompanyName(data.name);
+    const loadPendingData = () => {
+      const pendingDataStr = sessionStorage.getItem('pendingCompanyData');
+      if (pendingDataStr) {
+        const pendingData = JSON.parse(pendingDataStr);
+        setCompanyName(pendingData.name);
+      } else if (companyId) {
+        // Fallback: fetch existing company if companyId is provided
+        const fetchCompany = async () => {
+          const { data } = await supabase
+            .from("companies")
+            .select("name")
+            .eq("id", companyId)
+            .single();
+          if (data) setCompanyName(data.name);
+        };
+        fetchCompany();
+      }
     };
 
     checkAuth();
-    fetchCompany();
+    loadPendingData();
   }, [navigate, companyId]);
 
   const handlePayment = async () => {
-    if (!userId || !companyId) {
+    if (!userId) {
       toast({
         title: "Error",
-        description: "Missing user or company information",
+        description: "User not authenticated",
         variant: "destructive",
       });
       return;
@@ -55,33 +64,46 @@ export default function WaitlistCheckout() {
     setLoading(true);
 
     try {
-      // Check if already on waitlist
-      const { data: existing } = await supabase
-        .from("waitlist_signups")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("company_id", companyId)
-        .maybeSingle();
-
-      if (existing) {
+      // Get pending company data from sessionStorage
+      const pendingDataStr = sessionStorage.getItem('pendingCompanyData');
+      if (!pendingDataStr) {
         toast({
-          title: "Already on Waitlist",
-          description: "You've already secured your early access discount!",
+          title: "Error",
+          description: "No questionnaire data found. Please complete the questionnaire first.",
+          variant: "destructive",
         });
-        navigate("/waitlist-confirmation");
+        navigate("/intake");
         return;
       }
+
+      const pendingData = JSON.parse(pendingDataStr);
 
       // In production, integrate with Stripe here
       // For now, simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 1500));
 
+      // After successful payment, create the company
+      const { data: newCompany, error: companyError } = await supabase
+        .from("companies")
+        .insert({
+          founder_id: userId,
+          name: pendingData.name,
+          description: pendingData.description,
+          stage: pendingData.stage,
+          category: null,
+          biggest_challenge: null
+        })
+        .select()
+        .single();
+
+      if (companyError) throw companyError;
+
       // Create waitlist signup record
-      const { error } = await supabase
+      const { error: waitlistError } = await supabase
         .from("waitlist_signups")
         .insert({
           user_id: userId,
-          company_id: companyId,
+          company_id: newCompany.id,
           pricing_tier: "early_access",
           discount_amount: 29.99,
           has_paid: true,
@@ -89,11 +111,14 @@ export default function WaitlistCheckout() {
           payment_intent_id: `simulated_${Date.now()}`, // Replace with real Stripe payment intent
         });
 
-      if (error) throw error;
+      if (waitlistError) throw waitlistError;
+
+      // Clear the pending data
+      sessionStorage.removeItem('pendingCompanyData');
 
       toast({
         title: "Payment Successful!",
-        description: "Your spot is secured with the 50% discount.",
+        description: "Your profile has been created and your spot is secured!",
       });
 
       navigate("/waitlist-confirmation");
