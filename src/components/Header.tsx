@@ -166,7 +166,11 @@ export const Header = () => {
                     
                     {/* Hub Dropdown Menu */}
                     {hubDropdownOpen && (
-                      <div className="absolute top-full left-0 mt-2 w-[600px] bg-card border border-border rounded-lg shadow-xl z-50 p-4">
+                      <div 
+                        className="absolute top-full left-0 mt-2 w-[600px] bg-card border border-border rounded-lg shadow-xl z-50 p-4"
+                        onMouseEnter={() => setHubDropdownOpen(true)}
+                        onMouseLeave={() => setHubDropdownOpen(false)}
+                      >
                         {!isAuthenticated && (
                           <div className="mb-3 px-2 py-2 bg-primary/10 border border-primary/30 rounded-lg">
                             <p className="text-xs text-primary font-semibold">🔒 Sign in to access VC Brain resources</p>
@@ -215,7 +219,11 @@ export const Header = () => {
               
               {/* Tools Dropdown Menu */}
               {toolsDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-[400px] bg-card border border-border rounded-lg shadow-xl z-50 p-4">
+                <div 
+                  className="absolute top-full left-0 mt-2 w-[400px] bg-card border border-border rounded-lg shadow-xl z-50 p-4"
+                  onMouseEnter={() => setToolsDropdownOpen(true)}
+                  onMouseLeave={() => setToolsDropdownOpen(false)}
+                >
                   {!isAuthenticated && (
                     <div className="mb-3 px-2 py-2 bg-primary/10 border border-primary/30 rounded-lg">
                       <p className="text-xs text-primary font-semibold">🔒 Sign in to access all tools</p>
