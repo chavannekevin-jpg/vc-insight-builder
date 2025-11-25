@@ -549,17 +549,17 @@ export default function GeneratedMemo() {
             )}
             
             {/* Memo Sections */}
-            <div className="space-y-12">
+            <div className="space-y-16">
               {structuredSections.length > 0 ? (
                 // New structured format rendering
                 structuredSections.map((section, index) => {
                   const sectionRecs = aiAnalysis?.sectionRecommendations?.[section.title] || [];
                   
                   return (
-                    <div key={index} className="space-y-4">
-                      <MemoSectionComponent title={section.title}>
+                    <div key={index} className="space-y-6">
+                      <MemoSectionComponent title={section.title} index={index}>
                         {section.paragraphs && section.paragraphs.length > 0 && (
-                          <div className="space-y-4">
+                          <div className="space-y-5">
                             {section.paragraphs.map((para, pIdx) => (
                               <MemoParagraph key={pIdx} text={para.text} emphasis={para.emphasis} />
                             ))}
@@ -567,7 +567,7 @@ export default function GeneratedMemo() {
                         )}
                         
                         {section.highlights && section.highlights.length > 0 && (
-                          <div className="grid md:grid-cols-3 gap-4 mt-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
                             {section.highlights.map((highlight, hIdx) => (
                               <MemoHighlight key={hIdx} metric={highlight.metric} label={highlight.label} />
                             ))}
@@ -575,7 +575,9 @@ export default function GeneratedMemo() {
                         )}
                         
                         {section.keyPoints && section.keyPoints.length > 0 && (
-                          <MemoKeyPoints points={section.keyPoints} />
+                          <div className="mt-8">
+                            <MemoKeyPoints points={section.keyPoints} />
+                          </div>
                         )}
                       </MemoSectionComponent>
                       
