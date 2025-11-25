@@ -15,6 +15,14 @@ import ProductSlide from "./pages/vcbrain/ProductSlide";
 import MarketSlide from "./pages/vcbrain/MarketSlide";
 import TractionSlide from "./pages/vcbrain/TractionSlide";
 import TeamSlide from "./pages/vcbrain/TeamSlide";
+import WhatAngelsWant from "./pages/vcbrain/WhatAngelsWant";
+import EarlyTraction from "./pages/vcbrain/EarlyTraction";
+import FakeTAMs from "./pages/vcbrain/FakeTAMs";
+import WhyStartupsDie from "./pages/vcbrain/WhyStartupsDie";
+import StageComparison from "./pages/vcbrain/StageComparison";
+import VCGlossary from "./pages/vcbrain/VCGlossary";
+import RedFlagDatabase from "./pages/vcbrain/RedFlagDatabase";
+import PitchChecklist from "./pages/vcbrain/PitchChecklist";
 import Portal from "./pages/Portal";
 import Auth from "./pages/Auth";
 import About from "./pages/About";
@@ -62,6 +70,14 @@ const App = () => (
             <Route path="deck/market" element={<MarketSlide />} />
             <Route path="deck/traction" element={<TractionSlide />} />
             <Route path="deck/team" element={<TeamSlide />} />
+            <Route path="guides/angels" element={<WhatAngelsWant />} />
+            <Route path="guides/traction" element={<EarlyTraction />} />
+            <Route path="guides/tam" element={<FakeTAMs />} />
+            <Route path="guides/death" element={<WhyStartupsDie />} />
+            <Route path="stage-comparison" element={<StageComparison />} />
+            <Route path="tools/glossary" element={<VCGlossary />} />
+            <Route path="tools/red-flags" element={<RedFlagDatabase />} />
+            <Route path="tools/checklist" element={<PitchChecklist />} />
           </Route>
           <Route path="/pre-seed-guide" element={<PreSeedGuide />} />
           <Route path="/problem-slide-guide" element={<ProblemSlideGuide />} />
