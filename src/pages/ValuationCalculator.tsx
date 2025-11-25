@@ -482,6 +482,22 @@ export default function ValuationCalculator() {
                         <p className="text-xl font-bold">{actualDilution.toFixed(1)}%</p>
                       </div>
                     </div>
+
+                    <div className="pt-4 border-t">
+                      <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/30">
+                        <p className="text-xs font-semibold text-foreground mb-2">
+                          Numbers don't raise capital. Stories do.
+                        </p>
+                        <Button 
+                          onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
+                          variant="outline"
+                          size="sm"
+                          className="w-full text-xs border-destructive/40 hover:bg-destructive/20"
+                        >
+                          Build My Memo →
+                        </Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 

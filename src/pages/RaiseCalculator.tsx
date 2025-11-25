@@ -579,9 +579,25 @@ export default function RaiseCalculator() {
                 <div className="text-5xl font-bold text-primary mb-2">
                   {formatCurrency(recommendedRaise)}
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground mb-4">
                   Based on {totalRunway} months runway + {bufferMode === "conservative" ? "15%" : "25%"} buffer
                 </p>
+
+                <div className="pt-4 border-t">
+                  <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/30">
+                    <p className="text-xs font-semibold text-foreground mb-2">
+                      Can you actually justify this raise?
+                    </p>
+                    <Button 
+                      onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs border-destructive/40 hover:bg-destructive/20"
+                    >
+                      Test Your Narrative →
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
