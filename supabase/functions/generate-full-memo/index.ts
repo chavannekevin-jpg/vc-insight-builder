@@ -90,11 +90,13 @@ serve(async (req) => {
       }
     });
 
-    // Check if memo already exists
+    // Check if memo already exists - get the most recent one
     const { data: existingMemo } = await supabaseClient
       .from("memos")
       .select("*")
       .eq("company_id", companyId)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (existingMemo && existingMemo.content) {
