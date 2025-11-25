@@ -19,14 +19,15 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground/90 leading-relaxed font-semibold mb-6">
-              The problem isn't just features or traction—it's misalignment with how VCs evaluate startups.
+              You're pitching blind. You have no idea what VCs actually look for.
             </p>
             
             <ul className="space-y-4 mb-6">
               {[
-                "Traction ≠ VC traction – Your growth looks great on paper, but it doesn't map to the metrics VCs care about.",
-                "Features over fundamentals – You obsess over product details, while investors are scanning for market potential, defensibility, and scalability.",
-                "Small deals, small impact – Low ACV means growth looks slow, even if adoption is strong."
+                "You think traction matters—but you're measuring the wrong metrics",
+                "You focus on features while VCs evaluate market dynamics and defensibility",
+                "You waste months pitching to the wrong investors with the wrong story",
+                "Every rejection feels random because you don't understand their framework"
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-destructive/5 border border-destructive/20 hover:bg-destructive/10 hover:border-destructive/30 transition-all duration-300">
                   <span className="text-destructive mt-0.5 font-bold">✗</span>
@@ -37,7 +38,7 @@ export const ProblemSolutionSection = () => {
             
             <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 backdrop-blur-sm">
               <p className="text-sm text-foreground/80 italic">
-                <strong>I won't waste time in meetings teaching you</strong>—and neither will other VCs. We'll just pass and move on to the next pitch.
+                <strong>I won't waste time in meetings teaching you</strong>—and neither will other VCs. We'll just pass and move on.
               </p>
             </div>
           </div>
@@ -55,14 +56,15 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground/90 leading-relaxed font-semibold mb-6">
-              Brutal clarity. Immediate impact.
+              Stop guessing. Learn how we actually think.
             </p>
             
             <ul className="space-y-4 mb-6">
               {[
-                "a memo a VC would present to the IC",
-                "structured to be the backbone of your narrative",
-                "Fix your pitch before it fails"
+                "Access the exact framework VCs use to evaluate startups",
+                "Understand the real criteria behind every investment decision",
+                "Learn what separates fundable companies from rejections",
+                "Fix your pitch and strategy before you waste months fundraising"
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300">
                   <span className="text-primary mt-0.5 font-bold">✓</span>
@@ -73,7 +75,7 @@ export const ProblemSolutionSection = () => {
             
             <div className="p-4 rounded-xl gradient-accent border-2 border-primary/40 shadow-glow backdrop-blur-sm">
               <p className="text-sm font-bold text-foreground">
-                → See your company the way they do, before they reject you
+                → Think like a VC. Win like a founder.
               </p>
             </div>
           </div>
