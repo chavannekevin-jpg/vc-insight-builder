@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Menu, X, LogIn, LogOut, ChevronDown } from "lucide-react";
@@ -12,6 +12,10 @@ export const Header = () => {
   const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Refs for managing hover delays
+  const hubTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const toolsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -130,6 +134,42 @@ export const Header = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Handlers for Hub dropdown with delay
+  const handleHubMouseEnter = () => {
+    if (hubTimeoutRef.current) {
+      clearTimeout(hubTimeoutRef.current);
+    }
+    setHubDropdownOpen(true);
+  };
+
+  const handleHubMouseLeave = () => {
+    hubTimeoutRef.current = setTimeout(() => {
+      setHubDropdownOpen(false);
+    }, 150);
+  };
+
+  // Handlers for Tools dropdown with delay
+  const handleToolsMouseEnter = () => {
+    if (toolsTimeoutRef.current) {
+      clearTimeout(toolsTimeoutRef.current);
+    }
+    setToolsDropdownOpen(true);
+  };
+
+  const handleToolsMouseLeave = () => {
+    toolsTimeoutRef.current = setTimeout(() => {
+      setToolsDropdownOpen(false);
+    }, 150);
+  };
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (hubTimeoutRef.current) clearTimeout(hubTimeoutRef.current);
+      if (toolsTimeoutRef.current) clearTimeout(toolsTimeoutRef.current);
+    };
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/50 shadow-sm">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
@@ -157,8 +197,8 @@ export const Header = () => {
             {/* Hub dropdown */}
             <div
               className="relative"
-              onMouseEnter={() => setHubDropdownOpen(true)}
-              onMouseLeave={() => setHubDropdownOpen(false)}
+              onMouseEnter={handleHubMouseEnter}
+              onMouseLeave={handleHubMouseLeave}
             >
               <button
                 onClick={() => isAuthenticated ? navigate("/hub") : navigate('/auth')}
@@ -173,9 +213,9 @@ export const Header = () => {
               {/* Hub Dropdown Menu */}
               {hubDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 mt-2 w-[600px] bg-card border border-border rounded-lg shadow-xl z-50 p-4"
-                  onMouseEnter={() => setHubDropdownOpen(true)}
-                  onMouseLeave={() => setHubDropdownOpen(false)}
+                  className="absolute top-full left-0 mt-1 w-[600px] bg-card/98 backdrop-blur-md border border-border rounded-lg shadow-xl z-[100] p-4"
+                  onMouseEnter={handleHubMouseEnter}
+                  onMouseLeave={handleHubMouseLeave}
                 >
                   {!isAuthenticated && (
                     <div className="mb-3 px-2 py-2 bg-primary/10 border border-primary/30 rounded-lg">
@@ -209,8 +249,8 @@ export const Header = () => {
             {/* Tools Dropdown - visible to everyone */}
             <div
               className="relative"
-              onMouseEnter={() => setToolsDropdownOpen(true)}
-              onMouseLeave={() => setToolsDropdownOpen(false)}
+              onMouseEnter={handleToolsMouseEnter}
+              onMouseLeave={handleToolsMouseLeave}
             >
               <button
                 className="text-sm font-medium transition-all duration-300 flex items-center gap-1 text-muted-foreground hover:neon-pink"
@@ -222,9 +262,9 @@ export const Header = () => {
               {/* Tools Dropdown Menu */}
               {toolsDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 mt-2 w-[400px] bg-card border border-border rounded-lg shadow-xl z-50 p-4"
-                  onMouseEnter={() => setToolsDropdownOpen(true)}
-                  onMouseLeave={() => setToolsDropdownOpen(false)}
+                  className="absolute top-full left-0 mt-1 w-[400px] bg-card/98 backdrop-blur-md border border-border rounded-lg shadow-xl z-[100] p-4"
+                  onMouseEnter={handleToolsMouseEnter}
+                  onMouseLeave={handleToolsMouseLeave}
                 >
                   {!isAuthenticated && (
                     <div className="mb-3 px-2 py-2 bg-primary/10 border border-primary/30 rounded-lg">
