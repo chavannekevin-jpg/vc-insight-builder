@@ -4,83 +4,90 @@ import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { Check, Zap, Clock, Users } from "lucide-react";
+import { Check, X, Zap, BookOpen, Sparkles, Users } from "lucide-react";
 
 const Pricing = () => {
   const navigate = useNavigate();
 
   const pricingPlans = [
     {
-      name: "Early Access",
-      subtitle: "Early Access - 50% Off",
-      price: "€29.99",
-      originalPrice: "€59.99",
-      discount: "50% OFF",
-      description: "Discounted price for early joiners",
-      icon: Clock,
+      name: "Freemium",
+      subtitle: "Everything You Need to Start",
+      price: "€0",
+      description: "Full access to VC knowledge and frameworks",
+      icon: BookOpen,
       features: [
-        "Get your memo when platform launches",
-        "Save €30 with early access pricing",
-        "Company profile shared to our VC network (optional)"
+        { text: "Full access to VC Hub", included: true },
+        { text: "Complete educational content library", included: true },
+        { text: "Pitch deck frameworks and templates", included: true },
+        { text: "Track your fundraising progress", included: true },
+        { text: "Personalized investment memorandum", included: false },
+        { text: "Supporting materials and insights", included: false },
+        { text: "Network exposure to 400+ investors", included: false }
       ],
-      cta: "Join Early Access",
+      cta: "Start Free",
+      popular: false,
+      color: "secondary"
+    },
+    {
+      name: "Investment Memo Builder",
+      subtitle: "Your Fundraising Weapon",
+      price: "€29.99",
+      description: "AI-powered memo that VCs actually read",
+      icon: Sparkles,
+      features: [
+        { text: "Everything in Freemium", included: true, bold: true },
+        { text: "AI-generated investment memorandum", included: true },
+        { text: "Personalized to your business model", included: true },
+        { text: "All supporting materials and insights", included: true },
+        { text: "Actionable feedback on your pitch", included: true },
+        { text: "Unlimited memo updates", included: true },
+        { text: "Network exposure to 400+ investors", included: false }
+      ],
+      cta: "Build My Memo",
       popular: true,
       color: "primary"
     },
     {
-      name: "Skip The Line",
-      subtitle: "Express Service",
+      name: "Network Access",
+      subtitle: "Get In Front of Capital",
       price: "€159.99",
-      description: "Get your memo within one week",
-      icon: Zap,
+      description: "Your memo delivered to real investors",
+      icon: Users,
       features: [
-        "Receive your memo within one week",
-        "Jump ahead of the waitlist",
-        "Company profile shared to our VC network (optional)"
+        { text: "Everything in Memo Builder", included: true, bold: true },
+        { text: "Profile shared with 400+ investors", included: true },
+        { text: "Direct introductions when there's interest", included: true },
+        { text: "Priority memo delivery (7 days)", included: true },
+        { text: "Priority support throughout", included: true },
+        { text: "Results-based investor matching", included: true }
       ],
-      cta: "Skip the Line",
+      cta: "Get Network Access",
       popular: false,
       color: "accent"
     }
   ];
 
-  const premiumPlan = {
-    icon: Users,
-    name: "VIP Fast Track",
-    subtitle: "Ultra Premium Package",
-    price: "€399",
-    description: "Express delivery + investor network exposure",
-    features: [
-      "Express memo delivered within one week",
-      "Memo pushed to our network of 100+ global investors",
-      "Direct introductions to VCs/investors if they show interest",
-      "Priority support throughout the process",
-      "Results-based introductions (we facilitate connections, not guarantees)"
-    ],
-    cta: "Get VIP Access",
-    badge: "Most Exclusive"
-  };
-
   const faqs = [
     {
-      question: "What's included in the memorandum?",
-      answer: "A comprehensive VC-grade investment memorandum covering your business model, market analysis, traction, team, financials, and strategic insights. Plus diagnostic feedback to improve your model."
+      question: "Why is the Freemium tier actually free?",
+      answer: "Because most founders fail due to lack of knowledge, not lack of capital. We want you to have the frameworks and education you need. We only charge when you're ready to fundraise seriously."
     },
     {
-      question: "How long does it take to generate?",
-      answer: "Early Access users receive their memo when the platform launches. Skip the Line users get their memo within one week of submitting their questionnaire."
+      question: "What makes the investment memo worth €29.99?",
+      answer: "It's a personalized, AI-generated memorandum that translates your startup into VC language. Most founders pitch poorly because they don't speak investor. This memo does it for you—and it's cheaper than a single coffee meeting that goes nowhere."
     },
     {
-      question: "Can I update my memorandum later?",
-      answer: "Yes! You can request updates as your startup evolves. Early Access users get lifetime updates included."
+      question: "How does Network Access actually work?",
+      answer: "Your company profile and memo get pushed to our network of 400+ active investors. When someone shows interest, we facilitate the introduction. We don't guarantee funding—nobody can—but we guarantee exposure to real decision-makers."
     },
     {
-      question: "What format is the memorandum delivered in?",
-      answer: "Your memorandum is delivered as a professionally formatted PDF document, ready to share with investors."
+      question: "Can I upgrade from one plan to another?",
+      answer: "Absolutely. Start with Freemium, upgrade to Memo Builder when you're ready, and add Network Access when you need exposure. Pay only for what you need, when you need it."
     },
     {
       question: "Is there a refund policy?",
-      answer: "Yes, we offer a 14-day money-back guarantee if you're not satisfied with your memorandum."
+      answer: "Yes. 14-day money-back guarantee if you're not satisfied with your memo. But you'll be satisfied—this isn't our first rodeo."
     }
   ];
 
@@ -92,28 +99,29 @@ const Pricing = () => {
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <Badge variant="secondary" className="mb-6 px-4 py-1.5">
-            Simple, Transparent Pricing
+            No BS Pricing
           </Badge>
           <h1 className="text-5xl md:text-6xl font-serif mb-6">
-            Choose Your Plan
+            Pay Only for What You Need
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Select the option that fits your timeline. Both plans give you the same 
-            high-quality, VC-calibrated investment memorandum.
+            Start free. Upgrade when you're ready to fundraise. Add network access when you need it.
+            <br />
+            <span className="font-semibold text-foreground">Simple. Transparent. No hidden costs.</span>
           </p>
         </div>
       </section>
 
       {/* Pricing Cards */}
       <section className="py-12 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8">
             {pricingPlans.map((plan, index) => {
               const Icon = plan.icon;
               return (
                 <ModernCard 
                   key={index}
-                  className={`relative ${plan.popular ? 'ring-2 ring-primary shadow-xl' : ''}`}
+                  className={`relative ${plan.popular ? 'ring-2 ring-primary shadow-xl scale-105 md:scale-105' : ''}`}
                 >
                   {plan.popular && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -125,8 +133,8 @@ const Pricing = () => {
 
                   <div className="space-y-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl gradient-accent flex items-center justify-center">
-                        <Icon className="w-6 h-6 text-primary" />
+                      <div className={`w-12 h-12 rounded-xl ${plan.popular ? 'gradient-primary' : 'gradient-accent'} flex items-center justify-center`}>
+                        <Icon className="w-6 h-6 text-white" />
                       </div>
                       <div>
                         <h3 className="text-2xl font-serif">{plan.name}</h3>
@@ -137,32 +145,34 @@ const Pricing = () => {
                     <div>
                       <div className="flex items-baseline gap-2 mb-2">
                         <span className="text-4xl font-bold">{plan.price}</span>
-                        {plan.originalPrice && (
-                          <span className="text-lg text-muted-foreground line-through">
-                            {plan.originalPrice}
-                          </span>
+                        {plan.name === "Freemium" && (
+                          <span className="text-sm text-muted-foreground">/forever</span>
+                        )}
+                        {plan.name !== "Freemium" && (
+                          <span className="text-sm text-muted-foreground">/one-time</span>
                         )}
                       </div>
-                      {plan.discount && (
-                        <Badge variant="secondary" className="mb-2">
-                          {plan.discount}
-                        </Badge>
-                      )}
                       <p className="text-sm text-muted-foreground">{plan.description}</p>
                     </div>
 
-                    <ul className="space-y-3 py-6">
+                    <ul className="space-y-3 py-6 min-h-[320px]">
                       {plan.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start gap-3 text-sm">
-                          <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                          <span className="text-muted-foreground">{feature}</span>
+                          {feature.included ? (
+                            <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                          ) : (
+                            <X className="w-5 h-5 text-muted-foreground/30 flex-shrink-0 mt-0.5" />
+                          )}
+                          <span className={`${feature.included ? 'text-foreground' : 'text-muted-foreground/50 line-through'} ${feature.bold ? 'font-semibold' : ''}`}>
+                            {feature.text}
+                          </span>
                         </li>
                       ))}
                     </ul>
 
                     <Button 
-                      onClick={() => navigate(`/auth?plan=${encodeURIComponent(plan.name)}&price=${encodeURIComponent(plan.price)}`)}
-                      className={plan.popular ? "w-full gradient-primary" : "w-full"}
+                      onClick={() => navigate(plan.name === "Freemium" ? '/auth' : `/auth?plan=${encodeURIComponent(plan.name)}&price=${encodeURIComponent(plan.price)}`)}
+                      className={plan.popular ? "w-full gradient-primary hover-neon-pulse" : "w-full hover-neon-pulse"}
                       variant={plan.popular ? "default" : "outline"}
                       size="lg"
                     >
@@ -172,73 +182,6 @@ const Pricing = () => {
                 </ModernCard>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* Add-ons */}
-      <section className="py-12 px-4 bg-muted/30">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <Badge className="mb-4 px-4 py-1.5 bg-accent/20 text-accent border border-accent/40">
-              Ultra Premium
-            </Badge>
-            <h2 className="text-3xl font-bold mb-3">VIP Fast Track</h2>
-            <p className="text-base text-muted-foreground">
-              Maximum exposure, maximum impact
-            </p>
-          </div>
-
-          <div className="max-w-2xl mx-auto">
-            <ModernCard className="relative border-2 border-accent/40 shadow-[0_0_30px_rgba(236,72,153,0.2)]">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-accent text-white border-0 px-4 py-1">
-                  Most Exclusive
-                </Badge>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl gradient-accent flex items-center justify-center">
-                    <Users className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-serif">{premiumPlan.name}</h3>
-                    <p className="text-sm text-muted-foreground">{premiumPlan.subtitle}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-4xl font-bold">{premiumPlan.price}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{premiumPlan.description}</p>
-                </div>
-
-                <ul className="space-y-3 py-6">
-                  {premiumPlan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-sm">
-                      <Check className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
-                  <p className="text-xs text-muted-foreground italic">
-                    * Your memo will be sent to our investor network. While we cannot guarantee investor interest, we facilitate introductions when there's a match.
-                  </p>
-                </div>
-
-                <Button 
-                  onClick={() => navigate(`/auth?plan=${encodeURIComponent(premiumPlan.name)}&price=${encodeURIComponent(premiumPlan.price)}`)}
-                  className="w-full gradient-accent"
-                  size="lg"
-                >
-                  {premiumPlan.cta}
-                </Button>
-              </div>
-            </ModernCard>
           </div>
         </div>
       </section>
@@ -270,19 +213,21 @@ const Pricing = () => {
         <div className="max-w-4xl mx-auto text-center">
           <ModernCard className="shadow-xl">
             <div className="space-y-6 py-8">
-              <h2 className="text-3xl font-serif">Ready to Transform Your Fundraising?</h2>
+              <h2 className="text-3xl font-serif">Stop Wasting Time on Bad Pitches</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Choose the plan that fits your timeline and get your investment memorandum.
+                Start with free access to everything you need. Pay only when you're ready to raise.
+                <br />
+                <span className="font-semibold text-foreground">No BS. No surprises.</span>
               </p>
               <Button 
                 size="lg"
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/auth')}
                 className="gradient-primary px-8 shadow-glow hover:shadow-glow-strong"
               >
-                View All Plans
+                Start Free Now
               </Button>
               <p className="text-xs text-muted-foreground">
-                14-day money-back guarantee • Secure payment processing
+                14-day money-back guarantee on paid plans • Free tier is free forever
               </p>
             </div>
           </ModernCard>
