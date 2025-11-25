@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Download, ArrowLeft, Sparkles, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { marked } from "marked";
 
 interface MemoSection {
   title: string;
@@ -242,22 +243,31 @@ export default function GeneratedMemo() {
             )}
             
             {sections.map((section, index) => (
-              <section key={index} className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary font-bold text-sm">
+              <section key={index} className="space-y-6 pb-12 border-b border-border/30 last:border-0">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-primary text-primary-foreground font-bold text-lg shadow-lg">
                     {index + 1}
                   </div>
-                  <h2 className="text-2xl font-bold">{section.title}</h2>
+                  <h2 className="text-3xl font-bold tracking-tight">{section.title}</h2>
                 </div>
                 
-                <div className="pl-11">
-                  <div className="prose prose-lg max-w-none">
-                    {section.content.split('\n\n').map((paragraph, pIndex) => (
-                      <p key={pIndex} className="text-foreground/90 leading-relaxed mb-4">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
+                <div className="pl-14">
+                  <div 
+                    className="prose prose-lg prose-slate dark:prose-invert max-w-none
+                      prose-headings:font-bold prose-headings:tracking-tight
+                      prose-p:text-foreground/90 prose-p:leading-relaxed prose-p:mb-4
+                      prose-strong:text-foreground prose-strong:font-semibold
+                      prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6
+                      prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6
+                      prose-li:text-foreground/90 prose-li:my-2
+                      prose-a:text-primary prose-a:underline-offset-4 hover:prose-a:text-primary/80"
+                    dangerouslySetInnerHTML={{ 
+                      __html: marked(section.content, { 
+                        breaks: true,
+                        gfm: true 
+                      }) 
+                    }}
+                  />
                 </div>
               </section>
             ))}
