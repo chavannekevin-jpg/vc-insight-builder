@@ -3,7 +3,8 @@ import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { FontFamily } from '@tiptap/extension-font-family';
-import { Bold, Italic, UnderlineIcon, Heading1, Heading2, Heading3, List, ListOrdered, Type } from 'lucide-react';
+import TextAlign from '@tiptap/extension-text-align';
+import { Bold, Italic, UnderlineIcon, Heading1, Heading2, Heading3, List, ListOrdered, Type, AlignLeft, AlignCenter, AlignRight, AlignJustify, Pilcrow } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -31,6 +32,9 @@ export const RichTextEditor = ({ content, onChange, placeholder }: RichTextEdito
       Underline,
       TextStyle,
       FontFamily,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -77,6 +81,11 @@ export const RichTextEditor = ({ content, onChange, placeholder }: RichTextEdito
   const getFontSize = () => {
     const fontSize = editor.getAttributes('textStyle').fontSize;
     return fontSize || '16px';
+  };
+
+  const getFontFamily = () => {
+    const fontFamily = editor.getAttributes('textStyle').fontFamily;
+    return fontFamily || 'default';
   };
 
   return (
@@ -130,8 +139,39 @@ export const RichTextEditor = ({ content, onChange, placeholder }: RichTextEdito
           </SelectContent>
         </Select>
         
+        <Select
+          value={getFontFamily()}
+          onValueChange={(value) => {
+            if (value === 'default') {
+              editor.chain().focus().unsetFontFamily().run();
+            } else {
+              editor.chain().focus().setFontFamily(value).run();
+            }
+          }}
+        >
+          <SelectTrigger className="w-[130px] h-8 text-xs">
+            <SelectValue placeholder="Font" />
+          </SelectTrigger>
+          <SelectContent className="bg-background border-border z-50">
+            <SelectItem value="default">Default</SelectItem>
+            <SelectItem value="Arial, sans-serif">Arial</SelectItem>
+            <SelectItem value="'Times New Roman', serif">Times New Roman</SelectItem>
+            <SelectItem value="Georgia, serif">Georgia</SelectItem>
+            <SelectItem value="'Courier New', monospace">Courier New</SelectItem>
+            <SelectItem value="Verdana, sans-serif">Verdana</SelectItem>
+            <SelectItem value="'Comic Sans MS', cursive">Comic Sans</SelectItem>
+            <SelectItem value="Impact, sans-serif">Impact</SelectItem>
+          </SelectContent>
+        </Select>
+        
         <div className="w-px h-6 bg-border mx-1" />
         
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setParagraph().run()}
+          isActive={editor.isActive('paragraph')}
+          icon={Pilcrow}
+          label="Paragraph"
+        />
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
           isActive={editor.isActive('heading', { level: 1 })}
@@ -149,6 +189,33 @@ export const RichTextEditor = ({ content, onChange, placeholder }: RichTextEdito
           isActive={editor.isActive('heading', { level: 3 })}
           icon={Heading3}
           label="Heading 3"
+        />
+        
+        <div className="w-px h-6 bg-border mx-1" />
+        
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          isActive={editor.isActive({ textAlign: 'left' })}
+          icon={AlignLeft}
+          label="Align Left"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          isActive={editor.isActive({ textAlign: 'center' })}
+          icon={AlignCenter}
+          label="Align Center"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          isActive={editor.isActive({ textAlign: 'right' })}
+          icon={AlignRight}
+          label="Align Right"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+          isActive={editor.isActive({ textAlign: 'justify' })}
+          icon={AlignJustify}
+          label="Justify"
         />
         
         <div className="w-px h-6 bg-border mx-1" />
