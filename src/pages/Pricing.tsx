@@ -33,12 +33,12 @@ const Pricing = () => {
       name: "Investment Memo Builder",
       subtitle: "Your Fundraising Weapon",
       price: "€29.99",
-      description: "One AI-powered memo that VCs actually read",
+      description: "Professional memo that VCs actually read",
       icon: Sparkles,
       features: [
         { text: "Everything in Freemium", included: true, bold: true },
-        { text: "One AI-generated investment memorandum", included: true },
-        { text: "Personalized to your business model", included: true },
+        { text: "One personalized investment memorandum", included: true },
+        { text: "Tailored to your business model", included: true },
         { text: "All supporting materials and insights", included: true },
         { text: "Actionable feedback on your pitch", included: true },
         { text: "Unlimited memo updates", included: false },
@@ -76,7 +76,7 @@ const Pricing = () => {
     },
     {
       question: "What makes the investment memo worth €29.99?",
-      answer: "It's a personalized, AI-generated memorandum that translates your startup into VC language. Most founders pitch poorly because they don't speak investor. This memo does it for you—and it's cheaper than a single coffee meeting that goes nowhere."
+      answer: "It's a personalized memorandum that translates your startup into VC language. Most founders pitch poorly because they don't speak investor. This memo does it for you—and it's cheaper than a single coffee meeting that goes nowhere."
     },
     {
       question: "How does Network Access actually work?",
