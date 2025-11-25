@@ -251,54 +251,64 @@ export default function FreemiumHub() {
               <div className="pt-6 space-y-4">
                 <div className="grid md:grid-cols-[2fr_1fr] gap-6">
                   {/* Investment Memorandum Card */}
-                  <div className="p-6 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl space-y-4 hover-lift">
-                    <div className="flex items-center gap-3">
-                      <FileText className="w-6 h-6 text-primary" />
-                      <div>
-                        <h2 className="text-2xl font-bold">{MEMO_CONCEPT.title}</h2>
+                  <div className="relative overflow-hidden rounded-2xl border border-border/50 shadow-lg hover:shadow-xl transition-all hover-lift">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-card to-card" />
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl" />
+                    
+                    <div className="relative p-8 space-y-6">
+                      {/* Header */}
+                      <div className="space-y-3">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/30 rounded-full">
+                          <FileText className="w-4 h-4 text-primary" />
+                          <span className="text-xs font-bold text-primary uppercase tracking-wide">Your Investment Memo</span>
+                        </div>
+                        <h2 className="text-3xl font-bold text-foreground leading-tight">{MEMO_CONCEPT.title}</h2>
                         <p className="text-sm text-muted-foreground">{MEMO_CONCEPT.subtitle}</p>
                       </div>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {MEMO_CONCEPT.tagline}
-                    </p>
-                    
-                    <p className="text-sm text-foreground leading-relaxed">
-                      {MEMO_CONCEPT.pitch}
-                    </p>
-                    
-                    <div className="flex flex-col gap-3">
-                      <Button 
-                        onClick={() => company && navigate(`/memo?companyId=${company.id}`)}
-                        className="flex-1 gradient-primary shadow-glow hover-neon-pulse font-bold"
-                        size="lg"
-                      >
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        {memo ? "View My Memo" : "Generate My Memo"}
-                      </Button>
-                      <Button 
-                        onClick={() => navigate("/sample-memo")}
-                        variant="outline"
-                        className="relative flex-1 border-2 border-primary/40 hover:border-primary hover:bg-primary/10 transition-all duration-300 group"
-                        size="lg"
-                      >
-                        <div className="absolute inset-0 gradient-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg" />
+                      
+                      {/* Description */}
+                      <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {MEMO_CONCEPT.tagline}
+                        </p>
                         
-                        <div className="absolute -top-2 -right-2 px-2.5 py-0.5 gradient-primary text-primary-foreground text-xs font-bold rounded-full shadow-glow animate-pulse">
-                          PREVIEW
-                        </div>
+                        <p className="text-sm text-foreground leading-relaxed font-medium">
+                          {MEMO_CONCEPT.pitch}
+                        </p>
+                      </div>
+                      
+                      {/* CTAs */}
+                      <div className="space-y-3 pt-2">
+                        <Button 
+                          onClick={() => company && navigate(`/memo?companyId=${company.id}`)}
+                          className="w-full gradient-primary shadow-glow hover:shadow-glow-strong font-bold text-base h-14 hover-punch"
+                          size="lg"
+                        >
+                          <Sparkles className="w-5 h-5 mr-2" />
+                          {memo ? "View My Memo" : "Generate My Memo"}
+                        </Button>
                         
-                        <div className="relative flex items-center justify-center">
-                          <FileText className="w-4 h-4 mr-2 neon-pink" />
-                          <span className="font-bold neon-pink">See Sample First</span>
-                        </div>
-                      </Button>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
-                      <div className="w-1 h-1 rounded-full bg-primary/50" />
-                      <span>Preview the AI-powered analysis before creating yours</span>
+                        <Button 
+                          onClick={() => navigate("/sample-memo")}
+                          variant="ghost"
+                          className="w-full border border-primary/30 hover:border-primary hover:bg-primary/5 transition-all duration-300 group h-11"
+                          size="lg"
+                        >
+                          <div className="absolute -top-1.5 -right-1.5 px-2 py-0.5 gradient-primary text-primary-foreground text-[10px] font-bold rounded-full shadow-sm animate-pulse">
+                            PREVIEW
+                          </div>
+                          
+                          <div className="flex items-center justify-center gap-2">
+                            <FileText className="w-4 h-4 text-primary" />
+                            <span className="font-semibold text-primary">See Sample First</span>
+                          </div>
+                        </Button>
+                        
+                        <p className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
+                          <div className="w-1 h-1 rounded-full bg-primary/50" />
+                          <span>Preview the AI-powered analysis before creating yours</span>
+                        </p>
+                      </div>
                     </div>
                   </div>
 
