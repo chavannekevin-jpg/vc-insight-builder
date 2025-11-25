@@ -33,15 +33,15 @@ const Pricing = () => {
       name: "Investment Memo Builder",
       subtitle: "Your Fundraising Weapon",
       price: "€29.99",
-      description: "AI-powered memo that VCs actually read",
+      description: "One AI-powered memo that VCs actually read",
       icon: Sparkles,
       features: [
         { text: "Everything in Freemium", included: true, bold: true },
-        { text: "AI-generated investment memorandum", included: true },
+        { text: "One AI-generated investment memorandum", included: true },
         { text: "Personalized to your business model", included: true },
         { text: "All supporting materials and insights", included: true },
         { text: "Actionable feedback on your pitch", included: true },
-        { text: "Unlimited memo updates", included: true },
+        { text: "Unlimited memo updates", included: false },
         { text: "Network exposure to 400+ investors", included: false }
       ],
       cta: "Build My Memo",
@@ -56,6 +56,7 @@ const Pricing = () => {
       icon: Users,
       features: [
         { text: "Everything in Memo Builder", included: true, bold: true },
+        { text: "Unlimited memo updates", included: true },
         { text: "Profile shared with 400+ investors", included: true },
         { text: "Direct introductions when there's interest", included: true },
         { text: "Priority memo delivery (7 days)", included: true },
