@@ -46,6 +46,9 @@ import GeneratedMemo from "./pages/GeneratedMemo";
 import PreSeedGuide from "./pages/PreSeedGuide";
 import ProblemSlideGuide from "./pages/ProblemSlideGuide";
 import SolutionSlideGuide from "./pages/SolutionSlideGuide";
+import WaitlistCheckout from "./pages/WaitlistCheckout";
+import WaitlistConfirmation from "./pages/WaitlistConfirmation";
+import AdminWaitlist from "./pages/AdminWaitlist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -96,10 +99,13 @@ const App = () => (
           <Route path="/product" element={<Product />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/waitlist-checkout" element={<WaitlistCheckout />} />
+          <Route path="/waitlist-confirmation" element={<WaitlistConfirmation />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/articles" element={<AdminArticles />} />
           <Route path="/admin/prompts" element={<AdminPrompts />} />
           <Route path="/admin/memo-builder" element={<MemoBuilder />} />
+          <Route path="/admin/waitlist" element={<AdminWaitlist />} />
           <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

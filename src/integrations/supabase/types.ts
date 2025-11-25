@@ -279,6 +279,91 @@ export type Database = {
         }
         Relationships: []
       }
+      waitlist_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      waitlist_signups: {
+        Row: {
+          company_id: string
+          created_at: string
+          discount_amount: number
+          has_paid: boolean
+          id: string
+          paid_at: string | null
+          payment_intent_id: string | null
+          pricing_tier: string
+          signed_up_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          discount_amount?: number
+          has_paid?: boolean
+          id?: string
+          paid_at?: string | null
+          payment_intent_id?: string | null
+          pricing_tier?: string
+          signed_up_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          discount_amount?: number
+          has_paid?: boolean
+          id?: string
+          paid_at?: string | null
+          payment_intent_id?: string | null
+          pricing_tier?: string
+          signed_up_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_signups_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_signups_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "company_responses_view"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "waitlist_signups_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       company_responses_view: {
