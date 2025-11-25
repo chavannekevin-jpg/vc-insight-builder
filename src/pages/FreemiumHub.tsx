@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CompanyBadge } from "@/components/CompanyBadge";
+import { CompanyReadinessScore } from "@/components/CompanyReadinessScore";
 import { marked } from "marked";
 import { 
   FileText, 
@@ -17,7 +18,8 @@ import {
   AlertTriangle,
   Wrench,
   TrendingUp,
-  Shield
+  Shield,
+  Edit
 } from "lucide-react";
 
 interface Company {
@@ -112,6 +114,7 @@ export default function FreemiumHub() {
   const [expandedSection, setExpandedSection] = useState<string | null>("stage-guides");
   const [tagline, setTagline] = useState<string>("");
   const [taglineLoading, setTaglineLoading] = useState(false);
+  const [profileReadiness, setProfileReadiness] = useState<Array<{ name: string; completed: boolean }>>([]);
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -146,6 +149,20 @@ export default function FreemiumHub() {
       if (memoData) {
         setMemo(memoData);
       }
+      
+      // Calculate profile readiness
+      const { data: responses } = await supabase
+        .from("memo_responses")
+        .select("question_key")
+        .eq("company_id", companies[0].id);
+      
+      const sectionKeys = ["problem", "solution", "market", "competition", "team", "usp", "business", "traction"];
+      const readiness = sectionKeys.map(key => ({
+        name: key.charAt(0).toUpperCase() + key.slice(1),
+        completed: responses?.some(r => r.question_key.startsWith(key)) || false
+      }));
+      
+      setProfileReadiness(readiness);
       
       // Load published articles
       const { data: articlesData } = await supabase
@@ -311,12 +328,20 @@ export default function FreemiumHub() {
                       </div>
                     )}
                     
+                    <div className="pt-4 border-t border-border/50">
+                      <CompanyReadinessScore 
+                        sections={profileReadiness}
+                        variant="compact"
+                      />
+                    </div>
+                    
                     <Button 
-                      onClick={() => navigate('/intake')}
+                      onClick={() => navigate('/company/profile/edit')}
                       className="w-full mt-2"
                       variant="outline"
                     >
-                      Edit Company Details
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Company Profile
                     </Button>
                   </div>
                 </div>
