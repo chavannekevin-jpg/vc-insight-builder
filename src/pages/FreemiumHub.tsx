@@ -110,11 +110,13 @@ export default function FreemiumHub() {
 
       setCompany(companies[0]);
       
-      // Check if memo exists for this company
+      // Check if memo exists for this company - get the most recent one
       const { data: memoData } = await supabase
         .from("memos")
         .select("*")
         .eq("company_id", companies[0].id)
+        .order("created_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
       
       if (memoData) {
