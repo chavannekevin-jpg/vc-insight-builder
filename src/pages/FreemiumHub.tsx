@@ -6,24 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { marked } from "marked";
 import { 
-  BookOpen, 
-  Target, 
-  Users, 
-  TrendingUp, 
-  Shield, 
   FileText, 
-  XCircle,
   ChevronRight,
   Sparkles,
   GraduationCap,
   Calculator,
-  BarChart3,
-  Lightbulb,
-  CheckCircle2,
   Layers,
   PresentationIcon,
   AlertTriangle,
-  Wrench
+  Wrench,
+  TrendingUp,
+  Shield
 } from "lucide-react";
 
 interface Company {
@@ -51,26 +44,16 @@ interface EducationalArticle {
   published: boolean;
 }
 
-const MEMO_BENEFITS = [
-  {
-    id: "what-vcs-see",
-    title: "See What VCs See",
-    description: "Understand exactly how investors evaluate your startup",
-    icon: Target
-  },
-  {
-    id: "identify-gaps",
-    title: "Identify Your Gaps",
-    description: "Discover weaknesses before investors do",
-    icon: Shield
-  },
-  {
-    id: "strengthen-pitch",
-    title: "Strengthen Your Pitch",
-    description: "Build a compelling narrative that resonates with VCs",
-    icon: TrendingUp
-  }
-];
+const MEMO_CONCEPT = {
+  title: "The Investment Memorandum",
+  subtitle: "Your startup, analyzed through the VC lens",
+  description: [
+    "I've taken the cognitive process I use as a VC—the exact mental model and internal evaluation workflow used inside Investment Committees—and translated it into a structured methodology founders can access.",
+    "This methodology enables you to generate your own Investment Memorandum, built the same way a VC would structure and justify a deal.",
+    "This memo becomes your most powerful asset: a presentation-ready, investor-grade narrative written in VC language. It exposes the real weaknesses in your company, highlights strengths, outlines the investment case, and identifies the areas that need improvement before fundraising.",
+    "When you purchase the memo, you're essentially receiving the internal document a VC would write about you if they were preparing to pitch your startup to their partners. It is precise, objective, critical, and aligned with how funding decisions are actually made."
+  ]
+};
 
 const VC_BRAIN_SECTIONS = [
   {
@@ -220,11 +203,11 @@ export default function FreemiumHub() {
               </p>
               <div className="pt-4">
                 <Button 
-                  onClick={() => navigate("/pricing")}
+                  onClick={() => company && navigate(`/memo?companyId=${company.id}`)}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
                   size="lg"
                 >
-                  Upgrade to Full Access
+                  Generate My Memo
                 </Button>
               </div>
             </div>
@@ -236,7 +219,7 @@ export default function FreemiumHub() {
       <div className="max-w-[1800px] mx-auto px-8 py-12">
         <div className="grid lg:grid-cols-3 gap-8 items-start">
           
-          {/* LEFT PANEL: My Memo */}
+          {/* LEFT PANEL: Investment Memo Concept */}
           <div className="space-y-6">
             <div className="sticky top-6">
               <div className="p-6 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl">
@@ -244,36 +227,51 @@ export default function FreemiumHub() {
                   <div className="p-3 rounded-xl bg-gradient-primary shadow-lg">
                     <FileText className="w-6 h-6 text-primary-foreground" />
                   </div>
-                  <h2 className="text-2xl font-bold">My Memo</h2>
+                  <div>
+                    <h2 className="text-2xl font-bold">{MEMO_CONCEPT.title}</h2>
+                    <p className="text-sm text-muted-foreground mt-1">{MEMO_CONCEPT.subtitle}</p>
+                  </div>
                 </div>
                 
-                {company && (
+                <div className="space-y-6">
+                  {/* The Transformation */}
                   <div className="space-y-4">
-                    <Button 
-                      onClick={() => navigate(`/memo?companyId=${company.id}`)}
-                      className="w-full gradient-primary shadow-glow hover-neon-pulse font-bold"
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      {memo ? "View Memo" : "Generate Memo"}
-                    </Button>
-                    
-                    {memo ? (
-                      <div className="space-y-4 pt-4">
-                        <div className="space-y-3">
+                    {MEMO_CONCEPT.description.map((paragraph, idx) => (
+                      <p key={idx} className="text-sm text-foreground leading-relaxed">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                  
+                  {/* CTA */}
+                  {company && (
+                    <div className="pt-4 border-t border-border/50">
+                      <Button 
+                        onClick={() => navigate(`/memo?companyId=${company.id}`)}
+                        className="w-full gradient-primary shadow-glow hover-neon-pulse font-bold"
+                        size="lg"
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        {memo ? "View My Memo" : "Generate My Memo"}
+                      </Button>
+                      
+                      {memo && (
+                        <div className="mt-4 space-y-3">
                           {(() => {
                             try {
                               const parsedContent = JSON.parse(memo.content);
-                              const sections = Object.entries(parsedContent.sections).slice(0, 3);
+                              const sections = Object.entries(parsedContent.sections).slice(0, 2);
                               return sections.map(([title, content]: [string, any], index: number) => (
                                 <div
                                   key={index}
-                                  className="p-4 bg-card/50 border border-border/50 rounded-lg hover:border-primary/20 transition-all"
+                                  className="p-3 bg-card/50 border border-border/50 rounded-lg hover:border-primary/20 transition-all cursor-pointer"
+                                  onClick={() => navigate(`/memo?companyId=${company.id}`)}
                                 >
-                                  <h3 className="text-sm font-bold mb-2 text-primary">
+                                  <h3 className="text-xs font-bold mb-1 text-primary">
                                     {title}
                                   </h3>
                                   <div 
-                                    className="text-xs text-muted-foreground prose prose-sm max-w-none line-clamp-3"
+                                    className="text-xs text-muted-foreground prose prose-sm max-w-none line-clamp-2"
                                     dangerouslySetInnerHTML={{ 
                                       __html: marked(content as string, { breaks: true, gfm: true })
                                     }}
@@ -281,41 +279,14 @@ export default function FreemiumHub() {
                                 </div>
                               ));
                             } catch (e) {
-                              return (
-                                <p className="text-sm text-muted-foreground text-center py-4">
-                                  Your memo is ready. Click above to view.
-                                </p>
-                              );
+                              return null;
                             }
                           })()}
                         </div>
-                      </div>
-                    ) : (
-                      <div className="pt-4 space-y-4 border-t border-border/50">
-                        <p className="text-sm text-muted-foreground">
-                          Get a detailed investment memo analyzing your startup through a VC's lens.
-                        </p>
-                        
-                        <div className="space-y-3">
-                          {MEMO_BENEFITS.map((item) => {
-                            const Icon = item.icon;
-                            return (
-                              <div key={item.id} className="flex items-start gap-3">
-                                <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0 mt-0.5">
-                                  <Icon className="w-4 h-4 text-primary" />
-                                </div>
-                                <div className="space-y-1">
-                                  <h4 className="text-sm font-bold">{item.title}</h4>
-                                  <p className="text-xs text-muted-foreground">{item.description}</p>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -375,37 +346,6 @@ export default function FreemiumHub() {
               })}
             </div>
 
-            {/* Curated Articles */}
-            <div className="mt-8">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-primary" />
-                Featured Articles
-              </h3>
-              <div className="space-y-3">
-                {articles.map((item, index) => (
-                  <div
-                    key={item.id}
-                    onClick={() => navigate(`/hub/${item.slug}`)}
-                    className="group cursor-pointer p-4 bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg hover:border-primary/30 hover:shadow-md transition-all duration-300"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-bold group-hover:text-primary transition-colors mb-1">
-                          {item.title}
-                        </h4>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {item.description}
-                        </p>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* RIGHT PANEL: Tools & Templates */}
