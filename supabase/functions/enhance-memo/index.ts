@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.84.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +19,29 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Create Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Fetch custom prompts from database
+    const { data: promptsData, error: promptsError } = await supabaseClient
+      .from("memo_prompts")
+      .select("section_name, prompt");
+
+    if (promptsError) {
+      console.error("Error fetching prompts:", promptsError);
+    }
+
+    // Create a map of section names to prompts
+    const customPrompts: Record<string, string> = {};
+    if (promptsData) {
+      promptsData.forEach((p) => {
+        customPrompts[p.section_name] = p.prompt;
+      });
+    }
+
     const enhanced: Record<string, string> = {};
 
     // Process each section
@@ -35,7 +59,12 @@ serve(async (req) => {
         continue;
       }
 
-      const prompt = `You are a professional VC investment memo writer. Take the following startup information for the "${sectionName}" section and create a clear, concise, and compelling narrative. 
+      // Use custom prompt if available, otherwise use default
+      const customPrompt = customPrompts[sectionName];
+      
+      const prompt = customPrompt 
+        ? `${customPrompt}\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.\n\nRaw information:\n${combinedContent}\n\nProfessional memo section:`
+        : `You are a professional VC investment memo writer. Take the following startup information for the "${sectionName}" section and create a clear, concise, and compelling narrative. 
 
 Requirements:
 - Synthesize all the information into a cohesive 2-4 paragraph narrative
