@@ -16,7 +16,13 @@ import {
   ChevronRight,
   ChevronDown,
   Sparkles,
-  GraduationCap
+  GraduationCap,
+  Calculator,
+  FolderOpen,
+  Database,
+  BarChart3,
+  Lightbulb,
+  CheckCircle2
 } from "lucide-react";
 import {
   Collapsible,
@@ -69,6 +75,9 @@ export default function FreemiumHub() {
   const [articles, setArticles] = useState<EducationalArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [playbookOpen, setPlaybookOpen] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
+  const [caseStudiesOpen, setCaseStudiesOpen] = useState(false);
+  const [progressOpen, setProgressOpen] = useState(true);
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -170,10 +179,90 @@ export default function FreemiumHub() {
       <div className="max-w-7xl mx-auto px-8 py-20">
         <div className="grid lg:grid-cols-3 gap-12">
           {/* Main Content Area */}
-          <div className="lg:col-span-2 space-y-16">
+          <div className="lg:col-span-2 space-y-8">
+            
+            {/* My Progress Section */}
+            <section>
+              <Collapsible open={progressOpen} onOpenChange={setProgressOpen}>
+                <CollapsibleTrigger asChild>
+                  <button className="w-full group">
+                    <div className="flex items-center justify-between p-6 bg-card border border-border rounded-2xl hover:border-primary/30 transition-all duration-300 hover:shadow-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-xl bg-gradient-primary shadow-lg">
+                          <BarChart3 className="w-7 h-7 text-primary-foreground" />
+                        </div>
+                        <div className="text-left">
+                          <h2 className="text-3xl font-bold group-hover:text-primary transition-colors">
+                            My Progress
+                          </h2>
+                          <p className="text-muted-foreground mt-1">
+                            Track your VC learning journey
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronDown 
+                        className={`w-6 h-6 text-muted-foreground transition-transform duration-300 ${
+                          progressOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </div>
+                  </button>
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent className="pt-6">
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Articles Read</span>
+                          <CheckCircle2 className="w-4 h-4 text-primary" />
+                        </div>
+                        <p className="text-3xl font-bold">0 / {articles.length}</p>
+                        <div className="w-full bg-muted rounded-full h-2 mt-3">
+                          <div className="bg-gradient-primary h-2 rounded-full" style={{ width: '0%' }} />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Learning Streak</span>
+                          <Sparkles className="w-4 h-4 text-primary" />
+                        </div>
+                        <p className="text-3xl font-bold">0 days</p>
+                        <p className="text-xs text-muted-foreground mt-3">Start learning to build your streak</p>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Next Up</span>
+                          <Target className="w-4 h-4 text-primary" />
+                        </div>
+                        <p className="text-sm font-medium line-clamp-2 mt-2">
+                          {articles[0]?.title || 'Start with PlayBook'}
+                        </p>
+                        {articles[0] && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="w-full mt-2 text-primary hover:text-primary"
+                            onClick={() => navigate(`/hub/${articles[0].slug}`)}
+                          >
+                            Continue →
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </section>
             
             {/* PlayBook Section - Collapsible */}
-            <section className="space-y-6">
+            <section>
               <Collapsible open={playbookOpen} onOpenChange={setPlaybookOpen}>
                 <CollapsibleTrigger asChild>
                   <button className="w-full group">
@@ -238,6 +327,186 @@ export default function FreemiumHub() {
                   </div>
                 </CollapsibleContent>
               </Collapsible>
+            </section>
+
+            {/* Resources & Tools Section - Coming Soon */}
+            <section>
+              <Collapsible open={resourcesOpen} onOpenChange={setResourcesOpen}>
+                <CollapsibleTrigger asChild>
+                  <button className="w-full group">
+                    <div className="flex items-center justify-between p-6 bg-card border border-border rounded-2xl hover:border-primary/30 transition-all duration-300 hover:shadow-lg relative overflow-hidden">
+                      <div className="absolute top-3 right-3">
+                        <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                          Coming Soon
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-xl bg-gradient-primary shadow-lg">
+                          <Calculator className="w-7 h-7 text-primary-foreground" />
+                        </div>
+                        <div className="text-left">
+                          <h2 className="text-3xl font-bold group-hover:text-primary transition-colors">
+                            Resources & Tools
+                          </h2>
+                          <p className="text-muted-foreground mt-1">
+                            Calculators, templates, and frameworks
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronDown 
+                        className={`w-6 h-6 text-muted-foreground transition-transform duration-300 ${
+                          resourcesOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </div>
+                  </button>
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent className="pt-6">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <Calculator className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold mb-2">Valuation Calculator</h3>
+                          <p className="text-sm text-muted-foreground">Calculate pre/post-money valuation and dilution</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <FileText className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold mb-2">Pitch Deck Template</h3>
+                          <p className="text-sm text-muted-foreground">VC-approved slide deck structure</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <TrendingUp className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold mb-2">Financial Model</h3>
+                          <p className="text-sm text-muted-foreground">5-year projection template with unit economics</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <Shield className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold mb-2">Due Diligence Checklist</h3>
+                          <p className="text-sm text-muted-foreground">Prepare for investor questions</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </section>
+
+            {/* Case Studies Section - Coming Soon */}
+            <section>
+              <Collapsible open={caseStudiesOpen} onOpenChange={setCaseStudiesOpen}>
+                <CollapsibleTrigger asChild>
+                  <button className="w-full group">
+                    <div className="flex items-center justify-between p-6 bg-card border border-border rounded-2xl hover:border-primary/30 transition-all duration-300 hover:shadow-lg relative overflow-hidden">
+                      <div className="absolute top-3 right-3">
+                        <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                          Coming Soon
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-xl bg-gradient-primary shadow-lg">
+                          <FolderOpen className="w-7 h-7 text-primary-foreground" />
+                        </div>
+                        <div className="text-left">
+                          <h2 className="text-3xl font-bold group-hover:text-primary transition-colors">
+                            Case Studies
+                          </h2>
+                          <p className="text-muted-foreground mt-1">
+                            Real VC deals analyzed and explained
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronDown 
+                        className={`w-6 h-6 text-muted-foreground transition-transform duration-300 ${
+                          caseStudiesOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </div>
+                  </button>
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent className="pt-6">
+                  <div className="space-y-4">
+                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                          <Lightbulb className="w-6 h-6 text-primary" />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <h3 className="text-lg font-bold">Why [Company] Got Funded</h3>
+                          <p className="text-sm text-muted-foreground">Breaking down a Series A that closed in 30 days</p>
+                          <div className="flex gap-2 pt-2">
+                            <span className="text-xs px-2 py-1 bg-primary/10 rounded">Seed</span>
+                            <span className="text-xs px-2 py-1 bg-primary/10 rounded">SaaS</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 bg-card/50 border border-border/50 rounded-xl opacity-60">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                          <XCircle className="w-6 h-6 text-primary" />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <h3 className="text-lg font-bold">The Red Flags VCs Spotted</h3>
+                          <p className="text-sm text-muted-foreground">Why this $10M ARR company couldn't raise</p>
+                          <div className="flex gap-2 pt-2">
+                            <span className="text-xs px-2 py-1 bg-primary/10 rounded">Series A</span>
+                            <span className="text-xs px-2 py-1 bg-primary/10 rounded">B2B</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </section>
+
+            {/* VC Directory Section - Coming Soon */}
+            <section>
+              <div className="p-6 bg-card border border-border rounded-2xl hover:border-primary/30 transition-all duration-300 relative overflow-hidden">
+                <div className="absolute top-3 right-3">
+                  <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                    Coming Soon
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 opacity-60">
+                  <div className="p-3 rounded-xl bg-gradient-primary shadow-lg">
+                    <Database className="w-7 h-7 text-primary-foreground" />
+                  </div>
+                  <div className="text-left">
+                    <h2 className="text-3xl font-bold">VC Directory</h2>
+                    <p className="text-muted-foreground mt-1">
+                      Browse 1000+ VCs by stage, sector, and geography
+                    </p>
+                  </div>
+                </div>
+              </div>
             </section>
 
             {/* Benefits Section */}
