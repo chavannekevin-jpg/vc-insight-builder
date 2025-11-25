@@ -4,8 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Save, RotateCcw } from "lucide-react";
+import { ArrowLeft, Save, RotateCcw, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Prompt {
   id: string;
@@ -32,6 +42,10 @@ const AdminPrompts = () => {
   const [prompts, setPrompts] = useState<Record<string, Prompt>>({});
   const [editedPrompts, setEditedPrompts] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [optimizing, setOptimizing] = useState<string | null>(null);
+  const [optimizedPrompt, setOptimizedPrompt] = useState<string>("");
+  const [showOptimizedDialog, setShowOptimizedDialog] = useState(false);
+  const [currentSection, setCurrentSection] = useState<string>("");
 
   useEffect(() => {
     checkAuthAndFetch();
@@ -139,6 +153,48 @@ const AdminPrompts = () => {
     return editedPrompts[sectionName] !== prompts[sectionName]?.prompt;
   };
 
+  const handleOptimize = async (sectionName: string) => {
+    setOptimizing(sectionName);
+    setCurrentSection(sectionName);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("optimize-prompt", {
+        body: { 
+          prompt: editedPrompts[sectionName],
+          sectionName 
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.optimizedPrompt) {
+        setOptimizedPrompt(data.optimizedPrompt);
+        setShowOptimizedDialog(true);
+      }
+    } catch (error: any) {
+      console.error("Error optimizing prompt:", error);
+      toast({
+        title: "Optimization Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setOptimizing(null);
+    }
+  };
+
+  const handleAcceptOptimized = () => {
+    setEditedPrompts({
+      ...editedPrompts,
+      [currentSection]: optimizedPrompt,
+    });
+    setShowOptimizedDialog(false);
+    toast({
+      title: "Prompt Updated",
+      description: "You can now review and save the optimized prompt",
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -181,6 +237,16 @@ const AdminPrompts = () => {
                   )}
                 </div>
                 <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleOptimize(sectionName)}
+                    variant="secondary"
+                    size="sm"
+                    disabled={optimizing === sectionName || !editedPrompts[sectionName]}
+                    className="gap-2"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    {optimizing === sectionName ? "Optimizing..." : "Optimize with AI"}
+                  </Button>
                   {hasChanges(sectionName) && (
                     <Button
                       onClick={() => handleReset(sectionName)}
@@ -218,6 +284,48 @@ const AdminPrompts = () => {
           </ModernCard>
         ))}
       </main>
+
+      {/* Optimized Prompt Dialog */}
+      <AlertDialog open={showOptimizedDialog} onOpenChange={setShowOptimizedDialog}>
+        <AlertDialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              Optimized Prompt for {currentSection}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Review the AI-optimized version of your prompt below. You can accept it or continue with your original.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h4 className="font-semibold text-sm">Original Prompt:</h4>
+              <div className="p-4 bg-muted rounded-lg max-h-40 overflow-y-auto">
+                <p className="text-sm whitespace-pre-wrap font-mono">
+                  {editedPrompts[currentSection]}
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="font-semibold text-sm text-primary">Optimized Prompt:</h4>
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg max-h-60 overflow-y-auto">
+                <p className="text-sm whitespace-pre-wrap font-mono">
+                  {optimizedPrompt}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Original</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAcceptOptimized}>
+              Accept Optimized
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
