@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, ArrowLeft, Sparkles, FileText, Target, TrendingUp, AlertCircle, Lightbulb, CheckCircle2, Star, Users, DollarSign, Rocket, Shield } from "lucide-react";
+import { Download, ArrowLeft, Sparkles, FileText, Target, TrendingUp, AlertCircle, Lightbulb, CheckCircle2, Zap, Building2, Cog } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { marked } from "marked";
 
@@ -20,17 +20,31 @@ interface CompanyInfo {
   description: string;
 }
 
-interface ExtractedInsight {
-  icon: any;
-  label: string;
-  value: string;
-  color: string;
+interface StructuredInfo {
+  industry: string;
+  processImproved: string;
+  oneLiner: string;
 }
 
-interface ActionItem {
+interface InvestmentInsight {
   category: string;
+  insight: string;
+  sentiment: 'positive' | 'neutral' | 'concern';
+  significance: 'high' | 'medium' | 'low';
+}
+
+interface NextStepRecommendation {
   action: string;
+  rationale: string;
   priority: 'high' | 'medium' | 'low';
+}
+
+interface AIAnalysis {
+  structuredInfo: StructuredInfo;
+  investmentInsights: InvestmentInsight[];
+  keyStrengths: string[];
+  keyRisks: string[];
+  nextStepRecommendations: NextStepRecommendation[];
 }
 
 export default function GeneratedMemo() {
@@ -40,13 +54,13 @@ export default function GeneratedMemo() {
   
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [sections, setSections] = useState<MemoSection[]>([]);
   const [company, setCompany] = useState<CompanyInfo | null>(null);
-  const [insights, setInsights] = useState<ExtractedInsight[]>([]);
-  const [actionItems, setActionItems] = useState<ActionItem[]>([]);
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
 
   useEffect(() => {
-    const loadOrGenerateMemo = async () => {
+    const loadMemoAndAnalyze = async () => {
       if (!companyId) {
         toast({
           title: "Error",
@@ -80,13 +94,6 @@ export default function GeneratedMemo() {
           );
           setSections(formattedSections);
 
-          // Extract real insights and actions from memo content
-          const extractedInsights = extractIntelligentInsights(formattedSections);
-          setInsights(extractedInsights);
-          
-          const extractedActions = extractActionItems(formattedSections);
-          setActionItems(extractedActions);
-
           const { data: companyData } = await supabase
             .from("companies")
             .select("name, stage, category, description")
@@ -95,12 +102,39 @@ export default function GeneratedMemo() {
 
           if (companyData) {
             setCompany(companyData);
+            
+            // Analyze memo with AI
+            setAnalyzing(true);
+            try {
+              const { data: analysisData, error: analysisError } = await supabase.functions.invoke("analyze-memo", {
+                body: {
+                  memoContent: parsedContent.sections,
+                  companyInfo: companyData
+                }
+              });
+
+              if (analysisError) {
+                console.error("Analysis error:", analysisError);
+                toast({
+                  title: "Analysis unavailable",
+                  description: "Showing memo without AI insights",
+                  variant: "destructive"
+                });
+              } else if (analysisData) {
+                setAiAnalysis(analysisData);
+              }
+            } catch (analysisError) {
+              console.error("Failed to analyze memo:", analysisError);
+            } finally {
+              setAnalyzing(false);
+            }
           }
           
           setLoading(false);
           return;
         }
 
+        // If no memo exists, generate it
         setGenerating(true);
         const { data, error } = await supabase.functions.invoke("generate-full-memo", {
           body: { companyId }
@@ -108,7 +142,7 @@ export default function GeneratedMemo() {
 
         if (error) throw error;
 
-        if (data.enhanced) {
+        if (data.enhanced && data.company) {
           const formattedSections: MemoSection[] = Object.entries(data.enhanced).map(
             ([title, content]) => ({
               title,
@@ -116,16 +150,26 @@ export default function GeneratedMemo() {
             })
           );
           setSections(formattedSections);
-          
-          const extractedInsights = extractIntelligentInsights(formattedSections);
-          setInsights(extractedInsights);
-          
-          const extractedActions = extractActionItems(formattedSections);
-          setActionItems(extractedActions);
-        }
-
-        if (data.company) {
           setCompany(data.company);
+          
+          // Analyze newly generated memo
+          setAnalyzing(true);
+          try {
+            const { data: analysisData, error: analysisError } = await supabase.functions.invoke("analyze-memo", {
+              body: {
+                memoContent: data.enhanced,
+                companyInfo: data.company
+              }
+            });
+
+            if (!analysisError && analysisData) {
+              setAiAnalysis(analysisData);
+            }
+          } catch (analysisError) {
+            console.error("Failed to analyze memo:", analysisError);
+          } finally {
+            setAnalyzing(false);
+          }
         }
       } catch (error: any) {
         console.error("Error with memo:", error);
@@ -140,158 +184,8 @@ export default function GeneratedMemo() {
       }
     };
 
-    loadOrGenerateMemo();
+    loadMemoAndAnalyze();
   }, [companyId, navigate]);
-
-  const extractIntelligentInsights = (sections: MemoSection[]): ExtractedInsight[] => {
-    const insights: ExtractedInsight[] = [];
-    
-    sections.forEach(section => {
-      const content = section.content.toLowerCase();
-      
-      // Extract market size
-      if (section.title === 'Market') {
-        const marketMatch = content.match(/\$\s*(\d+(?:\.\d+)?)\s*(?:billion|bn|million|mn|trillion|tn)/i);
-        if (marketMatch) {
-          insights.push({
-            icon: TrendingUp,
-            label: 'Market Opportunity',
-            value: marketMatch[0].replace(/\$\s*/, '$'),
-            color: 'text-primary'
-          });
-        }
-      }
-      
-      // Extract team size or key team info
-      if (section.title === 'Team') {
-        const teamMatch = content.match(/(\d+)\s*(?:years?|decades?)\s*(?:of\s*)?(?:experience|expertise)/i);
-        if (teamMatch) {
-          insights.push({
-            icon: Users,
-            label: 'Team Experience',
-            value: `${teamMatch[1]}+ years combined`,
-            color: 'text-success'
-          });
-        }
-      }
-      
-      // Extract traction metrics
-      if (section.title === 'Traction') {
-        const revenueMatch = content.match(/\$\s*(\d+(?:,\d+)?(?:\.\d+)?)\s*(?:k|m|million|thousand)/i);
-        const userMatch = content.match(/(\d+(?:,\d+)?(?:\.\d+)?)\s*(?:k|m|million|thousand)?\s*(?:users?|customers?|clients?)/i);
-        const growthMatch = content.match(/(\d+(?:\.\d+)?)\s*%\s*(?:growth|increase)/i);
-        
-        if (revenueMatch) {
-          insights.push({
-            icon: DollarSign,
-            label: 'Revenue Milestone',
-            value: revenueMatch[0],
-            color: 'text-success'
-          });
-        }
-        if (userMatch) {
-          insights.push({
-            icon: Users,
-            label: 'User Base',
-            value: userMatch[0],
-            color: 'text-primary'
-          });
-        }
-        if (growthMatch) {
-          insights.push({
-            icon: Rocket,
-            label: 'Growth Rate',
-            value: `${growthMatch[1]}% growth`,
-            color: 'text-primary'
-          });
-        }
-      }
-      
-      // Extract competitive advantage
-      if (section.title === 'USP' || content.includes('unique') || content.includes('differentiat')) {
-        if (content.includes('proprietary') || content.includes('patent')) {
-          insights.push({
-            icon: Shield,
-            label: 'Competitive Moat',
-            value: 'Proprietary technology',
-            color: 'text-accent'
-          });
-        }
-      }
-    });
-    
-    return insights;
-  };
-
-  const extractActionItems = (sections: MemoSection[]): ActionItem[] => {
-    const actions: ActionItem[] = [];
-    
-    sections.forEach(section => {
-      const content = section.content.toLowerCase();
-      
-      // Extract challenges and convert to actions
-      if (content.includes('challenge') || content.includes('risk') || content.includes('concern')) {
-        if (section.title === 'Competition') {
-          actions.push({
-            category: 'Market Position',
-            action: 'Conduct detailed competitive analysis and identify clear differentiation points',
-            priority: 'high'
-          });
-        }
-        if (section.title === 'Market') {
-          actions.push({
-            category: 'Market Validation',
-            action: 'Validate market assumptions with customer interviews and pilot programs',
-            priority: 'high'
-          });
-        }
-      }
-      
-      // Extract growth opportunities
-      if (section.title === 'Traction' && (content.includes('early') || content.includes('growing'))) {
-        actions.push({
-          category: 'Growth Strategy',
-          action: 'Develop scalable acquisition channels and optimize unit economics',
-          priority: 'high'
-        });
-      }
-      
-      if (section.title === 'Team' && (content.includes('need') || content.includes('hire') || content.includes('expand'))) {
-        actions.push({
-          category: 'Team Building',
-          action: 'Identify and recruit key hires in critical functional areas',
-          priority: 'medium'
-        });
-      }
-      
-      // Business model actions
-      if (section.title === 'Business Model') {
-        actions.push({
-          category: 'Business Model',
-          action: 'Stress-test financial projections and refine pricing strategy',
-          priority: 'medium'
-        });
-      }
-    });
-    
-    // Add default strategic actions if none extracted
-    if (actions.length === 0) {
-      actions.push(
-        {
-          category: 'Due Diligence',
-          action: 'Prepare detailed data room with financial metrics and customer references',
-          priority: 'high'
-        },
-        {
-          category: 'Narrative',
-          action: 'Refine pitch deck to align with key insights from this memo',
-          priority: 'medium'
-        }
-      );
-    }
-    
-    return actions.slice(0, 4); // Limit to 4 most relevant actions
-  };
 
   const handleDownloadPDF = () => {
     toast({
@@ -349,7 +243,6 @@ export default function GeneratedMemo() {
           </Button>
           
           <div className="grid lg:grid-cols-3 gap-8 items-start">
-            {/* Left: Title and badges */}
             <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center gap-3 flex-wrap">
                 {company && (
@@ -376,7 +269,6 @@ export default function GeneratedMemo() {
               </div>
             </div>
             
-            {/* Right: Export actions */}
             <div className="flex lg:flex-col gap-3 lg:items-end">
               <Button
                 size="sm"
@@ -401,7 +293,7 @@ export default function GeneratedMemo() {
         </div>
       </section>
 
-      {/* Main Content - More Breathable */}
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 md:px-8 py-12 md:py-16">
         {sections.length === 0 ? (
           <div className="text-center py-20">
@@ -420,40 +312,134 @@ export default function GeneratedMemo() {
           </div>
         ) : (
           <div className="space-y-12">
-            {/* Key Metrics - Extracted from actual memo */}
-            {insights.length > 0 && (
+            {/* AI Analysis Loading State */}
+            {analyzing && (
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20">
+                <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+                <p className="text-sm font-body text-muted-foreground">
+                  AI is analyzing the memo to generate investment insights...
+                </p>
+              </div>
+            )}
+
+            {/* Structured Company Info - From AI Analysis */}
+            {aiAnalysis?.structuredInfo && (
               <section className="animate-fade-in">
-                <h2 className="text-2xl md:text-3xl font-display font-bold mb-6">
-                  Key Metrics
-                </h2>
-                
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {insights.map((insight, idx) => {
-                    const Icon = insight.icon;
-                    return (
-                      <div
-                        key={idx}
-                        className="group relative p-5 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm hover:border-primary/30 transition-all duration-300 hover:shadow-lg"
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className={`flex items-center justify-center w-9 h-9 rounded-lg bg-card ${insight.color}`}>
-                            <Icon className="w-4.5 h-4.5" />
-                          </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground font-body mb-1 uppercase tracking-wide">
-                          {insight.label}
-                        </p>
-                        <p className="text-xl font-display font-bold">
-                          {insight.value}
-                        </p>
-                      </div>
-                    );
-                  })}
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="p-5 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Building2 className="w-4 h-4 text-primary" />
+                      <span className="text-xs text-muted-foreground font-body uppercase tracking-wide">Industry</span>
+                    </div>
+                    <p className="text-lg font-display font-bold">{aiAnalysis.structuredInfo.industry}</p>
+                  </div>
+                  
+                  <div className="p-5 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Cog className="w-4 h-4 text-accent" />
+                      <span className="text-xs text-muted-foreground font-body uppercase tracking-wide">Process Improved</span>
+                    </div>
+                    <p className="text-sm font-body text-foreground/90">{aiAnalysis.structuredInfo.processImproved}</p>
+                  </div>
+                  
+                  <div className="p-5 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm md:col-span-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap className="w-4 h-4 text-warning" />
+                      <span className="text-xs text-muted-foreground font-body uppercase tracking-wide">One-Liner</span>
+                    </div>
+                    <p className="text-sm font-body font-medium text-foreground/90">{aiAnalysis.structuredInfo.oneLiner}</p>
+                  </div>
                 </div>
               </section>
             )}
 
-            {/* Executive Summary - Lighter */}
+            {/* AI Investment Insights */}
+            {aiAnalysis?.investmentInsights && aiAnalysis.investmentInsights.length > 0 && (
+              <section className="animate-fade-in">
+                <h2 className="text-2xl md:text-3xl font-display font-bold mb-6">
+                  Investment Analysis
+                </h2>
+                
+                <div className="space-y-4">
+                  {aiAnalysis.investmentInsights.map((insight, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-5 rounded-xl border transition-all ${
+                        insight.sentiment === 'positive'
+                          ? 'bg-success/5 border-success/30'
+                          : insight.sentiment === 'concern'
+                          ? 'bg-warning/5 border-warning/30'
+                          : 'bg-card/30 border-border/50'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-body font-medium uppercase tracking-wide text-muted-foreground">
+                            {insight.category}
+                          </span>
+                          {insight.significance === 'high' && (
+                            <Badge variant="outline" className="text-xs px-2 py-0 border-primary/40 text-primary">
+                              High Priority
+                            </Badge>
+                          )}
+                        </div>
+                        {insight.sentiment === 'positive' ? (
+                          <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                        ) : insight.sentiment === 'concern' ? (
+                          <AlertCircle className="w-4 h-4 text-warning shrink-0" />
+                        ) : null}
+                      </div>
+                      <p className="font-body text-foreground/90 text-sm leading-relaxed">
+                        {insight.insight}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Key Strengths & Risks - Side by Side */}
+            {aiAnalysis && (aiAnalysis.keyStrengths?.length > 0 || aiAnalysis.keyRisks?.length > 0) && (
+              <section className="animate-fade-in">
+                <div className="grid md:grid-cols-2 gap-6">
+                  {aiAnalysis.keyStrengths && aiAnalysis.keyStrengths.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <CheckCircle2 className="w-5 h-5 text-success" />
+                        <h3 className="text-xl font-display font-bold">Key Strengths</h3>
+                      </div>
+                      <ul className="space-y-3">
+                        {aiAnalysis.keyStrengths.map((strength, idx) => (
+                          <li key={idx} className="flex items-start gap-2 p-3 rounded-lg bg-success/5 border border-success/20">
+                            <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                            <span className="font-body text-sm text-foreground/90">{strength}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {aiAnalysis.keyRisks && aiAnalysis.keyRisks.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <AlertCircle className="w-5 h-5 text-warning" />
+                        <h3 className="text-xl font-display font-bold">Key Risks</h3>
+                      </div>
+                      <ul className="space-y-3">
+                        {aiAnalysis.keyRisks.map((risk, idx) => (
+                          <li key={idx} className="flex items-start gap-2 p-3 rounded-lg bg-warning/5 border border-warning/20">
+                            <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
+                            <span className="font-body text-sm text-foreground/90">{risk}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Executive Summary */}
             {company?.description && (
               <section className="animate-fade-in">
                 <div className="flex items-center gap-3 mb-4">
@@ -470,7 +456,7 @@ export default function GeneratedMemo() {
               </section>
             )}
             
-            {/* Memo Sections - Lighter and More Breathable */}
+            {/* Memo Sections */}
             <div className="space-y-12">
               {sections.map((section, index) => (
                 <section 
@@ -510,38 +496,39 @@ export default function GeneratedMemo() {
               ))}
             </div>
 
-            {/* Recommended Actions - Based on actual content */}
-            {actionItems.length > 0 && (
+            {/* AI-Generated Next Steps */}
+            {aiAnalysis?.nextStepRecommendations && aiAnalysis.nextStepRecommendations.length > 0 && (
               <section className="animate-fade-in">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-primary text-primary-foreground shadow-glow">
                     <Target className="w-5 h-5" />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-display font-bold">Recommended Actions</h2>
+                  <h2 className="text-2xl md:text-3xl font-display font-bold">Recommended Next Steps</h2>
                 </div>
                 
-                <div className="pl-0 md:pl-[52px] grid sm:grid-cols-2 gap-4">
-                  {actionItems.map((item, idx) => (
+                <div className="pl-0 md:pl-[52px] space-y-4">
+                  {aiAnalysis.nextStepRecommendations.map((rec, idx) => (
                     <div
                       key={idx}
-                      className="group relative p-5 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm hover:border-primary/30 transition-all"
+                      className="p-5 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm hover:border-primary/30 transition-all"
                     >
-                      <div className="flex items-start gap-3 mb-2">
-                        <div className={`px-2 py-0.5 rounded text-xs font-body font-medium ${
-                          item.priority === 'high' 
-                            ? 'bg-primary/20 text-primary' 
-                            : item.priority === 'medium'
-                            ? 'bg-accent/20 text-accent'
-                            : 'bg-muted text-muted-foreground'
-                        }`}>
-                          {item.priority}
+                      <div className="flex items-start justify-between gap-4 mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`px-2 py-0.5 rounded text-xs font-body font-medium ${
+                            rec.priority === 'high' 
+                              ? 'bg-primary/20 text-primary' 
+                              : rec.priority === 'medium'
+                              ? 'bg-accent/20 text-accent'
+                              : 'bg-muted text-muted-foreground'
+                          }`}>
+                            {rec.priority}
+                          </div>
                         </div>
-                        <span className="text-xs text-muted-foreground font-body uppercase tracking-wide">
-                          {item.category}
-                        </span>
+                        <Lightbulb className="w-4 h-4 text-primary shrink-0" />
                       </div>
-                      <p className="font-body text-foreground/90 text-sm leading-relaxed">
-                        {item.action}
+                      <h4 className="font-body font-semibold text-foreground mb-2">{rec.action}</h4>
+                      <p className="font-body text-sm text-muted-foreground leading-relaxed">
+                        {rec.rationale}
                       </p>
                     </div>
                   ))}
@@ -552,7 +539,7 @@ export default function GeneratedMemo() {
         )}
       </div>
 
-      {/* Lighter Footer CTA */}
+      {/* Footer CTA */}
       <section className="relative border-t border-border/30 overflow-hidden">
         <div className="absolute inset-0 gradient-hero opacity-20" />
         
