@@ -102,16 +102,40 @@ const SampleMemo = () => {
       {/* Content */}
       <main className="container mx-auto px-4 py-16 max-w-5xl">
         {/* Psychological Framing Block */}
-        <div className="mb-12 animate-fade-in">
-          <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 border-2 border-primary/30 rounded-3xl p-10 shadow-glow-strong hover-lift">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-secondary/5 rounded-full blur-3xl" />
-            <div className="relative z-10 text-center space-y-3">
-              <p className="text-2xl md:text-3xl font-bold text-foreground leading-relaxed">
-                This is the document written about you after the partner meeting.
-              </p>
-              <p className="text-xl md:text-2xl text-muted-foreground font-medium">
-                Not the deck you present — the document VCs debate without you in the room.
+        <div className="mb-16 animate-fade-in">
+          <div className="relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/5 border border-border/40 rounded-3xl p-12 md:p-16 shadow-xl">
+            {/* Background decoration */}
+            <div className="absolute -top-20 -right-20 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/8 rounded-full blur-3xl" />
+            
+            <div className="relative z-10 max-w-3xl mx-auto">
+              {/* Icon cluster */}
+              <div className="flex items-center justify-center gap-3 mb-8">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-primary" />
+                </div>
+                <div className="h-px w-16 bg-gradient-to-r from-primary/40 to-transparent" />
+                <div className="w-10 h-10 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center -rotate-6">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                </div>
+              </div>
+
+              {/* Main message */}
+              <h2 className="text-3xl md:text-5xl lg:text-6xl font-display font-bold text-foreground leading-tight text-center mb-6 tracking-tight">
+                This is the document written about you<br />
+                <span className="text-primary">after the partner meeting</span>
+              </h2>
+
+              {/* Divider */}
+              <div className="flex items-center gap-4 my-8">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+                <div className="w-2 h-2 rounded-full bg-primary/40" />
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+              </div>
+
+              {/* Secondary text */}
+              <p className="text-lg md:text-xl text-muted-foreground text-center font-medium">
+                Not the deck you present — the document VCs debate <span className="text-foreground font-semibold">without you in the room.</span>
               </p>
             </div>
           </div>
