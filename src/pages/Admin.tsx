@@ -140,7 +140,7 @@ const Admin = () => {
   };
 
   const handleViewDetails = (companyId: string) => {
-    navigate(`/admin/company/${companyId}`);
+    navigate(`/portal?viewCompanyId=${companyId}`);
   };
 
   const filteredCompanies = companies.filter((company) => {

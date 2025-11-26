@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -400,8 +400,10 @@ export default function Portal() {
   const [founderScore, setFounderScore] = useState(0);
   const [showNeonFlash, setShowNeonFlash] = useState(false);
   const [memoSubmitted, setMemoSubmitted] = useState(false);
+  const [isAdminViewing, setIsAdminViewing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
 
   // Flatten all questions into a single array with metadata
   const allQuestions = Object.entries(questionSections).flatMap(([sectionTitle, section]) => 
@@ -423,7 +425,7 @@ export default function Portal() {
     );
 
     // Check for existing session and load data
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -438,12 +440,31 @@ export default function Portal() {
         return;
       }
 
+      // Check if viewing as admin
+      const viewCompanyId = searchParams.get('viewCompanyId');
+      
+      if (viewCompanyId) {
+        // Check if user is admin
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+
+        if (roleData) {
+          setIsAdminViewing(true);
+          loadCompanyDataById(viewCompanyId);
+          return;
+        }
+      }
+
       // Load company and responses from database
       loadCompanyData(session.user.id);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, toast]);
+  }, [navigate, toast, searchParams]);
 
   // Load AI feedback for current question when responses are loaded or question changes
   useEffect(() => {
@@ -503,6 +524,58 @@ export default function Portal() {
     }
   };
 
+  const loadCompanyDataById = async (companyId: string) => {
+    try {
+      // Get company by ID (admin view)
+      const { data: company, error: companyError } = await supabase
+        .from("companies")
+        .select("id, name, stage")
+        .eq("id", companyId)
+        .maybeSingle();
+
+      if (companyError) throw companyError;
+
+      if (!company) {
+        toast({
+          title: "Company Not Found",
+          description: "Could not find the requested company",
+          variant: "destructive",
+        });
+        navigate("/admin");
+        return;
+      }
+
+      setCompanyId(company.id);
+      setCompanyName(company.name);
+
+      // Load existing responses
+      const { data: existingResponses, error: responsesError } = await supabase
+        .from("memo_responses")
+        .select("question_key, answer")
+        .eq("company_id", company.id);
+
+      if (responsesError) throw responsesError;
+
+      const responsesMap: Record<string, string> = {};
+      existingResponses?.forEach((r) => {
+        if (r.answer) {
+          responsesMap[r.question_key] = r.answer;
+        }
+      });
+
+      setResponses(responsesMap);
+    } catch (error: any) {
+      console.error("Error loading company data:", error);
+      toast({
+        title: "Error",
+        description: "Could not load company data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch AI VC coach feedback
   const fetchAIFeedback = async (questionKey: string, question: string, answer: string) => {
     if (!answer || answer.trim().length === 0) {
@@ -536,6 +609,11 @@ export default function Portal() {
   };
 
   const handleAnswerChange = async (questionKey: string, answer: string) => {
+    // Don't save if admin is viewing
+    if (isAdminViewing) {
+      return;
+    }
+    
     const updatedResponses = { ...responses, [questionKey]: answer };
     setResponses(updatedResponses);
 
@@ -829,6 +907,16 @@ export default function Portal() {
               </p>
             </div>
             <div className="flex items-center gap-4">
+              {isAdminViewing && (
+                <Button
+                  onClick={() => navigate('/admin')}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 border-white/20 bg-white/5 text-white hover:bg-white/10"
+                >
+                  ← Back to Admin
+                </Button>
+              )}
               <FounderScoreDisplay score={founderScore} className="text-white" />
               <button
                 onClick={() => navigate('/hub')}
@@ -846,6 +934,16 @@ export default function Portal() {
               </button>
             </div>
           </div>
+
+          {/* Admin Viewing Banner */}
+          {isAdminViewing && (
+            <div className="mt-4 bg-yellow-500/20 border border-yellow-500/40 rounded-lg p-3 flex items-center gap-2">
+              <Eye className="w-5 h-5 text-yellow-400" />
+              <span className="text-sm text-yellow-200 font-medium">
+                Viewing as Admin - Read Only Mode
+              </span>
+            </div>
+          )}
 
           {/* Progress Bar */}
           <div className="mt-6">
@@ -935,7 +1033,8 @@ export default function Portal() {
                   onChange={(e) => handleAnswerChange(currentQuestion.key, e.target.value)}
                   placeholder={currentQuestion.placeholder}
                   className="min-h-[200px] md:min-h-[250px] text-base bg-black/40 border-2 border-white/20 focus:border-pink-500/50 focus:ring-4 focus:ring-pink-500/20 transition-all resize-none text-white placeholder:text-white/40 backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]"
-                  autoFocus
+                  autoFocus={!isAdminViewing}
+                  disabled={isAdminViewing}
                 />
 
                 {/* AI VC Coach Feedback */}
@@ -1007,24 +1106,25 @@ export default function Portal() {
               </div>
 
               {isLastQuestion ? (
-                <div className="flex flex-col items-end gap-4">
-                  <div className="text-right">
-                    <p className="text-white/90 mb-2">
-                      Your Founder Score: <span className={`text-2xl font-bold ${
-                        founderScore >= 86 ? "text-neon-pink" :
-                        founderScore >= 71 ? "text-green-400" :
-                        founderScore >= 41 ? "text-yellow-400" : "text-red-400"
-                      }`}>{founderScore}</span>
-                    </p>
-                    <p className="text-sm text-white/60 italic">
-                      {founderScore >= 96 ? "🔥 LEGENDARY. Go raise that money!" :
-                       founderScore >= 86 ? "Impressive. Top 10% territory." :
-                       founderScore >= 71 ? "Strong! You've got a real shot here." :
-                       founderScore >= 51 ? "Solid. VCs won't slam the door on you." :
-                       "Needs work. But you finished!"}
-                    </p>
-                  </div>
-                  <Button
+                !isAdminViewing && (
+                  <div className="flex flex-col items-end gap-4">
+                    <div className="text-right">
+                      <p className="text-white/90 mb-2">
+                        Your Founder Score: <span className={`text-2xl font-bold ${
+                          founderScore >= 86 ? "text-neon-pink" :
+                          founderScore >= 71 ? "text-green-400" :
+                          founderScore >= 41 ? "text-yellow-400" : "text-red-400"
+                        }`}>{founderScore}</span>
+                      </p>
+                      <p className="text-sm text-white/60 italic">
+                        {founderScore >= 96 ? "🔥 LEGENDARY. Go raise that money!" :
+                         founderScore >= 86 ? "Impressive. Top 10% territory." :
+                         founderScore >= 71 ? "Strong! You've got a real shot here." :
+                         founderScore >= 51 ? "Solid. VCs won't slam the door on you." :
+                         "Needs work. But you finished!"}
+                      </p>
+                    </div>
+                    <Button
                     onClick={async () => {
                       if (progressPercentage === 100) {
                         try {
@@ -1070,8 +1170,10 @@ export default function Portal() {
                     Choose Your Plan →
                   </Button>
                 </div>
+                )
               ) : (
-                <Button
+                !isAdminViewing && (
+                  <Button
                   onClick={handleNext}
                   size="lg"
                   className="gap-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 border-0 text-white shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:shadow-[0_0_40px_rgba(236,72,153,0.7)] hover:scale-105 transition-all"
@@ -1079,6 +1181,7 @@ export default function Portal() {
                   {hasAnswer ? "Next" : "Skip"}
                   <ChevronRight className="w-5 h-5" />
                 </Button>
+                )
               )}
             </div>
 
