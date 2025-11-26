@@ -101,6 +101,22 @@ const SampleMemo = () => {
 
       {/* Content */}
       <main className="container mx-auto px-4 py-16 max-w-5xl">
+        {/* Psychological Framing Block */}
+        <div className="mb-12 animate-fade-in">
+          <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 border-2 border-primary/30 rounded-3xl p-10 shadow-glow-strong hover-lift">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-secondary/5 rounded-full blur-3xl" />
+            <div className="relative z-10 text-center space-y-3">
+              <p className="text-2xl md:text-3xl font-bold text-foreground leading-relaxed">
+                This is the document written about you after the partner meeting.
+              </p>
+              <p className="text-xl md:text-2xl text-muted-foreground font-medium">
+                Not the deck you present — the document VCs debate without you in the room.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Company Header */}
         <div className="mb-16 space-y-8 animate-fade-in">
           <div className="space-y-4">
