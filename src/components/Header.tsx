@@ -8,6 +8,7 @@ import { toast } from "sonner";
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [hubDropdownOpen, setHubDropdownOpen] = useState(false);
   const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
   const location = useLocation();
@@ -18,12 +19,40 @@ export const Header = () => {
   const toolsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setIsAuthenticated(!!session);
+      
+      // Check admin role
+      if (session?.user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        
+        setIsAdmin(!!roleData);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setIsAuthenticated(!!session);
+      
+      // Check admin role on auth state change
+      if (session?.user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        
+        setIsAdmin(!!roleData);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -322,6 +351,18 @@ export const Header = () => {
                 </Link>
               );
             })}
+            
+            {/* Admin link - only visible to admins */}
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className={`text-sm font-medium transition-all duration-300 ${
+                  isActive("/admin") ? "neon-pink" : "text-muted-foreground hover:neon-pink"
+                }`}
+              >
+                Admin
+              </Link>
+            )}
           </div>
 
           {/* CTA Buttons */}
