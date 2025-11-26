@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,8 @@ import {
   TrendingUp,
   Shield,
   Edit,
-  Euro
+  Euro,
+  Eye
 } from "lucide-react";
 
 interface Company {
@@ -108,6 +109,7 @@ const VC_BRAIN_SECTIONS = [
 
 export default function FreemiumHub() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [company, setCompany] = useState<Company | null>(null);
   const [memo, setMemo] = useState<Memo | null>(null);
   const [articles, setArticles] = useState<EducationalArticle[]>([]);
@@ -116,6 +118,7 @@ export default function FreemiumHub() {
   const [tagline, setTagline] = useState<string>("");
   const [taglineLoading, setTaglineLoading] = useState(false);
   const [profileReadiness, setProfileReadiness] = useState<Array<{ name: string; completed: boolean }>>([]);
+  const [isAdminViewing, setIsAdminViewing] = useState(false);
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -123,6 +126,25 @@ export default function FreemiumHub() {
       if (!session) {
         navigate("/auth?redirect=/hub");
         return;
+      }
+
+      // Check if viewing as admin
+      const viewCompanyId = searchParams.get('viewCompanyId');
+      
+      if (viewCompanyId) {
+        // Check if user is admin
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+
+        if (roleData) {
+          setIsAdminViewing(true);
+          await loadCompanyById(viewCompanyId);
+          return;
+        }
       }
 
       const { data: companies } = await supabase
@@ -136,77 +158,102 @@ export default function FreemiumHub() {
         return;
       }
 
-      setCompany(companies[0]);
-      
-      // Check if memo exists for this company - get the most recent one
-      const { data: memoData } = await supabase
-        .from("memos")
-        .select("*")
-        .eq("company_id", companies[0].id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
-      if (memoData) {
-        setMemo(memoData);
-      }
-      
-      // Calculate profile readiness
-      const { data: responses } = await supabase
-        .from("memo_responses")
-        .select("question_key")
-        .eq("company_id", companies[0].id);
-      
-      const sectionKeys = ["problem", "solution", "market", "competition", "team", "usp", "business", "traction"];
-      const readiness = sectionKeys.map(key => ({
-        name: key.charAt(0).toUpperCase() + key.slice(1),
-        completed: responses?.some(r => r.question_key.startsWith(key)) || false
-      }));
-      
-      setProfileReadiness(readiness);
-      
-      // Load published articles
-      const { data: articlesData } = await supabase
-        .from("educational_articles")
-        .select("id, slug, title, description, icon, published")
-        .eq("published", true)
-        .order("created_at", { ascending: true });
-      
-      if (articlesData) {
-        setArticles(articlesData);
-      }
-      
-      setLoading(false);
-      
-      // Generate AI tagline
-      if (companies[0]) {
-        setTaglineLoading(true);
-        try {
-          const { data: taglineData, error: taglineError } = await supabase.functions.invoke(
-            'generate-company-tagline',
-            {
-              body: {
-                companyName: companies[0].name,
-                description: companies[0].description,
-                stage: companies[0].stage
-              }
-            }
-          );
-          
-          if (taglineError) throw taglineError;
-          if (taglineData?.tagline) {
-            setTagline(taglineData.tagline);
-          }
-        } catch (error) {
-          console.error('Error generating tagline:', error);
-        } finally {
-          setTaglineLoading(false);
-        }
-      }
+      await loadCompanyData(companies[0]);
     };
 
     loadCompany();
-  }, [navigate]);
+  }, [navigate, searchParams]);
+
+  const loadCompanyData = async (companyData: Company) => {
+    setCompany(companyData);
+    
+    // Check if memo exists for this company - get the most recent one
+    const { data: memoData } = await supabase
+      .from("memos")
+      .select("*")
+      .eq("company_id", companyData.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    
+    if (memoData) {
+      setMemo(memoData);
+    }
+    
+    // Calculate profile readiness
+    const { data: responses } = await supabase
+      .from("memo_responses")
+      .select("question_key")
+      .eq("company_id", companyData.id);
+    
+    const sectionKeys = ["problem", "solution", "market", "competition", "team", "usp", "business", "traction"];
+    const readiness = sectionKeys.map(key => ({
+      name: key.charAt(0).toUpperCase() + key.slice(1),
+      completed: responses?.some(r => r.question_key.startsWith(key)) || false
+    }));
+    
+    setProfileReadiness(readiness);
+    
+    // Load published articles
+    const { data: articlesData } = await supabase
+      .from("educational_articles")
+      .select("id, slug, title, description, icon, published")
+      .eq("published", true)
+      .order("created_at", { ascending: true });
+    
+    if (articlesData) {
+      setArticles(articlesData);
+    }
+    
+    setLoading(false);
+    
+    // Generate AI tagline only if not admin viewing
+    if (!isAdminViewing && companyData) {
+      setTaglineLoading(true);
+      try {
+        const { data: taglineData, error: taglineError } = await supabase.functions.invoke(
+          'generate-company-tagline',
+          {
+            body: {
+              companyName: companyData.name,
+              description: companyData.description,
+              stage: companyData.stage
+            }
+          }
+        );
+        
+        if (taglineError) throw taglineError;
+        if (taglineData?.tagline) {
+          setTagline(taglineData.tagline);
+        }
+      } catch (error) {
+        console.error('Error generating tagline:', error);
+      } finally {
+        setTaglineLoading(false);
+      }
+    }
+  };
+
+  const loadCompanyById = async (companyId: string) => {
+    try {
+      const { data: companyData, error } = await supabase
+        .from("companies")
+        .select("*")
+        .eq("id", companyId)
+        .maybeSingle();
+
+      if (error || !companyData) {
+        console.error("Error loading company:", error);
+        navigate("/admin");
+        return;
+      }
+
+      await loadCompanyData(companyData);
+    } catch (error) {
+      console.error("Error in loadCompanyById:", error);
+      navigate("/admin");
+    }
+  };
 
   if (loading) {
     return (
@@ -219,6 +266,28 @@ export default function FreemiumHub() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      
+      {/* Admin Viewing Banner */}
+      {isAdminViewing && (
+        <div className="bg-yellow-500/20 border-b border-yellow-500/40 px-8 py-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Eye className="w-5 h-5 text-yellow-400" />
+              <span className="text-sm text-yellow-200 font-medium">
+                Viewing as Admin - Read Only Mode
+              </span>
+            </div>
+            <Button
+              onClick={() => navigate('/admin')}
+              variant="outline"
+              size="sm"
+              className="gap-2 border-yellow-500/40 bg-yellow-500/10 text-yellow-200 hover:bg-yellow-500/20"
+            >
+              ← Back to Admin
+            </Button>
+          </div>
+        </div>
+      )}
       
       {/* Hero Section */}
       <section className="relative overflow-hidden">
@@ -283,6 +352,7 @@ export default function FreemiumHub() {
                           onClick={() => company && navigate(`/memo?companyId=${company.id}`)}
                           className="w-full gradient-primary shadow-glow hover:shadow-glow-strong font-bold text-base h-14 hover-punch"
                           size="lg"
+                          disabled={isAdminViewing}
                         >
                           <Sparkles className="w-5 h-5 mr-2" />
                           {memo ? "View My Memo" : "Generate My Memo"}
@@ -423,6 +493,7 @@ export default function FreemiumHub() {
                       onClick={() => navigate('/company/profile/edit')}
                       className="w-full mt-2"
                       variant="outline"
+                      disabled={isAdminViewing}
                     >
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Company Profile
