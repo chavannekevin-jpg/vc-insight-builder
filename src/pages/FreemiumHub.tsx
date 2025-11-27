@@ -128,17 +128,24 @@ export default function FreemiumHub() {
   const { data: waitlistStatus } = useUserWaitlistStatus(userId, company?.id);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const loadCompany = async () => {
       console.log("[Hub] Starting loadCompany");
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (!session) {
-        console.log("[Hub] No session, redirecting to auth");
-        navigate("/auth?redirect=/hub");
+        console.log("[Hub] No session found, redirecting to auth");
+        if (isMounted) {
+          navigate("/auth?redirect=/hub");
+        }
         return;
       }
       
       console.log("[Hub] Session found:", session.user.id);
-      setUserId(session.user.id);
+      if (isMounted) {
+        setUserId(session.user.id);
+      }
 
       // Check if user is admin
       const { data: roleData } = await supabase
@@ -148,7 +155,7 @@ export default function FreemiumHub() {
         .eq("role", "admin")
         .maybeSingle();
 
-      if (roleData) {
+      if (roleData && isMounted) {
         console.log("[Hub] User is admin");
         setIsAdmin(true);
       }
@@ -158,7 +165,9 @@ export default function FreemiumHub() {
       
       if (viewCompanyId && roleData) {
         console.log("[Hub] Admin viewing company:", viewCompanyId);
-        setIsAdminViewing(true);
+        if (isMounted) {
+          setIsAdminViewing(true);
+        }
         await loadCompanyById(viewCompanyId);
         return;
       }
@@ -176,11 +185,13 @@ export default function FreemiumHub() {
         return;
       }
 
-      console.log("[Hub] Companies query result:", companies);
+      console.log("[Hub] Companies query result:", companies, "count:", companies?.length);
 
       if (!companies || companies.length === 0) {
         console.log("[Hub] No companies found, redirecting to intake");
-        navigate("/intake");
+        if (isMounted) {
+          navigate("/intake");
+        }
         return;
       }
 
@@ -189,6 +200,10 @@ export default function FreemiumHub() {
     };
 
     loadCompany();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [navigate, searchParams]);
 
   const loadCompanyData = async (companyData: Company) => {

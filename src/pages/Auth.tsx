@@ -23,83 +23,58 @@ export default function Auth() {
   const selectedPrice = searchParams.get('price');
 
   useEffect(() => {
-    let isRedirecting = false;
-
-    // Set up auth state listener FIRST
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log("Auth state change:", event, session?.user?.id);
+        console.log("[Auth] Auth state change:", event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Redirect authenticated users
-        if (session?.user && !isRedirecting) {
-          isRedirecting = true;
-          
-          // Use setTimeout to defer async work
-          setTimeout(async () => {
-            const explicitRedirect = searchParams.get('redirect');
-            if (explicitRedirect) {
-              console.log("Redirecting to explicit redirect:", explicitRedirect);
-              navigate(explicitRedirect);
-              return;
-            }
-
-            // Check if user has companies
-            console.log("Checking for companies for user:", session.user.id);
-            const { data: companies, error } = await supabase
-              .from("companies")
-              .select("id")
-              .eq("founder_id", session.user.id)
-              .limit(1);
-
-            if (error) {
-              console.error("Error checking companies:", error);
-            }
-
-            console.log("Companies query result:", { companies, hasCompanies: companies && companies.length > 0 });
-            const redirect = companies && companies.length > 0 ? '/hub' : '/intake';
-            console.log("Navigating to:", redirect);
-            navigate(redirect);
-          }, 100); // Slightly longer delay to ensure state is ready
-        }
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log("Initial session check:", session?.user?.id);
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Check for existing session and handle redirect
+    const checkSessionAndRedirect = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("[Auth] Initial session check:", session?.user?.id);
       
-      if (session?.user && !isRedirecting) {
-        isRedirecting = true;
-        
-        const explicitRedirect = searchParams.get('redirect');
-        if (explicitRedirect) {
-          console.log("Initial: Redirecting to explicit redirect:", explicitRedirect);
-          navigate(explicitRedirect);
-          return;
-        }
-
-        // Check if user has companies
-        console.log("Initial: Checking for companies for user:", session.user.id);
-        const { data: companies, error } = await supabase
-          .from("companies")
-          .select("id")
-          .eq("founder_id", session.user.id)
-          .limit(1);
-
-        if (error) {
-          console.error("Initial: Error checking companies:", error);
-        }
-
-        console.log("Initial: Companies query result:", { companies, hasCompanies: companies && companies.length > 0 });
-        const redirect = companies && companies.length > 0 ? '/hub' : '/intake';
-        console.log("Initial: Navigating to:", redirect);
-        navigate(redirect);
+      if (!session?.user) {
+        console.log("[Auth] No session found");
+        return;
       }
-    });
+
+      setSession(session);
+      setUser(session.user);
+
+      // Check for explicit redirect parameter
+      const explicitRedirect = searchParams.get('redirect');
+      if (explicitRedirect) {
+        console.log("[Auth] Using explicit redirect:", explicitRedirect);
+        navigate(explicitRedirect);
+        return;
+      }
+
+      // Check if user has companies
+      console.log("[Auth] Checking for companies for user:", session.user.id);
+      const { data: companies, error } = await supabase
+        .from("companies")
+        .select("id")
+        .eq("founder_id", session.user.id)
+        .limit(1);
+
+      if (error) {
+        console.error("[Auth] Error checking companies:", error);
+        // On error, default to hub and let hub handle it
+        navigate("/hub");
+        return;
+      }
+
+      const hasCompanies = companies && companies.length > 0;
+      const redirect = hasCompanies ? '/hub' : '/intake';
+      console.log("[Auth] Redirecting to:", redirect, "hasCompanies:", hasCompanies);
+      navigate(redirect);
+    };
+
+    checkSessionAndRedirect();
 
     return () => subscription.unsubscribe();
   }, [navigate, searchParams]);
@@ -171,7 +146,7 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      console.log("Attempting sign in...");
+      console.log("[Auth] Attempting sign in...");
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -179,15 +154,35 @@ export default function Auth() {
 
       if (error) throw error;
 
-      console.log("Sign in successful:", data);
+      console.log("[Auth] Sign in successful:", data.user?.id);
+      
+      // Check for redirect or companies
+      const explicitRedirect = searchParams.get('redirect');
+      if (explicitRedirect) {
+        console.log("[Auth] Redirecting to:", explicitRedirect);
+        navigate(explicitRedirect);
+        return;
+      }
+
+      // Check if user has companies
+      const { data: companies } = await supabase
+        .from("companies")
+        .select("id")
+        .eq("founder_id", data.user.id)
+        .limit(1);
+
+      const hasCompanies = companies && companies.length > 0;
+      const redirect = hasCompanies ? '/hub' : '/intake';
+      console.log("[Auth] Redirecting after sign in to:", redirect);
+      
       toast({
         title: "Welcome back!",
         description: "Redirecting...",
       });
       
-      // The redirect will be handled by onAuthStateChange
+      navigate(redirect);
     } catch (error: any) {
-      console.error("Login error:", error);
+      console.error("[Auth] Login error:", error);
       toast({
         title: "Login failed",
         description: error.message || "Invalid credentials",
