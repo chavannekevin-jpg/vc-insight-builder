@@ -88,14 +88,6 @@ const questionSections = {
     color: "text-yellow-500",
     questions: [
       { 
-        key: "solution_oneliner",
-        title: "Your One-Liner",
-        tldr: "The elevator pitch in one sentence",
-        icon: Zap,
-        question: "In one sentence, what does your product do and for whom?", 
-        placeholder: "We help [who] do [what] by [how]. Keep it crisp." 
-      },
-      { 
         key: "solution_mechanism",
         title: "How It Actually Works",
         tldr: "The core technology or process",
@@ -110,14 +102,6 @@ const questionSections = {
         icon: Sparkles,
         question: "What are your 2-3 key features?", 
         placeholder: "For each, explain what it does and why it matters. Focus on value, not tech specs." 
-      },
-      { 
-        key: "solution_roi",
-        title: "Tangible Results",
-        tldr: "What customers actually get",
-        icon: TrendingUp,
-        question: "What tangible results do customers get?", 
-        placeholder: "Quantify: time saved, cost reduced, revenue gained, or risk avoided. Use real numbers." 
       },
       { 
         key: "solution_validation",
@@ -165,14 +149,6 @@ const questionSections = {
         question: "What is your current and target pricing?", 
         placeholder: "Current ACV and where you expect it to grow as you add features or move upmarket." 
       },
-      { 
-        key: "market_path_to_scale",
-        title: "Path to €100M ARR",
-        tldr: "How you'll actually scale",
-        icon: Rocket,
-        question: "What's your path to €100M ARR?", 
-        placeholder: "Who do you sell to first? What expansion levers exist? How does the market grow?" 
-      },
     ]
   },
   "Competition": {
@@ -186,14 +162,6 @@ const questionSections = {
         icon: Shield,
         question: "Who are your competitors?", 
         placeholder: "List direct competitors, adjacent solutions, and incumbent players." 
-      },
-      { 
-        key: "competition_strengths",
-        title: "Where They're Strong",
-        tldr: "What competitors do well",
-        icon: Award,
-        question: "What do your competitors do well?", 
-        placeholder: "Be honest—where are they strong? What have they figured out?" 
       },
       { 
         key: "competition_weaknesses",
@@ -242,14 +210,6 @@ const questionSections = {
         placeholder: "Prior collaboration or shared experience that proves you can work together." 
       },
       { 
-        key: "team_ownership",
-        title: "Skin In The Game",
-        tldr: "Total founder/team equity",
-        icon: Award,
-        question: "What is total founder/team ownership?", 
-        placeholder: "Combined equity % fully diluted. How much skin in the game?" 
-      },
-      { 
         key: "team_gaps",
         title: "Missing Pieces",
         tldr: "Key hires you need next",
@@ -264,36 +224,12 @@ const questionSections = {
     color: "text-orange-500",
     questions: [
       { 
-        key: "usp_core",
-        title: "Your Single Biggest Edge",
-        tldr: "The one thing that sets you apart",
-        icon: Star,
-        question: "What is your single biggest differentiator?", 
-        placeholder: "The one thing competitors can't easily copy. Your core unfair advantage." 
-      },
-      { 
         key: "usp_differentiators",
-        title: "Other Key Advantages",
-        tldr: "Secondary differentiators that matter",
+        title: "Your Key Advantages",
+        tldr: "What sets you apart from competitors",
         icon: Sparkles,
-        question: "What are your other key advantages?", 
-        placeholder: "List 3-5 across product, distribution, data, compliance, or business model." 
-      },
-      { 
-        key: "usp_moat",
-        title: "Your Defensive Moat",
-        tldr: "What creates long-term defensibility",
-        icon: Lock,
-        question: "What creates defensibility?", 
-        placeholder: "Network effects, data, integrations, regulatory barriers, or switching costs." 
-      },
-      { 
-        key: "usp_customer_choice",
-        title: "Why Customers Choose You",
-        tldr: "The real reasons they switched",
-        icon: ThumbsUp,
-        question: "Why do customers choose you over alternatives?", 
-        placeholder: "In their words. What do they say when they explain why they picked you?" 
+        question: "What are your key advantages?", 
+        placeholder: "List 3-5 across product, distribution, data, compliance, or business model. What makes you different?" 
       },
     ]
   },
@@ -304,18 +240,10 @@ const questionSections = {
       { 
         key: "business_model_type",
         title: "How You Make Money",
-        tldr: "Your core revenue model",
+        tldr: "Your revenue model and streams",
         icon: DollarSign,
-        question: "What is your business model?", 
-        placeholder: "SaaS, marketplace, usage-based, revenue share, hybrid, etc." 
-      },
-      { 
-        key: "business_model_revenue",
-        title: "Revenue Sources",
-        tldr: "Where money comes from",
-        icon: BarChart3,
-        question: "What are your revenue sources?", 
-        placeholder: "For each: how it works and why it matters. Break down the revenue streams." 
+        question: "How do you make money?", 
+        placeholder: "Describe your business model (SaaS, marketplace, usage-based, etc.) and revenue sources. For each stream: how it works and why it matters." 
       },
       { 
         key: "business_model_expansion",
@@ -332,14 +260,6 @@ const questionSections = {
         icon: Target,
         question: "How do you sell?", 
         placeholder: "Direct sales, partnerships, self-serve, or hybrid approach. What's working?" 
-      },
-      { 
-        key: "business_model_margins",
-        title: "Unit Economics",
-        tldr: "Margins and cost structure",
-        icon: Sparkles,
-        question: "What are your gross margins and cost drivers?", 
-        placeholder: "Include what makes the model scalable. Where do costs go as you grow?" 
       },
     ]
   },
