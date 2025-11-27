@@ -138,144 +138,109 @@ export default function FreemiumHub() {
       
       setUserId(session.user.id);
 
-      // Only check admin role once
-      if (!adminCheckDone) {
-        const { data: roleData } = await supabase
+      const viewCompanyId = searchParams.get('viewCompanyId');
+
+      // Run admin check and company fetch in parallel
+      const [roleResult, companiesResult] = await Promise.all([
+        !adminCheckDone ? supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", session.user.id)
           .eq("role", "admin")
-          .maybeSingle();
+          .maybeSingle() : Promise.resolve({ data: null }),
+        viewCompanyId ? 
+          supabase.from("companies").select("*").eq("id", viewCompanyId).maybeSingle() :
+          supabase.from("companies").select("*").eq("founder_id", session.user.id).order("created_at", { ascending: false }).limit(1).single()
+      ]);
 
-        if (roleData) {
-          setIsAdmin(true);
-        }
+      if (!adminCheckDone && roleResult.data) {
+        setIsAdmin(true);
         setAdminCheckDone(true);
       }
 
-      // Check if viewing as admin
-      const viewCompanyId = searchParams.get('viewCompanyId');
-      
-      if (viewCompanyId && isAdmin) {
+      if (viewCompanyId && roleResult.data) {
         setIsAdminViewing(true);
-        await loadCompanyById(viewCompanyId);
+      }
+
+      if (companiesResult.error || !companiesResult.data) {
+        if (!viewCompanyId) {
+          navigate("/intake");
+        } else {
+          console.error("Error loading company:", companiesResult.error);
+          navigate("/admin");
+        }
         return;
       }
 
-      const { data: companies, error: companiesError } = await supabase
-        .from("companies")
-        .select("*")
-        .eq("founder_id", session.user.id)
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      if (companiesError) {
-        console.error("Error loading company data:", companiesError);
-        toast.error("Failed to load company data. Please try again.");
-        return;
-      }
-
-      if (!companies || companies.length === 0) {
-        navigate("/intake");
-        return;
-      }
-
-      await loadCompanyData(companies[0]);
+      await loadCompanyData(companiesResult.data);
     };
 
     loadCompany();
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams, adminCheckDone]);
 
   const loadCompanyData = async (companyData: Company) => {
     setCompany(companyData);
     
-    // Check if memo exists for this company - get the most recent one
-    const { data: memoData } = await supabase
-      .from("memos")
-      .select("*")
-      .eq("company_id", companyData.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Load all data in parallel
+    const [memoResult, responsesResult, articlesResult] = await Promise.all([
+      supabase
+        .from("memos")
+        .select("*")
+        .eq("company_id", companyData.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("memo_responses")
+        .select("question_key")
+        .eq("company_id", companyData.id),
+      supabase
+        .from("educational_articles")
+        .select("id, slug, title, description, icon, published")
+        .eq("published", true)
+        .order("created_at", { ascending: true })
+    ]);
     
-    if (memoData) {
-      setMemo(memoData);
+    if (memoResult.data) {
+      setMemo(memoResult.data);
     }
     
     // Calculate profile readiness
-    const { data: responses } = await supabase
-      .from("memo_responses")
-      .select("question_key")
-      .eq("company_id", companyData.id);
-    
     const sectionKeys = ["problem", "solution", "market", "competition", "team", "usp", "business", "traction"];
     const readiness = sectionKeys.map(key => ({
       name: key.charAt(0).toUpperCase() + key.slice(1),
-      completed: responses?.some(r => r.question_key.startsWith(key)) || false
+      completed: responsesResult.data?.some(r => r.question_key.startsWith(key)) || false
     }));
     
     setProfileReadiness(readiness);
     
-    // Load published articles
-    const { data: articlesData } = await supabase
-      .from("educational_articles")
-      .select("id, slug, title, description, icon, published")
-      .eq("published", true)
-      .order("created_at", { ascending: true });
-    
-    if (articlesData) {
-      setArticles(articlesData);
+    if (articlesResult.data) {
+      setArticles(articlesResult.data);
     }
     
     setLoading(false);
     
-    // Generate AI tagline only if not admin viewing
+    // Generate AI tagline in background (non-blocking)
     if (!isAdminViewing && companyData) {
       setTaglineLoading(true);
-      try {
-        const { data: taglineData, error: taglineError } = await supabase.functions.invoke(
-          'generate-company-tagline',
-          {
-            body: {
-              companyName: companyData.name,
-              description: companyData.description,
-              stage: companyData.stage
-            }
-          }
-        );
-        
-        if (taglineError) throw taglineError;
+      supabase.functions.invoke('generate-company-tagline', {
+        body: {
+          companyName: companyData.name,
+          description: companyData.description,
+          stage: companyData.stage
+        }
+      }).then(({ data: taglineData }) => {
         if (taglineData?.tagline) {
           setTagline(taglineData.tagline);
         }
-      } catch (error) {
+      }).catch((error) => {
         console.error('Error generating tagline:', error);
-      } finally {
+      }).finally(() => {
         setTaglineLoading(false);
-      }
+      });
     }
   };
 
-  const loadCompanyById = async (companyId: string) => {
-    try {
-      const { data: companyData, error } = await supabase
-        .from("companies")
-        .select("*")
-        .eq("id", companyId)
-        .maybeSingle();
-
-      if (error || !companyData) {
-        console.error("Error loading company:", error);
-        navigate("/admin");
-        return;
-      }
-
-      await loadCompanyData(companyData);
-    } catch (error) {
-      console.error("Error in loadCompanyById:", error);
-      navigate("/admin");
-    }
-  };
 
   if (loading) {
     return (
