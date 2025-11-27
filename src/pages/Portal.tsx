@@ -126,22 +126,6 @@ const questionSections = {
         placeholder: "Define by industry, company size, geography, and specific characteristics." 
       },
       { 
-        key: "market_buyer",
-        title: "Who Signs The Check?",
-        tldr: "The actual decision maker",
-        icon: Crown,
-        question: "Who makes the buying decision?", 
-        placeholder: "Job title, their main priorities, and what pain they feel most." 
-      },
-      { 
-        key: "market_size",
-        title: "How Big Is This?",
-        tldr: "Total addressable market",
-        icon: BarChart3,
-        question: "How big is your market?", 
-        placeholder: "Estimate # of potential customers × your ACV. Show your math." 
-      },
-      { 
         key: "market_pricing",
         title: "Your Price Point",
         tldr: "Current and target pricing",
@@ -162,14 +146,6 @@ const questionSections = {
         icon: Shield,
         question: "Who are your competitors?", 
         placeholder: "List direct competitors, adjacent solutions, and incumbent players." 
-      },
-      { 
-        key: "competition_weaknesses",
-        title: "Where They Fail",
-        tldr: "The gaps you exploit",
-        icon: AlertCircle,
-        question: "Where do competitors fall short?", 
-        placeholder: "Gaps in their product, pricing, UX, speed, or market fit. What leaves customers frustrated?" 
       },
       { 
         key: "competition_advantage",
@@ -298,14 +274,6 @@ const questionSections = {
         icon: Star,
         question: "Name your most notable customers.", 
         placeholder: "Logos or case studies that validate your product. Who's singing your praises?" 
-      },
-      { 
-        key: "traction_efficiency",
-        title: "Efficiency Metrics",
-        tldr: "Unit economics that prove it works",
-        icon: BarChart3,
-        question: "What are your efficiency metrics?", 
-        placeholder: "CAC, retention rate, gross margins, or other unit economics. Show the model works." 
       },
       { 
         key: "traction_pipeline",
