@@ -81,16 +81,11 @@ export default function RaiseCalculator() {
         setIsAdmin(true);
       }
 
-      const { data: companies, error: companiesError } = await supabase
+      const { data: companies } = await supabase
         .from("companies")
         .select("id")
         .eq("founder_id", session.user.id)
-        .order("created_at", { ascending: false })
         .limit(1);
-
-      if (companiesError) {
-        console.error("Error loading company:", companiesError);
-      }
 
       if (companies && companies.length > 0) {
         setCompanyId(companies[0].id);

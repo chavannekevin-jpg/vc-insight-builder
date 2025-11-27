@@ -23,109 +23,33 @@ export default function Auth() {
   const selectedPrice = searchParams.get('price');
 
   useEffect(() => {
-    let redirectTimeout: NodeJS.Timeout | null = null;
-
-    const checkCompanyAndRedirect = async (userId: string) => {
-      try {
-        console.log("Checking company for user:", userId);
-        
-        // Check if user has a company
-        const { data: companies, error } = await supabase
-          .from("companies")
-          .select("id")
-          .eq("founder_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (error) {
-          console.error("Error checking companies:", error);
-          toast({
-            title: "Error loading profile",
-            description: "Redirecting to setup...",
-            variant: "destructive",
-          });
-          navigate('/intake');
-          return;
-        }
-
-        console.log("Companies found:", companies?.length || 0);
-
-        // Use custom redirect if provided, otherwise go to hub if they have a company, or intake if not
-        const customRedirect = searchParams.get('redirect');
-        if (customRedirect) {
-          console.log("Using custom redirect:", customRedirect);
-          navigate(customRedirect);
-        } else if (companies && companies.length > 0) {
-          console.log("Redirecting to hub");
-          navigate('/hub');
-        } else {
-          console.log("No company found, redirecting to intake");
-          navigate('/intake');
-        }
-      } catch (error) {
-        console.error("Error in checkCompanyAndRedirect:", error);
-        toast({
-          title: "Unexpected error",
-          description: "Redirecting to setup...",
-          variant: "destructive",
-        });
-        navigate('/intake');
-      }
-    };
-
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log("Auth state changed:", event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         // Redirect authenticated users
         if (session?.user) {
-          checkCompanyAndRedirect(session.user.id);
+          const redirect = searchParams.get('redirect') || '/intake';
+          setTimeout(() => navigate(redirect), 0);
         }
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error("Error getting session:", error);
-      }
-      
-      console.log("Initial session check:", session?.user?.email);
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        checkCompanyAndRedirect(session.user.id);
+        const redirect = searchParams.get('redirect') || '/intake';
+        navigate(redirect);
       }
     });
 
-    return () => {
-      subscription.unsubscribe();
-      if (redirectTimeout) {
-        clearTimeout(redirectTimeout);
-      }
-    };
-  }, [navigate, searchParams, toast]);
-
-  // Timeout fallback - redirect to /hub after 5 seconds if still on loading screen
-  useEffect(() => {
-    if (session && user && !loading) {
-      console.log("Setting up redirect timeout fallback");
-      const timeoutId = setTimeout(() => {
-        console.warn("Redirect timeout - forcing navigation to /hub");
-        toast({
-          title: "Redirecting to dashboard",
-          description: "Taking you to your hub...",
-        });
-        navigate('/hub');
-      }, 5000);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [session, user, loading, navigate, toast]);
+    return () => subscription.unsubscribe();
+  }, [navigate, searchParams]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -196,7 +120,7 @@ export default function Auth() {
 
       toast({
         title: "Welcome back!",
-        description: "Loading your dashboard...",
+        description: "Redirecting to portal...",
       });
     } catch (error: any) {
       console.error("Login error:", error);
@@ -210,12 +134,12 @@ export default function Auth() {
     }
   };
 
-  if (!loading && session && user) {
+  if (session && user) {
     return (
       <div className="min-h-screen gradient-hero flex items-center justify-center">
         <div className="text-foreground flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-          <span>Loading your dashboard...</span>
+          <span>Redirecting to your portal...</span>
         </div>
       </div>
     );

@@ -82,22 +82,11 @@ export default function CompanyProfile() {
         return;
       }
 
-      const { data: companies, error: companiesError } = await supabase
+      const { data: companies } = await supabase
         .from("companies")
         .select("*")
         .eq("founder_id", session.user.id)
-        .order("created_at", { ascending: false })
         .limit(1);
-
-      if (companiesError) {
-        console.error("Error loading company:", companiesError);
-        toast({
-          title: "Error",
-          description: "Failed to load company data. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
 
       if (!companies || companies.length === 0) {
         navigate("/intake");

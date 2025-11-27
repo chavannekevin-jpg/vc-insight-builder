@@ -124,179 +124,147 @@ export default function FreemiumHub() {
   const [isAdminViewing, setIsAdminViewing] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userId, setUserId] = useState<string | undefined>(undefined);
-  const [adminCheckDone, setAdminCheckDone] = useState(false);
   
   const { data: waitlistStatus } = useUserWaitlistStatus(userId, company?.id);
 
   useEffect(() => {
     const loadCompany = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error("Session error:", sessionError);
-          toast.error("Authentication error. Please sign in again.");
-          navigate("/auth?redirect=/hub");
-          return;
-        }
-        
-        if (!session) {
-          navigate("/auth?redirect=/hub");
-          return;
-        }
-        
-        setUserId(session.user.id);
-
-        const viewCompanyId = searchParams.get('viewCompanyId');
-
-        // Run admin check and company fetch in parallel
-        const [roleResult, companiesResult] = await Promise.all([
-          !adminCheckDone ? supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", session.user.id)
-            .eq("role", "admin")
-            .maybeSingle() : Promise.resolve({ data: null, error: null }),
-          viewCompanyId ? 
-            supabase.from("companies").select("*").eq("id", viewCompanyId).maybeSingle() :
-            supabase.from("companies").select("*").eq("founder_id", session.user.id).order("created_at", { ascending: false }).limit(1)
-        ]);
-
-        // Handle admin check
-        if (!adminCheckDone) {
-          if (roleResult.error) {
-            console.error("Error checking admin role:", roleResult.error);
-          }
-          if (roleResult.data) {
-            setIsAdmin(true);
-          }
-          setAdminCheckDone(true);
-        }
-
-        if (viewCompanyId && roleResult.data) {
-          setIsAdminViewing(true);
-        }
-
-        // Handle company data
-        if (companiesResult.error) {
-          console.error("Error loading company:", companiesResult.error);
-          toast.error("Failed to load company data. Please try again.");
-          setLoading(false);
-          return;
-        }
-
-        const companyData = Array.isArray(companiesResult.data) 
-          ? companiesResult.data[0] 
-          : companiesResult.data;
-
-        if (!companyData) {
-          if (!viewCompanyId) {
-            console.log("No company found, redirecting to intake");
-            navigate("/intake");
-          } else {
-            console.error("Company not found for admin view");
-            toast.error("Company not found");
-            navigate("/admin");
-          }
-          return;
-        }
-
-        console.log("Loading company data:", companyData.name);
-        await loadCompanyData(companyData);
-      } catch (error) {
-        console.error("Unexpected error in loadCompany:", error);
-        toast.error("An unexpected error occurred. Please refresh the page.");
-        setLoading(false);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth?redirect=/hub");
+        return;
       }
+      
+      setUserId(session.user.id);
+
+      // Check if user is admin
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (roleData) {
+        setIsAdmin(true);
+      }
+
+      // Check if viewing as admin
+      const viewCompanyId = searchParams.get('viewCompanyId');
+      
+      if (viewCompanyId && roleData) {
+        setIsAdminViewing(true);
+        await loadCompanyById(viewCompanyId);
+        return;
+      }
+
+      const { data: companies } = await supabase
+        .from("companies")
+        .select("*")
+        .eq("founder_id", session.user.id)
+        .limit(1);
+
+      if (!companies || companies.length === 0) {
+        navigate("/intake");
+        return;
+      }
+
+      await loadCompanyData(companies[0]);
     };
 
     loadCompany();
   }, [navigate, searchParams]);
 
   const loadCompanyData = async (companyData: Company) => {
-    try {
-      setCompany(companyData);
-      console.log("Loading data for company:", companyData.name);
-      
-      // Load all data in parallel
-      const [memoResult, responsesResult, articlesResult] = await Promise.all([
-        supabase
-          .from("memos")
-          .select("*")
-          .eq("company_id", companyData.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from("memo_responses")
-          .select("question_key")
-          .eq("company_id", companyData.id),
-        supabase
-          .from("educational_articles")
-          .select("id, slug, title, description, icon, published")
-          .eq("published", true)
-          .order("created_at", { ascending: true })
-      ]);
-      
-      if (memoResult.error) {
-        console.error("Error loading memo:", memoResult.error);
-      } else if (memoResult.data) {
-        setMemo(memoResult.data);
-        console.log("Memo loaded");
-      }
-      
-      if (responsesResult.error) {
-        console.error("Error loading responses:", responsesResult.error);
-      }
-      
-      // Calculate profile readiness
-      const sectionKeys = ["problem", "solution", "market", "competition", "team", "usp", "business", "traction"];
-      const readiness = sectionKeys.map(key => ({
-        name: key.charAt(0).toUpperCase() + key.slice(1),
-        completed: responsesResult.data?.some(r => r.question_key.startsWith(key)) || false
-      }));
-      
-      setProfileReadiness(readiness);
-      console.log("Profile readiness calculated:", readiness.filter(r => r.completed).length, "/", readiness.length);
-      
-      if (articlesResult.error) {
-        console.error("Error loading articles:", articlesResult.error);
-      } else if (articlesResult.data) {
-        setArticles(articlesResult.data);
-        console.log("Articles loaded:", articlesResult.data.length);
-      }
-      
-      setLoading(false);
-      console.log("Hub fully loaded");
-      
-      // Generate AI tagline in background (non-blocking)
-      if (!isAdminViewing && companyData) {
-        setTaglineLoading(true);
-        supabase.functions.invoke('generate-company-tagline', {
-          body: {
-            companyName: companyData.name,
-            description: companyData.description,
-            stage: companyData.stage
+    setCompany(companyData);
+    
+    // Check if memo exists for this company - get the most recent one
+    const { data: memoData } = await supabase
+      .from("memos")
+      .select("*")
+      .eq("company_id", companyData.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    
+    if (memoData) {
+      setMemo(memoData);
+    }
+    
+    // Calculate profile readiness
+    const { data: responses } = await supabase
+      .from("memo_responses")
+      .select("question_key")
+      .eq("company_id", companyData.id);
+    
+    const sectionKeys = ["problem", "solution", "market", "competition", "team", "usp", "business", "traction"];
+    const readiness = sectionKeys.map(key => ({
+      name: key.charAt(0).toUpperCase() + key.slice(1),
+      completed: responses?.some(r => r.question_key.startsWith(key)) || false
+    }));
+    
+    setProfileReadiness(readiness);
+    
+    // Load published articles
+    const { data: articlesData } = await supabase
+      .from("educational_articles")
+      .select("id, slug, title, description, icon, published")
+      .eq("published", true)
+      .order("created_at", { ascending: true });
+    
+    if (articlesData) {
+      setArticles(articlesData);
+    }
+    
+    setLoading(false);
+    
+    // Generate AI tagline only if not admin viewing
+    if (!isAdminViewing && companyData) {
+      setTaglineLoading(true);
+      try {
+        const { data: taglineData, error: taglineError } = await supabase.functions.invoke(
+          'generate-company-tagline',
+          {
+            body: {
+              companyName: companyData.name,
+              description: companyData.description,
+              stage: companyData.stage
+            }
           }
-        }).then(({ data: taglineData, error: taglineError }) => {
-          if (taglineError) {
-            console.error('Error generating tagline:', taglineError);
-          } else if (taglineData?.tagline) {
-            setTagline(taglineData.tagline);
-          }
-        }).catch((error) => {
-          console.error('Error generating tagline:', error);
-        }).finally(() => {
-          setTaglineLoading(false);
-        });
+        );
+        
+        if (taglineError) throw taglineError;
+        if (taglineData?.tagline) {
+          setTagline(taglineData.tagline);
+        }
+      } catch (error) {
+        console.error('Error generating tagline:', error);
+      } finally {
+        setTaglineLoading(false);
       }
-    } catch (error) {
-      console.error("Unexpected error in loadCompanyData:", error);
-      toast.error("Failed to load all data. Some features may not be available.");
-      setLoading(false);
     }
   };
 
+  const loadCompanyById = async (companyId: string) => {
+    try {
+      const { data: companyData, error } = await supabase
+        .from("companies")
+        .select("*")
+        .eq("id", companyId)
+        .maybeSingle();
+
+      if (error || !companyData) {
+        console.error("Error loading company:", error);
+        navigate("/admin");
+        return;
+      }
+
+      await loadCompanyData(companyData);
+    } catch (error) {
+      console.error("Error in loadCompanyById:", error);
+      navigate("/admin");
+    }
+  };
 
   if (loading) {
     return (
@@ -392,45 +360,14 @@ export default function FreemiumHub() {
                       {/* CTAs */}
                       <div className="space-y-3 pt-2">
                         <Button 
-                          onClick={async () => {
+                          onClick={() => {
                             if (memo) {
                               navigate(`/memo?id=${memo.id}`);
-                              return;
-                            }
-                            
-                            // Check if all required sections are completed
-                            const { data: responses } = await supabase
-                              .from("memo_responses")
-                              .select("question_key, answer")
-                              .eq("company_id", company.id);
-                            
-                            const requiredSections = [
-                              "problem_description",
-                              "solution_description", 
-                              "market_target_customer",
-                              "competition_mission",
-                              "team_founders",
-                              "usp_differentiators",
-                              "business_model_type",
-                              "traction_revenue"
-                            ];
-                            
-                            const completedSections = requiredSections.filter(section => 
-                              responses?.some(r => r.question_key === section && r.answer?.trim())
-                            );
-                            
-                            if (completedSections.length < requiredSections.length) {
-                              toast.error(`Please complete your company profile first (${completedSections.length}/${requiredSections.length} sections done)`);
-                              navigate(`/company`);
-                              return;
-                            }
-                            
-                            // All sections complete - check payment
-                            if (isAdmin || waitlistStatus?.has_paid) {
+                            } else if (isAdmin || waitlistStatus?.has_paid) {
                               // Admin or paid users can generate memo
-                              navigate(`/generate-memo?companyId=${company.id}`);
+                              navigate(`/memo-builder?companyId=${company.id}`);
                             } else {
-                              // Show paywall
+                              // Non-paid users go to checkout
                               navigate(`/waitlist-checkout?companyId=${company.id}`);
                             }
                           }}
@@ -443,10 +380,20 @@ export default function FreemiumHub() {
                               <FileText className="w-5 h-5 mr-2" />
                               View My Memo
                             </>
-                          ) : (
+                          ) : isAdmin ? (
                             <>
                               <Sparkles className="w-5 h-5 mr-2" />
                               Generate My Memo
+                            </>
+                          ) : waitlistStatus?.has_paid ? (
+                            <>
+                              <Sparkles className="w-5 h-5 mr-2" />
+                              Generate My Memo
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-5 h-5 mr-2" />
+                              Generate My Memo - Early Bird Access
                             </>
                           )}
                         </Button>
@@ -467,8 +414,8 @@ export default function FreemiumHub() {
                           </div>
                         </Button>
                         
-                        <p className="text-sm text-muted-foreground pt-1 flex items-center gap-2">
-                          <span className="w-1 h-1 rounded-full bg-primary/50" />
+                        <p className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
+                          <div className="w-1 h-1 rounded-full bg-primary/50" />
                           <span>Preview the AI-powered analysis before creating yours</span>
                         </p>
                       </div>

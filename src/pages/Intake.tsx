@@ -38,15 +38,10 @@ export default function Intake() {
       }
 
       // Check if they already have a company
-      const { data: companies, error: companiesError } = await supabase
+      const { data: companies } = await supabase
         .from("companies")
         .select("*")
-        .eq("founder_id", session.user.id)
-        .order("created_at", { ascending: false });
-
-      if (companiesError) {
-        console.error("Error checking existing companies:", companiesError);
-      }
+        .eq("founder_id", session.user.id);
 
       if (companies && companies.length > 0) {
         navigate("/hub");
@@ -110,6 +105,32 @@ export default function Intake() {
     }
   };
 
+  const handleProceedToPayment = async () => {
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({ title: "Please sign in first", variant: "destructive" });
+        navigate("/auth");
+        return;
+      }
+
+      // Store questionnaire data in sessionStorage to be saved after payment
+      sessionStorage.setItem('pendingCompanyData', JSON.stringify({
+        name: formData.name,
+        description: formData.problemSolution,
+        stage: formData.stage,
+        founder_id: session.user.id
+      }));
+
+      // Navigate to payment page
+      navigate("/waitlist-checkout");
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderStep = () => {
     switch (currentStep) {
@@ -184,23 +205,34 @@ export default function Intake() {
             <div className="flex justify-center">
               <Sparkles className="w-16 h-16 text-primary animate-pulse" />
             </div>
-            <h2 className="text-4xl font-serif font-bold">You're all set!</h2>
-            <p className="text-xl text-muted-foreground">Let's get you started</p>
+            <h2 className="text-4xl font-serif font-bold">Almost there!</h2>
+            <p className="text-xl text-muted-foreground">Secure your spot with our early access discount</p>
             <div className="bg-primary/10 border border-primary/30 rounded-lg p-6 space-y-3">
+              <p className="text-2xl font-bold text-primary">
+                <span className="line-through text-muted-foreground text-xl mr-2">€59.99</span>
+                €29.99
+              </p>
+              <Badge variant="secondary" className="text-sm">
+                <Sparkles className="w-3 h-3 mr-1" />
+                50% OFF Pre-Launch
+              </Badge>
               <p className="text-sm text-muted-foreground">
-                Access all freemium content immediately. When you're ready to generate your investment memo, you'll complete a detailed questionnaire first.
+                Complete your profile and get instant access to the Investment Memorandum Generator
               </p>
             </div>
             <div className="pt-4">
               <Button 
                 size="lg" 
-                onClick={handleSaveAndExit}
+                onClick={handleProceedToPayment}
                 disabled={loading}
                 className="text-lg px-10 py-6 gradient-primary shadow-glow hover-neon-pulse transition-all duration-300 font-bold uppercase tracking-wider"
               >
-                {loading ? "Processing..." : "Go to Hub →"}
+                {loading ? "Processing..." : "Proceed to Payment →"}
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Your information will be saved after payment confirmation
+            </p>
           </div>
         );
 
