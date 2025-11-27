@@ -50,6 +50,7 @@ import WaitlistCheckout from "./pages/WaitlistCheckout";
 import WaitlistConfirmation from "./pages/WaitlistConfirmation";
 import AdminWaitlist from "./pages/AdminWaitlist";
 import SampleMemo from "./pages/SampleMemo";
+import GenerateMemo from "./pages/GenerateMemo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -103,6 +104,7 @@ const App = () => (
           <Route path="/waitlist-checkout" element={<WaitlistCheckout />} />
           <Route path="/waitlist-confirmation" element={<WaitlistConfirmation />} />
           <Route path="/sample-memo" element={<SampleMemo />} />
+          <Route path="/generate-memo" element={<GenerateMemo />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/articles" element={<AdminArticles />} />
           <Route path="/admin/prompts" element={<AdminPrompts />} />

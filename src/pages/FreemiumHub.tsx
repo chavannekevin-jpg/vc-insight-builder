@@ -367,14 +367,45 @@ export default function FreemiumHub() {
                       {/* CTAs */}
                       <div className="space-y-3 pt-2">
                         <Button 
-                          onClick={() => {
+                          onClick={async () => {
                             if (memo) {
                               navigate(`/memo?id=${memo.id}`);
-                            } else if (isAdmin || waitlistStatus?.has_paid) {
+                              return;
+                            }
+                            
+                            // Check if all required sections are completed
+                            const { data: responses } = await supabase
+                              .from("memo_responses")
+                              .select("question_key, answer")
+                              .eq("company_id", company.id);
+                            
+                            const requiredSections = [
+                              "problem_description",
+                              "solution_description", 
+                              "market_target_customer",
+                              "competition_mission",
+                              "team_founders",
+                              "usp_differentiators",
+                              "business_model_type",
+                              "traction_revenue"
+                            ];
+                            
+                            const completedSections = requiredSections.filter(section => 
+                              responses?.some(r => r.question_key === section && r.answer?.trim())
+                            );
+                            
+                            if (completedSections.length < requiredSections.length) {
+                              toast.error(`Please complete your company profile first (${completedSections.length}/${requiredSections.length} sections done)`);
+                              navigate(`/company/profile/edit`);
+                              return;
+                            }
+                            
+                            // All sections complete - check payment
+                            if (isAdmin || waitlistStatus?.has_paid) {
                               // Admin or paid users can generate memo
-                              navigate(`/memo-builder?companyId=${company.id}`);
+                              navigate(`/generate-memo?companyId=${company.id}`);
                             } else {
-                              // Non-paid users go to checkout
+                              // Show paywall
                               navigate(`/waitlist-checkout?companyId=${company.id}`);
                             }
                           }}
@@ -387,20 +418,10 @@ export default function FreemiumHub() {
                               <FileText className="w-5 h-5 mr-2" />
                               View My Memo
                             </>
-                          ) : isAdmin ? (
-                            <>
-                              <Sparkles className="w-5 h-5 mr-2" />
-                              Generate My Memo
-                            </>
-                          ) : waitlistStatus?.has_paid ? (
-                            <>
-                              <Sparkles className="w-5 h-5 mr-2" />
-                              Generate My Memo
-                            </>
                           ) : (
                             <>
                               <Sparkles className="w-5 h-5 mr-2" />
-                              Generate My Memo - Early Bird Access
+                              Generate My Memo
                             </>
                           )}
                         </Button>
