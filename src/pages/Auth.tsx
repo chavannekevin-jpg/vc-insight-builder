@@ -24,21 +24,32 @@ export default function Auth() {
 
   useEffect(() => {
     const checkCompanyAndRedirect = async (userId: string) => {
-      // Check if user has a company
-      const { data: companies } = await supabase
-        .from("companies")
-        .select("id")
-        .eq("founder_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(1);
+      try {
+        // Check if user has a company
+        const { data: companies, error } = await supabase
+          .from("companies")
+          .select("id")
+          .eq("founder_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(1);
 
-      // Use custom redirect if provided, otherwise go to hub if they have a company, or intake if not
-      const customRedirect = searchParams.get('redirect');
-      if (customRedirect) {
-        navigate(customRedirect);
-      } else if (companies && companies.length > 0) {
-        navigate('/hub');
-      } else {
+        if (error) {
+          console.error("Error checking companies:", error);
+          navigate('/intake');
+          return;
+        }
+
+        // Use custom redirect if provided, otherwise go to hub if they have a company, or intake if not
+        const customRedirect = searchParams.get('redirect');
+        if (customRedirect) {
+          navigate(customRedirect);
+        } else if (companies && companies.length > 0) {
+          navigate('/hub');
+        } else {
+          navigate('/intake');
+        }
+      } catch (error) {
+        console.error("Error in checkCompanyAndRedirect:", error);
         navigate('/intake');
       }
     };
@@ -51,7 +62,7 @@ export default function Auth() {
         
         // Redirect authenticated users
         if (session?.user) {
-          setTimeout(() => checkCompanyAndRedirect(session.user.id), 0);
+          checkCompanyAndRedirect(session.user.id);
         }
       }
     );
@@ -152,7 +163,7 @@ export default function Auth() {
     }
   };
 
-  if (session && user) {
+  if (!loading && session && user) {
     return (
       <div className="min-h-screen gradient-hero flex items-center justify-center">
         <div className="text-foreground flex items-center gap-2">
