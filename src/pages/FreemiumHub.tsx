@@ -359,7 +359,7 @@ export default function FreemiumHub() {
                         <Button 
                           onClick={() => {
                             if (memo) {
-                              navigate(`/memo?id=${memo.id}`);
+                              navigate(`/memo?companyId=${company.id}`);
                             } else if (!waitlistStatus?.has_paid) {
                               navigate(`/waitlist-checkout?companyId=${company.id}`);
                             } else {
