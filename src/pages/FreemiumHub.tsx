@@ -400,10 +400,10 @@ export default function FreemiumHub() {
                       {/* CTAs */}
                       <div className="space-y-3 pt-2">
                         <Button 
-                          onClick={() => {
-                            console.log("[Hub] Memo button clicked. Navigating to memo-builder");
-                            navigate(`/memo-builder?companyId=${company.id}`);
-                          }}
+          onClick={() => {
+            console.log("[Hub] Memo button clicked. Navigating to intake");
+            navigate('/intake');
+          }}
                           className="w-full gradient-primary shadow-glow hover:shadow-glow-strong font-bold text-base h-14 hover-punch"
                           size="lg"
                           disabled={isAdminViewing}
