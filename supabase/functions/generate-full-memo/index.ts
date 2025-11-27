@@ -90,6 +90,45 @@ serve(async (req) => {
       }
     });
 
+    // Extract market context using AI before generating memo
+    console.log("Extracting market context from responses...");
+    
+    const problemInfo = responses?.filter(r => r.question_key.startsWith('problem_')).map(r => r.answer).join('\n') || "";
+    const solutionInfo = responses?.filter(r => r.question_key.startsWith('solution_')).map(r => r.answer).join('\n') || "";
+    const icpInfo = responses?.find(r => r.question_key === 'market_icp')?.answer || "";
+    const competitionInfo = responses?.filter(r => r.question_key.startsWith('competition_')).map(r => r.answer).join('\n') || "";
+    const tractionInfo = responses?.filter(r => r.question_key.startsWith('traction_')).map(r => r.answer).join('\n') || "";
+
+    let marketContext: any = null;
+    
+    // Call extract-market-context function
+    try {
+      const contextResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/extract-market-context`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          problem: problemInfo,
+          solution: solutionInfo,
+          icp: icpInfo,
+          competition: competitionInfo,
+          traction: tractionInfo
+        }),
+      });
+
+      if (contextResponse.ok) {
+        const contextData = await contextResponse.json();
+        marketContext = contextData.marketContext;
+        console.log("Market context extracted successfully:", marketContext);
+      } else {
+        console.warn("Failed to extract market context, proceeding without it");
+      }
+    } catch (contextError) {
+      console.warn("Error extracting market context:", contextError);
+    }
+
     // Check if memo already exists - get the most recent one
     const { data: existingMemo } = await supabaseClient
       .from("memos")
@@ -162,8 +201,29 @@ serve(async (req) => {
       // Use custom prompt if available, otherwise use default
       const customPrompt = customPrompts[sectionName];
       
+      // Build AI-deduced market context string if available
+      let marketContextStr = "";
+      if (marketContext) {
+        marketContextStr = `\n\n--- AI-DEDUCED MARKET INTELLIGENCE ---
+Market Vertical: ${marketContext.marketVertical || "N/A"}
+Market Sub-Segment: ${marketContext.marketSubSegment || "N/A"}
+Estimated TAM: ${marketContext.estimatedTAM || "N/A"}
+Buyer Persona: ${marketContext.buyerPersona || "N/A"}
+Competitor Weaknesses: ${marketContext.competitorWeaknesses || "N/A"}
+Industry Benchmarks:
+  - Typical CAC: ${marketContext.industryBenchmarks?.typicalCAC || "N/A"}
+  - Typical LTV: ${marketContext.industryBenchmarks?.typicalLTV || "N/A"}
+  - Growth Rate: ${marketContext.industryBenchmarks?.typicalGrowthRate || "N/A"}
+  - Margins: ${marketContext.industryBenchmarks?.typicalMargins || "N/A"}
+Market Drivers: ${marketContext.marketDrivers || "N/A"}
+Confidence Level: ${marketContext.confidence || "N/A"}
+
+NOTE: This market intelligence was AI-estimated based on the company's problem, solution, and ICP. Use it to enrich your analysis but clearly attribute it as "AI-estimated market data" when relevant.
+--- END MARKET INTELLIGENCE ---`;
+      }
+      
       const prompt = customPrompt 
-        ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": ["specific investor question 1", "question 2", "question 3", "question 4", "question 5"],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
+        ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": ["specific investor question 1", "question 2", "question 3", "question 4", "question 5"],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
         : `You are a professional VC investment memo writer. Take the following startup information for the "${sectionName}" section and create a clear, concise, and compelling narrative in structured JSON format.
 
 Requirements:
@@ -175,12 +235,12 @@ Requirements:
 - Focus on facts and concrete details
 - Keep total content between 150-300 words
 
-Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.
+Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}
 
 Raw information:
 ${combinedContent}
 
-Return ONLY valid JSON with this exact structure (no markdown, no code blocks, no preambles):
+${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above to enrich your analysis. When using TAM estimates, buyer personas, or benchmarks from the market intelligence, clearly note they are "AI-estimated based on company profile".\n\n' : ''}Return ONLY valid JSON with this exact structure (no markdown, no code blocks, no preambles):
 {
   "narrative": {
     "paragraphs": [
