@@ -385,8 +385,10 @@ export const Header = () => {
             </button>
             <Button 
               onClick={() => {
-                console.log("[Header] Get your memo button clicked, navigating to intake");
-                navigate('/intake');
+                const pricingSection = document.getElementById('pricing-section');
+                if (pricingSection) {
+                  pricingSection.scrollIntoView({ behavior: 'smooth' });
+                }
               }}
               className="gradient-primary shadow-glow hover:shadow-glow-strong"
             >
@@ -446,8 +448,10 @@ export const Header = () => {
               <Button 
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  console.log("[Header] Get your memo button (mobile) clicked, navigating to intake");
-                  navigate('/intake');
+                  const pricingSection = document.getElementById('pricing-section');
+                  if (pricingSection) {
+                    pricingSection.scrollIntoView({ behavior: 'smooth' });
+                  }
                 }}
                 className="gradient-primary w-full shadow-glow"
               >

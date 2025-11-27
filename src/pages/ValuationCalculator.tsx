@@ -31,7 +31,6 @@ export default function ValuationCalculator() {
   
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
 
@@ -55,18 +54,6 @@ export default function ValuationCalculator() {
       if (!session) return;
 
       setUserId(session.user.id);
-
-      // Check if user is admin
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-
-      if (roleData) {
-        setIsAdmin(true);
-      }
 
       const { data: companies } = await supabase
         .from("companies")
@@ -512,7 +499,7 @@ export default function ValuationCalculator() {
                         </p>
                         <Button 
                           onClick={() => {
-                            if (!isAdmin && waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
+                            if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
                               setShowWaitlistModal(true);
                             } else {
                               companyId && navigate(`/memo?companyId=${companyId}`);
@@ -631,7 +618,7 @@ export default function ValuationCalculator() {
                     </div>
                     <Button 
                       onClick={() => {
-                        if (!isAdmin && waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
+                        if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
                           setShowWaitlistModal(true);
                         } else {
                           companyId && navigate(`/memo?companyId=${companyId}`);

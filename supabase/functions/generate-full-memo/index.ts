@@ -73,8 +73,7 @@ serve(async (req) => {
       "Team",
       "USP",
       "Business Model",
-      "Traction",
-      "Investment Thesis"
+      "Traction"
     ];
 
     // Group responses by section
@@ -163,69 +162,9 @@ serve(async (req) => {
       // Use custom prompt if available, otherwise use default
       const customPrompt = customPrompts[sectionName];
       
-      // Special handling for Investment Thesis section
-      let prompt: string;
-      
-      if (sectionName === "Investment Thesis") {
-        // Gather all available data for Investment Thesis
-        const allResponses = Object.values(responsesBySection).flatMap(section => Object.values(section)).join("\n\n");
-        const fullMemoContext = Object.keys(enhancedSections).map(s => `${s}: ${JSON.stringify(enhancedSections[s])}`).join("\n\n");
-        
-        prompt = `You are a Venture Capital Investment Manager writing the Investment Thesis section of an internal investment memorandum.
-
-Your task is to synthesize all available information about the startup into a single, coherent investment thesis written as a high-quality narrative — not as disjointed bullet points, not as a summary, but as a persuasive, logically connected analysis.
-
-The thesis must read like a real investment memo written by a senior VC.
-
-CONTEXT:
-Company: ${company.name}
-Stage: ${company.stage}
-Category: ${company.category || "startup"}
-Description: ${company.description || "N/A"}
-
-ALL AVAILABLE INFORMATION:
-${allResponses}
-
-PREVIOUS MEMO SECTIONS:
-${fullMemoContext}
-
-STRUCTURE TO FOLLOW (INTEGRATED INTO A FLOWING NARRATIVE):
-Your output must be written as a single logically flowing text (200-250 words) that naturally integrates:
-- Where the true venture-scale opportunity lies
-- What real-world evidence supports early validation
-- Whether the business can scale efficiently and defend its position
-- Why market timing matters now
-- What could break the story
-- Whether this is a VC-grade opportunity or not
-
-STYLE REQUIREMENTS:
-- Professional VC tone
-- Plain English
-- Analytical and grounded
-- No hype or marketing language
-- No repetition of pitch content
-- Forward-looking but realistic
-- Quantify when possible
-- Surface tensions, risks, and trade-offs
-- Every sentence should add reasoning, insight, or judgment
-
-Return ONLY valid JSON with this structure (no markdown, no code blocks):
-{
-  "narrative": {
-    "paragraphs": [{"text": "your complete investment thesis narrative as one flowing text", "emphasis": "high"}],
-    "keyPoints": ["critical insight 1", "critical insight 2", "critical insight 3"]
-  },
-  "vcReflection": {
-    "analysis": "Optional: Investment Committee Considerations section title if adequate data exists, otherwise empty string",
-    "questions": ["Critical question IC should debate 1", "Question 2", "Question 3", "Question 4", "Question 5"],
-    "benchmarking": "Comparisons to similar companies or market patterns if relevant, otherwise empty string",
-    "conclusion": "Final verdict: whether you would invest or not, and why (1-2 sentences)"
-  }
-}`;
-      } else if (customPrompt) {
-        prompt = `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": ["specific investor question 1", "question 2", "question 3", "question 4", "question 5"],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`;
-      } else {
-        prompt = `You are a professional VC investment memo writer. Take the following startup information for the "${sectionName}" section and create a clear, concise, and compelling narrative in structured JSON format.
+      const prompt = customPrompt 
+        ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": ["specific investor question 1", "question 2", "question 3", "question 4", "question 5"],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
+        : `You are a professional VC investment memo writer. Take the following startup information for the "${sectionName}" section and create a clear, concise, and compelling narrative in structured JSON format.
 
 Requirements:
 - Create 2-4 well-structured paragraphs with varying emphasis levels
@@ -270,7 +209,6 @@ Return ONLY valid JSON with this exact structure (no markdown, no code blocks, n
     "conclusion": "Investment implication or synthesis"
   }
 }`;
-      }
 
       console.log(`Generating section: ${sectionName}`);
 

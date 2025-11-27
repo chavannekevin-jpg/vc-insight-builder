@@ -41,7 +41,6 @@ interface Memo {
   company_id: string;
   content: string;
   status: string;
-  structured_content?: any;
 }
 
 interface EducationalArticle {
@@ -123,96 +122,61 @@ export default function FreemiumHub() {
   const [taglineLoading, setTaglineLoading] = useState(false);
   const [profileReadiness, setProfileReadiness] = useState<Array<{ name: string; completed: boolean }>>([]);
   const [isAdminViewing, setIsAdminViewing] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [userId, setUserId] = useState<string | undefined>(undefined);
   
   const { data: waitlistStatus } = useUserWaitlistStatus(userId, company?.id);
 
   useEffect(() => {
-    let isMounted = true;
-    
     const loadCompany = async () => {
-      console.log("[Hub] Starting loadCompany");
       const { data: { session } } = await supabase.auth.getSession();
-      
       if (!session) {
-        console.log("[Hub] No session found, redirecting to auth");
-        if (isMounted) {
-          navigate("/auth?redirect=/hub");
-        }
+        navigate("/auth?redirect=/hub");
         return;
       }
       
-      console.log("[Hub] Session found:", session.user.id);
-      if (isMounted) {
-        setUserId(session.user.id);
-      }
-
-      // Check if user is admin
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-
-      if (roleData && isMounted) {
-        console.log("[Hub] User is admin");
-        setIsAdmin(true);
-      }
+      setUserId(session.user.id);
 
       // Check if viewing as admin
       const viewCompanyId = searchParams.get('viewCompanyId');
       
-      if (viewCompanyId && roleData) {
-        console.log("[Hub] Admin viewing company:", viewCompanyId);
-        if (isMounted) {
+      if (viewCompanyId) {
+        // Check if user is admin
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+
+        if (roleData) {
           setIsAdminViewing(true);
+          await loadCompanyById(viewCompanyId);
+          return;
         }
-        await loadCompanyById(viewCompanyId);
-        return;
       }
 
-      console.log("[Hub] Querying companies for user:", session.user.id);
-      const { data: companies, error } = await supabase
+      const { data: companies } = await supabase
         .from("companies")
         .select("*")
         .eq("founder_id", session.user.id)
         .limit(1);
 
-      if (error) {
-        console.error("[Hub] Error querying companies:", error);
-        toast.error("Error loading your profile. Please try refreshing the page.");
-        return;
-      }
-
-      console.log("[Hub] Companies query result:", companies, "count:", companies?.length);
-
       if (!companies || companies.length === 0) {
-        console.log("[Hub] No companies found, redirecting to intake");
-        if (isMounted) {
-          navigate("/intake");
-        }
+        navigate("/intake");
         return;
       }
 
-      console.log("[Hub] Company found, loading data:", companies[0].id);
       await loadCompanyData(companies[0]);
     };
 
     loadCompany();
-    
-    return () => {
-      isMounted = false;
-    };
   }, [navigate, searchParams]);
 
   const loadCompanyData = async (companyData: Company) => {
-    console.log("[Hub] Loading company data:", companyData.id);
     setCompany(companyData);
     
     // Check if memo exists for this company - get the most recent one
-    const { data: memoData, error: memoError } = await supabase
+    const { data: memoData } = await supabase
       .from("memos")
       .select("*")
       .eq("company_id", companyData.id)
@@ -220,13 +184,8 @@ export default function FreemiumHub() {
       .limit(1)
       .maybeSingle();
     
-    console.log("[Hub] Memo query result:", { memoData, memoError, hasMemo: !!memoData });
-    
     if (memoData) {
-      console.log("[Hub] Setting memo:", memoData.id);
       setMemo(memoData);
-    } else {
-      console.log("[Hub] No memo found");
     }
     
     // Calculate profile readiness
@@ -234,8 +193,6 @@ export default function FreemiumHub() {
       .from("memo_responses")
       .select("question_key")
       .eq("company_id", companyData.id);
-    
-    console.log("[Hub] Memo responses count:", responses?.length);
     
     const sectionKeys = ["problem", "solution", "market", "competition", "team", "usp", "business", "traction"];
     const readiness = sectionKeys.map(key => ({
@@ -256,7 +213,6 @@ export default function FreemiumHub() {
       setArticles(articlesData);
     }
     
-    console.log("[Hub] Finished loading company data. isAdminViewing:", isAdminViewing, "isAdmin:", isAdmin);
     setLoading(false);
     
     // Generate AI tagline only if not admin viewing
@@ -279,7 +235,7 @@ export default function FreemiumHub() {
           setTagline(taglineData.tagline);
         }
       } catch (error) {
-        console.error('[Hub] Error generating tagline:', error);
+        console.error('Error generating tagline:', error);
       } finally {
         setTaglineLoading(false);
       }
@@ -402,35 +358,34 @@ export default function FreemiumHub() {
                       <div className="space-y-3 pt-2">
                         <Button 
                           onClick={() => {
-                            // Check if memo has actual content
-                            const hasMemoContent = memo && 
-                              memo.structured_content && 
-                              typeof memo.structured_content === 'object' &&
-                              'sections' in memo.structured_content &&
-                              Array.isArray((memo.structured_content as any).sections) &&
-                              (memo.structured_content as any).sections.length > 0;
-                            
-                            if (hasMemoContent) {
-                              console.log("[Hub] Memo has content. Navigating to view memo");
-                              navigate('/memo');
+                            if (memo) {
+                              navigate(`/memo?id=${memo.id}`);
+                            } else if (!waitlistStatus?.has_paid) {
+                              navigate(`/waitlist-checkout?companyId=${company.id}`);
                             } else {
-                              console.log("[Hub] No memo or empty memo. Navigating to intake");
-                              navigate('/intake');
+                              toast.info("Memo generation will be enabled soon for early-bird members!");
                             }
                           }}
                           className="w-full gradient-primary shadow-glow hover:shadow-glow-strong font-bold text-base h-14 hover-punch"
                           size="lg"
                           disabled={isAdminViewing}
                         >
-                          <Sparkles className="w-5 h-5 mr-2" />
-                          {memo && 
-                           memo.structured_content && 
-                           typeof memo.structured_content === 'object' &&
-                           'sections' in memo.structured_content &&
-                           Array.isArray((memo.structured_content as any).sections) &&
-                           (memo.structured_content as any).sections.length > 0
-                            ? "View My Memo" 
-                            : "Generate My Memo"}
+                          {memo ? (
+                            <>
+                              <FileText className="w-5 h-5 mr-2" />
+                              View My Memo
+                            </>
+                          ) : waitlistStatus?.has_paid ? (
+                            <>
+                              <Lock className="w-5 h-5 mr-2" />
+                              Memo Generation Coming Soon
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-5 h-5 mr-2" />
+                              Generate My Memo - Early Bird Access
+                            </>
+                          )}
                         </Button>
                         
                         <Button 

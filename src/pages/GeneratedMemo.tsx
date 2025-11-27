@@ -24,7 +24,6 @@ export default function GeneratedMemo() {
   
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
@@ -45,24 +44,10 @@ export default function GeneratedMemo() {
       }
 
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        
-        // Check if user is admin
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("role", "admin")
-          .maybeSingle();
+      if (user) setUserId(user.id);
 
-        if (roleData) {
-          setIsAdmin(true);
-        }
-      }
-
-      // Check waitlist mode - skip for admins
-      if (!isAdmin && waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
+      // Check waitlist mode
+      if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
         setShowWaitlistModal(true);
         setLoading(false);
         return;
@@ -115,9 +100,9 @@ export default function GeneratedMemo() {
       setLoading(false);
     };
     init();
-  }, [companyId, waitlistMode, userWaitlistStatus, navigate, isAdmin]);
+  }, [companyId, waitlistMode, userWaitlistStatus, navigate]);
 
-  if (showWaitlistModal || (!isAdmin && waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid))) {
+  if (showWaitlistModal || (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid))) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
