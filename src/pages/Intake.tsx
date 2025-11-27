@@ -38,10 +38,15 @@ export default function Intake() {
       }
 
       // Check if they already have a company
-      const { data: companies } = await supabase
+      const { data: companies, error: companiesError } = await supabase
         .from("companies")
         .select("*")
-        .eq("founder_id", session.user.id);
+        .eq("founder_id", session.user.id)
+        .order("created_at", { ascending: false });
+
+      if (companiesError) {
+        console.error("Error checking existing companies:", companiesError);
+      }
 
       if (companies && companies.length > 0) {
         navigate("/hub");

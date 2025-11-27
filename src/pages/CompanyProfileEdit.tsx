@@ -58,9 +58,21 @@ export default function CompanyProfileEdit() {
         .from("companies")
         .select("*")
         .eq("founder_id", session.user.id)
+        .order("created_at", { ascending: false })
         .limit(1);
 
-      if (companyError || !companies || companies.length === 0) {
+      if (companyError) {
+        console.error("Error loading company:", companyError);
+        toast({
+          title: "Error",
+          description: "Failed to load company data. Please try again.",
+          variant: "destructive"
+        });
+        navigate("/hub");
+        return;
+      }
+
+      if (!companies || companies.length === 0) {
         toast({
           title: "Error",
           description: "Could not load company profile",
