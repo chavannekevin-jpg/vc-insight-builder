@@ -38,13 +38,22 @@ export default function Intake() {
       }
 
       // Check if they already have a company
-      const { data: companies } = await supabase
+      const { data: companies, error } = await supabase
         .from("companies")
         .select("*")
         .eq("founder_id", session.user.id);
 
+      console.log("Company check:", { companies, error, userId: session.user.id });
+
+      if (error) {
+        console.error("Error checking companies:", error);
+      }
+
       if (companies && companies.length > 0) {
+        console.log("Found existing company, redirecting to hub");
         navigate("/hub");
+      } else {
+        console.log("No existing company found");
       }
     };
 
