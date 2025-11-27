@@ -73,14 +73,6 @@ const questionSections = {
         question: "How much does this problem cost your customers?", 
         placeholder: "Estimate in time, money, errors, or missed revenue. Use real numbers if possible." 
       },
-      { 
-        key: "problem_urgency",
-        title: "Why Now? Why This Matters",
-        tldr: "What makes this problem urgent today",
-        icon: Flame,
-        question: "Why is this problem getting worse?", 
-        placeholder: "Mention regulations, market shifts, technology changes, or trends making it more urgent." 
-      },
     ]
   },
   "Solution": {
@@ -102,14 +94,6 @@ const questionSections = {
         icon: Sparkles,
         question: "What are your 2-3 key features?", 
         placeholder: "For each, explain what it does and why it matters. Focus on value, not tech specs." 
-      },
-      { 
-        key: "solution_validation",
-        title: "Proof It Works",
-        tldr: "Evidence that validates your solution",
-        icon: ThumbsUp,
-        question: "What proof do you have that it works?", 
-        placeholder: "Pilots, retention rates, testimonials, early revenues, or partnerships." 
       },
     ]
   },
@@ -1032,24 +1016,32 @@ export default function Portal() {
                     onClick={async () => {
                       if (progressPercentage === 100) {
                         try {
-                          // Create memo record
-                          const { error } = await supabase
+                          // Create memo record if it doesn't exist
+                          const { data: existingMemo } = await supabase
                             .from("memos")
-                            .insert({
-                              company_id: companyId,
-                              status: "submitted",
-                              content: null,
-                            });
+                            .select("id")
+                            .eq("company_id", companyId)
+                            .maybeSingle();
 
-                          if (error) throw error;
+                          if (!existingMemo) {
+                            const { error } = await supabase
+                              .from("memos")
+                              .insert({
+                                company_id: companyId,
+                                status: "draft",
+                                content: null,
+                              });
+
+                            if (error) throw error;
+                          }
 
                           toast({
                             title: "Questionnaire Complete! 🎉",
-                            description: "Now choose your plan to get your VC memo.",
+                            description: "Generating your VC memo...",
                           });
                           
-                          // Navigate to checkout page
-                          navigate("/checkout");
+                          // Navigate to memo builder to generate
+                          navigate(`/memo-builder?companyId=${companyId}`);
                         } catch (error: any) {
                           console.error("Error creating memo:", error);
                           toast({
@@ -1071,7 +1063,7 @@ export default function Portal() {
                     className="gap-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 border-0 text-white shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:shadow-[0_0_40px_rgba(236,72,153,0.7)] hover:scale-105 transition-all disabled:opacity-30 disabled:hover:scale-100"
                   >
                     <Rocket className="w-5 h-5" />
-                    Choose Your Plan →
+                    Generate Memo →
                   </Button>
                 </div>
                 )
