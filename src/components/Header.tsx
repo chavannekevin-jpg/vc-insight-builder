@@ -384,10 +384,21 @@ export const Header = () => {
               )}
             </button>
             <Button 
-              onClick={() => {
-                const pricingSection = document.getElementById('pricing-section');
-                if (pricingSection) {
-                  pricingSection.scrollIntoView({ behavior: 'smooth' });
+              onClick={async () => {
+                // Get user's company ID
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                  const { data: companies } = await supabase
+                    .from("companies")
+                    .select("id")
+                    .eq("founder_id", session.user.id)
+                    .limit(1);
+                  
+                  if (companies && companies.length > 0) {
+                    navigate(`/memo-builder?companyId=${companies[0].id}`);
+                  } else {
+                    navigate("/intake");
+                  }
                 }
               }}
               className="gradient-primary shadow-glow hover:shadow-glow-strong"
@@ -446,11 +457,22 @@ export const Header = () => {
                 )}
               </button>
               <Button 
-                onClick={() => {
+                onClick={async () => {
                   setMobileMenuOpen(false);
-                  const pricingSection = document.getElementById('pricing-section');
-                  if (pricingSection) {
-                    pricingSection.scrollIntoView({ behavior: 'smooth' });
+                  // Get user's company ID
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (session) {
+                    const { data: companies } = await supabase
+                      .from("companies")
+                      .select("id")
+                      .eq("founder_id", session.user.id)
+                      .limit(1);
+                    
+                    if (companies && companies.length > 0) {
+                      navigate(`/memo-builder?companyId=${companies[0].id}`);
+                    } else {
+                      navigate("/intake");
+                    }
                   }
                 }}
                 className="gradient-primary w-full shadow-glow"
