@@ -23,6 +23,26 @@ export default function Auth() {
   const selectedPrice = searchParams.get('price');
 
   useEffect(() => {
+    const checkCompanyAndRedirect = async (userId: string) => {
+      // Check if user has a company
+      const { data: companies } = await supabase
+        .from("companies")
+        .select("id")
+        .eq("founder_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      // Use custom redirect if provided, otherwise go to hub if they have a company, or intake if not
+      const customRedirect = searchParams.get('redirect');
+      if (customRedirect) {
+        navigate(customRedirect);
+      } else if (companies && companies.length > 0) {
+        navigate('/hub');
+      } else {
+        navigate('/intake');
+      }
+    };
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -31,8 +51,7 @@ export default function Auth() {
         
         // Redirect authenticated users
         if (session?.user) {
-          const redirect = searchParams.get('redirect') || '/intake';
-          setTimeout(() => navigate(redirect), 0);
+          setTimeout(() => checkCompanyAndRedirect(session.user.id), 0);
         }
       }
     );
@@ -43,8 +62,7 @@ export default function Auth() {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        const redirect = searchParams.get('redirect') || '/intake';
-        navigate(redirect);
+        checkCompanyAndRedirect(session.user.id);
       }
     });
 
@@ -120,7 +138,7 @@ export default function Auth() {
 
       toast({
         title: "Welcome back!",
-        description: "Redirecting to portal...",
+        description: "Loading your dashboard...",
       });
     } catch (error: any) {
       console.error("Login error:", error);
@@ -139,7 +157,7 @@ export default function Auth() {
       <div className="min-h-screen gradient-hero flex items-center justify-center">
         <div className="text-foreground flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-          <span>Redirecting to your portal...</span>
+          <span>Loading your dashboard...</span>
         </div>
       </div>
     );
