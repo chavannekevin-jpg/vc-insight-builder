@@ -29,10 +29,10 @@ export default function Auth() {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Redirect authenticated users
-        if (session?.user) {
+        // Redirect authenticated users immediately
+        if (session?.user && event === 'SIGNED_IN') {
           const redirect = searchParams.get('redirect') || '/hub';
-          setTimeout(() => navigate(redirect), 0);
+          navigate(redirect);
         }
       }
     );

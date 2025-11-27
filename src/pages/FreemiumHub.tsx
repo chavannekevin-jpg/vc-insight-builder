@@ -184,9 +184,6 @@ export default function FreemiumHub() {
       .limit(1)
       .maybeSingle();
     
-    if (memoData) {
-      setMemo(memoData);
-    }
     
     // Calculate profile readiness and check questionnaire completion
     const { data: responses } = await supabase
@@ -218,9 +215,14 @@ export default function FreemiumHub() {
     const answeredKeys = responses?.filter(r => r.answer && r.answer.trim()).map(r => r.question_key) || [];
     const isQuestionnaireComplete = requiredQuestions.every(key => answeredKeys.includes(key));
     
-    // Only consider memo complete if questionnaire is fully answered
-    if (memoData && !isQuestionnaireComplete) {
-      setMemo(null); // Hide memo button if questionnaire not complete
+    // Only show memo if it has actual content AND questionnaire is complete
+    if (memoData && memoData.structured_content) {
+      const structuredContent = memoData.structured_content as any;
+      const hasContent = structuredContent.sections && structuredContent.sections.length > 0;
+      
+      if (hasContent && isQuestionnaireComplete) {
+        setMemo(memoData);
+      }
     }
     
     const sectionKeys = ["problem", "solution", "market", "competition", "team", "usp", "business", "traction"];
