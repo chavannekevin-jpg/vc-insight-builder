@@ -54,16 +54,32 @@ const questionSections = {
         title: "What Makes People Suffer?",
         tldr: "Define the pain point that keeps your customers up at night",
         icon: AlertCircle,
-        question: "Describe the problem", 
-        placeholder: "What's the pain point your customers face? Make it real, make it hurt." 
+        question: "What painful problem do your customers face?", 
+        placeholder: "Describe the frustration, inefficiency, or failure they experience today. Make it real, make it hurt." 
       },
       { 
         key: "problem_workflow",
         title: "Show Us The Broken System",
         tldr: "How do people struggle through this problem today?",
         icon: Target,
-        question: "What is the main process, task, or workflow your product improves, replaces, or simplifies?", 
-        placeholder: "Walk us through the broken workflow. How does it work today vs. how it should work?" 
+        question: "How do people currently handle this problem?", 
+        placeholder: "Walk through the existing process or workaround. Explain what's broken about it." 
+      },
+      { 
+        key: "problem_quantification",
+        title: "The Cost of Pain",
+        tldr: "Quantify the damage this problem causes",
+        icon: DollarSign,
+        question: "How much does this problem cost your customers?", 
+        placeholder: "Estimate in time, money, errors, or missed revenue. Use real numbers if possible." 
+      },
+      { 
+        key: "problem_urgency",
+        title: "Why Now? Why This Matters",
+        tldr: "What makes this problem urgent today",
+        icon: Flame,
+        question: "Why is this problem getting worse?", 
+        placeholder: "Mention regulations, market shifts, technology changes, or trends making it more urgent." 
       },
     ]
   },
@@ -72,28 +88,44 @@ const questionSections = {
     color: "text-yellow-500",
     questions: [
       { 
-        key: "solution_description",
-        title: "Your Weapon of Choice",
-        tldr: "The solution that changes the game",
+        key: "solution_oneliner",
+        title: "Your One-Liner",
+        tldr: "The elevator pitch in one sentence",
         icon: Zap,
-        question: "Description of your product/service", 
-        placeholder: "What have you built? Get specific about what it does." 
+        question: "In one sentence, what does your product do and for whom?", 
+        placeholder: "We help [who] do [what] by [how]. Keep it crisp." 
+      },
+      { 
+        key: "solution_mechanism",
+        title: "How It Actually Works",
+        tldr: "The core technology or process",
+        icon: Brain,
+        question: "How does your solution actually work?", 
+        placeholder: "Explain the core technology, process, or approach that makes it effective." 
       },
       { 
         key: "solution_features",
-        title: "Unlock Your Arsenal",
-        tldr: "Key features that make magic happen",
+        title: "Your Key Features",
+        tldr: "The 2-3 features that make magic happen",
         icon: Sparkles,
-        question: "Describe the key features and brief explanations of how they work / why they matter", 
-        placeholder: "Break down 3-5 core features. What makes each one powerful?" 
+        question: "What are your 2-3 key features?", 
+        placeholder: "For each, explain what it does and why it matters. Focus on value, not tech specs." 
       },
       { 
-        key: "solution_social_proof",
-        title: "Show Me You Have Believers",
-        tldr: "Who's already singing your praises?",
+        key: "solution_roi",
+        title: "Tangible Results",
+        tldr: "What customers actually get",
+        icon: TrendingUp,
+        question: "What tangible results do customers get?", 
+        placeholder: "Quantify: time saved, cost reduced, revenue gained, or risk avoided. Use real numbers." 
+      },
+      { 
+        key: "solution_validation",
+        title: "Proof It Works",
+        tldr: "Evidence that validates your solution",
         icon: ThumbsUp,
-        question: "Social proof (early adoption, pilot results, churn, testimonials, metrics)", 
-        placeholder: "Show us the love. Who's using it? What results have you seen?" 
+        question: "What proof do you have that it works?", 
+        placeholder: "Pilots, retention rates, testimonials, early revenues, or partnerships." 
       },
     ]
   },
@@ -102,36 +134,44 @@ const questionSections = {
     color: "text-blue-500",
     questions: [
       { 
-        key: "market_target_customer",
-        title: "Who's Paying The Bills?",
-        tldr: "Your ideal customer in crystal clear detail",
+        key: "market_icp",
+        title: "Your Ideal Customer Profile",
+        tldr: "Define who you're selling to",
         icon: Users,
-        question: "Who is your target customer?", 
-        placeholder: "Get specific. Company size, industry, geography. Paint the picture." 
+        question: "Who is your ideal customer?", 
+        placeholder: "Define by industry, company size, geography, and specific characteristics." 
       },
       { 
-        key: "market_buying_persona",
-        title: "The Money Person",
-        tldr: "Who actually signs the checks?",
+        key: "market_buyer",
+        title: "Who Signs The Check?",
+        tldr: "The actual decision maker",
         icon: Crown,
-        question: "Who is your buying persona?", 
-        placeholder: "Who signs the check? Title, priorities, pain points." 
+        question: "Who makes the buying decision?", 
+        placeholder: "Job title, their main priorities, and what pain they feel most." 
       },
       { 
-        key: "market_current_acv",
-        title: "Your Price Tag Today",
-        tldr: "What customers pay you right now",
+        key: "market_size",
+        title: "How Big Is This?",
+        tldr: "Total addressable market",
+        icon: BarChart3,
+        question: "How big is your market?", 
+        placeholder: "Estimate # of potential customers × your ACV. Show your math." 
+      },
+      { 
+        key: "market_pricing",
+        title: "Your Price Point",
+        tldr: "Current and target pricing",
         icon: DollarSign,
-        question: "What is your current pricing ideally ACV?", 
-        placeholder: "What are you charging today? Be transparent." 
+        question: "What is your current and target pricing?", 
+        placeholder: "Current ACV and where you expect it to grow as you add features or move upmarket." 
       },
       { 
-        key: "market_projected_acv",
-        title: "Your Future Price Tag",
-        tldr: "Where the money's heading",
-        icon: TrendingUp,
-        question: "What is your projected ACV?", 
-        placeholder: "Where do you see pricing going as you scale?" 
+        key: "market_path_to_scale",
+        title: "Path to €100M ARR",
+        tldr: "How you'll actually scale",
+        icon: Rocket,
+        question: "What's your path to €100M ARR?", 
+        placeholder: "Who do you sell to first? What expansion levers exist? How does the market grow?" 
       },
     ]
   },
@@ -140,28 +180,36 @@ const questionSections = {
     color: "text-purple-500",
     questions: [
       { 
-        key: "competition_mission",
-        title: "Your Battle Cry",
-        tldr: "Why you exist beyond making money",
-        icon: Heart,
-        question: "What is your company mission / product / core value proposition?", 
-        placeholder: "Why do you exist? What's your North Star?" 
-      },
-      { 
-        key: "competition_competitors",
-        title: "Name Your Enemies",
-        tldr: "Who you're fighting against",
+        key: "competition_landscape",
+        title: "The Battlefield",
+        tldr: "Who you're competing against",
         icon: Shield,
-        question: "List the competitors you know", 
-        placeholder: "Who else is in the ring? Direct and indirect." 
+        question: "Who are your competitors?", 
+        placeholder: "List direct competitors, adjacent solutions, and incumbent players." 
       },
       { 
-        key: "competition_strength",
-        title: "Your Secret Weapon",
-        tldr: "Why you'll win this fight",
+        key: "competition_strengths",
+        title: "Where They're Strong",
+        tldr: "What competitors do well",
+        icon: Award,
+        question: "What do your competitors do well?", 
+        placeholder: "Be honest—where are they strong? What have they figured out?" 
+      },
+      { 
+        key: "competition_weaknesses",
+        title: "Where They Fail",
+        tldr: "The gaps you exploit",
+        icon: AlertCircle,
+        question: "Where do competitors fall short?", 
+        placeholder: "Gaps in their product, pricing, UX, speed, or market fit. What leaves customers frustrated?" 
+      },
+      { 
+        key: "competition_advantage",
+        title: "Why You'll Win",
+        tldr: "Your unfair advantage",
         icon: Flame,
-        question: "What do you think your strength is facing your competition?", 
-        placeholder: "What's your unfair advantage? Why will you win?" 
+        question: "Why will you win?", 
+        placeholder: "What's your unfair advantage over all of them? Why can't they copy you?" 
       },
     ]
   },
@@ -170,44 +218,44 @@ const questionSections = {
     color: "text-green-500",
     questions: [
       { 
-        key: "team_size",
-        title: "Headcount Power",
-        tldr: "Size of your army",
+        key: "team_overview",
+        title: "Your Army Structure",
+        tldr: "How the team is organized",
         icon: Users,
-        question: "Number of full-time employees / team structure", 
-        placeholder: "How many people? How are you organized?" 
-      },
-      { 
-        key: "team_functions",
-        title: "Who's In Your Elite Squad?",
-        tldr: "What roles cover your bases",
-        icon: Award,
-        question: "Key team functions / outsourced support", 
-        placeholder: "Who does what? What's in-house vs. outsourced?" 
+        question: "How is your team structured?", 
+        placeholder: "# of employees, key functions, in-house vs outsourced." 
       },
       { 
         key: "team_founders",
-        title: "Meet The Founding Legends",
-        tldr: "The people who started this",
+        title: "The Founding Squad",
+        tldr: "Who started this and why they're perfect",
         icon: Crown,
-        question: "Founders (name, role, % ownership, background)", 
-        placeholder: "Introduce the founding team. Why are they perfect for this?" 
+        question: "Who are the founders?", 
+        placeholder: "For each: Name, Role, Ownership %, and relevant background (1 sentence each)." 
       },
       { 
         key: "team_history",
-        title: "Team Chemistry Check",
-        tldr: "How long you've been rolling together",
+        title: "Team Chemistry",
+        tldr: "Prior collaboration and shared experience",
         icon: Heart,
-        question: "Prior collaboration or history among team members", 
-        placeholder: "Have you worked together before? What's the chemistry?" 
+        question: "Have you worked together before?", 
+        placeholder: "Prior collaboration or shared experience that proves you can work together." 
       },
       { 
         key: "team_ownership",
         title: "Skin In The Game",
-        tldr: "Who owns what",
+        tldr: "Total founder/team equity",
         icon: Award,
-        question: "Total team/founder ownership (% FD)", 
-        placeholder: "What % of the company does the team own fully diluted?" 
+        question: "What is total founder/team ownership?", 
+        placeholder: "Combined equity % fully diluted. How much skin in the game?" 
+      },
+      { 
+        key: "team_gaps",
+        title: "Missing Pieces",
+        tldr: "Key hires you need next",
+        icon: AlertCircle,
+        question: "What key hires do you need next?", 
+        placeholder: "Roles missing to reach your next growth stage. What functions need strengthening?" 
       },
     ]
   },
@@ -216,52 +264,36 @@ const questionSections = {
     color: "text-orange-500",
     questions: [
       { 
-        key: "usp_differentiators",
-        title: "Your Unfair Advantages",
-        tldr: "What others can't copy",
+        key: "usp_core",
+        title: "Your Single Biggest Edge",
+        tldr: "The one thing that sets you apart",
         icon: Star,
-        question: "Key differentiators you already have or want to emphasize (3–5 max)", 
-        placeholder: "What makes you different? List your secret weapons." 
+        question: "What is your single biggest differentiator?", 
+        placeholder: "The one thing competitors can't easily copy. Your core unfair advantage." 
       },
       { 
-        key: "usp_distribution",
-        title: "Network Effect Unlocked?",
-        tldr: "How you reach and keep customers",
-        icon: Network,
-        question: "Distribution or network advantages", 
-        placeholder: "Do you have special access? Partnerships? Network effects?" 
+        key: "usp_differentiators",
+        title: "Other Key Advantages",
+        tldr: "Secondary differentiators that matter",
+        icon: Sparkles,
+        question: "What are your other key advantages?", 
+        placeholder: "List 3-5 across product, distribution, data, compliance, or business model." 
       },
       { 
-        key: "usp_business_model",
-        title: "The Money Machine Design",
-        tldr: "How you capture value differently",
-        icon: Zap,
-        question: "Business model advantages (e.g., revenue share, SaaS, upsell, capital-efficient)", 
-        placeholder: "What's smart about how you make money?" 
-      },
-      { 
-        key: "usp_compliance",
-        title: "Your Regulatory Moat",
-        tldr: "Barriers that protect you",
+        key: "usp_moat",
+        title: "Your Defensive Moat",
+        tldr: "What creates long-term defensibility",
         icon: Lock,
-        question: "Compliance / regulatory or local-market advantages (if relevant)", 
-        placeholder: "Any regulatory moats? Local advantages?" 
+        question: "What creates defensibility?", 
+        placeholder: "Network effects, data, integrations, regulatory barriers, or switching costs." 
       },
       { 
-        key: "usp_data",
-        title: "Data Gold Mine?",
-        tldr: "Proprietary data that gives you power",
-        icon: Database,
-        question: "Data or insights layer potential", 
-        placeholder: "Do you collect unique data? Can it become a moat?" 
-      },
-      { 
-        key: "usp_customer_rationale",
+        key: "usp_customer_choice",
         title: "Why Customers Choose You",
         tldr: "The real reasons they switched",
         icon: ThumbsUp,
-        question: "Customer rationale (why clients pick you over competitors)", 
-        placeholder: "From the customer's mouth—why do they choose you?" 
+        question: "Why do customers choose you over alternatives?", 
+        placeholder: "In their words. What do they say when they explain why they picked you?" 
       },
     ]
   },
@@ -271,51 +303,43 @@ const questionSections = {
     questions: [
       { 
         key: "business_model_type",
-        title: "How You Print Money",
-        tldr: "Your revenue model explained",
+        title: "How You Make Money",
+        tldr: "Your core revenue model",
         icon: DollarSign,
-        question: "Business model type (SaaS / Marketplace / etc.)", 
-        placeholder: "How does the business work? SaaS, marketplace, transaction-based?" 
+        question: "What is your business model?", 
+        placeholder: "SaaS, marketplace, usage-based, revenue share, hybrid, etc." 
       },
       { 
         key: "business_model_revenue",
-        title: "Revenue Breakdown",
-        tldr: "Where the money comes from",
+        title: "Revenue Sources",
+        tldr: "Where money comes from",
         icon: BarChart3,
-        question: "Revenue sources & pricing details", 
-        placeholder: "Where does money come from? Break down revenue streams." 
+        question: "What are your revenue sources?", 
+        placeholder: "For each: how it works and why it matters. Break down the revenue streams." 
       },
       { 
-        key: "business_model_acv_growth",
-        title: "Growth Trajectory",
-        tldr: "How fast you're scaling",
+        key: "business_model_expansion",
+        title: "Customer Expansion Path",
+        tldr: "How customers grow with you",
         icon: TrendingUp,
-        question: "ACV range or growth potential", 
-        placeholder: "What's the ACV range? How does it expand over time?" 
+        question: "How do customers expand over time?", 
+        placeholder: "Describe the typical journey from initial contract to full deployment." 
       },
       { 
         key: "business_model_gtm",
-        title: "Sales War Room Strategy",
-        tldr: "How you capture market share",
+        title: "Go-To-Market Strategy",
+        tldr: "How you acquire customers",
         icon: Target,
-        question: "GTM strategy (direct / partner / hybrid)", 
-        placeholder: "How do you sell? Sales team, partners, self-serve?" 
+        question: "How do you sell?", 
+        placeholder: "Direct sales, partnerships, self-serve, or hybrid approach. What's working?" 
       },
       { 
         key: "business_model_margins",
-        title: "Margin Magic",
-        tldr: "The unit economics that matter",
+        title: "Unit Economics",
+        tldr: "Margins and cost structure",
         icon: Sparkles,
-        question: "Margins or cost drivers", 
-        placeholder: "What are your gross margins? What drives costs?" 
-      },
-      { 
-        key: "business_model_future",
-        title: "Future Money Moves",
-        tldr: "New ways to monetize",
-        icon: Rocket,
-        question: "Future monetization ideas", 
-        placeholder: "What other ways could you make money down the line?" 
+        question: "What are your gross margins and cost drivers?", 
+        placeholder: "Include what makes the model scalable. Where do costs go as you grow?" 
       },
     ]
   },
@@ -324,60 +348,52 @@ const questionSections = {
     color: "text-pink-500",
     questions: [
       { 
-        key: "traction_launch",
-        title: "Launch & First Wins",
-        tldr: "When you first entered the arena",
+        key: "traction_timeline",
+        title: "Your Journey So Far",
+        tldr: "Key milestones to date",
         icon: Rocket,
-        question: "Launch date and initial milestones", 
-        placeholder: "When did you launch? What have you hit so far?" 
+        question: "What are your key milestones?", 
+        placeholder: "Launch date, pivots, product releases, market expansions. Tell the story." 
       },
       { 
-        key: "traction_revenue",
-        title: "Show Me You Have Momentum",
-        tldr: "Revenue numbers that speak volumes",
+        key: "traction_revenue_progression",
+        title: "Revenue Growth Story",
+        tldr: "Show the momentum with dates",
         icon: DollarSign,
-        question: "Current ARR / MRR and past values (for comparison)", 
-        placeholder: "Show us the revenue trajectory. Where were you? Where are you now?" 
+        question: "Show your revenue growth.", 
+        placeholder: "ARR/MRR at different points in time (e.g., Jan: €50K → June: €150K → Now: €300K)." 
       },
       { 
         key: "traction_customers",
-        title: "Army Size",
-        tldr: "How many are in your customer base",
+        title: "Customer Base Size",
+        tldr: "How many people you're serving",
         icon: Users,
-        question: "Number of customers, users, or partners", 
-        placeholder: "How many customers? How many users? Growing how fast?" 
+        question: "How many customers/users do you have?", 
+        placeholder: "Include growth rate and geographies. What does the trend look like?" 
       },
       { 
         key: "traction_key_customers",
-        title: "Name Drop Your Stars",
-        tldr: "The logos that matter",
+        title: "Notable Customer Logos",
+        tldr: "The names that matter",
         icon: Star,
-        question: "Key customer names or use cases", 
-        placeholder: "Any notable customers? Compelling use cases?" 
+        question: "Name your most notable customers.", 
+        placeholder: "Logos or case studies that validate your product. Who's singing your praises?" 
       },
       { 
         key: "traction_efficiency",
-        title: "Unit Economics Flex",
-        tldr: "Proof your model works",
+        title: "Efficiency Metrics",
+        tldr: "Unit economics that prove it works",
         icon: BarChart3,
-        question: "Efficiency metrics (CAC, retention, margins)", 
-        placeholder: "What's your CAC? Retention rate? Unit economics looking good?" 
+        question: "What are your efficiency metrics?", 
+        placeholder: "CAC, retention rate, gross margins, or other unit economics. Show the model works." 
       },
       { 
-        key: "traction_funding",
-        title: "Who Believes In You?",
-        tldr: "The investors who backed you",
+        key: "traction_pipeline",
+        title: "Sales Pipeline",
+        tldr: "What's coming next",
         icon: Trophy,
-        question: "Funding, investors, or advisors", 
-        placeholder: "Who's backed you? Any notable angels or advisors?" 
-      },
-      { 
-        key: "traction_milestones",
-        title: "Major Victory Lap",
-        tldr: "Wins that prove you're for real",
-        icon: Crown,
-        question: "Notable milestones (expansion, regulation, product releases)", 
-        placeholder: "Any big wins? New markets? Product launches? Partnerships?" 
+        question: "What does your sales pipeline look like?", 
+        placeholder: "Qualified opportunities and estimated value. What deals are in motion?" 
       },
     ]
   },
