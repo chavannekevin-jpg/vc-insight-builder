@@ -4,6 +4,7 @@ import { LucideIcon } from "lucide-react";
 
 interface LevelCardProps {
   levelNumber: number;
+  totalLevels: number;
   title: string;
   tldr: string;
   icon: LucideIcon;
@@ -12,7 +13,8 @@ interface LevelCardProps {
 }
 
 export const LevelCard = ({ 
-  levelNumber, 
+  levelNumber,
+  totalLevels,
   title, 
   tldr, 
   icon: Icon, 
@@ -31,7 +33,7 @@ export const LevelCard = ({
             <Icon className="w-6 h-6 text-neon-pink" />
           </div>
           <div className="flex-1">
-            <div className="text-sm text-muted-foreground mb-1">Level {levelNumber} of 36</div>
+            <div className="text-sm text-muted-foreground mb-1">Level {levelNumber} of {totalLevels}</div>
             <h2 className="text-2xl font-bold neon-pink mb-2">{title}</h2>
             <p className="text-sm text-muted-foreground italic">{tldr}</p>
           </div>
