@@ -12,7 +12,7 @@ import { MemoVCReflection } from "@/components/memo/MemoVCReflection";
 import { MemoVCQuestions } from "@/components/memo/MemoVCQuestions";
 import { MemoBenchmarking } from "@/components/memo/MemoBenchmarking";
 import { MemoAIConclusion } from "@/components/memo/MemoAIConclusion";
-import { Sparkles, ArrowLeft } from "lucide-react";
+import { Sparkles, ArrowLeft, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent } from "@/types/memo";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ export default function GeneratedMemo() {
   const companyId = searchParams.get("companyId");
   
   const [loading, setLoading] = useState(true);
+  const [regenerating, setRegenerating] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
@@ -109,6 +110,37 @@ export default function GeneratedMemo() {
     init();
   }, [companyId, waitlistMode, userWaitlistStatus, navigate]);
 
+  const handleRegenerate = async () => {
+    if (!companyId) return;
+    
+    setRegenerating(true);
+    try {
+      console.log("Regenerating memo with force=true...");
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-full-memo', {
+        body: { companyId, force: true }
+      });
+
+      if (functionError) throw functionError;
+
+      setMemoContent(functionData.structuredContent);
+      setCompanyInfo(functionData.company);
+      
+      toast({
+        title: "Success",
+        description: "Memo regenerated successfully"
+      });
+    } catch (error) {
+      console.error("Error regenerating memo:", error);
+      toast({
+        title: "Error",
+        description: "Failed to regenerate memo",
+        variant: "destructive"
+      });
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
   if (showWaitlistModal || (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid))) {
     return (
       <div className="min-h-screen bg-background">
@@ -151,14 +183,24 @@ export default function GeneratedMemo() {
       <div className="container mx-auto px-4 py-12 max-w-5xl">
         {/* Header Section */}
         <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/portal")}
-            className="mb-6"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Portal
-          </Button>
+          <div className="flex justify-between items-center mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/portal")}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Portal
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={handleRegenerate}
+              disabled={regenerating}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
+              {regenerating ? 'Regenerating...' : 'Regenerate Memo'}
+            </Button>
+          </div>
 
           <div className="bg-card/95 backdrop-blur-sm border border-border/50 rounded-2xl p-8 shadow-lg">
             <h1 className="text-4xl font-display font-bold mb-4 text-foreground">

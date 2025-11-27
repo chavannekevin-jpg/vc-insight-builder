@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { companyId } = await req.json();
+    const { companyId, force = false } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
@@ -76,19 +76,34 @@ serve(async (req) => {
       "Traction"
     ];
 
+    // Create proper section name mapping
+    const sectionKeyMapping: Record<string, string> = {
+      "problem": "Problem",
+      "solution": "Solution",
+      "market": "Market",
+      "competition": "Competition",
+      "team": "Team",
+      "usp": "USP",
+      "business": "Business Model",
+      "traction": "Traction"
+    };
+
     // Group responses by section
     const responsesBySection: Record<string, Record<string, string>> = {};
     
     responses?.forEach((response) => {
       const sectionMatch = response.question_key.match(/^([^_]+)/);
       if (sectionMatch) {
-        const sectionName = sectionMatch[1].charAt(0).toUpperCase() + sectionMatch[1].slice(1);
+        const sectionKey = sectionMatch[1].toLowerCase();
+        const sectionName = sectionKeyMapping[sectionKey] || sectionMatch[1].charAt(0).toUpperCase() + sectionMatch[1].slice(1);
         if (!responsesBySection[sectionName]) {
           responsesBySection[sectionName] = {};
         }
         responsesBySection[sectionName][response.question_key] = response.answer || "";
       }
     });
+
+    console.log("Sections found in responses:", Object.keys(responsesBySection));
 
     // Extract market context using AI before generating memo
     console.log("Extracting market context from responses...");
@@ -138,13 +153,13 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    // Only return existing memo if it has actual content (non-empty sections)
-    if (existingMemo && existingMemo.structured_content) {
+    // Only return existing memo if not forced and has sufficient content
+    if (!force && existingMemo && existingMemo.structured_content) {
       const content = existingMemo.structured_content as any;
-      const hasContent = content.sections && Array.isArray(content.sections) && content.sections.length > 0;
+      const hasContent = content.sections && Array.isArray(content.sections) && content.sections.length >= 6;
       
       if (hasContent) {
-        console.log("Returning existing memo from cache");
+        console.log(`Returning existing memo from cache (${content.sections.length} sections)`);
         return new Response(
           JSON.stringify({ 
             structuredContent: existingMemo.structured_content,
@@ -162,8 +177,10 @@ serve(async (req) => {
           }
         );
       } else {
-        console.log("Existing memo found but has empty sections, regenerating...");
+        console.log(`Existing memo found but incomplete (${content.sections?.length || 0} sections), regenerating...`);
       }
+    } else if (force) {
+      console.log("Force regeneration requested, skipping cache");
     }
 
     const enhancedSections: Record<string, any> = {};
@@ -257,7 +274,7 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
   }
 }`;
 
-      console.log(`Generating section: ${sectionName}`);
+      console.log(`Generating section: ${sectionName} (${Object.keys(sectionResponses).length} questions)`);
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -285,6 +302,7 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`AI API error for ${sectionName}:`, response.status, errorText);
+        console.error(`Failed to generate section: ${sectionName} - skipping`);
         continue;
       }
 
@@ -302,14 +320,17 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
           // Support both new format (with narrative/vcReflection) and legacy format
           if (structuredContent.narrative || structuredContent.vcReflection) {
             enhancedSections[sectionName] = structuredContent;
+            console.log(`✓ Successfully generated section: ${sectionName}`);
           } else {
             // Legacy format - wrap in narrative
             enhancedSections[sectionName] = {
               narrative: structuredContent
             };
+            console.log(`✓ Successfully generated section: ${sectionName} (legacy format)`);
           }
         } catch (parseError) {
           console.error(`Failed to parse JSON for ${sectionName}:`, parseError);
+          console.error(`Raw response from AI:`, enhancedText.substring(0, 200));
           // Fallback to basic structure if parsing fails
           enhancedSections[sectionName] = {
             narrative: {
@@ -317,8 +338,22 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
               keyPoints: []
             }
           };
+          console.log(`✓ Generated section with fallback: ${sectionName}`);
         }
+      } else {
+        console.error(`No content returned for section: ${sectionName}`);
       }
+    }
+
+    // Validate memo completeness
+    const generatedSectionCount = Object.keys(enhancedSections).length;
+    console.log(`\n=== MEMO GENERATION SUMMARY ===`);
+    console.log(`Generated sections: ${generatedSectionCount}/${sectionOrder.length}`);
+    console.log(`Section titles: ${Object.keys(enhancedSections).join(", ")}`);
+    
+    if (generatedSectionCount < 6) {
+      console.error(`WARNING: Only ${generatedSectionCount} sections generated, expected at least 6`);
+      throw new Error(`Incomplete memo generation: only ${generatedSectionCount} sections generated`);
     }
 
     // Save memo to database with structured content
