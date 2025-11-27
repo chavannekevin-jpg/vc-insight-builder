@@ -124,6 +124,7 @@ export default function FreemiumHub() {
   const [isAdminViewing, setIsAdminViewing] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userId, setUserId] = useState<string | undefined>(undefined);
+  const [adminCheckDone, setAdminCheckDone] = useState(false);
   
   const { data: waitlistStatus } = useUserWaitlistStatus(userId, company?.id);
 
@@ -137,22 +138,25 @@ export default function FreemiumHub() {
       
       setUserId(session.user.id);
 
-      // Check if user is admin
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+      // Only check admin role once
+      if (!adminCheckDone) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
 
-      if (roleData) {
-        setIsAdmin(true);
+        if (roleData) {
+          setIsAdmin(true);
+        }
+        setAdminCheckDone(true);
       }
 
       // Check if viewing as admin
       const viewCompanyId = searchParams.get('viewCompanyId');
       
-      if (viewCompanyId && roleData) {
+      if (viewCompanyId && isAdmin) {
         setIsAdminViewing(true);
         await loadCompanyById(viewCompanyId);
         return;
@@ -396,7 +400,7 @@ export default function FreemiumHub() {
                             
                             if (completedSections.length < requiredSections.length) {
                               toast.error(`Please complete your company profile first (${completedSections.length}/${requiredSections.length} sections done)`);
-                              navigate(`/company/profile/edit`);
+                              navigate(`/company`);
                               return;
                             }
                             
@@ -442,8 +446,8 @@ export default function FreemiumHub() {
                           </div>
                         </Button>
                         
-                        <p className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
-                          <div className="w-1 h-1 rounded-full bg-primary/50" />
+                        <p className="text-sm text-muted-foreground pt-1 flex items-center gap-2">
+                          <span className="w-1 h-1 rounded-full bg-primary/50" />
                           <span>Preview the AI-powered analysis before creating yours</span>
                         </p>
                       </div>
