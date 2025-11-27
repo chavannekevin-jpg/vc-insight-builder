@@ -57,9 +57,9 @@ export default function WaitlistConfirmation() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 mb-2">
               <CheckCircle2 className="h-8 w-8 text-green-600" />
             </div>
-            <h1 className="text-3xl font-bold">You're All Set!</h1>
+            <h1 className="text-3xl font-bold">🎉 Early Bird Confirmed!</h1>
             <p className="text-muted-foreground text-lg">
-              Your early access spot is secured with the 50% discount
+              Your reservation is secured. You can now complete the questionnaire.
             </p>
           </div>
 
@@ -67,7 +67,7 @@ export default function WaitlistConfirmation() {
             <CardHeader>
               <CardTitle>Confirmation Details</CardTitle>
               <CardDescription>
-                Your investment memo will be ready as soon as we launch
+                Your memo will be generated when we officially launch
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -83,7 +83,7 @@ export default function WaitlistConfirmation() {
                 <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                   <Calendar className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Joined Waitlist</p>
+                    <p className="text-sm text-muted-foreground">Reserved On</p>
                     <p className="font-medium">{signupDate}</p>
                   </div>
                 </div>
@@ -91,30 +91,26 @@ export default function WaitlistConfirmation() {
                 <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                   <Tag className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Pricing Tier</p>
-                    <p className="font-medium">Early Access - €29.99 (50% off)</p>
+                    <p className="text-sm text-muted-foreground">Price Locked In</p>
+                    <p className="font-medium">€29.99 (50% off €59.99)</p>
                   </div>
                 </div>
               </div>
 
               <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 space-y-2">
-                <h3 className="font-semibold">What Happens Next?</h3>
+                <h3 className="font-semibold">What You Can Do Now</h3>
                 <ul className="text-sm space-y-1.5">
                   <li className="flex items-start gap-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5" />
-                    <span>We'll email you as soon as the memo generator launches (expected within 2 weeks)</span>
+                    <span><strong>Access the Full Platform</strong> - Explore all educational content, guides, and tools for free</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5" />
-                    <span>Your memo will be generated and delivered within 24 hours of launch</span>
+                    <span><strong>Complete the Questionnaire</strong> - Fill in your startup details (your answers are saved automatically)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5" />
-                    <span>Your 50% discount is permanently locked in for this company</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5" />
-                    <span>You'll get priority support when the feature goes live</span>
+                    <span><strong>Wait for Launch</strong> - We'll notify you when memo generation is enabled (you're already paid!)</span>
                   </li>
                 </ul>
               </div>
@@ -134,15 +130,15 @@ export default function WaitlistConfirmation() {
               variant="default"
               className="flex-1"
             >
-              Go to Dashboard
+              Start Questionnaire
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <Button
-              onClick={() => navigate("/vcbrain")}
+              onClick={() => navigate("/hub")}
               variant="outline"
               className="flex-1"
             >
-              Explore Resources
+              Explore Platform
             </Button>
           </div>
         </div>
