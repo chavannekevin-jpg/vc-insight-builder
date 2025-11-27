@@ -194,25 +194,24 @@ export default function FreemiumHub() {
       .select("question_key, answer")
       .eq("company_id", companyData.id);
     
-    // Define all required question keys from the streamlined questionnaire (22 total - AI deduces 6)
+    // Define all required question keys from the streamlined questionnaire (18 total)
     const requiredQuestions = [
-      // Problem (3) - AI deduces: problem_urgency (why now)
+      // Problem (3)
       'problem_description', 'problem_workflow', 'problem_quantification',
-      // Solution (2) - AI deduces: solution_validation (proof from traction)
+      // Solution (2)
       'solution_mechanism', 'solution_features',
-      // Market (2) - AI deduces: market_buyer, market_size
+      // Market (2)
       'market_icp', 'market_pricing',
-      // Competition (2) - AI deduces: competition_weaknesses
+      // Competition (2)
       'competition_landscape', 'competition_advantage',
-      // Team (4)
-      'team_overview', 'team_founders', 'team_history', 'team_gaps',
+      // Team (3) - removed team_history, now included in team_founders placeholder
+      'team_overview', 'team_founders', 'team_gaps',
       // USP (1)
       'usp_differentiators',
-      // Business Model (3)
-      'business_model_type', 'business_model_expansion', 'business_model_gtm',
-      // Traction (5) - AI deduces: traction_efficiency
-      'traction_timeline', 'traction_revenue_progression', 'traction_customers', 
-      'traction_key_customers', 'traction_pipeline'
+      // Business Model (2) - removed customer_expansion_path
+      'business_model_type', 'business_model_gtm',
+      // Traction (3) - merged customers and logos into revenue_progression
+      'traction_timeline', 'traction_revenue_progression', 'traction_pipeline'
     ];
     
     // Check if all required questions have answers
