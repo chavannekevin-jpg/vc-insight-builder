@@ -138,9 +138,13 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    if (existingMemo && (existingMemo.structured_content || existingMemo.content)) {
-      // Return existing memo - prefer structured_content
-      if (existingMemo.structured_content) {
+    // Only return existing memo if it has actual content (non-empty sections)
+    if (existingMemo && existingMemo.structured_content) {
+      const content = existingMemo.structured_content as any;
+      const hasContent = content.sections && Array.isArray(content.sections) && content.sections.length > 0;
+      
+      if (hasContent) {
+        console.log("Returning existing memo from cache");
         return new Response(
           JSON.stringify({ 
             structuredContent: existingMemo.structured_content,
@@ -157,25 +161,8 @@ serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
-      } else if (existingMemo.content) {
-        // Legacy markdown format - return as-is for backward compatibility
-        const parsedContent = JSON.parse(existingMemo.content);
-        return new Response(
-          JSON.stringify({ 
-            enhanced: parsedContent.sections,
-            company: {
-              name: company.name,
-              stage: company.stage,
-              category: company.category,
-              description: company.description
-            },
-            memoId: existingMemo.id,
-            fromCache: true
-          }), 
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
+      } else {
+        console.log("Existing memo found but has empty sections, regenerating...");
       }
     }
 

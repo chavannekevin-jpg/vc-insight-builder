@@ -65,8 +65,15 @@ export default function GeneratedMemo() {
 
         if (memoError) throw memoError;
 
-        if (!memo || !memo.structured_content) {
-          // No memo exists, generate one
+        // Check if memo has actual content (non-empty sections)
+        const hasContent = memo?.structured_content && 
+                          (memo.structured_content as any).sections && 
+                          Array.isArray((memo.structured_content as any).sections) && 
+                          (memo.structured_content as any).sections.length > 0;
+
+        if (!hasContent) {
+          // No memo or empty memo exists, generate one
+          console.log("Generating new memo...");
           const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-full-memo', {
             body: { companyId }
           });
@@ -76,7 +83,7 @@ export default function GeneratedMemo() {
           setMemoContent(functionData.structuredContent);
           setCompanyInfo(functionData.company);
         } else {
-          // Memo exists, fetch company info
+          // Memo exists with content, fetch company info
           const { data: company, error: companyError } = await supabase
             .from("companies")
             .select("*")
