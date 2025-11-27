@@ -911,6 +911,7 @@ export default function Portal() {
             {/* Question Card */}
             <LevelCard
               levelNumber={currentStep + 1}
+              totalLevels={totalQuestions}
               title={currentQuestion.title}
               tldr={currentQuestion.tldr}
               icon={currentQuestion.icon}
