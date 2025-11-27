@@ -1011,8 +1011,8 @@ export default function Portal() {
                             description: "Generating your VC memo...",
                           });
                           
-                          // Navigate to memo builder to generate
-                          navigate(`/memo-builder?companyId=${companyId}`);
+                          // Navigate to memo page to generate
+                          navigate(`/memo?companyId=${companyId}`);
                         } catch (error: any) {
                           console.error("Error creating memo:", error);
                           toast({
