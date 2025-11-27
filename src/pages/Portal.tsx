@@ -159,15 +159,7 @@ const questionSections = {
         tldr: "Who started this and why they're perfect",
         icon: Crown,
         question: "Who are the founders?", 
-        placeholder: "For each: Name, Role, Ownership %, and relevant background (1 sentence each)." 
-      },
-      { 
-        key: "team_history",
-        title: "Team Chemistry",
-        tldr: "Prior collaboration and shared experience",
-        icon: Heart,
-        question: "Have you worked together before?", 
-        placeholder: "Prior collaboration or shared experience that proves you can work together." 
+        placeholder: "For each: Name, Role, Ownership %, relevant background, and how you've worked together before (team chemistry, shared experience, etc.)." 
       },
       { 
         key: "team_gaps",
@@ -206,14 +198,6 @@ const questionSections = {
         placeholder: "Describe your business model (SaaS, marketplace, usage-based, etc.) and revenue sources. For each stream: how it works and why it matters." 
       },
       { 
-        key: "business_model_expansion",
-        title: "Customer Expansion Path",
-        tldr: "How customers grow with you",
-        icon: TrendingUp,
-        question: "How do customers expand over time?", 
-        placeholder: "Describe the typical journey from initial contract to full deployment." 
-      },
-      { 
         key: "business_model_gtm",
         title: "Go-To-Market Strategy",
         tldr: "How you acquire customers",
@@ -237,27 +221,11 @@ const questionSections = {
       },
       { 
         key: "traction_revenue_progression",
-        title: "Revenue Growth Story",
-        tldr: "Show the momentum with dates",
+        title: "Revenue & Customer Growth",
+        tldr: "Show the momentum with real numbers",
         icon: DollarSign,
-        question: "Show your revenue growth.", 
-        placeholder: "ARR/MRR at different points in time (e.g., Jan: €50K → June: €150K → Now: €300K)." 
-      },
-      { 
-        key: "traction_customers",
-        title: "Customer Base Size",
-        tldr: "How many people you're serving",
-        icon: Users,
-        question: "How many customers/users do you have?", 
-        placeholder: "Include growth rate and geographies. What does the trend look like?" 
-      },
-      { 
-        key: "traction_key_customers",
-        title: "Notable Customer Logos",
-        tldr: "The names that matter",
-        icon: Star,
-        question: "Name your most notable customers.", 
-        placeholder: "Logos or case studies that validate your product. Who's singing your praises?" 
+        question: "Show your revenue and customer growth.", 
+        placeholder: "ARR/MRR progression with dates (e.g., Jan: €50K → June: €150K → Now: €300K), customer count and growth rate, geographies, and notable customer logos or case studies that validate your product." 
       },
       { 
         key: "traction_pipeline",
@@ -558,8 +526,10 @@ export default function Portal() {
   };
 
   const totalQuestions = allQuestions.length;
+  // Only count answers for current questions (ignore old/deleted questions)
+  const currentQuestionKeys = allQuestions.map(q => q.key);
   const answeredQuestions = Object.keys(responses).filter(
-    (key) => responses[key]?.trim()
+    (key) => currentQuestionKeys.includes(key) && responses[key]?.trim()
   ).length;
 
   const progressPercentage = Math.round(
