@@ -188,16 +188,46 @@ export default function FreemiumHub() {
       setMemo(memoData);
     }
     
-    // Calculate profile readiness
+    // Calculate profile readiness and check questionnaire completion
     const { data: responses } = await supabase
       .from("memo_responses")
-      .select("question_key")
+      .select("question_key, answer")
       .eq("company_id", companyData.id);
+    
+    // Define all required question keys from the streamlined questionnaire (24 total)
+    const requiredQuestions = [
+      // Problem (4)
+      'problem_description', 'problem_workflow', 'problem_quantification', 'problem_urgency',
+      // Solution (3)
+      'solution_mechanism', 'solution_features', 'solution_validation',
+      // Market (4)
+      'market_icp', 'market_buyer', 'market_size', 'market_pricing',
+      // Competition (3)
+      'competition_landscape', 'competition_weaknesses', 'competition_advantage',
+      // Team (4)
+      'team_overview', 'team_founders', 'team_history', 'team_gaps',
+      // USP (1)
+      'usp_differentiators',
+      // Business Model (3)
+      'business_model_type', 'business_model_expansion', 'business_model_gtm',
+      // Traction (2 shown in view, need to check if there are more)
+      'traction_timeline', 'traction_revenue_progression', 'traction_customers', 
+      'traction_key_customers', 'traction_efficiency', 'traction_pipeline'
+    ];
+    
+    // Check if all required questions have answers
+    const answeredKeys = responses?.filter(r => r.answer && r.answer.trim()).map(r => r.question_key) || [];
+    const isQuestionnaireComplete = requiredQuestions.every(key => answeredKeys.includes(key));
+    
+    // Only consider memo complete if questionnaire is fully answered
+    if (memoData && !isQuestionnaireComplete) {
+      setMemo(null); // Hide memo button if questionnaire not complete
+    }
     
     const sectionKeys = ["problem", "solution", "market", "competition", "team", "usp", "business", "traction"];
     const readiness = sectionKeys.map(key => ({
       name: key.charAt(0).toUpperCase() + key.slice(1),
-      completed: responses?.some(r => r.question_key.startsWith(key)) || false
+      completed: responses?.some(r => r.question_key.startsWith(key) && r.answer && r.answer.trim()) || false
     }));
     
     setProfileReadiness(readiness);
@@ -360,10 +390,9 @@ export default function FreemiumHub() {
                           onClick={() => {
                             if (memo) {
                               navigate(`/memo?companyId=${company.id}`);
-                            } else if (!waitlistStatus?.has_paid) {
-                              navigate(`/waitlist-checkout?companyId=${company.id}`);
                             } else {
-                              toast.info("Memo generation will be enabled soon for early-bird members!");
+                              // Questionnaire incomplete - go to portal
+                              navigate("/portal");
                             }
                           }}
                           className="w-full gradient-primary shadow-glow hover:shadow-glow-strong font-bold text-base h-14 hover-punch"
@@ -375,15 +404,10 @@ export default function FreemiumHub() {
                               <FileText className="w-5 h-5 mr-2" />
                               View My Memo
                             </>
-                          ) : waitlistStatus?.has_paid ? (
-                            <>
-                              <Lock className="w-5 h-5 mr-2" />
-                              Memo Generation Coming Soon
-                            </>
                           ) : (
                             <>
                               <Sparkles className="w-5 h-5 mr-2" />
-                              Generate My Memo - Early Bird Access
+                              Complete Questionnaire
                             </>
                           )}
                         </Button>
