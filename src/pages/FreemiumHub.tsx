@@ -158,11 +158,18 @@ export default function FreemiumHub() {
         return;
       }
 
-      const { data: companies } = await supabase
+      const { data: companies, error: companiesError } = await supabase
         .from("companies")
         .select("*")
         .eq("founder_id", session.user.id)
+        .order("created_at", { ascending: false })
         .limit(1);
+
+      if (companiesError) {
+        console.error("Error loading company data:", companiesError);
+        toast.error("Failed to load company data. Please try again.");
+        return;
+      }
 
       if (!companies || companies.length === 0) {
         navigate("/intake");
