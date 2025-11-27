@@ -207,10 +207,11 @@ export default function FreemiumHub() {
   }, [navigate, searchParams]);
 
   const loadCompanyData = async (companyData: Company) => {
+    console.log("[Hub] Loading company data:", companyData.id);
     setCompany(companyData);
     
     // Check if memo exists for this company - get the most recent one
-    const { data: memoData } = await supabase
+    const { data: memoData, error: memoError } = await supabase
       .from("memos")
       .select("*")
       .eq("company_id", companyData.id)
@@ -218,8 +219,13 @@ export default function FreemiumHub() {
       .limit(1)
       .maybeSingle();
     
+    console.log("[Hub] Memo query result:", { memoData, memoError, hasMemo: !!memoData });
+    
     if (memoData) {
+      console.log("[Hub] Setting memo:", memoData.id);
       setMemo(memoData);
+    } else {
+      console.log("[Hub] No memo found");
     }
     
     // Calculate profile readiness
@@ -227,6 +233,8 @@ export default function FreemiumHub() {
       .from("memo_responses")
       .select("question_key")
       .eq("company_id", companyData.id);
+    
+    console.log("[Hub] Memo responses count:", responses?.length);
     
     const sectionKeys = ["problem", "solution", "market", "competition", "team", "usp", "business", "traction"];
     const readiness = sectionKeys.map(key => ({
@@ -247,6 +255,7 @@ export default function FreemiumHub() {
       setArticles(articlesData);
     }
     
+    console.log("[Hub] Finished loading company data. isAdminViewing:", isAdminViewing, "isAdmin:", isAdmin);
     setLoading(false);
     
     // Generate AI tagline only if not admin viewing
@@ -269,7 +278,7 @@ export default function FreemiumHub() {
           setTagline(taglineData.tagline);
         }
       } catch (error) {
-        console.error('Error generating tagline:', error);
+        console.error('[Hub] Error generating tagline:', error);
       } finally {
         setTaglineLoading(false);
       }
@@ -392,13 +401,17 @@ export default function FreemiumHub() {
                       <div className="space-y-3 pt-2">
                         <Button 
                           onClick={() => {
+                            console.log("[Hub] Button clicked. memo:", memo?.id, "isAdmin:", isAdmin, "waitlistStatus:", waitlistStatus);
                             if (memo) {
+                              console.log("[Hub] Navigating to memo:", memo.id);
                               navigate(`/memo?id=${memo.id}`);
                             } else if (isAdmin || waitlistStatus?.has_paid) {
                               // Admin or paid users can generate memo
+                              console.log("[Hub] Navigating to memo-builder");
                               navigate(`/memo-builder?companyId=${company.id}`);
                             } else {
                               // Non-paid users go to checkout
+                              console.log("[Hub] Navigating to checkout");
                               navigate(`/waitlist-checkout?companyId=${company.id}`);
                             }
                           }}
