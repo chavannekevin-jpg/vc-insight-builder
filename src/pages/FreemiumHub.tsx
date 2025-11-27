@@ -122,6 +122,7 @@ export default function FreemiumHub() {
   const [taglineLoading, setTaglineLoading] = useState(false);
   const [profileReadiness, setProfileReadiness] = useState<Array<{ name: string; completed: boolean }>>([]);
   const [isAdminViewing, setIsAdminViewing] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [userId, setUserId] = useState<string | undefined>(undefined);
   
   const { data: waitlistStatus } = useUserWaitlistStatus(userId, company?.id);
@@ -136,23 +137,25 @@ export default function FreemiumHub() {
       
       setUserId(session.user.id);
 
+      // Check if user is admin
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (roleData) {
+        setIsAdmin(true);
+      }
+
       // Check if viewing as admin
       const viewCompanyId = searchParams.get('viewCompanyId');
       
-      if (viewCompanyId) {
-        // Check if user is admin
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .eq("role", "admin")
-          .maybeSingle();
-
-        if (roleData) {
-          setIsAdminViewing(true);
-          await loadCompanyById(viewCompanyId);
-          return;
-        }
+      if (viewCompanyId && roleData) {
+        setIsAdminViewing(true);
+        await loadCompanyById(viewCompanyId);
+        return;
       }
 
       const { data: companies } = await supabase
@@ -360,10 +363,12 @@ export default function FreemiumHub() {
                           onClick={() => {
                             if (memo) {
                               navigate(`/memo?id=${memo.id}`);
-                            } else if (!waitlistStatus?.has_paid) {
-                              navigate(`/waitlist-checkout?companyId=${company.id}`);
+                            } else if (isAdmin || waitlistStatus?.has_paid) {
+                              // Admin or paid users can generate memo
+                              navigate(`/memo-builder?companyId=${company.id}`);
                             } else {
-                              toast.info("Memo generation will be enabled soon for early-bird members!");
+                              // Non-paid users go to checkout
+                              navigate(`/waitlist-checkout?companyId=${company.id}`);
                             }
                           }}
                           className="w-full gradient-primary shadow-glow hover:shadow-glow-strong font-bold text-base h-14 hover-punch"
@@ -375,10 +380,15 @@ export default function FreemiumHub() {
                               <FileText className="w-5 h-5 mr-2" />
                               View My Memo
                             </>
+                          ) : isAdmin ? (
+                            <>
+                              <Sparkles className="w-5 h-5 mr-2" />
+                              Generate My Memo
+                            </>
                           ) : waitlistStatus?.has_paid ? (
                             <>
-                              <Lock className="w-5 h-5 mr-2" />
-                              Memo Generation Coming Soon
+                              <Sparkles className="w-5 h-5 mr-2" />
+                              Generate My Memo
                             </>
                           ) : (
                             <>
