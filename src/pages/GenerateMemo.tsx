@@ -108,7 +108,7 @@ export default function GenerateMemo() {
 
       if (completedSections.length < requiredSections.length) {
         toast.error(`Please complete all sections (${completedSections.length}/${requiredSections.length} done)`);
-        navigate("/company/profile/edit");
+        navigate("/company");
         return;
       }
 
