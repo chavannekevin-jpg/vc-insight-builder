@@ -41,6 +41,7 @@ interface Memo {
   company_id: string;
   content: string;
   status: string;
+  structured_content?: any;
 }
 
 interface EducationalArticle {
@@ -400,16 +401,36 @@ export default function FreemiumHub() {
                       {/* CTAs */}
                       <div className="space-y-3 pt-2">
                         <Button 
-          onClick={() => {
-            console.log("[Hub] Memo button clicked. Navigating to intake");
-            navigate('/intake');
-          }}
+                          onClick={() => {
+                            // Check if memo has actual content
+                            const hasMemoContent = memo && 
+                              memo.structured_content && 
+                              typeof memo.structured_content === 'object' &&
+                              'sections' in memo.structured_content &&
+                              Array.isArray((memo.structured_content as any).sections) &&
+                              (memo.structured_content as any).sections.length > 0;
+                            
+                            if (hasMemoContent) {
+                              console.log("[Hub] Memo has content. Navigating to view memo");
+                              navigate('/memo');
+                            } else {
+                              console.log("[Hub] No memo or empty memo. Navigating to intake");
+                              navigate('/intake');
+                            }
+                          }}
                           className="w-full gradient-primary shadow-glow hover:shadow-glow-strong font-bold text-base h-14 hover-punch"
                           size="lg"
                           disabled={isAdminViewing}
                         >
                           <Sparkles className="w-5 h-5 mr-2" />
-                          {memo ? "Update My Memo" : "Generate My Memo"}
+                          {memo && 
+                           memo.structured_content && 
+                           typeof memo.structured_content === 'object' &&
+                           'sections' in memo.structured_content &&
+                           Array.isArray((memo.structured_content as any).sections) &&
+                           (memo.structured_content as any).sections.length > 0
+                            ? "View My Memo" 
+                            : "Generate My Memo"}
                         </Button>
                         
                         <Button 
