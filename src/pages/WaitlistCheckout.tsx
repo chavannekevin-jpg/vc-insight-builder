@@ -152,19 +152,19 @@ export default function WaitlistCheckout() {
           <div className="text-center space-y-2">
             <Badge variant="secondary" className="mb-2">
               <Sparkles className="h-3 w-3 mr-1" />
-              Early Access Offer
+              🎉 Early Bird Reservation
             </Badge>
-            <h1 className="text-3xl font-bold">Secure Your 50% Discount</h1>
+            <h1 className="text-3xl font-bold">Reserve Your Early Access</h1>
             <p className="text-muted-foreground">
-              Pre-pay now and get immediate access when we launch
+              Complete the questionnaire, pay now, get your memo when we launch
             </p>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
+              <CardTitle>Early Bird Reservation</CardTitle>
               <CardDescription>
-                Investment Memorandum Generator - Early Access
+                Investment Memorandum Generator - Reserve Your Access
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -177,34 +177,33 @@ export default function WaitlistCheckout() {
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Standard Price:</span>
+                  <span className="text-muted-foreground">Future Launch Price:</span>
                   <span className="line-through">€59.99</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Early Access Discount (50%):</span>
-                  <span className="text-green-600 font-medium">-€30.00</span>
+                  <span className="text-primary font-medium">Early Bird Price (50% Off):</span>
+                  <span className="text-primary font-medium">-€30.00</span>
                 </div>
               </div>
 
               <Separator />
 
               <div className="flex justify-between items-center text-lg font-bold">
-                <span>Total Due Today:</span>
+                <span>Reserve Today:</span>
                 <span className="text-primary">€29.99</span>
               </div>
 
               <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 space-y-2">
                 <h3 className="font-semibold flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4" />
-                  What You're Getting:
+                  🎯 Early Bird Benefits:
                 </h3>
                 <ul className="text-sm space-y-1.5 ml-6">
-                  <li>• Full access to memo generator at launch</li>
-                  <li>• AI-powered investment memorandum</li>
-                  <li>• Professional formatting & export options</li>
-                  <li>• Priority delivery within 24h of launch</li>
-                  <li>• 50% discount locked in forever</li>
-                  <li>• Priority customer support</li>
+                  <li><strong>Full platform access now</strong> - all content & tools</li>
+                  <li><strong>Complete questionnaire now</strong> - save your answers</li>
+                  <li><strong>Memo generation later</strong> - when we officially launch</li>
+                  <li><strong>50% off forever</strong> (regular price €59.99)</li>
+                  <li><strong>Priority support</strong> as an early supporter</li>
                 </ul>
               </div>
 
@@ -212,8 +211,8 @@ export default function WaitlistCheckout() {
                 <p className="flex items-start gap-2">
                   <Lock className="h-3 w-3 mt-0.5 flex-shrink-0" />
                   <span>
-                    <strong>Launch Timeline:</strong> Expected within 2 weeks. You'll receive an email notification 
-                    when the memo generator goes live.
+                    <strong>What happens next:</strong> You'll have immediate access to complete the questionnaire.
+                    We'll notify you when memo generation is enabled.
                   </span>
                 </p>
                 <p className="flex items-start gap-2">
@@ -233,12 +232,11 @@ export default function WaitlistCheckout() {
             size="lg"
             className="w-full"
           >
-            {loading ? "Processing Payment..." : "Complete Payment - €29.99"}
+            {loading ? "Processing..." : "Reserve My Spot - €29.99"}
           </Button>
 
           <p className="text-center text-xs text-muted-foreground">
-            By completing this purchase, you agree to our terms of service and refund policy.
-            Payment is processed securely.
+            <strong>Note:</strong> Payment confirms your early-bird reservation. Your memo will be generated when we officially launch.
           </p>
         </div>
       </div>

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { CompanyBadge } from "@/components/CompanyBadge";
 import { CompanyReadinessScore } from "@/components/CompanyReadinessScore";
 import { marked } from "marked";
+import { toast } from "sonner";
 import { 
   FileText, 
   ChevronRight,
@@ -21,8 +22,10 @@ import {
   Shield,
   Edit,
   Euro,
-  Eye
+  Eye,
+  Lock
 } from "lucide-react";
+import { useUserWaitlistStatus } from "@/hooks/useWaitlistMode";
 
 interface Company {
   id: string;
@@ -119,6 +122,9 @@ export default function FreemiumHub() {
   const [taglineLoading, setTaglineLoading] = useState(false);
   const [profileReadiness, setProfileReadiness] = useState<Array<{ name: string; completed: boolean }>>([]);
   const [isAdminViewing, setIsAdminViewing] = useState(false);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+  
+  const { data: waitlistStatus } = useUserWaitlistStatus(userId, company?.id);
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -127,6 +133,8 @@ export default function FreemiumHub() {
         navigate("/auth?redirect=/hub");
         return;
       }
+      
+      setUserId(session.user.id);
 
       // Check if viewing as admin
       const viewCompanyId = searchParams.get('viewCompanyId');
@@ -349,13 +357,35 @@ export default function FreemiumHub() {
                       {/* CTAs */}
                       <div className="space-y-3 pt-2">
                         <Button 
-                          onClick={() => company && navigate(`/memo?companyId=${company.id}`)}
+                          onClick={() => {
+                            if (memo) {
+                              navigate(`/memo?id=${memo.id}`);
+                            } else if (!waitlistStatus?.has_paid) {
+                              navigate(`/waitlist-checkout?companyId=${company.id}`);
+                            } else {
+                              toast.info("Memo generation will be enabled soon for early-bird members!");
+                            }
+                          }}
                           className="w-full gradient-primary shadow-glow hover:shadow-glow-strong font-bold text-base h-14 hover-punch"
                           size="lg"
                           disabled={isAdminViewing}
                         >
-                          <Sparkles className="w-5 h-5 mr-2" />
-                          {memo ? "View My Memo" : "Generate My Memo"}
+                          {memo ? (
+                            <>
+                              <FileText className="w-5 h-5 mr-2" />
+                              View My Memo
+                            </>
+                          ) : waitlistStatus?.has_paid ? (
+                            <>
+                              <Lock className="w-5 h-5 mr-2" />
+                              Memo Generation Coming Soon
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-5 h-5 mr-2" />
+                              Generate My Memo - Early Bird Access
+                            </>
+                          )}
                         </Button>
                         
                         <Button 
