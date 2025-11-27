@@ -194,7 +194,7 @@ export default function FreemiumHub() {
       .select("question_key, answer")
       .eq("company_id", companyData.id);
     
-    // Define all required question keys from the streamlined questionnaire (18 total - AI deduces 6)
+    // Define all required question keys from the streamlined questionnaire (22 total - AI deduces 6)
     const requiredQuestions = [
       // Problem (3) - AI deduces: problem_urgency (why now)
       'problem_description', 'problem_workflow', 'problem_quantification',
