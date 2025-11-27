@@ -31,7 +31,7 @@ export default function Auth() {
         
         // Redirect authenticated users
         if (session?.user) {
-          const redirect = searchParams.get('redirect') || '/intake';
+          const redirect = searchParams.get('redirect') || '/hub';
           setTimeout(() => navigate(redirect), 0);
         }
       }
@@ -43,7 +43,7 @@ export default function Auth() {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        const redirect = searchParams.get('redirect') || '/intake';
+        const redirect = searchParams.get('redirect') || '/hub';
         navigate(redirect);
       }
     });
