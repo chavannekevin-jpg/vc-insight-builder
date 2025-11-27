@@ -401,45 +401,15 @@ export default function FreemiumHub() {
                       <div className="space-y-3 pt-2">
                         <Button 
                           onClick={() => {
-                            console.log("[Hub] Button clicked. memo:", memo?.id, "isAdmin:", isAdmin, "waitlistStatus:", waitlistStatus);
-                            if (memo) {
-                              console.log("[Hub] Navigating to memo:", memo.id);
-                              navigate(`/memo?id=${memo.id}`);
-                            } else if (isAdmin || waitlistStatus?.has_paid) {
-                              // Admin or paid users can generate memo
-                              console.log("[Hub] Navigating to memo-builder");
-                              navigate(`/memo-builder?companyId=${company.id}`);
-                            } else {
-                              // Non-paid users go to checkout
-                              console.log("[Hub] Navigating to checkout");
-                              navigate(`/waitlist-checkout?companyId=${company.id}`);
-                            }
+                            console.log("[Hub] Memo button clicked. Navigating to memo-builder");
+                            navigate(`/memo-builder?companyId=${company.id}`);
                           }}
                           className="w-full gradient-primary shadow-glow hover:shadow-glow-strong font-bold text-base h-14 hover-punch"
                           size="lg"
                           disabled={isAdminViewing}
                         >
-                          {memo ? (
-                            <>
-                              <FileText className="w-5 h-5 mr-2" />
-                              View My Memo
-                            </>
-                          ) : isAdmin ? (
-                            <>
-                              <Sparkles className="w-5 h-5 mr-2" />
-                              Generate My Memo
-                            </>
-                          ) : waitlistStatus?.has_paid ? (
-                            <>
-                              <Sparkles className="w-5 h-5 mr-2" />
-                              Generate My Memo
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="w-5 h-5 mr-2" />
-                              Generate My Memo - Early Bird Access
-                            </>
-                          )}
+                          <Sparkles className="w-5 h-5 mr-2" />
+                          {memo ? "Update My Memo" : "Generate My Memo"}
                         </Button>
                         
                         <Button 
