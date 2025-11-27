@@ -129,12 +129,15 @@ export default function FreemiumHub() {
 
   useEffect(() => {
     const loadCompany = async () => {
+      console.log("[Hub] Starting loadCompany");
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        console.log("[Hub] No session, redirecting to auth");
         navigate("/auth?redirect=/hub");
         return;
       }
       
+      console.log("[Hub] Session found:", session.user.id);
       setUserId(session.user.id);
 
       // Check if user is admin
@@ -146,6 +149,7 @@ export default function FreemiumHub() {
         .maybeSingle();
 
       if (roleData) {
+        console.log("[Hub] User is admin");
         setIsAdmin(true);
       }
 
@@ -153,22 +157,34 @@ export default function FreemiumHub() {
       const viewCompanyId = searchParams.get('viewCompanyId');
       
       if (viewCompanyId && roleData) {
+        console.log("[Hub] Admin viewing company:", viewCompanyId);
         setIsAdminViewing(true);
         await loadCompanyById(viewCompanyId);
         return;
       }
 
-      const { data: companies } = await supabase
+      console.log("[Hub] Querying companies for user:", session.user.id);
+      const { data: companies, error } = await supabase
         .from("companies")
         .select("*")
         .eq("founder_id", session.user.id)
         .limit(1);
 
+      if (error) {
+        console.error("[Hub] Error querying companies:", error);
+        toast.error("Error loading your profile. Please try refreshing the page.");
+        return;
+      }
+
+      console.log("[Hub] Companies query result:", companies);
+
       if (!companies || companies.length === 0) {
+        console.log("[Hub] No companies found, redirecting to intake");
         navigate("/intake");
         return;
       }
 
+      console.log("[Hub] Company found, loading data:", companies[0].id);
       await loadCompanyData(companies[0]);
     };
 

@@ -53,11 +53,15 @@ export default function Auth() {
               .eq("founder_id", session.user.id)
               .limit(1);
 
-            console.log("Companies found:", companies, error);
+            if (error) {
+              console.error("Error checking companies:", error);
+            }
+
+            console.log("Companies query result:", { companies, hasCompanies: companies && companies.length > 0 });
             const redirect = companies && companies.length > 0 ? '/hub' : '/intake';
-            console.log("Redirecting to:", redirect);
+            console.log("Navigating to:", redirect);
             navigate(redirect);
-          }, 0);
+          }, 100); // Slightly longer delay to ensure state is ready
         }
       }
     );
@@ -86,9 +90,13 @@ export default function Auth() {
           .eq("founder_id", session.user.id)
           .limit(1);
 
-        console.log("Initial: Companies found:", companies, error);
+        if (error) {
+          console.error("Initial: Error checking companies:", error);
+        }
+
+        console.log("Initial: Companies query result:", { companies, hasCompanies: companies && companies.length > 0 });
         const redirect = companies && companies.length > 0 ? '/hub' : '/intake';
-        console.log("Initial: Redirecting to:", redirect);
+        console.log("Initial: Navigating to:", redirect);
         navigate(redirect);
       }
     });
