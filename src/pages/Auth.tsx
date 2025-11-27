@@ -80,6 +80,22 @@ export default function Auth() {
     return () => subscription.unsubscribe();
   }, [navigate, searchParams]);
 
+  // Timeout fallback - redirect to /hub after 5 seconds if still on loading screen
+  useEffect(() => {
+    if (session && user && !loading) {
+      const timeoutId = setTimeout(() => {
+        console.warn("Redirect timeout - forcing navigation to /hub");
+        toast({
+          title: "Redirecting to dashboard",
+          description: "Taking you to your hub...",
+        });
+        navigate('/hub');
+      }, 5000);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [session, user, loading, navigate, toast]);
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
