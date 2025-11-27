@@ -23,27 +23,44 @@ export default function Auth() {
   const selectedPrice = searchParams.get('price');
 
   useEffect(() => {
+    // Check where to redirect based on company existence
+    const determineRedirect = async (userId: string) => {
+      const explicitRedirect = searchParams.get('redirect');
+      if (explicitRedirect) {
+        return explicitRedirect;
+      }
+
+      // Check if user has companies
+      const { data: companies } = await supabase
+        .from("companies")
+        .select("id")
+        .eq("founder_id", userId)
+        .limit(1);
+
+      return companies && companies.length > 0 ? '/hub' : '/intake';
+    };
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         // Redirect authenticated users
         if (session?.user) {
-          const redirect = searchParams.get('redirect') || '/intake';
+          const redirect = await determineRedirect(session.user.id);
           setTimeout(() => navigate(redirect), 0);
         }
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        const redirect = searchParams.get('redirect') || '/intake';
+        const redirect = await determineRedirect(session.user.id);
         navigate(redirect);
       }
     });
@@ -78,10 +95,17 @@ export default function Auth() {
 
       if (signUpError) throw signUpError;
 
-      if (signUpData.user) {
+      if (signUpData.user && signUpData.session) {
+        // User is auto-confirmed, will be redirected by onAuthStateChange
         toast({
           title: "Welcome to UglyBaby!",
-          description: "Complete your profile in the next step...",
+          description: "Setting up your account...",
+        });
+      } else if (signUpData.user) {
+        // Email confirmation required
+        toast({
+          title: "Check your email",
+          description: "We've sent you a confirmation link",
         });
       }
     } catch (error: any) {

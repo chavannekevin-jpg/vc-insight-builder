@@ -43,18 +43,16 @@ export default function Intake() {
         .select("*")
         .eq("founder_id", session.user.id);
 
-      console.log("Company check:", { companies, error, userId: session.user.id });
-
       if (error) {
         console.error("Error checking companies:", error);
+        return;
       }
 
       if (companies && companies.length > 0) {
-        console.log("Found existing company, redirecting to hub");
+        // User already has a company, redirect to hub
         navigate("/hub");
-      } else {
-        console.log("No existing company found");
       }
+      // If no companies, stay on intake page
     };
 
     checkAuth();
