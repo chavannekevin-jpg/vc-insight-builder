@@ -130,114 +130,170 @@ export default function FreemiumHub() {
 
   useEffect(() => {
     const loadCompany = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/auth?redirect=/hub");
-        return;
-      }
-      
-      setUserId(session.user.id);
-
-      const viewCompanyId = searchParams.get('viewCompanyId');
-
-      // Run admin check and company fetch in parallel
-      const [roleResult, companiesResult] = await Promise.all([
-        !adminCheckDone ? supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .eq("role", "admin")
-          .maybeSingle() : Promise.resolve({ data: null }),
-        viewCompanyId ? 
-          supabase.from("companies").select("*").eq("id", viewCompanyId).maybeSingle() :
-          supabase.from("companies").select("*").eq("founder_id", session.user.id).order("created_at", { ascending: false }).limit(1).single()
-      ]);
-
-      if (!adminCheckDone && roleResult.data) {
-        setIsAdmin(true);
-        setAdminCheckDone(true);
-      }
-
-      if (viewCompanyId && roleResult.data) {
-        setIsAdminViewing(true);
-      }
-
-      if (companiesResult.error || !companiesResult.data) {
-        if (!viewCompanyId) {
-          navigate("/intake");
-        } else {
-          console.error("Error loading company:", companiesResult.error);
-          navigate("/admin");
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          toast.error("Authentication error. Please sign in again.");
+          navigate("/auth?redirect=/hub");
+          return;
         }
-        return;
-      }
+        
+        if (!session) {
+          navigate("/auth?redirect=/hub");
+          return;
+        }
+        
+        setUserId(session.user.id);
 
-      await loadCompanyData(companiesResult.data);
+        const viewCompanyId = searchParams.get('viewCompanyId');
+
+        // Run admin check and company fetch in parallel
+        const [roleResult, companiesResult] = await Promise.all([
+          !adminCheckDone ? supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", session.user.id)
+            .eq("role", "admin")
+            .maybeSingle() : Promise.resolve({ data: null, error: null }),
+          viewCompanyId ? 
+            supabase.from("companies").select("*").eq("id", viewCompanyId).maybeSingle() :
+            supabase.from("companies").select("*").eq("founder_id", session.user.id).order("created_at", { ascending: false }).limit(1)
+        ]);
+
+        // Handle admin check
+        if (!adminCheckDone) {
+          if (roleResult.error) {
+            console.error("Error checking admin role:", roleResult.error);
+          }
+          if (roleResult.data) {
+            setIsAdmin(true);
+          }
+          setAdminCheckDone(true);
+        }
+
+        if (viewCompanyId && roleResult.data) {
+          setIsAdminViewing(true);
+        }
+
+        // Handle company data
+        if (companiesResult.error) {
+          console.error("Error loading company:", companiesResult.error);
+          toast.error("Failed to load company data. Please try again.");
+          setLoading(false);
+          return;
+        }
+
+        const companyData = Array.isArray(companiesResult.data) 
+          ? companiesResult.data[0] 
+          : companiesResult.data;
+
+        if (!companyData) {
+          if (!viewCompanyId) {
+            console.log("No company found, redirecting to intake");
+            navigate("/intake");
+          } else {
+            console.error("Company not found for admin view");
+            toast.error("Company not found");
+            navigate("/admin");
+          }
+          return;
+        }
+
+        console.log("Loading company data:", companyData.name);
+        await loadCompanyData(companyData);
+      } catch (error) {
+        console.error("Unexpected error in loadCompany:", error);
+        toast.error("An unexpected error occurred. Please refresh the page.");
+        setLoading(false);
+      }
     };
 
     loadCompany();
-  }, [navigate, searchParams, adminCheckDone]);
+  }, [navigate, searchParams]);
 
   const loadCompanyData = async (companyData: Company) => {
-    setCompany(companyData);
-    
-    // Load all data in parallel
-    const [memoResult, responsesResult, articlesResult] = await Promise.all([
-      supabase
-        .from("memos")
-        .select("*")
-        .eq("company_id", companyData.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("memo_responses")
-        .select("question_key")
-        .eq("company_id", companyData.id),
-      supabase
-        .from("educational_articles")
-        .select("id, slug, title, description, icon, published")
-        .eq("published", true)
-        .order("created_at", { ascending: true })
-    ]);
-    
-    if (memoResult.data) {
-      setMemo(memoResult.data);
-    }
-    
-    // Calculate profile readiness
-    const sectionKeys = ["problem", "solution", "market", "competition", "team", "usp", "business", "traction"];
-    const readiness = sectionKeys.map(key => ({
-      name: key.charAt(0).toUpperCase() + key.slice(1),
-      completed: responsesResult.data?.some(r => r.question_key.startsWith(key)) || false
-    }));
-    
-    setProfileReadiness(readiness);
-    
-    if (articlesResult.data) {
-      setArticles(articlesResult.data);
-    }
-    
-    setLoading(false);
-    
-    // Generate AI tagline in background (non-blocking)
-    if (!isAdminViewing && companyData) {
-      setTaglineLoading(true);
-      supabase.functions.invoke('generate-company-tagline', {
-        body: {
-          companyName: companyData.name,
-          description: companyData.description,
-          stage: companyData.stage
-        }
-      }).then(({ data: taglineData }) => {
-        if (taglineData?.tagline) {
-          setTagline(taglineData.tagline);
-        }
-      }).catch((error) => {
-        console.error('Error generating tagline:', error);
-      }).finally(() => {
-        setTaglineLoading(false);
-      });
+    try {
+      setCompany(companyData);
+      console.log("Loading data for company:", companyData.name);
+      
+      // Load all data in parallel
+      const [memoResult, responsesResult, articlesResult] = await Promise.all([
+        supabase
+          .from("memos")
+          .select("*")
+          .eq("company_id", companyData.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("memo_responses")
+          .select("question_key")
+          .eq("company_id", companyData.id),
+        supabase
+          .from("educational_articles")
+          .select("id, slug, title, description, icon, published")
+          .eq("published", true)
+          .order("created_at", { ascending: true })
+      ]);
+      
+      if (memoResult.error) {
+        console.error("Error loading memo:", memoResult.error);
+      } else if (memoResult.data) {
+        setMemo(memoResult.data);
+        console.log("Memo loaded");
+      }
+      
+      if (responsesResult.error) {
+        console.error("Error loading responses:", responsesResult.error);
+      }
+      
+      // Calculate profile readiness
+      const sectionKeys = ["problem", "solution", "market", "competition", "team", "usp", "business", "traction"];
+      const readiness = sectionKeys.map(key => ({
+        name: key.charAt(0).toUpperCase() + key.slice(1),
+        completed: responsesResult.data?.some(r => r.question_key.startsWith(key)) || false
+      }));
+      
+      setProfileReadiness(readiness);
+      console.log("Profile readiness calculated:", readiness.filter(r => r.completed).length, "/", readiness.length);
+      
+      if (articlesResult.error) {
+        console.error("Error loading articles:", articlesResult.error);
+      } else if (articlesResult.data) {
+        setArticles(articlesResult.data);
+        console.log("Articles loaded:", articlesResult.data.length);
+      }
+      
+      setLoading(false);
+      console.log("Hub fully loaded");
+      
+      // Generate AI tagline in background (non-blocking)
+      if (!isAdminViewing && companyData) {
+        setTaglineLoading(true);
+        supabase.functions.invoke('generate-company-tagline', {
+          body: {
+            companyName: companyData.name,
+            description: companyData.description,
+            stage: companyData.stage
+          }
+        }).then(({ data: taglineData, error: taglineError }) => {
+          if (taglineError) {
+            console.error('Error generating tagline:', taglineError);
+          } else if (taglineData?.tagline) {
+            setTagline(taglineData.tagline);
+          }
+        }).catch((error) => {
+          console.error('Error generating tagline:', error);
+        }).finally(() => {
+          setTaglineLoading(false);
+        });
+      }
+    } catch (error) {
+      console.error("Unexpected error in loadCompanyData:", error);
+      toast.error("Failed to load all data. Some features may not be available.");
+      setLoading(false);
     }
   };
 
