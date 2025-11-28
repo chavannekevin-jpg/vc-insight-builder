@@ -178,13 +178,24 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div onClick={() => navigate("/admin/articles")} className="cursor-pointer">
+          <div onClick={() => navigate("/admin/sections")} className="cursor-pointer">
             <ModernCard className="hover:border-primary/50 transition-colors h-full">
               <h2 className="text-2xl font-bold text-foreground mb-2">
-                Educational Content
+                Manage Sections
               </h2>
               <p className="text-muted-foreground">
-                Create and manage educational articles
+                Add and edit questionnaire sections
+              </p>
+            </ModernCard>
+          </div>
+
+          <div onClick={() => navigate("/admin/questions")} className="cursor-pointer">
+            <ModernCard className="hover:border-primary/50 transition-colors h-full">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Manage Questions
+              </h2>
+              <p className="text-muted-foreground">
+                Add and edit questions for each section
               </p>
             </ModernCard>
           </div>
@@ -192,10 +203,21 @@ const Admin = () => {
           <div onClick={() => navigate("/admin/prompts")} className="cursor-pointer">
             <ModernCard className="hover:border-primary/50 transition-colors h-full">
               <h2 className="text-2xl font-bold text-foreground mb-2">
-                Memo Prompts
+                Manage Prompts
               </h2>
               <p className="text-muted-foreground">
-                Customize AI prompts for each section
+                Edit AI prompts for memo sections
+              </p>
+            </ModernCard>
+          </div>
+
+          <div onClick={() => navigate("/admin/articles")} className="cursor-pointer">
+            <ModernCard className="hover:border-primary/50 transition-colors h-full">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Educational Content
+              </h2>
+              <p className="text-muted-foreground">
+                Manage articles and guides
               </p>
             </ModernCard>
           </div>

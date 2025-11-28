@@ -20,8 +20,15 @@ import {
 interface Prompt {
   id: string;
   section_name: string;
+  section_id: string | null;
   prompt: string;
   updated_at: string;
+}
+
+interface Section {
+  id: string;
+  name: string;
+  display_title: string;
 }
 
 const SECTIONS = [
@@ -40,6 +47,7 @@ const AdminPrompts = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [prompts, setPrompts] = useState<Record<string, Prompt>>({});
+  const [sections, setSections] = useState<Section[]>([]);
   const [editedPrompts, setEditedPrompts] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [optimizing, setOptimizing] = useState<string | null>(null);
@@ -87,31 +95,32 @@ const AdminPrompts = () => {
   };
 
   const fetchPrompts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("memo_prompts")
-        .select("*")
-        .order("section_name");
+    const [promptsResult, sectionsResult] = await Promise.all([
+      supabase.from("memo_prompts").select("*").order("section_name"),
+      supabase.from("questionnaire_sections").select("id, name, display_title").order("sort_order")
+    ]);
 
-      if (error) throw error;
-
+    if (promptsResult.error) {
+      toast({
+        title: "Error",
+        description: "Failed to load prompts",
+        variant: "destructive",
+      });
+    } else {
       const promptsMap: Record<string, Prompt> = {};
       const editedMap: Record<string, string> = {};
       
-      data?.forEach((prompt) => {
+      promptsResult.data?.forEach((prompt) => {
         promptsMap[prompt.section_name] = prompt;
         editedMap[prompt.section_name] = prompt.prompt;
       });
 
       setPrompts(promptsMap);
       setEditedPrompts(editedMap);
-    } catch (error) {
-      console.error("Error fetching prompts:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load prompts",
-        variant: "destructive",
-      });
+    }
+
+    if (sectionsResult.data) {
+      setSections(sectionsResult.data);
     }
   };
 
@@ -224,65 +233,74 @@ const AdminPrompts = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 space-y-6">
-        {SECTIONS.map((sectionName) => (
-          <ModernCard key={sectionName}>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-foreground">{sectionName}</h2>
-                  {prompts[sectionName]?.updated_at && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Last updated: {new Date(prompts[sectionName].updated_at).toLocaleString()}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => handleOptimize(sectionName)}
-                    variant="secondary"
-                    size="sm"
-                    disabled={optimizing === sectionName || !editedPrompts[sectionName]}
-                    className="gap-2"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    {optimizing === sectionName ? "Optimizing..." : "Optimize with AI"}
-                  </Button>
-                  {hasChanges(sectionName) && (
+        {Object.entries(prompts).map(([sectionName, prompt]) => {
+          const linkedSection = sections.find(s => s.id === prompt.section_id);
+          
+          return (
+            <ModernCard key={sectionName}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground">{sectionName}</h2>
+                    {linkedSection && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Linked to: {linkedSection.display_title}
+                      </p>
+                    )}
+                    {prompt.updated_at && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Last updated: {new Date(prompt.updated_at).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
                     <Button
-                      onClick={() => handleReset(sectionName)}
-                      variant="outline"
+                      onClick={() => handleOptimize(sectionName)}
+                      variant="secondary"
                       size="sm"
-                      disabled={saving === sectionName}
+                      disabled={optimizing === sectionName || !editedPrompts[sectionName]}
+                      className="gap-2"
                     >
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      Reset
+                      <Sparkles className="w-4 h-4" />
+                      {optimizing === sectionName ? "Optimizing..." : "Optimize with AI"}
                     </Button>
-                  )}
-                  <Button
-                    onClick={() => handleSave(sectionName)}
-                    size="sm"
-                    disabled={!hasChanges(sectionName) || saving === sectionName}
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    {saving === sectionName ? "Saving..." : "Save"}
-                  </Button>
+                    {hasChanges(sectionName) && (
+                      <Button
+                        onClick={() => handleReset(sectionName)}
+                        variant="outline"
+                        size="sm"
+                        disabled={saving === sectionName}
+                      >
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Reset
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => handleSave(sectionName)}
+                      size="sm"
+                      disabled={!hasChanges(sectionName) || saving === sectionName}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {saving === sectionName ? "Saving..." : "Save"}
+                    </Button>
+                  </div>
                 </div>
-              </div>
 
-              <Textarea
-                value={editedPrompts[sectionName] || ""}
-                onChange={(e) =>
-                  setEditedPrompts({
-                    ...editedPrompts,
-                    [sectionName]: e.target.value,
-                  })
-                }
-                className="min-h-[250px] font-mono text-sm"
-                placeholder={`Enter prompt for ${sectionName} section...`}
-              />
-            </div>
-          </ModernCard>
-        ))}
+                <Textarea
+                  value={editedPrompts[sectionName] || ""}
+                  onChange={(e) =>
+                    setEditedPrompts({
+                      ...editedPrompts,
+                      [sectionName]: e.target.value,
+                    })
+                  }
+                  className="min-h-[250px] font-mono text-sm"
+                  placeholder={`Enter prompt for ${sectionName} section...`}
+                />
+              </div>
+            </ModernCard>
+          );
+        })}
       </main>
 
       {/* Optimized Prompt Dialog */}
