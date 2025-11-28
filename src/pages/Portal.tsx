@@ -8,236 +8,41 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
 import { 
-  AlertCircle,
-  Lightbulb, 
-  TrendingUp, 
-  Users, 
-  Rocket,
   ChevronRight,
   ChevronLeft,
   CheckCircle2,
   Circle,
-  Target,
-  Zap,
-  Award,
-  DollarSign,
-  BarChart3,
-  Sparkles,
-  Flame,
-  Star,
   PartyPopper,
-  TrendingUp as TrendingUpIcon,
   Eye,
-  Shield,
-  Crown,
-  ThumbsUp,
-  Network,
-  Lock,
-  Database,
-  Trophy,
-  Heart,
-  Brain,
   LogOut,
   Home
 } from "lucide-react";
 import { SectionBadge } from "@/components/SectionBadge";
 import { FounderScoreDisplay } from "@/components/FounderScoreDisplay";
 import { LevelCard } from "@/components/LevelCard";
+import { resolveIcon } from "@/lib/iconResolver";
 
-const questionSections = {
-  "Problem": {
-    icon: AlertCircle,
-    color: "text-red-500",
-    questions: [
-      { 
-        key: "problem_description",
-        title: "What Makes People Suffer?",
-        tldr: "Define the pain point that keeps your customers up at night",
-        icon: AlertCircle,
-        question: "What painful problem do your customers face?", 
-        placeholder: "Describe the frustration, inefficiency, or failure they experience today. Make it real, make it hurt." 
-      },
-      { 
-        key: "problem_workflow",
-        title: "Show Us The Broken System",
-        tldr: "How do people struggle through this problem today?",
-        icon: Target,
-        question: "How do people currently handle this problem?", 
-        placeholder: "Walk through the existing process or workaround. Explain what's broken about it." 
-      },
-      { 
-        key: "problem_quantification",
-        title: "The Cost of Pain",
-        tldr: "Quantify the damage this problem causes",
-        icon: DollarSign,
-        question: "How much does this problem cost your customers?", 
-        placeholder: "Estimate in time, money, errors, or missed revenue. Use real numbers if possible." 
-      },
-    ]
-  },
-  "Solution": {
-    icon: Lightbulb,
-    color: "text-yellow-500",
-    questions: [
-      { 
-        key: "solution_mechanism",
-        title: "How It Actually Works",
-        tldr: "The core technology or process",
-        icon: Brain,
-        question: "How does your solution actually work?", 
-        placeholder: "Explain the core technology, process, or approach that makes it effective." 
-      },
-      { 
-        key: "solution_features",
-        title: "Your Key Features",
-        tldr: "The 2-3 features that make magic happen",
-        icon: Sparkles,
-        question: "What are your 2-3 key features?", 
-        placeholder: "For each, explain what it does and why it matters. Focus on value, not tech specs." 
-      },
-    ]
-  },
-  "Market": {
-    icon: Target,
-    color: "text-blue-500",
-    questions: [
-      { 
-        key: "market_icp",
-        title: "Your Ideal Customer Profile",
-        tldr: "Define who you're selling to",
-        icon: Users,
-        question: "Who is your ideal customer?", 
-        placeholder: "Define by industry, company size, geography, and specific characteristics." 
-      },
-      { 
-        key: "market_pricing",
-        title: "Your Price Point",
-        tldr: "Current and target pricing",
-        icon: DollarSign,
-        question: "What is your current and target pricing?", 
-        placeholder: "Current ACV and where you expect it to grow as you add features or move upmarket." 
-      },
-    ]
-  },
-  "Competition": {
-    icon: Zap,
-    color: "text-purple-500",
-    questions: [
-      { 
-        key: "competition_landscape",
-        title: "The Battlefield",
-        tldr: "Who you're competing against",
-        icon: Shield,
-        question: "Who are your competitors?", 
-        placeholder: "List direct competitors, adjacent solutions, and incumbent players." 
-      },
-      { 
-        key: "competition_advantage",
-        title: "Why You'll Win",
-        tldr: "Your unfair advantage",
-        icon: Flame,
-        question: "Why will you win?", 
-        placeholder: "What's your unfair advantage over all of them? Why can't they copy you?" 
-      },
-    ]
-  },
-  "Team": {
-    icon: Users,
-    color: "text-green-500",
-    questions: [
-      { 
-        key: "team_overview",
-        title: "Your Army Structure",
-        tldr: "How the team is organized",
-        icon: Users,
-        question: "How is your team structured?", 
-        placeholder: "# of employees, key functions, in-house vs outsourced." 
-      },
-      { 
-        key: "team_founders",
-        title: "The Founding Squad",
-        tldr: "Who started this and why they're perfect",
-        icon: Crown,
-        question: "Who are the founders?", 
-        placeholder: "For each: Name, Role, Ownership %, relevant background, and how you've worked together before (team chemistry, shared experience, etc.)." 
-      },
-      { 
-        key: "team_gaps",
-        title: "Missing Pieces",
-        tldr: "Key hires you need next",
-        icon: AlertCircle,
-        question: "What key hires do you need next?", 
-        placeholder: "Roles missing to reach your next growth stage. What functions need strengthening?" 
-      },
-    ]
-  },
-  "USP": {
-    icon: Award,
-    color: "text-orange-500",
-    questions: [
-      { 
-        key: "usp_differentiators",
-        title: "Your Key Advantages",
-        tldr: "What sets you apart from competitors",
-        icon: Sparkles,
-        question: "What are your key advantages?", 
-        placeholder: "List 3-5 across product, distribution, data, compliance, or business model. What makes you different?" 
-      },
-    ]
-  },
-  "Business Model": {
-    icon: DollarSign,
-    color: "text-emerald-500",
-    questions: [
-      { 
-        key: "business_model_type",
-        title: "How You Make Money",
-        tldr: "Your revenue model and streams",
-        icon: DollarSign,
-        question: "How do you make money?", 
-        placeholder: "Describe your business model (SaaS, marketplace, usage-based, etc.) and revenue sources. For each stream: how it works and why it matters." 
-      },
-      { 
-        key: "business_model_gtm",
-        title: "Go-To-Market Strategy",
-        tldr: "How you acquire customers",
-        icon: Target,
-        question: "How do you sell?", 
-        placeholder: "Direct sales, partnerships, self-serve, or hybrid approach. What's working?" 
-      },
-    ]
-  },
-  "Traction": {
-    icon: BarChart3,
-    color: "text-pink-500",
-    questions: [
-      { 
-        key: "traction_timeline",
-        title: "Your Journey So Far",
-        tldr: "Key milestones to date",
-        icon: Rocket,
-        question: "What are your key milestones?", 
-        placeholder: "Launch date, pivots, product releases, market expansions. Tell the story." 
-      },
-      { 
-        key: "traction_revenue_progression",
-        title: "Revenue & Customer Growth",
-        tldr: "Show the momentum with real numbers",
-        icon: DollarSign,
-        question: "Show your revenue and customer growth.", 
-        placeholder: "ARR/MRR progression with dates (e.g., Jan: €50K → June: €150K → Now: €300K), customer count and growth rate, geographies, and notable customer logos or case studies that validate your product." 
-      },
-      { 
-        key: "traction_pipeline",
-        title: "Sales Pipeline",
-        tldr: "What's coming next",
-        icon: Trophy,
-        question: "What does your sales pipeline look like?", 
-        placeholder: "Qualified opportunities and estimated value. What deals are in motion?" 
-      },
-    ]
-  },
-};
+// Dynamic interfaces for database-driven questions
+interface Section {
+  id: string;
+  name: string;
+  display_title: string;
+  icon: string;
+  color: string;
+  sort_order: number;
+}
+
+interface Question {
+  id: string;
+  section_id: string;
+  question_key: string;
+  title: string;
+  tldr: string | null;
+  question: string;
+  placeholder: string | null;
+  icon: string;
+  sort_order: number;
+}
 
 export default function Portal() {
   const [session, setSession] = useState<Session | null>(null);
@@ -257,17 +62,26 @@ export default function Portal() {
   const [showNeonFlash, setShowNeonFlash] = useState(false);
   const [memoSubmitted, setMemoSubmitted] = useState(false);
   const [isAdminViewing, setIsAdminViewing] = useState(false);
+  
+  // Dynamic data from database
+  const [sections, setSections] = useState<Section[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
 
-  // Flatten all questions into a single array with metadata
-  const allQuestions = Object.entries(questionSections).flatMap(([sectionTitle, section]) => 
-    section.questions.map(q => ({
+  // Build questions grouped by section dynamically
+  const questionsBySections = sections.map(section => ({
+    section,
+    questions: questions.filter(q => q.section_id === section.id)
+  })).filter(group => group.questions.length > 0);
+
+  const allQuestions = questionsBySections.flatMap(group =>
+    group.questions.map(q => ({
       ...q,
-      sectionTitle,
-      sectionIcon: section.icon,
-      sectionColor: section.color
+      sectionTitle: group.section.name,
+      sectionData: group.section
     }))
   );
 
@@ -295,6 +109,22 @@ export default function Portal() {
         setLoading(false);
         return;
       }
+
+      // Fetch sections and questions from database
+      const { data: sectionsData } = await supabase
+        .from("questionnaire_sections")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order");
+
+      const { data: questionsData } = await supabase
+        .from("questionnaire_questions")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order");
+
+      if (sectionsData) setSections(sectionsData);
+      if (questionsData) setQuestions(questionsData);
 
       // Check if viewing as admin
       const viewCompanyId = searchParams.get('viewCompanyId');
@@ -324,13 +154,14 @@ export default function Portal() {
 
   // Load AI feedback for current question when responses are loaded or question changes
   useEffect(() => {
-    if (!loading && currentQuestion && responses[currentQuestion.key]) {
-      const existingAnswer = responses[currentQuestion.key];
-      if (existingAnswer.trim().length > 0) {
-        fetchAIFeedback(currentQuestion.key, currentQuestion.question, existingAnswer);
+    if (!loading && currentStep < allQuestions.length && responses[allQuestions[currentStep].question_key]) {
+      const currentQuestion = allQuestions[currentStep];
+      const existingAnswer = responses[currentQuestion.question_key];
+      if (existingAnswer && existingAnswer.trim().length > 0) {
+        fetchAIFeedback(currentQuestion.question_key, currentQuestion.question, existingAnswer);
       }
     }
-  }, [currentStep, loading]);
+  }, [currentStep, loading, allQuestions.length]);
 
   const loadCompanyData = async (userId: string) => {
     try {
@@ -480,16 +311,17 @@ export default function Portal() {
 
     // Debounce AI feedback call
     const timeoutId = setTimeout(() => {
-      const question = allQuestions.find(q => q.key === questionKey)?.question || "";
+      const question = allQuestions.find(q => q.question_key === questionKey)?.question || "";
       fetchAIFeedback(questionKey, question, answer);
     }, 1500);
     
     setFeedbackTimeoutId(timeoutId);
 
+    const currentQuestion = allQuestions[currentStep];
     // Check if section is completed
     const currentSectionQuestions = allQuestions.filter(q => q.sectionTitle === currentQuestion.sectionTitle);
     const sectionAnswered = currentSectionQuestions.filter(q => 
-      (q.key === questionKey ? answer.trim() : responses[q.key]?.trim())
+      (q.question_key === questionKey ? answer.trim() : responses[q.question_key]?.trim())
     ).length;
     
     if (sectionAnswered === currentSectionQuestions.length && !completedSections.has(currentQuestion.sectionTitle)) {
@@ -527,7 +359,7 @@ export default function Portal() {
 
   const totalQuestions = allQuestions.length;
   // Only count answers for current questions (ignore old/deleted questions)
-  const currentQuestionKeys = allQuestions.map(q => q.key);
+  const currentQuestionKeys = allQuestions.map(q => q.question_key);
   const answeredQuestions = Object.keys(responses).filter(
     (key) => currentQuestionKeys.includes(key) && responses[key]?.trim()
   ).length;
@@ -541,7 +373,7 @@ export default function Portal() {
     const completionScore = (answeredQuestions / totalQuestions) * 60;
     const qualityBonus = calculateQualityBonus();
     setFounderScore(Math.round(completionScore + qualityBonus));
-  }, [responses]);
+  }, [responses, totalQuestions, answeredQuestions]);
 
   const calculateQualityBonus = () => {
     let bonus = 0;
@@ -576,9 +408,9 @@ export default function Portal() {
         setIsAnimating(false);
         // Fetch AI feedback for existing answer
         const nextQ = allQuestions[currentStep + 1];
-        const existingAnswer = responses[nextQ.key];
+        const existingAnswer = responses[nextQ.question_key];
         if (existingAnswer && existingAnswer.trim().length > 0) {
-          fetchAIFeedback(nextQ.key, nextQ.question, existingAnswer);
+          fetchAIFeedback(nextQ.question_key, nextQ.question, existingAnswer);
         }
       }, 150);
     }
@@ -594,528 +426,183 @@ export default function Portal() {
         setIsAnimating(false);
         // Fetch AI feedback for existing answer
         const prevQ = allQuestions[currentStep - 1];
-        const existingAnswer = responses[prevQ.key];
+        const existingAnswer = responses[prevQ.question_key];
         if (existingAnswer && existingAnswer.trim().length > 0) {
-          fetchAIFeedback(prevQ.key, prevQ.question, existingAnswer);
+          fetchAIFeedback(prevQ.question_key, prevQ.question, existingAnswer);
         }
       }, 150);
     }
   };
 
+  const handleGenerateMemo = async () => {
+    if (!companyId) return;
+    setMemoSubmitted(true);
+    navigate(`/memo?companyId=${companyId}`);
+  };
+
   const currentQuestion = allQuestions[currentStep];
-  const isLastQuestion = currentStep === allQuestions.length - 1;
-  const currentAnswer = responses[currentQuestion?.key] || "";
-  const hasAnswer = currentAnswer.trim().length > 0;
-  
-  // Get next section for curiosity hook
-  const nextQuestion = currentStep < allQuestions.length - 1 ? allQuestions[currentStep + 1] : null;
-  const isChangingSection = nextQuestion && nextQuestion.sectionTitle !== currentQuestion?.sectionTitle;
 
-  if (loading) {
+  if (loading || !currentQuestion) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-foreground text-lg animate-pulse">Loading your workspace...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-foreground animate-pulse">Loading your workspace...</p>
       </div>
     );
   }
 
-  if (!session || !user) {
-    return null;
-  }
-
-  // Show company creation UI if no company exists
-  if (!companyId) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-8 shadow-2xl">
-          <div className="text-center mb-6">
-            <Flame className="w-16 h-16 text-pink-500 mx-auto mb-4 animate-pulse" />
-            <h2 className="text-2xl font-bold text-white mb-2">Create Your Company Profile</h2>
-            <p className="text-white/70 text-sm">Let's get started with your investment memo</p>
-          </div>
-          
-          <form onSubmit={async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            const name = formData.get('companyName') as string;
-            const stage = formData.get('stage') as string;
-            
-            if (!name || !stage) {
-              toast({
-                title: "Missing information",
-                description: "Please fill in all fields",
-                variant: "destructive",
-              });
-              return;
-            }
-
-            try {
-              const { data, error } = await supabase
-                .from("companies")
-                .insert({
-                  name,
-                  founder_id: user.id,
-                  stage,
-                })
-                .select()
-                .single();
-
-              if (error) throw error;
-
-              setCompanyId(data.id);
-              setCompanyName(data.name);
-              
-              toast({
-                title: "Company Created! 🎉",
-                description: "Let's build your investment memo",
-              });
-            } catch (error: any) {
-              console.error("Error creating company:", error);
-              toast({
-                title: "Error",
-                description: error.message || "Could not create company",
-                variant: "destructive",
-              });
-            }
-          }}>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  Company Name
-                </label>
-                <Input
-                  name="companyName"
-                  placeholder="Your amazing startup"
-                  className="bg-black/40 border-white/20 text-white placeholder:text-white/40"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  Stage
-                </label>
-                <select
-                  name="stage"
-                  className="w-full px-3 py-2 bg-black/40 border-2 border-white/20 rounded-lg text-white focus:border-pink-500/50 focus:ring-4 focus:ring-pink-500/20 transition-all"
-                  required
-                >
-                  <option value="idea">Idea</option>
-                  <option value="mvp">MVP</option>
-                  <option value="early">Early Stage</option>
-                  <option value="growth">Growth</option>
-                </select>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full mt-6 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 text-white shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:shadow-[0_0_40px_rgba(236,72,153,0.7)] hover:scale-105 transition-all"
-            >
-              Create Company
-            </Button>
-          </form>
-
-          <div className="flex gap-2">
-            <button
-              onClick={() => navigate('/hub')}
-              className="flex-1 text-white/60 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
-            >
-              <Home className="w-4 h-4" />
-              Hub
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex-1 text-white/60 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const QuestionIcon = resolveIcon(currentQuestion.icon);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden">
-      {/* Neon Flash Effect */}
+    <div className="min-h-screen bg-background relative overflow-hidden">
       {showNeonFlash && (
-        <div className="fixed inset-0 bg-neon-pink/20 pointer-events-none animate-pulse z-50" />
+        <div className="fixed inset-0 bg-primary/20 pointer-events-none z-50 animate-pulse" />
+      )}
+      
+      {showCelebration && (
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
+          <PartyPopper className="w-32 h-32 text-primary animate-bounce" />
+        </div>
       )}
 
-      {/* Animated background effects */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-500 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-500 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-      </div>
+      {/* Admin Viewing Banner */}
+      {isAdminViewing && (
+        <div className="bg-yellow-500/10 border-b border-yellow-500/30 p-3 text-center">
+          <div className="flex items-center justify-center gap-2 text-yellow-600 dark:text-yellow-400">
+            <Eye className="w-4 h-4" />
+            <span className="text-sm font-medium">Viewing as Admin - Changes will not be saved</span>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
-      <div className="border-b border-white/10 bg-black/40 backdrop-blur-xl sticky top-0 z-50 shadow-[0_0_50px_rgba(236,72,153,0.3)]">
-        <div className="max-w-4xl mx-auto p-4 md:p-6 relative">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="relative flex-1">
-              <h1 className="text-2xl md:text-3xl font-serif font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(236,72,153,0.5)] flex items-center gap-3">
-                <Flame className="w-8 h-8 text-pink-500 animate-pulse drop-shadow-[0_0_10px_rgba(236,72,153,0.8)]" />
-                Build Your Memo
-              </h1>
-              <p className="text-sm text-white/60 mt-1">
-                Level {currentStep + 1} of {totalQuestions} • {companyName}
-              </p>
-            </div>
+      <header className="border-b border-border/40 bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              {isAdminViewing && (
-                <Button
-                  onClick={() => navigate('/admin')}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 border-white/20 bg-white/5 text-white hover:bg-white/10"
-                >
-                  ← Back to Admin
-                </Button>
-              )}
-              <FounderScoreDisplay score={founderScore} className="text-white" />
-              <button
-                onClick={() => navigate('/hub')}
-                className="text-white/90 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
+              <Button
+                onClick={() => navigate("/")}
+                variant="ghost"
+                size="sm"
               >
-                <Home className="w-4 h-4" />
-                Hub
-              </button>
-              <button
-                onClick={handleLogout}
-                className="text-white/90 hover:text-white hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
-              >
-                <LogOut className="w-4 h-4" />
+                <Home className="w-4 h-4 mr-2" />
+                Home
+              </Button>
+              <h1 className="text-xl font-bold text-primary">{companyName || "My Startup"}</h1>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <FounderScoreDisplay score={founderScore} />
+              <Button onClick={handleLogout} variant="ghost" size="sm">
+                <LogOut className="w-4 h-4 mr-2" />
                 Logout
-              </button>
+              </Button>
             </div>
           </div>
 
-          {/* Admin Viewing Banner */}
-          {isAdminViewing && (
-            <div className="mt-4 bg-yellow-500/20 border border-yellow-500/40 rounded-lg p-3 flex items-center gap-2">
-              <Eye className="w-5 h-5 text-yellow-400" />
-              <span className="text-sm text-yellow-200 font-medium">
-                Viewing as Admin - Read Only Mode
-              </span>
-            </div>
-          )}
-
           {/* Progress Bar */}
-          <div className="mt-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-bold text-white/90">
-                {progressPercentage === 100 ? 'Complete' : 'Progress'}
-              </span>
-              <span className="text-sm font-mono text-pink-400 font-bold bg-pink-500/20 px-3 py-1 rounded-full border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
-                {answeredQuestions} / {totalQuestions}
-              </span>
+          <div className="mt-4">
+            <div className="flex justify-between text-sm text-muted-foreground mb-2">
+              <span>Progress: {answeredQuestions}/{totalQuestions} questions</span>
+              <span>{progressPercentage}%</span>
             </div>
-            <div className="relative h-3 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm border border-white/20">
-              <div 
-                className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 transition-all duration-500 shadow-[0_0_20px_rgba(236,72,153,0.6)]"
-                style={{ width: `${progressPercentage}%` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]" />
-              </div>
-            </div>
-            <p className="text-xs text-white/50 mt-2">
-              {progressPercentage === 100 
-                ? "Ready to generate your memo"
-                : progressPercentage >= 75
-                  ? "Almost complete"
-                  : progressPercentage >= 50
-                    ? "Halfway through"
-                    : progressPercentage >= 25
-                      ? "Good progress"
-                      : `${progressPercentage}% complete`
-              }
+            <Progress value={progressPercentage} className="h-2" />
+          </div>
+
+          {/* Section Progress */}
+          <div className="mt-4">
+            <p className="text-sm text-muted-foreground">
+              Section: {currentQuestion?.sectionTitle || "Getting Started"}
             </p>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto p-4 md:p-8 min-h-[calc(100vh-12rem)] relative">
-        {/* Section Completion Celebration */}
-        {showCelebration && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none animate-fade-in">
-            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl animate-scale-in">
-              <div className="flex items-center gap-3 text-white">
-                <CheckCircle2 className="w-8 h-8 text-green-400" />
-                <div>
-                  <h3 className="text-xl font-semibold">Section Complete</h3>
-                  <p className="text-sm text-white/70">Moving to next section</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {currentQuestion && (
-          <div 
-            key={currentStep}
-            className={`transition-all duration-300 ${
-              isAnimating ? 'opacity-0 translate-x-8' : 'opacity-100 translate-x-0'
-            }`}
-          >
-            {/* Section Badge */}
-            <div className="flex items-center gap-4 mb-8 animate-fade-in">
-              <SectionBadge 
-                icon={currentQuestion.sectionIcon}
-                title={currentQuestion.sectionTitle}
-                isComplete={hasAnswer}
-              />
-              <div>
-                <p className="text-base font-bold text-white/90">
-                  {currentQuestion.sectionTitle}
+      <main className="container mx-auto px-4 py-12 max-w-4xl">
+        <div className={`transition-all duration-200 ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+          <div className="bg-card border border-border rounded-lg p-8 shadow-lg">
+            <div className="text-center mb-8">
+              <QuestionIcon className={`w-8 h-8 mb-4 mx-auto ${currentQuestion.sectionData.color}`} />
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                {currentQuestion.title}
+              </h2>
+              {currentQuestion.tldr && (
+                <p className="text-muted-foreground text-sm">
+                  {currentQuestion.tldr}
                 </p>
-                <p className="text-xs text-white/50">
-                  Question {currentStep + 1} of {totalQuestions}
-                </p>
-              </div>
+              )}
             </div>
 
-            {/* Question Card */}
-            <LevelCard
-              levelNumber={currentStep + 1}
-              totalLevels={totalQuestions}
-              title={currentQuestion.title}
-              tldr={currentQuestion.tldr}
-              icon={currentQuestion.icon}
-            >
-              <div className="space-y-6">
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-3">
+                  {currentQuestion.question}
+                </label>
                 <Textarea
-                  value={currentAnswer}
-                  onChange={(e) => handleAnswerChange(currentQuestion.key, e.target.value)}
-                  placeholder={currentQuestion.placeholder}
-                  className="min-h-[200px] md:min-h-[250px] text-base bg-black/40 border-2 border-white/20 focus:border-pink-500/50 focus:ring-4 focus:ring-pink-500/20 transition-all resize-none text-white placeholder:text-white/40 backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]"
-                  autoFocus={!isAdminViewing}
+                  value={responses[currentQuestion.question_key] || ""}
+                  onChange={(e) => handleAnswerChange(currentQuestion.question_key, e.target.value)}
+                  placeholder={currentQuestion.placeholder || "Type your answer here..."}
+                  className="min-h-[200px] text-base resize-none"
                   disabled={isAdminViewing}
                 />
-
-                {/* AI VC Coach Feedback */}
-                {isFetchingFeedback && (
-                  <div className="flex items-center gap-2 text-cyan-400 text-sm font-medium animate-fade-in">
-                    <Brain className="w-4 h-4 animate-pulse" />
-                    <span className="drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">AI Coach analyzing...</span>
-                  </div>
-                )}
-                
-                {!isFetchingFeedback && microFeedback && (
-                  <div className="flex items-start gap-3 text-blue-400 text-sm bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-                    <Brain className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    <span className="leading-relaxed">{microFeedback}</span>
-                  </div>
-                )}
-
-                {hasAnswer && !microFeedback && !isFetchingFeedback && (
-                  <div className="flex items-center gap-2 text-green-400 text-sm font-medium animate-fade-in">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span className="drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]">Saved</span>
-                  </div>
-                )}
               </div>
-            </LevelCard>
+
+              {/* AI Feedback */}
+              {microFeedback && (
+                <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                  <p className="text-sm text-foreground">
+                    {isFetchingFeedback ? (
+                      <span className="animate-pulse">Analyzing...</span>
+                    ) : (
+                      microFeedback
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between mt-8 gap-4">
+            <div className="flex justify-between items-center mt-8 pt-6 border-t border-border">
               <Button
                 onClick={handlePrevious}
-                disabled={currentStep === 0}
                 variant="outline"
-                size="lg"
-                className="gap-2 border-white/20 bg-white/5 text-white hover:bg-white/10 backdrop-blur-sm disabled:opacity-30"
+                disabled={currentStep === 0}
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-4 h-4 mr-2" />
                 Previous
               </Button>
 
               <div className="flex gap-2">
                 {allQuestions.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setIsAnimating(true);
-                      setMicroFeedback("");
-                      setIsFetchingFeedback(false);
-                      setTimeout(() => {
-                        setCurrentStep(idx);
-                        setIsAnimating(false);
-                        // Fetch AI feedback for existing answer
-                        const targetQ = allQuestions[idx];
-                        const existingAnswer = responses[targetQ.key];
-                        if (existingAnswer && existingAnswer.trim().length > 0) {
-                          fetchAIFeedback(targetQ.key, targetQ.question, existingAnswer);
-                        }
-                      }, 150);
-                    }}
-                    className={`h-2 rounded-full transition-all ${
-                      idx === currentStep 
-                        ? 'bg-gradient-to-r from-pink-500 to-purple-500 w-8 shadow-[0_0_10px_rgba(236,72,153,0.6)]' 
-                        : responses[allQuestions[idx].key]?.trim() 
-                          ? 'bg-green-500 w-2 shadow-[0_0_8px_rgba(74,222,128,0.4)]' 
-                          : 'bg-white/20 w-2'
-                    }`}
-                    aria-label={`Go to question ${idx + 1}`}
-                  />
+                  idx === currentStep ? (
+                    <CheckCircle2 key={idx} className="w-4 h-4 text-primary" />
+                  ) : responses[allQuestions[idx].question_key]?.trim() ? (
+                    <CheckCircle2 key={idx} className="w-4 h-4 text-primary/50" />
+                  ) : (
+                    <Circle key={idx} className="w-4 h-4 text-muted-foreground" />
+                  )
                 ))}
               </div>
 
-              {isLastQuestion ? (
-                !isAdminViewing && (
-                  <div className="flex flex-col items-end gap-4">
-                    <div className="text-right">
-                      <p className="text-white/90 mb-2">
-                        Your Founder Score: <span className={`text-2xl font-bold ${
-                          founderScore >= 86 ? "text-neon-pink" :
-                          founderScore >= 71 ? "text-green-400" :
-                          founderScore >= 41 ? "text-yellow-400" : "text-red-400"
-                        }`}>{founderScore}</span>
-                      </p>
-                      <p className="text-sm text-white/60 italic">
-                        {founderScore >= 96 ? "🔥 LEGENDARY. Go raise that money!" :
-                         founderScore >= 86 ? "Impressive. Top 10% territory." :
-                         founderScore >= 71 ? "Strong! You've got a real shot here." :
-                         founderScore >= 51 ? "Solid. VCs won't slam the door on you." :
-                         "Needs work. But you finished!"}
-                      </p>
-                    </div>
-                    <Button
-                    onClick={async () => {
-                      if (progressPercentage === 100) {
-                        try {
-                          // Create memo record if it doesn't exist
-                          const { data: existingMemo } = await supabase
-                            .from("memos")
-                            .select("id")
-                            .eq("company_id", companyId)
-                            .maybeSingle();
-
-                          if (!existingMemo) {
-                            const { error } = await supabase
-                              .from("memos")
-                              .insert({
-                                company_id: companyId,
-                                status: "draft",
-                                content: null,
-                              });
-
-                            if (error) throw error;
-                          }
-
-                          toast({
-                            title: "Questionnaire Complete! 🎉",
-                            description: "Generating your VC memo...",
-                          });
-                          
-                          // Navigate to memo page to generate
-                          navigate(`/memo?companyId=${companyId}`);
-                        } catch (error: any) {
-                          console.error("Error creating memo:", error);
-                          toast({
-                            title: "Error",
-                            description: "Could not submit memo. Your answers are still saved.",
-                            variant: "destructive",
-                          });
-                        }
-                      } else {
-                        toast({
-                          title: "Almost there!",
-                          description: `Please answer all questions (${answeredQuestions}/${totalQuestions} complete)`,
-                          variant: "destructive",
-                        });
-                      }
-                    }}
-                    disabled={progressPercentage < 100}
-                    size="lg"
-                    className="gap-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 border-0 text-white shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:shadow-[0_0_40px_rgba(236,72,153,0.7)] hover:scale-105 transition-all disabled:opacity-30 disabled:hover:scale-100"
-                  >
-                    <Rocket className="w-5 h-5" />
-                    Generate Memo →
-                  </Button>
-                </div>
-                )
-              ) : (
-                !isAdminViewing && (
-                  <Button
-                  onClick={handleNext}
-                  size="lg"
-                  className="gap-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 border-0 text-white shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:shadow-[0_0_40px_rgba(236,72,153,0.7)] hover:scale-105 transition-all"
-                >
-                  {hasAnswer ? "Next" : "Skip"}
-                  <ChevronRight className="w-5 h-5" />
+              {currentStep < allQuestions.length - 1 ? (
+                <Button onClick={handleNext}>
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
-                )
+              ) : (
+                <Button 
+                  onClick={handleGenerateMemo}
+                  disabled={progressPercentage < 80 || isAdminViewing}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  Generate Memo
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
               )}
             </div>
-
-            {/* Curiosity Hook - Show when changing sections */}
-            {isChangingSection && hasAnswer && (
-              <div className="mt-6 p-6 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-cyan-500/20 border-2 border-purple-500/30 rounded-2xl backdrop-blur-sm animate-fade-in">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <Eye className="w-8 h-8 text-purple-400 animate-pulse drop-shadow-[0_0_10px_rgba(168,85,247,0.6)]" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                      Coming Up Next: {nextQuestion?.sectionTitle}
-                      <Sparkles className="w-5 h-5 text-yellow-400" />
-                    </h3>
-                    <p className="text-white/80 text-sm">
-                      {nextQuestion?.sectionTitle === "Market" && "Dive into your target market and pricing strategy..."}
-                      {nextQuestion?.sectionTitle === "Competition" && "Show us why you'll dominate the competition..."}
-                      {nextQuestion?.sectionTitle === "Team" && "Introduce the dream team behind your vision..."}
-                      {nextQuestion?.sectionTitle === "USP" && "Reveal your secret weapons and unique advantages..."}
-                      {nextQuestion?.sectionTitle === "Business Model" && "Break down how you'll make money and scale..."}
-                      {nextQuestion?.sectionTitle === "Traction" && "Show the traction that proves you're onto something big..."}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Quick Jump Sections */}
-            <div className="mt-12 p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
-              <p className="text-sm font-bold text-white/90 mb-4">Jump to Section:</p>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(questionSections).map(([sectionTitle, section]) => {
-                  const sectionQuestions = allQuestions.filter(q => q.sectionTitle === sectionTitle);
-                  const firstQuestionIndex = allQuestions.findIndex(q => q.sectionTitle === sectionTitle);
-                  const sectionAnswered = sectionQuestions.filter(q => responses[q.key]?.trim()).length;
-                  const sectionTotal = sectionQuestions.length;
-                  const isComplete = sectionAnswered === sectionTotal;
-                  
-                  return (
-                    <button
-                      key={sectionTitle}
-                      onClick={() => {
-                        setIsAnimating(true);
-                        setTimeout(() => {
-                          setCurrentStep(firstQuestionIndex);
-                          setIsAnimating(false);
-                        }, 150);
-                      }}
-                      className={`px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 ${
-                        isComplete
-                          ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border-2 border-green-500/30 shadow-[0_0_15px_rgba(74,222,128,0.3)]'
-                          : currentQuestion.sectionTitle === sectionTitle
-                            ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-400 border-2 border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.3)]'
-                            : 'bg-white/5 text-white/60 border-2 border-white/10 hover:border-white/30'
-                      }`}
-                    >
-                      {isComplete && '✓ '}
-                      {sectionTitle}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
           </div>
-        )}
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

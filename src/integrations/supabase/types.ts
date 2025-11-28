@@ -131,6 +131,7 @@ export type Database = {
           created_at: string
           id: string
           prompt: string
+          section_id: string | null
           section_name: string
           updated_at: string
         }
@@ -138,6 +139,7 @@ export type Database = {
           created_at?: string
           id?: string
           prompt: string
+          section_id?: string | null
           section_name: string
           updated_at?: string
         }
@@ -145,10 +147,19 @@ export type Database = {
           created_at?: string
           id?: string
           prompt?: string
+          section_id?: string | null
           section_name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "memo_prompts_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "questionnaire_sections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       memo_responses: {
         Row: {
@@ -254,6 +265,98 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      questionnaire_questions: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          is_required: boolean
+          placeholder: string | null
+          question: string
+          question_key: string
+          section_id: string
+          sort_order: number
+          title: string
+          tldr: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          placeholder?: string | null
+          question: string
+          question_key: string
+          section_id: string
+          sort_order?: number
+          title: string
+          tldr?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          placeholder?: string | null
+          question?: string
+          question_key?: string
+          section_id?: string
+          sort_order?: number
+          title?: string
+          tldr?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questionnaire_questions_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "questionnaire_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questionnaire_sections: {
+        Row: {
+          color: string
+          created_at: string
+          display_title: string
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          display_title: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          display_title?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
