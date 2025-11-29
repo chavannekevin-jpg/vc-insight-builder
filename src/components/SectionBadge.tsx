@@ -2,7 +2,7 @@ import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SectionBadgeProps {
-  icon: LucideIcon;
+  icon: LucideIcon | React.ComponentType<any>;
   title: string;
   isComplete?: boolean;
   className?: string;

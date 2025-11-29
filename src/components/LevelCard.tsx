@@ -7,7 +7,7 @@ interface LevelCardProps {
   totalLevels: number;
   title: string;
   tldr: string;
-  icon: LucideIcon;
+  icon: LucideIcon | React.ComponentType<any>;
   children: ReactNode;
   className?: string;
 }

@@ -517,88 +517,138 @@ export default function Portal() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-12 max-w-4xl">
-        <div className={`transition-all duration-200 ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-          <div className="bg-card border border-border rounded-lg p-8 shadow-lg">
-            <div className="text-center mb-8">
-              <QuestionIcon className={`w-8 h-8 mb-4 mx-auto ${currentQuestion.sectionData.color}`} />
-              <h2 className="text-2xl font-bold text-foreground mb-2">
-                {currentQuestion.title}
-              </h2>
-              {currentQuestion.tldr && (
-                <p className="text-muted-foreground text-sm">
-                  {currentQuestion.tldr}
-                </p>
-              )}
+      {/* Main Content - Two Column Layout */}
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex gap-6 max-w-7xl mx-auto">
+          {/* Section Sidebar */}
+          <aside className="w-48 flex-shrink-0">
+            <div className="sticky top-24 space-y-6">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                Sections
+              </h3>
+              {questionsBySections.map(({ section, questions: sectionQuestions }) => {
+                const SectionIcon = resolveIcon(section.icon);
+                const sectionAnswered = sectionQuestions.filter(q => 
+                  responses[q.question_key]?.trim()
+                ).length;
+                const isComplete = sectionAnswered === sectionQuestions.length;
+                const isCurrent = currentQuestion.section_id === section.id;
+                
+                return (
+                  <div 
+                    key={section.id}
+                    className="flex flex-col items-center gap-2"
+                  >
+                    <button
+                      onClick={() => {
+                        const firstQuestionIndex = allQuestions.findIndex(q => q.section_id === section.id);
+                        if (firstQuestionIndex !== -1) {
+                          setCurrentStep(firstQuestionIndex);
+                          setMicroFeedback("");
+                        }
+                      }}
+                      className={`transition-all ${isCurrent ? 'scale-110' : 'hover:scale-105'}`}
+                    >
+                      <SectionBadge 
+                        icon={SectionIcon}
+                        title={section.display_title}
+                        isComplete={isComplete}
+                      />
+                    </button>
+                    <span className={`text-xs text-center transition-colors ${isCurrent ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                      {section.display_title}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {sectionAnswered}/{sectionQuestions.length}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
+          </aside>
 
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-3">
-                  {currentQuestion.question}
-                </label>
-                <Textarea
-                  value={responses[currentQuestion.question_key] || ""}
-                  onChange={(e) => handleAnswerChange(currentQuestion.question_key, e.target.value)}
-                  placeholder={currentQuestion.placeholder || "Type your answer here..."}
-                  className="min-h-[200px] text-base resize-none"
-                  disabled={isAdminViewing}
-                />
-              </div>
-
-              {/* AI Feedback */}
-              {microFeedback && (
-                <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                  <p className="text-sm text-foreground">
-                    {isFetchingFeedback ? (
-                      <span className="animate-pulse">Analyzing...</span>
-                    ) : (
-                      microFeedback
-                    )}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Navigation */}
-            <div className="flex justify-between items-center mt-8 pt-6 border-t border-border">
-              <Button
-                onClick={handlePrevious}
-                variant="outline"
-                disabled={currentStep === 0}
+          {/* Question Content */}
+          <div className="flex-1">
+            <div className={`transition-all duration-200 ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+              <LevelCard
+                levelNumber={currentStep + 1}
+                totalLevels={totalQuestions}
+                title={currentQuestion.title}
+                tldr={currentQuestion.tldr || "Complete this question to progress"}
+                icon={QuestionIcon}
               >
-                <ChevronLeft className="w-4 h-4 mr-2" />
-                Previous
-              </Button>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-3">
+                      {currentQuestion.question}
+                    </label>
+                    <Textarea
+                      value={responses[currentQuestion.question_key] || ""}
+                      onChange={(e) => handleAnswerChange(currentQuestion.question_key, e.target.value)}
+                      placeholder={currentQuestion.placeholder || "Type your answer here..."}
+                      className="min-h-[200px] text-base resize-none"
+                      disabled={isAdminViewing}
+                    />
+                  </div>
 
-              <div className="flex gap-2">
-                {allQuestions.map((_, idx) => (
-                  idx === currentStep ? (
-                    <CheckCircle2 key={idx} className="w-4 h-4 text-primary" />
-                  ) : responses[allQuestions[idx].question_key]?.trim() ? (
-                    <CheckCircle2 key={idx} className="w-4 h-4 text-primary/50" />
+                  {/* AI Feedback */}
+                  {microFeedback && (
+                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                      <p className="text-sm text-foreground">
+                        {isFetchingFeedback ? (
+                          <span className="animate-pulse">Analyzing...</span>
+                        ) : (
+                          microFeedback
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Navigation */}
+                <div className="flex justify-between items-center mt-8 pt-6 border-t border-border/30">
+                  <Button
+                    onClick={handlePrevious}
+                    variant="outline"
+                    disabled={currentStep === 0}
+                    className="hover:border-primary/50"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    Previous
+                  </Button>
+
+                  <div className="flex gap-2">
+                    {allQuestions.map((_, idx) => (
+                      idx === currentStep ? (
+                        <CheckCircle2 key={idx} className="w-4 h-4 text-neon-pink animate-pulse" />
+                      ) : responses[allQuestions[idx].question_key]?.trim() ? (
+                        <CheckCircle2 key={idx} className="w-4 h-4 text-primary/50" />
+                      ) : (
+                        <Circle key={idx} className="w-4 h-4 text-muted-foreground/30" />
+                      )
+                    ))}
+                  </div>
+
+                  {currentStep < allQuestions.length - 1 ? (
+                    <Button 
+                      onClick={handleNext}
+                      className="bg-gradient-to-r from-neon-pink to-neon-purple hover:opacity-90 transition-opacity"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
                   ) : (
-                    <Circle key={idx} className="w-4 h-4 text-muted-foreground" />
-                  )
-                ))}
-              </div>
-
-              {currentStep < allQuestions.length - 1 ? (
-                <Button onClick={handleNext}>
-                  Next
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              ) : (
-                <Button 
-                  onClick={handleGenerateMemo}
-                  disabled={progressPercentage < 80 || isAdminViewing}
-                  className="bg-primary hover:bg-primary/90"
-                >
-                  Generate Memo
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              )}
+                    <Button 
+                      onClick={handleGenerateMemo}
+                      disabled={progressPercentage < 80 || isAdminViewing}
+                      className="bg-gradient-to-r from-neon-pink to-neon-purple hover:opacity-90 transition-opacity disabled:opacity-50"
+                    >
+                      Generate Memo
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  )}
+                </div>
+              </LevelCard>
             </div>
           </div>
         </div>
