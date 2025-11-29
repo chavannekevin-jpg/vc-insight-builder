@@ -89,7 +89,7 @@ export default function GeneratedMemo() {
             .from("companies")
             .select("*")
             .eq("id", companyId)
-            .single();
+            .maybeSingle();
 
           if (companyError) throw companyError;
 

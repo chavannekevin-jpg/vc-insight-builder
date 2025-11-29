@@ -53,11 +53,12 @@ export default function CompanyProfileEdit() {
         return;
       }
 
-      // Load company details
+      // Load company details - get most recent if multiple exist
       const { data: companies, error: companyError } = await supabase
         .from("companies")
         .select("*")
         .eq("founder_id", session.user.id)
+        .order("created_at", { ascending: false })
         .limit(1);
 
       if (companyError || !companies || companies.length === 0) {

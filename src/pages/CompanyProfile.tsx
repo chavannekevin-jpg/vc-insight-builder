@@ -86,6 +86,7 @@ export default function CompanyProfile() {
         .from("companies")
         .select("*")
         .eq("founder_id", session.user.id)
+        .order("created_at", { ascending: false })
         .limit(1);
 
       if (!companies || companies.length === 0) {
