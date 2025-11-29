@@ -165,21 +165,23 @@ export default function Portal() {
 
   const loadCompanyData = async (userId: string) => {
     try {
-      // Get company
-      const { data: companies, error: companyError } = await supabase
+      // Get company - get most recent if multiple exist
+      const { data: companiesArray, error: companyError } = await supabase
         .from("companies")
         .select("id, name, stage")
         .eq("founder_id", userId)
-        .maybeSingle();
+        .order("created_at", { ascending: false })
+        .limit(1);
 
       if (companyError) throw companyError;
 
       // If no company exists, keep companyId null and show creation UI
-      if (!companies) {
+      if (!companiesArray || companiesArray.length === 0) {
         setLoading(false);
         return;
       }
 
+      const companies = companiesArray[0];
       setCompanyId(companies.id);
       setCompanyName(companies.name);
 
