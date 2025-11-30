@@ -230,7 +230,7 @@ export const MemoJourneyCard = ({
   };
 
   return (
-    <div className="relative bg-card border-2 border-border/50 rounded-3xl p-8 shadow-xl animate-fade-in">
+    <div className="relative bg-card border-2 border-primary/30 rounded-3xl p-8 shadow-glow animate-fade-in hover:shadow-glow-strong transition-all duration-500">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 rounded-3xl -z-10" />
       {renderContent()}
     </div>

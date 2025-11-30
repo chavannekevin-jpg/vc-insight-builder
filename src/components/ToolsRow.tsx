@@ -1,6 +1,7 @@
-import { Calculator, TrendingUp, Lock } from "lucide-react";
+import { Calculator, TrendingUp, Lock, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ModernCard } from "./ModernCard";
+import { Badge } from "./ui/badge";
 
 export const ToolsRow = () => {
   const navigate = useNavigate();
@@ -21,6 +22,15 @@ export const ToolsRow = () => {
       description: "Estimate your startup's value",
       available: true,
       path: "/valuation-calculator"
+    },
+    {
+      id: "venture-scale-diagnostic",
+      icon: Zap,
+      title: "Venture Scale Diagnostic",
+      description: "Reality check: Are you truly VC-scale?",
+      available: true,
+      path: "/venture-scale-diagnostic",
+      badge: "New"
     }
   ];
 
@@ -31,7 +41,7 @@ export const ToolsRow = () => {
         <p className="text-sm text-muted-foreground">Free calculators to help you plan</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {tools.map((tool) => {
           const Icon = tool.icon;
           return (
@@ -50,7 +60,14 @@ export const ToolsRow = () => {
                   )}
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold mb-1">{tool.title}</h4>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold">{tool.title}</h4>
+                    {tool.badge && (
+                      <Badge className="bg-primary/20 text-primary border-primary/40 text-xs">
+                        {tool.badge}
+                      </Badge>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground">{tool.description}</p>
                 </div>
               </div>
