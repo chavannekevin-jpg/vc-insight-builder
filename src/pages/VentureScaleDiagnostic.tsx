@@ -13,9 +13,22 @@ import { ModernCard } from "@/components/ModernCard";
 
 interface DiagnosticData {
   acv: string;
-  marketDescription: string;
-  currentRevenue: string;
-  currentCustomers: string;
+}
+
+interface MarketContext {
+  marketVertical: string;
+  marketSubSegment: string;
+  estimatedTAM: string;
+  buyerPersona: string;
+  competitorWeaknesses: string;
+  industryBenchmarks: {
+    typicalCAC: string;
+    typicalLTV: string;
+    typicalGrowthRate: string;
+    typicalMargins: string;
+  };
+  marketDrivers: string;
+  confidence: string;
 }
 
 interface DiagnosticResult {
@@ -39,12 +52,10 @@ export default function VentureScaleDiagnostic() {
   const [analyzing, setAnalyzing] = useState(false);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [result, setResult] = useState<DiagnosticResult | null>(null);
+  const [marketContext, setMarketContext] = useState<MarketContext | null>(null);
   
   const [formData, setFormData] = useState<DiagnosticData>({
-    acv: "",
-    marketDescription: "",
-    currentRevenue: "",
-    currentCustomers: ""
+    acv: ""
   });
 
   useEffect(() => {
@@ -75,27 +86,30 @@ export default function VentureScaleDiagnostic() {
           .select("question_key, answer")
           .eq("company_id", company.id);
 
+        // Build context from responses
+        const responsesMap = (responses || []).reduce((acc: any, r: any) => {
+          acc[r.question_key] = r.answer;
+          return acc;
+        }, {});
+
         // Extract market context using AI
         const { data: contextData, error: contextError } = await supabase.functions.invoke(
           "extract-market-context",
           {
             body: {
-              company: {
-                name: company.name,
-                description: company.description,
-                category: company.category,
-                challenge: company.biggest_challenge
-              },
-              responses: responses || []
+              problem: responsesMap.problem_statement || company.biggest_challenge || company.description,
+              solution: responsesMap.solution_overview || company.description,
+              icp: responsesMap.market_icp || responsesMap.target_customer || company.category,
+              competition: responsesMap.competitive_landscape || "Not provided",
+              traction: responsesMap.traction_revenue_progression || responsesMap.current_metrics || "Not provided"
             }
           }
         );
 
         if (!contextError && contextData?.marketContext) {
-          setFormData(prev => ({
-            ...prev,
-            marketDescription: contextData.marketContext
-          }));
+          setMarketContext(contextData.marketContext);
+        } else {
+          console.error("Market context extraction error:", contextError);
         }
       }
     } catch (error) {
@@ -107,10 +121,19 @@ export default function VentureScaleDiagnostic() {
 
   const handleRunDiagnostic = async () => {
     // Validation
-    if (!formData.acv || !formData.marketDescription) {
+    if (!formData.acv) {
       toast({
         title: "Missing information",
-        description: "Please provide your ACV and market description.",
+        description: "Please provide your ACV.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!marketContext) {
+      toast({
+        title: "Loading market data",
+        description: "Please wait while we analyze your market...",
         variant: "destructive"
       });
       return;
@@ -121,7 +144,8 @@ export default function VentureScaleDiagnostic() {
     try {
       const { data, error } = await supabase.functions.invoke("venture-scale-diagnostic", {
         body: {
-          diagnosticData: formData,
+          acv: formData.acv,
+          marketContext,
           companyId
         }
       });
@@ -303,12 +327,27 @@ export default function VentureScaleDiagnostic() {
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold">Why This Matters</h2>
                 <p className="text-foreground/90 leading-relaxed">
-                  VCs need companies that can scale to $100M+ ARR. This diagnostic calculates how many customers you&apos;d need at your 
-                  current ACV to reach that threshold, and whether it&apos;s realistically achievable in your market within a reasonable timeframe.
+                  VCs need companies that can scale to $100M+ ARR. This diagnostic uses your company profile to understand your market, 
+                  then calculates how many customers you&apos;d need at your ACV to reach that threshold, and whether it&apos;s realistically 
+                  achievable within a reasonable timeframe.
                 </p>
                 <p className="text-foreground/90 leading-relaxed">
                   Simple math. Hard truth.
                 </p>
+                {loading && (
+                  <div className="flex items-center gap-2 text-primary">
+                    <Sparkles className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Analyzing your market from profile data...</span>
+                  </div>
+                )}
+                {marketContext && (
+                  <div className="p-4 bg-success/10 border border-success/30 rounded-xl">
+                    <p className="text-sm font-semibold text-success mb-2">✓ Market Analysis Complete</p>
+                    <p className="text-xs text-muted-foreground">
+                      {marketContext.marketVertical} • {marketContext.marketSubSegment}
+                    </p>
+                  </div>
+                )}
               </div>
             </ModernCard>
 
@@ -326,50 +365,9 @@ export default function VentureScaleDiagnostic() {
                     onChange={(e) => setFormData({ ...formData, acv: e.target.value })}
                     required
                     className="text-lg"
-                  />
-                  <p className="text-xs text-muted-foreground">Average revenue per customer per year</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="marketDescription">Describe your market *</Label>
-                  <Textarea
-                    id="marketDescription"
-                    placeholder="e.g., We sell to mid-market SaaS companies (50-500 employees) in the US and Europe. There are approximately 15,000 companies in this segment. Our GTM is outbound sales with an average 60-day sales cycle."
-                    value={formData.marketDescription}
-                    onChange={(e) => setFormData({ ...formData, marketDescription: e.target.value })}
-                    className="min-h-[120px]"
-                    required
                     disabled={loading}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {loading ? "Loading market insights from your profile..." : "Who are your customers, how big is the addressable market, and how do you sell to them? (Pre-filled from your profile - adjust as needed)"}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="currentRevenue">Current Annual Revenue (Optional)</Label>
-                    <Input
-                      id="currentRevenue"
-                      type="number"
-                      placeholder="e.g., 500000"
-                      value={formData.currentRevenue}
-                      onChange={(e) => setFormData({ ...formData, currentRevenue: e.target.value })}
-                    />
-                    <p className="text-xs text-muted-foreground">Your current ARR or projected first-year revenue</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="currentCustomers">Current Customers (Optional)</Label>
-                    <Input
-                      id="currentCustomers"
-                      type="number"
-                      placeholder="e.g., 25"
-                      value={formData.currentCustomers}
-                      onChange={(e) => setFormData({ ...formData, currentCustomers: e.target.value })}
-                    />
-                    <p className="text-xs text-muted-foreground">How many paying customers today?</p>
-                  </div>
+                  <p className="text-xs text-muted-foreground">Average revenue per customer per year</p>
                 </div>
               </div>
 
@@ -377,12 +375,17 @@ export default function VentureScaleDiagnostic() {
                 type="submit"
                 size="lg"
                 className="w-full gradient-primary shadow-glow hover:shadow-glow-strong"
-                disabled={analyzing}
+                disabled={analyzing || loading || !marketContext}
               >
                 {analyzing ? (
                   <>
                     <Sparkles className="w-5 h-5 mr-2 animate-spin" />
                     Analyzing...
+                  </>
+                ) : loading ? (
+                  <>
+                    <Sparkles className="w-5 h-5 mr-2 animate-spin" />
+                    Loading Market Data...
                   </>
                 ) : (
                   <>

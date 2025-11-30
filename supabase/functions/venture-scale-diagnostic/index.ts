@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { diagnosticData, companyId } = await req.json();
+    const { acv: acvString, marketContext, companyId } = await req.json();
     
     console.log("Running venture scale diagnostic for company:", companyId);
 
@@ -21,11 +21,8 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    const acv = parseFloat(diagnosticData.acv);
-    const currentRevenue = parseFloat(diagnosticData.currentRevenue || "0");
-    const currentCustomers = parseFloat(diagnosticData.currentCustomers || "0");
+    const acv = parseFloat(acvString);
     const targetRevenue = 100000000; // $100M ARR target
-
     const customersNeeded = Math.ceil(targetRevenue / acv);
     
     const systemPrompt = `You are a brutally honest, slightly cynical venture capital partner with 15+ years of experience. Your job is to analyze whether a startup can realistically achieve venture-scale outcomes ($100M ARR).
@@ -79,16 +76,25 @@ Return ONLY valid JSON with this exact structure:
 - ACV: $${acv.toLocaleString()}
 - Target: $100M ARR
 - Customers needed at this ACV: ${customersNeeded.toLocaleString()}
-${currentRevenue > 0 ? `- Current Annual Revenue: $${currentRevenue.toLocaleString()}` : ""}
-${currentCustomers > 0 ? `- Current Customers: ${currentCustomers}` : ""}
 
-**Market Description:**
-${diagnosticData.marketDescription}
+**Market Intelligence:**
+- Market Vertical: ${marketContext.marketVertical}
+- Market Sub-Segment: ${marketContext.marketSubSegment}
+- Estimated TAM: ${marketContext.estimatedTAM}
+- Buyer Persona: ${marketContext.buyerPersona}
+- Competitor Weaknesses: ${marketContext.competitorWeaknesses}
+- Industry Benchmarks:
+  • Typical CAC: ${marketContext.industryBenchmarks.typicalCAC}
+  • Typical LTV: ${marketContext.industryBenchmarks.typicalLTV}
+  • Typical Growth Rate: ${marketContext.industryBenchmarks.typicalGrowthRate}
+  • Typical Margins: ${marketContext.industryBenchmarks.typicalMargins}
+- Market Drivers: ${marketContext.marketDrivers}
+- Confidence Level: ${marketContext.confidence}
 
 **Key Question:**
 Can they realistically acquire ${customersNeeded.toLocaleString()} customers at $${acv.toLocaleString()} ACV in this market within 5-7 years?
 
-Run the full diagnostic. Be specific with numbers and market realities. Call out if the ACV is too low, if the market is too small, if the sales motion doesn't support the volume needed. Make it uncomfortable but intellectually honest.`;
+Run the full diagnostic. Be specific with numbers and market realities. Use the TAM estimate to assess if ${customersNeeded.toLocaleString()} customers is achievable. Call out if the ACV is too low relative to the buyer persona, if the market TAM can't support the volume needed, or if the sales motion doesn't match the customer profile. Make it uncomfortable but intellectually honest.`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -138,17 +144,17 @@ Run the full diagnostic. Be specific with numbers and market realities. Call out
 
       // Map diagnostic data to questionnaire fields
       const responsesToUpsert = [
-        { company_id: companyId, question_key: "business_model_type", answer: `ACV: $${acv}, Target: $100M ARR requires ${customersNeeded} customers` },
-        { company_id: companyId, question_key: "market_icp", answer: diagnosticData.marketDescription },
+        { 
+          company_id: companyId, 
+          question_key: "business_model_type", 
+          answer: `ACV: $${acv.toLocaleString()}, Target: $100M ARR requires ${customersNeeded.toLocaleString()} customers` 
+        },
+        { 
+          company_id: companyId, 
+          question_key: "market_icp", 
+          answer: `${marketContext.buyerPersona} in ${marketContext.marketVertical}` 
+        },
       ];
-
-      if (currentRevenue > 0 || currentCustomers > 0) {
-        responsesToUpsert.push({
-          company_id: companyId,
-          question_key: "traction_revenue_progression",
-          answer: `Current: ${currentCustomers} customers, $${currentRevenue} ARR`
-        });
-      }
 
       for (const response of responsesToUpsert) {
         await supabase
