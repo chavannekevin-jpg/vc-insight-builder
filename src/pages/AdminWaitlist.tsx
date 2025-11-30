@@ -148,6 +148,35 @@ export default function AdminWaitlist() {
     }
   };
 
+  const togglePremiumAccess = async (signupId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("waitlist_signups")
+        .update({ 
+          has_paid: !currentStatus,
+          paid_at: !currentStatus ? new Date().toISOString() : null 
+        })
+        .eq("id", signupId);
+
+      if (error) throw error;
+
+      // Refresh signups
+      await fetchSignups();
+      
+      toast({
+        title: "Success",
+        description: `Premium access ${!currentStatus ? "granted" : "revoked"}`,
+      });
+    } catch (error) {
+      console.error("Error toggling premium access:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update premium access",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -255,9 +284,9 @@ export default function AdminWaitlist() {
           {/* Signups Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Waitlist Signups</CardTitle>
+              <CardTitle>Waitlist Signups & Premium Access</CardTitle>
               <CardDescription>
-                All users who joined the early access program
+                Manage user access - grant premium to any user regardless of payment status
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -268,7 +297,8 @@ export default function AdminWaitlist() {
                     <TableHead>Company</TableHead>
                     <TableHead>Tier</TableHead>
                     <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Payment</TableHead>
+                    <TableHead>Premium Access</TableHead>
                     <TableHead>Signed Up</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -287,6 +317,12 @@ export default function AdminWaitlist() {
                         <Badge variant={signup.has_paid ? "default" : "outline"}>
                           {signup.has_paid ? "Paid" : "Pending"}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={signup.has_paid}
+                          onCheckedChange={() => togglePremiumAccess(signup.id, signup.has_paid)}
+                        />
                       </TableCell>
                       <TableCell>
                         {new Date(signup.signed_up_at).toLocaleDateString()}

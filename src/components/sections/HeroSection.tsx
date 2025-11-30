@@ -40,7 +40,7 @@ export const HeroSection = () => {
 
           {/* Subheadline */}
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            After 10 years of seeing the same mistakes over and over, I built a complete platform with my investment framework, resources, and tools—so you can leverage what actually works to raise capital.
+            After a decade of rejecting founders, I built this platform with my investment framework, resources, and tools—so you can master what actually works before you pitch.
           </p>
 
           {/* Three-tier value prop */}

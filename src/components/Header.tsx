@@ -11,6 +11,8 @@ export const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [hubDropdownOpen, setHubDropdownOpen] = useState(false);
   const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
+  const [hasMemo, setHasMemo] = useState(false);
+  const [memoCompanyId, setMemoCompanyId] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -22,7 +24,7 @@ export const Header = () => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setIsAuthenticated(!!session);
       
-      // Check admin role
+      // Check admin role and memo
       if (session?.user) {
         const { data: roleData } = await supabase
           .from("user_roles")
@@ -32,15 +34,40 @@ export const Header = () => {
           .maybeSingle();
         
         setIsAdmin(!!roleData);
+        
+        // Check if user has a generated memo
+        const { data: companies } = await supabase
+          .from("companies")
+          .select("id")
+          .eq("founder_id", session.user.id)
+          .order("created_at", { ascending: false })
+          .limit(1);
+        
+        if (companies && companies.length > 0) {
+          const { data: memo } = await supabase
+            .from("memos")
+            .select("id, structured_content")
+            .eq("company_id", companies[0].id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          
+          if (memo && memo.structured_content) {
+            setHasMemo(true);
+            setMemoCompanyId(companies[0].id);
+          }
+        }
       } else {
         setIsAdmin(false);
+        setHasMemo(false);
+        setMemoCompanyId(null);
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setIsAuthenticated(!!session);
       
-      // Check admin role on auth state change
+      // Check admin role and memo on auth state change
       if (session?.user) {
         const { data: roleData } = await supabase
           .from("user_roles")
@@ -50,8 +77,33 @@ export const Header = () => {
           .maybeSingle();
         
         setIsAdmin(!!roleData);
+        
+        // Check if user has a generated memo
+        const { data: companies } = await supabase
+          .from("companies")
+          .select("id")
+          .eq("founder_id", session.user.id)
+          .order("created_at", { ascending: false })
+          .limit(1);
+        
+        if (companies && companies.length > 0) {
+          const { data: memo } = await supabase
+            .from("memos")
+            .select("id, structured_content")
+            .eq("company_id", companies[0].id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          
+          if (memo && memo.structured_content) {
+            setHasMemo(true);
+            setMemoCompanyId(companies[0].id);
+          }
+        }
       } else {
         setIsAdmin(false);
+        setHasMemo(false);
+        setMemoCompanyId(null);
       }
     });
 
@@ -336,6 +388,18 @@ export const Header = () => {
               )}
             </div>
             
+            {/* My Memo link - only show if user has a generated memo */}
+            {isAuthenticated && hasMemo && memoCompanyId && (
+              <Link
+                to={`/memo?companyId=${memoCompanyId}`}
+                className={`text-sm font-medium transition-all duration-300 ${
+                  location.pathname === "/memo" ? "neon-pink" : "text-muted-foreground hover:neon-pink"
+                }`}
+              >
+                My Memo
+              </Link>
+            )}
+            
             {/* Other nav links (Product, Pricing, About) */}
             {navLinks.map((link) => {
               if (link.name === "Home" || link.name === "Hub") return null;
@@ -422,6 +486,18 @@ export const Header = () => {
                   {link.name}
                 </Link>
               ))}
+              {/* My Memo link in mobile menu */}
+              {isAuthenticated && hasMemo && memoCompanyId && (
+                <Link
+                  to={`/memo?companyId=${memoCompanyId}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`text-sm font-medium transition-all duration-300 ${
+                    location.pathname === "/memo" ? "neon-pink" : "text-muted-foreground hover:neon-pink"
+                  }`}
+                >
+                  My Memo
+                </Link>
+              )}
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
