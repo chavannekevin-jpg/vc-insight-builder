@@ -19,7 +19,7 @@ interface CollapsedLibraryProps {
 
 export const CollapsedLibrary = ({ stage }: CollapsedLibraryProps) => {
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const getRecommendedForStage = (userStage?: string): { label: string; path: string; badge?: string }[] => {
     const stageMap: Record<string, { label: string; path: string }[]> = {
@@ -129,26 +129,21 @@ export const CollapsedLibrary = ({ stage }: CollapsedLibraryProps) => {
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {sections.map((section) => (
             <div key={section.title} className="space-y-3">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 {section.title}
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="space-y-2">
                 {section.items.map((item) => (
                   <button
                     key={item.path}
                     onClick={() => navigate(item.path)}
-                    className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/50 hover:border-primary/50 hover:bg-muted/30 transition-all group"
+                    className="w-full flex items-center justify-between p-3 rounded-lg bg-card border border-border/50 hover:border-primary/50 hover:bg-muted/30 transition-all group text-left"
                   >
                     <span className="text-sm font-medium">{item.label}</span>
-                    {item.badge && (
-                      <Badge variant="secondary" className="text-xs">
-                        {item.badge}
-                      </Badge>
-                    )}
-                    <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
                   </button>
                 ))}
               </div>
