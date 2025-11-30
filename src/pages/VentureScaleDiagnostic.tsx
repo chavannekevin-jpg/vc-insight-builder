@@ -13,15 +13,9 @@ import { ModernCard } from "@/components/ModernCard";
 
 interface DiagnosticData {
   acv: string;
-  expectedCustomers: string;
-  salesCycle: string;
-  churnRate: string;
-  expansionRevenue: string;
-  customerType: string;
-  gtmStrategy: string;
-  currentMRR: string;
+  marketDescription: string;
+  currentRevenue: string;
   currentCustomers: string;
-  targetRevenue: string;
 }
 
 interface DiagnosticResult {
@@ -48,15 +42,9 @@ export default function VentureScaleDiagnostic() {
   
   const [formData, setFormData] = useState<DiagnosticData>({
     acv: "",
-    expectedCustomers: "",
-    salesCycle: "",
-    churnRate: "",
-    expansionRevenue: "",
-    customerType: "",
-    gtmStrategy: "",
-    currentMRR: "",
-    currentCustomers: "",
-    targetRevenue: "75000000"
+    marketDescription: "",
+    currentRevenue: "",
+    currentCustomers: ""
   });
 
   useEffect(() => {
@@ -87,13 +75,10 @@ export default function VentureScaleDiagnostic() {
 
   const handleRunDiagnostic = async () => {
     // Validation
-    const requiredFields = ["acv", "expectedCustomers", "salesCycle", "churnRate", "customerType", "gtmStrategy"];
-    const missingFields = requiredFields.filter(field => !formData[field as keyof DiagnosticData]);
-    
-    if (missingFields.length > 0) {
+    if (!formData.acv || !formData.marketDescription) {
       toast({
         title: "Missing information",
-        description: "Please fill in all required fields to run the diagnostic.",
+        description: "Please provide your ACV and market description.",
         variant: "destructive"
       });
       return;
@@ -274,35 +259,33 @@ export default function VentureScaleDiagnostic() {
           ← Back to Dashboard
         </Button>
 
-        <div className="space-y-8">
-          {/* Header */}
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold neon-pink">Venture Scale Diagnostic Engine</h1>
-            <p className="text-xl text-muted-foreground">The reality check you need before pitching VCs</p>
-          </div>
-
-          {/* Intro */}
-          <ModernCard>
-            <div className="space-y-4">
-              <h2 className="text-2xl font-bold">Why Run the Math?</h2>
-              <p className="text-foreground/90 leading-relaxed">
-                Venture investors aren&apos;t looking for good ideas—they&apos;re looking for companies that can generate 50–100 million ARR and deliver 
-                fund-level returns. This tool models the actual physics of growth: ACV, customer volume, sales velocity, retention, 
-                and expansion. It exposes whether your business can realistically scale to venture outcomes, or if you&apos;re building 
-                something that will never satisfy VC economics.
-              </p>
-              <p className="text-foreground/90 leading-relaxed">
-                This isn&apos;t aspirational. It&apos;s structural. Let&apos;s see if your math holds up.
-              </p>
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="text-center space-y-4">
+              <h1 className="text-4xl font-bold neon-pink">Venture Scale Diagnostic</h1>
+              <p className="text-xl text-muted-foreground">Can your business model reach $100M ARR?</p>
             </div>
-          </ModernCard>
+
+            {/* Intro */}
+            <ModernCard>
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold">Why This Matters</h2>
+                <p className="text-foreground/90 leading-relaxed">
+                  VCs need companies that can scale to $100M+ ARR. This diagnostic calculates how many customers you&apos;d need at your 
+                  current ACV to reach that threshold, and whether it&apos;s realistically achievable in your market within a reasonable timeframe.
+                </p>
+                <p className="text-foreground/90 leading-relaxed">
+                  Simple math. Hard truth.
+                </p>
+              </div>
+            </ModernCard>
 
           {/* Form */}
           <ModernCard>
             <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleRunDiagnostic(); }}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="acv">Annual Contract Value (ACV) *</Label>
+                  <Label htmlFor="acv">What&apos;s your Annual Contract Value (ACV)? *</Label>
                   <Input
                     id="acv"
                     type="number"
@@ -310,120 +293,49 @@ export default function VentureScaleDiagnostic() {
                     value={formData.acv}
                     onChange={(e) => setFormData({ ...formData, acv: e.target.value })}
                     required
+                    className="text-lg"
                   />
                   <p className="text-xs text-muted-foreground">Average revenue per customer per year</p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="expectedCustomers">Expected Customers at Target *</Label>
-                  <Input
-                    id="expectedCustomers"
-                    type="number"
-                    placeholder="e.g., 3000"
-                    value={formData.expectedCustomers}
-                    onChange={(e) => setFormData({ ...formData, expectedCustomers: e.target.value })}
+                  <Label htmlFor="marketDescription">Describe your market *</Label>
+                  <Textarea
+                    id="marketDescription"
+                    placeholder="e.g., We sell to mid-market SaaS companies (50-500 employees) in the US and Europe. There are approximately 15,000 companies in this segment. Our GTM is outbound sales with an average 60-day sales cycle."
+                    value={formData.marketDescription}
+                    onChange={(e) => setFormData({ ...formData, marketDescription: e.target.value })}
+                    className="min-h-[120px]"
                     required
                   />
-                  <p className="text-xs text-muted-foreground">How many customers to hit target ARR?</p>
+                  <p className="text-xs text-muted-foreground">Who are your customers, how big is the addressable market, and how do you sell to them?</p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="salesCycle">Sales Cycle (days) *</Label>
-                  <Input
-                    id="salesCycle"
-                    type="number"
-                    placeholder="e.g., 90"
-                    value={formData.salesCycle}
-                    onChange={(e) => setFormData({ ...formData, salesCycle: e.target.value })}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">Time from first touch to signed contract</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentRevenue">Current Annual Revenue (Optional)</Label>
+                    <Input
+                      id="currentRevenue"
+                      type="number"
+                      placeholder="e.g., 500000"
+                      value={formData.currentRevenue}
+                      onChange={(e) => setFormData({ ...formData, currentRevenue: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">Your current ARR or projected first-year revenue</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="currentCustomers">Current Customers (Optional)</Label>
+                    <Input
+                      id="currentCustomers"
+                      type="number"
+                      placeholder="e.g., 25"
+                      value={formData.currentCustomers}
+                      onChange={(e) => setFormData({ ...formData, currentCustomers: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">How many paying customers today?</p>
+                  </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="churnRate">Annual Churn Rate (%) *</Label>
-                  <Input
-                    id="churnRate"
-                    type="number"
-                    placeholder="e.g., 15"
-                    value={formData.churnRate}
-                    onChange={(e) => setFormData({ ...formData, churnRate: e.target.value })}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">What % of customers leave each year?</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="expansionRevenue">Net Revenue Retention (%)</Label>
-                  <Input
-                    id="expansionRevenue"
-                    type="number"
-                    placeholder="e.g., 110"
-                    value={formData.expansionRevenue}
-                    onChange={(e) => setFormData({ ...formData, expansionRevenue: e.target.value })}
-                  />
-                  <p className="text-xs text-muted-foreground">Including upsells and expansion (100% = flat)</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="currentMRR">Current MRR</Label>
-                  <Input
-                    id="currentMRR"
-                    type="number"
-                    placeholder="e.g., 50000"
-                    value={formData.currentMRR}
-                    onChange={(e) => setFormData({ ...formData, currentMRR: e.target.value })}
-                  />
-                  <p className="text-xs text-muted-foreground">Your current monthly recurring revenue</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="currentCustomers">Current Customers</Label>
-                  <Input
-                    id="currentCustomers"
-                    type="number"
-                    placeholder="e.g., 25"
-                    value={formData.currentCustomers}
-                    onChange={(e) => setFormData({ ...formData, currentCustomers: e.target.value })}
-                  />
-                  <p className="text-xs text-muted-foreground">How many paying customers today?</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="targetRevenue">Target ARR</Label>
-                  <Input
-                    id="targetRevenue"
-                    type="number"
-                    placeholder="e.g., 75000000"
-                    value={formData.targetRevenue}
-                    onChange={(e) => setFormData({ ...formData, targetRevenue: e.target.value })}
-                  />
-                  <p className="text-xs text-muted-foreground">Your venture-scale goal (default: $75M)</p>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="customerType">Customer Type (ICP) *</Label>
-                <Input
-                  id="customerType"
-                  placeholder="e.g., Mid-market SaaS companies with 50-500 employees"
-                  value={formData.customerType}
-                  onChange={(e) => setFormData({ ...formData, customerType: e.target.value })}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">Who exactly are you selling to?</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="gtmStrategy">Go-to-Market Strategy *</Label>
-                <Textarea
-                  id="gtmStrategy"
-                  placeholder="Describe how you acquire customers (e.g., outbound sales, PLG, channel partners, etc.)"
-                  value={formData.gtmStrategy}
-                  onChange={(e) => setFormData({ ...formData, gtmStrategy: e.target.value })}
-                  className="min-h-[100px]"
-                  required
-                />
               </div>
 
               <Button
@@ -435,12 +347,12 @@ export default function VentureScaleDiagnostic() {
                 {analyzing ? (
                   <>
                     <Sparkles className="w-5 h-5 mr-2 animate-spin" />
-                    Running Diagnostic...
+                    Analyzing...
                   </>
                 ) : (
                   <>
                     <Zap className="w-5 h-5 mr-2" />
-                    Run Venture Scale Diagnostic
+                    Run Diagnostic
                   </>
                 )}
               </Button>

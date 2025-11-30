@@ -397,7 +397,7 @@ const SampleMemo = () => {
               </div>
               <h2 className="text-4xl font-bold neon-pink mb-2">Ready to Create Your Memo?</h2>
               <p className="text-foreground max-w-2xl mx-auto text-lg leading-relaxed">
-                Get the same depth of VC-focused analysis tailored to your startup. Our AI-powered platform 
+                Get the same depth of VC-focused analysis tailored to your startup. Our platform 
                 helps you craft a compelling investment memorandum that resonates with investors.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto my-8 text-sm">

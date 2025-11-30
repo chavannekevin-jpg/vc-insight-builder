@@ -21,47 +21,41 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    // Calculate key metrics
     const acv = parseFloat(diagnosticData.acv);
-    const expectedCustomers = parseFloat(diagnosticData.expectedCustomers);
-    const targetRevenue = parseFloat(diagnosticData.targetRevenue || "75000000");
-    const salesCycle = parseFloat(diagnosticData.salesCycle);
-    const churnRate = parseFloat(diagnosticData.churnRate);
-    const nrr = parseFloat(diagnosticData.expansionRevenue || "100");
-    const currentMRR = parseFloat(diagnosticData.currentMRR || "0");
+    const currentRevenue = parseFloat(diagnosticData.currentRevenue || "0");
     const currentCustomers = parseFloat(diagnosticData.currentCustomers || "0");
+    const targetRevenue = 100000000; // $100M ARR target
 
-    const projectedARR = acv * expectedCustomers;
-    const yearsToTarget = Math.ceil(expectedCustomers / (365 / salesCycle));
-    const requiredACV = targetRevenue / expectedCustomers;
+    const customersNeeded = Math.ceil(targetRevenue / acv);
     
-    const systemPrompt = `You are a brutally honest, slightly cynical venture capital partner with 15+ years of experience. Your job is to analyze startup business models and determine if they can realistically achieve venture-scale outcomes (50-100M ARR+). 
+    const systemPrompt = `You are a brutally honest, slightly cynical venture capital partner with 15+ years of experience. Your job is to analyze whether a startup can realistically achieve venture-scale outcomes ($100M ARR).
 
-You are sassy, provocative, intellectually rigorous, and provide tough love without being rude. You expose illusions and challenge assumptions. Your tone should feel like a VC partner reading the company's assumptions out loud in a partner meeting, questioning everything.
-
-Based on the provided metrics, you must deliver a venture scale diagnostic with the following structure:
+Based on the ACV, market description, and calculated customer requirements, you must deliver a reality check with the following structure:
 
 1. **Venture Reality Rating**: Classify as one of:
-   - "VC-Fit": Can realistically hit 50-100M+ ARR with this model
+   - "VC-Fit": Can realistically hit $100M+ ARR with this model
    - "Venture-Adjacent": Has potential but needs structural changes
    - "Lifestyle Business in Denial": Will never satisfy VC economics
 
 2. **Rating Explanation**: 2-3 sentences explaining the classification
 
-3. **Revenue Machine Narrative**: A flowing paragraph describing how the revenue machine actually works, highlighting where pricing, volume, retention, expansion, and sales velocity hold up or break down
+3. **The Math**: Explain how many customers are needed at this ACV to hit $100M ARR, and whether that's realistically achievable given the market size and sales motion
 
-4. **Fantasy vs Physics**: Compare stated goals with realistic constraints, exposing contradictions
+4. **Reality Check Narrative**: A flowing paragraph about whether they can actually acquire and retain that many customers in a reasonable timeframe (5-7 years), considering market dynamics, competition, and typical sales cycles
 
-5. **What VCs Will Actually Say**: 3-5 sharp, sassy investor comments they'd make when the founder leaves the room
+5. **Fantasy vs Physics**: Compare their market description with what it would actually take to get to $100M
 
-6. **Structural Fragility**: 
-   - List top 3 assumptions holding the model together
-   - Identify which assumption would collapse first and why
-   - Explain consequences
+6. **What VCs Will Actually Say**: 3-5 sharp, sassy investor comments they'd make when the founder leaves the room
 
-7. **Improvements**: 3-5 concrete structural changes to improve VC-scale potential (pricing, ICP, GTM, positioning, business model)
+7. **Structural Analysis**:
+   - Can this market support the required customer volume?
+   - Is the ACV appropriate for the customer segment?
+   - What's the realistic timeline to reach $100M?
+   - What would need to be true for this to work?
 
-8. **Verdict**: Final 2-3 sentence verdict in the tone of a fund partner deciding whether to lean in or walk away
+8. **Improvements**: 3-5 concrete structural changes to improve VC-scale potential (pricing, ICP, market positioning, GTM)
+
+9. **Verdict**: Final 2-3 sentence verdict in the tone of a fund partner deciding whether to lean in or walk away
 
 Return ONLY valid JSON with this exact structure:
 {
@@ -83,25 +77,18 @@ Return ONLY valid JSON with this exact structure:
 
 **Business Model:**
 - ACV: $${acv.toLocaleString()}
-- Expected Customers at Target: ${expectedCustomers.toLocaleString()}
-- Target ARR: $${targetRevenue.toLocaleString()}
-- Projected ARR with Current Model: $${projectedARR.toLocaleString()}
-- Sales Cycle: ${salesCycle} days
-- Annual Churn Rate: ${churnRate}%
-- Net Revenue Retention: ${nrr}%
-${currentMRR > 0 ? `- Current MRR: $${currentMRR.toLocaleString()}` : ""}
+- Target: $100M ARR
+- Customers needed at this ACV: ${customersNeeded.toLocaleString()}
+${currentRevenue > 0 ? `- Current Annual Revenue: $${currentRevenue.toLocaleString()}` : ""}
 ${currentCustomers > 0 ? `- Current Customers: ${currentCustomers}` : ""}
 
-**Customer & GTM:**
-- Customer Type (ICP): ${diagnosticData.customerType}
-- Go-to-Market Strategy: ${diagnosticData.gtmStrategy}
+**Market Description:**
+${diagnosticData.marketDescription}
 
-**Key Calculations:**
-- Years to reach target (at current velocity): ~${yearsToTarget} years
-- Required ACV to hit target with this customer count: $${requiredACV.toLocaleString()}
-- Gap to target: $${(targetRevenue - projectedARR).toLocaleString()}
+**Key Question:**
+Can they realistically acquire ${customersNeeded.toLocaleString()} customers at $${acv.toLocaleString()} ACV in this market within 5-7 years?
 
-Run the full diagnostic. Be specific with numbers. Call out assumptions that don't hold up. Make it uncomfortable but intellectually honest.`;
+Run the full diagnostic. Be specific with numbers and market realities. Call out if the ACV is too low, if the market is too small, if the sales motion doesn't support the volume needed. Make it uncomfortable but intellectually honest.`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -151,11 +138,17 @@ Run the full diagnostic. Be specific with numbers. Call out assumptions that don
 
       // Map diagnostic data to questionnaire fields
       const responsesToUpsert = [
-        { company_id: companyId, question_key: "business_model_type", answer: `ACV: $${acv}, Target: ${expectedCustomers} customers at $${targetRevenue} ARR` },
-        { company_id: companyId, question_key: "business_model_gtm", answer: diagnosticData.gtmStrategy },
-        { company_id: companyId, question_key: "market_icp", answer: diagnosticData.customerType },
-        { company_id: companyId, question_key: "traction_revenue_progression", answer: `Current: ${currentCustomers} customers, $${currentMRR} MRR. Churn: ${churnRate}%, NRR: ${nrr}%` },
+        { company_id: companyId, question_key: "business_model_type", answer: `ACV: $${acv}, Target: $100M ARR requires ${customersNeeded} customers` },
+        { company_id: companyId, question_key: "market_icp", answer: diagnosticData.marketDescription },
       ];
+
+      if (currentRevenue > 0 || currentCustomers > 0) {
+        responsesToUpsert.push({
+          company_id: companyId,
+          question_key: "traction_revenue_progression",
+          answer: `Current: ${currentCustomers} customers, $${currentRevenue} ARR`
+        });
+      }
 
       for (const response of responsesToUpsert) {
         await supabase

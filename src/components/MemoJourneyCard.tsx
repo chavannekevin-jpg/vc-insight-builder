@@ -39,7 +39,8 @@ export const MemoJourneyCard = ({
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h2 className="text-3xl font-display font-bold mb-2">Your Investment Memo Journey</h2>
-                <p className="text-muted-foreground">Build your profile to unlock AI-powered insights</p>
+                <p className="text-muted-foreground mb-2">The strategic document that becomes the backbone of your company</p>
+                <p className="text-sm text-muted-foreground/80">Answer key questions about your business, and we'll generate a comprehensive Investment Memorandum—the same type of document VCs write internally when evaluating startups.</p>
               </div>
               <Target className="w-12 h-12 text-primary/30" />
             </div>
@@ -120,7 +121,7 @@ export const MemoJourneyCard = ({
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-primary" />
-                  Executive summary with AI-powered insights
+                  Executive summary with strategic insights
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-primary" />
