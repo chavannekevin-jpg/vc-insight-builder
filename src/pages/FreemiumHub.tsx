@@ -7,7 +7,7 @@ import { CompanyProfileCard } from "@/components/CompanyProfileCard";
 import { MemoJourneyCard } from "@/components/MemoJourneyCard";
 import { ToolsRow } from "@/components/ToolsRow";
 import { CollapsedLibrary } from "@/components/CollapsedLibrary";
-import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, User } from "lucide-react";
+import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, User, Shield } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Company {
@@ -41,6 +41,7 @@ export default function FreemiumHub() {
   const [loading, setLoading] = useState(true);
   const [generatingTagline, setGeneratingTagline] = useState(false);
   const [tagline, setTagline] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -53,6 +54,18 @@ export default function FreemiumHub() {
       if (!session && !adminView) {
         navigate("/auth");
         return;
+      }
+
+      // Check if user is admin
+      if (session?.user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        
+        setIsAdmin(!!roleData);
       }
 
       // Load questions count
@@ -317,6 +330,17 @@ export default function FreemiumHub() {
               <Calculator className="w-4 h-4" />
               Tools
             </Button>
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/admin")}
+                className="gap-2 hover:text-primary transition-colors"
+              >
+                <Shield className="w-4 h-4" />
+                Admin
+              </Button>
+            )}
           </div>
         </div>
       </header>
