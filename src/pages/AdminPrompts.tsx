@@ -37,7 +37,6 @@ const SECTIONS = [
   "Market",
   "Competition",
   "Team",
-  "USP",
   "Business Model",
   "Traction",
 ];

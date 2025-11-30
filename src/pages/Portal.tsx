@@ -20,6 +20,7 @@ import {
 import { FounderScoreDisplay } from "@/components/FounderScoreDisplay";
 import { LevelCard } from "@/components/LevelCard";
 import { resolveIcon } from "@/lib/iconResolver";
+import { AIInsightCard } from "@/components/AIInsightCard";
 
 // Dynamic interfaces for database-driven questions
 interface Section {
@@ -61,6 +62,7 @@ export default function Portal() {
   const [showNeonFlash, setShowNeonFlash] = useState(false);
   const [memoSubmitted, setMemoSubmitted] = useState(false);
   const [isAdminViewing, setIsAdminViewing] = useState(false);
+  const [showAIInsight, setShowAIInsight] = useState<string | null>(null);
   
   // Dynamic data from database
   const [sections, setSections] = useState<Section[]>([]);
@@ -304,6 +306,13 @@ export default function Portal() {
     
     const updatedResponses = { ...responses, [questionKey]: answer };
     setResponses(updatedResponses);
+
+    // Show AI insights for specific questions
+    if (questionKey === 'target_customer' && answer.trim().length > 100) {
+      setShowAIInsight('target_customer');
+    } else if (questionKey === 'competitive_advantage' && answer.trim().length > 100) {
+      setShowAIInsight('competitive_advantage');
+    }
 
     // Clear previous timeout
     if (feedbackTimeoutId) {
@@ -589,6 +598,29 @@ export default function Portal() {
                         )}
                       </p>
                     </div>
+                  )}
+
+                  {/* AI Insights */}
+                  {showAIInsight === 'target_customer' && currentQuestion.question_key === 'target_customer' && (
+                    <AIInsightCard 
+                      title="🤖 AI Market Analysis"
+                      insights={[
+                        "We'll automatically estimate your TAM based on this customer profile",
+                        "Our AI will identify key market timing drivers (\"Why Now?\")",
+                        "You'll see detailed buyer persona analysis in your memo"
+                      ]}
+                    />
+                  )}
+                  
+                  {showAIInsight === 'competitive_advantage' && currentQuestion.question_key === 'competitive_advantage' && (
+                    <AIInsightCard 
+                      title="🤖 AI Competitive Analysis"
+                      insights={[
+                        "We'll analyze your defensibility and identify specific moats",
+                        "Our AI will assess barriers to entry and sustainability",
+                        "You'll get a comprehensive competitive positioning analysis"
+                      ]}
+                    />
                   )}
                 </div>
 
