@@ -152,10 +152,16 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    // Only return existing memo if not forced and has sufficient content (at least 6 sections including Investment Thesis)
+    // Only return existing memo if not forced and has ALL 8 sections including Investment Thesis
     if (!force && existingMemo && existingMemo.structured_content) {
       const content = existingMemo.structured_content as any;
-      const hasContent = content.sections && Array.isArray(content.sections) && content.sections.length >= 6;
+      const hasInvestmentThesis = content.sections?.some(
+        (s: any) => s.title === "Investment Thesis"
+      );
+      const hasContent = content.sections && 
+                         Array.isArray(content.sections) && 
+                         content.sections.length >= 8 &&
+                         hasInvestmentThesis;
       
       if (hasContent) {
         console.log(`Returning existing memo from cache (${content.sections.length} sections)`);
@@ -176,7 +182,7 @@ serve(async (req) => {
           }
         );
       } else {
-        console.log(`Existing memo found but incomplete (${content.sections?.length || 0} sections), regenerating...`);
+        console.log(`Existing memo found but incomplete (${content.sections?.length || 0} sections, has Investment Thesis: ${hasInvestmentThesis}), regenerating...`);
       }
     } else if (force) {
       console.log("Force regeneration requested, skipping cache");
