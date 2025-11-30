@@ -6,6 +6,21 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper function to sanitize problematic unicode escapes in JSON strings
+function sanitizeJsonString(str: string): string {
+  return str
+    // Remove incomplete unicode escapes (e.g., \u26a without 4 hex digits)
+    .replace(/\\u[0-9a-fA-F]{0,3}(?![0-9a-fA-F])/g, '')
+    // Convert valid unicode escapes to actual characters
+    .replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => {
+      try {
+        return String.fromCharCode(parseInt(hex, 16));
+      } catch {
+        return '';
+      }
+    });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -334,16 +349,38 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
             console.log(`✓ Successfully generated section: ${sectionName} (legacy format)`);
           }
         } catch (parseError) {
-          console.error(`Failed to parse JSON for ${sectionName}:`, parseError);
-          console.error(`Raw response from AI:`, enhancedText.substring(0, 200));
-          // Fallback to basic structure if parsing fails
-          enhancedSections[sectionName] = {
-            narrative: {
-              paragraphs: [{ text: enhancedText, emphasis: "normal" }],
-              keyPoints: []
+          console.error(`First parse failed for ${sectionName}:`, parseError);
+          console.error(`Raw response from AI (first 300 chars):`, enhancedText.substring(0, 300));
+          
+          // Retry with sanitized string
+          try {
+            const sanitized = sanitizeJsonString(enhancedText);
+            console.log(`Retrying ${sectionName} with sanitized JSON...`);
+            const structuredContent = JSON.parse(sanitized);
+            
+            if (structuredContent.narrative || structuredContent.vcReflection) {
+              enhancedSections[sectionName] = structuredContent;
+              console.log(`✓ Successfully generated section after sanitization: ${sectionName}`);
+            } else {
+              enhancedSections[sectionName] = {
+                narrative: structuredContent
+              };
+              console.log(`✓ Generated section after sanitization (legacy format): ${sectionName}`);
             }
-          };
-          console.log(`✓ Generated section with fallback: ${sectionName}`);
+          } catch (retryError) {
+            console.error(`All parsing attempts failed for ${sectionName}:`, retryError);
+            // Final fallback with regeneration message
+            enhancedSections[sectionName] = {
+              narrative: {
+                paragraphs: [{ 
+                  text: "Section content could not be fully parsed. Please regenerate the memo to restore this section.", 
+                  emphasis: "normal" 
+                }],
+                keyPoints: ["Regeneration recommended for complete analysis"]
+              }
+            };
+            console.log(`✓ Generated section with final fallback: ${sectionName}`);
+          }
         }
       } else {
         console.error(`No content returned for section: ${sectionName}`);
@@ -457,14 +494,38 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
               console.log("✓ Generated Investment Thesis (legacy format)");
             }
           } catch (parseError) {
-            console.error("Failed to parse Investment Thesis JSON:", parseError);
-            enhancedSections["Investment Thesis"] = {
-              narrative: {
-                paragraphs: [{ text: thesisContent, emphasis: "high" }],
-                keyPoints: []
+            console.error("First parse failed for Investment Thesis:", parseError);
+            console.error("Raw Investment Thesis response (first 300 chars):", thesisContent.substring(0, 300));
+            
+            // Retry with sanitized string
+            try {
+              const sanitized = sanitizeJsonString(thesisContent);
+              console.log("Retrying Investment Thesis with sanitized JSON...");
+              const structuredThesis = JSON.parse(sanitized);
+              
+              if (structuredThesis.narrative || structuredThesis.vcReflection) {
+                enhancedSections["Investment Thesis"] = structuredThesis;
+                console.log("✓ Successfully generated Investment Thesis after sanitization");
+              } else {
+                enhancedSections["Investment Thesis"] = {
+                  narrative: structuredThesis
+                };
+                console.log("✓ Generated Investment Thesis after sanitization (legacy format)");
               }
-            };
-            console.log("✓ Generated Investment Thesis with fallback");
+            } catch (retryError) {
+              console.error("All parsing attempts failed for Investment Thesis:", retryError);
+              // Final fallback with regeneration message
+              enhancedSections["Investment Thesis"] = {
+                narrative: {
+                  paragraphs: [{ 
+                    text: "Investment Thesis content could not be fully parsed. Please regenerate the memo to restore this section.", 
+                    emphasis: "high" 
+                  }],
+                  keyPoints: ["Regeneration recommended for complete analysis"]
+                }
+              };
+              console.log("✓ Generated Investment Thesis with final fallback");
+            }
           }
         } else {
           console.warn("No content returned for Investment Thesis section");
