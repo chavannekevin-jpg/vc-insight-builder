@@ -39,6 +39,7 @@ export default function AdminWaitlist() {
   const [loading, setLoading] = useState(true);
   const [waitlistActive, setWaitlistActive] = useState(true);
   const [signups, setSignups] = useState<WaitlistSignup[]>([]);
+  const [updatingSignupId, setUpdatingSignupId] = useState<string | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     paid: 0,
@@ -149,31 +150,56 @@ export default function AdminWaitlist() {
   };
 
   const togglePremiumAccess = async (signupId: string, currentStatus: boolean) => {
+    setUpdatingSignupId(signupId);
+    
     try {
+      const newStatus = !currentStatus;
+      
       const { error } = await supabase
         .from("waitlist_signups")
         .update({ 
-          has_paid: !currentStatus,
-          paid_at: !currentStatus ? new Date().toISOString() : null 
+          has_paid: newStatus,
+          paid_at: newStatus ? new Date().toISOString() : null 
         })
         .eq("id", signupId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Update error:", error);
+        throw error;
+      }
 
-      // Refresh signups
-      await fetchSignups();
+      // Update local state immediately for better UX
+      setSignups(prevSignups => 
+        prevSignups.map(signup => 
+          signup.id === signupId 
+            ? { ...signup, has_paid: newStatus, paid_at: newStatus ? new Date().toISOString() : null }
+            : signup
+        )
+      );
+
+      // Recalculate stats
+      const updatedSignups = signups.map(signup => 
+        signup.id === signupId 
+          ? { ...signup, has_paid: newStatus }
+          : signup
+      );
+      const paid = updatedSignups.filter(s => s.has_paid).length;
+      const revenue = updatedSignups.reduce((sum, s) => sum + (s.has_paid ? s.discount_amount : 0), 0);
+      setStats(prev => ({ ...prev, paid, revenue }));
       
       toast({
         title: "Success",
-        description: `Premium access ${!currentStatus ? "granted" : "revoked"}`,
+        description: `Premium access ${newStatus ? "granted" : "revoked"}`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error toggling premium access:", error);
       toast({
         title: "Error",
-        description: "Failed to update premium access",
+        description: error.message || "Failed to update premium access",
         variant: "destructive",
       });
+    } finally {
+      setUpdatingSignupId(null);
     }
   };
 
@@ -322,6 +348,7 @@ export default function AdminWaitlist() {
                         <Switch
                           checked={signup.has_paid}
                           onCheckedChange={() => togglePremiumAccess(signup.id, signup.has_paid)}
+                          disabled={updatingSignupId === signup.id}
                         />
                       </TableCell>
                       <TableCell>
