@@ -3,10 +3,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { CompanyBadge } from "@/components/CompanyBadge";
+import { CompanyProfileCard } from "@/components/CompanyProfileCard";
 import { MemoJourneyCard } from "@/components/MemoJourneyCard";
 import { ToolsRow } from "@/components/ToolsRow";
 import { CollapsedLibrary } from "@/components/CollapsedLibrary";
-import { LogOut, Sparkles } from "lucide-react";
+import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, User } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Company {
@@ -245,41 +246,115 @@ export default function FreemiumHub() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <h1 className="text-xl font-display font-bold">VCReady</h1>
-            <CompanyBadge
-              name={company.name}
-              sector={company.category || undefined}
-              tagline={generatingTagline ? "Generating tagline..." : tagline}
-              isLoading={generatingTagline}
-            />
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-6">
+          {/* Top Bar */}
+          <div className="h-16 flex items-center justify-between border-b border-border/20">
+            <div className="flex items-center gap-6">
+              <button 
+                onClick={() => navigate("/")}
+                className="text-xl font-display font-bold hover:text-primary transition-colors"
+              >
+                VCReady
+              </button>
+              <CompanyBadge
+                name={company.name}
+                sector={company.category || undefined}
+                tagline={generatingTagline ? "Generating tagline..." : tagline}
+                isLoading={generatingTagline}
+              />
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+
+          {/* Navigation Menu */}
+          <div className="h-12 flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/hub")}
+              className="gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              Dashboard
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/portal")}
+              className="gap-2"
+            >
+              <Edit className="w-4 h-4" />
+              My Profile
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/sample-memo")}
+              className="gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              Sample Memo
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/vcbrain")}
+              className="gap-2"
+            >
+              <BookOpen className="w-4 h-4" />
+              Knowledge Library
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/raise-calculator")}
+              className="gap-2"
+            >
+              <Calculator className="w-4 h-4" />
+              Tools
+            </Button>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-12">
-        <div className="max-w-5xl mx-auto space-y-12">
-          {/* Hero: Memo Journey Card */}
-          <MemoJourneyCard
-            completedQuestions={completedQuestions}
-            totalQuestions={totalQuestions}
-            memoGenerated={!!memoGenerated}
-            hasPaid={hasPaid}
-            nextSection={getNextSection()}
-          />
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column: Profile & Quick Actions */}
+            <div className="space-y-6">
+              <CompanyProfileCard
+                name={company.name}
+                stage={company.stage}
+                sector={company.category || undefined}
+                completedQuestions={completedQuestions}
+                totalQuestions={totalQuestions}
+              />
+            </div>
 
-          {/* Tools Section */}
-          <ToolsRow />
+            {/* Center Column: Main Journey Card */}
+            <div className="lg:col-span-2 space-y-8">
+              <MemoJourneyCard
+                completedQuestions={completedQuestions}
+                totalQuestions={totalQuestions}
+                memoGenerated={!!memoGenerated}
+                hasPaid={hasPaid}
+                nextSection={getNextSection()}
+              />
 
-          {/* Knowledge Library */}
-          <CollapsedLibrary stage={company.stage} />
+              {/* Tools Section */}
+              <ToolsRow />
+            </div>
+          </div>
+
+          {/* Knowledge Library - Full Width */}
+          <div className="mt-12">
+            <CollapsedLibrary stage={company.stage} />
+          </div>
         </div>
       </main>
     </div>
