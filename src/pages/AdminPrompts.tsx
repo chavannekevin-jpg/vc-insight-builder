@@ -39,6 +39,7 @@ const SECTIONS = [
   "Team",
   "Business Model",
   "Traction",
+  "Investment Thesis",
 ];
 
 const AdminPrompts = () => {

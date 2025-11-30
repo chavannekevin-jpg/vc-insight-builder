@@ -64,7 +64,7 @@ serve(async (req) => {
       });
     }
 
-    // Define section order (USP section removed, merged into Competition)
+    // Define section order (USP section removed, merged into Competition; Investment Thesis added at end)
     const sectionOrder = [
       "Problem",
       "Solution",
@@ -72,7 +72,8 @@ serve(async (req) => {
       "Competition",
       "Team",
       "Business Model",
-      "Traction"
+      "Traction",
+      "Investment Thesis"
     ];
 
     // Create proper section name mapping
@@ -151,10 +152,10 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    // Only return existing memo if not forced and has sufficient content (at least 5 sections)
+    // Only return existing memo if not forced and has sufficient content (at least 6 sections including Investment Thesis)
     if (!force && existingMemo && existingMemo.structured_content) {
       const content = existingMemo.structured_content as any;
-      const hasContent = content.sections && Array.isArray(content.sections) && content.sections.length >= 5;
+      const hasContent = content.sections && Array.isArray(content.sections) && content.sections.length >= 6;
       
       if (hasContent) {
         console.log(`Returning existing memo from cache (${content.sections.length} sections)`);
@@ -343,10 +344,136 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
       }
     }
 
-    // Validate memo completeness (expect 7 sections now: Problem, Solution, Market, Competition, Team, Business Model, Traction)
+    // ============================================
+    // Generate Investment Thesis section (synthesizes ALL sections)
+    // ============================================
+    console.log("Generating Investment Thesis section (final synthesis)...");
+    
+    const allResponsesText = responses?.map(r => `${r.question_key}: ${r.answer || "N/A"}`).join("\n\n") || "";
+    const allSectionsContext = Object.entries(enhancedSections)
+      .map(([title, content]) => `\n### ${title} Section Summary ###\n${JSON.stringify(content)}`)
+      .join("\n");
+
+    const investmentThesisPrompt = customPrompts["Investment Thesis"];
+    
+    if (investmentThesisPrompt) {
+      let thesisMarketContextStr = "";
+      if (marketContext) {
+        thesisMarketContextStr = `\n\n--- AI-DEDUCED MARKET INTELLIGENCE ---
+Market Vertical: ${marketContext.marketVertical || "N/A"}
+Market Sub-Segment: ${marketContext.marketSubSegment || "N/A"}
+Estimated TAM: ${marketContext.estimatedTAM || "N/A"}
+Buyer Persona: ${marketContext.buyerPersona || "N/A"}
+Competitor Weaknesses: ${marketContext.competitorWeaknesses || "N/A"}
+Industry Benchmarks:
+  - Typical CAC: ${marketContext.industryBenchmarks?.typicalCAC || "N/A"}
+  - Typical LTV: ${marketContext.industryBenchmarks?.typicalLTV || "N/A"}
+  - Growth Rate: ${marketContext.industryBenchmarks?.typicalGrowthRate || "N/A"}
+  - Margins: ${marketContext.industryBenchmarks?.typicalMargins || "N/A"}
+Market Drivers: ${marketContext.marketDrivers || "N/A"}
+Confidence Level: ${marketContext.confidence || "N/A"}
+--- END MARKET INTELLIGENCE ---`;
+      }
+
+      const thesisPromptText = `${investmentThesisPrompt}
+
+---
+
+**Context:** ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${thesisMarketContextStr}
+
+**Company Description:** ${company.description || "N/A"}
+
+**All Questionnaire Responses:**
+${allResponsesText}
+
+**Previously Generated Memo Sections:**
+${allSectionsContext}
+
+---
+
+IMPORTANT: Synthesize ALL the information above into a comprehensive Investment Thesis. This is the final assessment section that pulls together everything.
+
+Return ONLY valid JSON with this structure (no markdown, no code blocks):
+{
+  "narrative": {
+    "paragraphs": [{"text": "each paragraph covering the 6 structure elements", "emphasis": "high|medium|normal"}],
+    "highlights": [{"metric": "key metric", "label": "description"}],
+    "keyPoints": ["Core opportunity", "Execution proof", "Scalability driver", "Key risk"]
+  },
+  "vcReflection": {
+    "analysis": "your complete comparative benchmarking and assessment",
+    "questions": ["critical question 1", "question 2", "question 3", "question 4", "question 5"],
+    "benchmarking": "your complete benchmarking insights with real-world comparables",
+    "conclusion": "your strict, non-biased final investment decision with reasoning"
+  }
+}`;
+
+      const thesisResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            {
+              role: "system",
+              content: "You are a senior VC investment manager writing a critical investment thesis. Be analytical, balanced, and strict in your assessment. Always respond with valid JSON only.",
+            },
+            {
+              role: "user",
+              content: thesisPromptText,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 3000,
+        }),
+      });
+
+      if (thesisResponse.ok) {
+        const thesisData = await thesisResponse.json();
+        let thesisContent = thesisData.choices?.[0]?.message?.content?.trim();
+
+        if (thesisContent) {
+          thesisContent = thesisContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          
+          try {
+            const structuredThesis = JSON.parse(thesisContent);
+            
+            if (structuredThesis.narrative || structuredThesis.vcReflection) {
+              enhancedSections["Investment Thesis"] = structuredThesis;
+              console.log("✓ Successfully generated Investment Thesis section");
+            } else {
+              enhancedSections["Investment Thesis"] = {
+                narrative: structuredThesis
+              };
+              console.log("✓ Generated Investment Thesis (legacy format)");
+            }
+          } catch (parseError) {
+            console.error("Failed to parse Investment Thesis JSON:", parseError);
+            enhancedSections["Investment Thesis"] = {
+              narrative: {
+                paragraphs: [{ text: thesisContent, emphasis: "high" }],
+                keyPoints: []
+              }
+            };
+            console.log("✓ Generated Investment Thesis with fallback");
+          }
+        } else {
+          console.warn("No content returned for Investment Thesis section");
+        }
+      } else {
+        console.warn("Failed to generate Investment Thesis section, skipping");
+      }
+    } else {
+      console.warn("No Investment Thesis prompt found in database, skipping section");
+    }
+
+    // Validate memo completeness (expect 7-8 sections now: 7 main + Investment Thesis)
     const generatedSectionCount = Object.keys(enhancedSections).length;
     console.log(`\n=== MEMO GENERATION SUMMARY ===`);
-    console.log(`Generated sections: ${generatedSectionCount}/7`);
+    console.log(`Generated sections: ${generatedSectionCount}/8 expected`);
     console.log(`Section titles: ${Object.keys(enhancedSections).join(", ")}`);
     
     if (generatedSectionCount < 5) {
