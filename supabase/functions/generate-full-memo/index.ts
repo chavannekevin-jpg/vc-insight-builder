@@ -64,14 +64,13 @@ serve(async (req) => {
       });
     }
 
-    // Define section order
+    // Define section order (USP section removed, merged into Competition)
     const sectionOrder = [
       "Problem",
       "Solution",
       "Market",
       "Competition",
       "Team",
-      "USP",
       "Business Model",
       "Traction"
     ];
@@ -83,7 +82,6 @@ serve(async (req) => {
       "market": "Market",
       "competition": "Competition",
       "team": "Team",
-      "usp": "USP",
       "business": "Business Model",
       "traction": "Traction"
     };
@@ -153,10 +151,10 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    // Only return existing memo if not forced and has sufficient content
+    // Only return existing memo if not forced and has sufficient content (at least 5 sections)
     if (!force && existingMemo && existingMemo.structured_content) {
       const content = existingMemo.structured_content as any;
-      const hasContent = content.sections && Array.isArray(content.sections) && content.sections.length >= 6;
+      const hasContent = content.sections && Array.isArray(content.sections) && content.sections.length >= 5;
       
       if (hasContent) {
         console.log(`Returning existing memo from cache (${content.sections.length} sections)`);
@@ -345,14 +343,14 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
       }
     }
 
-    // Validate memo completeness
+    // Validate memo completeness (expect 7 sections now: Problem, Solution, Market, Competition, Team, Business Model, Traction)
     const generatedSectionCount = Object.keys(enhancedSections).length;
     console.log(`\n=== MEMO GENERATION SUMMARY ===`);
-    console.log(`Generated sections: ${generatedSectionCount}/${sectionOrder.length}`);
+    console.log(`Generated sections: ${generatedSectionCount}/7`);
     console.log(`Section titles: ${Object.keys(enhancedSections).join(", ")}`);
     
-    if (generatedSectionCount < 6) {
-      console.error(`WARNING: Only ${generatedSectionCount} sections generated, expected at least 6`);
+    if (generatedSectionCount < 5) {
+      console.error(`WARNING: Only ${generatedSectionCount} sections generated, expected at least 5`);
       throw new Error(`Incomplete memo generation: only ${generatedSectionCount} sections generated`);
     }
 
