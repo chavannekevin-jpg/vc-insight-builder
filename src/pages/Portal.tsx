@@ -17,7 +17,6 @@ import {
   LogOut,
   Home
 } from "lucide-react";
-import { SectionBadge } from "@/components/SectionBadge";
 import { FounderScoreDisplay } from "@/components/FounderScoreDisplay";
 import { LevelCard } from "@/components/LevelCard";
 import { resolveIcon } from "@/lib/iconResolver";
@@ -519,59 +518,17 @@ export default function Portal() {
         </div>
       </header>
 
-      {/* Main Content - Two Column Layout */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex gap-6 max-w-7xl mx-auto">
-          {/* Section Sidebar */}
-          <aside className="w-48 flex-shrink-0">
-            <div className="sticky top-24 space-y-6">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                Sections
-              </h3>
-              {questionsBySections.map(({ section, questions: sectionQuestions }) => {
-                const SectionIcon = resolveIcon(section.icon);
-                const sectionAnswered = sectionQuestions.filter(q => 
-                  responses[q.question_key]?.trim()
-                ).length;
-                const isComplete = sectionAnswered === sectionQuestions.length;
-                const isCurrent = currentQuestion.section_id === section.id;
-                
-                return (
-                  <div 
-                    key={section.id}
-                    className="flex flex-col items-center gap-2"
-                  >
-                    <button
-                      onClick={() => {
-                        const firstQuestionIndex = allQuestions.findIndex(q => q.section_id === section.id);
-                        if (firstQuestionIndex !== -1) {
-                          setCurrentStep(firstQuestionIndex);
-                          setMicroFeedback("");
-                        }
-                      }}
-                      className={`transition-all ${isCurrent ? 'scale-110' : 'hover:scale-105'}`}
-                    >
-                      <SectionBadge 
-                        icon={SectionIcon}
-                        title={section.display_title}
-                        isComplete={isComplete}
-                      />
-                    </button>
-                    <span className={`text-xs text-center transition-colors ${isCurrent ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
-                      {section.display_title}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {sectionAnswered}/{sectionQuestions.length}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </aside>
+      {/* Main Content - Centered Single Column */}
+      <main className="container mx-auto px-6 py-12">
+        <div className="max-w-3xl mx-auto">
+          {/* Section indicator */}
+          <div className="text-center mb-6">
+            <p className="text-sm text-muted-foreground">
+              {currentQuestion?.sectionTitle || "Getting Started"}
+            </p>
+          </div>
 
-          {/* Question Content */}
-          <div className="flex-1">
-            <div className={`transition-all duration-200 ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+          <div className={`transition-all duration-200 ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
               <LevelCard
                 levelNumber={currentStep + 1}
                 totalLevels={totalQuestions}
@@ -652,7 +609,6 @@ export default function Portal() {
                 </div>
               </LevelCard>
             </div>
-          </div>
         </div>
       </main>
     </div>
