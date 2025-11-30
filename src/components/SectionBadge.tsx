@@ -16,9 +16,9 @@ export const SectionBadge = ({ icon: Icon, title, isComplete, className }: Secti
     if (lower.includes("market")) return "from-blue-500 via-cyan-500 to-teal-500";
     if (lower.includes("competition")) return "from-purple-500 via-violet-500 to-fuchsia-500";
     if (lower.includes("team")) return "from-green-500 via-emerald-500 to-teal-500";
-    if (lower.includes("usp")) return "from-orange-500 via-red-500 to-pink-500";
     if (lower.includes("business")) return "from-emerald-500 via-green-500 to-lime-500";
     if (lower.includes("traction")) return "from-pink-500 via-rose-500 to-red-500";
+    if (lower.includes("investment") || lower.includes("thesis")) return "from-amber-500 via-yellow-500 to-orange-500";
     return "from-primary via-pink-500 to-purple-500";
   };
 

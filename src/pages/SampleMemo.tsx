@@ -166,8 +166,8 @@ const SampleMemo = () => {
                 <p className="text-sm font-bold neon-pink uppercase tracking-wide">✨ Sample Preview - Limited Content Unlocked</p>
                 <p className="text-sm text-foreground leading-relaxed">
                   This is a <strong className="neon-pink">partial sample</strong> with fictional data. Premium analysis elements are blurred to protect our proprietary methodology 
-                  (including market benchmarking, VC perspectives, and investor questions). Your full personalized memo includes <strong className="neon-pink">7+ comprehensive sections</strong> 
-                  with complete, unblurred insights: Problem, Solution, Market, Competition & Defensibility, Team, Business Model, and Traction.
+                  (including market benchmarking, VC perspectives, and investor questions). Your full personalized memo includes <strong className="neon-pink">8 comprehensive sections</strong> 
+                  with complete, unblurred insights: Problem, Solution, Market, Competition & Defensibility, Team, Business Model, Traction, and Investment Thesis.
                 </p>
                 <p className="text-xs text-muted-foreground italic pt-1">
                   🔒 Several sections and premium subsections are locked to showcase structure while protecting IP.
@@ -326,7 +326,7 @@ const SampleMemo = () => {
           </div>
 
             {/* Placeholder Locked Sections */}
-            {['Competitive Moats & Defensibility Analysis', 'Go-to-Market Strategy', 'Funding & Investment Thesis'].map((title, idx) => (
+            {['Go-to-Market Strategy', 'Investment Thesis (Final VC Assessment)'].map((title, idx) => (
               <MemoSection key={`locked-${idx}`} title={title} index={memoContent.sections.length + idx}>
                 <div className="absolute inset-0 z-10 bg-background/60 backdrop-blur-lg rounded-3xl flex items-center justify-center">
                   <div className="bg-card/95 border-2 border-primary/50 rounded-2xl p-6 shadow-glow-strong text-center max-w-md mx-auto hover-lift">
