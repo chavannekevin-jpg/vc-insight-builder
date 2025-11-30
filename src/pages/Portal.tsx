@@ -481,12 +481,12 @@ export default function Portal() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <Button
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/hub")}
                 variant="ghost"
                 size="sm"
               >
                 <Home className="w-4 h-4 mr-2" />
-                Home
+                Dashboard
               </Button>
               <h1 className="text-xl font-bold text-primary">{companyName || "My Startup"}</h1>
             </div>

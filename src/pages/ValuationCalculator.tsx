@@ -241,6 +241,14 @@ export default function ValuationCalculator() {
         <Header />
         
         <div className="max-w-7xl mx-auto px-6 py-12">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/hub")}
+            className="mb-6 gap-2"
+          >
+            ← Dashboard
+          </Button>
+          
           {/* Article Section */}
           <div className="max-w-4xl mx-auto mb-16">
             <div className="flex items-center gap-3 mb-6">

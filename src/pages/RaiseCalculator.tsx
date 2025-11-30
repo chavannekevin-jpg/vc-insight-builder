@@ -266,9 +266,13 @@ export default function RaiseCalculator() {
       
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex items-center gap-4 mb-8">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/hub")}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Dashboard
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => navigate("/raise-education")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Model
+            Model Guide
           </Button>
         </div>
 

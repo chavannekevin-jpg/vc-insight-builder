@@ -115,9 +115,9 @@ export const PlatformAccessSection = () => {
             </div>
 
             <h3 className="text-2xl font-bold mb-3">Investment Memo</h3>
-            <p className="text-muted-foreground mb-6">
-              AI-powered personalized memo written from a VC's perspective
-            </p>
+              <p className="text-muted-foreground mb-6">
+                Your personalized memo written from a VC's perspective
+              </p>
 
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-2">

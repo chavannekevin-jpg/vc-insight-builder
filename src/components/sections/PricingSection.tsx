@@ -31,11 +31,11 @@ export const PricingSection = () => {
       price: "€59.99",
       originalPrice: "€119.99",
       discount: "Early Access - 50% OFF",
-      features: [
-        "Everything in Free, plus:",
-        "AI-powered personalized memo",
-        "VC-quality analysis of your startup",
-        "Actionable feedback and insights",
+        features: [
+          "Everything in Free, plus:",
+          "Personalized investment memo",
+          "VC-quality analysis of your startup",
+          "Actionable feedback and insights",
         "Pitch strengthening recommendations",
         "Company profile shared to VC network (optional)"
       ],
