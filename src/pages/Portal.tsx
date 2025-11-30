@@ -436,7 +436,35 @@ export default function Portal() {
   };
 
   const handleGenerateMemo = async () => {
-    if (!companyId) return;
+    if (!companyId || !user) return;
+    
+    // Check waitlist status
+    const { data: waitlistSettings } = await supabase
+      .from('waitlist_settings')
+      .select('is_active')
+      .single();
+    
+    if (waitlistSettings?.is_active) {
+      // Check if user has paid
+      const { data: waitlistStatus } = await supabase
+        .from('waitlist_signups')
+        .select('has_paid')
+        .eq('user_id', user.id)
+        .eq('company_id', companyId)
+        .maybeSingle();
+      
+      if (!waitlistStatus || !waitlistStatus.has_paid) {
+        // Show paywall
+        toast({
+          title: "Premium Feature",
+          description: "Complete your payment to generate your investment memo",
+          variant: "default",
+        });
+        navigate(`/waitlist-checkout?companyId=${companyId}`);
+        return;
+      }
+    }
+    
     setMemoSubmitted(true);
     navigate(`/memo?companyId=${companyId}`);
   };

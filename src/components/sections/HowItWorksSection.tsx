@@ -23,7 +23,7 @@ export const HowItWorksSection = () => {
     {
       number: "04",
       title: "Stop Wasting Time",
-      description: "Fix your pitch before the meeting. Understand what VCs want before you ask for their money.",
+      description: "Fix your pitch before the meeting. Know what investors want before you ask for their money.",
       icon: Lightbulb
     }
   ];

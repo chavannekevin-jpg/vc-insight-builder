@@ -38,7 +38,7 @@ export const ProblemSolutionSection = () => {
             
             <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 backdrop-blur-sm">
               <p className="text-sm text-foreground/80 italic">
-                <strong>I won't waste time in meetings teaching you</strong>—and neither will other VCs. We'll just pass and move on.
+                <strong>Reality check:</strong> I won't waste meetings teaching you the basics—and neither will other VCs. We'll just pass.
               </p>
             </div>
           </div>
@@ -56,7 +56,7 @@ export const ProblemSolutionSection = () => {
             </div>
             
             <p className="text-base text-foreground/90 leading-relaxed font-semibold mb-6">
-              Stop guessing. Learn how we actually think.
+              Stop guessing. Get in the minds of the investors.
             </p>
             
             <ul className="space-y-4 mb-6">
