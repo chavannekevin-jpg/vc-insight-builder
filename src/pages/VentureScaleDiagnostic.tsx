@@ -52,6 +52,7 @@ export default function VentureScaleDiagnostic() {
   }, []);
 
   const loadCompanyData = async () => {
+    setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -61,15 +62,46 @@ export default function VentureScaleDiagnostic() {
 
       const { data: company } = await supabase
         .from("companies")
-        .select("id")
+        .select("id, name, description, category, biggest_challenge")
         .eq("founder_id", session.user.id)
         .single();
 
       if (company) {
         setCompanyId(company.id);
+
+        // Fetch memo responses for additional context
+        const { data: responses } = await supabase
+          .from("memo_responses")
+          .select("question_key, answer")
+          .eq("company_id", company.id);
+
+        // Extract market context using AI
+        const { data: contextData, error: contextError } = await supabase.functions.invoke(
+          "extract-market-context",
+          {
+            body: {
+              company: {
+                name: company.name,
+                description: company.description,
+                category: company.category,
+                challenge: company.biggest_challenge
+              },
+              responses: responses || []
+            }
+          }
+        );
+
+        if (!contextError && contextData?.marketContext) {
+          setFormData(prev => ({
+            ...prev,
+            marketDescription: contextData.marketContext
+          }));
+        }
       }
     } catch (error) {
       console.error("Error loading company:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -307,8 +339,11 @@ export default function VentureScaleDiagnostic() {
                     onChange={(e) => setFormData({ ...formData, marketDescription: e.target.value })}
                     className="min-h-[120px]"
                     required
+                    disabled={loading}
                   />
-                  <p className="text-xs text-muted-foreground">Who are your customers, how big is the addressable market, and how do you sell to them?</p>
+                  <p className="text-xs text-muted-foreground">
+                    {loading ? "Loading market insights from your profile..." : "Who are your customers, how big is the addressable market, and how do you sell to them? (Pre-filled from your profile - adjust as needed)"}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

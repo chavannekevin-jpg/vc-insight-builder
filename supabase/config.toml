@@ -21,4 +21,7 @@ verify_jwt = false
 [functions.venture-scale-diagnostic]
 verify_jwt = false
 
+[functions.extract-market-context]
+verify_jwt = false
+
 
