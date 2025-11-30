@@ -18,4 +18,7 @@ verify_jwt = false
 [functions.auto-generate-profile]
 verify_jwt = false
 
+[functions.venture-scale-diagnostic]
+verify_jwt = false
+
 

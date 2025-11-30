@@ -22,7 +22,7 @@ export const CompanyProfileCard = ({
   const percentage = Math.round((completedQuestions / totalQuestions) * 100);
 
   return (
-    <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+    <div className="bg-card border-2 border-primary/20 rounded-2xl p-6 space-y-4 shadow-glow hover:shadow-glow-strong transition-all duration-500">
       <div className="flex items-start justify-between">
         <div className="space-y-2">
           <div className="flex items-center gap-2">

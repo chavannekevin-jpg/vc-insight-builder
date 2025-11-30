@@ -34,6 +34,7 @@ import CompanyProfileEdit from "./pages/CompanyProfileEdit";
 import RaiseEducation from "./pages/RaiseEducation";
 import RaiseCalculator from "./pages/RaiseCalculator";
 import ValuationCalculator from "./pages/ValuationCalculator";
+import VentureScaleDiagnostic from "./pages/VentureScaleDiagnostic";
 import Admin from "./pages/Admin";
 import AdminArticles from "./pages/AdminArticles";
 import AdminCompanyDetail from "./pages/AdminCompanyDetail";
@@ -96,6 +97,7 @@ const App = () => (
           <Route path="/raise-education" element={<RaiseEducation />} />
           <Route path="/raise-calculator" element={<RaiseCalculator />} />
           <Route path="/valuation-calculator" element={<ValuationCalculator />} />
+          <Route path="/venture-scale-diagnostic" element={<VentureScaleDiagnostic />} />
           <Route path="/about" element={<About />} />
           <Route path="/product" element={<Product />} />
           <Route path="/pricing" element={<Pricing />} />
