@@ -18,6 +18,7 @@ interface Company {
   stage: string;
   category: string | null;
   description: string | null;
+  has_premium: boolean | null;
 }
 
 interface Memo {
@@ -231,7 +232,7 @@ export default function FreemiumHub() {
 
   const completedQuestions = responses.filter(r => r.answer && r.answer.trim()).length;
   const memoGenerated = memo && memo.status === "generated";
-  const hasPaid = false; // TODO: Check payment status from waitlist_signups
+  const hasPaid = company.has_premium ?? false;
 
   // Get next section to complete
   const getNextSection = () => {
