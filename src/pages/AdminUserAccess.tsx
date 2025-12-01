@@ -124,7 +124,10 @@ const AdminUserAccess = () => {
         .update({ has_premium: !currentStatus })
         .eq("id", companyId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Update error details:", error);
+        throw error;
+      }
 
       toast({
         title: "Access Updated",
