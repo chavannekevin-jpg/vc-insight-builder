@@ -35,8 +35,8 @@ export const ToolsRow = () => {
     {
       id: "investor-email-generator",
       icon: Mail,
-      title: "Investor Email Generator",
-      description: "Generate cold email templates from your memo",
+      title: "Outreach Lab",
+      description: "Craft cold email templates from your memo",
       available: true,
       path: "/investor-email-generator",
       badge: "Memo Required"
