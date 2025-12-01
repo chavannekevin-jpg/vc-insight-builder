@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
@@ -12,12 +12,10 @@ import { MemoVCReflection } from "@/components/memo/MemoVCReflection";
 import { MemoVCQuestions } from "@/components/memo/MemoVCQuestions";
 import { MemoBenchmarking } from "@/components/memo/MemoBenchmarking";
 import { MemoAIConclusion } from "@/components/memo/MemoAIConclusion";
-import { MemoPDFExport } from "@/components/memo/MemoPDFExport";
-import { Sparkles, ArrowLeft, RefreshCw, Download } from "lucide-react";
+import { Sparkles, ArrowLeft, RefreshCw, Printer } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent } from "@/types/memo";
 import { Button } from "@/components/ui/button";
-import { usePDF } from "react-to-pdf";
 
 export default function GeneratedMemo() {
   const navigate = useNavigate();
@@ -30,14 +28,10 @@ export default function GeneratedMemo() {
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
-  
-  const { toPDF, targetRef } = usePDF({
-    filename: `${companyInfo?.name || 'Company'}_Investment_Memo_${new Date().toISOString().split('T')[0]}.pdf`,
-    page: { 
-      margin: 20,
-      format: 'a4'
-    }
-  });
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   const { data: waitlistMode } = useWaitlistMode();
   const { data: userWaitlistStatus } = useUserWaitlistStatus(userId || undefined, companyId || undefined);
@@ -246,19 +240,20 @@ export default function GeneratedMemo() {
             <Button
               variant="ghost"
               onClick={() => navigate("/portal")}
+              className="no-print"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Portal
             </Button>
             
-            <div className="flex gap-3">
+            <div className="flex gap-3 no-print">
               <Button
                 variant="default"
-                onClick={() => toPDF()}
+                onClick={handlePrint}
                 className="min-w-[160px]"
               >
-                <Download className="w-4 h-4 mr-2" />
-                Export to PDF
+                <Printer className="w-4 h-4 mr-2" />
+                Print / Save as PDF
               </Button>
               
               <Button
@@ -345,15 +340,6 @@ export default function GeneratedMemo() {
             );
           })}
         </div>
-      </div>
-
-      {/* Hidden PDF Export Component */}
-      <div className="hidden">
-        <MemoPDFExport 
-          ref={targetRef}
-          memoContent={memoContent}
-          companyInfo={companyInfo}
-        />
       </div>
     </div>
   );
