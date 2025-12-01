@@ -341,16 +341,24 @@ All colors MUST be HSL.
     font-size: inherit !important;
   }
 
-  /* Print Styles for PDF Export */
+  /* Print Styles for PDF Export - Preserve Dark Theme */
   @media print {
+    /* Force color printing to preserve the dark theme */
+    * {
+      color-adjust: exact !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Preserve dark background */
     body {
-      background: white !important;
-      color: black !important;
+      background: hsl(0 0% 6%) !important;
     }
 
     /* Hide navigation and interactive elements */
     .no-print,
-    button:not(.no-print) {
+    button:not(.no-print),
+    header {
       display: none !important;
     }
 
@@ -360,42 +368,23 @@ All colors MUST be HSL.
       margin-bottom: 2rem;
     }
 
-    /* Force color printing */
-    * {
-      color-adjust: exact !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
     /* Optimize margins for print */
     .container {
       margin: 0 !important;
-      padding: 1cm !important;
+      padding: 1.5cm !important;
       max-width: 100% !important;
     }
 
-    /* Clean backgrounds for print */
-    .bg-card,
-    .bg-muted,
-    .bg-primary\/10,
-    .bg-accent\/10 {
-      background: white !important;
-      border: 1px solid #ddd !important;
-    }
-
-    /* Ensure readable text */
-    .text-muted-foreground {
-      color: #444 !important;
-    }
-
-    .text-foreground {
-      color: #000 !important;
-    }
-
-    /* Page title styling */
+    /* Page title styling - preserve original colors */
     h1, h2, h3 {
-      color: #000 !important;
       page-break-after: avoid;
+    }
+
+    /* Ensure gradients and colors print correctly */
+    .gradient-primary,
+    .gradient-secondary,
+    .gradient-accent {
+      background: var(--gradient-primary) !important;
     }
   }
 }
