@@ -82,7 +82,7 @@ export default function InvestorEmailGenerator() {
 
       if (data?.emails) {
         setEmails(data.emails);
-        toast.success("Email templates generated successfully!");
+        toast.success("Email templates crafted successfully!");
       }
     } catch (error: any) {
       console.error("Error generating emails:", error);
@@ -155,10 +155,10 @@ export default function InvestorEmailGenerator() {
 
         <div className="mb-8">
           <h1 className="text-4xl font-display font-bold mb-3">
-            Investor Email Generator
+            Outreach Lab
           </h1>
           <p className="text-lg text-muted-foreground">
-            Generate high-converting cold email templates for investor outreach using your memo
+            Craft high-converting cold email templates for investor outreach using your memo
           </p>
         </div>
 
@@ -166,10 +166,10 @@ export default function InvestorEmailGenerator() {
           <Card className="p-8 text-center">
             <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary" />
             <h2 className="text-2xl font-display font-bold mb-2">
-              Generate Email Templates
+              Build Your Email Arsenal
             </h2>
             <p className="text-muted-foreground mb-6">
-              We'll analyze your investment memo and create 5 personalized email templates
+              We'll analyze your investment memo and craft 5 personalized email templates
               optimized for investor outreach.
             </p>
             <Button
@@ -178,7 +178,7 @@ export default function InvestorEmailGenerator() {
               size="lg"
               className="bg-gradient-to-r from-neon-pink to-neon-purple hover:opacity-90"
             >
-              {generating ? "Generating..." : "Generate Email Templates"}
+              {generating ? "Crafting Templates..." : "Craft Email Templates"}
               <Sparkles className="w-4 h-4 ml-2" />
             </Button>
           </Card>
@@ -186,14 +186,14 @@ export default function InvestorEmailGenerator() {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
-                {emails.length} email templates generated
+                {emails.length} email templates ready
               </p>
               <Button
                 onClick={generateEmails}
                 disabled={generating}
                 variant="outline"
               >
-                Regenerate Templates
+                Rebuild Templates
               </Button>
             </div>
 
