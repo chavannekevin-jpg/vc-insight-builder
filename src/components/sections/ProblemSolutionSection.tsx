@@ -75,7 +75,7 @@ export const ProblemSolutionSection = () => {
             
             <div className="p-4 rounded-xl gradient-accent border-2 border-primary/40 shadow-glow backdrop-blur-sm">
               <p className="text-sm font-bold text-foreground">
-                → Think like a VC. Win like a founder.
+                → Think like an investor, win investors.
               </p>
             </div>
           </div>

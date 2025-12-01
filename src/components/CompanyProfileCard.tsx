@@ -46,7 +46,7 @@ export const CompanyProfileCard = ({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate("/portal")}
+          onClick={() => navigate("/company-profile")}
           className="gap-2"
         >
           <Edit className="w-4 h-4" />
@@ -73,7 +73,7 @@ export const CompanyProfileCard = ({
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => navigate("/portal")}
+        onClick={() => navigate("/company-profile")}
         className="w-full gap-2 text-primary hover:text-primary hover:bg-primary/10"
       >
         <TrendingUp className="w-4 h-4" />

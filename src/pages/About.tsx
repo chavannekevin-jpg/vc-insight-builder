@@ -126,8 +126,8 @@ const About = () => {
             </div>
           </ModernCard>
 
-          {/* LinkedIn CTA Cards */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* LinkedIn CTA Card */}
+          <div className="max-w-md mx-auto mb-8">
             <ModernCard className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 hover:shadow-glow transition-all duration-300">
               <div className="text-center space-y-4">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
@@ -142,33 +142,10 @@ const About = () => {
                 <Button 
                   className="w-full gradient-primary shadow-glow"
                   size="lg"
-                  onClick={() => window.open('https://www.linkedin.com/in/kevinchavanne/', '_blank')}
+                  onClick={() => window.open('https://www.linkedin.com/in/kevin-chavanne-1b8a368a/', '_blank')}
                 >
                   <Linkedin className="w-4 h-4 mr-2" />
                   Follow Me
-                </Button>
-              </div>
-            </ModernCard>
-
-            <ModernCard className="bg-gradient-to-br from-secondary/5 to-secondary/10 border-secondary/20 hover:shadow-glow transition-all duration-300">
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center mx-auto">
-                  <MessageSquare className="w-8 h-8 text-secondary" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-serif mb-2">Let's Talk</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Have questions? Want to discuss your fundraise? Reach out directly
-                  </p>
-                </div>
-                <Button 
-                  variant="outline"
-                  className="w-full border-secondary/30 hover:bg-secondary/10"
-                  size="lg"
-                  onClick={() => window.open('https://www.linkedin.com/in/kevinchavanne/', '_blank')}
-                >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Send Message
                 </Button>
               </div>
             </ModernCard>

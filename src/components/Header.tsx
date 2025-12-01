@@ -334,6 +334,7 @@ export const Header = () => {
               onMouseLeave={handleToolsMouseLeave}
             >
               <button
+                onClick={() => navigate("/tools")}
                 className="text-sm font-medium transition-all duration-300 flex items-center gap-1 text-muted-foreground hover:neon-pink"
               >
                 Tools
