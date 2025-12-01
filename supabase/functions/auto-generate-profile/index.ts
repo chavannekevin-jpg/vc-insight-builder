@@ -36,14 +36,13 @@ serve(async (req) => {
     const systemPrompt = `You are an expert startup analyst. Based on a brief company description, extract and infer information to pre-fill a startup questionnaire.
 
 Your task is to intelligently parse the description and provide structured answers for the following sections:
-1. Problem Validation
-2. Target Customer
-3. Market Size
-4. Solution Description
-5. Competitive Advantage
-6. Current Traction
-7. Revenue Model
-8. Founder Background
+1. Problem Description - What problem the startup solves
+2. Solution Description - How the product solves the problem
+3. Target Customer - Who the ideal customer is and market size
+4. Competitive Advantage - Competitors and what makes this startup different
+5. Founder Background - Why the team is right to build this
+6. Revenue Model - How they make money
+7. Current Traction - Progress made so far
 
 Guidelines:
 - Extract explicit information when mentioned
@@ -52,24 +51,24 @@ Guidelines:
 - Be specific with numbers, examples, and data points
 - Write from the founder's perspective (first person)
 - Keep answers concise but informative (2-4 sentences each)
+- For target_customer, include both the customer profile AND market size information
 
 Return ONLY valid JSON with this structure:
 {
-  "problem_validation": "string",
-  "target_customer": "string",
-  "market_size": "string",
+  "problem_description": "string",
   "solution_description": "string",
+  "target_customer": "string",
   "competitive_advantage": "string",
-  "current_traction": "string",
+  "founder_background": "string",
   "revenue_model": "string",
-  "founder_background": "string"
+  "current_traction": "string"
 }`;
 
     const userPrompt = `Company Name: ${companyName}
 Stage: ${stage}
 Description: ${description}
 
-Based on this information, extract and infer answers for all 8 questionnaire sections. Be specific and use concrete examples from the description.`;
+Based on this information, extract and infer answers for all 7 questionnaire sections. Be specific and use concrete examples from the description.`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
