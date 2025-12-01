@@ -69,7 +69,7 @@ export default function ToolsHub() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-serif mb-6">
-            Stop <span className="text-neon">Guessing</span>. Start Calculating.
+            Stop <span className="neon-pink">Guessing</span>. Start Calculating.
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             The tools VCs wish you'd use before wasting their time. <span className="text-primary font-semibold">Free, brutal, and better than your napkin math.</span>
