@@ -3,7 +3,7 @@ import { Footer } from "@/components/sections/Footer";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Calculator, TrendingUp, ArrowRight, Lock, Sparkles } from "lucide-react";
+import { Calculator, TrendingUp, ArrowRight, Lock, Sparkles, Zap, Mail } from "lucide-react";
 
 export default function ToolsHub() {
   const navigate = useNavigate();
@@ -11,7 +11,7 @@ export default function ToolsHub() {
   const tools = [
     {
       name: "Raise Calculator",
-      description: "Calculate exactly how much you need to raise based on your burn rate, milestones, and market risk factors.",
+      description: "Stop guessing. Calculate exactly how much cash you need before you run out of runway—because \"we'll figure it out\" isn't a strategy.",
       icon: Calculator,
       path: "/raise-calculator",
       available: true,
@@ -19,9 +19,25 @@ export default function ToolsHub() {
     },
     {
       name: "Valuation Calculator",
-      description: "Estimate your pre-money valuation using industry benchmarks and comparable company analysis.",
+      description: "Find out what your startup is actually worth. Not your inflated dreams, not your competitor's fake valuation. Real numbers.",
       icon: TrendingUp,
       path: "/valuation-calculator",
+      available: true,
+      color: "secondary"
+    },
+    {
+      name: "Venture Scale Diagnostic",
+      description: "Think you're VC-scale? This brutal reality check will tell you if you're building a unicorn or just another lifestyle business.",
+      icon: Zap,
+      path: "/venture-scale-diagnostic",
+      available: true,
+      color: "primary"
+    },
+    {
+      name: "Outreach Lab",
+      description: "Cold email templates that don't sound like a robot wrote them. Requires your memo—because context matters more than your inbox spam tactics.",
+      icon: Mail,
+      path: "/investor-email-generator",
       available: true,
       color: "secondary"
     }
@@ -53,16 +69,16 @@ export default function ToolsHub() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-serif mb-6">
-            Your Fundraising <span className="text-primary">Toolkit</span>
+            Stop <span className="text-primary">Guessing</span>. Start Calculating.
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Practical tools to plan your raise, understand your valuation, and prepare for investor conversations.
+            The tools VCs wish you'd use before wasting their time. Free, brutal, and better than your napkin math.
           </p>
         </div>
 
         {/* Available Tools */}
         <div className="mb-16">
-          <h2 className="text-2xl font-serif mb-6">Available Now</h2>
+          <h2 className="text-2xl font-serif mb-6">Your Reality Check Toolkit</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {tools.map((tool) => {
               const Icon = tool.icon;
@@ -129,10 +145,10 @@ export default function ToolsHub() {
               <Sparkles className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h2 className="text-3xl font-serif mb-4">Ready to Build Your Investment Memo?</h2>
+              <h2 className="text-3xl font-serif mb-4">Done Playing with Calculators?</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Tools are helpful, but investors want to see the complete picture. 
-                Generate your personalized investment memorandum and speak the language VCs understand.
+                These tools get you started. But VCs don't invest in spreadsheets—they invest in stories. 
+                Build the investment memo that makes them say "tell me more" instead of "next."
               </p>
             </div>
             <Button 
