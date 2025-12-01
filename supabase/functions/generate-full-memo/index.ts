@@ -248,15 +248,22 @@ NOTE: This market intelligence was AI-estimated based on the company's problem, 
       
       const prompt = customPrompt 
         ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": ["specific investor question 1", "question 2", "question 3", "question 4", "question 5"],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
-        : `You are a professional VC investment memo writer. Take the following startup information for the "${sectionName}" section and create a clear, concise, and compelling narrative in structured JSON format.
+        : `You are a skeptical VC investment analyst writing the "${sectionName}" section of an internal due diligence memo. Your job is to assess objectively, NOT to advocate.
+
+CRITICAL ANALYSIS REQUIREMENTS:
+- Lead with concerns and risks, not strengths
+- Explicitly flag what is MISSING or UNVERIFIED in the data
+- Challenge founder assumptions — what could be wrong?
+- Assess whether evidence is signal or noise
+- Highlight red flags, execution risks, and market risks
+- Do NOT default to optimism — be neutral or skeptical unless evidence is strong
+- If you would hesitate to invest, say so clearly
 
 Requirements:
-- Create 2-4 well-structured paragraphs with varying emphasis levels
-- Extract key metrics and statistics as highlights (if any exist in the data)
-- Identify 3-5 key takeaway points
-- Provide VC perspective with analysis, questions, and conclusion
-- Use professional, direct language that VCs expect
-- Focus on facts and concrete details
+- Create 2-4 factual paragraphs (emphasize weaknesses first)
+- Extract metrics as highlights (note if unverified)
+- Identify 3-5 key concerns and takeaways
+- Provide critical VC perspective that highlights gaps
 - Keep total content between 150-300 words
 
 Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}
@@ -283,14 +290,14 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
     ]
   },
   "vcReflection": {
-    "analysis": "Brief VC perspective on this section",
+    "analysis": "Critical VC assessment focusing on the 2-3 biggest concerns or weaknesses in this section. What assumptions lack evidence? What data is missing?",
     "questions": [
-      "Key question investors would ask?",
-      "Another important question?",
-      "Third critical question?"
+      "What is the single biggest risk or gap in this section?",
+      "What assumptions are being made that may not hold?",
+      "What critical data is missing that a VC would need?"
     ],
-    "benchmarking": "How this compares to market benchmarks or similar companies",
-    "conclusion": "Investment implication or synthesis"
+    "benchmarking": "How this compares to market benchmarks or similar companies (if favorable, state why; if concerning, be explicit)",
+    "conclusion": "Lead with primary concern/risk. Rate confidence (Low/Medium/High) based on evidence quality. Example: 'Revenue concentration (60% from 2 customers) is a critical risk that overshadows otherwise strong ARR growth. Confidence: Low until pipeline diversification demonstrated.'"
   }
 }`;
 
@@ -307,7 +314,7 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
           messages: [
             {
               role: "system",
-              content: "You are a professional VC investment memo writer. Return structured JSON data for component-based rendering. Always respond with valid JSON only, no markdown formatting.",
+              content: "You are a skeptical VC investment analyst writing an internal due diligence memo. Your job is NOT to advocate for the company, but to objectively assess it — highlighting weaknesses, risks, and gaps alongside any strengths. Be critical where warranted. If data is missing or claims are unsubstantiated, flag it explicitly. Return valid JSON only, no markdown formatting.",
             },
             {
               role: "user",
@@ -462,7 +469,7 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
           messages: [
             {
               role: "system",
-              content: "You are a senior VC investment manager writing a critical investment thesis. Be analytical, balanced, and strict in your assessment. Always respond with valid JSON only.",
+              content: "You are a senior VC partner writing a critical, unbiased investment thesis. This is NOT an advocacy document. Your job is to assess whether this is truly a VC-grade opportunity with clear eyes. Highlight weaknesses and risks prominently. Challenge assumptions. If data is weak or missing, explicitly state that you cannot recommend investment. Do not default to optimism. Always respond with valid JSON only.",
             },
             {
               role: "user",
