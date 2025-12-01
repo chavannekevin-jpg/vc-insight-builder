@@ -58,6 +58,42 @@ export type Database = {
           },
         ]
       }
+      discount_codes: {
+        Row: {
+          code: string
+          created_at: string
+          discount_percent: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          updated_at: string
+          uses: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_percent: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          updated_at?: string
+          uses?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_percent?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          updated_at?: string
+          uses?: number
+        }
+        Relationships: []
+      }
       educational_articles: {
         Row: {
           content: string
@@ -158,6 +194,48 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "questionnaire_sections"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      memo_purchases: {
+        Row: {
+          amount_paid: number
+          company_id: string
+          created_at: string
+          discount_code_used: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          amount_paid: number
+          company_id: string
+          created_at?: string
+          discount_code_used?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          company_id?: string
+          created_at?: string
+          discount_code_used?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memo_purchases_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memo_purchases_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "company_responses_view"
+            referencedColumns: ["company_id"]
           },
         ]
       }
