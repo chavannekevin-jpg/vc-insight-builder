@@ -114,26 +114,55 @@ export default function GeneratedMemo() {
     if (!companyId) return;
     
     setRegenerating(true);
+    
+    // Set a timeout to warn user if it's taking too long
+    const warningTimeout = setTimeout(() => {
+      toast({
+        title: "Still Processing",
+        description: "This may take 60-90 seconds as we generate all sections with critical analysis...",
+      });
+    }, 10000); // Warn after 10 seconds
+    
     try {
-      console.log("Regenerating memo with force=true...");
+      console.log("Regenerating memo with force=true and new critical prompts...");
+      const startTime = Date.now();
+      
       const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-full-memo', {
         body: { companyId, force: true }
       });
 
-      if (functionError) throw functionError;
+      clearTimeout(warningTimeout);
+      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log(`Memo regeneration completed in ${duration}s`);
+
+      if (functionError) {
+        console.error("Function error details:", functionError);
+        throw functionError;
+      }
+
+      if (!functionData || !functionData.structuredContent) {
+        throw new Error("No structured content returned from function");
+      }
 
       setMemoContent(functionData.structuredContent);
       setCompanyInfo(functionData.company);
       
       toast({
         title: "Success",
-        description: "Memo regenerated successfully"
+        description: `Memo regenerated with critical VC analysis in ${duration}s`
       });
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(warningTimeout);
       console.error("Error regenerating memo:", error);
+      console.error("Error details:", {
+        message: error?.message,
+        status: error?.status,
+        details: error?.details || error
+      });
+      
       toast({
         title: "Error",
-        description: "Failed to regenerate memo",
+        description: error?.message || "Failed to regenerate memo. Check console for details.",
         variant: "destructive"
       });
     } finally {
@@ -159,8 +188,9 @@ export default function GeneratedMemo() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
         <Sparkles className="w-12 h-12 text-primary animate-pulse" />
+        <p className="text-muted-foreground">Loading your investment memo...</p>
       </div>
     );
   }
@@ -196,9 +226,10 @@ export default function GeneratedMemo() {
               variant="outline"
               onClick={handleRegenerate}
               disabled={regenerating}
+              className="min-w-[200px]"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
-              {regenerating ? 'Regenerating...' : 'Regenerate Memo'}
+              {regenerating ? 'Regenerating (60-90s)...' : 'Regenerate Memo'}
             </Button>
           </div>
 
