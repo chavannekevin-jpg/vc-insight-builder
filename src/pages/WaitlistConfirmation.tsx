@@ -19,19 +19,27 @@ export default function WaitlistConfirmation() {
         return;
       }
 
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("email")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
-      const { data: signup } = await supabase
+      if (profileError) {
+        console.error("Error loading profile:", profileError);
+      }
+
+      const { data: signup, error: signupError } = await supabase
         .from("waitlist_signups")
         .select("signed_up_at")
         .eq("user_id", user.id)
         .order("signed_up_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
+
+      if (signupError) {
+        console.error("Error loading signup:", signupError);
+      }
 
       if (profile) setUserEmail(profile.email);
       if (signup) {
