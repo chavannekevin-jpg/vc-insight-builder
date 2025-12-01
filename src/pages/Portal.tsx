@@ -652,24 +652,49 @@ export default function Portal() {
                     ))}
                   </div>
 
-                  {currentStep < allQuestions.length - 1 ? (
-                    <Button 
-                      onClick={handleNext}
-                      className="bg-gradient-to-r from-neon-pink to-neon-purple hover:opacity-90 transition-opacity"
-                    >
-                      Next
-                      <ChevronRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  ) : (
-                    <Button 
-                      onClick={handleGenerateMemo}
-                      disabled={progressPercentage < 80 || isAdminViewing}
-                      className="bg-gradient-to-r from-neon-pink to-neon-purple hover:opacity-90 transition-opacity disabled:opacity-50"
-                    >
-                      Generate Memo
-                      <ChevronRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  )}
+                  <div className="flex gap-2">
+                    {currentStep < allQuestions.length - 1 && (
+                      <Button
+                        onClick={() => {
+                          setIsAnimating(true);
+                          setMicroFeedback("");
+                          setIsFetchingFeedback(false);
+                          setTimeout(() => {
+                            setCurrentStep(allQuestions.length - 1);
+                            setIsAnimating(false);
+                            const lastQ = allQuestions[allQuestions.length - 1];
+                            const existingAnswer = responses[lastQ.question_key];
+                            if (existingAnswer && existingAnswer.trim().length > 0) {
+                              fetchAIFeedback(lastQ.question_key, lastQ.question, existingAnswer);
+                            }
+                          }, 150);
+                        }}
+                        variant="ghost"
+                        className="text-muted-foreground hover:text-primary"
+                      >
+                        Skip to Generate
+                      </Button>
+                    )}
+                    
+                    {currentStep < allQuestions.length - 1 ? (
+                      <Button 
+                        onClick={handleNext}
+                        className="bg-gradient-to-r from-neon-pink to-neon-purple hover:opacity-90 transition-opacity"
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={handleGenerateMemo}
+                        disabled={progressPercentage < 80 || isAdminViewing}
+                        className="bg-gradient-to-r from-neon-pink to-neon-purple hover:opacity-90 transition-opacity disabled:opacity-50"
+                      >
+                        Generate Memo
+                        <ChevronRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </LevelCard>
             </div>
