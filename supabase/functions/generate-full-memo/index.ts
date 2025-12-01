@@ -26,11 +26,17 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const startTime = Date.now();
+  console.log("=== Starting generate-full-memo function ===");
+
   try {
     const { companyId, force = false } = await req.json();
+    console.log(`Request received: companyId=${companyId}, force=${force}`);
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY is not configured");
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
@@ -594,6 +600,9 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
       memoId = newMemo.id;
     }
 
+    const totalDuration = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`=== Memo generation completed successfully in ${totalDuration}s ===`);
+    
     return new Response(
       JSON.stringify({ 
         structuredContent: structuredContent,
@@ -603,16 +612,25 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
           category: company.category,
           description: company.description
         },
-        memoId: memoId
+        memoId: memoId,
+        generationTime: totalDuration
       }), 
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   } catch (error) {
-    console.error("Error in generate-full-memo function:", error);
+    const errorDuration = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.error(`=== Error in generate-full-memo function after ${errorDuration}s ===`);
+    console.error("Error details:", error);
+    console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
+    
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : "Unknown error",
+        details: error instanceof Error ? error.stack : String(error),
+        duration: errorDuration
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
