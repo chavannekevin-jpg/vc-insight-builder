@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
-import { WaitlistModal } from "@/components/WaitlistModal";
-import { useWaitlistMode, useUserWaitlistStatus } from "@/hooks/useWaitlistMode";
 import { MemoSection } from "@/components/memo/MemoSection";
 import { MemoParagraph } from "@/components/memo/MemoParagraph";
 import { MemoKeyPoints } from "@/components/memo/MemoKeyPoints";
@@ -25,16 +23,12 @@ export default function GeneratedMemo() {
   const [loading, setLoading] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
 
   const handlePrint = () => {
     window.print();
   };
-
-  const { data: waitlistMode } = useWaitlistMode();
-  const { data: userWaitlistStatus } = useUserWaitlistStatus(userId || undefined, companyId || undefined);
 
   useEffect(() => {
     const init = async () => {
@@ -53,13 +47,6 @@ export default function GeneratedMemo() {
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) setUserId(user.id);
-
-      // Check waitlist mode
-      if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
-        setShowWaitlistModal(true);
-        setLoading(false);
-        return;
-      }
 
       // Fetch the memo
       try {
@@ -127,7 +114,7 @@ export default function GeneratedMemo() {
       setLoading(false);
     };
     init();
-  }, [companyId, waitlistMode, userWaitlistStatus, navigate]);
+  }, [companyId, navigate]);
 
   const handleRegenerate = async () => {
     if (!companyId) return;
@@ -192,22 +179,6 @@ export default function GeneratedMemo() {
       setRegenerating(false);
     }
   };
-
-  if (showWaitlistModal || (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid))) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <WaitlistModal 
-          open={true} 
-          onOpenChange={(open) => {
-            setShowWaitlistModal(open);
-            if (!open) navigate("/portal");
-          }}
-          companyId={companyId || undefined}
-        />
-      </div>
-    );
-  }
 
   if (loading) {
     return (

@@ -65,8 +65,11 @@ export default function Intake() {
       return;
     }
 
-    if (currentStep < 4) {
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
+    } else {
+      // Step 3 is the last step, save and navigate to hub
+      handleFinalSubmit();
     }
   };
 
@@ -105,7 +108,12 @@ export default function Intake() {
     }
   };
 
-  const handleProceedToPayment = async () => {
+  const handleFinalSubmit = async () => {
+    if (!formData.name || !formData.stage || !formData.problemSolution) {
+      toast({ title: "Please complete all fields", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -115,18 +123,22 @@ export default function Intake() {
         return;
       }
 
-      // Store questionnaire data in sessionStorage to be saved after payment
-      sessionStorage.setItem('pendingCompanyData', JSON.stringify({
+      const { error } = await supabase.from("companies").insert({
+        founder_id: session.user.id,
         name: formData.name,
         description: formData.problemSolution,
+        category: null,
         stage: formData.stage,
-        founder_id: session.user.id
-      }));
+        biggest_challenge: null,
+        has_premium: false // Default to non-premium
+      });
 
-      // Navigate to payment page
-      navigate("/waitlist-checkout");
+      if (error) throw error;
+
+      toast({ title: "Company created successfully!" });
+      navigate("/hub");
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error creating company", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -199,43 +211,6 @@ export default function Intake() {
           </div>
         );
 
-      case 4:
-        return (
-          <div className="space-y-6 text-center">
-            <div className="flex justify-center">
-              <Sparkles className="w-16 h-16 text-primary animate-pulse" />
-            </div>
-            <h2 className="text-4xl font-serif font-bold">Almost there!</h2>
-            <p className="text-xl text-muted-foreground">Secure your spot with our early access discount</p>
-            <div className="bg-primary/10 border border-primary/30 rounded-lg p-6 space-y-3">
-              <p className="text-2xl font-bold text-primary">
-                <span className="line-through text-muted-foreground text-xl mr-2">€59.99</span>
-                €29.99
-              </p>
-              <Badge variant="secondary" className="text-sm">
-                <Sparkles className="w-3 h-3 mr-1" />
-                50% OFF Pre-Launch
-              </Badge>
-              <p className="text-sm text-muted-foreground">
-                Complete your profile and get instant access to the Investment Memorandum Generator
-              </p>
-            </div>
-            <div className="pt-4">
-              <Button 
-                size="lg" 
-                onClick={handleProceedToPayment}
-                disabled={loading}
-                className="text-lg px-10 py-6 gradient-primary shadow-glow hover-neon-pulse transition-all duration-300 font-bold uppercase tracking-wider"
-              >
-                {loading ? "Processing..." : "Proceed to Payment →"}
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Your information will be saved after payment confirmation
-            </p>
-          </div>
-        );
-
       default:
         return null;
     }
@@ -247,24 +222,21 @@ export default function Intake() {
       
       <div className="w-full max-w-2xl space-y-8 animate-fade-in">
         {/* Save & Exit button */}
-        {currentStep < 4 && (
-          <div className="flex justify-center">
-            <Button
-              variant="ghost"
-              onClick={handleSaveAndExit}
-              disabled={loading}
-              className="gap-2 text-muted-foreground hover:text-foreground"
-            >
-              <Home className="w-4 h-4" />
-              Save & Return to Hub
-            </Button>
-          </div>
-        )}
+        <div className="flex justify-center">
+          <Button
+            variant="ghost"
+            onClick={handleSaveAndExit}
+            disabled={loading}
+            className="gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <Home className="w-4 h-4" />
+            Save & Return to Hub
+          </Button>
+        </div>
 
         {/* Progress indicator */}
-        {currentStep < 4 && (
-          <div className="flex justify-center gap-2 mb-8">
-            {[1, 2, 3].map((step) => (
+        <div className="flex justify-center gap-2 mb-8">
+          {[1, 2, 3].map((step) => (
               <div
                 key={step}
                 className={`h-2 rounded-full transition-all duration-300 ${
@@ -273,29 +245,26 @@ export default function Intake() {
                     : step < currentStep 
                     ? "w-8 bg-primary/50" 
                     : "w-8 bg-border"
-                }`}
-              />
-            ))}
-          </div>
-        )}
+              }`}
+            />
+          ))}
+        </div>
 
         <ModernCard className="p-8">
           {renderStep()}
           
-          {currentStep < 4 && (
-            <div className="flex justify-between pt-8">
-              <Button
-                variant="outline"
-                onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
-                disabled={currentStep === 1}
-              >
-                Back
-              </Button>
-              <Button onClick={handleNext} className="gap-2">
-                Next <ArrowRight className="w-4 h-4" />
-              </Button>
-            </div>
-          )}
+          <div className="flex justify-between pt-8">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
+              disabled={currentStep === 1}
+            >
+              Back
+            </Button>
+            <Button onClick={handleNext} className="gap-2" disabled={loading}>
+              {currentStep === 3 ? (loading ? "Creating..." : "Complete") : "Next"} <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
         </ModernCard>
       </div>
     </div>

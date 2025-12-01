@@ -447,19 +447,25 @@ export default function Portal() {
   const handleGenerateMemo = async () => {
     if (!companyId || !user) return;
     
-    // Check if user has ever purchased a memo (premium user check)
-    const { data: purchases, error: purchaseError } = await supabase
-      .from('memo_purchases' as any)
-      .select('id')
-      .eq('user_id', user.id)
-      .limit(1);
+    // Check if company has premium access
+    const { data: company, error: companyError } = await supabase
+      .from('companies')
+      .select('has_premium')
+      .eq('id', companyId)
+      .maybeSingle();
     
-    if (purchaseError) {
-      console.error("Error checking purchase status:", purchaseError);
+    if (companyError) {
+      console.error("Error checking premium status:", companyError);
+      toast({
+        title: "Error",
+        description: "Failed to check premium access",
+        variant: "destructive",
+      });
+      return;
     }
     
-    // If user has never purchased, show paywall
-    if (!purchases || purchases.length === 0) {
+    // If company doesn't have premium access, show paywall
+    if (!company?.has_premium) {
       toast({
         title: "Get Your Investment Memo",
         description: "Complete your purchase to generate your professional investment memo",
@@ -469,6 +475,7 @@ export default function Portal() {
       return;
     }
     
+    // Premium user - proceed to memo generation
     setMemoSubmitted(true);
     navigate(`/memo?companyId=${companyId}`);
   };

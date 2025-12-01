@@ -22,8 +22,6 @@ import {
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { WaitlistModal } from "@/components/WaitlistModal";
-import { useWaitlistMode, useUserWaitlistStatus } from "@/hooks/useWaitlistMode";
 
 export default function RaiseCalculator() {
   const navigate = useNavigate();
@@ -33,12 +31,8 @@ export default function RaiseCalculator() {
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
-  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [hasMemo, setHasMemo] = useState(false);
   const [memoCompanyId, setMemoCompanyId] = useState<string | null>(null);
-
-  const { data: waitlistMode } = useWaitlistMode();
-  const { data: userWaitlistStatus } = useUserWaitlistStatus(userId || undefined, companyId || undefined);
   
   // Inputs
   const [monthlyBurn, setMonthlyBurn] = useState(40000);
@@ -618,13 +612,7 @@ export default function RaiseCalculator() {
                       Can you actually justify this raise?
                     </p>
                     <Button 
-                      onClick={() => {
-                        if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
-                          setShowWaitlistModal(true);
-                        } else {
-                          companyId && navigate(`/memo?companyId=${companyId}`);
-                        }
-                      }}
+                      onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
                       variant="outline"
                       size="sm"
                       className="w-full text-xs border-destructive/40 hover:bg-destructive/20"
@@ -816,11 +804,8 @@ export default function RaiseCalculator() {
                     if (hasMemo && memoCompanyId) {
                       // User has a memo, go to it
                       navigate(`/memo?companyId=${memoCompanyId}`);
-                    } else if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
-                      // Waitlist mode: show waitlist modal
-                      setShowWaitlistModal(true);
                     } else {
-                      // Default: navigate to pricing
+                      // Navigate to pricing
                       navigate('/pricing');
                     }
                   }}
@@ -835,12 +820,6 @@ export default function RaiseCalculator() {
           </div>
         </div>
       </div>
-
-      <WaitlistModal 
-        open={showWaitlistModal} 
-        onOpenChange={setShowWaitlistModal}
-        companyId={companyId || undefined}
-      />
     </div>
     </TooltipProvider>
   );
