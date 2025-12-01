@@ -1,6 +1,6 @@
 import { ModernCard } from "../ModernCard";
 import { Linkedin } from "lucide-react";
-import kevinPhoto from "@/assets/kevin-chavanne.jpg";
+import kevinPhoto from "@/assets/profile-photo.jpg";
 
 export const WhyTrustMeSection = () => {
   return (
