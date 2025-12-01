@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
@@ -12,10 +12,12 @@ import { MemoVCReflection } from "@/components/memo/MemoVCReflection";
 import { MemoVCQuestions } from "@/components/memo/MemoVCQuestions";
 import { MemoBenchmarking } from "@/components/memo/MemoBenchmarking";
 import { MemoAIConclusion } from "@/components/memo/MemoAIConclusion";
-import { Sparkles, ArrowLeft, RefreshCw } from "lucide-react";
+import { MemoPDFExport } from "@/components/memo/MemoPDFExport";
+import { Sparkles, ArrowLeft, RefreshCw, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent } from "@/types/memo";
 import { Button } from "@/components/ui/button";
+import { usePDF } from "react-to-pdf";
 
 export default function GeneratedMemo() {
   const navigate = useNavigate();
@@ -28,6 +30,14 @@ export default function GeneratedMemo() {
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
+  
+  const { toPDF, targetRef } = usePDF({
+    filename: `${companyInfo?.name || 'Company'}_Investment_Memo_${new Date().toISOString().split('T')[0]}.pdf`,
+    page: { 
+      margin: 20,
+      format: 'a4'
+    }
+  });
 
   const { data: waitlistMode } = useWaitlistMode();
   const { data: userWaitlistStatus } = useUserWaitlistStatus(userId || undefined, companyId || undefined);
@@ -241,15 +251,26 @@ export default function GeneratedMemo() {
               Back to Portal
             </Button>
             
-            <Button
-              variant="outline"
-              onClick={handleRegenerate}
-              disabled={regenerating}
-              className="min-w-[200px]"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
-              {regenerating ? 'Regenerating (60-90s)...' : 'Regenerate Memo'}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                variant="default"
+                onClick={() => toPDF()}
+                className="min-w-[160px]"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export to PDF
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={handleRegenerate}
+                disabled={regenerating}
+                className="min-w-[200px]"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
+                {regenerating ? 'Regenerating (60-90s)...' : 'Regenerate Memo'}
+              </Button>
+            </div>
           </div>
 
           <div className="bg-card/95 backdrop-blur-sm border border-border/50 rounded-2xl p-8 shadow-lg">
@@ -324,6 +345,15 @@ export default function GeneratedMemo() {
             );
           })}
         </div>
+      </div>
+
+      {/* Hidden PDF Export Component */}
+      <div className="hidden">
+        <MemoPDFExport 
+          ref={targetRef}
+          memoContent={memoContent}
+          companyInfo={companyInfo}
+        />
       </div>
     </div>
   );

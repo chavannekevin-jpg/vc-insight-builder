@@ -340,4 +340,64 @@ All colors MUST be HSL.
   .prose [style*="font-size"] {
     font-size: inherit !important;
   }
+
+  /* PDF Export Styles */
+  .pdf-export {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    line-height: 1.6;
+  }
+
+  .pdf-export * {
+    color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .pdf-page {
+    page-break-after: always;
+  }
+
+  .pdf-section {
+    page-break-inside: avoid;
+    margin-bottom: 2rem;
+  }
+
+  .pdf-footer {
+    display: none;
+  }
+
+  @media print {
+    .pdf-export {
+      margin: 0;
+      padding: 1.5cm;
+    }
+
+    .pdf-page {
+      page-break-after: always;
+    }
+
+    .pdf-section {
+      page-break-inside: avoid;
+    }
+
+    .pdf-footer {
+      display: block;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    /* Ensure colors print correctly */
+    .pdf-export * {
+      color-adjust: exact !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Hide interactive elements in PDF */
+    button, .no-print {
+      display: none !important;
+    }
+  }
 }
