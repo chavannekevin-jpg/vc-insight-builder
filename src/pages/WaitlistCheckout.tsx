@@ -36,11 +36,15 @@ export default function WaitlistCheckout() {
       } else if (companyId) {
         // Fallback: fetch existing company if companyId is provided
         const fetchCompany = async () => {
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from("companies")
             .select("name")
             .eq("id", companyId)
-            .single();
+            .maybeSingle();
+          
+          if (error) {
+            console.error("Error loading company:", error);
+          }
           if (data) setCompanyName(data.name);
         };
         fetchCompany();

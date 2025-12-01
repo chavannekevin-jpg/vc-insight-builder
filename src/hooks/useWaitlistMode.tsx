@@ -8,14 +8,14 @@ export const useWaitlistMode = () => {
       const { data, error } = await supabase
         .from('waitlist_settings')
         .select('is_active')
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error('Error fetching waitlist mode:', error);
         return { isActive: true }; // Default to active for safety
       }
       
-      return { isActive: data.is_active };
+      return { isActive: data?.is_active ?? true };
     },
   });
 };

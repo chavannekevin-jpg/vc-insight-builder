@@ -71,11 +71,15 @@ export default function VentureScaleDiagnostic() {
         return;
       }
 
-      const { data: company } = await supabase
+      const { data: company, error: companyError } = await supabase
         .from("companies")
         .select("id, name, description, category, biggest_challenge")
         .eq("founder_id", session.user.id)
-        .single();
+        .maybeSingle();
+
+      if (companyError) {
+        console.error("Error loading company:", companyError);
+      }
 
       if (company) {
         setCompanyId(company.id);

@@ -448,10 +448,14 @@ export default function Portal() {
     if (!companyId || !user) return;
     
     // Check waitlist status
-    const { data: waitlistSettings } = await supabase
+    const { data: waitlistSettings, error: settingsError } = await supabase
       .from('waitlist_settings')
       .select('is_active')
-      .single();
+      .maybeSingle();
+    
+    if (settingsError) {
+      console.error("Error loading waitlist settings:", settingsError);
+    }
     
     if (waitlistSettings?.is_active) {
       // Check if user has paid

@@ -109,13 +109,18 @@ export default function FreemiumHub() {
       setResponses(responsesData || []);
 
       // Load memo
-      const { data: memoData } = await supabase
+      const { data: memoData, error: memoError } = await supabase
         .from("memos")
         .select("*")
         .eq("company_id", companyData.id)
         .order("created_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
+
+      if (memoError) {
+        console.error("Error loading memo:", memoError);
+        // Don't throw - just continue with null memo
+      }
 
       setMemo(memoData);
 
@@ -188,8 +193,14 @@ export default function FreemiumHub() {
 
   const generateTagline = async (companyData: Company) => {
     setGeneratingTagline(true);
+    
+    // Add timeout safety
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Tagline generation timeout')), 10000)
+    );
+    
     try {
-      const { data, error } = await supabase.functions.invoke("generate-company-tagline", {
+      const invokePromise = supabase.functions.invoke("generate-company-tagline", {
         body: {
           companyName: companyData.name,
           description: companyData.description,
@@ -197,12 +208,15 @@ export default function FreemiumHub() {
         }
       });
 
+      const { data, error } = await Promise.race([invokePromise, timeoutPromise]) as any;
+
       if (error) throw error;
       if (data?.tagline) {
         setTagline(data.tagline);
       }
     } catch (error) {
       console.error("Error generating tagline:", error);
+      // Don't show error toast - silently fail for tagline generation
     } finally {
       setGeneratingTagline(false);
     }

@@ -89,10 +89,14 @@ export default function AdminWaitlist() {
   };
 
   const fetchWaitlistSettings = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("waitlist_settings")
       .select("is_active")
-      .single();
+      .maybeSingle();
+    
+    if (error) {
+      console.error("Error loading waitlist settings:", error);
+    }
     
     if (data) {
       setWaitlistActive(data.is_active);
