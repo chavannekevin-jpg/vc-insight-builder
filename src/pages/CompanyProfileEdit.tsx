@@ -12,14 +12,13 @@ import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
 
 const SECTIONS = [
-  { key: "problem_description", title: "Problem", description: "What problem are you solving?" },
+  { key: "problem_description", title: "Problem", description: "What problem are you solving and how do you know it hurts?" },
   { key: "solution_description", title: "Solution", description: "How does your product solve this problem?" },
-  { key: "market_target_customer", title: "Market", description: "Who is your target market and how big is it?" },
-  { key: "competition_mission", title: "Competition", description: "Who are your competitors and how are you different?" },
-  { key: "team_founders", title: "Team", description: "Who's on your founding team and what's their expertise?" },
-  { key: "usp_differentiators", title: "Unique Selling Proposition", description: "What makes you truly unique?" },
-  { key: "business_model_type", title: "Business Model", description: "How do you make money?" },
-  { key: "traction_revenue", title: "Traction", description: "What progress have you made?" }
+  { key: "target_customer", title: "Target Customer", description: "Who is your ideal customer and how big is the market?" },
+  { key: "competitive_advantage", title: "Competition", description: "Who are your competitors and what's your edge?" },
+  { key: "founder_background", title: "Team", description: "Why are you the right team to build this?" },
+  { key: "revenue_model", title: "Business Model", description: "How do you make money?" },
+  { key: "current_traction", title: "Traction", description: "What progress have you made so far?" }
 ];
 
 const responseSchema = z.object({
@@ -86,22 +85,13 @@ export default function CompanyProfileEdit() {
         console.error("Error loading responses:", responsesError);
       }
 
-      // Group responses by section - use the main question key for each section
+      // Load responses directly by the questionnaire keys
       const grouped: SectionData = {};
-      const sectionPrefixes: Record<string, string> = {
-        "problem": "problem_description",
-        "solution": "solution_description",
-        "market": "market_target_customer",
-        "competition": "competition_mission",
-        "team": "team_founders",
-        "usp": "usp_differentiators",
-        "business": "business_model_type",
-        "traction": "traction_revenue"
-      };
+      const questionnaireKeys = SECTIONS.map(s => s.key);
       
       responses?.forEach((response) => {
-        // Check if this response matches one of our main section keys
-        if (Object.values(sectionPrefixes).includes(response.question_key)) {
+        // Only include responses that match our section keys
+        if (questionnaireKeys.includes(response.question_key)) {
           grouped[response.question_key] = response.answer || "";
         }
       });
@@ -147,16 +137,18 @@ export default function CompanyProfileEdit() {
 
       if (error) throw error;
 
+      // Unwrap the prefilled response from the edge function
+      const generatedData = data?.prefilled || data || {};
+      
       const updates: SectionData = { ...currentData };
       const sectionMapping = {
-        "problem_description": data.problem,
-        "solution_description": data.solution,
-        "market_target_customer": data.market,
-        "competition_mission": data.competition,
-        "team_founders": data.team,
-        "usp_differentiators": data.usp,
-        "business_model_type": data.business_model,
-        "traction_revenue": data.traction
+        "problem_description": generatedData.problem_description,
+        "solution_description": generatedData.solution_description,
+        "target_customer": generatedData.target_customer,
+        "competitive_advantage": generatedData.competitive_advantage,
+        "founder_background": generatedData.founder_background,
+        "revenue_model": generatedData.revenue_model,
+        "current_traction": generatedData.current_traction
       };
 
       // Only update sections that are empty
