@@ -341,63 +341,61 @@ All colors MUST be HSL.
     font-size: inherit !important;
   }
 
-  /* PDF Export Styles */
-  .pdf-export {
-    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-    line-height: 1.6;
-  }
-
-  .pdf-export * {
-    color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .pdf-page {
-    page-break-after: always;
-  }
-
-  .pdf-section {
-    page-break-inside: avoid;
-    margin-bottom: 2rem;
-  }
-
-  .pdf-footer {
-    display: none;
-  }
-
+  /* Print Styles for PDF Export */
   @media print {
-    .pdf-export {
-      margin: 0;
-      padding: 1.5cm;
+    body {
+      background: white !important;
+      color: black !important;
     }
 
-    .pdf-page {
-      page-break-after: always;
+    /* Hide navigation and interactive elements */
+    .no-print,
+    button:not(.no-print) {
+      display: none !important;
     }
 
+    /* Ensure proper page breaks */
     .pdf-section {
       page-break-inside: avoid;
+      margin-bottom: 2rem;
     }
 
-    .pdf-footer {
-      display: block;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-    }
-
-    /* Ensure colors print correctly */
-    .pdf-export * {
+    /* Force color printing */
+    * {
       color-adjust: exact !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
 
-    /* Hide interactive elements in PDF */
-    button, .no-print {
-      display: none !important;
+    /* Optimize margins for print */
+    .container {
+      margin: 0 !important;
+      padding: 1cm !important;
+      max-width: 100% !important;
+    }
+
+    /* Clean backgrounds for print */
+    .bg-card,
+    .bg-muted,
+    .bg-primary\/10,
+    .bg-accent\/10 {
+      background: white !important;
+      border: 1px solid #ddd !important;
+    }
+
+    /* Ensure readable text */
+    .text-muted-foreground {
+      color: #444 !important;
+    }
+
+    .text-foreground {
+      color: #000 !important;
+    }
+
+    /* Page title styling */
+    h1, h2, h3 {
+      color: #000 !important;
+      page-break-after: avoid;
     }
   }
 }
