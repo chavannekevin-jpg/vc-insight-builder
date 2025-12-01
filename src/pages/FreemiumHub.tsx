@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { CompanyBadge } from "@/components/CompanyBadge";
 import { CompanyProfileCard } from "@/components/CompanyProfileCard";
 import { MemoJourneyCard } from "@/components/MemoJourneyCard";
+import { CompanySummaryCard } from "@/components/CompanySummaryCard";
 import { ToolsRow } from "@/components/ToolsRow";
 import { CollapsedLibrary } from "@/components/CollapsedLibrary";
-import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, User, Shield } from "lucide-react";
+import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, User, Shield, ArrowRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Company {
@@ -338,7 +340,7 @@ export default function FreemiumHub() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/raise-calculator")}
+              onClick={() => navigate("/tools")}
               className="gap-2 hover:text-primary transition-colors"
             >
               <Calculator className="w-4 h-4" />
@@ -374,15 +376,51 @@ export default function FreemiumHub() {
               />
             </div>
 
-            {/* Center Column: Main Journey Card */}
+            {/* Center Column: Main Card */}
             <div className="lg:col-span-2 space-y-8">
-              <MemoJourneyCard
-                completedQuestions={completedQuestions}
-                totalQuestions={totalQuestions}
-                memoGenerated={!!memoGenerated}
-                hasPaid={hasPaid}
-                nextSection={getNextSection()}
-              />
+              {/* Show summary card if user has memo (premium), otherwise show journey card */}
+              {memoGenerated ? (
+                <div className="space-y-6">
+                  <CompanySummaryCard
+                    companyId={company.id}
+                    companyName={company.name}
+                    companyDescription={company.description || ""}
+                    companyStage={company.stage}
+                  />
+                  
+                  {/* Direct link to memo */}
+                  <Card className="border-2 border-primary/30 shadow-glow hover:shadow-glow-strong transition-all duration-300">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-5 h-5 text-primary" />
+                            <h3 className="text-xl font-serif">Your Investment Memorandum</h3>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Access your latest generated memo and supporting materials
+                          </p>
+                        </div>
+                        <Button
+                          onClick={() => navigate(`/memo?companyId=${company.id}`)}
+                          className="gradient-primary shadow-glow"
+                        >
+                          View Memo
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ) : (
+                <MemoJourneyCard
+                  completedQuestions={completedQuestions}
+                  totalQuestions={totalQuestions}
+                  memoGenerated={!!memoGenerated}
+                  hasPaid={hasPaid}
+                  nextSection={getNextSection()}
+                />
+              )}
 
               {/* Tools Section */}
               <ToolsRow />

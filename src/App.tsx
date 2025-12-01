@@ -35,6 +35,7 @@ import RaiseEducation from "./pages/RaiseEducation";
 import RaiseCalculator from "./pages/RaiseCalculator";
 import ValuationCalculator from "./pages/ValuationCalculator";
 import VentureScaleDiagnostic from "./pages/VentureScaleDiagnostic";
+import ToolsHub from "./pages/ToolsHub";
 import Admin from "./pages/Admin";
 import AdminArticles from "./pages/AdminArticles";
 import AdminCompanyDetail from "./pages/AdminCompanyDetail";
@@ -93,7 +94,9 @@ const App = () => (
           <Route path="/solution-slide-guide" element={<SolutionSlideGuide />} />
           <Route path="/memo" element={<GeneratedMemo />} />
           <Route path="/company" element={<CompanyProfile />} />
+          <Route path="/company-profile" element={<CompanyProfile />} />
           <Route path="/company/profile/edit" element={<CompanyProfileEdit />} />
+          <Route path="/tools" element={<ToolsHub />} />
           <Route path="/raise-education" element={<RaiseEducation />} />
           <Route path="/raise-calculator" element={<RaiseCalculator />} />
           <Route path="/valuation-calculator" element={<ValuationCalculator />} />

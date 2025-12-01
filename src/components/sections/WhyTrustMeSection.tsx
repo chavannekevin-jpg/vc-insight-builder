@@ -79,7 +79,7 @@ export const WhyTrustMeSection = () => {
             {/* LinkedIn Badge */}
             <div className="pt-2">
               <a 
-                href="https://www.linkedin.com/in/kevinchavanne/"
+                href="https://www.linkedin.com/in/kevin-chavanne-1b8a368a/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg backdrop-blur-sm hover:bg-primary/20 hover:border-primary/50 transition-all duration-300"

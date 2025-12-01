@@ -34,6 +34,8 @@ export default function RaiseCalculator() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+  const [hasMemo, setHasMemo] = useState(false);
+  const [memoCompanyId, setMemoCompanyId] = useState<string | null>(null);
 
   const { data: waitlistMode } = useWaitlistMode();
   const { data: userWaitlistStatus } = useUserWaitlistStatus(userId || undefined, companyId || undefined);
@@ -76,6 +78,20 @@ export default function RaiseCalculator() {
 
       if (companies && companies.length > 0) {
         setCompanyId(companies[0].id);
+        
+        // Check if user has a generated memo
+        const { data: memo } = await supabase
+          .from("memos")
+          .select("id, structured_content")
+          .eq("company_id", companies[0].id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (memo && memo.structured_content) {
+          setHasMemo(true);
+          setMemoCompanyId(companies[0].id);
+        }
       }
     };
 
@@ -797,17 +813,22 @@ export default function RaiseCalculator() {
                 </div>
                 <Button 
                   onClick={() => {
-                    if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
+                    if (hasMemo && memoCompanyId) {
+                      // User has a memo, go to it
+                      navigate(`/memo?companyId=${memoCompanyId}`);
+                    } else if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
+                      // Waitlist mode: show waitlist modal
                       setShowWaitlistModal(true);
                     } else {
-                      companyId && navigate(`/memo?companyId=${companyId}`);
+                      // Default: navigate to pricing
+                      navigate('/pricing');
                     }
                   }}
                   variant="destructive"
                   className="w-full font-bold"
                   size="lg"
                 >
-                  Build My Memo & Face Reality
+                  {hasMemo ? "View My Memo" : "Test Your Narrative"}
                 </Button>
               </CardContent>
             </Card>
