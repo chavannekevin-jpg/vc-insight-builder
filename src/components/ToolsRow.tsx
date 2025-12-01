@@ -1,4 +1,4 @@
-import { Calculator, TrendingUp, Lock, Zap } from "lucide-react";
+import { Calculator, TrendingUp, Lock, Zap, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ModernCard } from "./ModernCard";
 import { Badge } from "./ui/badge";
@@ -31,6 +31,15 @@ export const ToolsRow = () => {
       available: true,
       path: "/venture-scale-diagnostic",
       badge: "New"
+    },
+    {
+      id: "investor-email-generator",
+      icon: Mail,
+      title: "Investor Email Generator",
+      description: "Generate cold email templates from your memo",
+      available: true,
+      path: "/investor-email-generator",
+      badge: "Memo Required"
     }
   ];
 
