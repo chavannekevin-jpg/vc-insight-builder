@@ -21,6 +21,46 @@ function sanitizeJsonString(str: string): string {
     });
 }
 
+// Helper function to retry API calls with exponential backoff
+async function fetchWithRetry(
+  url: string, 
+  options: RequestInit, 
+  maxRetries = 3,
+  initialDelay = 1000
+): Promise<Response> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      
+      // If successful or client error (4xx), return immediately
+      if (response.ok || (response.status >= 400 && response.status < 500)) {
+        return response;
+      }
+      
+      // For 5xx errors, retry with backoff
+      if (response.status >= 500) {
+        const errorText = await response.text();
+        console.warn(`Attempt ${attempt + 1}/${maxRetries} failed with ${response.status}: ${errorText}`);
+        lastError = new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+    } catch (error) {
+      console.warn(`Attempt ${attempt + 1}/${maxRetries} failed with network error:`, error);
+      lastError = error instanceof Error ? error : new Error(String(error));
+    }
+    
+    // Don't wait after the last attempt
+    if (attempt < maxRetries - 1) {
+      const delay = initialDelay * Math.pow(2, attempt);
+      console.log(`Waiting ${delay}ms before retry...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  throw lastError || new Error('All retry attempts failed');
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -309,28 +349,35 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
 
       console.log(`Generating section: ${sectionName} (${Object.keys(sectionResponses).length} questions)`);
 
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            {
-              role: "system",
-              content: "You are a skeptical VC investment analyst writing an internal due diligence memo. Your job is NOT to advocate for the company, but to objectively assess it — highlighting weaknesses, risks, and gaps alongside any strengths. Be critical where warranted. If data is missing or claims are unsubstantiated, flag it explicitly. Return valid JSON only, no markdown formatting.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 3000,
-        }),
-      });
+      let response: Response;
+      try {
+        response = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              {
+                role: "system",
+                content: "You are a skeptical VC investment analyst writing an internal due diligence memo. Your job is NOT to advocate for the company, but to objectively assess it — highlighting weaknesses, risks, and gaps alongside any strengths. Be critical where warranted. If data is missing or claims are unsubstantiated, flag it explicitly. Return valid JSON only, no markdown formatting.",
+              },
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+            temperature: 0.7,
+            max_tokens: 3000,
+          }),
+        }, 3, 2000); // 3 retries, starting with 2s delay
+      } catch (fetchError) {
+        console.error(`Failed to generate section ${sectionName} after retries:`, fetchError);
+        console.error(`Skipping section: ${sectionName}`);
+        continue;
+      }
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -464,28 +511,35 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
   }
 }`;
 
-      const thesisResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            {
-              role: "system",
-              content: "You are a senior VC partner writing a critical, unbiased investment thesis. This is NOT an advocacy document. Your job is to assess whether this is truly a VC-grade opportunity with clear eyes. Highlight weaknesses and risks prominently. Challenge assumptions. If data is weak or missing, explicitly state that you cannot recommend investment. Do not default to optimism. Always respond with valid JSON only.",
-            },
-            {
-              role: "user",
-              content: thesisPromptText,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 3000,
-        }),
-      });
+      let thesisResponse: Response;
+      try {
+        thesisResponse = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              {
+                role: "system",
+                content: "You are a senior VC partner writing a critical, unbiased investment thesis. This is NOT an advocacy document. Your job is to assess whether this is truly a VC-grade opportunity with clear eyes. Highlight weaknesses and risks prominently. Challenge assumptions. If data is weak or missing, explicitly state that you cannot recommend investment. Do not default to optimism. Always respond with valid JSON only.",
+              },
+              {
+                role: "user",
+                content: thesisPromptText,
+              },
+            ],
+            temperature: 0.7,
+            max_tokens: 3000,
+          }),
+        }, 3, 2000); // 3 retries, starting with 2s delay
+      } catch (fetchError) {
+        console.error("Failed to generate Investment Thesis after retries:", fetchError);
+        console.warn("Investment Thesis generation failed, skipping section");
+        thesisResponse = new Response(null, { status: 500 });
+      }
 
       if (thesisResponse.ok) {
         const thesisData = await thesisResponse.json();
