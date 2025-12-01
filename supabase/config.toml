@@ -30,4 +30,10 @@ verify_jwt = false
 [functions.generate-investor-emails]
 verify_jwt = false
 
+[functions.validate-discount]
+verify_jwt = false
+
+[functions.use-discount]
+verify_jwt = false
+
 
