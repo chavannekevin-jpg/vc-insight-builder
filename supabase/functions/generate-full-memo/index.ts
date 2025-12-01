@@ -293,7 +293,18 @@ NOTE: This market intelligence was AI-estimated based on the company's problem, 
       }
       
       const prompt = customPrompt 
-        ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": ["specific investor question 1", "question 2", "question 3", "question 4", "question 5"],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
+        ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nCRITICAL TONE REQUIREMENTS:
+- Use OBJECTIVE, FACTUAL language only — avoid adjectives like "impressive," "strong," "promising," "exciting"
+- Replace positive framing with neutral observation: Instead of "strong team," write "team has X years experience in Y"
+- Flag ALL unverified claims with "Unverified:" or "Claimed:" prefix
+- Lead every section with the biggest concern or gap
+- When stating metrics, note data source and reliability
+- Avoid advocacy language — this is NOT a pitch document
+- Use phrases like "Data suggests..." "Evidence indicates..." "Requires validation..."
+
+IMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.
+
+Return ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": ["specific investor question 1", "question 2", "question 3", "question 4", "question 5"],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
         : `You are a skeptical VC investment analyst writing the "${sectionName}" section of an internal due diligence memo. Your job is to assess objectively, NOT to advocate.
 
 CRITICAL ANALYSIS REQUIREMENTS:
@@ -304,6 +315,14 @@ CRITICAL ANALYSIS REQUIREMENTS:
 - Highlight red flags, execution risks, and market risks
 - Do NOT default to optimism — be neutral or skeptical unless evidence is strong
 - If you would hesitate to invest, say so clearly
+
+TONE REQUIREMENTS (STRICTLY ENFORCE):
+- ELIMINATE adjectives: no "impressive," "strong," "promising," "compelling," "exciting," "robust," "solid"
+- Use NEUTRAL verbs: "indicates," "suggests," "shows," rather than "demonstrates," "proves," "excels"
+- QUANTIFY everything: Replace "significant growth" with "X% growth from Y to Z"
+- FLAG uncertainties: Prefix unverified claims with "Claimed:" "Founder states:" "Unverified:"
+- BALANCE positives: For every strength, note a corresponding risk or unknown
+- Use clinical language: "The data shows..." not "The company has achieved..."
 
 Requirements:
 - Create 2-4 factual paragraphs (emphasize weaknesses first)
@@ -362,7 +381,7 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
             messages: [
               {
                 role: "system",
-                content: "You are a skeptical VC investment analyst writing an internal due diligence memo. Your job is NOT to advocate for the company, but to objectively assess it — highlighting weaknesses, risks, and gaps alongside any strengths. Be critical where warranted. If data is missing or claims are unsubstantiated, flag it explicitly. Return valid JSON only, no markdown formatting.",
+                content: "You are a skeptical VC investment analyst writing an internal due diligence memo. This is NOT an advocacy document. CRITICAL REQUIREMENTS: (1) Use objective, clinical language — eliminate adjectives like 'impressive,' 'strong,' 'promising.' (2) Replace positive framing with neutral facts. (3) Prefix unverified claims with 'Claimed:' or 'Unverified:' (4) Lead with concerns and gaps. (5) For every positive, state a corresponding risk. (6) If evidence is weak, say so explicitly. Return valid JSON only, no markdown formatting.",
               },
               {
                 role: "user",
@@ -494,6 +513,16 @@ ${allSectionsContext}
 
 ---
 
+CRITICAL TONE REQUIREMENTS FOR INVESTMENT THESIS:
+- This is a DECISION DOCUMENT, not an advocacy pitch
+- Use OBJECTIVE, FACTUAL language — eliminate all promotional adjectives
+- Present a balanced assessment: for every strength, acknowledge the corresponding risk
+- Flag ALL assumptions and unverified claims explicitly
+- Lead with the primary investment concern or deal-breaker
+- Rate confidence levels based on evidence quality (Low/Medium/High)
+- If data is insufficient to recommend investment, state this clearly
+- Use clinical language: "Data indicates..." not "Company demonstrates..."
+
 IMPORTANT: Synthesize ALL the information above into a comprehensive Investment Thesis. This is the final assessment section that pulls together everything.
 
 Return ONLY valid JSON with this structure (no markdown, no code blocks):
@@ -524,7 +553,7 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
             messages: [
               {
                 role: "system",
-                content: "You are a senior VC partner writing a critical, unbiased investment thesis. This is NOT an advocacy document. Your job is to assess whether this is truly a VC-grade opportunity with clear eyes. Highlight weaknesses and risks prominently. Challenge assumptions. If data is weak or missing, explicitly state that you cannot recommend investment. Do not default to optimism. Always respond with valid JSON only.",
+                content: "You are a senior VC partner writing a critical, unbiased investment thesis. This is a DECISION DOCUMENT, not a pitch. STRICT REQUIREMENTS: (1) Eliminate promotional language — use only objective, clinical terms. (2) For every strength mentioned, immediately state the corresponding risk or unknown. (3) Flag all unverified claims with 'Claimed:' or 'Requires validation:' (4) Lead with the primary deal concern or risk. (5) If evidence is insufficient, state 'Insufficient data to recommend investment.' (6) Rate confidence Low/Medium/High based on evidence quality. Always respond with valid JSON only.",
               },
               {
                 role: "user",
