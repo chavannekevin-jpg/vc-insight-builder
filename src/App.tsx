@@ -52,6 +52,8 @@ import SolutionSlideGuide from "./pages/SolutionSlideGuide";
 import WaitlistCheckout from "./pages/WaitlistCheckout";
 import WaitlistConfirmation from "./pages/WaitlistConfirmation";
 import AdminWaitlist from "./pages/AdminWaitlist";
+import AdminDiscountCodes from "./pages/AdminDiscountCodes";
+import CheckoutMemo from "./pages/CheckoutMemo";
 import SampleMemo from "./pages/SampleMemo";
 import NotFound from "./pages/NotFound";
 
@@ -115,7 +117,9 @@ const App = () => (
           <Route path="/admin/prompts" element={<AdminPrompts />} />
           <Route path="/admin/memo-builder" element={<MemoBuilder />} />
           <Route path="/admin/waitlist" element={<AdminWaitlist />} />
+          <Route path="/admin/discount-codes" element={<AdminDiscountCodes />} />
           <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
+          <Route path="/checkout" element={<CheckoutMemo />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
