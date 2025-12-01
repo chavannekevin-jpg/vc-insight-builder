@@ -70,55 +70,35 @@ export default function CheckoutMemo() {
     setValidatingCode(true);
     
     try {
-      const { data: codeData, error } = await supabase
-        .from("discount_codes" as any)
-        .select("*")
-        .eq("code", discountCode.trim().toUpperCase())
-        .eq("is_active", true)
-        .maybeSingle();
+      // Use edge function for secure validation (users can't see all codes)
+      const { data, error } = await supabase.functions.invoke('validate-discount', {
+        body: { code: discountCode.trim() }
+      });
 
       if (error) throw error;
 
-      const code = codeData as any;
-
-      if (!code) {
+      if (!data?.valid) {
         toast({
           title: "Invalid code",
-          description: "This discount code doesn't exist or has expired.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Check if code has usage limit
-      if (code.max_uses !== null && code.uses >= code.max_uses) {
-        toast({
-          title: "Code expired",
-          description: "This discount code has reached its usage limit.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Check if code has expiration date
-      if (code.expires_at && new Date(code.expires_at) < new Date()) {
-        toast({
-          title: "Code expired",
-          description: "This discount code has expired.",
+          description: data?.error || "This discount code is not valid.",
           variant: "destructive",
         });
         return;
       }
 
       // Apply discount
-      setAppliedDiscount(code);
-      const discountAmount = (basePrice * code.discount_percent) / 100;
+      setAppliedDiscount({
+        id: data.id,
+        discount_percent: data.discount_percent,
+        code: data.code
+      });
+      const discountAmount = (basePrice * data.discount_percent) / 100;
       const newPrice = Math.max(0, basePrice - discountAmount);
       setFinalPrice(newPrice);
 
       toast({
         title: "Discount applied! 🎉",
-        description: `${code.discount_percent}% discount has been applied to your order.`,
+        description: `${data.discount_percent}% discount has been applied to your order.`,
       });
     } catch (error) {
       console.error("Error validating discount code:", error);
@@ -147,19 +127,17 @@ export default function CheckoutMemo() {
             user_id: user.id,
             company_id: companyId,
             amount_paid: 0,
-            discount_code_id: appliedDiscount?.id,
-            payment_status: "completed"
+            discount_code_used: appliedDiscount?.code || null
           });
 
         if (purchaseError) throw purchaseError;
 
-        // Update discount code usage
-        if (appliedDiscount) {
-          await supabase
-            .from("discount_codes" as any)
-            .update({ uses: appliedDiscount.uses + 1 })
-            .eq("id", appliedDiscount.id);
-        }
+      // Update discount code usage via edge function (users can't directly update)
+      if (appliedDiscount) {
+        await supabase.functions.invoke('use-discount', {
+          body: { codeId: appliedDiscount.id }
+        });
+      }
 
         toast({
           title: "Success! 🎉",
@@ -181,19 +159,16 @@ export default function CheckoutMemo() {
           user_id: user.id,
           company_id: companyId,
           amount_paid: finalPrice,
-          discount_code_id: appliedDiscount?.id,
-          payment_status: "completed",
-          payment_method: "card" // placeholder
+          discount_code_used: appliedDiscount?.code || null
         });
 
       if (purchaseError) throw purchaseError;
 
-      // Update discount code usage
+      // Update discount code usage via edge function (users can't directly update)
       if (appliedDiscount) {
-        await supabase
-          .from("discount_codes" as any)
-          .update({ uses: appliedDiscount.uses + 1 })
-          .eq("id", appliedDiscount.id);
+        await supabase.functions.invoke('use-discount', {
+          body: { codeId: appliedDiscount.id }
+        });
       }
 
       toast({
