@@ -243,6 +243,17 @@ const Admin = () => {
               </p>
             </ModernCard>
           </div>
+
+          <div onClick={() => navigate("/admin/discount-codes")} className="cursor-pointer">
+            <ModernCard className="hover:border-primary/50 transition-colors h-full">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Discount Codes
+              </h2>
+              <p className="text-muted-foreground">
+                Create and manage discount codes for memo purchases
+              </p>
+            </ModernCard>
+          </div>
           
           <ModernCard>
             <h2 className="text-2xl font-bold text-foreground mb-2">

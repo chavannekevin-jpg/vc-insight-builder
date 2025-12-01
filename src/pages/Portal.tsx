@@ -447,35 +447,26 @@ export default function Portal() {
   const handleGenerateMemo = async () => {
     if (!companyId || !user) return;
     
-    // Check waitlist status
-    const { data: waitlistSettings, error: settingsError } = await supabase
-      .from('waitlist_settings')
-      .select('is_active')
-      .maybeSingle();
+    // Check if user has ever purchased a memo (premium user check)
+    const { data: purchases, error: purchaseError } = await supabase
+      .from('memo_purchases' as any)
+      .select('id')
+      .eq('user_id', user.id)
+      .limit(1);
     
-    if (settingsError) {
-      console.error("Error loading waitlist settings:", settingsError);
+    if (purchaseError) {
+      console.error("Error checking purchase status:", purchaseError);
     }
     
-    if (waitlistSettings?.is_active) {
-      // Check if user has paid
-      const { data: waitlistStatus } = await supabase
-        .from('waitlist_signups')
-        .select('has_paid')
-        .eq('user_id', user.id)
-        .eq('company_id', companyId)
-        .maybeSingle();
-      
-      if (!waitlistStatus || !waitlistStatus.has_paid) {
-        // Show paywall
-        toast({
-          title: "Premium Feature",
-          description: "Complete your payment to generate your investment memo",
-          variant: "default",
-        });
-        navigate(`/waitlist-checkout?companyId=${companyId}`);
-        return;
-      }
+    // If user has never purchased, show paywall
+    if (!purchases || purchases.length === 0) {
+      toast({
+        title: "Get Your Investment Memo",
+        description: "Complete your purchase to generate your professional investment memo",
+        variant: "default",
+      });
+      navigate(`/checkout?companyId=${companyId}`);
+      return;
     }
     
     setMemoSubmitted(true);
