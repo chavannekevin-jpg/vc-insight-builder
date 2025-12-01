@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/sections/Footer";
 import { Header } from "@/components/Header";
 import { Linkedin, ArrowRight, Target, TrendingUp, Users2, Briefcase, MessageSquare } from "lucide-react";
-import kevinPhoto from "@/assets/kevin-chavanne.jpg";
+import kevinPhoto from "@/assets/profile-photo.jpg";
 
 const About = () => {
   const navigate = useNavigate();
