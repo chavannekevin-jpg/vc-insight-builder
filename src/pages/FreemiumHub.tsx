@@ -232,7 +232,7 @@ export default function FreemiumHub() {
 
   const completedQuestions = responses.filter(r => r.answer && r.answer.trim()).length;
   const memoGenerated = memo && memo.status === "generated";
-  const hasPaid = company.has_premium ?? false;
+  const hasPaid = company?.has_premium ?? false;
 
   // Get next section to complete
   const getNextSection = () => {
