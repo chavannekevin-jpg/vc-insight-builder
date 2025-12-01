@@ -71,15 +71,36 @@ export default function VentureScaleDiagnostic() {
         return;
       }
 
-      const { data: company, error: companyError } = await supabase
+      const { data: companiesArray, error: companyError } = await supabase
         .from("companies")
         .select("id, name, description, category, biggest_challenge")
         .eq("founder_id", session.user.id)
-        .maybeSingle();
+        .order("created_at", { ascending: false })
+        .limit(1);
 
       if (companyError) {
         console.error("Error loading company:", companyError);
+        toast({
+          title: "Error loading company",
+          description: "Failed to load your company profile.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
       }
+
+      if (!companiesArray || companiesArray.length === 0) {
+        console.log("No company found");
+        toast({
+          title: "No company found",
+          description: "Please create a company profile first.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      const company = companiesArray[0];
 
       if (company) {
         setCompanyId(company.id);
