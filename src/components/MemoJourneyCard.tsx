@@ -10,6 +10,7 @@ interface MemoJourneyCardProps {
   memoGenerated: boolean;
   hasPaid: boolean;
   nextSection?: string;
+  companyId: string;
 }
 
 export const MemoJourneyCard = ({
@@ -17,7 +18,8 @@ export const MemoJourneyCard = ({
   totalQuestions,
   memoGenerated,
   hasPaid,
-  nextSection = "your profile"
+  nextSection = "your profile",
+  companyId
 }: MemoJourneyCardProps) => {
   const navigate = useNavigate();
   const percentage = (completedQuestions / totalQuestions) * 100;
@@ -141,7 +143,7 @@ export const MemoJourneyCard = ({
             <Button 
               size="lg" 
               className="w-full text-lg font-semibold bg-primary hover:bg-primary/90"
-              onClick={() => navigate("/memo-builder")}
+              onClick={() => navigate(`/memo?companyId=${companyId}`)}
             >
               Generate Investment Memo
               <Sparkles className="ml-2 w-5 h-5" />

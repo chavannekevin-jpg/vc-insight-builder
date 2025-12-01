@@ -429,6 +429,7 @@ export default function FreemiumHub() {
                   memoGenerated={!!memoGenerated}
                   hasPaid={hasPaid}
                   nextSection={getNextSection()}
+                  companyId={company.id}
                 />
               )}
 
