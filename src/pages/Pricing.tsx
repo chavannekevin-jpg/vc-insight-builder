@@ -5,12 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Check, X, Zap, BookOpen, Sparkles, Users } from "lucide-react";
-import { WaitlistBanner } from "@/components/WaitlistBanner";
-import { useWaitlistMode } from "@/hooks/useWaitlistMode";
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const { data: waitlistMode } = useWaitlistMode();
 
   const pricingPlans = [
     {
@@ -35,11 +32,9 @@ const Pricing = () => {
     {
       name: "Investment Memo Builder",
       subtitle: "Your Fundraising Weapon",
-      price: waitlistMode?.isActive ? "€29.99" : "€59.99",
-      originalPrice: waitlistMode?.isActive ? "€59.99" : null,
-      description: waitlistMode?.isActive 
-        ? "50% OFF Pre-Launch • Professional memo VCs read" 
-        : "Professional memo that VCs actually read",
+      price: "€59.99",
+      originalPrice: null,
+      description: "Professional memo that VCs actually read",
       icon: Sparkles,
       features: [
         { text: "Everything in Freemium", included: true, bold: true },
@@ -50,10 +45,10 @@ const Pricing = () => {
         { text: "Unlimited memo updates", included: false },
         { text: "Network exposure to 400+ investors", included: false }
       ],
-      cta: waitlistMode?.isActive ? "Join Waitlist - 50% Off" : "Build My Memo",
+      cta: "Build My Memo",
       popular: true,
       color: "primary",
-      waitlistBadge: waitlistMode?.isActive
+      waitlistBadge: false
     },
     {
       name: "Network Access",
@@ -102,7 +97,6 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header />
-      <WaitlistBanner />
 
       {/* Hero Section */}
       <section className="py-20 px-4">

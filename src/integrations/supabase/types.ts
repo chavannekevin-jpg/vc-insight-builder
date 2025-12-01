@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           description: string | null
           founder_id: string
+          has_premium: boolean | null
           id: string
           name: string
           stage: string
@@ -32,6 +33,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           founder_id: string
+          has_premium?: boolean | null
           id?: string
           name: string
           stage: string
@@ -43,6 +45,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           founder_id?: string
+          has_premium?: boolean | null
           id?: string
           name?: string
           stage?: string

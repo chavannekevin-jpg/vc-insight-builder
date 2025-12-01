@@ -49,10 +49,8 @@ import GeneratedMemo from "./pages/GeneratedMemo";
 import PreSeedGuide from "./pages/PreSeedGuide";
 import ProblemSlideGuide from "./pages/ProblemSlideGuide";
 import SolutionSlideGuide from "./pages/SolutionSlideGuide";
-import WaitlistCheckout from "./pages/WaitlistCheckout";
-import WaitlistConfirmation from "./pages/WaitlistConfirmation";
-import AdminWaitlist from "./pages/AdminWaitlist";
 import AdminDiscountCodes from "./pages/AdminDiscountCodes";
+import AdminUserAccess from "./pages/AdminUserAccess";
 import CheckoutMemo from "./pages/CheckoutMemo";
 import SampleMemo from "./pages/SampleMemo";
 import NotFound from "./pages/NotFound";
@@ -109,14 +107,12 @@ const App = () => (
           <Route path="/product" element={<Product />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/checkout" element={<Checkout />} />
-          <Route path="/waitlist-checkout" element={<WaitlistCheckout />} />
-          <Route path="/waitlist-confirmation" element={<WaitlistConfirmation />} />
           <Route path="/sample-memo" element={<SampleMemo />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/articles" element={<AdminArticles />} />
           <Route path="/admin/prompts" element={<AdminPrompts />} />
           <Route path="/admin/memo-builder" element={<MemoBuilder />} />
-          <Route path="/admin/waitlist" element={<AdminWaitlist />} />
+          <Route path="/admin/user-access" element={<AdminUserAccess />} />
           <Route path="/admin/discount-codes" element={<AdminDiscountCodes />} />
           <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
           <Route path="/checkout" element={<CheckoutMemo />} />

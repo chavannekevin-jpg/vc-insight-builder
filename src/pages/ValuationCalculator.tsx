@@ -20,8 +20,6 @@ import {
   Sparkles
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { WaitlistModal } from "@/components/WaitlistModal";
-import { useWaitlistMode, useUserWaitlistStatus } from "@/hooks/useWaitlistMode";
 
 type SignalLevel = "realistic" | "aggressive" | "inflated" | "conservative";
 
@@ -32,10 +30,6 @@ export default function ValuationCalculator() {
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
-  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
-
-  const { data: waitlistMode } = useWaitlistMode();
-  const { data: userWaitlistStatus } = useUserWaitlistStatus(userId || undefined, companyId || undefined);
   
   const [raiseAmount, setRaiseAmount] = useState(500000);
   const [dilution, setDilution] = useState([15]);
@@ -506,13 +500,7 @@ export default function ValuationCalculator() {
                           Numbers don't raise capital. Stories do.
                         </p>
                         <Button 
-                          onClick={() => {
-                            if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
-                              setShowWaitlistModal(true);
-                            } else {
-                              companyId && navigate(`/memo?companyId=${companyId}`);
-                            }
-                          }}
+                          onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
                           variant="outline"
                           size="sm"
                           className="w-full text-xs border-destructive/40 hover:bg-destructive/20"
@@ -625,13 +613,7 @@ export default function ValuationCalculator() {
                       </div>
                     </div>
                     <Button 
-                      onClick={() => {
-                        if (waitlistMode?.isActive && (!userWaitlistStatus || !userWaitlistStatus.has_paid)) {
-                          setShowWaitlistModal(true);
-                        } else {
-                          companyId && navigate(`/memo?companyId=${companyId}`);
-                        }
-                      }}
+                      onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
                       variant="destructive"
                       className="w-full font-bold"
                       size="lg"
@@ -646,11 +628,6 @@ export default function ValuationCalculator() {
         </div>
       </div>
 
-      <WaitlistModal 
-        open={showWaitlistModal} 
-        onOpenChange={setShowWaitlistModal}
-        companyId={companyId || undefined}
-      />
     </TooltipProvider>
   );
 }
