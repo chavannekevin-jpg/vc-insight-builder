@@ -402,7 +402,17 @@ export default function FreemiumHub() {
                           </p>
                         </div>
                         <Button
-                          onClick={() => navigate(`/memo?companyId=${company.id}`)}
+                          onClick={() => {
+                            if (!company?.id) {
+                              toast({
+                                title: "Error",
+                                description: "Company ID not found. Please refresh the page.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            navigate(`/memo?companyId=${company.id}`);
+                          }}
                           className="gradient-primary shadow-glow"
                         >
                           View Memo

@@ -35,14 +35,17 @@ export default function GeneratedMemo() {
   useEffect(() => {
     const init = async () => {
       if (!companyId) {
+        console.error("GeneratedMemo: No company ID provided in URL");
         toast({
           title: "Error",
-          description: "No company ID provided",
+          description: "No company ID provided. Redirecting to portal...",
           variant: "destructive"
         });
         navigate("/portal");
         return;
       }
+
+      console.log("GeneratedMemo: Loading memo for company:", companyId);
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) setUserId(user.id);
@@ -74,12 +77,23 @@ export default function GeneratedMemo() {
 
         if (!hasContent) {
           // No memo or empty memo exists, generate one
-          console.log("Generating new memo...");
+          console.log("GeneratedMemo: No existing memo found, generating new one...");
           const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-full-memo', {
             body: { companyId }
           });
 
-          if (functionError) throw functionError;
+          if (functionError) {
+            console.error("GeneratedMemo: Edge function error:", functionError);
+            throw new Error(
+              functionError.message === "Not Found" || functionError.status === 404
+                ? "Memo generation service is currently unavailable. Please try again in a moment."
+                : functionError.message || "Failed to generate memo"
+            );
+          }
+
+          if (!functionData || !functionData.structuredContent) {
+            throw new Error("No structured content returned from generation");
+          }
 
           setMemoContent(functionData.structuredContent);
           setCompanyInfo(functionData.company);
@@ -96,13 +110,14 @@ export default function GeneratedMemo() {
           setMemoContent(memo.structured_content as unknown as MemoStructuredContent);
           setCompanyInfo(company);
         }
-      } catch (error) {
-        console.error("Error loading memo:", error);
+      } catch (error: any) {
+        console.error("GeneratedMemo: Error loading memo:", error);
         toast({
-          title: "Error",
-          description: "Failed to load memo",
+          title: "Error Loading Memo",
+          description: error?.message || "Failed to load memo. Please try again.",
           variant: "destructive"
         });
+        // Stay on page but show error state
       }
       
       setLoading(false);
@@ -136,8 +151,12 @@ export default function GeneratedMemo() {
       console.log(`Memo regeneration completed in ${duration}s`);
 
       if (functionError) {
-        console.error("Function error details:", functionError);
-        throw functionError;
+        console.error("GeneratedMemo: Regenerate function error:", functionError);
+        throw new Error(
+          functionError.message === "Not Found" || functionError.status === 404
+            ? "Memo generation service (404). The edge function may not be deployed yet."
+            : functionError.message || "Failed to regenerate memo"
+        );
       }
 
       if (!functionData || !functionData.structuredContent) {
