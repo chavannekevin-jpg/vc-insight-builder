@@ -132,6 +132,14 @@ export default function CheckoutMemo() {
 
         if (purchaseError) throw purchaseError;
 
+        // Grant premium access
+        const { error: updateError } = await supabase
+          .from("companies")
+          .update({ has_premium: true })
+          .eq("id", companyId);
+
+        if (updateError) throw updateError;
+
       // Update discount code usage via edge function (users can't directly update)
       if (appliedDiscount) {
         await supabase.functions.invoke('use-discount', {
@@ -144,8 +152,8 @@ export default function CheckoutMemo() {
           description: "Your memo is being generated now!",
         });
 
-        // Navigate back to portal to generate memo
-        navigate(`/portal?companyId=${companyId}`);
+        // Navigate to memo page
+        navigate(`/memo?companyId=${companyId}`);
         return;
       }
 
@@ -164,6 +172,14 @@ export default function CheckoutMemo() {
 
       if (purchaseError) throw purchaseError;
 
+      // Grant premium access
+      const { error: updateError } = await supabase
+        .from("companies")
+        .update({ has_premium: true })
+        .eq("id", companyId);
+
+      if (updateError) throw updateError;
+
       // Update discount code usage via edge function (users can't directly update)
       if (appliedDiscount) {
         await supabase.functions.invoke('use-discount', {
@@ -176,8 +192,8 @@ export default function CheckoutMemo() {
         description: "Your memo is being generated now!",
       });
 
-      // Navigate back to portal to generate memo
-      navigate(`/portal?companyId=${companyId}`);
+      // Navigate to memo page
+      navigate(`/memo?companyId=${companyId}`);
     } catch (error) {
       console.error("Purchase error:", error);
       toast({

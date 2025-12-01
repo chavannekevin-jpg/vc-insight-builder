@@ -177,7 +177,7 @@ export const MemoJourneyCard = ({
               </Button>
               <Button 
                 className="h-auto py-4 flex-col gap-2 bg-primary hover:bg-primary/90"
-                onClick={() => navigate("/waitlist-checkout")}
+                onClick={() => navigate(`/checkout?companyId=${companyId}`)}
               >
                 <Sparkles className="w-5 h-5" />
                 <span>Unlock Full Memo</span>
