@@ -24,42 +24,34 @@ interface MemoResponse {
 }
 
 const QUESTION_LABELS: Record<string, { section: string; title: string }> = {
+  // Problem Section
   problem_description: { section: "Problem", title: "What Makes People Suffer?" },
-  problem_workflow: { section: "Problem", title: "Show Us The Broken System" },
-  solution_description: { section: "Solution", title: "Your Weapon of Choice" },
-  solution_features: { section: "Solution", title: "Unlock Your Arsenal" },
-  solution_social_proof: { section: "Solution", title: "Show Me You Have Believers" },
-  market_target_customer: { section: "Market", title: "Who's Paying The Bills?" },
-  market_buying_persona: { section: "Market", title: "The Money Person" },
-  market_current_acv: { section: "Market", title: "Your Price Tag Today" },
-  market_projected_acv: { section: "Market", title: "Your Future Price Tag" },
-  competition_mission: { section: "Competition", title: "Your Battle Cry" },
-  competition_competitors: { section: "Competition", title: "Name Your Enemies" },
-  competition_strength: { section: "Competition", title: "Your Secret Weapon" },
-  team_size: { section: "Team", title: "Headcount Power" },
-  team_functions: { section: "Team", title: "Who's In Your Elite Squad?" },
-  team_founders: { section: "Team", title: "Meet The Founding Legends" },
-  team_history: { section: "Team", title: "Team Chemistry Check" },
-  team_ownership: { section: "Team", title: "Skin In The Game" },
-  usp_differentiators: { section: "USP", title: "Your Unfair Advantages" },
-  usp_distribution: { section: "USP", title: "Network Effect Unlocked?" },
-  usp_business_model: { section: "USP", title: "The Money Machine Design" },
-  usp_compliance: { section: "USP", title: "Your Regulatory Moat" },
-  usp_data: { section: "USP", title: "Data Gold Mine?" },
-  usp_customer_rationale: { section: "USP", title: "Why Customers Choose You" },
-  business_model_type: { section: "Business Model", title: "How You Print Money" },
-  business_model_revenue: { section: "Business Model", title: "Revenue Breakdown" },
-  business_model_acv_growth: { section: "Business Model", title: "Growth Trajectory" },
-  business_model_gtm: { section: "Business Model", title: "Sales War Room Strategy" },
-  business_model_margins: { section: "Business Model", title: "Margin Magic" },
-  business_model_future: { section: "Business Model", title: "Future Money Moves" },
-  traction_launch: { section: "Traction", title: "Launch & First Wins" },
-  traction_revenue: { section: "Traction", title: "Show Me You Have Momentum" },
-  traction_customers: { section: "Traction", title: "Army Size" },
-  traction_key_customers: { section: "Traction", title: "Name Drop Your Stars" },
-  traction_efficiency: { section: "Traction", title: "Unit Economics Flex" },
-  traction_funding: { section: "Traction", title: "Who Believes In You?" },
-  traction_milestones: { section: "Traction", title: "Major Victory Lap" },
+  problem_validation: { section: "Problem", title: "How Do You Know This Hurts?" },
+  
+  // Solution Section
+  solution_description: { section: "Solution", title: "Your Killer Solution" },
+  solution_demo: { section: "Solution", title: "Show, Don't Tell" },
+  
+  // Market Section
+  market_size: { section: "Market", title: "How Big Is This Thing?" },
+  market_timing: { section: "Market", title: "Why Now?" },
+  target_customer: { section: "Market", title: "Who Pays You?" },
+  
+  // Competition Section
+  competitors: { section: "Competition", title: "Who Else Wants This?" },
+  competitive_advantage: { section: "Competition", title: "Your Competitive Edge" },
+  
+  // Team Section
+  founder_background: { section: "Team", title: "Why You?" },
+  team_composition: { section: "Team", title: "The Band" },
+  
+  // Business Model Section
+  revenue_model: { section: "Business Model", title: "Show Me The Money" },
+  unit_economics: { section: "Business Model", title: "The Math" },
+  
+  // Traction Section
+  current_traction: { section: "Traction", title: "Proof of Life" },
+  key_milestones: { section: "Traction", title: "What's Next?" },
 };
 
 export default function CompanyProfile() {
@@ -139,35 +131,49 @@ export default function CompanyProfile() {
     }
   };
 
-  const handleSaveSection = async (sectionName: string) => {
+  const handleSaveSection = async (sectionName: string, questionKey: string) => {
     if (!company || !editedSectionContent.trim()) return;
 
     try {
-      // Get all responses for this section
-      const sectionResponses = responses.filter(
-        (r) => QUESTION_LABELS[r.question_key]?.section === sectionName
-      );
+      // Check if response exists
+      const existingResponse = responses.find((r) => r.question_key === questionKey);
 
-      if (sectionResponses.length === 0) return;
+      if (existingResponse) {
+        // Update existing response
+        const { error } = await supabase
+          .from("memo_responses")
+          .update({ answer: editedSectionContent })
+          .eq("company_id", company.id)
+          .eq("question_key", questionKey);
 
-      // Update the first response with the edited content
-      const firstResponse = sectionResponses[0];
-      const { error } = await supabase
-        .from("memo_responses")
-        .update({ answer: editedSectionContent })
-        .eq("company_id", company.id)
-        .eq("question_key", firstResponse.question_key);
+        if (error) throw error;
 
-      if (error) throw error;
+        // Update local state
+        setResponses(
+          responses.map((r) =>
+            r.question_key === questionKey
+              ? { ...r, answer: editedSectionContent }
+              : r
+          )
+        );
+      } else {
+        // Create new response
+        const { error } = await supabase
+          .from("memo_responses")
+          .insert({
+            company_id: company.id,
+            question_key: questionKey,
+            answer: editedSectionContent,
+          });
 
-      // Update local state
-      setResponses(
-        responses.map((r) =>
-          r.question_key === firstResponse.question_key
-            ? { ...r, answer: editedSectionContent }
-            : r
-        )
-      );
+        if (error) throw error;
+
+        // Update local state
+        setResponses([
+          ...responses,
+          { question_key: questionKey, answer: editedSectionContent },
+        ]);
+      }
 
       setEditingSection(null);
       toast({
@@ -191,7 +197,7 @@ export default function CompanyProfile() {
       // Group responses by section
       const sectionData: Record<string, Record<string, string>> = {};
       
-      ["Problem", "Solution", "Market", "Competition", "Team", "USP", "Business Model", "Traction"].forEach(
+      ["Problem", "Solution", "Market", "Competition", "Team", "Business Model", "Traction"].forEach(
         (sectionName) => {
           const sectionResponses = responses.filter(
             (r) => QUESTION_LABELS[r.question_key]?.section === sectionName
@@ -393,16 +399,20 @@ export default function CompanyProfile() {
         </div>
 
         {/* Memo Sections */}
-        {["Problem", "Solution", "Market", "Competition", "Team", "USP", "Business Model", "Traction"].map(
+        {["Problem", "Solution", "Market", "Competition", "Team", "Business Model", "Traction"].map(
           (sectionName) => {
+            // Get the primary question key for this section
+            const primaryQuestionKey = Object.entries(QUESTION_LABELS).find(
+              ([_, label]) => label.section === sectionName
+            )?.[0] || "";
+
             const sectionResponses = responses.filter(
               (r) => QUESTION_LABELS[r.question_key]?.section === sectionName
             );
 
-            if (sectionResponses.length === 0) return null;
-
-            // Get the first response which contains the section content (either original or AI-enhanced)
+            // Get the first response which contains the section content
             const displayContent = sectionResponses[0]?.answer || "";
+            const hasContent = sectionResponses.length > 0 && displayContent;
 
             return (
               <div key={sectionName} className="bg-card border border-border rounded-lg p-8 space-y-6">
@@ -415,7 +425,7 @@ export default function CompanyProfile() {
                       <>
                         <Button
                           size="sm"
-                          onClick={() => handleSaveSection(sectionName)}
+                          onClick={() => handleSaveSection(sectionName, primaryQuestionKey)}
                           className="gap-2"
                         >
                           <Check className="w-4 h-4" />
@@ -440,7 +450,7 @@ export default function CompanyProfile() {
                         className="gap-2"
                       >
                         <Edit className="w-4 h-4" />
-                        Edit
+                        {hasContent ? "Edit" : "Add Content"}
                       </Button>
                     )}
                   </div>
@@ -451,13 +461,33 @@ export default function CompanyProfile() {
                     value={editedSectionContent}
                     onChange={(e) => setEditedSectionContent(e.target.value)}
                     className="min-h-[300px] text-base leading-relaxed"
+                    placeholder={`Add ${sectionName.toLowerCase()} content here...`}
                     autoFocus
                   />
-                ) : (
+                ) : hasContent ? (
                   <div className="prose prose-slate max-w-none">
                     <p className="text-foreground text-base leading-relaxed whitespace-pre-wrap">
                       {displayContent}
                     </p>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center py-12 text-muted-foreground">
+                    <div className="text-center space-y-4">
+                      <FileText className="w-12 h-12 mx-auto opacity-50" />
+                      <p className="text-sm">No content yet for this section.</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditingSection(sectionName);
+                          setEditedSectionContent("");
+                        }}
+                        className="gap-2"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Add Content
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
