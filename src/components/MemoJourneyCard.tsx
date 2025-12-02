@@ -113,7 +113,7 @@ export const MemoJourneyCard = ({
                   Profile Complete
                 </Badge>
                 <h2 className="text-3xl font-display font-bold mb-2">Ready to Generate Your Memo</h2>
-                <p className="text-muted-foreground">All questions answered — let AI create your investment memo</p>
+                <p className="text-muted-foreground">All questions answered — let's create your investment memo</p>
               </div>
               <CheckCircle2 className="w-12 h-12 text-primary" />
             </div>
