@@ -263,7 +263,7 @@ export default function CheckoutMemo() {
                   id="discount"
                   placeholder="Enter discount code"
                   value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                  onChange={(e) => setDiscountCode(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && validateDiscountCode()}
                 />
                 <Button

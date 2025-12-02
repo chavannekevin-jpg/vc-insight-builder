@@ -30,9 +30,9 @@ Deno.serve(async (req) => {
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const trimmedCode = code.trim().toUpperCase();
+    const trimmedCode = code.trim();
 
-    console.log(`[VALIDATE-DISCOUNT] Validating code: ${trimmedCode}`);
+    console.log(`[VALIDATE-DISCOUNT] Validating code: "${trimmedCode}" (original input)`);
 
     // Try to retrieve coupon from Stripe (coupon IDs are case-sensitive, try both)
     let coupon = null;
