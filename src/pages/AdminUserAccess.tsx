@@ -147,7 +147,13 @@ const AdminUserAccess = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Sign out error:", error);
+      }
+    }
     navigate("/");
   };
 
