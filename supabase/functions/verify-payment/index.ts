@@ -84,6 +84,11 @@ serve(async (req) => {
 
     if (existingPurchase) {
       logStep("Purchase already processed", { companyId });
+      // Ensure premium is still granted (in case previous update failed)
+      await supabaseClient
+        .from("companies")
+        .update({ has_premium: true })
+        .eq("id", companyId);
       return new Response(JSON.stringify({ success: true, alreadyProcessed: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
