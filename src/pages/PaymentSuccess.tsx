@@ -33,6 +33,10 @@ export default function PaymentSuccess() {
 
         if (data?.success) {
           setVerified(true);
+          // Auto-redirect to memo after successful verification
+          setTimeout(() => {
+            navigate(`/memo?companyId=${companyId}`);
+          }, 2000);
         } else {
           setError(data?.error || "Payment verification failed");
         }
@@ -106,7 +110,7 @@ export default function PaymentSuccess() {
               Payment Successful!
             </h1>
             <p className="text-muted-foreground">
-              Thank you for your purchase. Your investment memo is ready to be generated.
+              Thank you for your purchase. Redirecting you to your memo...
             </p>
           </div>
 
