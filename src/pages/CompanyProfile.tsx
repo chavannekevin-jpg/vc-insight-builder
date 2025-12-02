@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Edit, Sparkles, Loader2, Check, X } from "lucide-react";
+import { FileText, Edit, Sparkles, Loader2, Check, X, Zap, Rocket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { QuickFillWizard } from "@/components/QuickFillWizard";
 
 interface Company {
   id: string;
@@ -65,6 +66,7 @@ export default function CompanyProfile() {
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editedCompanyName, setEditedCompanyName] = useState("");
   const [editedSectionContent, setEditedSectionContent] = useState("");
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   useEffect(() => {
     const loadCompanyData = async () => {
@@ -286,23 +288,91 @@ export default function CompanyProfile() {
     );
   }
 
+  const filledSections = new Set(responses.filter(r => r.answer?.trim()).map(r => QUESTION_LABELS[r.question_key]?.section)).size;
+  const totalSections = 7;
+  const isProfileEmpty = responses.length === 0 || !responses.some(r => r.answer?.trim());
+
+  const handleWizardComplete = (newResponses: MemoResponse[]) => {
+    setResponses(prev => {
+      const updated = [...prev];
+      newResponses.forEach(nr => {
+        const idx = updated.findIndex(r => r.question_key === nr.question_key);
+        if (idx >= 0) {
+          updated[idx] = nr;
+        } else {
+          updated.push(nr);
+        }
+      });
+      return updated;
+    });
+    toast({
+      title: "Profile updated!",
+      description: "Your answers have been saved.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
+      {/* Quick Fill Wizard */}
+      {company && (
+        <QuickFillWizard
+          open={wizardOpen}
+          onOpenChange={setWizardOpen}
+          companyId={company.id}
+          companyName={company.name}
+          companyDescription={company.description || ""}
+          companyStage={company.stage}
+          existingResponses={responses}
+          onComplete={handleWizardComplete}
+        />
+      )}
+
       <div className="max-w-5xl mx-auto px-6 py-12 space-y-8">
+        {/* Hero Banner for Empty Profiles */}
+        {isProfileEmpty && (
+          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border border-primary/20 rounded-xl p-8 text-center space-y-4">
+            <div className="flex justify-center">
+              <Rocket className="w-12 h-12 text-primary" />
+            </div>
+            <h2 className="text-2xl font-serif font-bold">New here? Let's get you funded!</h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Complete your profile in under 5 minutes with our guided wizard. 
+              We'll help you craft the perfect pitch for each section.
+            </p>
+            <Button onClick={() => setWizardOpen(true)} size="lg" className="gap-2">
+              <Zap className="w-5 h-5" />
+              Quick Fill Your Profile
+            </Button>
+          </div>
+        )}
+
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
             <Button variant="outline" onClick={() => navigate("/hub")}>
               ← Back to Hub
             </Button>
             <div className="flex items-center gap-3">
               <FileText className="w-8 h-8 text-primary" />
-              <h1 className="text-4xl font-serif font-bold">My Company Details</h1>
+              <div>
+                <h1 className="text-4xl font-serif font-bold">My Company Details</h1>
+                <p className="text-sm text-muted-foreground">
+                  {filledSections}/{totalSections} sections completed
+                </p>
+              </div>
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
+            <Button
+              variant="outline"
+              onClick={() => setWizardOpen(true)}
+              className="gap-2"
+            >
+              <Zap className="w-4 h-4" />
+              Quick Fill
+            </Button>
             <Button
               onClick={handleEnhanceContent}
               disabled={enhancing || responses.length === 0}
