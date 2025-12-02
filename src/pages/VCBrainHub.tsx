@@ -29,6 +29,9 @@ const navigationSections: NavSection[] = [{
 }, {
   title: "Pitch Deck Library",
   items: [{
+    label: "Executive Summary",
+    path: "/vcbrain/deck/executive-summary"
+  }, {
     label: "Problem Slide",
     path: "/vcbrain/deck/problem"
   }, {
@@ -53,17 +56,26 @@ const navigationSections: NavSection[] = [{
     label: "Team Slide",
     path: "/vcbrain/deck/team"
   }, {
+    label: "GTM Slide",
+    path: "/vcbrain/deck/gtm"
+  }, {
     label: "Vision Slide",
     path: "/vcbrain/deck/vision"
   }, {
     label: "Ask Slide",
     path: "/vcbrain/deck/ask"
+  }]
+}, {
+  title: "Term Sheets & Deals",
+  items: [{
+    label: "Funding Instruments",
+    path: "/vcbrain/deals/instruments"
   }, {
-    label: "GTM Slide",
-    path: "/vcbrain/deck/gtm"
+    label: "Key Terms Explained",
+    path: "/vcbrain/deals/terms"
   }, {
-    label: "Executive Summary",
-    path: "/vcbrain/deck/executive-summary"
+    label: "Negotiation Tactics",
+    path: "/vcbrain/deals/negotiation"
   }]
 }, {
   title: "Tactical Guides",
@@ -83,14 +95,14 @@ const navigationSections: NavSection[] = [{
     label: "Pitching Without Hype",
     path: "/vcbrain/guides/pitching"
   }, {
-    label: "Why Startups Actually Die",
-    path: "/vcbrain/guides/death"
-  }, {
     label: "Founder-Market Fit",
     path: "/vcbrain/guides/founder-fit"
   }, {
     label: "Fundraising Timeline Reality",
     path: "/vcbrain/guides/timeline"
+  }, {
+    label: "Why Startups Actually Die",
+    path: "/vcbrain/guides/death"
   }]
 }, {
   title: "Founder Mistakes",

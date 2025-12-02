@@ -23,6 +23,24 @@ import StageComparison from "./pages/vcbrain/StageComparison";
 import VCGlossary from "./pages/vcbrain/VCGlossary";
 import RedFlagDatabase from "./pages/vcbrain/RedFlagDatabase";
 import PitchChecklist from "./pages/vcbrain/PitchChecklist";
+import CompetitionSlide from "./pages/vcbrain/CompetitionSlide";
+import FinancialsSlide from "./pages/vcbrain/FinancialsSlide";
+import VisionSlide from "./pages/vcbrain/VisionSlide";
+import AskSlide from "./pages/vcbrain/AskSlide";
+import GTMSlide from "./pages/vcbrain/GTMSlide";
+import ExecutiveSummarySlide from "./pages/vcbrain/ExecutiveSummarySlide";
+import BuildingDemos from "./pages/vcbrain/BuildingDemos";
+import PitchingWithoutHype from "./pages/vcbrain/PitchingWithoutHype";
+import FounderMarketFit from "./pages/vcbrain/FounderMarketFit";
+import FundraisingTimeline from "./pages/vcbrain/FundraisingTimeline";
+import FatalErrors from "./pages/vcbrain/FatalErrors";
+import RedFlagsVCsSpot from "./pages/vcbrain/RedFlagsVCsSpot";
+import DeckDisasters from "./pages/vcbrain/DeckDisasters";
+import EmailPitchFails from "./pages/vcbrain/EmailPitchFails";
+import InvestorScorecard from "./pages/vcbrain/InvestorScorecard";
+import FundingInstruments from "./pages/vcbrain/FundingInstruments";
+import KeyTermsExplained from "./pages/vcbrain/KeyTermsExplained";
+import NegotiationTactics from "./pages/vcbrain/NegotiationTactics";
 import Portal from "./pages/Portal";
 import Auth from "./pages/Auth";
 import About from "./pages/About";
@@ -86,9 +104,27 @@ const App = () => (
             <Route path="guides/tam" element={<FakeTAMs />} />
             <Route path="guides/death" element={<WhyStartupsDie />} />
             <Route path="stage-comparison" element={<StageComparison />} />
+            <Route path="deck/competition" element={<CompetitionSlide />} />
+            <Route path="deck/financials" element={<FinancialsSlide />} />
+            <Route path="deck/vision" element={<VisionSlide />} />
+            <Route path="deck/ask" element={<AskSlide />} />
+            <Route path="deck/gtm" element={<GTMSlide />} />
+            <Route path="deck/executive-summary" element={<ExecutiveSummarySlide />} />
+            <Route path="guides/demos" element={<BuildingDemos />} />
+            <Route path="guides/pitching" element={<PitchingWithoutHype />} />
+            <Route path="guides/founder-fit" element={<FounderMarketFit />} />
+            <Route path="guides/timeline" element={<FundraisingTimeline />} />
+            <Route path="mistakes/fatal" element={<FatalErrors />} />
+            <Route path="mistakes/red-flags" element={<RedFlagsVCsSpot />} />
+            <Route path="mistakes/deck-disasters" element={<DeckDisasters />} />
+            <Route path="mistakes/email-fails" element={<EmailPitchFails />} />
             <Route path="tools/glossary" element={<VCGlossary />} />
             <Route path="tools/red-flags" element={<RedFlagDatabase />} />
             <Route path="tools/checklist" element={<PitchChecklist />} />
+            <Route path="tools/scorecard" element={<InvestorScorecard />} />
+            <Route path="deals/instruments" element={<FundingInstruments />} />
+            <Route path="deals/terms" element={<KeyTermsExplained />} />
+            <Route path="deals/negotiation" element={<NegotiationTactics />} />
           </Route>
           <Route path="/pre-seed-guide" element={<PreSeedGuide />} />
           <Route path="/problem-slide-guide" element={<ProblemSlideGuide />} />
