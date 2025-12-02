@@ -76,8 +76,8 @@ serve(async (req) => {
       },
     };
 
-    // Apply discount if provided
-    if (discountPercent && discountPercent > 0 && discountPercent < 100) {
+    // Apply discount if provided (allow up to 100%)
+    if (discountPercent && discountPercent > 0 && discountPercent <= 100) {
       // Create a coupon for this specific discount
       const coupon = await stripe.coupons.create({
         percent_off: discountPercent,
