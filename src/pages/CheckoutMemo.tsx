@@ -22,7 +22,10 @@ export default function CheckoutMemo() {
   const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
   
   const basePrice = 59.99;
-  const [finalPrice, setFinalPrice] = useState(basePrice);
+  const earlyAccessDiscount = 50; // 50% early access discount
+  const discountedPrice = basePrice * (1 - earlyAccessDiscount / 100);
+  const [finalPrice, setFinalPrice] = useState(discountedPrice);
+  const [hasEarlyAccess] = useState(true); // Early access pricing active
 
   useEffect(() => {
     checkAuth();
@@ -151,12 +154,12 @@ export default function CheckoutMemo() {
         return;
       }
 
-      // Create Stripe checkout session
+      // Create Stripe checkout session with early access discount
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           companyId,
-          discountCode: appliedDiscount?.code || null,
-          discountPercent: appliedDiscount?.discount_percent || 0,
+          discountCode: appliedDiscount?.code || "EARLY_ACCESS",
+          discountPercent: appliedDiscount?.discount_percent || earlyAccessDiscount,
           discountId: appliedDiscount?.id || null,
         }
       });
@@ -279,30 +282,29 @@ export default function CheckoutMemo() {
           <div className="space-y-3 pt-4 border-t border-border">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Base price</span>
-              <span className={appliedDiscount ? "line-through text-muted-foreground" : "font-medium"}>
+              <span className="line-through text-muted-foreground">
                 €{basePrice.toFixed(2)}
               </span>
             </div>
             
-            {appliedDiscount && (
-              <>
-                <div className="flex items-center justify-between text-success">
-                  <span>Discount ({appliedDiscount.discount_percent}%)</span>
-                  <span>-€{((basePrice * appliedDiscount.discount_percent) / 100).toFixed(2)}</span>
-                </div>
-                <div className="flex items-center justify-between text-2xl font-bold pt-2">
-                  <span>Total</span>
-                  <span className="text-primary">€{finalPrice.toFixed(2)}</span>
-                </div>
-              </>
-            )}
-
-            {!appliedDiscount && (
-              <div className="flex items-center justify-between text-2xl font-bold pt-2">
-                <span>Total</span>
-                <span className="text-primary">€{finalPrice.toFixed(2)}</span>
+            {hasEarlyAccess && !appliedDiscount && (
+              <div className="flex items-center justify-between text-success">
+                <span>Early Access Discount ({earlyAccessDiscount}%)</span>
+                <span>-€{(basePrice * earlyAccessDiscount / 100).toFixed(2)}</span>
               </div>
             )}
+            
+            {appliedDiscount && (
+              <div className="flex items-center justify-between text-success">
+                <span>Discount ({appliedDiscount.discount_percent}%)</span>
+                <span>-€{((basePrice * appliedDiscount.discount_percent) / 100).toFixed(2)}</span>
+              </div>
+            )}
+            
+            <div className="flex items-center justify-between text-2xl font-bold pt-2">
+              <span>Total</span>
+              <span className="text-primary">€{finalPrice.toFixed(2)}</span>
+            </div>
           </div>
 
           <div className="pt-4 space-y-4">
