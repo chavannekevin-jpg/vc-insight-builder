@@ -8,6 +8,7 @@ import { ModernCard } from "@/components/ModernCard";
 import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, Tag, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePricingSettings } from "@/hooks/usePricingSettings";
 
 export default function CheckoutMemo() {
   const navigate = useNavigate();
@@ -21,15 +22,25 @@ export default function CheckoutMemo() {
   const [validatingCode, setValidatingCode] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
   
-  const basePrice = 59.99;
-  const earlyAccessDiscount = 50; // 50% early access discount
-  const discountedPrice = basePrice * (1 - earlyAccessDiscount / 100);
-  const [finalPrice, setFinalPrice] = useState(discountedPrice);
-  const [hasEarlyAccess] = useState(true); // Early access pricing active
+  const { data: pricingSettings, isLoading: pricingLoading } = usePricingSettings();
+  
+  const basePrice = pricingSettings?.memo_pricing.base_price ?? 59.99;
+  const earlyAccessDiscount = pricingSettings?.memo_pricing.early_access_discount ?? 50;
+  const earlyAccessEnabled = pricingSettings?.memo_pricing.early_access_enabled ?? true;
+  
+  const discountedPrice = earlyAccessEnabled ? basePrice * (1 - earlyAccessDiscount / 100) : basePrice;
+  const [finalPrice, setFinalPrice] = useState<number | null>(null);
 
   useEffect(() => {
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    if (pricingSettings && finalPrice === null) {
+      const price = earlyAccessEnabled ? basePrice * (1 - earlyAccessDiscount / 100) : basePrice;
+      setFinalPrice(price);
+    }
+  }, [pricingSettings, finalPrice, basePrice, earlyAccessDiscount, earlyAccessEnabled]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -114,7 +125,7 @@ export default function CheckoutMemo() {
   };
 
   const handlePurchase = async () => {
-    if (!user || !companyId) return;
+    if (!user || !companyId || finalPrice === null) return;
 
     setProcessing(true);
 
@@ -158,8 +169,8 @@ export default function CheckoutMemo() {
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           companyId,
-          discountCode: appliedDiscount?.code || "EARLY_ACCESS",
-          discountPercent: appliedDiscount?.discount_percent || earlyAccessDiscount,
+          discountCode: appliedDiscount?.code || (earlyAccessEnabled ? "EARLY_ACCESS" : null),
+          discountPercent: appliedDiscount?.discount_percent || (earlyAccessEnabled ? earlyAccessDiscount : 0),
           discountId: appliedDiscount?.id || null,
         }
       });
@@ -186,8 +197,16 @@ export default function CheckoutMemo() {
   const removeDiscount = () => {
     setAppliedDiscount(null);
     setDiscountCode("");
-    setFinalPrice(basePrice);
+    setFinalPrice(discountedPrice);
   };
+
+  if (pricingLoading || finalPrice === null) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -282,12 +301,12 @@ export default function CheckoutMemo() {
           <div className="space-y-3 pt-4 border-t border-border">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Base price</span>
-              <span className="line-through text-muted-foreground">
+              <span className={earlyAccessEnabled || appliedDiscount ? "line-through text-muted-foreground" : "font-medium"}>
                 €{basePrice.toFixed(2)}
               </span>
             </div>
             
-            {hasEarlyAccess && !appliedDiscount && (
+            {earlyAccessEnabled && !appliedDiscount && (
               <div className="flex items-center justify-between text-success">
                 <span>Early Access Discount ({earlyAccessDiscount}%)</span>
                 <span>-€{(basePrice * earlyAccessDiscount / 100).toFixed(2)}</span>

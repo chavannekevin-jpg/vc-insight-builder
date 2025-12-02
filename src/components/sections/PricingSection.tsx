@@ -3,10 +3,19 @@ import { Check } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { useNavigate } from "react-router-dom";
+import { usePricingSettings } from "@/hooks/usePricingSettings";
 
 export const PricingSection = () => {
   const navigate = useNavigate();
+  const { data: pricingSettings, isLoading } = usePricingSettings();
   
+  const memoPricing = pricingSettings?.memo_pricing;
+  const networkPricing = pricingSettings?.network_pricing;
+  
+  const memoFinalPrice = memoPricing?.early_access_enabled 
+    ? memoPricing.base_price * (1 - memoPricing.early_access_discount / 100)
+    : memoPricing?.base_price ?? 59.99;
+
   const pricingOptions = [
     {
       title: "Free Access",
@@ -28,14 +37,14 @@ export const PricingSection = () => {
     {
       title: "Premium Memo",
       subtitle: "Personalized Investment Memo",
-      price: "€59.99",
-      originalPrice: "€119.99",
-      discount: "Early Access - 50% OFF",
-        features: [
-          "Everything in Free, plus:",
-          "Personalized investment memo",
-          "VC-quality analysis of your startup",
-          "Actionable feedback and insights",
+      price: `€${memoFinalPrice.toFixed(2)}`,
+      originalPrice: memoPricing?.early_access_enabled ? `€${memoPricing.base_price.toFixed(2)}` : undefined,
+      discount: memoPricing?.early_access_enabled ? `Early Access - ${memoPricing.early_access_discount}% OFF` : undefined,
+      features: [
+        "Everything in Free, plus:",
+        "Personalized investment memo",
+        "VC-quality analysis of your startup",
+        "Actionable feedback and insights",
         "Pitch strengthening recommendations",
         "Company profile shared to VC network (optional)"
       ],
@@ -46,7 +55,7 @@ export const PricingSection = () => {
     {
       title: "VIP Package",
       subtitle: "Premium + Network Access",
-      price: "€399",
+      price: `€${(networkPricing?.base_price ?? 399).toFixed(2)}`,
       features: [
         "Everything in Premium, plus:",
         "Priority memo delivery (1 week)",
@@ -69,6 +78,16 @@ export const PricingSection = () => {
       navigate(`/auth?plan=${encodeURIComponent(option.title)}&price=${encodeURIComponent(option.price)}`);
     }
   };
+
+  if (isLoading) {
+    return (
+      <section id="pricing-section" className="py-24 bg-muted/30">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-muted-foreground">Loading pricing...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="pricing-section" className="py-24 bg-muted/30">
