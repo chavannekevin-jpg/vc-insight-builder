@@ -48,6 +48,23 @@ export default function GeneratedMemo() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) setUserId(user.id);
 
+      // Check premium status before showing memo
+      const { data: company, error: premiumError } = await supabase
+        .from("companies")
+        .select("has_premium")
+        .eq("id", companyId)
+        .maybeSingle();
+
+      if (premiumError || !company?.has_premium) {
+        toast({
+          title: "Premium Access Required",
+          description: "Complete your purchase to view your investment memo",
+          variant: "default"
+        });
+        navigate(`/checkout?companyId=${companyId}`);
+        return;
+      }
+
       // Fetch the memo
       try {
         const { data: memo, error: memoError } = await supabase
