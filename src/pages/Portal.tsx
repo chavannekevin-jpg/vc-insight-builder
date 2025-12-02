@@ -471,7 +471,7 @@ export default function Portal() {
         description: "Complete your purchase to generate your professional investment memo",
         variant: "default",
       });
-      navigate(`/checkout?companyId=${companyId}`);
+      navigate(`/checkout-memo?companyId=${companyId}`);
       return;
     }
     

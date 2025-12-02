@@ -61,7 +61,7 @@ export default function GeneratedMemo() {
           description: "Complete your purchase to view your investment memo",
           variant: "default"
         });
-        navigate(`/checkout?companyId=${companyId}`);
+        navigate(`/checkout-memo?companyId=${companyId}`);
         return;
       }
 
