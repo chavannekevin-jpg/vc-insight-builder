@@ -70,7 +70,6 @@ export default function CheckoutMemo() {
     setValidatingCode(true);
     
     try {
-      // Use edge function for secure validation (users can't see all codes)
       const { data, error } = await supabase.functions.invoke('validate-discount', {
         body: { code: discountCode.trim() }
       });
@@ -86,7 +85,6 @@ export default function CheckoutMemo() {
         return;
       }
 
-      // Apply discount
       setAppliedDiscount({
         id: data.id,
         discount_percent: data.discount_percent,
@@ -118,9 +116,8 @@ export default function CheckoutMemo() {
     setProcessing(true);
 
     try {
-      // If 100% discount, bypass payment
+      // If 100% discount, bypass Stripe
       if (finalPrice === 0) {
-        // Record the purchase
         const { error: purchaseError } = await supabase
           .from("memo_purchases" as any)
           .insert({
@@ -132,7 +129,6 @@ export default function CheckoutMemo() {
 
         if (purchaseError) throw purchaseError;
 
-        // Grant premium access
         const { error: updateError } = await supabase
           .from("companies")
           .update({ has_premium: true })
@@ -140,60 +136,39 @@ export default function CheckoutMemo() {
 
         if (updateError) throw updateError;
 
-      // Update discount code usage via edge function (users can't directly update)
-      if (appliedDiscount) {
-        await supabase.functions.invoke('use-discount', {
-          body: { codeId: appliedDiscount.id }
-        });
-      }
+        if (appliedDiscount) {
+          await supabase.functions.invoke('use-discount', {
+            body: { codeId: appliedDiscount.id }
+          });
+        }
 
         toast({
           title: "Success! 🎉",
           description: "Your memo is being generated now!",
         });
 
-        // Navigate to memo page
         navigate(`/memo?companyId=${companyId}`);
         return;
       }
 
-      // For paid purchases, simulate payment (in production, integrate Stripe here)
-      // TODO: Integrate actual payment processing
-
-      // Record the purchase
-      const { error: purchaseError } = await supabase
-        .from("memo_purchases" as any)
-        .insert({
-          user_id: user.id,
-          company_id: companyId,
-          amount_paid: finalPrice,
-          discount_code_used: appliedDiscount?.code || null
-        });
-
-      if (purchaseError) throw purchaseError;
-
-      // Grant premium access
-      const { error: updateError } = await supabase
-        .from("companies")
-        .update({ has_premium: true })
-        .eq("id", companyId);
-
-      if (updateError) throw updateError;
-
-      // Update discount code usage via edge function (users can't directly update)
-      if (appliedDiscount) {
-        await supabase.functions.invoke('use-discount', {
-          body: { codeId: appliedDiscount.id }
-        });
-      }
-
-      toast({
-        title: "Payment Successful! 🎉",
-        description: "Your memo is being generated now!",
+      // Create Stripe checkout session
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {
+          companyId,
+          discountCode: appliedDiscount?.code || null,
+          discountPercent: appliedDiscount?.discount_percent || 0,
+          discountId: appliedDiscount?.id || null,
+        }
       });
 
-      // Navigate to memo page
-      navigate(`/memo?companyId=${companyId}`);
+      if (error) throw error;
+
+      if (data?.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
     } catch (error) {
       console.error("Purchase error:", error);
       toast({
@@ -201,7 +176,6 @@ export default function CheckoutMemo() {
         description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setProcessing(false);
     }
   };
@@ -217,7 +191,6 @@ export default function CheckoutMemo() {
       <div className="absolute inset-0 gradient-hero -z-10 opacity-30" />
       
       <div className="max-w-2xl mx-auto px-6 py-12 space-y-8">
-        {/* Header */}
         <div className="text-center space-y-4">
           <h1 
             className="text-4xl md:text-5xl font-serif font-bold"
@@ -232,7 +205,6 @@ export default function CheckoutMemo() {
           </p>
         </div>
 
-        {/* Main Card */}
         <ModernCard className="p-8 space-y-6">
           <div className="flex items-center justify-between pb-6 border-b border-border">
             <div>
@@ -242,7 +214,6 @@ export default function CheckoutMemo() {
             <Sparkles className="w-8 h-8 text-primary" />
           </div>
 
-          {/* Features */}
           <ul className="space-y-3 py-4">
             {[
               "AI-powered professional investment memo",
@@ -259,7 +230,6 @@ export default function CheckoutMemo() {
             ))}
           </ul>
 
-          {/* Discount Code Section */}
           {!appliedDiscount ? (
             <div className="space-y-3 pt-4 border-t border-border">
               <Label htmlFor="discount" className="flex items-center gap-2">
@@ -306,7 +276,6 @@ export default function CheckoutMemo() {
             </div>
           )}
 
-          {/* Price Summary */}
           <div className="space-y-3 pt-4 border-t border-border">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Base price</span>
@@ -336,7 +305,6 @@ export default function CheckoutMemo() {
             )}
           </div>
 
-          {/* Purchase Button */}
           <div className="pt-4 space-y-4">
             {finalPrice === 0 && (
               <Badge className="w-full justify-center py-2 gradient-primary text-white border-0">
@@ -353,7 +321,7 @@ export default function CheckoutMemo() {
               {processing ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                  Processing...
+                  Redirecting to Stripe...
                 </>
               ) : finalPrice === 0 ? (
                 <>
@@ -363,7 +331,7 @@ export default function CheckoutMemo() {
               ) : (
                 <>
                   <CreditCard className="w-5 h-5 mr-2" />
-                  Complete Purchase - €{finalPrice.toFixed(2)}
+                  Pay with Stripe - €{finalPrice.toFixed(2)}
                 </>
               )}
             </Button>

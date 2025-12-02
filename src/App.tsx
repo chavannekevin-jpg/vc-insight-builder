@@ -71,6 +71,7 @@ import AdminDiscountCodes from "./pages/AdminDiscountCodes";
 import AdminUserAccess from "./pages/AdminUserAccess";
 import CheckoutMemo from "./pages/CheckoutMemo";
 import SampleMemo from "./pages/SampleMemo";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -151,7 +152,8 @@ const App = () => (
           <Route path="/admin/user-access" element={<AdminUserAccess />} />
           <Route path="/admin/discount-codes" element={<AdminDiscountCodes />} />
           <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
-          <Route path="/checkout" element={<CheckoutMemo />} />
+          <Route path="/checkout-memo" element={<CheckoutMemo />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
