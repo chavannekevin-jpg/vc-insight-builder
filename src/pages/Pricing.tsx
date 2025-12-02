@@ -4,10 +4,19 @@ import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { Check, X, Zap, BookOpen, Sparkles, Users } from "lucide-react";
+import { Check, X, BookOpen, Sparkles, Users } from "lucide-react";
+import { usePricingSettings } from "@/hooks/usePricingSettings";
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const { data: pricingSettings, isLoading } = usePricingSettings();
+
+  const memoPricing = pricingSettings?.memo_pricing;
+  const networkPricing = pricingSettings?.network_pricing;
+
+  const memoFinalPrice = memoPricing?.early_access_enabled 
+    ? memoPricing.base_price * (1 - memoPricing.early_access_discount / 100)
+    : memoPricing?.base_price ?? 59.99;
 
   const pricingPlans = [
     {
@@ -32,8 +41,8 @@ const Pricing = () => {
     {
       name: "Investment Memo Builder",
       subtitle: "Your Fundraising Weapon",
-      price: "€59.99",
-      originalPrice: null,
+      price: `€${memoFinalPrice.toFixed(2)}`,
+      originalPrice: memoPricing?.early_access_enabled ? `€${memoPricing.base_price.toFixed(2)}` : null,
       description: "Professional memo that VCs actually read",
       icon: Sparkles,
       features: [
@@ -48,12 +57,12 @@ const Pricing = () => {
       cta: "Build My Memo",
       popular: true,
       color: "primary",
-      waitlistBadge: false
+      waitlistBadge: memoPricing?.early_access_enabled
     },
     {
       name: "Network Access",
       subtitle: "Get In Front of Capital",
-      price: "€159.99",
+      price: `€${(networkPricing?.base_price ?? 159.99).toFixed(2)}`,
       description: "Your memo delivered to real investors",
       icon: Users,
       features: [
@@ -77,7 +86,7 @@ const Pricing = () => {
       answer: "Because most founders fail due to lack of knowledge, not lack of capital. We want you to have the frameworks and education you need. We only charge when you're ready to fundraise seriously."
     },
     {
-      question: "What makes the investment memo worth €29.99?",
+      question: `What makes the investment memo worth €${memoFinalPrice.toFixed(2)}?`,
       answer: "It's a personalized memorandum that translates your startup into VC language. Most founders pitch poorly because they don't speak investor. This memo does it for you—and it's cheaper than a single coffee meeting that goes nowhere."
     },
     {
@@ -93,6 +102,14 @@ const Pricing = () => {
       answer: "Yes. 14-day money-back guarantee if you're not satisfied with your memo. But you'll be satisfied—this isn't our first rodeo."
     }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center">
+        <p className="text-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
@@ -129,7 +146,7 @@ const Pricing = () => {
                    {plan.popular && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                       <Badge className="gradient-primary text-white border-0 px-4 py-1">
-                        {plan.waitlistBadge ? "50% OFF - Early Access" : "Most Popular"}
+                        {plan.waitlistBadge ? `${memoPricing?.early_access_discount}% OFF - Early Access` : "Most Popular"}
                       </Badge>
                     </div>
                   )}
@@ -161,7 +178,7 @@ const Pricing = () => {
                       {plan.waitlistBadge && (
                         <Badge variant="secondary" className="mb-2">
                           <Sparkles className="w-3 h-3 mr-1" />
-                          Limited Time: 50% Off
+                          Limited Time: {memoPricing?.early_access_discount}% Off
                         </Badge>
                       )}
                       <p className="text-sm text-muted-foreground">{plan.description}</p>

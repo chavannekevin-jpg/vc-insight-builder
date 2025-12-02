@@ -69,6 +69,7 @@ import ProblemSlideGuide from "./pages/ProblemSlideGuide";
 import SolutionSlideGuide from "./pages/SolutionSlideGuide";
 import AdminDiscountCodes from "./pages/AdminDiscountCodes";
 import AdminUserAccess from "./pages/AdminUserAccess";
+import AdminPricing from "./pages/AdminPricing";
 import CheckoutMemo from "./pages/CheckoutMemo";
 import SampleMemo from "./pages/SampleMemo";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -151,6 +152,7 @@ const App = () => (
           <Route path="/admin/memo-builder" element={<MemoBuilder />} />
           <Route path="/admin/user-access" element={<AdminUserAccess />} />
           <Route path="/admin/discount-codes" element={<AdminDiscountCodes />} />
+          <Route path="/admin/pricing" element={<AdminPricing />} />
           <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
           <Route path="/checkout-memo" element={<CheckoutMemo />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />

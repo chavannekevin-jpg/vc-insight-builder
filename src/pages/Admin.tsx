@@ -254,6 +254,17 @@ const Admin = () => {
               </p>
             </ModernCard>
           </div>
+
+          <div onClick={() => navigate("/admin/pricing")} className="cursor-pointer">
+            <ModernCard className="hover:border-primary/50 transition-colors h-full">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Pricing Settings
+              </h2>
+              <p className="text-muted-foreground">
+                Manage product pricing and discounts
+              </p>
+            </ModernCard>
+          </div>
           
           <ModernCard>
             <h2 className="text-2xl font-bold text-foreground mb-2">
