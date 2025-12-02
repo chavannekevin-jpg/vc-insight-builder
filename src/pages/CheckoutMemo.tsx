@@ -104,8 +104,11 @@ export default function CheckoutMemo() {
         discount_percent: data.discount_percent,
         code: data.code
       });
-      const discountAmount = (basePrice * data.discount_percent) / 100;
-      const newPrice = Math.max(0, basePrice - discountAmount);
+      // Stack coupon discount ON TOP of early access price
+      const priceAfterEarlyAccess = earlyAccessEnabled 
+        ? basePrice * (1 - earlyAccessDiscount / 100) 
+        : basePrice;
+      const newPrice = Math.max(0, priceAfterEarlyAccess * (1 - data.discount_percent / 100));
       setFinalPrice(newPrice);
 
       toast({
@@ -165,12 +168,28 @@ export default function CheckoutMemo() {
         return;
       }
 
-      // Create Stripe checkout session with early access discount
+      // Calculate combined discount for Stripe (stacking early access + coupon)
+      let combinedDiscountPercent = 0;
+      let discountLabel = "";
+
+      if (earlyAccessEnabled) {
+        combinedDiscountPercent = earlyAccessDiscount;
+        discountLabel = "EARLY_ACCESS";
+      }
+
+      if (appliedDiscount) {
+        // Stack: combined = 1 - ((1 - early/100) × (1 - coupon/100))
+        const remainingAfterEarly = 1 - (earlyAccessEnabled ? earlyAccessDiscount / 100 : 0);
+        const remainingAfterCoupon = remainingAfterEarly * (1 - appliedDiscount.discount_percent / 100);
+        combinedDiscountPercent = Math.round((1 - remainingAfterCoupon) * 100);
+        discountLabel = appliedDiscount.code;
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           companyId,
-          discountCode: appliedDiscount?.code || (earlyAccessEnabled ? "EARLY_ACCESS" : null),
-          discountPercent: appliedDiscount?.discount_percent || (earlyAccessEnabled ? earlyAccessDiscount : 0),
+          discountCode: discountLabel || null,
+          discountPercent: combinedDiscountPercent,
           discountId: appliedDiscount?.id || null,
         }
       });
@@ -306,7 +325,7 @@ export default function CheckoutMemo() {
               </span>
             </div>
             
-            {earlyAccessEnabled && !appliedDiscount && (
+            {earlyAccessEnabled && (
               <div className="flex items-center justify-between text-success">
                 <span>Early Access Discount ({earlyAccessDiscount}%)</span>
                 <span>-€{(basePrice * earlyAccessDiscount / 100).toFixed(2)}</span>
@@ -315,8 +334,8 @@ export default function CheckoutMemo() {
             
             {appliedDiscount && (
               <div className="flex items-center justify-between text-success">
-                <span>Discount ({appliedDiscount.discount_percent}%)</span>
-                <span>-€{((basePrice * appliedDiscount.discount_percent) / 100).toFixed(2)}</span>
+                <span>Coupon Discount ({appliedDiscount.discount_percent}%)</span>
+                <span>-€{(discountedPrice * appliedDiscount.discount_percent / 100).toFixed(2)}</span>
               </div>
             )}
             
