@@ -41,7 +41,7 @@ export default function PitchingWithoutHype() {
         their numbers do the talking—not their adjectives.
       </Callout>
 
-      <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">The Credibility > Excitement Framework</h2>
+      <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">The Credibility &gt; Excitement Framework</h2>
       <p className="text-muted-foreground mb-6">
         Excitement fades. Credibility compounds. When you make a claim, VCs are immediately 
         asking: "Can they prove this?" If the answer is no, you've lost them.

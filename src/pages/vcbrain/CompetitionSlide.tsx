@@ -75,7 +75,7 @@ export default function CompetitionSlide() {
         <h3 className="font-bold text-foreground">1. Feature Comparison Table</h3>
         <p className="text-muted-foreground text-sm">
           A simple table showing specific features/capabilities. Be honest—if a competitor 
-          beats you somewhere, show it. Credibility > perfection.
+          beats you somewhere, show it. Credibility &gt; perfection.
         </p>
         
         <h3 className="font-bold text-foreground">2. Customer Segment Map</h3>
