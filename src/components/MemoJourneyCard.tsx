@@ -136,8 +136,8 @@ export const MemoJourneyCard = ({
                   <Sparkles className="w-3 h-3 mr-1" />
                   Profile Complete
                 </Badge>
-                <h2 className="text-3xl font-display font-bold mb-2">Ready to Generate Your Memo</h2>
-                <p className="text-muted-foreground">All questions answered — let's create your investment memo</p>
+                <h2 className="text-3xl font-display font-bold mb-2">Review Your Answers</h2>
+                <p className="text-muted-foreground">Let's review your pre-filled answers before generating your memo</p>
               </div>
               <CheckCircle2 className="w-12 h-12 text-primary" />
             </div>
@@ -167,10 +167,10 @@ export const MemoJourneyCard = ({
             <Button 
               size="lg" 
               className="w-full text-lg font-semibold bg-primary hover:bg-primary/90"
-              onClick={() => navigate(`/memo?companyId=${companyId}`)}
+              onClick={() => navigate("/portal")}
             >
-              Generate Investment Memo
-              <Sparkles className="ml-2 w-5 h-5" />
+              Review & Generate Memo
+              <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </>
         );
