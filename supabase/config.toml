@@ -48,3 +48,8 @@ verify_jwt = false
 [functions.parse-pitch-deck]
 verify_jwt = false
 
+[functions.analyze-data-gaps]
+verify_jwt = false
+
+[functions.generate-smart-questions]
+verify_jwt = false
