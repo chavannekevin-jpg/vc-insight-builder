@@ -10,8 +10,18 @@ import { CompanySummaryCard } from "@/components/CompanySummaryCard";
 import { ToolsRow } from "@/components/ToolsRow";
 import { CollapsedLibrary } from "@/components/CollapsedLibrary";
 import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
-import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight } from "lucide-react";
+import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Company {
   id: string;
@@ -50,9 +60,18 @@ export default function FreemiumHub() {
   const [tagline, setTagline] = useState<string>("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [deckWizardOpen, setDeckWizardOpen] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     loadData();
+    
+    // Safety timeout - if loading takes more than 15 seconds, stop loading state
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 15000);
+    
+    return () => clearTimeout(timeout);
   }, [navigate, adminView]);
 
   const loadData = async () => {
@@ -318,6 +337,81 @@ export default function FreemiumHub() {
     navigate("/");
   };
 
+  const handleSoftReset = async () => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "No company found to reset",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsResetting(true);
+    try {
+      // 1. Get all memo IDs for this company
+      const { data: memos } = await supabase
+        .from('memos')
+        .select('id')
+        .eq('company_id', company.id);
+      
+      // 2. Delete memo_analyses for those memos
+      if (memos && memos.length > 0) {
+        const memoIds = memos.map(m => m.id);
+        await supabase
+          .from('memo_analyses')
+          .delete()
+          .in('memo_id', memoIds);
+      }
+      
+      // 3. Delete memos
+      await supabase.from('memos').delete().eq('company_id', company.id);
+      
+      // 4. Delete memo_responses
+      await supabase.from('memo_responses').delete().eq('company_id', company.id);
+      
+      // 5. Delete waitlist_signups
+      await supabase.from('waitlist_signups').delete().eq('company_id', company.id);
+      
+      // 6. Delete memo_purchases
+      await supabase.from('memo_purchases').delete().eq('company_id', company.id);
+      
+      // 7. Reset company fields
+      await supabase
+        .from('companies')
+        .update({
+          deck_url: null,
+          deck_parsed_at: null,
+          deck_confidence_scores: null,
+          description: null,
+          category: null,
+          biggest_challenge: null,
+          has_premium: false
+        })
+        .eq('id', company.id);
+
+      toast({
+        title: "Profile reset successfully!",
+        description: "Refreshing page...",
+      });
+      
+      // Refresh the page to reflect changes
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Reset error:", error);
+      toast({
+        title: "Reset failed",
+        description: "Failed to reset profile",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResetting(false);
+      setResetDialogOpen(false);
+    }
+  };
+
   const completedQuestions = responses.filter(r => r.answer && r.answer.trim()).length;
   const memoGenerated = memo && memo.status === "generated";
   const hasPaid = company?.has_premium ?? false;
@@ -436,15 +530,26 @@ export default function FreemiumHub() {
               Tools
             </Button>
             {isAdmin && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/admin")}
-                className="gap-2 hover:text-primary transition-colors"
-              >
-                <Shield className="w-4 h-4" />
-                Admin
-              </Button>
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/admin")}
+                  className="gap-2 hover:text-primary transition-colors"
+                >
+                  <Shield className="w-4 h-4" />
+                  Admin
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setResetDialogOpen(true)}
+                  className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Reset
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -544,6 +649,28 @@ export default function FreemiumHub() {
         companyDescription={company.description || undefined}
         onImportComplete={handleDeckImportComplete}
       />
+
+      {/* Reset Confirmation Dialog */}
+      <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Profile: {company.name}</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will clear all questionnaire responses, memos, deck data, and reset the company profile. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isResetting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleSoftReset}
+              disabled={isResetting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isResetting ? "Resetting..." : "Reset Profile"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
