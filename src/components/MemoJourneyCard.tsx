@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowRight, Lock, CheckCircle2, Target, FileText, Sparkles } from "lucide-react";
+import { ArrowRight, Lock, CheckCircle2, Target, FileText, Sparkles, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface MemoJourneyCardProps {
@@ -11,6 +11,7 @@ interface MemoJourneyCardProps {
   hasPaid: boolean;
   nextSection?: string;
   companyId: string;
+  onImportDeck?: () => void;
 }
 
 export const MemoJourneyCard = ({
@@ -19,7 +20,8 @@ export const MemoJourneyCard = ({
   memoGenerated,
   hasPaid,
   nextSection = "your profile",
-  companyId
+  companyId,
+  onImportDeck
 }: MemoJourneyCardProps) => {
   const navigate = useNavigate();
   const percentage = (completedQuestions / totalQuestions) * 100;
@@ -38,6 +40,28 @@ export const MemoJourneyCard = ({
       case "building":
         return (
           <>
+            {/* Deck Import CTA - Show prominently when < 50% complete */}
+            {percentage < 50 && onImportDeck && (
+              <div className="mb-6 p-5 bg-gradient-to-r from-primary/15 via-primary/10 to-primary/5 border border-primary/30 rounded-xl">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Upload className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-lg mb-1">Have a pitch deck?</p>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Import your deck to auto-fill your profile in seconds. Our AI will extract key information and pre-fill the questionnaire.
+                    </p>
+                    <Button onClick={onImportDeck} variant="default" size="sm">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Import from Deck
+                      <Sparkles className="w-3 h-3 ml-2" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h2 className="text-3xl font-display font-bold mb-2">Your Investment Memo Journey</h2>
