@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Edit, Sparkles, Loader2, Check, X, Zap, Rocket } from "lucide-react";
+import { FileText, Edit, Sparkles, Loader2, Check, X, Zap, Rocket, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { QuickFillWizard } from "@/components/QuickFillWizard";
+import { DeckImportWizard } from "@/components/DeckImportWizard";
 
 interface Company {
   id: string;
@@ -67,6 +68,7 @@ export default function CompanyProfile() {
   const [editedCompanyName, setEditedCompanyName] = useState("");
   const [editedSectionContent, setEditedSectionContent] = useState("");
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [deckWizardOpen, setDeckWizardOpen] = useState(false);
 
   useEffect(() => {
     const loadCompanyData = async () => {
@@ -311,6 +313,87 @@ export default function CompanyProfile() {
     });
   };
 
+  const handleDeckImportComplete = async (data: any) => {
+    if (!company) return;
+
+    try {
+      // Update company info if extracted
+      if (data.companyInfo?.category) {
+        await supabase
+          .from("companies")
+          .update({ category: data.companyInfo.category })
+          .eq("id", company.id);
+        setCompany({ ...company, category: data.companyInfo.category });
+      }
+
+      // Save extracted sections as memo responses
+      const sectionKeyMappings: Record<string, string> = {
+        problem_statement: "problem_description",
+        solution_description: "solution_description",
+        target_market: "market_size",
+        business_model: "revenue_model",
+        competitive_landscape: "competitors",
+        team_background: "founder_background",
+        traction_metrics: "current_traction",
+        funding_ask: "key_milestones",
+      };
+
+      const newResponses: MemoResponse[] = [];
+      
+      for (const [extractedKey, section] of Object.entries(data.extractedSections)) {
+        const typedSection = section as { content: string | null; confidence: number };
+        if (typedSection.content && typedSection.confidence > 0.3) {
+          const questionKey = sectionKeyMappings[extractedKey] || extractedKey;
+          
+          // Upsert the response
+          const { error } = await supabase
+            .from("memo_responses")
+            .upsert({
+              company_id: company.id,
+              question_key: questionKey,
+              answer: typedSection.content,
+              source: "deck_import",
+              confidence_score: typedSection.confidence
+            }, {
+              onConflict: "company_id,question_key"
+            });
+
+          if (!error) {
+            newResponses.push({
+              question_key: questionKey,
+              answer: typedSection.content
+            });
+          }
+        }
+      }
+
+      // Update local state
+      setResponses(prev => {
+        const updated = [...prev];
+        newResponses.forEach(nr => {
+          const idx = updated.findIndex(r => r.question_key === nr.question_key);
+          if (idx >= 0) {
+            updated[idx] = nr;
+          } else {
+            updated.push(nr);
+          }
+        });
+        return updated;
+      });
+
+      toast({
+        title: "Deck imported successfully!",
+        description: `${newResponses.length} sections were pre-filled from your deck.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Import failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -365,6 +448,14 @@ export default function CompanyProfile() {
             </div>
           </div>
           <div className="flex gap-3 flex-wrap">
+            <Button
+              variant="outline"
+              onClick={() => setDeckWizardOpen(true)}
+              className="gap-2"
+            >
+              <Upload className="w-4 h-4" />
+              Import Deck
+            </Button>
             <Button
               variant="outline"
               onClick={() => setWizardOpen(true)}
@@ -572,10 +663,28 @@ export default function CompanyProfile() {
             <p className="text-muted-foreground max-w-md mx-auto">
               Complete the questionnaire to generate your investment memo.
             </p>
-            <Button onClick={() => navigate("/portal")}>Start Questionnaire</Button>
+            <div className="flex justify-center gap-3">
+              <Button variant="outline" onClick={() => setDeckWizardOpen(true)} className="gap-2">
+                <Upload className="w-4 h-4" />
+                Import from Deck
+              </Button>
+              <Button onClick={() => navigate("/portal")}>Start Questionnaire</Button>
+            </div>
           </div>
         )}
       </div>
+
+      {/* Deck Import Wizard */}
+      {company && (
+        <DeckImportWizard
+          open={deckWizardOpen}
+          onOpenChange={setDeckWizardOpen}
+          companyId={company.id}
+          companyName={company.name}
+          companyDescription={company.description || ""}
+          onImportComplete={handleDeckImportComplete}
+        />
+      )}
     </div>
   );
 }
