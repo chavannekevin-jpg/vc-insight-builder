@@ -577,9 +577,13 @@ export default function Portal() {
               >
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-3">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       {currentQuestion.question}
                     </label>
+                    <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1.5">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary/60"></span>
+                      The more detailed and thorough your answer, the higher quality your memo will be
+                    </p>
                     <Textarea
                       value={responses[currentQuestion.question_key] || ""}
                       onChange={(e) => handleAnswerChange(currentQuestion.question_key, e.target.value)}
