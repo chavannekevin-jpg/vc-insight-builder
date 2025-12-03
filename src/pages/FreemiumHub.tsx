@@ -306,7 +306,7 @@ export default function FreemiumHub() {
               variant="ghost"
               size="sm"
               onClick={() => navigate("/hub")}
-              className="gap-2 hover:text-primary transition-colors"
+              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
             >
               <Sparkles className="w-4 h-4" />
               Dashboard
@@ -315,7 +315,7 @@ export default function FreemiumHub() {
               variant="ghost"
               size="sm"
               onClick={() => navigate("/portal")}
-              className="gap-2 hover:text-primary transition-colors"
+              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
             >
               <Edit className="w-4 h-4" />
               My Profile
@@ -324,7 +324,7 @@ export default function FreemiumHub() {
               variant="ghost"
               size="sm"
               onClick={() => navigate("/sample-memo")}
-              className="gap-2 hover:text-primary transition-colors"
+              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
             >
               <FileText className="w-4 h-4" />
               Sample Memo
@@ -333,7 +333,7 @@ export default function FreemiumHub() {
               variant="ghost"
               size="sm"
               onClick={() => navigate("/vcbrain")}
-              className="gap-2 hover:text-primary transition-colors"
+              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
             >
               <BookOpen className="w-4 h-4" />
               Knowledge Library
@@ -342,7 +342,7 @@ export default function FreemiumHub() {
               variant="ghost"
               size="sm"
               onClick={() => navigate("/tools")}
-              className="gap-2 hover:text-primary transition-colors"
+              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
             >
               <Calculator className="w-4 h-4" />
               Tools
