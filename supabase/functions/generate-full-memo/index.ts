@@ -176,6 +176,75 @@ serve(async (req) => {
 
     console.log("Sections found in responses:", Object.keys(responsesBySection));
 
+    // ============================================
+    // Extract financial metrics for cross-section sharing
+    // ============================================
+    const unitEconomicsJson = responses?.find(r => r.question_key === 'unit_economics_json')?.answer;
+    const unitEconomicsText = responses?.find(r => r.question_key === 'unit_economics')?.answer || "";
+    const pricingInfo = responses?.find(r => r.question_key === 'pricing_model')?.answer || "";
+    const revenueInfo = responses?.find(r => r.question_key === 'revenue_model')?.answer || "";
+    
+    let financialMetrics: any = null;
+    if (unitEconomicsJson) {
+      try {
+        financialMetrics = JSON.parse(unitEconomicsJson);
+        console.log("Parsed financial metrics from unit_economics_json:", financialMetrics);
+      } catch (e) {
+        console.warn("Could not parse unit_economics_json:", e);
+      }
+    }
+
+    // Build financial context string for injection into section prompts
+    let financialContextStr = "";
+    if (financialMetrics || unitEconomicsText || pricingInfo || revenueInfo) {
+      financialContextStr = `\n\n--- COMPANY FINANCIAL DATA (use for calculations) ---`;
+      
+      if (financialMetrics) {
+        if (financialMetrics.mrr) financialContextStr += `\nMRR: €${financialMetrics.mrr}`;
+        if (financialMetrics.arr) financialContextStr += `\nARR: €${financialMetrics.arr}`;
+        if (financialMetrics.acv) financialContextStr += `\nACV (Avg Contract Value): €${financialMetrics.acv}`;
+        if (financialMetrics.totalCustomers) financialContextStr += `\nTotal Customers: ${financialMetrics.totalCustomers}`;
+        if (financialMetrics.cac) financialContextStr += `\nCAC: €${financialMetrics.cac}`;
+        if (financialMetrics.ltv) financialContextStr += `\nLTV: €${financialMetrics.ltv}`;
+        if (financialMetrics.ltvCacRatio) financialContextStr += `\nLTV:CAC Ratio: ${financialMetrics.ltvCacRatio}`;
+        if (financialMetrics.paybackPeriod) financialContextStr += `\nPayback Period: ${financialMetrics.paybackPeriod} months`;
+        if (financialMetrics.monthlyChurn) financialContextStr += `\nMonthly Churn: ${financialMetrics.monthlyChurn}%`;
+        if (financialMetrics.grossMargin) financialContextStr += `\nGross Margin: ${financialMetrics.grossMargin}%`;
+        if (financialMetrics.monthlyBurn) financialContextStr += `\nMonthly Burn: €${financialMetrics.monthlyBurn}`;
+        if (financialMetrics.runway) financialContextStr += `\nRunway: ${financialMetrics.runway} months`;
+        if (financialMetrics.monthlyGrowth) financialContextStr += `\nMonthly Growth: ${financialMetrics.monthlyGrowth}%`;
+      }
+      
+      if (unitEconomicsText && !financialMetrics) {
+        financialContextStr += `\nUnit Economics: ${unitEconomicsText}`;
+      }
+      if (pricingInfo) financialContextStr += `\nPricing Model: ${pricingInfo}`;
+      if (revenueInfo) financialContextStr += `\nRevenue Model: ${revenueInfo}`;
+      
+      // Add bottoms-up calculation guidance for Market section
+      financialContextStr += `\n\n**BOTTOMS-UP CALCULATION GUIDANCE:**`;
+      if (financialMetrics?.acv) {
+        const acv = parseFloat(financialMetrics.acv);
+        const customersFor10M = Math.ceil(10000000 / acv);
+        const customersFor50M = Math.ceil(50000000 / acv);
+        const customersFor100M = Math.ceil(100000000 / acv);
+        financialContextStr += `\n- At €${acv} ACV: ${customersFor10M.toLocaleString()} customers = €10M ARR`;
+        financialContextStr += `\n- At €${acv} ACV: ${customersFor50M.toLocaleString()} customers = €50M ARR`;
+        financialContextStr += `\n- At €${acv} ACV: ${customersFor100M.toLocaleString()} customers = €100M ARR`;
+      } else if (financialMetrics?.arr && financialMetrics?.totalCustomers) {
+        const calculatedAcv = parseFloat(financialMetrics.arr) / parseFloat(financialMetrics.totalCustomers);
+        const customersFor10M = Math.ceil(10000000 / calculatedAcv);
+        const customersFor50M = Math.ceil(50000000 / calculatedAcv);
+        const customersFor100M = Math.ceil(100000000 / calculatedAcv);
+        financialContextStr += `\n- Implied ACV: €${calculatedAcv.toFixed(0)}`;
+        financialContextStr += `\n- At this ACV: ${customersFor10M.toLocaleString()} customers = €10M ARR`;
+        financialContextStr += `\n- At this ACV: ${customersFor50M.toLocaleString()} customers = €50M ARR`;
+        financialContextStr += `\n- At this ACV: ${customersFor100M.toLocaleString()} customers = €100M ARR`;
+      }
+      financialContextStr += `\n--- END FINANCIAL DATA ---`;
+    }
+    console.log("Financial context string:", financialContextStr);
+
     // Extract market context using AI before generating memo
     console.log("Extracting market context from responses...");
     
@@ -303,8 +372,14 @@ NOTE: This market intelligence was AI-estimated based on the company's problem, 
 --- END MARKET INTELLIGENCE ---`;
       }
       
+      // Add financial context for Market section specifically
+      let sectionFinancialStr = financialContextStr;
+      if (sectionName === "Market" && financialContextStr) {
+        sectionFinancialStr += `\n\n**CRITICAL FOR MARKET SECTION:** You MUST include a bottoms-up analysis using the ACV data above. Calculate exactly how many customers are needed to reach €10M, €50M, and €100M ARR. This is essential for SOM sizing.`;
+      }
+      
       const prompt = customPrompt 
-        ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": ["specific investor question 1", "question 2", "question 3", "question 4", "question 5"],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
+        ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": ["specific investor question 1", "question 2", "question 3", "question 4", "question 5"],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
         : `You are a skeptical VC investment analyst writing the "${sectionName}" section of an internal due diligence memo. Your job is to assess objectively, NOT to advocate.
 
 CRITICAL ANALYSIS REQUIREMENTS:
@@ -323,7 +398,7 @@ Requirements:
 - Provide critical VC perspective that highlights gaps
 - Keep total content between 150-300 words
 
-Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}
+Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}
 
 Raw information:
 ${combinedContent}
@@ -440,17 +515,58 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
             }
           } catch (retryError) {
             console.error(`All parsing attempts failed for ${sectionName}:`, retryError);
-            // Final fallback with regeneration message
-            enhancedSections[sectionName] = {
-              narrative: {
-                paragraphs: [{ 
-                  text: "Section content could not be fully parsed. Please regenerate the memo to restore this section.", 
-                  emphasis: "normal" 
-                }],
-                keyPoints: ["Regeneration recommended for complete analysis"]
+            // Final fallback: retry with a simpler prompt asking for plain text
+            console.log(`Attempting final fallback with simplified prompt for ${sectionName}...`);
+            try {
+              const fallbackResponse = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  model: "google/gemini-2.5-flash",
+                  messages: [
+                    {
+                      role: "system",
+                      content: "You are a VC analyst. Return ONLY valid JSON. Do not use special characters or unicode. Keep responses simple and direct.",
+                    },
+                    {
+                      role: "user",
+                      content: `Write a brief ${sectionName} analysis for ${company.name}. Data: ${combinedContent.substring(0, 1000)}
+
+Return EXACTLY this JSON structure with your content filled in:
+{"narrative":{"paragraphs":[{"text":"Main analysis paragraph here.","emphasis":"high"},{"text":"Supporting details.","emphasis":"normal"}],"keyPoints":["Key point 1","Key point 2","Key point 3"]},"vcReflection":{"analysis":"Critical assessment.","questions":["Question 1?","Question 2?"],"conclusion":"Summary conclusion."}}`,
+                    },
+                  ],
+                  temperature: 0.3,
+                  max_tokens: 1500,
+                }),
+              }, 2, 1000);
+
+              if (fallbackResponse.ok) {
+                const fallbackData = await fallbackResponse.json();
+                let fallbackContent = fallbackData.choices?.[0]?.message?.content?.trim();
+                if (fallbackContent) {
+                  fallbackContent = fallbackContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                  const fallbackParsed = JSON.parse(fallbackContent);
+                  enhancedSections[sectionName] = fallbackParsed;
+                  console.log(`✓ Generated ${sectionName} with simplified fallback`);
+                }
               }
-            };
-            console.log(`✓ Generated section with final fallback: ${sectionName}`);
+            } catch (finalError) {
+              console.error(`Final fallback also failed for ${sectionName}:`, finalError);
+              enhancedSections[sectionName] = {
+                narrative: {
+                  paragraphs: [{ 
+                    text: `The ${sectionName} section analysis is available but requires regeneration for optimal formatting.`, 
+                    emphasis: "normal" 
+                  }],
+                  keyPoints: ["Please regenerate memo for complete analysis"]
+                }
+              };
+              console.log(`✓ Generated section with placeholder: ${sectionName}`);
+            }
           }
         }
       } else {
