@@ -96,7 +96,18 @@ For missing information, set content to null and confidence to 0.`;
 
     // Read file as binary for both images and PDFs
     const fileBuffer = await deckResponse.arrayBuffer();
-    const base64Content = btoa(String.fromCharCode(...new Uint8Array(fileBuffer)));
+    
+    // Convert to base64 in chunks to avoid stack overflow with large files
+    const uint8Array = new Uint8Array(fileBuffer);
+    let base64Content = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.slice(i, i + chunkSize);
+      base64Content += String.fromCharCode(...chunk);
+    }
+    base64Content = btoa(base64Content);
+    
+    console.log('File size:', uint8Array.length, 'bytes');
 
     if (isImage) {
       // For images, use vision capability
