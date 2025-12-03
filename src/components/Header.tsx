@@ -1,9 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, LogIn, LogOut, ChevronDown } from "lucide-react";
+import { Menu, X, LogIn, LogOut, ChevronDown, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -13,6 +23,8 @@ export const Header = () => {
   const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
   const [hasMemo, setHasMemo] = useState(false);
   const [memoCompanyId, setMemoCompanyId] = useState<string | null>(null);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -125,6 +137,70 @@ export const Header = () => {
     } finally {
       // Always navigate to home page after sign out attempt
       navigate('/');
+    }
+  };
+
+  const handleSoftReset = async () => {
+    if (!memoCompanyId) {
+      toast.error("No company found to reset");
+      return;
+    }
+
+    setIsResetting(true);
+    try {
+      // 1. Get all memo IDs for this company
+      const { data: memos } = await supabase
+        .from('memos')
+        .select('id')
+        .eq('company_id', memoCompanyId);
+      
+      // 2. Delete memo_analyses for those memos
+      if (memos && memos.length > 0) {
+        const memoIds = memos.map(m => m.id);
+        await supabase
+          .from('memo_analyses')
+          .delete()
+          .in('memo_id', memoIds);
+      }
+      
+      // 3. Delete memos
+      await supabase.from('memos').delete().eq('company_id', memoCompanyId);
+      
+      // 4. Delete memo_responses
+      await supabase.from('memo_responses').delete().eq('company_id', memoCompanyId);
+      
+      // 5. Delete waitlist_signups
+      await supabase.from('waitlist_signups').delete().eq('company_id', memoCompanyId);
+      
+      // 6. Delete memo_purchases
+      await supabase.from('memo_purchases').delete().eq('company_id', memoCompanyId);
+      
+      // 7. Reset company fields
+      await supabase
+        .from('companies')
+        .update({
+          deck_url: null,
+          deck_parsed_at: null,
+          deck_confidence_scores: null,
+          description: null,
+          category: null,
+          biggest_challenge: null
+        })
+        .eq('id', memoCompanyId);
+
+      setHasMemo(false);
+      toast.success("Profile reset successfully! Refreshing...");
+      
+      // Refresh the page to reflect changes
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Reset error:", error);
+      toast.error("Failed to reset profile");
+    } finally {
+      setIsResetting(false);
+      setResetDialogOpen(false);
     }
   };
 
@@ -419,14 +495,23 @@ export const Header = () => {
             
             {/* Admin link - only visible to admins */}
             {isAdmin && (
-              <Link
-                to="/admin"
-                className={`text-sm font-medium transition-all duration-300 ${
-                  isActive("/admin") ? "neon-pink" : "text-muted-foreground hover:neon-pink"
-                }`}
-              >
-                Admin
-              </Link>
+              <>
+                <Link
+                  to="/admin"
+                  className={`text-sm font-medium transition-all duration-300 ${
+                    isActive("/admin") ? "neon-pink" : "text-muted-foreground hover:neon-pink"
+                  }`}
+                >
+                  Admin
+                </Link>
+                <button
+                  onClick={() => setResetDialogOpen(true)}
+                  className="text-sm font-medium transition-all duration-300 text-destructive hover:text-destructive/80 flex items-center gap-1"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Reset
+                </button>
+              </>
             )}
           </div>
 
@@ -538,6 +623,31 @@ export const Header = () => {
           </div>
         )}
       </nav>
+
+      {/* Reset Confirmation Dialog */}
+      <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Profile Data</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will clear all responses, memos, deck data, and analysis for the current company. 
+              The company record will be kept, but you'll return to an empty profile state.
+              <br /><br />
+              <strong className="text-destructive">This action cannot be undone.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isResetting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSoftReset}
+              disabled={isResetting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isResetting ? "Resetting..." : "Reset Profile"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   );
 };
