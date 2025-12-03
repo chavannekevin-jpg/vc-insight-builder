@@ -313,13 +313,21 @@ export default function FreemiumHub() {
 
         toast({
           title: "Deck imported successfully!",
-          description: `Pre-filled ${highConfidenceResponses.length} questionnaire sections from your pitch deck.`,
+          description: "Let's review your answers in the questionnaire.",
         });
+        
+        // Close wizard and navigate to questionnaire
+        setDeckWizardOpen(false);
+        navigate("/portal");
       } else {
         toast({
           title: "Import complete",
-          description: "No high-confidence sections found to auto-fill. You can still review and add content manually.",
+          description: "No high-confidence sections found. Let's fill out the questionnaire manually.",
         });
+        
+        // Still navigate to questionnaire
+        setDeckWizardOpen(false);
+        navigate("/portal");
       }
 
     } catch (error: any) {
