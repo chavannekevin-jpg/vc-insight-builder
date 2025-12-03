@@ -5,20 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const QUESTION_MAPPINGS = {
-  problem: 'problem_statement',
-  solution: 'solution_description',
-  market: 'target_market',
-  business_model: 'business_model',
-  competition: 'competitive_landscape',
-  team: 'team_background',
-  traction: 'traction_metrics',
-  financials: 'financial_projections',
-  ask: 'funding_ask',
-  vision: 'company_vision',
-  moat: 'competitive_moat',
-  gtm: 'go_to_market',
-};
+// Confidence threshold for auto-filling
+const CONFIDENCE_THRESHOLD = 0.6;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -62,41 +50,47 @@ serve(async (req) => {
 
     let messages: any[] = [];
 
+    // System prompt with EXACT questionnaire keys
     const systemPrompt = `You are an expert VC analyst who extracts structured information from pitch decks. 
 Analyze the provided pitch deck and extract as much relevant information as possible.
 
-Return a JSON object with the following structure:
+Return a JSON object with the following structure. Use these EXACT keys:
 {
   "companyInfo": {
     "name": "extracted company name or null",
     "description": "one-paragraph company description",
     "stage": "Pre-Seed|Seed|Series A|Series B|Growth",
-    "category": "industry/sector"
+    "category": "industry/sector like SaaS, FinTech, HealthTech, etc."
   },
   "extractedSections": {
-    "problem_statement": { "content": "extracted content", "confidence": 0.0-1.0 },
-    "solution_description": { "content": "extracted content", "confidence": 0.0-1.0 },
-    "target_market": { "content": "TAM/SAM/SOM and target customer info", "confidence": 0.0-1.0 },
-    "business_model": { "content": "how they make money", "confidence": 0.0-1.0 },
-    "competitive_landscape": { "content": "competitors and differentiation", "confidence": 0.0-1.0 },
-    "team_background": { "content": "founder/team info", "confidence": 0.0-1.0 },
-    "traction_metrics": { "content": "current traction, users, revenue", "confidence": 0.0-1.0 },
-    "financial_projections": { "content": "financial forecasts if available", "confidence": 0.0-1.0 },
-    "funding_ask": { "content": "how much they're raising and use of funds", "confidence": 0.0-1.0 },
-    "company_vision": { "content": "long-term vision", "confidence": 0.0-1.0 },
-    "competitive_moat": { "content": "defensibility and moats", "confidence": 0.0-1.0 },
-    "go_to_market": { "content": "GTM strategy", "confidence": 0.0-1.0 }
+    "problem_description": { "content": "What problem does this company solve? Who suffers from it?", "confidence": 0.0-1.0 },
+    "problem_validation": { "content": "Evidence that this problem is real and painful", "confidence": 0.0-1.0 },
+    "solution_description": { "content": "How does the product/service solve the problem?", "confidence": 0.0-1.0 },
+    "solution_demo": { "content": "Description of product demo, screenshots, or how it works", "confidence": 0.0-1.0 },
+    "market_size": { "content": "TAM/SAM/SOM analysis, market size data", "confidence": 0.0-1.0 },
+    "market_timing": { "content": "Why is now the right time for this solution?", "confidence": 0.0-1.0 },
+    "target_customer": { "content": "Ideal customer profile, who pays for this?", "confidence": 0.0-1.0 },
+    "competitors": { "content": "Competitive landscape, who else is solving this?", "confidence": 0.0-1.0 },
+    "competitive_advantage": { "content": "What's the moat? Why can't competitors copy this?", "confidence": 0.0-1.0 },
+    "founder_background": { "content": "Founder credentials, why are they suited to solve this?", "confidence": 0.0-1.0 },
+    "team_composition": { "content": "Team members, their roles and backgrounds", "confidence": 0.0-1.0 },
+    "revenue_model": { "content": "How does the company make money?", "confidence": 0.0-1.0 },
+    "unit_economics": { "content": "CAC, LTV, margins, pricing structure", "confidence": 0.0-1.0 },
+    "current_traction": { "content": "Current users, revenue, growth metrics, proof of traction", "confidence": 0.0-1.0 },
+    "key_milestones": { "content": "Past achievements and future milestones planned", "confidence": 0.0-1.0 }
   },
   "summary": "2-3 sentence executive summary of the company"
 }
 
-For each section:
-- Set confidence to 0.9+ if explicitly stated in the deck
-- Set confidence to 0.6-0.8 if inferred from context
-- Set confidence to 0.3-0.5 if making educated guesses
-- Set content to null and confidence to 0 if no relevant information found
+CONFIDENCE SCORING GUIDELINES:
+- 0.9-1.0: Information is explicitly and clearly stated in the deck
+- 0.7-0.8: Information is clearly implied or can be confidently inferred
+- 0.5-0.6: Information is partially available or requires some inference
+- 0.3-0.4: Educated guess based on limited context
+- 0.0: No relevant information found (set content to null)
 
-Be thorough but accurate. Only extract what you can actually find or reasonably infer.`;
+Be thorough but accurate. Only extract what you can actually find or reasonably infer.
+For missing information, set content to null and confidence to 0.`;
 
     if (isImage) {
       // For images, use vision capability
@@ -121,8 +115,6 @@ Be thorough but accurate. Only extract what you can actually find or reasonably 
         }
       ];
     } else if (isPDF) {
-      // For PDFs, we'll need to inform the user about limitations
-      // In a production app, you'd use a PDF parsing service first
       const textContent = await deckResponse.text();
       
       messages = [
@@ -214,12 +206,19 @@ ${textContent.substring(0, 50000)}`
       );
     }
 
-    console.log('Successfully parsed pitch deck');
+    // Count high-confidence extractions
+    const highConfidenceCount = Object.values(parsedContent.extractedSections || {})
+      .filter((section: any) => section.confidence >= CONFIDENCE_THRESHOLD && section.content)
+      .length;
+
+    console.log(`Successfully parsed pitch deck. High confidence extractions: ${highConfidenceCount}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: parsedContent
+        data: parsedContent,
+        confidenceThreshold: CONFIDENCE_THRESHOLD,
+        highConfidenceCount
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

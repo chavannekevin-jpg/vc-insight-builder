@@ -9,7 +9,8 @@ import { MemoJourneyCard } from "@/components/MemoJourneyCard";
 import { CompanySummaryCard } from "@/components/CompanySummaryCard";
 import { ToolsRow } from "@/components/ToolsRow";
 import { CollapsedLibrary } from "@/components/CollapsedLibrary";
-import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, User, Shield, ArrowRight } from "lucide-react";
+import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
+import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Company {
@@ -32,6 +33,9 @@ interface MemoResponse {
   answer: string | null;
 }
 
+// Confidence threshold for auto-filling
+const CONFIDENCE_THRESHOLD = 0.6;
+
 export default function FreemiumHub() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -45,6 +49,7 @@ export default function FreemiumHub() {
   const [generatingTagline, setGeneratingTagline] = useState(false);
   const [tagline, setTagline] = useState<string>("");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [deckWizardOpen, setDeckWizardOpen] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -222,6 +227,89 @@ export default function FreemiumHub() {
       // Don't show error toast - silently fail for tagline generation
     } finally {
       setGeneratingTagline(false);
+    }
+  };
+
+  const handleDeckImportComplete = async (data: ExtractedData) => {
+    if (!company) return;
+
+    try {
+      // 1. Update company profile if we have high-confidence company info
+      const companyUpdates: Record<string, any> = {};
+      
+      if (data.companyInfo.category) {
+        companyUpdates.category = data.companyInfo.category;
+      }
+      if (data.companyInfo.description && !company.description) {
+        companyUpdates.description = data.companyInfo.description;
+      }
+
+      if (Object.keys(companyUpdates).length > 0) {
+        const { error: updateError } = await supabase
+          .from("companies")
+          .update(companyUpdates)
+          .eq("id", company.id);
+
+        if (updateError) {
+          console.error("Error updating company:", updateError);
+        } else {
+          setCompany(prev => prev ? { ...prev, ...companyUpdates } : null);
+        }
+      }
+
+      // 2. Upsert memo responses for high-confidence extractions
+      const highConfidenceResponses = Object.entries(data.extractedSections)
+        .filter(([_, section]) => section.confidence >= CONFIDENCE_THRESHOLD && section.content)
+        .map(([key, section]) => ({
+          company_id: company.id,
+          question_key: key,
+          answer: section.content,
+          source: 'deck_import',
+          confidence_score: section.confidence
+        }));
+
+      if (highConfidenceResponses.length > 0) {
+        // Use upsert to update existing or insert new
+        for (const response of highConfidenceResponses) {
+          const { error: upsertError } = await supabase
+            .from("memo_responses")
+            .upsert(response, {
+              onConflict: 'company_id,question_key'
+            });
+
+          if (upsertError) {
+            console.error(`Error upserting response for ${response.question_key}:`, upsertError);
+          }
+        }
+
+        // Reload responses to update UI
+        const { data: updatedResponses } = await supabase
+          .from("memo_responses")
+          .select("question_key, answer")
+          .eq("company_id", company.id);
+
+        if (updatedResponses) {
+          setResponses(updatedResponses);
+        }
+
+        toast({
+          title: "Deck imported successfully!",
+          description: `Pre-filled ${highConfidenceResponses.length} questionnaire sections from your pitch deck.`,
+        });
+      } else {
+        toast({
+          title: "Import complete",
+          description: "No high-confidence sections found to auto-fill. You can still review and add content manually.",
+        });
+      }
+
+    } catch (error: any) {
+      console.error("Error completing deck import:", error);
+      toast({
+        title: "Import error",
+        description: error.message || "Failed to save imported data",
+        variant: "destructive",
+      });
     }
   };
 
@@ -431,6 +519,7 @@ export default function FreemiumHub() {
                   hasPaid={hasPaid}
                   nextSection={getNextSection()}
                   companyId={company.id}
+                  onImportDeck={() => setDeckWizardOpen(true)}
                 />
               )}
 
@@ -445,6 +534,16 @@ export default function FreemiumHub() {
           </div>
         </div>
       </main>
+
+      {/* Deck Import Wizard */}
+      <DeckImportWizard
+        open={deckWizardOpen}
+        onOpenChange={setDeckWizardOpen}
+        companyId={company.id}
+        companyName={company.name}
+        companyDescription={company.description || undefined}
+        onImportComplete={handleDeckImportComplete}
+      />
     </div>
   );
 }

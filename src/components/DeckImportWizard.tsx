@@ -24,7 +24,7 @@ interface ExtractedSection {
   confidence: number;
 }
 
-interface ExtractedData {
+export interface ExtractedData {
   companyInfo: {
     name: string | null;
     description: string | null;
@@ -44,20 +44,27 @@ interface DeckImportWizardProps {
   onImportComplete: (data: ExtractedData) => void;
 }
 
-const SECTION_LABELS: Record<string, string> = {
-  problem_statement: 'Problem Statement',
-  solution_description: 'Solution',
-  target_market: 'Target Market',
-  business_model: 'Business Model',
-  competitive_landscape: 'Competition',
-  team_background: 'Team',
-  traction_metrics: 'Traction',
-  financial_projections: 'Financials',
-  funding_ask: 'Funding Ask',
-  company_vision: 'Vision',
-  competitive_moat: 'Moat',
-  go_to_market: 'Go-to-Market',
+// Labels matching the ACTUAL questionnaire keys
+const SECTION_LABELS: Record<string, { label: string; section: string }> = {
+  problem_description: { label: "What Makes People Suffer?", section: "Problem" },
+  problem_validation: { label: "How Do You Know This Hurts?", section: "Problem" },
+  solution_description: { label: "Your Killer Solution", section: "Solution" },
+  solution_demo: { label: "Show, Don't Tell", section: "Solution" },
+  market_size: { label: "How Big Is This Thing?", section: "Market" },
+  market_timing: { label: "Why Now?", section: "Market" },
+  target_customer: { label: "Who Pays You?", section: "Market" },
+  competitors: { label: "Who Else Wants This?", section: "Competition" },
+  competitive_advantage: { label: "Your Competitive Edge", section: "Competition" },
+  founder_background: { label: "Why You?", section: "Team" },
+  team_composition: { label: "The Band", section: "Team" },
+  revenue_model: { label: "Show Me The Money", section: "Business Model" },
+  unit_economics: { label: "The Math", section: "Business Model" },
+  current_traction: { label: "Proof of Life", section: "Traction" },
+  key_milestones: { label: "What's Next?", section: "Traction" },
 };
+
+// Confidence threshold for pre-filling
+const CONFIDENCE_THRESHOLD = 0.6;
 
 type WizardStep = 'upload' | 'processing' | 'review' | 'complete';
 
@@ -76,6 +83,7 @@ export const DeckImportWizard = ({
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState<Record<string, string>>({});
+  const [highConfidenceCount, setHighConfidenceCount] = useState(0);
 
   const resetWizard = () => {
     setStep('upload');
@@ -85,6 +93,7 @@ export const DeckImportWizard = ({
     setExtractedData(null);
     setEditingSection(null);
     setEditedContent({});
+    setHighConfidenceCount(0);
   };
 
   const handleFileSelect = async (file: File) => {
@@ -149,6 +158,7 @@ export const DeckImportWizard = ({
 
       if (parseResult?.data) {
         setExtractedData(parseResult.data);
+        setHighConfidenceCount(parseResult.highConfidenceCount || 0);
         setStep('review');
       } else {
         throw new Error('No data extracted from deck');
@@ -169,10 +179,10 @@ export const DeckImportWizard = ({
     if (confidence >= 0.8) {
       return <Badge variant="default" className="bg-green-500/20 text-green-600 border-green-500/30">High confidence</Badge>;
     }
-    if (confidence >= 0.5) {
-      return <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-600 border-yellow-500/30">Medium confidence</Badge>;
+    if (confidence >= CONFIDENCE_THRESHOLD) {
+      return <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-600 border-yellow-500/30">Good confidence</Badge>;
     }
-    return <Badge variant="outline" className="text-muted-foreground">Low confidence</Badge>;
+    return <Badge variant="outline" className="text-muted-foreground">Low confidence - won't auto-fill</Badge>;
   };
 
   const handleSectionEdit = (key: string, value: string) => {
@@ -210,6 +220,19 @@ export const DeckImportWizard = ({
     }, 1500);
   };
 
+  // Group sections by category for better display
+  const groupedSections = extractedData 
+    ? Object.entries(extractedData.extractedSections)
+        .filter(([_, section]) => section.content)
+        .reduce((acc, [key, section]) => {
+          const sectionInfo = SECTION_LABELS[key];
+          const group = sectionInfo?.section || 'Other';
+          if (!acc[group]) acc[group] = [];
+          acc[group].push({ key, section, label: sectionInfo?.label || key });
+          return acc;
+        }, {} as Record<string, Array<{ key: string; section: ExtractedSection; label: string }>>)
+    : {};
+
   return (
     <Dialog open={open} onOpenChange={(open) => {
       if (!open) resetWizard();
@@ -224,7 +247,7 @@ export const DeckImportWizard = ({
           <DialogDescription>
             {step === 'upload' && 'Upload your pitch deck to automatically extract company information'}
             {step === 'processing' && 'Analyzing your deck with AI...'}
-            {step === 'review' && 'Review and edit the extracted information'}
+            {step === 'review' && `Found ${highConfidenceCount} high-confidence sections to auto-fill`}
             {step === 'complete' && 'Import complete!'}
           </DialogDescription>
         </DialogHeader>
@@ -263,7 +286,7 @@ export const DeckImportWizard = ({
               <div className="text-center space-y-2">
                 <p className="font-medium">Analyzing your pitch deck...</p>
                 <p className="text-sm text-muted-foreground">
-                  Our AI is extracting company information
+                  Our AI is extracting company information and questionnaire answers
                 </p>
               </div>
 
@@ -294,59 +317,84 @@ export const DeckImportWizard = ({
                       placeholder="Funding stage"
                     />
                   </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Category</label>
+                    <Input 
+                      value={editedContent['company_category'] ?? extractedData.companyInfo.category ?? ''}
+                      onChange={(e) => handleSectionEdit('company_category', e.target.value)}
+                      placeholder="Industry/sector"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Description</label>
+                    <Input 
+                      value={editedContent['company_description'] ?? extractedData.companyInfo.description ?? ''}
+                      onChange={(e) => handleSectionEdit('company_description', e.target.value)}
+                      placeholder="One-liner description"
+                    />
+                  </div>
                 </div>
                 {extractedData.summary && (
                   <div className="mt-4">
-                    <label className="text-sm text-muted-foreground">Summary</label>
-                    <p className="text-sm mt-1">{extractedData.summary}</p>
+                    <label className="text-sm text-muted-foreground">AI Summary</label>
+                    <p className="text-sm mt-1 p-2 bg-background rounded border">{extractedData.summary}</p>
                   </div>
                 )}
               </div>
 
-              {/* Extracted Sections */}
-              <div className="space-y-3">
-                <h3 className="font-semibold">Extracted Content</h3>
+              {/* Extracted Sections by Group */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold">Extracted Questionnaire Answers</h3>
+                  <Badge variant="secondary">
+                    {highConfidenceCount} will be auto-filled
+                  </Badge>
+                </div>
                 
-                {Object.entries(extractedData.extractedSections)
-                  .filter(([_, section]) => section.content)
-                  .map(([key, section]) => (
-                    <div 
-                      key={key}
-                      className={cn(
-                        "p-4 rounded-lg border transition-all",
-                        editingSection === key ? "border-primary" : "border-border"
-                      )}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{SECTION_LABELS[key] || key}</span>
-                          {getConfidenceBadge(section.confidence)}
+                {Object.entries(groupedSections).map(([group, items]) => (
+                  <div key={group} className="space-y-2">
+                    <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{group}</h4>
+                    {items.map(({ key, section, label }) => (
+                      <div 
+                        key={key}
+                        className={cn(
+                          "p-4 rounded-lg border transition-all",
+                          editingSection === key ? "border-primary" : "border-border",
+                          section.confidence < CONFIDENCE_THRESHOLD && "opacity-60"
+                        )}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-sm">{label}</span>
+                            {getConfidenceBadge(section.confidence)}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingSection(editingSection === key ? null : key)}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingSection(editingSection === key ? null : key)}
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
+
+                        {editingSection === key ? (
+                          <Textarea
+                            value={getSectionContent(key)}
+                            onChange={(e) => handleSectionEdit(key, e.target.value)}
+                            rows={4}
+                            className="mt-2"
+                          />
+                        ) : (
+                          <p className="text-sm text-muted-foreground line-clamp-3">
+                            {getSectionContent(key)}
+                          </p>
+                        )}
                       </div>
+                    ))}
+                  </div>
+                ))}
 
-                      {editingSection === key ? (
-                        <Textarea
-                          value={getSectionContent(key)}
-                          onChange={(e) => handleSectionEdit(key, e.target.value)}
-                          rows={4}
-                          className="mt-2"
-                        />
-                      ) : (
-                        <p className="text-sm text-muted-foreground line-clamp-3">
-                          {getSectionContent(key)}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-
-                {Object.values(extractedData.extractedSections).every(s => !s.content) && (
+                {Object.keys(groupedSections).length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p>No content could be extracted from this deck.</p>
@@ -364,7 +412,7 @@ export const DeckImportWizard = ({
                 <CheckCircle2 className="w-8 h-8 text-green-500" />
               </div>
               <p className="font-medium">Import successful!</p>
-              <p className="text-sm text-muted-foreground">Your profile has been updated</p>
+              <p className="text-sm text-muted-foreground">Your profile and questionnaire have been updated</p>
             </div>
           )}
         </div>
