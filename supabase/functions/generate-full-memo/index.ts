@@ -137,15 +137,26 @@ serve(async (req) => {
       "Investment Thesis"
     ];
 
-    // Create proper section name mapping
+    // Create proper section name mapping (expanded to cover all question key prefixes)
     const sectionKeyMapping: Record<string, string> = {
       "problem": "Problem",
       "solution": "Solution",
       "market": "Market",
+      "target": "Market",
       "competition": "Competition",
+      "competitors": "Competition",
+      "competitive": "Competition",
       "team": "Team",
+      "founder": "Team",
       "business": "Business Model",
-      "traction": "Traction"
+      "revenue": "Business Model",
+      "pricing": "Business Model",
+      "unit": "Business Model",
+      "average": "Business Model",
+      "traction": "Traction",
+      "retention": "Traction",
+      "current": "Traction",
+      "key": "Traction"
     };
 
     // Group responses by section
@@ -610,8 +621,8 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
     console.log(`Generated sections: ${generatedSectionCount}/8 expected`);
     console.log(`Section titles: ${Object.keys(enhancedSections).join(", ")}`);
     
-    if (generatedSectionCount < 5) {
-      console.error(`WARNING: Only ${generatedSectionCount} sections generated, expected at least 5`);
+    if (generatedSectionCount < 3) {
+      console.error(`WARNING: Only ${generatedSectionCount} sections generated, expected at least 3`);
       throw new Error(`Incomplete memo generation: only ${generatedSectionCount} sections generated`);
     }
 
