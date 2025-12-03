@@ -10,10 +10,35 @@ import { MemoVCReflection } from "@/components/memo/MemoVCReflection";
 import { MemoVCQuestions } from "@/components/memo/MemoVCQuestions";
 import { MemoBenchmarking } from "@/components/memo/MemoBenchmarking";
 import { MemoAIConclusion } from "@/components/memo/MemoAIConclusion";
-import { Sparkles, ArrowLeft, RefreshCw, Printer } from "lucide-react";
+import { SmartFillModal } from "@/components/SmartFillModal";
+import { Sparkles, ArrowLeft, RefreshCw, Printer, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent } from "@/types/memo";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+
+interface SmartQuestion {
+  questionKey: string;
+  question: string;
+  helpText: string;
+  placeholder: string;
+  priority: number;
+}
+
+interface GapAnalysis {
+  scores: {
+    memoReadiness: number;
+    qualitativeScore: number;
+    momentumScore: number;
+  };
+  criticalGaps: Array<{
+    category: string;
+    label: string;
+    keys: string[];
+    vcImportance: string;
+  }>;
+  filledData: Record<string, string>;
+}
 
 export default function GeneratedMemo() {
   const navigate = useNavigate();
@@ -21,13 +46,72 @@ export default function GeneratedMemo() {
   const companyId = searchParams.get("companyId");
   
   const [loading, setLoading] = useState(true);
+  const [analyzing, setAnalyzing] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
+  
+  // Smart fill state
+  const [showSmartFill, setShowSmartFill] = useState(false);
+  const [smartQuestions, setSmartQuestions] = useState<SmartQuestion[]>([]);
+  const [smartSummary, setSmartSummary] = useState("");
+  const [gapAnalysis, setGapAnalysis] = useState<GapAnalysis | null>(null);
+  const [pendingGeneration, setPendingGeneration] = useState(false);
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const analyzeAndPrepare = async (companyId: string): Promise<boolean> => {
+    setAnalyzing(true);
+    try {
+      // Step 1: Analyze data gaps
+      const { data: gapData, error: gapError } = await supabase.functions.invoke('analyze-data-gaps', {
+        body: { companyId }
+      });
+
+      if (gapError) {
+        console.error('Gap analysis error:', gapError);
+        // Don't block - proceed with generation
+        return true;
+      }
+
+      console.log('Gap analysis result:', gapData);
+      setGapAnalysis(gapData.analysis);
+
+      // If memo readiness is below 70%, generate smart questions
+      if (gapData.analysis.scores.memoReadiness < 70 && gapData.analysis.criticalGaps.length > 0) {
+        console.log('Memo readiness below 70%, generating smart questions...');
+        
+        const { data: questionData, error: questionError } = await supabase.functions.invoke('generate-smart-questions', {
+          body: { 
+            gapAnalysis: gapData.analysis,
+            company: gapData.company
+          }
+        });
+
+        if (questionError) {
+          console.error('Smart questions error:', questionError);
+          // Don't block - proceed with generation
+          return true;
+        }
+
+        if (questionData.questions && questionData.questions.length > 0) {
+          setSmartQuestions(questionData.questions);
+          setSmartSummary(questionData.summary);
+          setShowSmartFill(true);
+          return false; // Don't proceed with generation yet
+        }
+      }
+
+      return true; // Proceed with generation
+    } catch (error) {
+      console.error('Error in analyzeAndPrepare:', error);
+      return true; // Don't block on errors
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   useEffect(() => {
@@ -84,30 +168,21 @@ export default function GeneratedMemo() {
                           (memo.structured_content as any).sections.length > 0;
 
         if (!hasContent) {
-          // No memo or empty memo exists, generate one
-          console.log("GeneratedMemo: No existing memo found, generating new one...");
-          const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-full-memo', {
-            body: { companyId }
-          });
-
-          if (functionError) {
-            console.error("GeneratedMemo: Edge function error:", functionError);
-            throw new Error(
-              functionError.message === "Not Found" || functionError.status === 404
-                ? "Memo generation service is currently unavailable. Please try again in a moment."
-                : functionError.message || "Failed to generate memo"
-            );
+          // No memo exists - analyze gaps before generating
+          console.log("GeneratedMemo: No existing memo found, analyzing data gaps...");
+          
+          const shouldProceed = await analyzeAndPrepare(companyId);
+          
+          if (shouldProceed) {
+            await generateMemo(companyId);
+          } else {
+            // Smart fill modal will show, mark as pending
+            setPendingGeneration(true);
+            setLoading(false);
           }
-
-          if (!functionData || !functionData.structuredContent) {
-            throw new Error("No structured content returned from generation");
-          }
-
-          setMemoContent(functionData.structuredContent);
-          setCompanyInfo(functionData.company);
         } else {
           // Memo exists with content, fetch company info
-          const { data: company, error: companyError } = await supabase
+          const { data: companyData, error: companyError } = await supabase
             .from("companies")
             .select("*")
             .eq("id", companyId)
@@ -116,7 +191,8 @@ export default function GeneratedMemo() {
           if (companyError) throw companyError;
 
           setMemoContent(memo.structured_content as unknown as MemoStructuredContent);
-          setCompanyInfo(company);
+          setCompanyInfo(companyData);
+          setLoading(false);
         }
       } catch (error: any) {
         console.error("GeneratedMemo: Error loading memo:", error);
@@ -125,13 +201,61 @@ export default function GeneratedMemo() {
           description: error?.message || "Failed to load memo. Please try again.",
           variant: "destructive"
         });
-        // Stay on page but show error state
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
     init();
   }, [companyId, navigate]);
+
+  const generateMemo = async (companyIdToGenerate: string, force: boolean = false) => {
+    setLoading(true);
+    try {
+      console.log("Generating memo...");
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-full-memo', {
+        body: { companyId: companyIdToGenerate, force }
+      });
+
+      if (functionError) {
+        console.error("GeneratedMemo: Edge function error:", functionError);
+        throw new Error(
+          functionError.message === "Not Found" || functionError.status === 404
+            ? "Memo generation service is currently unavailable. Please try again in a moment."
+            : functionError.message || "Failed to generate memo"
+        );
+      }
+
+      if (!functionData || !functionData.structuredContent) {
+        throw new Error("No structured content returned from generation");
+      }
+
+      setMemoContent(functionData.structuredContent);
+      setCompanyInfo(functionData.company);
+    } catch (error: any) {
+      console.error("Error generating memo:", error);
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to generate memo.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+      setPendingGeneration(false);
+    }
+  };
+
+  const handleSmartFillComplete = async () => {
+    setShowSmartFill(false);
+    if (companyId && pendingGeneration) {
+      await generateMemo(companyId);
+    }
+  };
+
+  const handleSmartFillSkip = async () => {
+    setShowSmartFill(false);
+    if (companyId && pendingGeneration) {
+      await generateMemo(companyId);
+    }
+  };
 
   const handleRegenerate = async () => {
     if (!companyId) return;
@@ -144,10 +268,10 @@ export default function GeneratedMemo() {
         title: "Still Processing",
         description: "This may take 60-90 seconds as we generate all sections with critical analysis...",
       });
-    }, 10000); // Warn after 10 seconds
+    }, 10000);
     
     try {
-      console.log("Regenerating memo with force=true and new critical prompts...");
+      console.log("Regenerating memo with force=true...");
       const startTime = Date.now();
       
       const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-full-memo', {
@@ -181,11 +305,6 @@ export default function GeneratedMemo() {
     } catch (error: any) {
       clearTimeout(warningTimeout);
       console.error("Error regenerating memo:", error);
-      console.error("Error details:", {
-        message: error?.message,
-        status: error?.status,
-        details: error?.details || error
-      });
       
       toast({
         title: "Error",
@@ -197,11 +316,51 @@ export default function GeneratedMemo() {
     }
   };
 
-  if (loading) {
+  // Smart Fill Modal
+  if (showSmartFill && companyId) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-12 max-w-2xl">
+          <div className="text-center space-y-4 mb-8">
+            <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto" />
+            <h1 className="text-2xl font-display font-bold">Almost ready for your memo</h1>
+            <p className="text-muted-foreground">
+              We found some gaps in your data that would improve your memo quality.
+            </p>
+            {gapAnalysis && (
+              <div className="flex items-center justify-center gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Data Quality:</span>
+                  <Progress value={gapAnalysis.scores.memoReadiness} className="w-24 h-2" />
+                  <span className="font-medium">{gapAnalysis.scores.memoReadiness}%</span>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <SmartFillModal
+            open={showSmartFill}
+            onOpenChange={setShowSmartFill}
+            companyId={companyId}
+            questions={smartQuestions}
+            summary={smartSummary}
+            currentReadiness={gapAnalysis?.scores.memoReadiness || 0}
+            onComplete={handleSmartFillComplete}
+            onSkip={handleSmartFillSkip}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (loading || analyzing) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
         <Sparkles className="w-12 h-12 text-primary animate-pulse" />
-        <p className="text-muted-foreground">Loading your investment memo...</p>
+        <p className="text-muted-foreground">
+          {analyzing ? "Analyzing your data..." : "Loading your investment memo..."}
+        </p>
       </div>
     );
   }
