@@ -221,27 +221,52 @@ serve(async (req) => {
       if (pricingInfo) financialContextStr += `\nPricing Model: ${pricingInfo}`;
       if (revenueInfo) financialContextStr += `\nRevenue Model: ${revenueInfo}`;
       
-      // Add bottoms-up calculation guidance for Market section
-      financialContextStr += `\n\n**BOTTOMS-UP CALCULATION GUIDANCE:**`;
-      if (financialMetrics?.acv) {
-        const acv = parseFloat(financialMetrics.acv);
-        const customersFor10M = Math.ceil(10000000 / acv);
-        const customersFor50M = Math.ceil(50000000 / acv);
-        const customersFor100M = Math.ceil(100000000 / acv);
-        financialContextStr += `\n- At €${acv} ACV: ${customersFor10M.toLocaleString()} customers = €10M ARR`;
-        financialContextStr += `\n- At €${acv} ACV: ${customersFor50M.toLocaleString()} customers = €50M ARR`;
-        financialContextStr += `\n- At €${acv} ACV: ${customersFor100M.toLocaleString()} customers = €100M ARR`;
-      } else if (financialMetrics?.arr && financialMetrics?.totalCustomers) {
-        const calculatedAcv = parseFloat(financialMetrics.arr) / parseFloat(financialMetrics.totalCustomers);
+    // Add bottoms-up calculation guidance for Market section
+    financialContextStr += `\n\n**BOTTOMS-UP CALCULATION GUIDANCE:**`;
+    
+    // Calculate ACV from ARR/customers (use 'customers' field, not 'totalCustomers')
+    const numCustomers = financialMetrics?.customers || financialMetrics?.totalCustomers;
+    const arrValue = financialMetrics?.arr;
+    
+    if (financialMetrics?.acv) {
+      const acv = parseFloat(financialMetrics.acv);
+      const customersFor10M = Math.ceil(10000000 / acv);
+      const customersFor50M = Math.ceil(50000000 / acv);
+      const customersFor100M = Math.ceil(100000000 / acv);
+      financialContextStr += `\n- ACV (Average Contract Value): €${acv}`;
+      financialContextStr += `\n- At €${acv} ACV: ${customersFor10M.toLocaleString()} customers needed for €10M ARR`;
+      financialContextStr += `\n- At €${acv} ACV: ${customersFor50M.toLocaleString()} customers needed for €50M ARR`;
+      financialContextStr += `\n- At €${acv} ACV: ${customersFor100M.toLocaleString()} customers needed for €100M ARR`;
+    } else if (arrValue && numCustomers && parseFloat(numCustomers) > 0) {
+      const calculatedAcv = parseFloat(arrValue) / parseFloat(numCustomers);
+      const customersFor10M = Math.ceil(10000000 / calculatedAcv);
+      const customersFor50M = Math.ceil(50000000 / calculatedAcv);
+      const customersFor100M = Math.ceil(100000000 / calculatedAcv);
+      financialContextStr += `\n- Current customers: ${numCustomers}`;
+      financialContextStr += `\n- Current ARR: €${arrValue}`;
+      financialContextStr += `\n- Calculated ACV (ARR/customers): €${calculatedAcv.toFixed(0)}`;
+      financialContextStr += `\n- At €${calculatedAcv.toFixed(0)} ACV: ${customersFor10M.toLocaleString()} customers needed for €10M ARR`;
+      financialContextStr += `\n- At €${calculatedAcv.toFixed(0)} ACV: ${customersFor50M.toLocaleString()} customers needed for €50M ARR`;
+      financialContextStr += `\n- At €${calculatedAcv.toFixed(0)} ACV: ${customersFor100M.toLocaleString()} customers needed for €100M ARR`;
+    } else if (financialMetrics?.mrr) {
+      // Fallback: calculate from MRR
+      const mrrValue = parseFloat(financialMetrics.mrr);
+      const impliedArr = mrrValue * 12;
+      if (numCustomers && parseFloat(numCustomers) > 0) {
+        const calculatedAcv = impliedArr / parseFloat(numCustomers);
         const customersFor10M = Math.ceil(10000000 / calculatedAcv);
         const customersFor50M = Math.ceil(50000000 / calculatedAcv);
         const customersFor100M = Math.ceil(100000000 / calculatedAcv);
-        financialContextStr += `\n- Implied ACV: €${calculatedAcv.toFixed(0)}`;
-        financialContextStr += `\n- At this ACV: ${customersFor10M.toLocaleString()} customers = €10M ARR`;
-        financialContextStr += `\n- At this ACV: ${customersFor50M.toLocaleString()} customers = €50M ARR`;
-        financialContextStr += `\n- At this ACV: ${customersFor100M.toLocaleString()} customers = €100M ARR`;
+        financialContextStr += `\n- Current customers: ${numCustomers}`;
+        financialContextStr += `\n- Implied ARR (MRR x 12): €${impliedArr}`;
+        financialContextStr += `\n- Calculated ACV: €${calculatedAcv.toFixed(0)}`;
+        financialContextStr += `\n- At €${calculatedAcv.toFixed(0)} ACV: ${customersFor10M.toLocaleString()} customers needed for €10M ARR`;
+        financialContextStr += `\n- At €${calculatedAcv.toFixed(0)} ACV: ${customersFor50M.toLocaleString()} customers needed for €50M ARR`;
+        financialContextStr += `\n- At €${calculatedAcv.toFixed(0)} ACV: ${customersFor100M.toLocaleString()} customers needed for €100M ARR`;
       }
-      financialContextStr += `\n--- END FINANCIAL DATA ---`;
+    }
+    
+    financialContextStr += `\n--- END FINANCIAL DATA ---`;
     }
     console.log("Financial context string:", financialContextStr);
 
