@@ -48,6 +48,8 @@ serve(async (req) => {
     const isImage = contentType.startsWith('image/');
     const isPDF = contentType.includes('pdf');
 
+    console.log('Content type detected:', contentType, { isImage, isPDF });
+
     let messages: any[] = [];
 
     // System prompt with EXACT questionnaire keys
@@ -92,11 +94,14 @@ CONFIDENCE SCORING GUIDELINES:
 Be thorough but accurate. Only extract what you can actually find or reasonably infer.
 For missing information, set content to null and confidence to 0.`;
 
+    // Read file as binary for both images and PDFs
+    const fileBuffer = await deckResponse.arrayBuffer();
+    const base64Content = btoa(String.fromCharCode(...new Uint8Array(fileBuffer)));
+
     if (isImage) {
       // For images, use vision capability
-      const imageBuffer = await deckResponse.arrayBuffer();
-      const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
       const mimeType = contentType || 'image/png';
+      console.log('Processing as image:', mimeType);
 
       messages = [
         { role: 'system', content: systemPrompt },
@@ -109,13 +114,35 @@ For missing information, set content to null and confidence to 0.`;
             },
             {
               type: 'image_url',
-              image_url: { url: `data:${mimeType};base64,${base64Image}` }
+              image_url: { url: `data:${mimeType};base64,${base64Content}` }
             }
           ]
         }
       ];
     } else if (isPDF) {
-      const textContent = await deckResponse.text();
+      // For PDFs, send as base64 document to Gemini (it has native PDF support)
+      console.log('Processing as PDF document');
+
+      messages = [
+        { role: 'system', content: systemPrompt },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `Analyze this pitch deck PDF and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}`
+            },
+            {
+              type: 'image_url',
+              image_url: { url: `data:application/pdf;base64,${base64Content}` }
+            }
+          ]
+        }
+      ];
+    } else {
+      // For PPTX or other formats - try to read as text (limited support)
+      console.log('Processing as other format (limited support)');
+      const textContent = new TextDecoder().decode(fileBuffer);
       
       messages = [
         { role: 'system', content: systemPrompt },
@@ -123,19 +150,7 @@ For missing information, set content to null and confidence to 0.`;
           role: 'user',
           content: `Analyze this pitch deck content and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}
 
-Deck content:
-${textContent.substring(0, 50000)}`
-        }
-      ];
-    } else {
-      // For PPTX or other formats
-      const textContent = await deckResponse.text();
-      
-      messages = [
-        { role: 'system', content: systemPrompt },
-        {
-          role: 'user',
-          content: `Analyze this pitch deck content and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}
+Note: This file format may have limited extraction capability. Extract what you can.
 
 Deck content:
 ${textContent.substring(0, 50000)}`
