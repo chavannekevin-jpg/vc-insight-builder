@@ -412,7 +412,7 @@ export const DeckImportWizard = ({
                 <CheckCircle2 className="w-8 h-8 text-green-500" />
               </div>
               <p className="font-medium">Import successful!</p>
-              <p className="text-sm text-muted-foreground">Your profile and questionnaire have been updated</p>
+              <p className="text-sm text-muted-foreground">Taking you to review your answers...</p>
             </div>
           )}
         </div>
