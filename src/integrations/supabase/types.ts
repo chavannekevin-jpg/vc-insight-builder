@@ -19,6 +19,9 @@ export type Database = {
           biggest_challenge: string | null
           category: string | null
           created_at: string
+          deck_confidence_scores: Json | null
+          deck_parsed_at: string | null
+          deck_url: string | null
           description: string | null
           founder_id: string
           has_premium: boolean | null
@@ -31,6 +34,9 @@ export type Database = {
           biggest_challenge?: string | null
           category?: string | null
           created_at?: string
+          deck_confidence_scores?: Json | null
+          deck_parsed_at?: string | null
+          deck_url?: string | null
           description?: string | null
           founder_id: string
           has_premium?: boolean | null
@@ -43,6 +49,9 @@ export type Database = {
           biggest_challenge?: string | null
           category?: string | null
           created_at?: string
+          deck_confidence_scores?: Json | null
+          deck_parsed_at?: string | null
+          deck_url?: string | null
           description?: string | null
           founder_id?: string
           has_premium?: boolean | null
@@ -246,25 +255,31 @@ export type Database = {
         Row: {
           answer: string | null
           company_id: string
+          confidence_score: number | null
           created_at: string
           id: string
           question_key: string
+          source: string | null
           updated_at: string
         }
         Insert: {
           answer?: string | null
           company_id: string
+          confidence_score?: number | null
           created_at?: string
           id?: string
           question_key: string
+          source?: string | null
           updated_at?: string
         }
         Update: {
           answer?: string | null
           company_id?: string
+          confidence_score?: number | null
           created_at?: string
           id?: string
           question_key?: string
+          source?: string | null
           updated_at?: string
         }
         Relationships: [
