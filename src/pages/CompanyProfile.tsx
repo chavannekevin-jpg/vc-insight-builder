@@ -10,6 +10,7 @@ import { FileText, Edit, Sparkles, Loader2, Check, X, Zap, Rocket, Upload } from
 import { useToast } from "@/hooks/use-toast";
 import { QuickFillWizard } from "@/components/QuickFillWizard";
 import { DeckImportWizard } from "@/components/DeckImportWizard";
+import { UnitEconomicsEditor } from "@/components/UnitEconomicsEditor";
 
 interface Company {
   id: string;
@@ -559,49 +560,25 @@ export default function CompanyProfile() {
           )}
         </div>
 
-        {/* Unit Economics Prompt */}
-        <div className="bg-gradient-to-br from-accent/10 via-accent/5 to-background border border-accent/30 rounded-xl p-6 space-y-4">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
-                <span className="text-xl">📊</span>
-              </div>
-              <div>
-                <h3 className="font-bold text-lg">Unit Economics Matter</h3>
-                <p className="text-sm text-muted-foreground">Real numbers build investor confidence</p>
-              </div>
-            </div>
-            <Badge variant="outline" className="text-accent border-accent/30">Important</Badge>
-          </div>
-          
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            VCs evaluate startups on actual data, not projections. The more concrete metrics you provide, the stronger your memo will be. Include real numbers wherever possible:
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="bg-background/60 rounded-lg p-3 border border-border/50">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Revenue Metrics</p>
-              <p className="text-sm">MRR/ARR, revenue growth rate, average contract value</p>
-            </div>
-            <div className="bg-background/60 rounded-lg p-3 border border-border/50">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Customer Economics</p>
-              <p className="text-sm">CAC, LTV, LTV:CAC ratio, payback period</p>
-            </div>
-            <div className="bg-background/60 rounded-lg p-3 border border-border/50">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Growth & Retention</p>
-              <p className="text-sm">Monthly growth %, churn rate, NRR/GRR</p>
-            </div>
-            <div className="bg-background/60 rounded-lg p-3 border border-border/50">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Unit Margins</p>
-              <p className="text-sm">Gross margin %, contribution margin, burn rate</p>
-            </div>
-          </div>
-          
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5 pt-2 border-t border-border/30">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent/60"></span>
-            The more complete and accurate your data, the higher quality your investment memo will be
-          </p>
-        </div>
+        {/* Unit Economics Editor */}
+        {company && (
+          <UnitEconomicsEditor
+            companyId={company.id}
+            existingMetrics={responses.find(r => r.question_key === "unit_economics_json")?.answer}
+            onSave={(metrics) => {
+              setResponses(prev => {
+                const updated = [...prev];
+                const idx = updated.findIndex(r => r.question_key === "unit_economics");
+                if (idx >= 0) {
+                  updated[idx] = { question_key: "unit_economics", answer: metrics };
+                } else {
+                  updated.push({ question_key: "unit_economics", answer: metrics });
+                }
+                return updated;
+              });
+            }}
+          />
+        )}
 
         {/* Memo Sections */}
         {["Problem", "Solution", "Market", "Competition", "Team", "Business Model", "Traction"].map(
