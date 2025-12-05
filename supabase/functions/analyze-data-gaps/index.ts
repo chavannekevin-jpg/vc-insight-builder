@@ -6,37 +6,37 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Critical data categories for VC assessment
+// Updated data criteria for new merged questions
 const dataCriteria = {
-  // Qualitative data (usually from deck)
+  // Qualitative data (from questionnaire)
   qualitative: {
     problem: {
-      keys: ['problem_description', 'problem_validation'],
+      keys: ['problem_core', 'problem_description', 'problem_validation'], // Include legacy keys for backwards compat
       weight: 10,
       label: 'Problem Definition'
     },
     solution: {
-      keys: ['solution_description', 'solution_demo'],
+      keys: ['solution_core', 'solution_description', 'solution_demo'],
       weight: 10,
       label: 'Solution Clarity'
     },
     market: {
-      keys: ['market_size', 'target_customer', 'market_timing'],
+      keys: ['target_customer', 'market_size', 'market_timing'],
       weight: 12,
       label: 'Market Understanding'
     },
     competition: {
-      keys: ['competitors', 'competitive_advantage'],
+      keys: ['competitive_moat', 'competitors', 'competitive_advantage'],
       weight: 8,
       label: 'Competitive Landscape'
     },
     team: {
-      keys: ['founder_background', 'team_composition'],
+      keys: ['team_story', 'founder_background', 'team_composition'],
       weight: 10,
       label: 'Team Credentials'
     }
   },
-  // Momentum data (usually MISSING - critical for VC assessment)
+  // Momentum data (CRITICAL for VC assessment)
   momentum: {
     unit_economics: {
       keys: ['unit_economics', 'unit_economics_cac', 'unit_economics_ltv', 'unit_economics_margins'],
@@ -45,22 +45,22 @@ const dataCriteria = {
       vcImportance: 'VCs won\'t invest without understanding your CAC/LTV ratio'
     },
     revenue: {
-      keys: ['revenue_model', 'pricing_model', 'average_deal_size'],
+      keys: ['business_model', 'revenue_model', 'pricing_model', 'average_deal_size'],
       weight: 12,
       label: 'Revenue Model',
       vcImportance: 'How you make money is non-negotiable information'
     },
     growth: {
-      keys: ['current_traction', 'growth_rate', 'mrr_arr'],
+      keys: ['traction_proof', 'current_traction', 'growth_rate', 'mrr_arr'],
       weight: 15,
       label: 'Growth Metrics',
       vcImportance: 'Traction proves you\'re not just a slideshow'
     },
-    retention: {
-      keys: ['retention_rate', 'churn_rate', 'nrr'],
+    vision: {
+      keys: ['vision_ask', 'key_milestones', 'funding_ask'],
       weight: 8,
-      label: 'Retention Data',
-      vcImportance: 'Leaky bucket = no funding'
+      label: 'Vision & Ask',
+      vcImportance: 'Clear use of funds shows operational maturity'
     }
   }
 };
@@ -84,19 +84,25 @@ function analyzeDataCompleteness(responses: Record<string, string>) {
   let momentumPoints = 0;
   let momentumMaxPoints = 0;
 
-  // Analyze qualitative data
+  // Analyze qualitative data - count as filled if ANY key in the group has data
   for (const [category, config] of Object.entries(dataCriteria.qualitative)) {
-    const filled = config.keys.filter(key => responses[key]?.trim());
-    const missing = config.keys.filter(key => !responses[key]?.trim());
-    const coverage = filled.length / config.keys.length;
+    const filledKeys = config.keys.filter(key => responses[key]?.trim());
+    const hasData = filledKeys.length > 0;
     
-    analysis.qualitative[category] = { coverage, filled, missing };
+    // For merged questions, we only need ONE answer (either new or legacy)
+    const coverage = hasData ? 1 : 0;
+    
+    analysis.qualitative[category] = { 
+      coverage, 
+      filled: filledKeys, 
+      missing: hasData ? [] : [config.keys[0]] // Only show new key as missing
+    };
     
     qualitativePoints += coverage * config.weight;
     qualitativeMaxPoints += config.weight;
     
     // Store filled data for context
-    filled.forEach(key => {
+    filledKeys.forEach(key => {
       if (responses[key]) {
         analysis.filledData[key] = responses[key];
       }
@@ -105,32 +111,32 @@ function analyzeDataCompleteness(responses: Record<string, string>) {
 
   // Analyze momentum data (CRITICAL)
   for (const [category, config] of Object.entries(dataCriteria.momentum)) {
-    const filled = config.keys.filter(key => responses[key]?.trim());
-    const missing = config.keys.filter(key => !responses[key]?.trim());
-    const coverage = filled.length / config.keys.length;
+    const filledKeys = config.keys.filter(key => responses[key]?.trim());
+    const hasData = filledKeys.length > 0;
+    const coverage = hasData ? 1 : 0;
     
     analysis.momentum[category] = { 
       coverage, 
-      filled, 
-      missing, 
+      filled: filledKeys, 
+      missing: hasData ? [] : [config.keys[0]],
       vcImportance: config.vcImportance 
     };
     
     momentumPoints += coverage * config.weight;
     momentumMaxPoints += config.weight;
     
-    // Track critical gaps (momentum data with low coverage)
-    if (coverage < 0.5) {
+    // Track critical gaps (momentum data with no coverage)
+    if (!hasData) {
       analysis.criticalGaps.push({
         category,
         label: config.label,
-        keys: missing,
+        keys: [config.keys[0]],
         vcImportance: config.vcImportance
       });
     }
     
     // Store filled data for context
-    filled.forEach(key => {
+    filledKeys.forEach(key => {
       if (responses[key]) {
         analysis.filledData[key] = responses[key];
       }
@@ -215,7 +221,7 @@ serve(async (req) => {
       companyId,
       company: company || null,
       analysis,
-      recommendation: analysis.scores.memoReadiness >= 70 
+      recommendation: analysis.scores.memoReadiness >= 60 
         ? 'ready' 
         : analysis.scores.memoReadiness >= 40 
           ? 'needs_input' 

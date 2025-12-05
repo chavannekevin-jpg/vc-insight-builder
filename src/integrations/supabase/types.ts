@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      answer_quality_criteria: {
+        Row: {
+          created_at: string
+          example_good_answer: string | null
+          id: string
+          nice_to_have: Json
+          question_key: string
+          required_elements: Json
+          updated_at: string
+          vc_context: string | null
+        }
+        Insert: {
+          created_at?: string
+          example_good_answer?: string | null
+          id?: string
+          nice_to_have?: Json
+          question_key: string
+          required_elements?: Json
+          updated_at?: string
+          vc_context?: string | null
+        }
+        Update: {
+          created_at?: string
+          example_good_answer?: string | null
+          id?: string
+          nice_to_have?: Json
+          question_key?: string
+          required_elements?: Json
+          updated_at?: string
+          vc_context?: string | null
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           biggest_challenge: string | null
