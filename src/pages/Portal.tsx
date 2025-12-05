@@ -21,6 +21,7 @@ import { FounderScoreDisplay } from "@/components/FounderScoreDisplay";
 import { LevelCard } from "@/components/LevelCard";
 import { resolveIcon } from "@/lib/iconResolver";
 import { AIInsightCard } from "@/components/AIInsightCard";
+import { AnswerOptimizerWizard } from "@/components/AnswerOptimizerWizard";
 
 // Dynamic interfaces for database-driven questions
 interface Section {
@@ -603,6 +604,18 @@ export default function Portal() {
                       className="min-h-[200px] text-base resize-none"
                       disabled={isAdminViewing}
                     />
+                    
+                    {/* Answer Quality Optimizer */}
+                    {!isAdminViewing && (
+                      <AnswerOptimizerWizard
+                        answer={responses[currentQuestion.question_key] || ""}
+                        questionKey={currentQuestion.question_key}
+                        onSuggestionApply={(addition) => {
+                          const currentAnswer = responses[currentQuestion.question_key] || "";
+                          handleAnswerChange(currentQuestion.question_key, currentAnswer + addition);
+                        }}
+                      />
+                    )}
                   </div>
 
                   {/* AI Feedback */}

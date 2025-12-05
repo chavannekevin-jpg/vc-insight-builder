@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.generate-smart-questions]
 verify_jwt = false
+
+[functions.optimize-answer-quality]
+verify_jwt = false
