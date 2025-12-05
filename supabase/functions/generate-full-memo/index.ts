@@ -134,11 +134,21 @@ serve(async (req) => {
       "Team",
       "Business Model",
       "Traction",
+      "Vision",
       "Investment Thesis"
     ];
 
-    // Create proper section name mapping (expanded to cover all question key prefixes)
+    // Create proper section name mapping (expanded to cover all question key prefixes including new merged keys)
     const sectionKeyMapping: Record<string, string> = {
+      // New merged question keys
+      "problem_core": "Problem",
+      "solution_core": "Solution",
+      "competitive_moat": "Competition",
+      "team_story": "Team",
+      "business_model": "Business Model",
+      "traction_proof": "Traction",
+      "vision_ask": "Vision",
+      // Original prefix-based mapping
       "problem": "Problem",
       "solution": "Solution",
       "market": "Market",
@@ -156,13 +166,25 @@ serve(async (req) => {
       "traction": "Traction",
       "retention": "Traction",
       "current": "Traction",
-      "key": "Traction"
+      "key": "Traction",
+      "vision": "Vision"
     };
 
     // Group responses by section
     const responsesBySection: Record<string, Record<string, string>> = {};
     
     responses?.forEach((response) => {
+      // First check if the full question_key has a direct mapping (for merged keys like problem_core)
+      const fullKeyMapping = sectionKeyMapping[response.question_key];
+      if (fullKeyMapping) {
+        if (!responsesBySection[fullKeyMapping]) {
+          responsesBySection[fullKeyMapping] = {};
+        }
+        responsesBySection[fullKeyMapping][response.question_key] = response.answer || "";
+        return;
+      }
+      
+      // Fall back to prefix-based mapping
       const sectionMatch = response.question_key.match(/^([^_]+)/);
       if (sectionMatch) {
         const sectionKey = sectionMatch[1].toLowerCase();
@@ -273,11 +295,20 @@ serve(async (req) => {
     // Extract market context using AI before generating memo
     console.log("Extracting market context from responses...");
     
-    const problemInfo = responses?.filter(r => r.question_key.startsWith('problem_')).map(r => r.answer).join('\n') || "";
-    const solutionInfo = responses?.filter(r => r.question_key.startsWith('solution_')).map(r => r.answer).join('\n') || "";
-    const icpInfo = responses?.find(r => r.question_key === 'market_icp')?.answer || "";
-    const competitionInfo = responses?.filter(r => r.question_key.startsWith('competition_')).map(r => r.answer).join('\n') || "";
-    const tractionInfo = responses?.filter(r => r.question_key.startsWith('traction_')).map(r => r.answer).join('\n') || "";
+    // Support both old and new question keys
+    const problemInfo = responses?.filter(r => 
+      r.question_key.startsWith('problem_') || r.question_key === 'problem_core'
+    ).map(r => r.answer).join('\n') || "";
+    const solutionInfo = responses?.filter(r => 
+      r.question_key.startsWith('solution_') || r.question_key === 'solution_core'
+    ).map(r => r.answer).join('\n') || "";
+    const icpInfo = responses?.find(r => r.question_key === 'target_customer' || r.question_key === 'market_icp')?.answer || "";
+    const competitionInfo = responses?.filter(r => 
+      r.question_key.startsWith('competition_') || r.question_key === 'competitive_moat'
+    ).map(r => r.answer).join('\n') || "";
+    const tractionInfo = responses?.filter(r => 
+      r.question_key.startsWith('traction_') || r.question_key === 'traction_proof'
+    ).map(r => r.answer).join('\n') || "";
 
     let marketContext: any = null;
     
