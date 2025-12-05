@@ -125,6 +125,37 @@ serve(async (req) => {
       });
     }
 
+    // Fetch answer quality criteria for enhanced context
+    const { data: qualityCriteria, error: criteriaError } = await supabaseClient
+      .from("answer_quality_criteria")
+      .select("question_key, required_elements, nice_to_have, vc_context");
+
+    if (criteriaError) {
+      console.error("Error fetching quality criteria:", criteriaError);
+    }
+
+    // Map question keys to sections for criteria lookup
+    const criteriaBySection: Record<string, any> = {};
+    if (qualityCriteria) {
+      const keyToSection: Record<string, string> = {
+        "problem_core": "Problem",
+        "solution_core": "Solution",
+        "target_customer": "Market",
+        "competitive_moat": "Competition",
+        "team_story": "Team",
+        "business_model": "Business Model",
+        "traction_proof": "Traction",
+        "vision_ask": "Vision"
+      };
+      qualityCriteria.forEach((c) => {
+        const section = keyToSection[c.question_key];
+        if (section) {
+          criteriaBySection[section] = c;
+        }
+      });
+    }
+    console.log("Quality criteria loaded for sections:", Object.keys(criteriaBySection));
+
     // Define section order (USP section removed, merged into Competition; Investment Thesis added at end)
     const sectionOrder = [
       "Problem",
@@ -433,9 +464,36 @@ NOTE: This market intelligence was AI-estimated based on the company's problem, 
       if (sectionName === "Market" && financialContextStr) {
         sectionFinancialStr += `\n\n**CRITICAL FOR MARKET SECTION:** You MUST include a bottoms-up analysis using the ACV data above. Calculate exactly how many customers are needed to reach €10M, €50M, and €100M ARR. This is essential for SOM sizing.`;
       }
+
+      // Build quality criteria context for this section
+      let criteriaContextStr = "";
+      const sectionCriteria = criteriaBySection[sectionName];
+      if (sectionCriteria) {
+        const requiredElements = Array.isArray(sectionCriteria.required_elements) 
+          ? sectionCriteria.required_elements.join(", ") 
+          : sectionCriteria.required_elements;
+        const niceToHave = Array.isArray(sectionCriteria.nice_to_have) 
+          ? sectionCriteria.nice_to_have.join(", ") 
+          : sectionCriteria.nice_to_have;
+        criteriaContextStr = `\n\n--- EXPECTED DATA ELEMENTS FOR THIS SECTION ---
+Required Elements: ${requiredElements}
+Nice-to-Have Elements: ${niceToHave}
+VC Context: ${sectionCriteria.vc_context || "N/A"}
+
+**DATA QUALITY REQUIREMENTS:**
+When analyzing founder-provided information, explicitly distinguish:
+- VERIFIED: Data backed by external evidence (customer contracts, bank statements, third-party metrics)
+- CLAIMED: Founder statements without independent verification
+- INFERRED: AI-derived estimates based on available context
+- MISSING: Critical data not provided that would change assessment
+
+Flag explicitly if any REQUIRED elements above are MISSING from founder's response.
+In your conclusion, note data confidence level.
+--- END EXPECTED DATA ---`;
+      }
       
       const prompt = customPrompt 
-        ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": ["specific investor question 1", "question 2", "question 3", "question 4", "question 5"],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
+        ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${criteriaContextStr}\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": ["specific investor question 1", "question 2", "question 3", "question 4", "question 5"],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
         : `You are a skeptical VC investment analyst writing the "${sectionName}" section of an internal due diligence memo. Your job is to assess objectively, NOT to advocate.
 
 CRITICAL ANALYSIS REQUIREMENTS:
@@ -446,6 +504,7 @@ CRITICAL ANALYSIS REQUIREMENTS:
 - Highlight red flags, execution risks, and market risks
 - Do NOT default to optimism — be neutral or skeptical unless evidence is strong
 - If you would hesitate to invest, say so clearly
+${criteriaContextStr}
 
 Requirements:
 - Create 2-4 factual paragraphs (emphasize weaknesses first)
