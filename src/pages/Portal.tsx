@@ -310,8 +310,8 @@ export default function Portal() {
     // Show AI insights for specific questions
     if (questionKey === 'target_customer' && answer.trim().length > 100) {
       setShowAIInsight('target_customer');
-    } else if (questionKey === 'competitive_advantage' && answer.trim().length > 100) {
-      setShowAIInsight('competitive_advantage');
+    } else if (questionKey === 'competitive_moat' && answer.trim().length > 100) {
+      setShowAIInsight('competitive_moat');
     }
 
     // Clear previous timeout
@@ -378,12 +378,24 @@ export default function Portal() {
     (answeredQuestions / totalQuestions) * 100
   );
 
-  // Calculate Founder Score
+  // Calculate Founder Score and show 50% celebration
   useEffect(() => {
     const completionScore = (answeredQuestions / totalQuestions) * 60;
     const qualityBonus = calculateQualityBonus();
-    setFounderScore(Math.round(completionScore + qualityBonus));
-  }, [responses, totalQuestions, answeredQuestions]);
+    const newScore = Math.round(completionScore + qualityBonus);
+    
+    // Show 50% celebration when reaching halfway
+    if (progressPercentage >= 50 && founderScore < 30 && newScore >= 30) {
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 2000);
+      toast({
+        title: "🎉 Halfway There!",
+        description: "You're 50% done! Just a few more questions to unlock your memo.",
+      });
+    }
+    
+    setFounderScore(newScore);
+  }, [responses, totalQuestions, answeredQuestions, progressPercentage]);
 
   const calculateQualityBonus = () => {
     let bonus = 0;
@@ -618,7 +630,7 @@ export default function Portal() {
                     />
                   )}
                   
-                  {showAIInsight === 'competitive_advantage' && currentQuestion.question_key === 'competitive_advantage' && (
+                  {(showAIInsight === 'competitive_moat' && currentQuestion.question_key === 'competitive_moat') && (
                     <AIInsightCard 
                       title="🤖 AI Competitive Analysis"
                       insights={[
@@ -689,7 +701,7 @@ export default function Portal() {
                     ) : (
                       <Button 
                         onClick={handleGenerateMemo}
-                        disabled={progressPercentage < 80 || isAdminViewing}
+                        disabled={progressPercentage < 60 || isAdminViewing}
                         className="bg-gradient-to-r from-neon-pink to-neon-purple hover:opacity-90 transition-opacity disabled:opacity-50"
                       >
                         Generate Memo
