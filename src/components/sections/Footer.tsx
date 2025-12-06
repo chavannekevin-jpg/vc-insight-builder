@@ -1,6 +1,8 @@
+import { memo } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
 
-export const Footer = () => {
+export const Footer = memo(() => {
   const links = [
     { label: "About", href: "/about" },
     { label: "FAQ", href: "#" },
@@ -17,10 +19,10 @@ export const Footer = () => {
             <Button
               key={index}
               variant="ghost"
-              onClick={() => window.location.href = link.href}
+              asChild
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              {link.label}
+              <Link to={link.href}>{link.label}</Link>
             </Button>
           ))}
         </div>
@@ -52,4 +54,6 @@ export const Footer = () => {
       </div>
     </footer>
   );
-};
+});
+
+Footer.displayName = "Footer";

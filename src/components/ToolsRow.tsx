@@ -1,12 +1,13 @@
+import { memo, useMemo } from "react";
 import { Calculator, TrendingUp, Lock, Zap, Mail, Flame, FlaskConical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ModernCard } from "./ModernCard";
 import { Badge } from "./ui/badge";
 
-export const ToolsRow = () => {
+export const ToolsRow = memo(() => {
   const navigate = useNavigate();
 
-  const tools = [
+  const tools = useMemo(() => [
     {
       id: "raise-calculator",
       icon: Calculator,
@@ -59,7 +60,7 @@ export const ToolsRow = () => {
       path: "/dilution-lab",
       badge: "Premium"
     }
-  ];
+  ], []);
 
   return (
     <div className="space-y-4">
@@ -104,4 +105,6 @@ export const ToolsRow = () => {
       </div>
     </div>
   );
-};
+});
+
+ToolsRow.displayName = "ToolsRow";

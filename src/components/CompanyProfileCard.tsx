@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Building2, TrendingUp } from "lucide-react";
@@ -11,7 +12,7 @@ interface CompanyProfileCardProps {
   totalQuestions: number;
 }
 
-export const CompanyProfileCard = ({
+export const CompanyProfileCard = memo(({
   name,
   stage,
   sector,
@@ -19,7 +20,10 @@ export const CompanyProfileCard = ({
   totalQuestions
 }: CompanyProfileCardProps) => {
   const navigate = useNavigate();
-  const percentage = Math.round((completedQuestions / totalQuestions) * 100);
+  const percentage = useMemo(
+    () => Math.round((completedQuestions / totalQuestions) * 100),
+    [completedQuestions, totalQuestions]
+  );
 
   return (
     <div className="bg-card border-2 border-primary/20 rounded-2xl p-6 space-y-4 shadow-glow hover:shadow-glow-strong transition-all duration-500">
@@ -81,4 +85,6 @@ export const CompanyProfileCard = ({
       </Button>
     </div>
   );
-};
+});
+
+CompanyProfileCard.displayName = "CompanyProfileCard";
