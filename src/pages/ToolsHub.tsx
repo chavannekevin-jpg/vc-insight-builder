@@ -2,8 +2,9 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/sections/Footer";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { Calculator, TrendingUp, ArrowRight, Lock, Sparkles, Zap, Mail } from "lucide-react";
+import { Calculator, TrendingUp, ArrowRight, Lock, Sparkles, Zap, Mail, Flame, FlaskConical } from "lucide-react";
 
 export default function ToolsHub() {
   const navigate = useNavigate();
@@ -40,15 +41,28 @@ export default function ToolsHub() {
       path: "/investor-email-generator",
       available: true,
       color: "secondary"
+    },
+    {
+      name: "Roast Your Baby",
+      description: "Survive 10 brutal VC questions in a live-fire simulation. Premium feature—because real preparation costs more than your fragile ego.",
+      icon: Flame,
+      path: "/roast-your-baby",
+      available: true,
+      color: "primary",
+      badge: "Premium"
+    },
+    {
+      name: "Dilution Lab",
+      description: "Build your cap table, simulate funding rounds with SAFE/CLA/Equity, and watch your ownership dissolve in real-time. Premium feature.",
+      icon: FlaskConical,
+      path: "/dilution-lab",
+      available: true,
+      color: "secondary",
+      badge: "Premium"
     }
   ];
 
   const comingSoon = [
-    {
-      name: "Cap Table Simulator",
-      description: "Model dilution scenarios across multiple funding rounds",
-      icon: Lock
-    },
     {
       name: "Pitch Deck Analyzer",
       description: "AI-powered feedback on your investor presentation",
@@ -93,8 +107,13 @@ export default function ToolsHub() {
                         <Icon className="w-7 h-7 text-white" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-xl font-serif mb-2 group-hover:text-primary transition-colors">
+                        <h3 className="text-xl font-serif mb-2 group-hover:text-primary transition-colors flex items-center gap-2">
                           {tool.name}
+                          {tool.badge && (
+                            <Badge className="bg-primary/20 text-primary border-primary/40 text-xs">
+                              {tool.badge}
+                            </Badge>
+                          )}
                         </h3>
                         <p className="text-sm text-muted-foreground leading-relaxed">
                           {tool.description}
