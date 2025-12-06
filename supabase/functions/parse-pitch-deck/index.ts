@@ -52,7 +52,7 @@ serve(async (req) => {
 
     let messages: any[] = [];
 
-    // System prompt with EXACT questionnaire keys
+    // System prompt with EXACT questionnaire keys matching the current 8-question questionnaire
     const systemPrompt = `You are an expert VC analyst who extracts structured information from pitch decks. 
 Analyze the provided pitch deck and extract as much relevant information as possible.
 
@@ -61,25 +61,42 @@ Return a JSON object with the following structure. Use these EXACT keys:
   "companyInfo": {
     "name": "extracted company name or null",
     "description": "one-paragraph company description",
-    "stage": "Pre-Seed|Seed|Series A|Series B|Growth",
+    "stage": "Pre Seed|Seed|Series A",
     "category": "industry/sector like SaaS, FinTech, HealthTech, etc."
   },
   "extractedSections": {
-    "problem_description": { "content": "What problem does this company solve? Who suffers from it?", "confidence": 0.0-1.0 },
-    "problem_validation": { "content": "Evidence that this problem is real and painful", "confidence": 0.0-1.0 },
-    "solution_description": { "content": "How does the product/service solve the problem?", "confidence": 0.0-1.0 },
-    "solution_demo": { "content": "Description of product demo, screenshots, or how it works", "confidence": 0.0-1.0 },
-    "market_size": { "content": "TAM/SAM/SOM analysis, market size data", "confidence": 0.0-1.0 },
-    "market_timing": { "content": "Why is now the right time for this solution?", "confidence": 0.0-1.0 },
-    "target_customer": { "content": "Ideal customer profile, who pays for this?", "confidence": 0.0-1.0 },
-    "competitors": { "content": "Competitive landscape, who else is solving this?", "confidence": 0.0-1.0 },
-    "competitive_advantage": { "content": "What's the moat? Why can't competitors copy this?", "confidence": 0.0-1.0 },
-    "founder_background": { "content": "Founder credentials, why are they suited to solve this?", "confidence": 0.0-1.0 },
-    "team_composition": { "content": "Team members, their roles and backgrounds", "confidence": 0.0-1.0 },
-    "revenue_model": { "content": "How does the company make money?", "confidence": 0.0-1.0 },
-    "unit_economics": { "content": "CAC, LTV, margins, pricing structure", "confidence": 0.0-1.0 },
-    "current_traction": { "content": "Current users, revenue, growth metrics, proof of traction", "confidence": 0.0-1.0 },
-    "key_milestones": { "content": "Past achievements and future milestones planned", "confidence": 0.0-1.0 }
+    "problem_core": { 
+      "content": "What specific problem does this company solve? Who suffers from it and how much does it hurt? Include any evidence of problem validation if available.", 
+      "confidence": 0.0-1.0 
+    },
+    "solution_core": { 
+      "content": "How does the product/service solve the problem? What makes it unique or different from alternatives? Include demo/product details if available.", 
+      "confidence": 0.0-1.0 
+    },
+    "target_customer": { 
+      "content": "Who is the ideal customer? Include demographics, market size (TAM/SAM/SOM), and why now is the right time for this solution.", 
+      "confidence": 0.0-1.0 
+    },
+    "competitive_moat": { 
+      "content": "Who are the competitors and what is the company's competitive advantage? What's the moat or unfair advantage that makes them hard to copy?", 
+      "confidence": 0.0-1.0 
+    },
+    "business_model": { 
+      "content": "How does the company make money? Include revenue model, pricing, unit economics (CAC, LTV, margins) if available.", 
+      "confidence": 0.0-1.0 
+    },
+    "traction_proof": { 
+      "content": "What proof of progress exists? Include current users, revenue, growth metrics, key milestones achieved, and notable wins.", 
+      "confidence": 0.0-1.0 
+    },
+    "team_story": { 
+      "content": "Who are the founders and key team members? What's their background and why are they uniquely suited to solve this problem?", 
+      "confidence": 0.0-1.0 
+    },
+    "vision_ask": { 
+      "content": "What's the big vision and where is the company going? Include funding ask, use of funds, and key milestones planned.", 
+      "confidence": 0.0-1.0 
+    }
   },
   "summary": "2-3 sentence executive summary of the company"
 }

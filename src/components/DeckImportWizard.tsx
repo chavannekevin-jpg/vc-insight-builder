@@ -44,23 +44,16 @@ interface DeckImportWizardProps {
   onImportComplete: (data: ExtractedData) => void;
 }
 
-// Labels matching the ACTUAL questionnaire keys
+// Labels matching the CURRENT 8-question questionnaire keys
 const SECTION_LABELS: Record<string, { label: string; section: string }> = {
-  problem_description: { label: "What Makes People Suffer?", section: "Problem" },
-  problem_validation: { label: "How Do You Know This Hurts?", section: "Problem" },
-  solution_description: { label: "Your Killer Solution", section: "Solution" },
-  solution_demo: { label: "Show, Don't Tell", section: "Solution" },
-  market_size: { label: "How Big Is This Thing?", section: "Market" },
-  market_timing: { label: "Why Now?", section: "Market" },
+  problem_core: { label: "The Problem You're Solving", section: "Problem" },
+  solution_core: { label: "Your Solution", section: "Solution" },
   target_customer: { label: "Who Pays You?", section: "Market" },
-  competitors: { label: "Who Else Wants This?", section: "Competition" },
-  competitive_advantage: { label: "Your Competitive Edge", section: "Competition" },
-  founder_background: { label: "Why You?", section: "Team" },
-  team_composition: { label: "The Band", section: "Team" },
-  revenue_model: { label: "Show Me The Money", section: "Business Model" },
-  unit_economics: { label: "The Math", section: "Business Model" },
-  current_traction: { label: "Proof of Life", section: "Traction" },
-  key_milestones: { label: "What's Next?", section: "Traction" },
+  competitive_moat: { label: "Your Edge & Competition", section: "Competition" },
+  business_model: { label: "How You Make Money", section: "Business Model" },
+  traction_proof: { label: "Proof of Progress", section: "Traction" },
+  team_story: { label: "Your Team's Unfair Advantage", section: "Team" },
+  vision_ask: { label: "Where You're Going", section: "Vision" },
 };
 
 // Confidence threshold for pre-filling

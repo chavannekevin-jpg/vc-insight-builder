@@ -423,7 +423,7 @@ export default function Portal() {
         setShowWelcome(true);
       }
     }
-  }, [loading, companyId, allQuestions.length, answeredQuestions]);
+  }, [loading, companyId, allQuestions.length]);
 
   const handleWelcomeComplete = () => {
     if (companyId) {
