@@ -381,22 +381,11 @@ export default function Portal() {
     (answeredQuestions / totalQuestions) * 100
   );
 
-  // Calculate Founder Score and show 50% celebration
+  // Calculate Founder Score
   useEffect(() => {
     const completionScore = (answeredQuestions / totalQuestions) * 60;
     const qualityBonus = calculateQualityBonus();
     const newScore = Math.round(completionScore + qualityBonus);
-    
-    // Show 50% celebration when reaching halfway
-    if (progressPercentage >= 50 && founderScore < 30 && newScore >= 30) {
-      setShowCelebration(true);
-      setTimeout(() => setShowCelebration(false), 2000);
-      toast({
-        title: "🎉 Halfway There!",
-        description: "You're 50% done! Just a few more questions to unlock your memo.",
-      });
-    }
-    
     setFounderScore(newScore);
   }, [responses, totalQuestions, answeredQuestions, progressPercentage]);
 
