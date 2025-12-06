@@ -53,3 +53,12 @@ verify_jwt = false
 
 [functions.optimize-answer-quality]
 verify_jwt = false
+
+[functions.generate-roast-questions]
+verify_jwt = false
+
+[functions.score-roast-answer]
+verify_jwt = false
+
+[functions.generate-roast-verdict]
+verify_jwt = false
