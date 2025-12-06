@@ -493,6 +493,38 @@ export type Database = {
         }
         Relationships: []
       }
+      roast_question_history: {
+        Row: {
+          asked_at: string
+          category: string | null
+          company_id: string
+          id: string
+          question_text: string
+        }
+        Insert: {
+          asked_at?: string
+          category?: string | null
+          company_id: string
+          id?: string
+          question_text: string
+        }
+        Update: {
+          asked_at?: string
+          category?: string | null
+          company_id?: string
+          id?: string
+          question_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roast_question_history_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
