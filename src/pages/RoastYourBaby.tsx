@@ -47,19 +47,40 @@ export default function RoastYourBaby() {
   const [isLoadingVerdict, setIsLoadingVerdict] = useState(false);
 
   useEffect(() => {
-    checkAccess();
-  }, []);
+    // Set up auth state listener to properly wait for session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session?.user) {
+          // Defer the access check to avoid Supabase deadlock
+          setTimeout(() => {
+            checkAccessWithUser(session.user);
+          }, 0);
+        } else if (event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
+          if (!session) {
+            setAccessError("Please sign in to play Roast Your Baby.");
+            setGameState('access-denied');
+          }
+        }
+      }
+    );
 
-  const checkAccess = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
+    // Also check current session immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        checkAccessWithUser(session.user);
+      } else {
         setAccessError("Please sign in to play Roast Your Baby.");
         setGameState('access-denied');
-        return;
       }
+    });
 
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const checkAccessWithUser = async (user: any) => {
+    try {
       // Fetch user's company
       const { data: companies, error: companiesError } = await supabase
         .from('companies')
