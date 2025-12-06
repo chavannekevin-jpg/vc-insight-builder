@@ -11,7 +11,8 @@ import { MemoVCQuestions } from "@/components/memo/MemoVCQuestions";
 import { MemoBenchmarking } from "@/components/memo/MemoBenchmarking";
 import { MemoAIConclusion } from "@/components/memo/MemoAIConclusion";
 import { SmartFillModal } from "@/components/SmartFillModal";
-import { Sparkles, ArrowLeft, RefreshCw, Printer, AlertTriangle } from "lucide-react";
+import { MemoLoadingScreen } from "@/components/MemoLoadingScreen";
+import { ArrowLeft, RefreshCw, Printer, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent } from "@/types/memo";
 import { Button } from "@/components/ui/button";
@@ -355,14 +356,7 @@ export default function GeneratedMemo() {
   }
 
   if (loading || analyzing) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <Sparkles className="w-12 h-12 text-primary animate-pulse" />
-        <p className="text-muted-foreground">
-          {analyzing ? "Analyzing your data..." : "Loading your investment memo..."}
-        </p>
-      </div>
-    );
+    return <MemoLoadingScreen analyzing={analyzing} />;
   }
 
   if (!memoContent || !companyInfo) {
