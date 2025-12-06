@@ -18,7 +18,7 @@ serve(async (req) => {
       throw new Error('Company ID is required');
     }
 
-    const numQuestions = Math.min(Math.max(questionCount, 1), 10); // Clamp between 1-10
+    const numQuestions = Math.min(Math.max(questionCount, 1), 10);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -32,6 +32,25 @@ serve(async (req) => {
       .single();
 
     if (companyError) throw companyError;
+
+    // Fetch recent question history (last 50 questions or last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const { data: questionHistory, error: historyError } = await supabase
+      .from('roast_question_history')
+      .select('question_text, category')
+      .eq('company_id', companyId)
+      .gte('asked_at', thirtyDaysAgo.toISOString())
+      .order('asked_at', { ascending: false })
+      .limit(50);
+
+    if (historyError) {
+      console.error('Error fetching question history:', historyError);
+    }
+
+    const previousQuestions = questionHistory || [];
+    console.log(`Found ${previousQuestions.length} previous questions for company ${companyId}`);
 
     // Fetch all memo responses
     const { data: responses, error: responsesError } = await supabase
@@ -62,7 +81,24 @@ ${Object.entries(contextMap).map(([key, val]) => `- ${key}: ${val.substring(0, 2
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
+    // Build the previous questions avoidance section
+    const avoidanceSection = previousQuestions.length > 0 
+      ? `\n\nCRITICAL - QUESTIONS TO AVOID (already asked recently):
+${previousQuestions.map((q, i) => `${i + 1}. [${q.category}] "${q.question_text}"`).join('\n')}
+
+You MUST generate completely NEW questions that:
+- Cover DIFFERENT angles than the above
+- Ask about aspects NOT yet explored
+- Use fresh phrasing and perspectives
+- Target different weaknesses or data points`
+      : '';
+
+    // Add randomization seed based on timestamp
+    const randomSeed = `Session ID: ${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
     const systemPrompt = `You are a seasoned VC partner known for asking tough, incisive questions that expose weaknesses in startup pitches. Your job is to generate ${numQuestions} challenging but fair questions for a founder based on their company data.
+
+${randomSeed}
 
 RULES:
 1. Questions should be specific to THIS company's data - reference their actual claims
@@ -71,6 +107,7 @@ RULES:
 4. Be challenging but not mean - these should be questions a real VC would ask
 5. Each question should be answerable in 2-3 sentences
 6. Questions should escalate in difficulty (start easier, end harder)
+7. Be CREATIVE and VARIED - avoid generic questions${avoidanceSection}
 
 CATEGORIES: market_size, competition, traction, unit_economics, team, defensibility, go_to_market, vision, risks, funding
 
@@ -120,11 +157,30 @@ Return ONLY a JSON array with exactly ${numQuestions} questions in this format:
       }
     } catch (parseError) {
       console.error('Parse error:', parseError, 'Content:', content);
-      // Fallback questions - take only the number requested
-      questions = generateFallbackQuestions(company).slice(0, numQuestions);
+      // Fallback questions - filter out recently asked ones
+      questions = generateFallbackQuestions(company, previousQuestions).slice(0, numQuestions);
     }
 
-    console.log(`Generated ${questions.length} questions for company ${companyId}`);
+    // Save new questions to history
+    if (questions && questions.length > 0) {
+      const historyEntries = questions.map((q: any) => ({
+        company_id: companyId,
+        question_text: q.question,
+        category: q.category,
+      }));
+
+      const { error: insertError } = await supabase
+        .from('roast_question_history')
+        .insert(historyEntries);
+
+      if (insertError) {
+        console.error('Error saving question history:', insertError);
+      } else {
+        console.log(`Saved ${historyEntries.length} questions to history`);
+      }
+    }
+
+    console.log(`Generated ${questions.length} new questions for company ${companyId}`);
 
     return new Response(JSON.stringify({ questions, companyContext }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -140,17 +196,48 @@ Return ONLY a JSON array with exactly ${numQuestions} questions in this format:
   }
 });
 
-function generateFallbackQuestions(company: any) {
-  return [
-    { id: 1, question: `What makes ${company.name} defensible against a well-funded competitor entering tomorrow?`, category: "defensibility", difficulty: "easy", context: "Testing moat awareness" },
-    { id: 2, question: "Walk me through your unit economics - what's your CAC and LTV?", category: "unit_economics", difficulty: "easy", context: "Financial fundamentals" },
-    { id: 3, question: "What's your unfair advantage that others can't easily replicate?", category: "competition", difficulty: "easy", context: "Competitive positioning" },
-    { id: 4, question: "Why is now the right time for this solution? What's changed?", category: "market_size", difficulty: "medium", context: "Market timing" },
-    { id: 5, question: "What's the biggest assumption in your business model that could be wrong?", category: "risks", difficulty: "medium", context: "Self-awareness" },
-    { id: 6, question: "How do you plan to acquire your first 1000 customers profitably?", category: "go_to_market", difficulty: "medium", context: "GTM strategy" },
-    { id: 7, question: "Why is your team uniquely positioned to solve this problem?", category: "team", difficulty: "medium", context: "Founder-market fit" },
-    { id: 8, question: "If you had to 10x your price, what would you need to add to justify it?", category: "vision", difficulty: "hard", context: "Value proposition depth" },
-    { id: 9, question: "What would make you give up on this company?", category: "risks", difficulty: "hard", context: "Founder resilience" },
-    { id: 10, question: "In 5 years, why won't a tech giant just build this feature into their platform?", category: "defensibility", difficulty: "hard", context: "Long-term survival" },
-  ];
+// Extended fallback questions pool with variations
+const fallbackQuestionPool = [
+  { question: (name: string) => `What makes ${name} defensible against a well-funded competitor entering tomorrow?`, category: "defensibility", difficulty: "easy", context: "Testing moat awareness" },
+  { question: () => "Walk me through your unit economics - what's your CAC and LTV?", category: "unit_economics", difficulty: "easy", context: "Financial fundamentals" },
+  { question: () => "What's your unfair advantage that others can't easily replicate?", category: "competition", difficulty: "easy", context: "Competitive positioning" },
+  { question: () => "Why is now the right time for this solution? What's changed?", category: "market_size", difficulty: "medium", context: "Market timing" },
+  { question: () => "What's the biggest assumption in your business model that could be wrong?", category: "risks", difficulty: "medium", context: "Self-awareness" },
+  { question: () => "How do you plan to acquire your first 1000 customers profitably?", category: "go_to_market", difficulty: "medium", context: "GTM strategy" },
+  { question: () => "Why is your team uniquely positioned to solve this problem?", category: "team", difficulty: "medium", context: "Founder-market fit" },
+  { question: () => "If you had to 10x your price, what would you need to add to justify it?", category: "vision", difficulty: "hard", context: "Value proposition depth" },
+  { question: () => "What would make you give up on this company?", category: "risks", difficulty: "hard", context: "Founder resilience" },
+  { question: () => "In 5 years, why won't a tech giant just build this feature into their platform?", category: "defensibility", difficulty: "hard", context: "Long-term survival" },
+  // Additional variations
+  { question: () => "Who is your biggest competitor and why will you win?", category: "competition", difficulty: "easy", context: "Competitive awareness" },
+  { question: () => "What's your gross margin and how will it change at scale?", category: "unit_economics", difficulty: "medium", context: "Scalability" },
+  { question: (name: string) => `If ${name} fails, what will be the reason?`, category: "risks", difficulty: "hard", context: "Risk awareness" },
+  { question: () => "How much runway do you have and what milestones will you hit?", category: "funding", difficulty: "easy", context: "Financial planning" },
+  { question: () => "What's your customer churn rate and why?", category: "traction", difficulty: "medium", context: "Retention metrics" },
+  { question: () => "Describe your ideal customer in detail.", category: "market_size", difficulty: "easy", context: "Target market clarity" },
+  { question: () => "What regulatory or legal risks could impact your business?", category: "risks", difficulty: "medium", context: "External risks" },
+  { question: () => "How will you use AI/automation to create a moat?", category: "defensibility", difficulty: "medium", context: "Tech advantage" },
+  { question: () => "What's your distribution strategy beyond paid acquisition?", category: "go_to_market", difficulty: "medium", context: "Growth channels" },
+  { question: () => "Who on your team has done this before?", category: "team", difficulty: "easy", context: "Relevant experience" },
+];
+
+function generateFallbackQuestions(company: any, previousQuestions: any[]) {
+  const previousTexts = new Set(previousQuestions.map(q => q.question_text.toLowerCase()));
+  
+  // Filter out questions that were recently asked
+  const availableQuestions = fallbackQuestionPool.filter(q => {
+    const questionText = q.question(company.name).toLowerCase();
+    return !previousTexts.has(questionText);
+  });
+
+  // Shuffle available questions
+  const shuffled = availableQuestions.sort(() => Math.random() - 0.5);
+
+  return shuffled.map((q, i) => ({
+    id: i + 1,
+    question: q.question(company.name),
+    category: q.category,
+    difficulty: q.difficulty,
+    context: q.context,
+  }));
 }
