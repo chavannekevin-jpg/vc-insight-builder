@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ModernCard } from "@/components/ModernCard";
 import { Progress } from "@/components/ui/progress";
-import { Flame, Trophy, Target, Share2, RotateCcw, Home, Copy, Check, Sparkles, FileText } from "lucide-react";
+import { Flame, Trophy, Target, Share2, RotateCcw, Home, Copy, Check, Sparkles, FileText, ChevronDown, ChevronUp, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface CategoryScore {
   category: string;
@@ -25,6 +26,11 @@ interface AnswerResult {
   timeElapsed: number;
 }
 
+interface IdealAnswer {
+  questionIndex: number;
+  idealAnswer: string;
+}
+
 interface Verdict {
   totalScore: number;
   maxPossibleScore: number;
@@ -35,6 +41,7 @@ interface Verdict {
   recommendations: string[];
   shareableQuote: string;
   investorReadiness: string;
+  idealAnswers?: IdealAnswer[];
 }
 
 interface RoastResultsProps {
@@ -51,6 +58,7 @@ export const RoastResults = ({ verdict, results, onPlayAgain, onSaveAnswers, com
   const [copied, setCopied] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [expandedAnswers, setExpandedAnswers] = useState<Set<number>>(new Set());
 
   // Calculate percentage score
   const maxScore = verdict.maxPossibleScore || (results.length * 10);
@@ -119,6 +127,24 @@ export const RoastResults = ({ verdict, results, onPlayAgain, onSaveAnswers, com
     }
   };
 
+  const toggleAnswerExpanded = (index: number) => {
+    const newExpanded = new Set(expandedAnswers);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedAnswers(newExpanded);
+  };
+
+  const expandAll = () => {
+    setExpandedAnswers(new Set(results.map((_, i) => i)));
+  };
+
+  const collapseAll = () => {
+    setExpandedAnswers(new Set());
+  };
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       {/* Score reveal */}
@@ -151,7 +177,7 @@ export const RoastResults = ({ verdict, results, onPlayAgain, onSaveAnswers, com
         </span>
       </div>
 
-      {/* Save answers CTA - show if score is decent */}
+      {/* Save answers CTA */}
       {!saved && percentageScore >= 40 && (
         <ModernCard className="mb-8 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
           <div className="flex flex-col md:flex-row items-center gap-4">
@@ -161,8 +187,7 @@ export const RoastResults = ({ verdict, results, onPlayAgain, onSaveAnswers, com
                 Improve Your Memo
               </h3>
               <p className="text-sm text-muted-foreground">
-                Your answers from this game can be used to enhance your memo's quality and depth. 
-                Save them to strengthen your investor narrative.
+                Your answers can enhance your memo's quality. Save them to strengthen your investor narrative.
               </p>
             </div>
             <Button 
@@ -198,6 +223,96 @@ export const RoastResults = ({ verdict, results, onPlayAgain, onSaveAnswers, com
           {verdict.assessment}
         </p>
       </ModernCard>
+
+      {/* Q&A Review with Ideal Answers */}
+      {verdict.idealAnswers && verdict.idealAnswers.length > 0 && (
+        <ModernCard className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-yellow-500" />
+              Learn From The Best
+            </h3>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={expandAll}>
+                Expand All
+              </Button>
+              <Button variant="ghost" size="sm" onClick={collapseAll}>
+                Collapse All
+              </Button>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground mb-6">
+            See how a VC-ready founder would answer each question:
+          </p>
+          
+          <div className="space-y-4">
+            {results.map((result, i) => {
+              const idealAnswer = verdict.idealAnswers?.find(a => a.questionIndex === i);
+              const isExpanded = expandedAnswers.has(i);
+              
+              return (
+                <Collapsible key={i} open={isExpanded} onOpenChange={() => toggleAnswerExpanded(i)}>
+                  <div className="border border-border/50 rounded-lg overflow-hidden">
+                    <CollapsibleTrigger asChild>
+                      <button className="w-full p-4 flex items-start justify-between gap-4 hover:bg-muted/50 transition-colors text-left">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={cn(
+                              "text-xs font-bold px-2 py-0.5 rounded",
+                              result.score >= 7 && "bg-green-500/20 text-green-500",
+                              result.score >= 4 && result.score < 7 && "bg-yellow-500/20 text-yellow-500",
+                              result.score < 4 && "bg-red-500/20 text-red-500",
+                            )}>
+                              {result.score}/10
+                            </span>
+                            <span className="text-xs text-muted-foreground capitalize">
+                              {result.category.replace('_', ' ')}
+                            </span>
+                          </div>
+                          <p className="font-medium text-sm">{result.question}</p>
+                        </div>
+                        {isExpanded ? (
+                          <ChevronUp className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                        )}
+                      </button>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent>
+                      <div className="px-4 pb-4 space-y-4">
+                        {/* Your answer */}
+                        <div className="bg-muted/30 rounded-lg p-3">
+                          <p className="text-xs font-medium text-muted-foreground mb-1">Your Answer:</p>
+                          <p className="text-sm">{result.answer}</p>
+                        </div>
+                        
+                        {/* Ideal answer */}
+                        {idealAnswer && (
+                          <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+                            <p className="text-xs font-medium text-green-600 mb-1 flex items-center gap-1">
+                              <Lightbulb className="w-3 h-3" />
+                              VC-Ready Answer:
+                            </p>
+                            <p className="text-sm text-green-700 dark:text-green-300">
+                              {idealAnswer.idealAnswer}
+                            </p>
+                          </div>
+                        )}
+                        
+                        {/* Roast feedback */}
+                        <div className="text-xs text-muted-foreground italic">
+                          <span className="font-medium">Feedback:</span> {result.roast}
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </div>
+                </Collapsible>
+              );
+            })}
+          </div>
+        </ModernCard>
+      )}
 
       {/* Category breakdown */}
       {verdict.categoryBreakdown && verdict.categoryBreakdown.length > 0 && (
