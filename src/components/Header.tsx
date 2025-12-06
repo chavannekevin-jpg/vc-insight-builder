@@ -261,10 +261,17 @@ export const Header = () => {
       ]
     },
     {
+      category: "Diagnostics",
+      items: [
+        { label: "Venture Scale Diagnostic", path: "/venture-scale-diagnostic", description: "Are you truly VC-scale?" },
+        { label: "Roast Your Baby", path: "/roast-your-baby", description: "Survive 10 brutal VC questions", badge: "Premium" }
+      ]
+    },
+    {
       category: "Resources",
       items: [
-        { label: "Sample Memo", path: "/sample-memo", description: "Preview a full investment memo", public: true },
-        { label: "Educational Hub", path: "/hub", description: "Access learning resources" }
+        { label: "Outreach Lab", path: "/investor-email-generator", description: "Craft cold email templates" },
+        { label: "Sample Memo", path: "/sample-memo", description: "Preview a full investment memo", public: true }
       ]
     }
   ];
