@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { CollapsedLibrary } from "@/components/CollapsedLibrary";
 import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
 import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useCompany } from "@/hooks/useCompany";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,127 +53,95 @@ export default function FreemiumHub() {
   const [searchParams] = useSearchParams();
   const adminView = searchParams.get("admin") === "true";
   
-  const [company, setCompany] = useState<Company | null>(null);
+  // Use cached hooks instead of manual data loading
+  const { user, isAuthenticated, isAdmin, isLoading: authLoading } = useAuth();
+  const { 
+    company: companyData, 
+    hasMemo: hasMemoData,
+    memoHasContent,
+    hasPaid: hasPaidData,
+    completedQuestions: cachedCompletedQuestions,
+    totalQuestions: cachedTotalQuestions,
+    isLoading: companyLoading 
+  } = useCompany(user?.id);
+
   const [memo, setMemo] = useState<Memo | null>(null);
   const [responses, setResponses] = useState<MemoResponse[]>([]);
-  const [totalQuestions, setTotalQuestions] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [generatingTagline, setGeneratingTagline] = useState(false);
   const [tagline, setTagline] = useState<string>("");
-  const [isAdmin, setIsAdmin] = useState(false);
   const [deckWizardOpen, setDeckWizardOpen] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [responsesLoaded, setResponsesLoaded] = useState(false);
 
+  // Map companyData to Company type for compatibility
+  const company: Company | null = companyData ? {
+    id: companyData.id,
+    name: companyData.name,
+    stage: companyData.stage,
+    category: companyData.category || null,
+    description: companyData.description || null,
+    has_premium: companyData.has_premium || null,
+  } : null;
+
+  // Redirect to auth if not authenticated
   useEffect(() => {
-    loadData();
-    
-    // Safety timeout - if loading takes more than 15 seconds, stop loading state
-    const timeout = setTimeout(() => {
-      setLoading(false);
-    }, 15000);
-    
-    return () => clearTimeout(timeout);
-  }, [navigate, adminView]);
+    if (!authLoading && !isAuthenticated && !adminView) {
+      navigate("/auth");
+    }
+  }, [authLoading, isAuthenticated, adminView, navigate]);
 
-  const loadData = async () => {
+  // Redirect to intake if no company
+  useEffect(() => {
+    if (!authLoading && !companyLoading && isAuthenticated && !companyData) {
+      navigate("/intake");
+    }
+  }, [authLoading, companyLoading, isAuthenticated, companyData, navigate]);
+
+  // Load memo details and responses when company is available
+  useEffect(() => {
+    if (companyData?.id && !responsesLoaded) {
+      loadMemoAndResponses(companyData.id);
+    }
+  }, [companyData?.id, responsesLoaded]);
+
+  // Generate tagline when company loads
+  useEffect(() => {
+    if (company?.name && !tagline && !generatingTagline) {
+      generateTagline(company);
+    }
+  }, [company?.name, tagline, generatingTagline]);
+
+  const loadMemoAndResponses = useCallback(async (companyId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session && !adminView) {
-        navigate("/auth");
-        return;
-      }
+      // Load in parallel for speed
+      const [responsesResult, memoResult] = await Promise.all([
+        supabase
+          .from("memo_responses")
+          .select("question_key, answer")
+          .eq("company_id", companyId),
+        supabase
+          .from("memos")
+          .select("*")
+          .eq("company_id", companyId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      ]);
 
-      // Check if user is admin
-      if (session?.user) {
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .eq("role", "admin")
-          .maybeSingle();
-        
-        setIsAdmin(!!roleData);
-      }
-
-      // Load questions count
-      const { data: questionsData, error: questionsError } = await supabase
-        .from("questionnaire_questions")
-        .select("id")
-        .eq("is_active", true);
-
-      if (questionsError) throw questionsError;
-      setTotalQuestions(questionsData?.length || 0);
-
-      // Load company
-      let companyQuery = supabase
-        .from("companies")
-        .select("*");
-
-      if (!adminView && session) {
-        companyQuery = companyQuery.eq("founder_id", session.user.id);
-      }
-
-      const { data: companiesData, error: companyError } = await companyQuery
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      if (companyError || !companiesData || companiesData.length === 0) {
-        navigate("/intake");
-        return;
-      }
-
-      const companyData = companiesData[0];
-
-
-      setCompany(companyData);
-
-      // Load memo responses
-      const { data: responsesData } = await supabase
-        .from("memo_responses")
-        .select("question_key, answer")
-        .eq("company_id", companyData.id);
-
-      setResponses(responsesData || []);
-
-      // Load memo
-      const { data: memoData, error: memoError } = await supabase
-        .from("memos")
-        .select("*")
-        .eq("company_id", companyData.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (memoError) {
-        console.error("Error loading memo:", memoError);
-        // Don't throw - just continue with null memo
-      }
-
-      setMemo(memoData);
+      setResponses(responsesResult.data || []);
+      setMemo(memoResult.data);
+      setResponsesLoaded(true);
 
       // Auto-generate profile if description exists but no responses
-      if (companyData.description && (!responsesData || responsesData.length === 0)) {
-        await autoGenerateProfile(companyData);
+      if (companyData?.description && (!responsesResult.data || responsesResult.data.length === 0) && company) {
+        await autoGenerateProfile(company);
       }
-
-      // Generate tagline if not exists
-      if (!tagline && companyData.name) {
-        generateTagline(companyData);
-      }
-
-    } catch (error: any) {
-      console.error("Error loading data:", error);
-      toast({
-        title: "Error loading data",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error("Error loading memo and responses:", error);
+      setResponsesLoaded(true);
     }
-  };
+  }, [companyData]);
 
   const autoGenerateProfile = async (companyData: Company) => {
     try {
@@ -271,9 +241,8 @@ export default function FreemiumHub() {
 
         if (updateError) {
           console.error("Error updating company:", updateError);
-        } else {
-          setCompany(prev => prev ? { ...prev, ...companyUpdates } : null);
         }
+        // Note: Company data will be refetched by React Query
       }
 
       // 2. Upsert memo responses for high-confidence extractions
@@ -419,8 +388,9 @@ export default function FreemiumHub() {
   };
 
   const completedQuestions = responses.filter(r => r.answer && r.answer.trim()).length;
+  const totalQuestions = cachedTotalQuestions;
   const memoGenerated = memo && memo.status === "generated";
-  const hasPaid = company?.has_premium ?? false;
+  const hasPaid = company?.has_premium ?? hasPaidData;
 
   // Get next section to complete
   const getNextSection = () => {
@@ -445,6 +415,8 @@ export default function FreemiumHub() {
     }
     return "your profile";
   };
+
+  const loading = authLoading || companyLoading;
 
   if (loading) {
     return (
