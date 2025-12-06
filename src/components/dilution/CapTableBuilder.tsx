@@ -59,7 +59,8 @@ export function CapTableBuilder({ capTable, onChange }: CapTableBuilderProps) {
       id: generateId(),
       name: newName.trim(),
       type: newType,
-      shares
+      shares,
+      isOutstanding: newType !== 'investor' // employees/founders are outstanding, investors depend on instrument
     };
 
     onChange({

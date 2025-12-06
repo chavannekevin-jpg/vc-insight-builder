@@ -1,29 +1,72 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { Stakeholder, getStakeholderColor, formatPercentage } from '@/lib/dilutionCalculator';
+import { Stakeholder, getStakeholderColor, formatPercentage, calculateOwnership } from '@/lib/dilutionCalculator';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState } from 'react';
 
 interface OwnershipChartProps {
   stakeholders: Stakeholder[];
   esopPool: number;
+  esopAllocated?: number;
   title?: string;
   showLegend?: boolean;
+  showViewToggle?: boolean;
+  totalShares?: number;
 }
 
-export function OwnershipChart({ stakeholders, esopPool, title, showLegend = true }: OwnershipChartProps) {
-  // Prepare data for chart
-  const chartData = [
-    ...stakeholders.map((s, index) => ({
-      name: s.name,
-      value: s.ownership || 0,
-      color: getStakeholderColor(s.type, index),
-      type: s.type
-    })),
-    {
-      name: 'ESOP Pool',
-      value: esopPool,
-      color: 'hsl(var(--muted))',
-      type: 'esop' as const
-    }
-  ].filter(d => d.value > 0);
+export function OwnershipChart({ 
+  stakeholders, 
+  esopPool, 
+  esopAllocated = 0,
+  title, 
+  showLegend = true,
+  showViewToggle = false,
+  totalShares = 0
+}: OwnershipChartProps) {
+  const [view, setView] = useState<'fully-diluted' | 'outstanding'>('fully-diluted');
+
+  // Recalculate ownership based on view
+  const displayStakeholders = showViewToggle && totalShares > 0
+    ? calculateOwnership(stakeholders, totalShares, view === 'fully-diluted', esopPool)
+    : stakeholders;
+
+  // Prepare data for chart based on view
+  const chartData = view === 'fully-diluted' 
+    ? [
+        ...displayStakeholders.map((s, index) => ({
+          name: s.name,
+          value: s.ownership || 0,
+          color: getStakeholderColor(s.type, index),
+          type: s.type
+        })),
+        {
+          name: 'ESOP Pool (Unallocated)',
+          value: Math.max(0, esopPool - esopAllocated),
+          color: 'hsl(var(--muted))',
+          type: 'esop' as const
+        },
+        ...(esopAllocated > 0 ? [{
+          name: 'ESOP (Allocated)',
+          value: esopAllocated,
+          color: 'hsl(280, 60%, 50%)',
+          type: 'esop-allocated' as const
+        }] : [])
+      ].filter(d => d.value > 0)
+    : [
+        ...displayStakeholders
+          .filter(s => s.isOutstanding !== false)
+          .map((s, index) => ({
+            name: s.name,
+            value: s.ownership || 0,
+            color: getStakeholderColor(s.type, index),
+            type: s.type
+          })),
+        ...(esopAllocated > 0 ? [{
+          name: 'ESOP (Granted)',
+          value: esopAllocated,
+          color: 'hsl(280, 60%, 50%)',
+          type: 'esop-allocated' as const
+        }] : [])
+      ].filter(d => d.value > 0);
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -65,11 +108,37 @@ export function OwnershipChart({ stakeholders, esopPool, title, showLegend = tru
 
   return (
     <div className="w-full">
-      {title && (
-        <h4 className="text-sm font-semibold text-center mb-2 text-muted-foreground">
-          {title}
-        </h4>
+      {(title || showViewToggle) && (
+        <div className="flex items-center justify-between mb-2">
+          {title && (
+            <h4 className="text-sm font-semibold text-muted-foreground">
+              {title}
+            </h4>
+          )}
+          {showViewToggle && (
+            <Tabs value={view} onValueChange={(v) => setView(v as typeof view)} className="h-8">
+              <TabsList className="h-8">
+                <TabsTrigger value="fully-diluted" className="text-xs px-2 h-6">
+                  Fully Diluted
+                </TabsTrigger>
+                <TabsTrigger value="outstanding" className="text-xs px-2 h-6">
+                  Outstanding
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
+        </div>
       )}
+      
+      {showViewToggle && (
+        <p className="text-xs text-muted-foreground mb-2 text-center">
+          {view === 'fully-diluted' 
+            ? 'Includes all shares, options, and unissued ESOP pool'
+            : 'Only issued shares (excludes unallocated ESOP & unconverted instruments)'
+          }
+        </p>
+      )}
+
       <ResponsiveContainer width="100%" height={280}>
         <PieChart>
           <Pie

@@ -132,7 +132,8 @@ export default function DilutionLab() {
     setCapTable({
       totalShares: simulationResult.postRound.totalShares,
       stakeholders: simulationResult.postRound.stakeholders,
-      esopPool: simulationResult.postRound.esopPool
+      esopPool: simulationResult.postRound.esopPool,
+      esopAllocated: capTable.esopAllocated // preserve allocated
     });
     
     setSimulationResult(null);
@@ -217,6 +218,9 @@ export default function DilutionLab() {
                   <OwnershipChart
                     stakeholders={stakeholdersWithOwnership}
                     esopPool={capTable.esopPool}
+                    esopAllocated={capTable.esopAllocated}
+                    showViewToggle={true}
+                    totalShares={capTable.totalShares}
                   />
                 </ModernCard>
 
