@@ -7,8 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ModernCard } from "@/components/ModernCard";
-import { DeckImportWizard } from "@/components/DeckImportWizard";
-import { ArrowRight, Home, Upload, Sparkles } from "lucide-react";
+import { ArrowRight, Home } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const STAGES = [
@@ -21,7 +20,6 @@ export default function Intake() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [showDeckWizard, setShowDeckWizard] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -49,25 +47,6 @@ export default function Intake() {
 
     checkAuth();
   }, [navigate]);
-
-  const handleDeckImportComplete = async (data: any) => {
-    // Pre-fill form with extracted data
-    setFormData({
-      name: data.companyInfo?.name || formData.name,
-      stage: data.companyInfo?.stage || formData.stage,
-      problemSolution: data.extractedSections?.problem_statement?.content 
-        ? `Problem: ${data.extractedSections.problem_statement.content}\n\nSolution: ${data.extractedSections?.solution_description?.content || ''}`
-        : formData.problemSolution
-    });
-
-    // Save all extracted responses to database after company is created
-    toast({ title: "Deck imported! Review and complete your profile." });
-    
-    // Skip to last step if we have all data
-    if (data.companyInfo?.name && data.companyInfo?.stage) {
-      setCurrentStep(3);
-    }
-  };
 
   const handleNext = () => {
     if (currentStep === 1 && !formData.name) {
@@ -182,24 +161,6 @@ export default function Intake() {
               />
             </div>
 
-            {/* Quick Import Option */}
-            <div className="mt-8 pt-6 border-t border-border/50">
-              <div className="text-center space-y-3">
-                <p className="text-sm text-muted-foreground">Have a pitch deck ready?</p>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeckWizard(true)}
-                  className="gap-2"
-                >
-                  <Upload className="w-4 h-4" />
-                  Import from Pitch Deck
-                  <Sparkles className="w-4 h-4 text-primary" />
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  AI will extract your company info automatically
-                </p>
-              </div>
-            </div>
           </div>
         );
 
@@ -304,14 +265,6 @@ export default function Intake() {
         </ModernCard>
       </div>
 
-      {/* Deck Import Wizard */}
-      <DeckImportWizard
-        open={showDeckWizard}
-        onOpenChange={setShowDeckWizard}
-        companyName={formData.name}
-        companyDescription={formData.problemSolution}
-        onImportComplete={handleDeckImportComplete}
-      />
     </div>
   );
 }
