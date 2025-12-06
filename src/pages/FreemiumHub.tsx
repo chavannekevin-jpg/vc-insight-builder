@@ -313,20 +313,18 @@ export default function FreemiumHub() {
 
         toast({
           title: "Deck imported successfully!",
-          description: "Let's review your answers in the questionnaire.",
+          description: "Review your pre-filled answers with our AI guide.",
         });
         
-        // Close wizard and navigate to questionnaire
-        setDeckWizardOpen(false);
+        // Navigate to questionnaire immediately
         navigate("/portal");
       } else {
         toast({
           title: "Import complete",
-          description: "No high-confidence sections found. Let's fill out the questionnaire manually.",
+          description: "Let's fill out the questionnaire together.",
         });
         
-        // Still navigate to questionnaire
-        setDeckWizardOpen(false);
+        // Navigate to questionnaire
         navigate("/portal");
       }
 
