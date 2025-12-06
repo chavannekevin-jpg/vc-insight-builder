@@ -419,7 +419,7 @@ export default function Portal() {
     if (!loading && companyId && allQuestions.length > 0) {
       const welcomeKey = `portal_welcomed_${companyId}`;
       const hasSeenWelcome = localStorage.getItem(welcomeKey);
-      if (!hasSeenWelcome && answeredQuestions === 0) {
+      if (!hasSeenWelcome) {
         setShowWelcome(true);
       }
     }
