@@ -25,18 +25,18 @@ export const CollapsedLibrary = ({ stage }: CollapsedLibraryProps) => {
     const stageMap: Record<string, { label: string; path: string }[]> = {
       "Pre Seed": [
         { label: "Pre-Seed Stage Guide", path: "/vcbrain/pre-seed" },
-        { label: "What Angels Really Want", path: "/vcbrain/what-angels-want" },
-        { label: "Problem Slide Tips", path: "/vcbrain/problem-slide" }
+        { label: "What Angels Really Want", path: "/vcbrain/guides/angels" },
+        { label: "Problem Slide Tips", path: "/vcbrain/deck/problem" }
       ],
       "Seed": [
-        { label: "Seed Stage Guide", path: "/vcbrain/seed-stage" },
-        { label: "Early Traction Metrics", path: "/vcbrain/early-traction" },
-        { label: "Market Slide Essentials", path: "/vcbrain/market-slide" }
+        { label: "Seed Stage Guide", path: "/vcbrain/seed" },
+        { label: "Early Traction Metrics", path: "/vcbrain/guides/traction" },
+        { label: "Market Slide Essentials", path: "/vcbrain/deck/market" }
       ],
       "Series A": [
-        { label: "Series A Preparation", path: "/vcbrain/seed-stage" },
-        { label: "Traction Slide Guide", path: "/vcbrain/traction-slide" },
-        { label: "Product Slide Tips", path: "/vcbrain/product-slide" }
+        { label: "Series A Preparation", path: "/vcbrain/seed" },
+        { label: "Traction Slide Guide", path: "/vcbrain/deck/traction" },
+        { label: "Product Slide Tips", path: "/vcbrain/deck/product" }
       ]
     };
 
@@ -47,38 +47,38 @@ export const CollapsedLibrary = ({ stage }: CollapsedLibraryProps) => {
     {
       title: "Stage Guides",
       items: [
-        { label: "Angel Stage", path: "/vcbrain/angel-stage" },
+        { label: "Angel Stage", path: "/vcbrain/angel" },
         { label: "Pre-Seed Stage", path: "/vcbrain/pre-seed" },
-        { label: "Seed Stage", path: "/vcbrain/seed-stage" },
-        { label: "Stage Comparison", path: "/vcbrain/stage-comparison" }
+        { label: "Seed Stage", path: "/vcbrain/seed" },
+        { label: "Stage Comparison", path: "/vcbrain/stages" }
       ]
     },
     {
       title: "Pitch Deck Library",
       items: [
-        { label: "Problem Slide", path: "/vcbrain/problem-slide" },
-        { label: "Solution Slide", path: "/vcbrain/solution-slide" },
-        { label: "Market Slide", path: "/vcbrain/market-slide" },
-        { label: "Product Slide", path: "/vcbrain/product-slide" },
-        { label: "Traction Slide", path: "/vcbrain/traction-slide" },
-        { label: "Team Slide", path: "/vcbrain/team-slide" }
+        { label: "Problem Slide", path: "/vcbrain/deck/problem" },
+        { label: "Solution Slide", path: "/vcbrain/deck/solution" },
+        { label: "Market Slide", path: "/vcbrain/deck/market" },
+        { label: "Product Slide", path: "/vcbrain/deck/product" },
+        { label: "Traction Slide", path: "/vcbrain/deck/traction" },
+        { label: "Team Slide", path: "/vcbrain/deck/team" }
       ]
     },
     {
       title: "Tactical Guides",
       items: [
-        { label: "Early Traction", path: "/vcbrain/early-traction" },
-        { label: "What Angels Want", path: "/vcbrain/what-angels-want" },
-        { label: "Pitch Checklist", path: "/vcbrain/pitch-checklist" }
+        { label: "Early Traction", path: "/vcbrain/guides/traction" },
+        { label: "What Angels Want", path: "/vcbrain/guides/angels" },
+        { label: "Pitch Checklist", path: "/vcbrain/tools/checklist" }
       ]
     },
     {
       title: "Resources",
       items: [
-        { label: "VC Glossary", path: "/vcbrain/glossary" },
-        { label: "Red Flag Database", path: "/vcbrain/red-flags" },
-        { label: "Why Startups Die", path: "/vcbrain/why-startups-die" },
-        { label: "Fake TAMs Exposed", path: "/vcbrain/fake-tams" }
+        { label: "VC Glossary", path: "/vcbrain/tools/glossary" },
+        { label: "Red Flag Database", path: "/vcbrain/tools/red-flags" },
+        { label: "Why Startups Die", path: "/vcbrain/guides/death" },
+        { label: "Fake TAMs Exposed", path: "/vcbrain/guides/tam" }
       ]
     }
   ];
