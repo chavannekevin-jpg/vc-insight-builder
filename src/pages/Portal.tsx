@@ -414,16 +414,23 @@ export default function Portal() {
     return Math.min(bonus, 40); // Cap at 40 points
   };
 
-  // Show welcome disclaimer for new users
+  // Show welcome disclaimer for new users or when coming from deck import
   useEffect(() => {
     if (!loading && companyId && allQuestions.length > 0) {
       const welcomeKey = `portal_welcomed_${companyId}`;
       const hasSeenWelcome = localStorage.getItem(welcomeKey);
-      if (!hasSeenWelcome) {
+      const fromDeckImport = searchParams.get('fromDeck') === 'true';
+      
+      // Show welcome if never seen, or if coming from deck import
+      if (!hasSeenWelcome || fromDeckImport) {
         setShowWelcome(true);
+        // Clear the URL param without triggering navigation
+        if (fromDeckImport) {
+          window.history.replaceState({}, '', '/portal');
+        }
       }
     }
-  }, [loading, companyId, allQuestions.length]);
+  }, [loading, companyId, allQuestions.length, searchParams]);
 
   const handleWelcomeComplete = () => {
     if (companyId) {

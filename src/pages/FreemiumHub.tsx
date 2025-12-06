@@ -316,16 +316,16 @@ export default function FreemiumHub() {
           description: "Review your pre-filled answers with our AI guide.",
         });
         
-        // Navigate to questionnaire immediately
-        navigate("/portal");
+        // Navigate to questionnaire with flag to show welcome guide
+        navigate("/portal?fromDeck=true");
       } else {
         toast({
           title: "Import complete",
           description: "Let's fill out the questionnaire together.",
         });
         
-        // Navigate to questionnaire
-        navigate("/portal");
+        // Navigate to questionnaire with flag to show welcome guide
+        navigate("/portal?fromDeck=true");
       }
 
     } catch (error: any) {
