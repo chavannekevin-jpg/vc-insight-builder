@@ -86,6 +86,7 @@ export default function RoastYourBaby() {
         .from('companies')
         .select('*')
         .eq('founder_id', user.id)
+        .order('created_at', { ascending: false })
         .limit(1);
 
       if (companiesError) throw companiesError;
