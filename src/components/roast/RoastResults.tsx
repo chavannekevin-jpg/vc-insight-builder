@@ -1,0 +1,204 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { ModernCard } from "@/components/ModernCard";
+import { Progress } from "@/components/ui/progress";
+import { Flame, Trophy, Target, Share2, RotateCcw, Home, Copy, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+interface CategoryScore {
+  category: string;
+  score: number;
+  maxScore: number;
+}
+
+interface Verdict {
+  totalScore: number;
+  categoryBreakdown: CategoryScore[];
+  verdictTitle: string;
+  verdictEmoji: string;
+  assessment: string;
+  recommendations: string[];
+  shareableQuote: string;
+  investorReadiness: string;
+}
+
+interface RoastResultsProps {
+  verdict: Verdict;
+  onPlayAgain: () => void;
+}
+
+export const RoastResults = ({ verdict, onPlayAgain }: RoastResultsProps) => {
+  const navigate = useNavigate();
+  const [displayScore, setDisplayScore] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  // Animate score counter
+  useEffect(() => {
+    const duration = 2000;
+    const steps = 60;
+    const increment = verdict.totalScore / steps;
+    let current = 0;
+
+    const interval = setInterval(() => {
+      current += increment;
+      if (current >= verdict.totalScore) {
+        setDisplayScore(verdict.totalScore);
+        clearInterval(interval);
+      } else {
+        setDisplayScore(Math.floor(current));
+      }
+    }, duration / steps);
+
+    return () => clearInterval(interval);
+  }, [verdict.totalScore]);
+
+  const getScoreColor = (score: number) => {
+    if (score >= 70) return "text-green-500";
+    if (score >= 50) return "text-yellow-500";
+    return "text-red-500";
+  };
+
+  const getReadinessLabel = (readiness: string) => {
+    switch (readiness) {
+      case "investor_ready": return { label: "Investor Ready", color: "bg-green-500" };
+      case "almost_ready": return { label: "Almost Ready", color: "bg-yellow-500" };
+      case "getting_there": return { label: "Getting There", color: "bg-orange-500" };
+      default: return { label: "Needs Work", color: "bg-red-500" };
+    }
+  };
+
+  const readiness = getReadinessLabel(verdict.investorReadiness);
+
+  const handleCopyQuote = () => {
+    navigator.clipboard.writeText(verdict.shareableQuote);
+    setCopied(true);
+    toast.success("Copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShareTwitter = () => {
+    const text = encodeURIComponent(verdict.shareableQuote + " #StartupLife #VCRoast");
+    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+  };
+
+  const handleShareLinkedIn = () => {
+    const text = encodeURIComponent(verdict.shareableQuote);
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}&summary=${text}`, '_blank');
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      {/* Score reveal */}
+      <div className="text-center mb-12">
+        <div className="relative inline-block mb-6">
+          <div className="absolute inset-0 blur-3xl bg-gradient-to-t from-orange-500/30 via-red-500/20 to-transparent" />
+          <span className="text-8xl relative z-10">{verdict.verdictEmoji}</span>
+        </div>
+        
+        <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">
+          {verdict.verdictTitle}
+        </h1>
+
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <span className={cn("text-6xl font-bold", getScoreColor(verdict.totalScore))}>
+            {displayScore}
+          </span>
+          <span className="text-2xl text-muted-foreground">/100</span>
+        </div>
+
+        <span className={cn(
+          "inline-flex items-center gap-2 px-4 py-2 rounded-full text-white font-medium",
+          readiness.color
+        )}>
+          <Trophy className="w-4 h-4" />
+          {readiness.label}
+        </span>
+      </div>
+
+      {/* Assessment */}
+      <ModernCard className="mb-8">
+        <p className="text-lg text-center text-muted-foreground">
+          {verdict.assessment}
+        </p>
+      </ModernCard>
+
+      {/* Category breakdown */}
+      <ModernCard className="mb-8">
+        <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+          <Target className="w-5 h-5 text-primary" />
+          Category Breakdown
+        </h3>
+        <div className="space-y-4">
+          {verdict.categoryBreakdown.map((cat, i) => (
+            <div key={i}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium capitalize">
+                  {cat.category.replace('_', ' ')}
+                </span>
+                <span className={cn(
+                  "text-sm font-bold",
+                  cat.score >= 7 && "text-green-500",
+                  cat.score >= 4 && cat.score < 7 && "text-yellow-500",
+                  cat.score < 4 && "text-red-500",
+                )}>
+                  {cat.score.toFixed(1)}/10
+                </span>
+              </div>
+              <Progress value={(cat.score / 10) * 100} className="h-2" />
+            </div>
+          ))}
+        </div>
+      </ModernCard>
+
+      {/* Recommendations */}
+      <ModernCard className="mb-8">
+        <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+          <Flame className="w-5 h-5 text-orange-500" />
+          Top Recommendations
+        </h3>
+        <ul className="space-y-3">
+          {verdict.recommendations.map((rec, i) => (
+            <li key={i} className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">
+                {i + 1}
+              </span>
+              <span className="text-muted-foreground">{rec}</span>
+            </li>
+          ))}
+        </ul>
+      </ModernCard>
+
+      {/* Shareable quote */}
+      <ModernCard className="mb-8 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm text-muted-foreground mb-2">Share your result:</p>
+            <p className="italic">"{verdict.shareableQuote}"</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon" onClick={handleCopyQuote}>
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            </Button>
+            <Button variant="outline" size="icon" onClick={handleShareTwitter}>
+              <Share2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </ModernCard>
+
+      {/* Action buttons */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <Button onClick={onPlayAgain} variant="outline" className="flex-1 gap-2">
+          <RotateCcw className="w-4 h-4" />
+          Try Again
+        </Button>
+        <Button onClick={() => navigate('/hub')} className="flex-1 gap-2">
+          <Home className="w-4 h-4" />
+          Back to Hub
+        </Button>
+      </div>
+    </div>
+  );
+};

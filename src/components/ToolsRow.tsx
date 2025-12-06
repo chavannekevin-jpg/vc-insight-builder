@@ -1,4 +1,4 @@
-import { Calculator, TrendingUp, Lock, Zap, Mail } from "lucide-react";
+import { Calculator, TrendingUp, Lock, Zap, Mail, Flame } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ModernCard } from "./ModernCard";
 import { Badge } from "./ui/badge";
@@ -40,6 +40,15 @@ export const ToolsRow = () => {
       available: true,
       path: "/investor-email-generator",
       badge: "Memo Required"
+    },
+    {
+      id: "roast-your-baby",
+      icon: Flame,
+      title: "Roast Your Baby",
+      description: "Survive 10 brutal VC questions",
+      available: true,
+      path: "/roast-your-baby",
+      badge: "Premium"
     }
   ];
 
@@ -50,7 +59,7 @@ export const ToolsRow = () => {
         <p className="text-sm text-muted-foreground">Free calculators to help you plan</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {tools.map((tool) => {
           const Icon = tool.icon;
           return (

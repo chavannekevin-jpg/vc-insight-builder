@@ -74,6 +74,7 @@ import CheckoutMemo from "./pages/CheckoutMemo";
 import SampleMemo from "./pages/SampleMemo";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
+import RoastYourBaby from "./pages/RoastYourBaby";
 
 const queryClient = new QueryClient();
 
@@ -89,6 +90,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/intake" element={<Intake />} />
           <Route path="/hub" element={<FreemiumHub />} />
+          <Route path="/roast-your-baby" element={<RoastYourBaby />} />
           <Route path="/hub/:slug" element={<EducationalContent />} />
           <Route path="/vcbrain" element={<VCBrainHub />}>
             <Route index element={<VCBrainHome />} />
