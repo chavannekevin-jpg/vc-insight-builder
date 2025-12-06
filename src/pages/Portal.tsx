@@ -22,6 +22,7 @@ import { LevelCard } from "@/components/LevelCard";
 import { resolveIcon } from "@/lib/iconResolver";
 import { AIInsightCard } from "@/components/AIInsightCard";
 import { AnswerOptimizerWizard } from "@/components/AnswerOptimizerWizard";
+import { WelcomeDisclaimer } from "@/components/WelcomeDisclaimer";
 
 // Dynamic interfaces for database-driven questions
 interface Section {
@@ -64,6 +65,7 @@ export default function Portal() {
   const [memoSubmitted, setMemoSubmitted] = useState(false);
   const [isAdminViewing, setIsAdminViewing] = useState(false);
   const [showAIInsight, setShowAIInsight] = useState<string | null>(null);
+  const [showWelcome, setShowWelcome] = useState(false);
   
   // Dynamic data from database
   const [sections, setSections] = useState<Section[]>([]);
@@ -412,6 +414,24 @@ export default function Portal() {
     return Math.min(bonus, 40); // Cap at 40 points
   };
 
+  // Show welcome disclaimer for new users
+  useEffect(() => {
+    if (!loading && companyId && allQuestions.length > 0) {
+      const welcomeKey = `portal_welcomed_${companyId}`;
+      const hasSeenWelcome = localStorage.getItem(welcomeKey);
+      if (!hasSeenWelcome && answeredQuestions === 0) {
+        setShowWelcome(true);
+      }
+    }
+  }, [loading, companyId, allQuestions.length, answeredQuestions]);
+
+  const handleWelcomeComplete = () => {
+    if (companyId) {
+      localStorage.setItem(`portal_welcomed_${companyId}`, 'true');
+    }
+    setShowWelcome(false);
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
@@ -507,6 +527,9 @@ export default function Portal() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Welcome Disclaimer for new users */}
+      <WelcomeDisclaimer open={showWelcome} onComplete={handleWelcomeComplete} />
+      
       {showNeonFlash && (
         <div className="fixed inset-0 bg-primary/20 pointer-events-none z-50 animate-pulse" />
       )}
