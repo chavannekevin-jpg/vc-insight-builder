@@ -1,11 +1,13 @@
-import { ArrowRight, TrendingDown } from 'lucide-react';
+import { ArrowRight, TrendingDown, FileText } from 'lucide-react';
 import { ModernCard } from '@/components/ModernCard';
+import { Badge } from '@/components/ui/badge';
 import { OwnershipChart } from './OwnershipChart';
 import { 
   DilutionResult, 
   formatCurrency, 
   formatPercentage,
-  getStakeholderColor
+  getStakeholderColor,
+  instrumentLabels
 } from '@/lib/dilutionCalculator';
 
 interface DilutionComparisonProps {
@@ -46,7 +48,13 @@ export function DilutionComparison({ result, roundName }: DilutionComparisonProp
 
       {/* Round Summary */}
       <ModernCard className="!p-4">
-        <h4 className="text-sm font-semibold mb-4">Round Summary</h4>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="text-sm font-semibold">Round Summary</h4>
+          <Badge variant="outline" className="gap-1">
+            <FileText className="w-3 h-3" />
+            {instrumentLabels[postRound.instrument]}
+          </Badge>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center p-3 bg-muted/30 rounded-lg">
             <p className="text-xs text-muted-foreground mb-1">Post-Money</p>
@@ -73,6 +81,11 @@ export function DilutionComparison({ result, roundName }: DilutionComparisonProp
             </p>
           </div>
         </div>
+        {postRound.instrument !== 'equity' && (
+          <p className="text-xs text-muted-foreground mt-3 text-center">
+            💡 {instrumentLabels[postRound.instrument]} converts to equity at next priced round
+          </p>
+        )}
       </ModernCard>
 
       {/* Dilution Table */}

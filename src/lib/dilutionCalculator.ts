@@ -2,22 +2,30 @@
 export interface Stakeholder {
   id: string;
   name: string;
-  type: 'founder' | 'employee' | 'advisor' | 'investor';
+  type: 'founder' | 'employee' | 'advisor' | 'investor' | 'convertible';
   shares: number;
   ownership?: number; // calculated percentage
+  isOutstanding?: boolean; // true for issued shares, false for options/convertibles
 }
 
 export interface CapTable {
   totalShares: number;
   stakeholders: Stakeholder[];
   esopPool: number; // percentage reserved
+  esopAllocated: number; // percentage actually granted (outstanding)
 }
+
+export type InstrumentType = 'equity' | 'safe' | 'cla';
 
 export interface FundingRound {
   name: string;
+  instrument: InstrumentType;
   preMoney: number;
   investment: number;
   newEsopPool: number; // target pool post-round (percentage)
+  // SAFE/CLA specific
+  valuationCap?: number;
+  discount?: number; // percentage discount (e.g., 20 for 20%)
 }
 
 export interface DilutionResult {
@@ -34,16 +42,37 @@ export interface DilutionResult {
     newInvestorOwnership: number;
     postMoney: number;
     pricePerShare: number;
+    instrument: InstrumentType;
   };
   dilutionPercentages: Record<string, number>;
 }
 
 // Calculate ownership percentages for all stakeholders
-export function calculateOwnership(stakeholders: Stakeholder[], totalShares: number): Stakeholder[] {
-  return stakeholders.map(s => ({
-    ...s,
-    ownership: totalShares > 0 ? (s.shares / totalShares) * 100 : 0
-  }));
+export function calculateOwnership(
+  stakeholders: Stakeholder[], 
+  totalShares: number,
+  fullyDiluted: boolean = true,
+  esopPool: number = 0
+): Stakeholder[] {
+  if (fullyDiluted) {
+    // Include everything: all shares + unissued ESOP
+    const esopShares = Math.round((esopPool / 100) * totalShares);
+    const fullyDilutedTotal = totalShares + esopShares;
+    return stakeholders.map(s => ({
+      ...s,
+      ownership: fullyDilutedTotal > 0 ? (s.shares / fullyDilutedTotal) * 100 : 0
+    }));
+  } else {
+    // Outstanding only: only issued shares
+    const outstandingStakeholders = stakeholders.filter(s => s.isOutstanding !== false);
+    const outstandingShares = outstandingStakeholders.reduce((sum, s) => sum + s.shares, 0);
+    return stakeholders.map(s => ({
+      ...s,
+      ownership: outstandingShares > 0 && s.isOutstanding !== false 
+        ? (s.shares / outstandingShares) * 100 
+        : 0
+    }));
+  }
 }
 
 // Generate a unique ID
@@ -57,19 +86,33 @@ export function simulateRound(
   round: FundingRound
 ): DilutionResult {
   const { totalShares, stakeholders, esopPool } = capTable;
-  const { preMoney, investment, newEsopPool } = round;
+  const { preMoney, investment, newEsopPool, instrument, valuationCap, discount } = round;
+
+  let effectivePreMoney = preMoney;
+  let pricePerShare: number;
+
+  // Handle different instruments
+  if (instrument === 'safe' || instrument === 'cla') {
+    // For SAFE/CLA, use the lower of valuation cap or discounted price
+    if (valuationCap && valuationCap < preMoney) {
+      effectivePreMoney = valuationCap;
+    }
+    if (discount && discount > 0) {
+      const discountedPreMoney = preMoney * (1 - discount / 100);
+      effectivePreMoney = Math.min(effectivePreMoney, discountedPreMoney);
+    }
+  }
 
   // Calculate post-money valuation
   const postMoney = preMoney + investment;
 
-  // Calculate price per share based on pre-money
-  const pricePerShare = preMoney / totalShares;
+  // Calculate price per share based on effective pre-money (for investor)
+  pricePerShare = effectivePreMoney / totalShares;
 
   // Calculate new shares for investor
   const newInvestorShares = Math.round(investment / pricePerShare);
 
   // Calculate ESOP pool increase (option pool shuffle)
-  // The new ESOP pool is calculated on post-money, but comes from pre-money dilution
   const currentEsopShares = Math.round((esopPool / 100) * totalShares);
   const postRoundTotalShares = totalShares + newInvestorShares;
   const targetEsopShares = Math.round((newEsopPool / 100) * postRoundTotalShares);
@@ -79,18 +122,20 @@ export function simulateRound(
   const finalTotalShares = postRoundTotalShares + additionalEsopShares;
 
   // Calculate pre-round ownership
-  const preRoundStakeholders = calculateOwnership(stakeholders, totalShares);
+  const preRoundStakeholders = calculateOwnership(stakeholders, totalShares, true, esopPool);
 
   // Create post-round stakeholders (same shares, new ownership)
-  const postRoundStakeholders = calculateOwnership(stakeholders, finalTotalShares);
+  const postRoundStakeholders = calculateOwnership(stakeholders, finalTotalShares, true, newEsopPool);
 
   // Add new investor to post-round
+  const instrumentLabel = instrument === 'safe' ? 'SAFE' : instrument === 'cla' ? 'CLA' : '';
   const newInvestor: Stakeholder = {
     id: generateId(),
-    name: `${round.name} Investor`,
-    type: 'investor',
+    name: `${round.name} Investor${instrumentLabel ? ` (${instrumentLabel})` : ''}`,
+    type: instrument === 'equity' ? 'investor' : 'convertible',
     shares: newInvestorShares,
-    ownership: (newInvestorShares / finalTotalShares) * 100
+    ownership: (newInvestorShares / finalTotalShares) * 100,
+    isOutstanding: instrument === 'equity' // SAFE/CLA not outstanding until conversion
   };
 
   // Calculate dilution percentages
@@ -115,7 +160,8 @@ export function simulateRound(
       newInvestorShares,
       newInvestorOwnership: (newInvestorShares / finalTotalShares) * 100,
       postMoney,
-      pricePerShare
+      pricePerShare,
+      instrument
     },
     dilutionPercentages
   };
@@ -146,16 +192,19 @@ export function createDefaultCapTable(): CapTable {
         id: generateId(),
         name: 'Founder 1',
         type: 'founder',
-        shares: 5000000 // 50%
+        shares: 5000000, // 50%
+        isOutstanding: true
       },
       {
         id: generateId(),
         name: 'Founder 2',
         type: 'founder',
-        shares: 3000000 // 30%
+        shares: 3000000, // 30%
+        isOutstanding: true
       }
     ],
-    esopPool: 10 // 10% reserved
+    esopPool: 10, // 10% reserved
+    esopAllocated: 2 // 2% granted
   };
 }
 
@@ -165,7 +214,15 @@ export function getStakeholderColor(type: Stakeholder['type'], index: number): s
     founder: ['hsl(330, 100%, 65%)', 'hsl(330, 100%, 55%)', 'hsl(330, 100%, 45%)'],
     employee: ['hsl(280, 100%, 70%)', 'hsl(280, 100%, 60%)', 'hsl(280, 100%, 50%)'],
     advisor: ['hsl(200, 100%, 60%)', 'hsl(200, 100%, 50%)', 'hsl(200, 100%, 40%)'],
-    investor: ['hsl(140, 100%, 50%)', 'hsl(140, 100%, 40%)', 'hsl(140, 100%, 30%)']
+    investor: ['hsl(140, 100%, 50%)', 'hsl(140, 100%, 40%)', 'hsl(140, 100%, 30%)'],
+    convertible: ['hsl(45, 100%, 50%)', 'hsl(45, 100%, 40%)', 'hsl(45, 100%, 30%)']
   };
   return colors[type][index % 3] || colors.founder[0];
 }
+
+// Instrument display names
+export const instrumentLabels: Record<InstrumentType, string> = {
+  equity: 'Priced Equity',
+  safe: 'SAFE',
+  cla: 'Convertible Note (CLA)'
+};
