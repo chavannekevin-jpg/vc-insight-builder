@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, BookOpen, Sparkles } from "lucide-react";
 import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 interface Article {
   id: string;
@@ -185,7 +186,7 @@ export default function EducationalContent() {
               prose-ul:my-6 prose-ul:space-y-2
               prose-ol:my-6 prose-ol:space-y-2
               prose-li:text-lg prose-li:leading-relaxed prose-li:text-foreground/90"
-              dangerouslySetInnerHTML={{ __html: sections.find(s => s.title === 'intro')?.html || '' }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(sections.find(s => s.title === 'intro')?.html || '') }}
             />
           </div>
         )}
@@ -220,7 +221,7 @@ export default function EducationalContent() {
               prose-code:text-primary prose-code:bg-primary/10 prose-code:px-2 prose-code:py-1 
               prose-code:rounded-md prose-code:text-sm
               prose-a:text-primary prose-a:font-semibold prose-a:no-underline hover:prose-a:underline"
-              dangerouslySetInnerHTML={{ __html: section.html }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(section.html) }}
             />
           </div>
         ))}
