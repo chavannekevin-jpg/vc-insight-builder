@@ -75,6 +75,7 @@ import SampleMemo from "./pages/SampleMemo";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 import RoastYourBaby from "./pages/RoastYourBaby";
+import DilutionLab from "./pages/DilutionLab";
 
 const queryClient = new QueryClient();
 
@@ -91,6 +92,7 @@ const App = () => (
           <Route path="/intake" element={<Intake />} />
           <Route path="/hub" element={<FreemiumHub />} />
           <Route path="/roast-your-baby" element={<RoastYourBaby />} />
+          <Route path="/dilution-lab" element={<DilutionLab />} />
           <Route path="/hub/:slug" element={<EducationalContent />} />
           <Route path="/vcbrain" element={<VCBrainHub />}>
             <Route index element={<VCBrainHome />} />

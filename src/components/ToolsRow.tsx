@@ -1,4 +1,4 @@
-import { Calculator, TrendingUp, Lock, Zap, Mail, Flame } from "lucide-react";
+import { Calculator, TrendingUp, Lock, Zap, Mail, Flame, FlaskConical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ModernCard } from "./ModernCard";
 import { Badge } from "./ui/badge";
@@ -48,6 +48,15 @@ export const ToolsRow = () => {
       description: "Survive 10 brutal VC questions",
       available: true,
       path: "/roast-your-baby",
+      badge: "Premium"
+    },
+    {
+      id: "dilution-lab",
+      icon: FlaskConical,
+      title: "Dilution Lab",
+      description: "Simulate funding rounds & cap tables",
+      available: true,
+      path: "/dilution-lab",
       badge: "Premium"
     }
   ];
