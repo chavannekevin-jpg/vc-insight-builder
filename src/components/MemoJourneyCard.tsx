@@ -1,3 +1,4 @@
+import { memo, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -14,7 +15,7 @@ interface MemoJourneyCardProps {
   onImportDeck?: () => void;
 }
 
-export const MemoJourneyCard = ({
+export const MemoJourneyCard = memo(({
   completedQuestions,
   totalQuestions,
   memoGenerated,
@@ -24,23 +25,28 @@ export const MemoJourneyCard = ({
   onImportDeck
 }: MemoJourneyCardProps) => {
   const navigate = useNavigate();
-  const percentage = (completedQuestions / totalQuestions) * 100;
   
-  const getStatus = () => {
+  const percentage = useMemo(
+    () => (completedQuestions / totalQuestions) * 100,
+    [completedQuestions, totalQuestions]
+  );
+  
+  const status = useMemo(() => {
     if (memoGenerated) {
       return hasPaid ? "complete" : "preview";
     }
     return percentage === 100 ? "ready" : "building";
-  };
+  }, [memoGenerated, hasPaid, percentage]);
 
-  const status = getStatus();
+  const navigateToPortal = useCallback(() => navigate("/portal"), [navigate]);
+  const navigateToMemo = useCallback(() => navigate("/generated-memo"), [navigate]);
+  const navigateToCheckout = useCallback(() => navigate(`/checkout-memo?companyId=${companyId}`), [navigate, companyId]);
 
   const renderContent = () => {
     switch (status) {
       case "building":
         return (
           <>
-            {/* Deck Import CTA - Show prominently when < 50% complete */}
             {percentage < 50 && onImportDeck && (
               <div className="mb-6 p-5 bg-gradient-to-r from-primary/15 via-primary/10 to-primary/5 border border-primary/30 rounded-xl">
                 <div className="flex items-start gap-4">
@@ -96,13 +102,12 @@ export const MemoJourneyCard = ({
             <Button 
               size="lg" 
               className="w-full text-lg font-semibold"
-              onClick={() => navigate("/portal")}
+              onClick={navigateToPortal}
             >
               Continue Building Your Memo
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
 
-            {/* FOMO Preview */}
             <div className="mt-6 pt-6 border-t border-border/50">
               <p className="text-sm font-medium mb-3 text-muted-foreground">What you'll unlock:</p>
               <div className="grid grid-cols-2 gap-3">
@@ -167,7 +172,7 @@ export const MemoJourneyCard = ({
             <Button 
               size="lg" 
               className="w-full text-lg font-semibold bg-primary hover:bg-primary/90"
-              onClick={() => navigate("/portal")}
+              onClick={navigateToPortal}
             >
               Review & Generate Memo
               <ArrowRight className="ml-2 w-5 h-5" />
@@ -194,14 +199,14 @@ export const MemoJourneyCard = ({
               <Button 
                 variant="outline" 
                 className="h-auto py-4 flex-col gap-2"
-                onClick={() => navigate("/generated-memo")}
+                onClick={navigateToMemo}
               >
                 <Lock className="w-5 h-5" />
                 <span>View Preview</span>
               </Button>
               <Button 
                 className="h-auto py-4 flex-col gap-2 bg-primary hover:bg-primary/90"
-                onClick={() => navigate(`/checkout-memo?companyId=${companyId}`)}
+                onClick={navigateToCheckout}
               >
                 <Sparkles className="w-5 h-5" />
                 <span>Unlock Full Memo</span>
@@ -234,7 +239,7 @@ export const MemoJourneyCard = ({
             <Button 
               size="lg" 
               className="w-full text-lg font-semibold"
-              onClick={() => navigate("/generated-memo")}
+              onClick={navigateToMemo}
             >
               View Your Memo
               <ArrowRight className="ml-2 w-5 h-5" />
@@ -244,7 +249,7 @@ export const MemoJourneyCard = ({
               <p className="text-sm text-muted-foreground text-center">
                 Need to update your information?{" "}
                 <button 
-                  onClick={() => navigate("/portal")}
+                  onClick={navigateToPortal}
                   className="text-primary hover:underline"
                 >
                   Edit your profile
@@ -262,4 +267,6 @@ export const MemoJourneyCard = ({
       {renderContent()}
     </div>
   );
-};
+});
+
+MemoJourneyCard.displayName = "MemoJourneyCard";
