@@ -264,7 +264,8 @@ export const Header = () => {
       category: "Diagnostics",
       items: [
         { label: "Venture Scale Diagnostic", path: "/venture-scale-diagnostic", description: "Are you truly VC-scale?" },
-        { label: "Roast Your Baby", path: "/roast-your-baby", description: "Survive 10 brutal VC questions", badge: "Premium" }
+        { label: "Roast Your Baby", path: "/roast-your-baby", description: "Survive 10 brutal VC questions", badge: "Premium" },
+        { label: "Dilution Lab", path: "/dilution-lab", description: "Simulate funding rounds & cap tables", badge: "Premium" }
       ]
     },
     {
