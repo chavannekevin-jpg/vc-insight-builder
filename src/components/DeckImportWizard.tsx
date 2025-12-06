@@ -204,13 +204,12 @@ export const DeckImportWizard = ({
       )
     };
 
-    onImportComplete(finalData);
-    setStep('complete');
+    // Close wizard immediately and let parent handle navigation
+    onOpenChange(false);
+    resetWizard();
     
-    setTimeout(() => {
-      onOpenChange(false);
-      resetWizard();
-    }, 1500);
+    // Call parent's import handler (which will save data and navigate to Portal)
+    onImportComplete(finalData);
   };
 
   // Group sections by category for better display
