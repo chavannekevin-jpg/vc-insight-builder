@@ -204,12 +204,14 @@ export const DeckImportWizard = ({
       )
     };
 
-    // Close wizard immediately and let parent handle navigation
-    onOpenChange(false);
-    resetWizard();
+    // Show completion step with smooth transition
+    setStep('complete');
     
-    // Call parent's import handler (which will save data and navigate to Portal)
-    onImportComplete(finalData);
+    // Wait briefly to show success, then trigger import and navigation
+    setTimeout(() => {
+      onImportComplete(finalData);
+      // Parent will navigate, wizard will close when component unmounts
+    }, 1200);
   };
 
   // Group sections by category for better display
