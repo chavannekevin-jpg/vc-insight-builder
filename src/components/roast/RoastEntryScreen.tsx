@@ -1,12 +1,42 @@
-import { Flame, AlertTriangle, Zap, Trophy } from "lucide-react";
+import { Flame, AlertTriangle, Zap, Trophy, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModernCard } from "@/components/ModernCard";
+import { cn } from "@/lib/utils";
+
+export type GameMode = 'quick' | 'medium' | 'full';
 
 interface RoastEntryScreenProps {
   companyName: string;
-  onStart: () => void;
+  onStart: (mode: GameMode) => void;
   isLoading: boolean;
 }
+
+const gameModes = [
+  {
+    id: 'quick' as GameMode,
+    name: 'Quick Fire',
+    questions: 3,
+    time: '2-3 min',
+    description: 'Perfect for a quick test',
+    color: 'from-green-500 to-emerald-500',
+  },
+  {
+    id: 'medium' as GameMode,
+    name: 'Standard',
+    questions: 5,
+    time: '5-7 min',
+    description: 'Balanced challenge',
+    color: 'from-yellow-500 to-orange-500',
+  },
+  {
+    id: 'full' as GameMode,
+    name: 'Full Roast',
+    questions: 10,
+    time: '10-15 min',
+    description: 'The complete VC grilling',
+    color: 'from-orange-500 to-red-500',
+  },
+];
 
 export const RoastEntryScreen = ({ companyName, onStart, isLoading }: RoastEntryScreenProps) => {
   return (
@@ -22,8 +52,43 @@ export const RoastEntryScreen = ({ companyName, onStart, isLoading }: RoastEntry
       </h1>
       
       <p className="text-xl text-muted-foreground text-center mb-8 max-w-md">
-        Can <span className="text-primary font-semibold">{companyName}</span> survive 10 brutal VC questions?
+        Can <span className="text-primary font-semibold">{companyName}</span> survive the VC heat?
       </p>
+
+      {/* Game mode selection */}
+      <div className="w-full max-w-2xl mb-8">
+        <h3 className="text-center text-muted-foreground mb-4">Choose your challenge:</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {gameModes.map((mode) => (
+            <button
+              key={mode.id}
+              onClick={() => !isLoading && onStart(mode.id)}
+              disabled={isLoading}
+              className={cn(
+                "relative group p-6 rounded-xl border-2 border-border/50 bg-card hover:border-primary/50 transition-all duration-300",
+                "hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1",
+                "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              )}
+            >
+              <div className={cn(
+                "absolute inset-0 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity",
+                `bg-gradient-to-br ${mode.color}`
+              )} />
+              
+              <div className="relative z-10">
+                <h4 className="font-semibold text-lg mb-1">{mode.name}</h4>
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-2">
+                  <span className="font-medium text-foreground">{mode.questions} questions</span>
+                  <span>•</span>
+                  <Clock className="w-3 h-3" />
+                  <span>{mode.time}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{mode.description}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Rules card */}
       <ModernCard className="max-w-lg w-full mb-8">
@@ -34,7 +99,7 @@ export const RoastEntryScreen = ({ companyName, onStart, isLoading }: RoastEntry
         <ul className="space-y-3 text-muted-foreground">
           <li className="flex items-start gap-3">
             <span className="text-primary font-bold">1.</span>
-            <span>10 tough questions tailored to YOUR company data</span>
+            <span>Tough questions tailored to YOUR company data</span>
           </li>
           <li className="flex items-start gap-3">
             <span className="text-primary font-bold">2.</span>
@@ -50,34 +115,19 @@ export const RoastEntryScreen = ({ companyName, onStart, isLoading }: RoastEntry
           </li>
           <li className="flex items-start gap-3">
             <Trophy className="w-4 h-4 text-yellow-500 mt-0.5" />
-            <span><strong className="text-yellow-500">Goal:</strong> Score 70+ to prove you're investor-ready</span>
+            <span><strong className="text-yellow-500">Goal:</strong> Score 70%+ to prove you're investor-ready</span>
           </li>
         </ul>
       </ModernCard>
 
-      {/* Start button */}
-      <Button
-        size="lg"
-        onClick={onStart}
-        disabled={isLoading}
-        className="text-lg px-8 py-6 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg shadow-orange-500/25"
-      >
-        {isLoading ? (
-          <>
-            <Flame className="w-5 h-5 mr-2 animate-pulse" />
-            Preparing Questions...
-          </>
-        ) : (
-          <>
-            <Flame className="w-5 h-5 mr-2" />
-            Start the Roast
-          </>
-        )}
-      </Button>
-
-      <p className="text-sm text-muted-foreground mt-4">
-        Takes about 10-15 minutes
-      </p>
+      {isLoading && (
+        <div className="text-center">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Flame className="w-5 h-5 animate-pulse text-orange-500" />
+            <span>Preparing your questions...</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

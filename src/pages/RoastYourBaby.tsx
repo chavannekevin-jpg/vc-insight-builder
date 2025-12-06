@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/sections/Footer";
-import { RoastEntryScreen } from "@/components/roast/RoastEntryScreen";
+import { RoastEntryScreen, GameMode } from "@/components/roast/RoastEntryScreen";
 import { RoastGameLoop } from "@/components/roast/RoastGameLoop";
 import { RoastResults } from "@/components/roast/RoastResults";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Lock, AlertCircle, ArrowLeft } from "lucide-react";
+import { Lock, ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type GameState = 'loading' | 'access-denied' | 'entry' | 'playing' | 'results';
@@ -34,6 +34,12 @@ interface AnswerResult {
   timeElapsed: number;
 }
 
+const questionCountByMode: Record<GameMode, number> = {
+  quick: 3,
+  medium: 5,
+  full: 10,
+};
+
 export default function RoastYourBaby() {
   const navigate = useNavigate();
   const [gameState, setGameState] = useState<GameState>('loading');
@@ -45,18 +51,17 @@ export default function RoastYourBaby() {
   const [verdict, setVerdict] = useState<any>(null);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
   const [isLoadingVerdict, setIsLoadingVerdict] = useState(false);
+  const [gameMode, setGameMode] = useState<GameMode>('full');
 
   useEffect(() => {
     let accessCheckCompleted = false;
 
     const performAccessCheck = async (user: any) => {
-      // Prevent duplicate checks
       if (accessCheckCompleted) return;
       accessCheckCompleted = true;
       await checkAccessWithUser(user);
     };
 
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session?.user) {
@@ -70,7 +75,6 @@ export default function RoastYourBaby() {
       }
     );
 
-    // Check current session immediately
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         performAccessCheck(session.user);
@@ -87,7 +91,6 @@ export default function RoastYourBaby() {
 
   const checkAccessWithUser = async (user: any) => {
     try {
-      // Fetch user's company
       const { data: companies, error: companiesError } = await supabase
         .from('companies')
         .select('*')
@@ -106,14 +109,12 @@ export default function RoastYourBaby() {
       const userCompany = companies[0];
       setCompany(userCompany);
 
-      // Check premium status
       if (!userCompany.has_premium) {
         setAccessError("Roast Your Baby is a premium feature. Generate your memo to unlock it!");
         setGameState('access-denied');
         return;
       }
 
-      // Check if they have enough data
       const { data: responses, error: responsesError } = await supabase
         .from('memo_responses')
         .select('question_key, answer')
@@ -138,11 +139,13 @@ export default function RoastYourBaby() {
     }
   };
 
-  const startGame = async () => {
+  const startGame = async (mode: GameMode) => {
+    setGameMode(mode);
     setIsLoadingQuestions(true);
     try {
+      const questionCount = questionCountByMode[mode];
       const { data, error } = await supabase.functions.invoke('generate-roast-questions', {
-        body: { companyId: company.id }
+        body: { companyId: company.id, questionCount }
       });
 
       if (error) throw error;
@@ -178,24 +181,50 @@ export default function RoastYourBaby() {
 
     } catch (error) {
       console.error('Error generating verdict:', error);
-      // Create fallback verdict
       const totalScore = gameResults.reduce((sum, r) => sum + r.score, 0);
+      const maxScore = gameResults.length * 10;
       setVerdict({
         totalScore,
+        maxPossibleScore: maxScore,
         categoryBreakdown: [],
-        verdictTitle: totalScore >= 70 ? "Well Done!" : "Keep Practicing",
-        verdictEmoji: totalScore >= 70 ? "🔥" : "💪",
-        assessment: `You scored ${totalScore}/100. Review your answers and try again!`,
+        verdictTitle: totalScore >= (maxScore * 0.7) ? "Well Done!" : "Keep Practicing",
+        verdictEmoji: totalScore >= (maxScore * 0.7) ? "🔥" : "💪",
+        assessment: `You scored ${totalScore}/${maxScore}. Review your answers and try again!`,
         recommendations: [
           "Practice articulating your value proposition",
           "Be more specific with numbers and metrics",
           "Address potential weaknesses head-on"
         ],
-        shareableQuote: `Just got roasted by VCs and scored ${totalScore}/100! 🔥`,
-        investorReadiness: totalScore >= 70 ? "almost_ready" : "getting_there"
+        shareableQuote: `Just got roasted by VCs and scored ${Math.round((totalScore/maxScore)*100)}%! 🔥`,
+        investorReadiness: totalScore >= (maxScore * 0.7) ? "almost_ready" : "getting_there"
       });
     } finally {
       setIsLoadingVerdict(false);
+    }
+  };
+
+  const handleSaveAnswers = async () => {
+    if (!company || results.length === 0) return;
+
+    // Map game answers to memo responses format
+    // We'll create a special key format for roast answers
+    const answersToSave = results.map((result, index) => ({
+      company_id: company.id,
+      question_key: `roast_answer_${result.category}_${index}`,
+      answer: `Q: ${result.question}\nA: ${result.answer}`,
+      source: 'roast_game',
+    }));
+
+    // Upsert answers to memo_responses
+    for (const answer of answersToSave) {
+      const { error } = await supabase
+        .from('memo_responses')
+        .upsert(answer, { onConflict: 'company_id,question_key' });
+      
+      if (error) {
+        console.error('Error saving answer:', error);
+        throw error;
+      }
     }
   };
 
@@ -273,7 +302,13 @@ export default function RoastYourBaby() {
               </div>
             </div>
           ) : verdict && (
-            <RoastResults verdict={verdict} onPlayAgain={handlePlayAgain} />
+            <RoastResults 
+              verdict={verdict} 
+              results={results}
+              onPlayAgain={handlePlayAgain}
+              onSaveAnswers={handleSaveAnswers}
+              companyName={company?.name || ''}
+            />
           )
         )}
       </main>
