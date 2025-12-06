@@ -33,6 +33,7 @@ serve(async (req) => {
     // Calculate category scores
     const categoryScores: Record<string, { total: number; count: number }> = {};
     let totalScore = 0;
+    const maxPossibleScore = results.length * 10;
 
     results.forEach((r: AnswerResult) => {
       totalScore += r.score;
@@ -53,7 +54,9 @@ serve(async (req) => {
     const sortedCategories = [...categoryBreakdown].sort((a, b) => a.score - b.score);
     const weakestAreas = sortedCategories.slice(0, 3).map(c => c.category);
 
-    const systemPrompt = `You are a senior VC partner delivering a final verdict after grilling a founder. You've seen their answers to 10 tough questions and now need to give them honest, actionable feedback.
+    const percentageScore = Math.round((totalScore / maxPossibleScore) * 100);
+
+    const systemPrompt = `You are a senior VC partner delivering a final verdict after grilling a founder. You've seen their answers and need to give them honest, actionable feedback.
 
 Your personality: Direct, witty, experienced, ultimately supportive but never sugarcoating.
 
@@ -62,13 +65,14 @@ Based on the results, provide:
 2. A 2-3 sentence overall assessment
 3. Three specific, actionable recommendations
 4. A shareable quote (tweet-length, punchy)
+5. For EACH question, provide the IDEAL answer a VC would want to hear - specific, metric-driven, confident but honest
 
 Score interpretation:
-- 0-30: Needs significant work
-- 31-50: Shows potential but major gaps
-- 51-70: Solid foundation, some refinement needed
-- 71-85: Strong performer, minor polish needed
-- 86-100: Exceptional, VC-ready
+- 0-30%: Needs significant work
+- 31-50%: Shows potential but major gaps
+- 51-70%: Solid foundation, some refinement needed
+- 71-85%: Strong performer, minor polish needed
+- 86-100%: Exceptional, VC-ready
 
 Return ONLY valid JSON:
 {
@@ -81,11 +85,19 @@ Return ONLY valid JSON:
     "<specific actionable recommendation 3>"
   ],
   "shareableQuote": "<tweet-length punchy quote about their performance>",
-  "investorReadiness": "<not_ready|getting_there|almost_ready|investor_ready>"
-}`;
+  "investorReadiness": "<not_ready|getting_there|almost_ready|investor_ready>",
+  "idealAnswers": [
+    {
+      "questionIndex": 0,
+      "idealAnswer": "<2-3 sentence ideal answer that would score 10/10>"
+    }
+  ]
+}
+
+IMPORTANT: The idealAnswers array MUST have one entry for each question, in order. Each ideal answer should be specific to the company context, include metrics where possible, and demonstrate the confidence and clarity VCs expect.`;
 
     const userPrompt = `Company: ${companyName || 'This startup'}
-Total Score: ${totalScore}/100
+Total Score: ${totalScore}/${maxPossibleScore} (${percentageScore}%)
 Time Taken: ${Math.round(totalTime / 60)} minutes
 Weakest Areas: ${weakestAreas.join(', ')}
 
@@ -93,11 +105,10 @@ Question-by-Question Results:
 ${results.map((r: AnswerResult, i: number) => `
 Q${i + 1} (${r.category}): Score ${r.score}/10
 Question: ${r.question}
-Answer: ${r.answer.substring(0, 150)}...
-Roast: ${r.roast}
+Founder's Answer: ${r.answer}
 `).join('\n')}
 
-Generate the final verdict.`;
+Generate the final verdict with ideal answers for each question.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -115,6 +126,8 @@ Generate the final verdict.`;
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('AI API error:', response.status, errorText);
       throw new Error(`AI API error: ${response.status}`);
     }
 
@@ -130,23 +143,30 @@ Generate the final verdict.`;
         throw new Error('No JSON found');
       }
     } catch (parseError) {
-      console.error('Parse error:', parseError);
+      console.error('Parse error:', parseError, 'Content:', content);
       verdict = {
-        verdictTitle: totalScore >= 70 ? "Solid Performer" : "Room to Grow",
-        verdictEmoji: totalScore >= 70 ? "💪" : "📚",
-        assessment: `You scored ${totalScore}/100. ${totalScore >= 70 ? "You've got the fundamentals down." : "There's work to be done, but that's what this exercise is for."}`,
+        verdictTitle: percentageScore >= 70 ? "Solid Performer" : "Room to Grow",
+        verdictEmoji: percentageScore >= 70 ? "💪" : "📚",
+        assessment: `You scored ${percentageScore}%. ${percentageScore >= 70 ? "You have got the fundamentals down." : "There is work to be done, but that is what this exercise is for."}`,
         recommendations: [
           "Practice articulating your unit economics with specific numbers",
           "Develop a clearer narrative around your competitive moat",
           "Be prepared to discuss failure scenarios honestly"
         ],
-        shareableQuote: `Just got roasted by VCs and scored ${totalScore}/100. The truth hurts but makes you stronger. 🔥`,
-        investorReadiness: totalScore >= 85 ? "investor_ready" : totalScore >= 70 ? "almost_ready" : totalScore >= 50 ? "getting_there" : "not_ready"
+        shareableQuote: `Just got roasted by VCs and scored ${percentageScore}%. The truth hurts but makes you stronger. 🔥`,
+        investorReadiness: percentageScore >= 85 ? "investor_ready" : percentageScore >= 70 ? "almost_ready" : percentageScore >= 50 ? "getting_there" : "not_ready",
+        idealAnswers: results.map((_: AnswerResult, i: number) => ({
+          questionIndex: i,
+          idealAnswer: "A strong answer would include specific metrics, clear reasoning, and demonstrate deep market understanding."
+        }))
       };
     }
 
+    console.log(`Generated verdict for ${companyName}: ${totalScore}/${maxPossibleScore} (${percentageScore}%)`);
+
     return new Response(JSON.stringify({
       totalScore,
+      maxPossibleScore,
       categoryBreakdown,
       ...verdict,
     }), {
