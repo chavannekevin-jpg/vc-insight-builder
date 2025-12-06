@@ -12,11 +12,13 @@ serve(async (req) => {
   }
 
   try {
-    const { companyId } = await req.json();
+    const { companyId, questionCount = 10 } = await req.json();
     
     if (!companyId) {
       throw new Error('Company ID is required');
     }
+
+    const numQuestions = Math.min(Math.max(questionCount, 1), 10); // Clamp between 1-10
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -60,7 +62,7 @@ ${Object.entries(contextMap).map(([key, val]) => `- ${key}: ${val.substring(0, 2
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const systemPrompt = `You are a seasoned VC partner known for asking tough, incisive questions that expose weaknesses in startup pitches. Your job is to generate 10 challenging but fair questions for a founder based on their company data.
+    const systemPrompt = `You are a seasoned VC partner known for asking tough, incisive questions that expose weaknesses in startup pitches. Your job is to generate ${numQuestions} challenging but fair questions for a founder based on their company data.
 
 RULES:
 1. Questions should be specific to THIS company's data - reference their actual claims
@@ -68,11 +70,11 @@ RULES:
 3. Mix question types: market, team, traction, unit economics, competition, defensibility
 4. Be challenging but not mean - these should be questions a real VC would ask
 5. Each question should be answerable in 2-3 sentences
-6. Questions should escalate in difficulty (1-3 warm up, 4-7 probing, 8-10 hardball)
+6. Questions should escalate in difficulty (start easier, end harder)
 
 CATEGORIES: market_size, competition, traction, unit_economics, team, defensibility, go_to_market, vision, risks, funding
 
-Return ONLY a JSON array with exactly 10 questions in this format:
+Return ONLY a JSON array with exactly ${numQuestions} questions in this format:
 [
   {
     "id": 1,
@@ -93,7 +95,7 @@ Return ONLY a JSON array with exactly 10 questions in this format:
         model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Generate 10 tough VC questions for this company:\n\n${companyContext}` }
+          { role: 'user', content: `Generate ${numQuestions} tough VC questions for this company:\n\n${companyContext}` }
         ],
       }),
     });
@@ -118,8 +120,8 @@ Return ONLY a JSON array with exactly 10 questions in this format:
       }
     } catch (parseError) {
       console.error('Parse error:', parseError, 'Content:', content);
-      // Fallback questions
-      questions = generateFallbackQuestions(company);
+      // Fallback questions - take only the number requested
+      questions = generateFallbackQuestions(company).slice(0, numQuestions);
     }
 
     console.log(`Generated ${questions.length} questions for company ${companyId}`);

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ModernCard } from "@/components/ModernCard";
 import { Progress } from "@/components/ui/progress";
-import { Flame, Trophy, Target, Share2, RotateCcw, Home, Copy, Check } from "lucide-react";
+import { Flame, Trophy, Target, Share2, RotateCcw, Home, Copy, Check, Sparkles, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -13,8 +13,21 @@ interface CategoryScore {
   maxScore: number;
 }
 
+interface AnswerResult {
+  question: string;
+  answer: string;
+  score: number;
+  baseScore: number;
+  category: string;
+  roast: string;
+  hint: string;
+  speedBonus: boolean;
+  timeElapsed: number;
+}
+
 interface Verdict {
   totalScore: number;
+  maxPossibleScore: number;
   categoryBreakdown: CategoryScore[];
   verdictTitle: string;
   verdictEmoji: string;
@@ -26,25 +39,34 @@ interface Verdict {
 
 interface RoastResultsProps {
   verdict: Verdict;
+  results: AnswerResult[];
   onPlayAgain: () => void;
+  onSaveAnswers: () => Promise<void>;
+  companyName: string;
 }
 
-export const RoastResults = ({ verdict, onPlayAgain }: RoastResultsProps) => {
+export const RoastResults = ({ verdict, results, onPlayAgain, onSaveAnswers, companyName }: RoastResultsProps) => {
   const navigate = useNavigate();
   const [displayScore, setDisplayScore] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  // Calculate percentage score
+  const maxScore = verdict.maxPossibleScore || (results.length * 10);
+  const percentageScore = Math.round((verdict.totalScore / maxScore) * 100);
 
   // Animate score counter
   useEffect(() => {
     const duration = 2000;
     const steps = 60;
-    const increment = verdict.totalScore / steps;
+    const increment = percentageScore / steps;
     let current = 0;
 
     const interval = setInterval(() => {
       current += increment;
-      if (current >= verdict.totalScore) {
-        setDisplayScore(verdict.totalScore);
+      if (current >= percentageScore) {
+        setDisplayScore(percentageScore);
         clearInterval(interval);
       } else {
         setDisplayScore(Math.floor(current));
@@ -52,7 +74,7 @@ export const RoastResults = ({ verdict, onPlayAgain }: RoastResultsProps) => {
     }, duration / steps);
 
     return () => clearInterval(interval);
-  }, [verdict.totalScore]);
+  }, [percentageScore]);
 
   const getScoreColor = (score: number) => {
     if (score >= 70) return "text-green-500";
@@ -83,9 +105,18 @@ export const RoastResults = ({ verdict, onPlayAgain }: RoastResultsProps) => {
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
   };
 
-  const handleShareLinkedIn = () => {
-    const text = encodeURIComponent(verdict.shareableQuote);
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}&summary=${text}`, '_blank');
+  const handleSaveAnswers = async () => {
+    setIsSaving(true);
+    try {
+      await onSaveAnswers();
+      setSaved(true);
+      toast.success("Your answers have been saved to improve your memo!");
+    } catch (error) {
+      console.error('Error saving answers:', error);
+      toast.error("Failed to save answers. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -101,12 +132,15 @@ export const RoastResults = ({ verdict, onPlayAgain }: RoastResultsProps) => {
           {verdict.verdictTitle}
         </h1>
 
-        <div className="flex items-center justify-center gap-4 mb-6">
-          <span className={cn("text-6xl font-bold", getScoreColor(verdict.totalScore))}>
-            {displayScore}
+        <div className="flex items-center justify-center gap-4 mb-2">
+          <span className={cn("text-6xl font-bold", getScoreColor(percentageScore))}>
+            {displayScore}%
           </span>
-          <span className="text-2xl text-muted-foreground">/100</span>
         </div>
+        
+        <p className="text-muted-foreground mb-4">
+          {verdict.totalScore}/{maxScore} points
+        </p>
 
         <span className={cn(
           "inline-flex items-center gap-2 px-4 py-2 rounded-full text-white font-medium",
@@ -117,6 +151,47 @@ export const RoastResults = ({ verdict, onPlayAgain }: RoastResultsProps) => {
         </span>
       </div>
 
+      {/* Save answers CTA - show if score is decent */}
+      {!saved && percentageScore >= 40 && (
+        <ModernCard className="mb-8 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <div className="flex-1">
+              <h3 className="font-semibold text-lg flex items-center gap-2 mb-1">
+                <Sparkles className="w-5 h-5 text-primary" />
+                Improve Your Memo
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Your answers from this game can be used to enhance your memo's quality and depth. 
+                Save them to strengthen your investor narrative.
+              </p>
+            </div>
+            <Button 
+              onClick={handleSaveAnswers}
+              disabled={isSaving}
+              className="gap-2 whitespace-nowrap"
+            >
+              {isSaving ? (
+                <>Saving...</>
+              ) : (
+                <>
+                  <FileText className="w-4 h-4" />
+                  Save to Memo
+                </>
+              )}
+            </Button>
+          </div>
+        </ModernCard>
+      )}
+
+      {saved && (
+        <ModernCard className="mb-8 bg-green-500/10 border-green-500/20">
+          <div className="flex items-center gap-3 text-green-600">
+            <Check className="w-5 h-5" />
+            <span className="font-medium">Answers saved! Your memo knowledge has been enriched.</span>
+          </div>
+        </ModernCard>
+      )}
+
       {/* Assessment */}
       <ModernCard className="mb-8">
         <p className="text-lg text-center text-muted-foreground">
@@ -125,50 +200,54 @@ export const RoastResults = ({ verdict, onPlayAgain }: RoastResultsProps) => {
       </ModernCard>
 
       {/* Category breakdown */}
-      <ModernCard className="mb-8">
-        <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-          <Target className="w-5 h-5 text-primary" />
-          Category Breakdown
-        </h3>
-        <div className="space-y-4">
-          {verdict.categoryBreakdown.map((cat, i) => (
-            <div key={i}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium capitalize">
-                  {cat.category.replace('_', ' ')}
-                </span>
-                <span className={cn(
-                  "text-sm font-bold",
-                  cat.score >= 7 && "text-green-500",
-                  cat.score >= 4 && cat.score < 7 && "text-yellow-500",
-                  cat.score < 4 && "text-red-500",
-                )}>
-                  {cat.score.toFixed(1)}/10
-                </span>
+      {verdict.categoryBreakdown && verdict.categoryBreakdown.length > 0 && (
+        <ModernCard className="mb-8">
+          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+            <Target className="w-5 h-5 text-primary" />
+            Category Breakdown
+          </h3>
+          <div className="space-y-4">
+            {verdict.categoryBreakdown.map((cat, i) => (
+              <div key={i}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium capitalize">
+                    {cat.category.replace('_', ' ')}
+                  </span>
+                  <span className={cn(
+                    "text-sm font-bold",
+                    cat.score >= 7 && "text-green-500",
+                    cat.score >= 4 && cat.score < 7 && "text-yellow-500",
+                    cat.score < 4 && "text-red-500",
+                  )}>
+                    {cat.score.toFixed(1)}/10
+                  </span>
+                </div>
+                <Progress value={(cat.score / 10) * 100} className="h-2" />
               </div>
-              <Progress value={(cat.score / 10) * 100} className="h-2" />
-            </div>
-          ))}
-        </div>
-      </ModernCard>
+            ))}
+          </div>
+        </ModernCard>
+      )}
 
       {/* Recommendations */}
-      <ModernCard className="mb-8">
-        <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-          <Flame className="w-5 h-5 text-orange-500" />
-          Top Recommendations
-        </h3>
-        <ul className="space-y-3">
-          {verdict.recommendations.map((rec, i) => (
-            <li key={i} className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">
-                {i + 1}
-              </span>
-              <span className="text-muted-foreground">{rec}</span>
-            </li>
-          ))}
-        </ul>
-      </ModernCard>
+      {verdict.recommendations && verdict.recommendations.length > 0 && (
+        <ModernCard className="mb-8">
+          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+            <Flame className="w-5 h-5 text-orange-500" />
+            Top Recommendations
+          </h3>
+          <ul className="space-y-3">
+            {verdict.recommendations.map((rec, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">
+                  {i + 1}
+                </span>
+                <span className="text-muted-foreground">{rec}</span>
+              </li>
+            ))}
+          </ul>
+        </ModernCard>
+      )}
 
       {/* Shareable quote */}
       <ModernCard className="mb-8 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
