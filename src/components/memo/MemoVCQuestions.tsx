@@ -1,11 +1,21 @@
-import { HelpCircle } from "lucide-react";
+import { useState } from "react";
+import { HelpCircle, ChevronDown, Brain, FileText } from "lucide-react";
+import { MemoVCQuestion } from "@/types/memo";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface MemoVCQuestionsProps {
-  questions: string[];
+  questions: (string | MemoVCQuestion)[];
 }
 
 export const MemoVCQuestions = ({ questions }: MemoVCQuestionsProps) => {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
   if (!questions || questions.length === 0) return null;
+
+  // Check if we have enhanced questions (objects) or simple strings
+  const isEnhancedQuestion = (q: string | MemoVCQuestion): q is MemoVCQuestion => {
+    return typeof q === "object" && q !== null && "question" in q;
+  };
 
   return (
     <div className="bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl p-6 border border-accent/30 mt-6">
@@ -14,18 +24,85 @@ export const MemoVCQuestions = ({ questions }: MemoVCQuestionsProps) => {
         Key Investor Questions
       </h4>
       <div className="space-y-3">
-        {questions.map((question, index) => (
-          <div 
-            key={index} 
-            className="flex items-start gap-3 p-4 rounded-lg bg-background/60 hover:bg-background/80 transition-colors animate-fade-in border border-border/30"
-            style={{ animationDelay: `${index * 0.1}s` }}
-          >
-            <div className="flex items-center justify-center w-7 h-7 rounded-full bg-accent/20 flex-shrink-0 mt-0.5">
-              <span className="text-sm font-bold text-accent">{index + 1}</span>
+        {questions.map((question, index) => {
+          const isEnhanced = isEnhancedQuestion(question);
+          const questionText = isEnhanced ? question.question : question;
+          const isOpen = openIndex === index;
+
+          if (isEnhanced) {
+            // Enhanced question with expandable VC rationale
+            return (
+              <Collapsible 
+                key={index} 
+                open={isOpen}
+                onOpenChange={(open) => setOpenIndex(open ? index : null)}
+              >
+                <div 
+                  className="rounded-lg bg-background/60 border border-border/30 overflow-hidden animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <CollapsibleTrigger className="w-full">
+                    <div className="flex items-start gap-3 p-4 hover:bg-background/80 transition-colors cursor-pointer">
+                      <div className="flex items-center justify-center w-7 h-7 rounded-full bg-accent/20 flex-shrink-0 mt-0.5">
+                        <span className="text-sm font-bold text-accent">{index + 1}</span>
+                      </div>
+                      <p className="text-foreground leading-relaxed font-medium text-left flex-1">
+                        {questionText}
+                      </p>
+                      <ChevronDown 
+                        className={`w-5 h-5 text-muted-foreground transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} 
+                      />
+                    </div>
+                  </CollapsibleTrigger>
+                  
+                  <CollapsibleContent>
+                    <div className="px-4 pb-4 space-y-4 border-t border-border/30">
+                      {/* Why VCs Ask This */}
+                      <div className="pt-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Brain className="w-4 h-4 text-primary" />
+                          <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                            Why VCs Ask This
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed pl-6">
+                          {question.vcRationale}
+                        </p>
+                      </div>
+
+                      {/* What to Prepare */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="w-4 h-4 text-secondary" />
+                          <span className="text-xs font-semibold text-secondary uppercase tracking-wider">
+                            What to Prepare
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed pl-6">
+                          {question.whatToPrepare}
+                        </p>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
+            );
+          }
+
+          // Simple string question (legacy format)
+          return (
+            <div 
+              key={index} 
+              className="flex items-start gap-3 p-4 rounded-lg bg-background/60 hover:bg-background/80 transition-colors animate-fade-in border border-border/30"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <div className="flex items-center justify-center w-7 h-7 rounded-full bg-accent/20 flex-shrink-0 mt-0.5">
+                <span className="text-sm font-bold text-accent">{index + 1}</span>
+              </div>
+              <p className="text-foreground leading-relaxed font-medium">{questionText}</p>
             </div>
-            <p className="text-foreground leading-relaxed font-medium">{question}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

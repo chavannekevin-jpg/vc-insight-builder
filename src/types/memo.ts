@@ -8,11 +8,27 @@ export interface MemoHighlight {
   label: string;
 }
 
+// Enhanced VC Question with economics perspective
+export interface MemoVCQuestion {
+  question: string;
+  vcRationale: string;
+  whatToPrepare: string;
+}
+
 export interface MemoVCReflection {
   analysis: string;
-  questions: string[];
+  questions: (string | MemoVCQuestion)[]; // Support both string[] and MemoVCQuestion[] for backwards compatibility
   benchmarking?: string;
   conclusion: string;
+}
+
+// VC Quick Take - visible in free preview
+export interface MemoVCQuickTake {
+  verdict: string;
+  concerns: string[];
+  strengths: string[];
+  readinessLevel: "LOW" | "MEDIUM" | "HIGH";
+  readinessRationale: string;
 }
 
 export interface MemoStructuredSection {
@@ -32,5 +48,6 @@ export interface MemoStructuredSection {
 
 export interface MemoStructuredContent {
   sections: MemoStructuredSection[];
+  vcQuickTake?: MemoVCQuickTake;
   generatedAt?: string;
 }
