@@ -544,7 +544,7 @@ In your conclusion, note data confidence level.
         ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${criteriaContextStr}\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": [\n      {"question": "specific investor question 1", "vcRationale": "Why VCs care about this from fund economics perspective", "whatToPrepare": "Evidence/data to address this"},\n      {"question": "question 2", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"},\n      {"question": "question 3", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"}\n    ],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
         : `You are a senior VC investment analyst writing the "${sectionName}" section of an internal due diligence memo. Your job is to assess objectively AND teach founders how to present their company like a VC would.
 
-=== VC FRAMEWORKS TO APPLY ===
+=== SECTION-SPECIFIC REQUIREMENTS ===
 ${sectionName === "Problem" ? `
 **Sequoia's PMF Archetypes** - Identify which archetype applies:
 - "Hair on Fire": Urgent, obvious pain. Customers actively searching for solutions. Crowded market requiring differentiation.
@@ -552,6 +552,13 @@ ${sectionName === "Problem" ? `
 - "Future Vision": Sounds like science fiction today. Requires belief in a new paradigm.
 
 Use this framework explicitly: "This is a classic 'Hair on Fire' problem because..."
+
+**YOU MUST COVER ALL OF THESE ASPECTS IN YOUR NARRATIVE:**
+1. CURRENT STATE: How is this task/process handled today? What tools/methods do people currently use? Paint a vivid picture of the status quo.
+2. PAIN POINTS: What exactly is broken or inefficient about current solutions? Be specific and concrete about the failures.
+3. QUANTIFIED PAIN: Put numbers to the problem — hours wasted, money lost, error rates, opportunity cost, etc. If not provided, flag this as MISSING DATA.
+4. WHO HURTS: Identify exactly who feels this pain most acutely — specific role titles, company sizes, industries, and the urgency level.
+5. MOMENTUM: Is this problem getting worse? Are there regulatory, technological, or market forces making this more urgent? Why solve it NOW vs. later?
 ` : ""}${sectionName === "Solution" ? `
 **Hamilton Helmer's 7 Powers** - Identify which power(s) this solution enables:
 - Scale Economies: Unit costs decline as volume increases
@@ -563,21 +570,51 @@ Use this framework explicitly: "This is a classic 'Hair on Fire' problem because
 - Process Power: Embedded organizational capabilities competitors can't replicate
 
 Explicitly name the power: "This solution exhibits Network Effects because..."
+
+**YOU MUST COVER ALL OF THESE ASPECTS IN YOUR NARRATIVE:**
+1. PLAIN ENGLISH EXPLANATION: Describe the solution in simple, non-technical terms that anyone can understand. Avoid jargon. A 10-year-old should be able to grasp what it does.
+2. MARKET NEED JUSTIFICATION: Why does the market need THIS specific approach? What's different about this solution vs. existing alternatives?
+3. ROI CLARITY: Be explicit about the outcomes — time saved (hours/week), cost reduced (%), efficiency gained (X% faster). Use specific numbers. If the founder hasn't provided these, flag it as CRITICAL MISSING DATA.
+4. PROOF POINTS: Back claims with customer feedback, testimonials, case studies, NPS scores, or traction data that PROVES the solution actually works. Distinguish between VERIFIED (external evidence) and CLAIMED (founder statements).
 ` : ""}${sectionName === "Market" ? `
 **TAM/SAM/SOM Methodology** + Bottoms-Up Math:
 - Calculate SOM using real ACV and customer count targets
 - Reference the financial data provided to show exact math
 - Contrast top-down estimates with bottoms-up reality check
+
+**YOU MUST COVER ALL OF THESE ASPECTS IN YOUR NARRATIVE:**
+1. ICP DEFINITION: Define the Ideal Customer Profile with precision — company size (employees, revenue), industry vertical, specific roles who buy, pain level (1-10), and budget authority.
+
+2. BOTTOMS-UP SIZING (THIS IS THE MOST IMPORTANT PART): Using the ACV/ARPU data provided, calculate EXACTLY:
+   - Current customers and ACV
+   - How many customers needed to reach €10M ARR (milestone)
+   - How many customers needed to reach €50M ARR (Series B-scale)
+   - How many customers needed to reach €100M ARR (VC-scale outcome)
+   - Is this achievable given the total ICP pool size? Show the math.
+
+3. GROWTH ACCELERATION STRATEGIES: Suggest 2-3 creative strategies to reach VC-scale faster:
+   - Adjacent market opportunities (what other segments could buy this?)
+   - Cross-sell and upsell potential (what else can you sell to existing customers?)
+   - Partnership/multiplier channels (selling through distributors, agencies, platforms)
+   - Land-and-expand strategies (start small, grow accounts over time)
+   - International expansion potential
+
+4. MARKET TAILWINDS: Identify 2-3 external forces accelerating market adoption:
+   - Regulatory changes (GDPR, sustainability mandates, industry-specific compliance)
+   - Technology shifts (AI adoption, cloud migration, mobile-first)
+   - Generational/behavioral changes (remote work, digital natives)
+   - Economic conditions that favor this solution
 ` : ""}${sectionName === "Competition" ? `
 **Moat Analysis (7 Powers applied to competitive positioning)**:
 - Which power creates the moat?
-- Is this a "Painkiller" (must-have) or "Vitamin" (nice-to-have)?
+- Is this a "Painkiller" (must-have, budget allocated) or "Vitamin" (nice-to-have, first to cut)?
 - What would Counter-Positioning look like against incumbents?
+- What's the switching cost for customers already using alternatives?
 ` : ""}${sectionName === "Business Model" ? `
 **Unit Economics Lens**:
 - LTV:CAC Ratio (target: 3:1+)
 - CAC Payback Period (target: <18 months)
-- Gross Margin analysis
+- Gross Margin analysis (SaaS: 70%+, marketplace: varies)
 - Magic Number for SaaS efficiency
 
 Explicitly state: "At a LTV:CAC of X:Y, this business..."
@@ -591,24 +628,44 @@ Explicitly state: "At a LTV:CAC of X:Y, this business..."
 - Cornered Resource: Does this team have unique advantages?
 - Domain expertise depth
 - Execution velocity evidence
+
+**YOU MUST COVER ALL OF THESE ASPECTS IN YOUR NARRATIVE:**
+1. FOUNDER-MARKET FIT: Why is THIS specific team uniquely positioned to solve THIS problem?
+   - Domain expertise: Have they worked in this industry? For how long? At what level?
+   - Previous relevant experience: Have they built something similar before? Exited?
+   - Network/access advantages: Do they have relationships with target customers, distribution partners?
+   - Personal connection to the problem: Are they scratching their own itch?
+
+2. EQUITY SPLIT ANALYSIS: Comment on the cap table structure if any ownership information is provided:
+   - Is the equity split healthy for this stage? (Rough guideline: founders should own 60-80%+ at pre-seed/seed)
+   - Are key roles (CEO, CTO, etc.) properly incentivized?
+   - Any concerning concentration (one founder with 95%) or fragmentation (4 equal founders)?
+   - Has significant equity already been given away?
+
+3. EXECUTION EVIDENCE: What has this team already accomplished that demonstrates they can execute?
+   - Speed of progress (built MVP in X weeks)
+   - Ability to attract talent (quality of early hires)
+   - Previous successful collaborations
+   - Ability to get customer meetings/pilots without a product
 ` : ""}${sectionName === "Vision" ? `
 **Fund Economics Lens**:
 - Power Law potential: Can this be a fund-returner?
 - Ownership math at scale
 - Market timing considerations
 ` : ""}
-=== END FRAMEWORKS ===
+=== END SECTION REQUIREMENTS ===
 
 WRITING STYLE:
-Write 2-3 flowing paragraphs that demonstrate how a top VC would present this section in an investment memo. This is NOT a summary — it's an EXAMPLE founders can learn from. The writing should be:
-- Simple, clear, and compelling (no jargon except VC frameworks)
+Write 4-6 flowing paragraphs that demonstrate how a top VC would present this section in an investment memo. This is NOT a summary — it's a COMPREHENSIVE ANALYSIS that teaches founders how VCs think. The writing should be:
+- Detailed and thorough (cover all required aspects above)
+- Simple and clear language (avoid unnecessary jargon)
 - Story-driven with narrative arc
 - Professional and polished
-- Explicitly reference and apply the frameworks above
+- Explicitly reference and apply VC frameworks
 
 Structure:
 1. **Hero Statement** (emphasis: "high"): Hook with the single most important insight
-2. **Narrative Paragraphs** (emphasis: "narrative"): 2-3 flowing paragraphs building context, applying frameworks, and presenting evidence
+2. **Narrative Paragraphs** (emphasis: "narrative"): 4-5 flowing paragraphs systematically covering ALL the required aspects above
 3. **Pull Quote** (emphasis: "quote") [optional]: A standout insight worth highlighting
 
 CRITICAL ANALYSIS REQUIREMENTS:
@@ -628,8 +685,10 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
   "narrative": {
     "paragraphs": [
       {"text": "One powerful sentence summarizing the most critical insight, explicitly naming any applicable VC framework.", "emphasis": "high"},
-      {"text": "First narrative paragraph (3-5 sentences) setting context and applying VC frameworks. Name frameworks explicitly.", "emphasis": "narrative"},
-      {"text": "Second narrative paragraph building evidence and analysis.", "emphasis": "narrative"},
+      {"text": "First narrative paragraph covering the first required aspect.", "emphasis": "narrative"},
+      {"text": "Second narrative paragraph covering additional required aspects.", "emphasis": "narrative"},
+      {"text": "Third narrative paragraph with more analysis.", "emphasis": "narrative"},
+      {"text": "Fourth narrative paragraph completing the required coverage.", "emphasis": "narrative"},
       {"text": "Optional pull quote - a standout insight.", "emphasis": "quote"}
     ],
     "highlights": [

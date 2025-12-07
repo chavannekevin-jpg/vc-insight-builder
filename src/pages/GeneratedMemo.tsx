@@ -466,9 +466,9 @@ export default function GeneratedMemo() {
                   defaultOpen={true}
                 />
 
-                {/* VC Perspective - collapsible, default closed */}
+                {/* VC Perspective - collapsible, default open */}
                 {section.vcReflection && (
-                  <MemoCollapsibleVC vcReflection={section.vcReflection} defaultOpen={false} />
+                  <MemoCollapsibleVC vcReflection={section.vcReflection} defaultOpen={true} />
                 )}
               </MemoSection>
             );
