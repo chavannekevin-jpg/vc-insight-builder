@@ -473,38 +473,10 @@ export default function Portal() {
     }
   };
 
-  const handleGenerateMemo = async () => {
+  const handleGenerateMemo = () => {
     if (!companyId || !user) return;
     
-    // Check if company has premium access
-    const { data: company, error: companyError } = await supabase
-      .from('companies')
-      .select('has_premium')
-      .eq('id', companyId)
-      .maybeSingle();
-    
-    if (companyError) {
-      console.error("Error checking premium status:", companyError);
-      toast({
-        title: "Error",
-        description: "Failed to check premium access",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // If company doesn't have premium access, show paywall
-    if (!company?.has_premium) {
-      toast({
-        title: "Get Your Investment Memo",
-        description: "Complete your purchase to generate your professional investment memo",
-        variant: "default",
-      });
-      navigate(`/checkout-memo?companyId=${companyId}`);
-      return;
-    }
-    
-    // Premium user - proceed to memo generation
+    // Navigate directly to memo - the memo page handles the freemium paywall
     setMemoSubmitted(true);
     navigate(`/memo?companyId=${companyId}`);
   };
