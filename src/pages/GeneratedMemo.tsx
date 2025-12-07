@@ -133,8 +133,21 @@ export default function GeneratedMemo() {
 
       console.log("GeneratedMemo: Loading memo for company:", companyId);
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
+      // Verify user is authenticated before proceeding
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        console.error("GeneratedMemo: User not authenticated", authError);
+        toast({
+          title: "Session Expired",
+          description: "Please log in again to view your memo.",
+          variant: "destructive"
+        });
+        navigate("/auth");
+        return;
+      }
+      
+      setUserId(user.id);
 
       // Check premium status
       const { data: company } = await supabase
