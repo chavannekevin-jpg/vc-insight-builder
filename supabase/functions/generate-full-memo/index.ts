@@ -560,9 +560,19 @@ Sequoia's PMF Archetypes:
 
 **What's Broken:** What exactly is broken or inefficient about current solutions? Be specific and concrete about the failures. List 2-3 specific pain points with real examples.
 
-**Quantified Pain:** Put NUMBERS to the problem — hours wasted per week, money lost per month, error rates, customer churn attributed to this, opportunity cost. If founder data includes these numbers, USE THEM. If not, provide reasonable industry estimates and flag as [AI-ESTIMATED].
+**Quantified Pain (MANDATORY — YOU MUST INCLUDE SPECIFIC NUMBERS):**
+Put NUMBERS to the problem. This is NOT optional. If founder data includes metrics, USE THEM. If not provided, YOU MUST ESTIMATE based on industry research and clearly label as "[AI-ESTIMATED]".
 
-**Who Hurts Most:** Identify exactly who feels this pain most acutely — specific role titles (e.g., "Operations Manager at a 20-person agency"), company sizes (SMB vs Enterprise), industries, and the urgency level (1-10 pain scale).
+Calculate and include ALL of these:
+- Hours wasted per week/month on manual processes (e.g., "[AI-ESTIMATED] Small business owners spend 5-8 hours/week on manual loyalty tracking")
+- Money lost per month due to inefficiency (e.g., "[AI-ESTIMATED] €500-2,000/month in missed repeat revenue due to poor customer follow-up")
+- Error rates or data quality issues (e.g., "[AI-ESTIMATED] 30-40% of customer data becomes stale within 90 days")
+- Customer churn or lost opportunities (e.g., "[AI-ESTIMATED] 2-5 customers/week never return due to lack of engagement")
+- Opportunity cost in € terms (e.g., "[AI-ESTIMATED] Total annual cost of inaction: €15,000-25,000 per SMB")
+
+ALWAYS show your math. Example: "At an average transaction value of €15 and 3 potential repeat visits lost per customer, each churned customer = €45 lost LTV. With 10 preventable churns per month, that's €450/month or €5,400/year."
+
+**Who Hurts Most:** Identify exactly who feels this pain most acutely — specific role titles (e.g., "Operations Manager at a 20-person agency"), company sizes (SMB vs Enterprise), industries, and the urgency level (rate 1-10 pain scale with justification).
 
 **Why Now:** Is this problem getting worse? Identify 2-3 specific forces making this more urgent: regulatory changes, technology shifts (AI adoption), generational changes, economic pressures, competitive dynamics. Create urgency.
 ` : ""}${sectionName === "Solution" ? `
@@ -592,6 +602,7 @@ Hamilton Helmer's 7 Powers — Identify the PRIMARY power this solution enables:
 - MISSING: Evidence that should exist but wasn't provided
 ` : ""}${sectionName === "Market" ? `
 **MANDATORY: THIS SECTION MUST INCLUDE A COMPLETE BOTTOMS-UP CALCULATION WITH EXACT NUMBERS**
+**IF DATA IS INCOMPLETE, YOU MUST PROVIDE NAPKIN MATH ESTIMATES LABELED AS [AI-ESTIMATED]**
 
 **YOU MUST COVER ALL OF THESE ASPECTS IN SEPARATE, LABELED PARAGRAPHS:**
 
@@ -603,17 +614,22 @@ Hamilton Helmer's 7 Powers — Identify the PRIMARY power this solution enables:
 - Buying trigger: what event causes them to search for a solution?
 
 **Bottoms-Up Market Math (CRITICAL — SHOW ALL CALCULATIONS):**
-YOU MUST INCLUDE THIS EXACT CALCULATION FORMAT IN YOUR NARRATIVE:
+YOU MUST INCLUDE THIS EXACT CALCULATION FORMAT IN YOUR NARRATIVE. If founder did not provide ACV/pricing, ESTIMATE based on industry norms and label clearly:
 
 "**The Math:**
-- Current ACV: €[X] per customer per year
+- Current ACV: €[X] per customer per year [use provided data OR estimate: e.g., "[AI-ESTIMATED] typical SMB SaaS in this category: €200-500/year"]
 - Customers needed for €10M ARR: [10,000,000 ÷ ACV] = [N] customers
 - Customers needed for €50M ARR: [50,000,000 ÷ ACV] = [N] customers  
 - Customers needed for €100M ARR: [100,000,000 ÷ ACV] = [N] customers
-- Total addressable ICP pool: [estimate from market data]
+- Total addressable ICP pool: [estimate from market data — use public sources like Eurostat, industry reports]
 - Required market penetration for €100M: [N ÷ Total ICP]%"
 
-Assess: Is this penetration rate achievable? Compare to similar B2B SaaS penetration rates (typically 5-20% of reachable market).
+**VC-Grade Scale Reality Check:**
+Explicitly assess: "To reach €100M ARR (VC-grade scale), this company would need [N] customers at current ACV. Given [market size estimate], this represents [X%] market penetration. This is [Achievable / Aggressive / Extremely Aggressive] because [reasoning]."
+
+If penetration seems unrealistic, provide PATH TO SCALE:
+- "To reach VC-scale with realistic penetration (5-10%), ACV would need to increase to €[X] through [enterprise tier / usage expansion / multi-product]."
+- OR: "Market expansion to [adjacent geography/vertical] would add [N] potential customers, making the math work at [Y%] penetration."
 
 **Growth Acceleration Strategies:** Provide 3 SPECIFIC, ACTIONABLE strategies to reach VC-scale faster:
 1. **Adjacent Market:** Name a specific adjacent segment + why they'd buy + estimated additional TAM
@@ -625,11 +641,42 @@ Assess: Is this penetration rate achievable? Compare to similar B2B SaaS penetra
 - Technology: Specific tech shifts (GenAI adoption, cloud migration mandates) enabling or requiring this solution
 - Behavioral: Generational or work pattern changes (remote work, digital-native buyers) accelerating adoption
 ` : ""}${sectionName === "Competition" ? `
-**Moat Analysis (7 Powers applied to competitive positioning)**:
-- Which power creates the moat?
-- Is this a "Painkiller" (must-have, budget allocated) or "Vitamin" (nice-to-have, first to cut)?
-- What would Counter-Positioning look like against incumbents?
-- What's the switching cost for customers already using alternatives?
+**MANDATORY: USE VC TERMINOLOGY THROUGHOUT — RED OCEAN, BLUE OCEAN, BEACHHEAD, CATEGORY CREATION, ETC.**
+
+**YOU MUST COVER ALL OF THESE ASPECTS IN SEPARATE, LABELED PARAGRAPHS:**
+
+**Competitive Landscape Overview:**
+Start with: "This market is a [Red Ocean (crowded, commoditized) / Blue Ocean (uncontested, new category) / Purple Ocean (differentiated niche in existing market)]."
+
+Map the competitive landscape by PLAYER TYPE. For EACH type, provide:
+- 2-3 specific named examples (real companies)
+- Their primary strength (what they do well)
+- Their critical weakness (where they fall short)
+- Their target segment (who they serve)
+
+Player Types to Analyze:
+1. **Incumbents/Gorillas:** Large established players (e.g., Salesforce, HubSpot, legacy POS systems). They have scale and brand trust but are slow to innovate and over-engineered for SMBs.
+2. **Direct Competitors:** Startups solving the same problem. Name them specifically. Where do they overlap? Where do they differ?
+3. **Adjacent Solutions:** Products that partially solve the problem (e.g., "many use Excel/WhatsApp as a workaround"). Why are these inadequate?
+4. **Non-Consumption:** What % of the market uses NO solution? Why? (complexity, cost, awareness)
+
+**Beachhead Strategy:**
+"The beachhead market is [specific niche] because [reason]. Incumbents are [too big/too slow/too expensive/too complex] to effectively serve this segment."
+
+Example: "Incumbents like [Competitor X] target enterprise clients with €50K+ ACV and 6-month implementation cycles. Their self-serve onboarding is non-existent, creating a gap for SMBs who need to be live in <1 week. This is our beachhead."
+
+**Moat Analysis (7 Powers Framework):**
+- Which power creates defensibility? (Network Effects, Switching Costs, Scale Economies, Counter-Positioning, Branding, Cornered Resource, Process Power)
+- "This solution is a [Painkiller (must-have, budget allocated) / Vitamin (nice-to-have, first to cut)] because [evidence]."
+- Counter-Positioning angle: "Incumbents cannot copy this approach without [cannibalizing their enterprise revenue / rebuilding their tech stack / abandoning their sales model]."
+- Switching cost analysis: Once a customer is onboarded, what makes them sticky?
+
+**Where We Win:**
+Be explicit: "Company X wins against [Competitor Type] specifically because [concrete reason]."
+- Speed to value: Onboarding in [X days/hours] vs. [competitor's Y weeks/months]
+- Price point: [€X/month] vs. [competitor's €Y/month] — [Z%] cheaper
+- Simplicity: [X clicks/steps] to core value vs. [Y clicks/steps] for competitor
+- Focus: Purpose-built for [ICP] vs. [competitor's] generic approach
 ` : ""}${sectionName === "Business Model" ? `
 **Unit Economics Lens**:
 - LTV:CAC Ratio (target: 3:1+)
