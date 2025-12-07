@@ -532,7 +532,7 @@ In your conclusion, note data confidence level.
       }
       
       const prompt = customPrompt 
-        ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${criteriaContextStr}\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": ["specific investor question 1", "question 2", "question 3", "question 4", "question 5"],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
+        ? `${customPrompt}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${criteriaContextStr}\n\nRaw information to analyze:\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PART 1", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "your complete VC Reflection text from PART 2 (painkiller vs vitamin analysis)",\n    "questions": [\n      {"question": "specific investor question 1", "vcRationale": "Why VCs care about this from fund economics perspective", "whatToPrepare": "Evidence/data to address this"},\n      {"question": "question 2", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"},\n      {"question": "question 3", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"}\n    ],\n    "benchmarking": "your complete Market & Historical Insights with real-world comparable companies (use web search)",\n    "conclusion": "your AI Conclusion synthesis text from PART 2"\n  }\n}`
         : `You are a skeptical VC investment analyst writing the "${sectionName}" section of an internal due diligence memo. Your job is to assess objectively, NOT to advocate.
 
 CRITICAL ANALYSIS REQUIREMENTS:
@@ -578,9 +578,21 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
   "vcReflection": {
     "analysis": "Critical VC assessment focusing on the 2-3 biggest concerns or weaknesses in this section. What assumptions lack evidence? What data is missing?",
     "questions": [
-      "What is the single biggest risk or gap in this section?",
-      "What assumptions are being made that may not hold?",
-      "What critical data is missing that a VC would need?"
+      {
+        "question": "What is the single biggest risk or gap in this section?",
+        "vcRationale": "Explain WHY VCs care about this from a fund economics and return perspective. What does this signal about risk-adjusted returns?",
+        "whatToPrepare": "Specific evidence, data, or demonstration the founder should prepare to address this concern."
+      },
+      {
+        "question": "What assumptions are being made that may not hold?",
+        "vcRationale": "Explain the VC economic reasoning behind caring about this assumption.",
+        "whatToPrepare": "What validation or proof points would de-risk this assumption."
+      },
+      {
+        "question": "What critical data is missing that a VC would need?",
+        "vcRationale": "Why this data matters for investment decision-making.",
+        "whatToPrepare": "How to gather or present this data effectively."
+      }
     ],
     "benchmarking": "How this compares to market benchmarks or similar companies (if favorable, state why; if concerning, be explicit)",
     "conclusion": "Lead with primary concern/risk. Rate confidence (Low/Medium/High) based on evidence quality. Example: 'Revenue concentration (60% from 2 customers) is a critical risk that overshadows otherwise strong ARR growth. Confidence: Low until pipeline diversification demonstrated.'"
@@ -885,11 +897,94 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
       console.warn("No Investment Thesis prompt found in database, skipping section");
     }
 
+    // ============================================
+    // Generate VC Quick Take (synthesis of all sections for preview)
+    // ============================================
+    console.log("Generating VC Quick Take summary...");
+    
+    let vcQuickTake = null;
+    
+    try {
+      const quickTakePrompt = `You are a senior VC partner providing a rapid 30-second assessment of this company for a quick investment committee preview.
+
+Based on these memo sections, provide a brutally honest quick take:
+
+${Object.entries(enhancedSections).map(([title, content]) => 
+  `### ${title} ###\n${JSON.stringify(content).substring(0, 800)}`
+).join("\n\n")}
+
+Company: ${company.name} (${company.stage} stage, ${company.category || "startup"})
+
+Return ONLY valid JSON with this exact structure:
+{
+  "verdict": "One powerful sentence capturing the core investment thesis or anti-thesis. Be provocative and specific.",
+  "concerns": [
+    "Top concern #1 - the biggest risk or gap that could kill this investment",
+    "Top concern #2 - second most critical issue",
+    "Top concern #3 - third issue to watch"
+  ],
+  "strengths": [
+    "Top strength #1 - the most compelling reason to consider investing",
+    "Top strength #2 - second strongest point",
+    "Top strength #3 - third supporting factor"
+  ],
+  "readinessLevel": "LOW or MEDIUM or HIGH",
+  "readinessRationale": "Brief 1-sentence explanation of why this readiness level"
+}`;
+
+      const quickTakeResponse = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            {
+              role: "system",
+              content: "You are a direct, no-nonsense VC partner. Be provocative and specific. Lead with concerns, not enthusiasm. Return only valid JSON.",
+            },
+            {
+              role: "user",
+              content: quickTakePrompt,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 1500,
+        }),
+      }, 2, 1000);
+
+      if (quickTakeResponse.ok) {
+        const quickTakeData = await quickTakeResponse.json();
+        let quickTakeContent = quickTakeData.choices?.[0]?.message?.content?.trim();
+        
+        if (quickTakeContent) {
+          quickTakeContent = quickTakeContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          try {
+            vcQuickTake = JSON.parse(quickTakeContent);
+            console.log("✓ Successfully generated VC Quick Take");
+          } catch (parseError) {
+            console.warn("Failed to parse VC Quick Take, trying sanitization...");
+            try {
+              vcQuickTake = JSON.parse(sanitizeJsonString(quickTakeContent));
+              console.log("✓ Generated VC Quick Take after sanitization");
+            } catch (e) {
+              console.error("VC Quick Take parsing failed completely:", e);
+            }
+          }
+        }
+      }
+    } catch (quickTakeError) {
+      console.warn("VC Quick Take generation failed:", quickTakeError);
+    }
+
     // Validate memo completeness (expect 7-8 sections now: 7 main + Investment Thesis)
     const generatedSectionCount = Object.keys(enhancedSections).length;
     console.log(`\n=== MEMO GENERATION SUMMARY ===`);
     console.log(`Generated sections: ${generatedSectionCount}/8 expected`);
     console.log(`Section titles: ${Object.keys(enhancedSections).join(", ")}`);
+    console.log(`VC Quick Take generated: ${vcQuickTake ? "Yes" : "No"}`);
     
     if (generatedSectionCount < 3) {
       console.error(`WARNING: Only ${generatedSectionCount} sections generated, expected at least 3`);
@@ -902,6 +997,7 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
         title,
         ...(typeof content === 'string' ? { paragraphs: [{ text: content, emphasis: "normal" }] } : content)
       })),
+      vcQuickTake: vcQuickTake,
       generatedAt: new Date().toISOString()
     };
 

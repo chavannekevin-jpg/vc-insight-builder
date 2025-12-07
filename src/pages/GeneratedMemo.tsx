@@ -6,10 +6,9 @@ import { MemoSection } from "@/components/memo/MemoSection";
 import { MemoParagraph } from "@/components/memo/MemoParagraph";
 import { MemoKeyPoints } from "@/components/memo/MemoKeyPoints";
 import { MemoHighlight } from "@/components/memo/MemoHighlight";
-import { MemoVCReflection } from "@/components/memo/MemoVCReflection";
-import { MemoVCQuestions } from "@/components/memo/MemoVCQuestions";
-import { MemoBenchmarking } from "@/components/memo/MemoBenchmarking";
-import { MemoAIConclusion } from "@/components/memo/MemoAIConclusion";
+import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
+import { MemoCollapsibleVC } from "@/components/memo/MemoCollapsibleVC";
+import { MemoNavigation } from "@/components/memo/MemoNavigation";
 import { SmartFillModal } from "@/components/SmartFillModal";
 import { MemoLoadingScreen } from "@/components/MemoLoadingScreen";
 import { LockedSectionOverlay } from "@/components/memo/LockedSectionOverlay";
@@ -70,21 +69,18 @@ export default function GeneratedMemo() {
   const analyzeAndPrepare = async (companyId: string): Promise<boolean> => {
     setAnalyzing(true);
     try {
-      // Step 1: Analyze data gaps
       const { data: gapData, error: gapError } = await supabase.functions.invoke('analyze-data-gaps', {
         body: { companyId }
       });
 
       if (gapError) {
         console.error('Gap analysis error:', gapError);
-        // Don't block - proceed with generation
         return true;
       }
 
       console.log('Gap analysis result:', gapData);
       setGapAnalysis(gapData.analysis);
 
-      // If memo readiness is below 70%, generate smart questions
       if (gapData.analysis.scores.memoReadiness < 70 && gapData.analysis.criticalGaps.length > 0) {
         console.log('Memo readiness below 70%, generating smart questions...');
         
@@ -97,7 +93,6 @@ export default function GeneratedMemo() {
 
         if (questionError) {
           console.error('Smart questions error:', questionError);
-          // Don't block - proceed with generation
           return true;
         }
 
@@ -105,14 +100,14 @@ export default function GeneratedMemo() {
           setSmartQuestions(questionData.questions);
           setSmartSummary(questionData.summary);
           setShowSmartFill(true);
-          return false; // Don't proceed with generation yet
+          return false;
         }
       }
 
-      return true; // Proceed with generation
+      return true;
     } catch (error) {
       console.error('Error in analyzeAndPrepare:', error);
-      return true; // Don't block on errors
+      return true;
     } finally {
       setAnalyzing(false);
     }
@@ -133,7 +128,6 @@ export default function GeneratedMemo() {
 
       console.log("GeneratedMemo: Loading memo for company:", companyId);
 
-      // Verify user is authenticated before proceeding
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
       if (authError || !user) {
@@ -149,7 +143,6 @@ export default function GeneratedMemo() {
       
       setUserId(user.id);
 
-      // Check premium status
       const { data: company } = await supabase
         .from("companies")
         .select("has_premium")
@@ -158,7 +151,6 @@ export default function GeneratedMemo() {
 
       setHasPremium(company?.has_premium || false);
 
-      // Fetch the memo
       try {
         const { data: memo, error: memoError } = await supabase
           .from("memos")
@@ -170,14 +162,12 @@ export default function GeneratedMemo() {
 
         if (memoError) throw memoError;
 
-        // Check if memo has actual content (non-empty sections)
         const hasContent = memo?.structured_content && 
                           (memo.structured_content as any).sections && 
                           Array.isArray((memo.structured_content as any).sections) && 
                           (memo.structured_content as any).sections.length > 0;
 
         if (!hasContent) {
-          // No memo exists - analyze gaps before generating
           console.log("GeneratedMemo: No existing memo found, analyzing data gaps...");
           
           const shouldProceed = await analyzeAndPrepare(companyId);
@@ -185,12 +175,10 @@ export default function GeneratedMemo() {
           if (shouldProceed) {
             await generateMemo(companyId);
           } else {
-            // Smart fill modal will show, mark as pending
             setPendingGeneration(true);
             setLoading(false);
           }
         } else {
-          // Memo exists with content, fetch company info
           const { data: companyData, error: companyError } = await supabase
             .from("companies")
             .select("*")
@@ -271,7 +259,6 @@ export default function GeneratedMemo() {
     
     setRegenerating(true);
     
-    // Set a timeout to warn user if it's taking too long
     const warningTimeout = setTimeout(() => {
       toast({
         title: "Still Processing",
@@ -332,7 +319,7 @@ export default function GeneratedMemo() {
         <Header />
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="text-center space-y-4 mb-8">
-            <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto" />
+            <AlertTriangle className="w-12 h-12 text-warning mx-auto" />
             <h1 className="text-2xl font-display font-bold">Almost ready for your memo</h1>
             <p className="text-muted-foreground">
               We found some gaps in your data that would improve your memo quality.
@@ -378,14 +365,19 @@ export default function GeneratedMemo() {
     );
   }
 
+  const hasQuickTake = !!memoContent.vcQuickTake;
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-4 py-12 max-w-5xl">
+      {/* Floating Navigation */}
+      <MemoNavigation sections={memoContent.sections} hasQuickTake={hasQuickTake} />
+      
+      <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl pb-24">
         {/* Header Section */}
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <Button
               variant="ghost"
               onClick={() => navigate("/portal")}
@@ -399,32 +391,36 @@ export default function GeneratedMemo() {
               <Button
                 variant="default"
                 onClick={handlePrint}
-                className="min-w-[160px]"
+                size="sm"
+                className="md:min-w-[160px]"
               >
                 <Printer className="w-4 h-4 mr-2" />
-                Print / Save as PDF
+                <span className="hidden sm:inline">Print / Save as PDF</span>
+                <span className="sm:hidden">Print</span>
               </Button>
               
               <Button
                 variant="outline"
                 onClick={handleRegenerate}
                 disabled={regenerating}
-                className="min-w-[200px]"
+                size="sm"
+                className="md:min-w-[200px]"
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
-                {regenerating ? 'Regenerating (60-90s)...' : 'Regenerate Memo'}
+                <span className="hidden sm:inline">{regenerating ? 'Regenerating...' : 'Regenerate'}</span>
+                <span className="sm:hidden">{regenerating ? '...' : 'Regen'}</span>
               </Button>
             </div>
           </div>
 
-          <div className="bg-card/95 backdrop-blur-sm border border-border/50 rounded-2xl p-8 shadow-lg">
-            <h1 className="text-4xl font-display font-bold mb-4 text-foreground">
+          <div className="bg-card/95 backdrop-blur-sm border border-border/50 rounded-2xl p-6 md:p-8 shadow-lg">
+            <h1 className="text-3xl md:text-4xl font-display font-bold mb-4 text-foreground">
               {companyInfo.name}
             </h1>
             {companyInfo.description && (
-              <p className="text-lg text-muted-foreground mb-4">{companyInfo.description}</p>
+              <p className="text-base md:text-lg text-muted-foreground mb-4">{companyInfo.description}</p>
             )}
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
                 {companyInfo.stage}
               </span>
@@ -437,10 +433,16 @@ export default function GeneratedMemo() {
           </div>
         </div>
 
+        {/* VC Quick Take - Always visible, even in free preview */}
+        {memoContent.vcQuickTake && (
+          <div data-section="quick-take">
+            <MemoVCQuickTake quickTake={memoContent.vcQuickTake} />
+          </div>
+        )}
+
         {/* Memo Sections */}
         <div className="space-y-8">
           {memoContent.sections.map((section, index) => {
-            // Support both new format (narrative/vcReflection) and legacy format (direct properties)
             const narrative = section.narrative || {
               paragraphs: section.paragraphs,
               highlights: section.highlights,
@@ -468,27 +470,14 @@ export default function GeneratedMemo() {
                   <MemoKeyPoints points={narrative.keyPoints} />
                 )}
 
-                {/* VC Reflection Content */}
+                {/* Collapsible VC Reflection Content */}
                 {section.vcReflection && (
-                  <>
-                    {section.vcReflection.analysis && (
-                      <MemoVCReflection text={section.vcReflection.analysis} />
-                    )}
-                    {section.vcReflection.questions && section.vcReflection.questions.length > 0 && (
-                      <MemoVCQuestions questions={section.vcReflection.questions} />
-                    )}
-                    {section.vcReflection.benchmarking && (
-                      <MemoBenchmarking text={section.vcReflection.benchmarking} />
-                    )}
-                    {section.vcReflection.conclusion && (
-                      <MemoAIConclusion text={section.vcReflection.conclusion} />
-                    )}
-                  </>
+                  <MemoCollapsibleVC vcReflection={section.vcReflection} />
                 )}
               </MemoSection>
             );
 
-            // First section (Problem) is always visible
+            // First section (Problem) + Quick Take is always visible
             if (index === 0) {
               return (
                 <div key={section.title}>
