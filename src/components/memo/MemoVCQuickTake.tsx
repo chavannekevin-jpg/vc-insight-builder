@@ -1,11 +1,12 @@
-import { AlertTriangle, TrendingUp, AlertCircle, CheckCircle2, Zap } from "lucide-react";
+import { AlertTriangle, TrendingUp, AlertCircle, CheckCircle2, Zap, Lock } from "lucide-react";
 import { MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
 
 interface MemoVCQuickTakeProps {
   quickTake: MemoVCQuickTakeType;
+  showTeaser?: boolean;
 }
 
-export const MemoVCQuickTake = ({ quickTake }: MemoVCQuickTakeProps) => {
+export const MemoVCQuickTake = ({ quickTake, showTeaser = false }: MemoVCQuickTakeProps) => {
   const { verdict, concerns, strengths, readinessLevel, readinessRationale } = quickTake;
 
   const readinessConfig = {
@@ -120,6 +121,23 @@ export const MemoVCQuickTake = ({ quickTake }: MemoVCQuickTakeProps) => {
             </div>
           </div>
         </div>
+
+        {/* Teaser for free users */}
+        {showTeaser && (
+          <div className="mt-8 p-4 rounded-xl bg-primary/5 border border-primary/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">The full analysis reveals how to address each concern</p>
+                <p className="text-sm text-muted-foreground">
+                  Unlock detailed preparation guides, VC reasoning, and actionable next steps for each section.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

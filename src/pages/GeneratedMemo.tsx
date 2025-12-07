@@ -433,10 +433,10 @@ export default function GeneratedMemo() {
           </div>
         </div>
 
-        {/* VC Quick Take - Always visible, even in free preview */}
+        {/* VC Quick Take - Always visible for all users, with teaser for free users */}
         {memoContent.vcQuickTake && (
           <div data-section="quick-take">
-            <MemoVCQuickTake quickTake={memoContent.vcQuickTake} />
+            <MemoVCQuickTake quickTake={memoContent.vcQuickTake} showTeaser={!hasPremium} />
           </div>
         )}
 

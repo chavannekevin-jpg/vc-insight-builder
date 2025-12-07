@@ -419,19 +419,28 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    // Only return existing memo if not forced and has ALL 8 sections including Investment Thesis
+    // Only return existing memo if not forced and has ALL 8 sections including Investment Thesis AND vcQuickTake
     if (!force && existingMemo && existingMemo.structured_content) {
       const content = existingMemo.structured_content as any;
       const hasInvestmentThesis = content.sections?.some(
         (s: any) => s.title === "Investment Thesis"
       );
+      const hasVCQuickTake = !!content.vcQuickTake;
+      const hasEnhancedQuestions = content.sections?.every(
+        (s: any) => !s.vcReflection?.questions || 
+          s.vcReflection.questions.every((q: any) => 
+            typeof q === 'object' && q.vcRationale && q.whatToPrepare
+          )
+      );
       const hasContent = content.sections && 
                          Array.isArray(content.sections) && 
                          content.sections.length >= 8 &&
-                         hasInvestmentThesis;
+                         hasInvestmentThesis &&
+                         hasVCQuickTake &&
+                         hasEnhancedQuestions;
       
       if (hasContent) {
-        console.log(`Returning existing memo from cache (${content.sections.length} sections)`);
+        console.log(`Returning existing memo from cache (${content.sections.length} sections, vcQuickTake: ${hasVCQuickTake})`);
         return new Response(
           JSON.stringify({ 
             structuredContent: existingMemo.structured_content,
@@ -449,7 +458,7 @@ serve(async (req) => {
           }
         );
       } else {
-        console.log(`Existing memo found but incomplete (${content.sections?.length || 0} sections, has Investment Thesis: ${hasInvestmentThesis}), regenerating...`);
+        console.log(`Existing memo found but incomplete (${content.sections?.length || 0} sections, Investment Thesis: ${hasInvestmentThesis}, vcQuickTake: ${hasVCQuickTake}, enhancedQuestions: ${hasEnhancedQuestions}), regenerating...`);
       }
     } else if (force) {
       console.log("Force regeneration requested, skipping cache");
@@ -905,9 +914,9 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
     let vcQuickTake = null;
     
     try {
-      const quickTakePrompt = `You are a senior VC partner providing a rapid 30-second assessment of this company for a quick investment committee preview.
+      const quickTakePrompt = `You are a brutally honest senior VC partner providing a rapid 30-second assessment. Your job is to give founders the unvarnished truth about how VCs will perceive their company.
 
-Based on these memo sections, provide a brutally honest quick take:
+Based on these memo sections, provide a provocative quick take that creates curiosity:
 
 ${Object.entries(enhancedSections).map(([title, content]) => 
   `### ${title} ###\n${JSON.stringify(content).substring(0, 800)}`
@@ -915,21 +924,28 @@ ${Object.entries(enhancedSections).map(([title, content]) =>
 
 Company: ${company.name} (${company.stage} stage, ${company.category || "startup"})
 
+TONE REQUIREMENTS:
+- Be provocative and specific, not generic
+- Lead with the hard truth that founders need to hear
+- Create urgency - what will make VCs pass in the first 2 minutes?
+- Be concrete about blind spots (e.g., "Your pricing is 3x market rate but you haven't justified why")
+- The verdict should make founders think "I need to read the full analysis"
+
 Return ONLY valid JSON with this exact structure:
 {
-  "verdict": "One powerful sentence capturing the core investment thesis or anti-thesis. Be provocative and specific.",
+  "verdict": "A provocative, specific one-sentence assessment that captures the core investment question. Example: 'Strong product vision but the unit economics don't support a VC-scale outcome yet.' or 'Impressive traction but concentration risk means one churned customer kills the story.'",
   "concerns": [
-    "Top concern #1 - the biggest risk or gap that could kill this investment",
-    "Top concern #2 - second most critical issue",
-    "Top concern #3 - third issue to watch"
+    "Specific concern #1 with concrete detail - e.g., '60% revenue from 2 customers creates catastrophic concentration risk'",
+    "Specific concern #2 - e.g., 'No evidence of repeatable sales motion beyond founder-led deals'",
+    "Specific concern #3 - e.g., 'CAC:LTV ratio of 1.5:1 means you're paying more to acquire customers than they're worth'"
   ],
   "strengths": [
-    "Top strength #1 - the most compelling reason to consider investing",
-    "Top strength #2 - second strongest point",
-    "Top strength #3 - third supporting factor"
+    "Specific strength #1 with evidence - e.g., '85% gross retention signals real product-market fit'",
+    "Specific strength #2 - e.g., 'Founder's 10-year domain experience in this exact vertical'",
+    "Specific strength #3 - e.g., 'Capital-efficient growth: $0 marketing spend for first $100K ARR'"
   ],
   "readinessLevel": "LOW or MEDIUM or HIGH",
-  "readinessRationale": "Brief 1-sentence explanation of why this readiness level"
+  "readinessRationale": "One sentence explaining the readiness score with specific gaps. Example: 'HIGH - Strong traction, clear unit economics, and proven team, though competitive moat needs work.' or 'LOW - Missing critical data on CAC, retention, and market sizing that VCs will demand.'"
 }`;
 
       const quickTakeResponse = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
