@@ -131,7 +131,7 @@ export const MemoNarrative = ({ paragraphs }: MemoNarrativeProps) => {
             return (
               <p 
                 key={index}
-                className="text-lg text-foreground leading-relaxed first-letter:text-2xl first-letter:font-bold first-letter:text-primary"
+                className="text-lg text-foreground leading-relaxed first-letter:text-2xl first-letter:font-bold first-letter:text-foreground"
               >
                 {highlightFrameworks(paragraph.text)}
               </p>
