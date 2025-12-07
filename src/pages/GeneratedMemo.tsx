@@ -12,6 +12,8 @@ import { MemoBenchmarking } from "@/components/memo/MemoBenchmarking";
 import { MemoAIConclusion } from "@/components/memo/MemoAIConclusion";
 import { SmartFillModal } from "@/components/SmartFillModal";
 import { MemoLoadingScreen } from "@/components/MemoLoadingScreen";
+import { LockedSectionOverlay } from "@/components/memo/LockedSectionOverlay";
+import { UnlockMemoCTA } from "@/components/memo/UnlockMemoCTA";
 import { ArrowLeft, RefreshCw, Printer, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent } from "@/types/memo";
@@ -52,6 +54,7 @@ export default function GeneratedMemo() {
   const [userId, setUserId] = useState<string | null>(null);
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
+  const [hasPremium, setHasPremium] = useState(false);
   
   // Smart fill state
   const [showSmartFill, setShowSmartFill] = useState(false);
@@ -133,22 +136,14 @@ export default function GeneratedMemo() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) setUserId(user.id);
 
-      // Check premium status before showing memo
-      const { data: company, error: premiumError } = await supabase
+      // Check premium status
+      const { data: company } = await supabase
         .from("companies")
         .select("has_premium")
         .eq("id", companyId)
         .maybeSingle();
 
-      if (premiumError || !company?.has_premium) {
-        toast({
-          title: "Premium Access Required",
-          description: "Complete your purchase to view your investment memo",
-          variant: "default"
-        });
-        navigate(`/checkout-memo?companyId=${companyId}`);
-        return;
-      }
+      setHasPremium(company?.has_premium || false);
 
       // Fetch the memo
       try {
@@ -439,7 +434,7 @@ export default function GeneratedMemo() {
               keyPoints: section.keyPoints
             };
 
-            return (
+            const sectionContent = (
               <MemoSection key={section.title} title={section.title} index={index}>
                 {/* Narrative Content */}
                 <div className="space-y-4">
@@ -479,6 +474,28 @@ export default function GeneratedMemo() {
                 )}
               </MemoSection>
             );
+
+            // First section (Problem) is always visible
+            if (index === 0) {
+              return (
+                <div key={section.title}>
+                  {sectionContent}
+                  {/* Show CTA after Problem section if not premium */}
+                  {!hasPremium && <UnlockMemoCTA />}
+                </div>
+              );
+            }
+
+            // Remaining sections: blur if not premium
+            if (!hasPremium) {
+              return (
+                <LockedSectionOverlay key={section.title} sectionTitle={section.title}>
+                  {sectionContent}
+                </LockedSectionOverlay>
+              );
+            }
+
+            return sectionContent;
           })}
         </div>
       </div>
