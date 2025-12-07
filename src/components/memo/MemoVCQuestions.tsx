@@ -8,7 +8,8 @@ interface MemoVCQuestionsProps {
 }
 
 export const MemoVCQuestions = ({ questions }: MemoVCQuestionsProps) => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  // Default to first question open
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   if (!questions || questions.length === 0) return null;
 
