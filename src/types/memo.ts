@@ -1,6 +1,8 @@
 export interface MemoParagraph {
   text: string;
   emphasis?: "high" | "medium" | "normal";
+  title?: string;
+  category?: string;
 }
 
 export interface MemoHighlight {
