@@ -555,7 +555,8 @@ CRITICAL ANALYSIS REQUIREMENTS:
 ${criteriaContextStr}
 
 Requirements:
-- Create 2-4 factual paragraphs (emphasize weaknesses first)
+- Create 1 hero statement (emphasis: "high") - the most important insight in one sentence
+- Create 3-5 fact cards (emphasis: "normal") - each with a short title and focused insight
 - Extract metrics as highlights (note if unverified)
 - Identify 3-5 key concerns and takeaways
 - Provide critical VC perspective that highlights gaps
@@ -570,9 +571,11 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
 {
   "narrative": {
     "paragraphs": [
-      {"text": "Opening paragraph text here", "emphasis": "high"},
-      {"text": "Supporting details here", "emphasis": "medium"},
-      {"text": "Additional context", "emphasis": "normal"}
+      {"title": "Key Insight", "text": "The most critical finding about this section in one powerful sentence.", "emphasis": "high", "category": "${sectionName.toLowerCase()}"},
+      {"title": "Target Customer", "text": "Concise fact about target customer or market segment.", "emphasis": "normal", "category": "customer"},
+      {"title": "Market Size", "text": "Fact about market opportunity or size.", "emphasis": "normal", "category": "market"},
+      {"title": "Growth Signal", "text": "Evidence of traction or growth.", "emphasis": "normal", "category": "growth"},
+      {"title": "Risk Factor", "text": "Key concern or gap identified.", "emphasis": "normal", "category": "problem"}
     ],
     "highlights": [
       {"metric": "90%", "label": "Market growth rate"},

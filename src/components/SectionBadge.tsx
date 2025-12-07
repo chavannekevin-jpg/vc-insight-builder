@@ -46,8 +46,10 @@ export const SectionBadge = ({ icon: Icon, title, isComplete, className }: Secti
       </div>
       
       {isComplete && (
-        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-white text-xs font-bold shadow-[0_0_15px_rgba(74,222,128,0.6)] animate-scale-in">
-          ✓
+        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-[0_0_15px_rgba(74,222,128,0.6)] animate-scale-in">
+          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
         </div>
       )}
     </div>

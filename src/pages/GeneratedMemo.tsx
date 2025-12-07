@@ -3,9 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { MemoSection } from "@/components/memo/MemoSection";
-import { MemoParagraph } from "@/components/memo/MemoParagraph";
-import { MemoKeyPoints } from "@/components/memo/MemoKeyPoints";
-import { MemoHighlight } from "@/components/memo/MemoHighlight";
+import { MemoHeroStatement } from "@/components/memo/MemoHeroStatement";
+import { MemoCollapsibleOverview } from "@/components/memo/MemoCollapsibleOverview";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoCollapsibleVC } from "@/components/memo/MemoCollapsibleVC";
 import { MemoNavigation } from "@/components/memo/MemoNavigation";
@@ -15,10 +14,9 @@ import { LockedSectionOverlay } from "@/components/memo/LockedSectionOverlay";
 import { UnlockMemoCTA } from "@/components/memo/UnlockMemoCTA";
 import { ArrowLeft, RefreshCw, Printer, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { MemoStructuredContent } from "@/types/memo";
+import { MemoStructuredContent, MemoParagraph } from "@/types/memo";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-
 interface SmartQuestion {
   questionKey: string;
   question: string;
@@ -449,30 +447,28 @@ export default function GeneratedMemo() {
               keyPoints: section.keyPoints
             };
 
+            // Separate hero statement (high emphasis) from other paragraphs
+            const heroParagraph = narrative.paragraphs?.find((p: MemoParagraph) => p.emphasis === "high");
+            const otherParagraphs = narrative.paragraphs?.filter((p: MemoParagraph) => p.emphasis !== "high") || [];
+
             const sectionContent = (
               <MemoSection key={section.title} title={section.title} index={index}>
-                {/* Narrative Content */}
-                <div className="space-y-4">
-                  {narrative.paragraphs?.map((para, i) => (
-                    <MemoParagraph key={i} text={para.text} emphasis={para.emphasis} />
-                  ))}
-                </div>
-
-                {narrative.highlights && narrative.highlights.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    {narrative.highlights.map((highlight, i) => (
-                      <MemoHighlight key={i} metric={highlight.metric} label={highlight.label} />
-                    ))}
-                  </div>
+                {/* Hero Statement - always visible */}
+                {heroParagraph && (
+                  <MemoHeroStatement text={heroParagraph.text} />
                 )}
 
-                {narrative.keyPoints && narrative.keyPoints.length > 0 && (
-                  <MemoKeyPoints points={narrative.keyPoints} />
-                )}
+                {/* Company Overview - collapsible, default open */}
+                <MemoCollapsibleOverview
+                  paragraphs={otherParagraphs}
+                  highlights={narrative.highlights}
+                  keyPoints={narrative.keyPoints}
+                  defaultOpen={true}
+                />
 
-                {/* Collapsible VC Reflection Content */}
+                {/* VC Perspective - collapsible, default closed */}
                 {section.vcReflection && (
-                  <MemoCollapsibleVC vcReflection={section.vcReflection} />
+                  <MemoCollapsibleVC vcReflection={section.vcReflection} defaultOpen={false} />
                 )}
               </MemoSection>
             );
