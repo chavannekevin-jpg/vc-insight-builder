@@ -546,64 +546,84 @@ In your conclusion, note data confidence level.
 
 === SECTION-SPECIFIC REQUIREMENTS ===
 ${sectionName === "Problem" ? `
-**Sequoia's PMF Archetypes** - Identify which archetype applies:
-- "Hair on Fire": Urgent, obvious pain. Customers actively searching for solutions. Crowded market requiring differentiation.
-- "Hard Fact": Pain accepted as "just how things are." Requires customer epiphany to recognize the problem is solvable.
-- "Future Vision": Sounds like science fiction today. Requires belief in a new paradigm.
+**MANDATORY FRAMEWORK APPLICATION — YOUR FIRST PARAGRAPH MUST BEGIN WITH:**
+"This is a [Hair on Fire / Hard Fact / Future Vision] problem because [specific reason based on evidence]."
 
-Use this framework explicitly: "This is a classic 'Hair on Fire' problem because..."
+Sequoia's PMF Archetypes:
+- "Hair on Fire": Urgent, obvious pain. Customers actively searching for solutions. Budget already allocated. Crowded market requiring differentiation.
+- "Hard Fact": Pain accepted as "just how things are." Requires customer epiphany to recognize the problem is solvable. Often involves workflow inefficiency or manual processes.
+- "Future Vision": Sounds like science fiction today. Requires belief in a new paradigm. Early market creation.
 
-**YOU MUST COVER ALL OF THESE ASPECTS IN YOUR NARRATIVE:**
-1. CURRENT STATE: How is this task/process handled today? What tools/methods do people currently use? Paint a vivid picture of the status quo.
-2. PAIN POINTS: What exactly is broken or inefficient about current solutions? Be specific and concrete about the failures.
-3. QUANTIFIED PAIN: Put numbers to the problem — hours wasted, money lost, error rates, opportunity cost, etc. If not provided, flag this as MISSING DATA.
-4. WHO HURTS: Identify exactly who feels this pain most acutely — specific role titles, company sizes, industries, and the urgency level.
-5. MOMENTUM: Is this problem getting worse? Are there regulatory, technological, or market forces making this more urgent? Why solve it NOW vs. later?
+**YOU MUST COVER ALL OF THESE ASPECTS IN SEPARATE, LABELED PARAGRAPHS:**
+
+**Today's Reality:** How is this task/process handled today? What tools/methods do people currently use? Paint a vivid picture of the status quo — be specific about the exact workflow and tools (Excel, WhatsApp, paper, legacy software, etc.).
+
+**What's Broken:** What exactly is broken or inefficient about current solutions? Be specific and concrete about the failures. List 2-3 specific pain points with real examples.
+
+**Quantified Pain:** Put NUMBERS to the problem — hours wasted per week, money lost per month, error rates, customer churn attributed to this, opportunity cost. If founder data includes these numbers, USE THEM. If not, provide reasonable industry estimates and flag as [AI-ESTIMATED].
+
+**Who Hurts Most:** Identify exactly who feels this pain most acutely — specific role titles (e.g., "Operations Manager at a 20-person agency"), company sizes (SMB vs Enterprise), industries, and the urgency level (1-10 pain scale).
+
+**Why Now:** Is this problem getting worse? Identify 2-3 specific forces making this more urgent: regulatory changes, technology shifts (AI adoption), generational changes, economic pressures, competitive dynamics. Create urgency.
 ` : ""}${sectionName === "Solution" ? `
-**Hamilton Helmer's 7 Powers** - Identify which power(s) this solution enables:
-- Scale Economies: Unit costs decline as volume increases
-- Network Effects: Value increases with each additional user
+**MANDATORY FRAMEWORK APPLICATION — YOUR FIRST PARAGRAPH MUST BEGIN WITH:**
+"This solution builds [Power Name] because [specific reason]."
+
+Hamilton Helmer's 7 Powers — Identify the PRIMARY power this solution enables:
+- Scale Economies: Unit costs decline as volume increases (e.g., software with near-zero marginal cost)
+- Network Effects: Value increases with each additional user (marketplaces, social, data networks)
 - Counter-Positioning: Incumbent can't copy without harming their core business
-- Switching Costs: Lock-in through data, workflow, or integration
+- Switching Costs: Lock-in through data, workflow, or integration depth
 - Branding: Ability to charge premium for perceived quality/trust
-- Cornered Resource: Exclusive access to talent, IP, or assets
+- Cornered Resource: Exclusive access to talent, IP, data, or regulatory advantage
 - Process Power: Embedded organizational capabilities competitors can't replicate
 
-Explicitly name the power: "This solution exhibits Network Effects because..."
+**YOU MUST COVER ALL OF THESE ASPECTS IN SEPARATE, LABELED PARAGRAPHS:**
 
-**YOU MUST COVER ALL OF THESE ASPECTS IN YOUR NARRATIVE:**
-1. PLAIN ENGLISH EXPLANATION: Describe the solution in simple, non-technical terms that anyone can understand. Avoid jargon. A 10-year-old should be able to grasp what it does.
-2. MARKET NEED JUSTIFICATION: Why does the market need THIS specific approach? What's different about this solution vs. existing alternatives?
-3. ROI CLARITY: Be explicit about the outcomes — time saved (hours/week), cost reduced (%), efficiency gained (X% faster). Use specific numbers. If the founder hasn't provided these, flag it as CRITICAL MISSING DATA.
-4. PROOF POINTS: Back claims with customer feedback, testimonials, case studies, NPS scores, or traction data that PROVES the solution actually works. Distinguish between VERIFIED (external evidence) and CLAIMED (founder statements).
+**In Plain English:** Describe what the solution does in ONE simple sentence that a 10-year-old could understand. No jargon. No buzzwords. Just clear, concrete language. Then expand with a real example of how it works in practice.
+
+**Why This Approach:** Why does the market need THIS specific approach? What's fundamentally different about this solution vs. existing alternatives? Be specific about the unique insight or angle.
+
+**The ROI:** Be explicit about measurable outcomes — time saved (X hours/week), cost reduced (Y% or €Z/month), efficiency gained (X% faster), revenue increased (Y% improvement). USE SPECIFIC NUMBERS from founder data. If not provided, flag as [CRITICAL: ROI data needed to validate value proposition].
+
+**Proof It Works:** Back claims with REAL evidence: customer quotes, testimonials, case study results, NPS scores, retention data, pilot outcomes. Clearly label each as:
+- VERIFIED: Third-party evidence, public data, or signed contracts
+- CLAIMED: Founder-stated without independent verification
+- MISSING: Evidence that should exist but wasn't provided
 ` : ""}${sectionName === "Market" ? `
-**TAM/SAM/SOM Methodology** + Bottoms-Up Math:
-- Calculate SOM using real ACV and customer count targets
-- Reference the financial data provided to show exact math
-- Contrast top-down estimates with bottoms-up reality check
+**MANDATORY: THIS SECTION MUST INCLUDE A COMPLETE BOTTOMS-UP CALCULATION WITH EXACT NUMBERS**
 
-**YOU MUST COVER ALL OF THESE ASPECTS IN YOUR NARRATIVE:**
-1. ICP DEFINITION: Define the Ideal Customer Profile with precision — company size (employees, revenue), industry vertical, specific roles who buy, pain level (1-10), and budget authority.
+**YOU MUST COVER ALL OF THESE ASPECTS IN SEPARATE, LABELED PARAGRAPHS:**
 
-2. BOTTOMS-UP SIZING (THIS IS THE MOST IMPORTANT PART): Using the ACV/ARPU data provided, calculate EXACTLY:
-   - Current customers and ACV
-   - How many customers needed to reach €10M ARR (milestone)
-   - How many customers needed to reach €50M ARR (Series B-scale)
-   - How many customers needed to reach €100M ARR (VC-scale outcome)
-   - Is this achievable given the total ICP pool size? Show the math.
+**Ideal Customer Profile:** Define the ICP with extreme precision:
+- Company size: X-Y employees, €X-Y revenue range
+- Industry vertical(s): specific sectors, not generic categories
+- Buyer persona: exact job title, seniority, budget authority
+- Pain level: rate 1-10 with justification
+- Buying trigger: what event causes them to search for a solution?
 
-3. GROWTH ACCELERATION STRATEGIES: Suggest 2-3 creative strategies to reach VC-scale faster:
-   - Adjacent market opportunities (what other segments could buy this?)
-   - Cross-sell and upsell potential (what else can you sell to existing customers?)
-   - Partnership/multiplier channels (selling through distributors, agencies, platforms)
-   - Land-and-expand strategies (start small, grow accounts over time)
-   - International expansion potential
+**Bottoms-Up Market Math (CRITICAL — SHOW ALL CALCULATIONS):**
+YOU MUST INCLUDE THIS EXACT CALCULATION FORMAT IN YOUR NARRATIVE:
 
-4. MARKET TAILWINDS: Identify 2-3 external forces accelerating market adoption:
-   - Regulatory changes (GDPR, sustainability mandates, industry-specific compliance)
-   - Technology shifts (AI adoption, cloud migration, mobile-first)
-   - Generational/behavioral changes (remote work, digital natives)
-   - Economic conditions that favor this solution
+"**The Math:**
+- Current ACV: €[X] per customer per year
+- Customers needed for €10M ARR: [10,000,000 ÷ ACV] = [N] customers
+- Customers needed for €50M ARR: [50,000,000 ÷ ACV] = [N] customers  
+- Customers needed for €100M ARR: [100,000,000 ÷ ACV] = [N] customers
+- Total addressable ICP pool: [estimate from market data]
+- Required market penetration for €100M: [N ÷ Total ICP]%"
+
+Assess: Is this penetration rate achievable? Compare to similar B2B SaaS penetration rates (typically 5-20% of reachable market).
+
+**Growth Acceleration Strategies:** Provide 3 SPECIFIC, ACTIONABLE strategies to reach VC-scale faster:
+1. **Adjacent Market:** Name a specific adjacent segment + why they'd buy + estimated additional TAM
+2. **Channel Multiplier:** Identify a specific partner type (agencies, platforms, distributors) that could 10x distribution + example company
+3. **Pricing Expansion:** Upsell/cross-sell opportunity (premium tier, add-on modules, usage-based) + estimated ACV uplift potential
+
+**Market Tailwinds:** Identify 2-3 SPECIFIC external forces creating urgency:
+- Regulatory: Name specific regulations (GDPR, CSRD, SOC2 requirements) creating compliance pressure
+- Technology: Specific tech shifts (GenAI adoption, cloud migration mandates) enabling or requiring this solution
+- Behavioral: Generational or work pattern changes (remote work, digital-native buyers) accelerating adoption
 ` : ""}${sectionName === "Competition" ? `
 **Moat Analysis (7 Powers applied to competitive positioning)**:
 - Which power creates the moat?
@@ -624,29 +644,31 @@ Explicitly state: "At a LTV:CAC of X:Y, this business..."
 - Stage-appropriate metrics (what matters at this stage)
 - Growth quality vs. growth quantity
 ` : ""}${sectionName === "Team" ? `
-**Founder-Market Fit Assessment**:
-- Cornered Resource: Does this team have unique advantages?
-- Domain expertise depth
-- Execution velocity evidence
+**MANDATORY FRAMEWORK APPLICATION — YOUR FIRST PARAGRAPH MUST ASSESS:**
+"This team demonstrates [Strong/Moderate/Weak] Founder-Market Fit because [specific evidence]."
 
-**YOU MUST COVER ALL OF THESE ASPECTS IN YOUR NARRATIVE:**
-1. FOUNDER-MARKET FIT: Why is THIS specific team uniquely positioned to solve THIS problem?
-   - Domain expertise: Have they worked in this industry? For how long? At what level?
-   - Previous relevant experience: Have they built something similar before? Exited?
-   - Network/access advantages: Do they have relationships with target customers, distribution partners?
-   - Personal connection to the problem: Are they scratching their own itch?
+**YOU MUST COVER ALL OF THESE ASPECTS IN SEPARATE, LABELED PARAGRAPHS:**
 
-2. EQUITY SPLIT ANALYSIS: Comment on the cap table structure if any ownership information is provided:
-   - Is the equity split healthy for this stage? (Rough guideline: founders should own 60-80%+ at pre-seed/seed)
-   - Are key roles (CEO, CTO, etc.) properly incentivized?
-   - Any concerning concentration (one founder with 95%) or fragmentation (4 equal founders)?
-   - Has significant equity already been given away?
+**Founder-Market Fit:** Assess WHY this specific team is uniquely positioned to win:
+- **Domain Depth:** Years in industry, specific roles held, companies worked at, level of seniority. Quantify: "10 years in fintech, including 5 years as Head of Product at [Company]"
+- **Unfair Advantage:** Unique access to customers, distribution, technology, or talent that others don't have
+- **Personal Stake:** Are they solving their own problem? Have they experienced the pain firsthand?
+- **Track Record:** Previous companies built, exits achieved, teams scaled
 
-3. EXECUTION EVIDENCE: What has this team already accomplished that demonstrates they can execute?
-   - Speed of progress (built MVP in X weeks)
-   - Ability to attract talent (quality of early hires)
-   - Previous successful collaborations
-   - Ability to get customer meetings/pilots without a product
+Rate founder-market fit: Strong (clear industry expertise + network) / Moderate (adjacent experience) / Weak (no obvious connection)
+
+**Equity Structure:** Analyze the cap table health based on any ownership data provided:
+- Current founder ownership % (healthy benchmark: 70-90% at pre-seed, 60-75% at seed)
+- Split between co-founders — is it balanced and fair given contributions?
+- Red flags: single founder with 99% (execution risk), 4+ equal founders (decision paralysis), significant equity already given to advisors/early employees
+- If no equity data provided, flag as [MISSING: Cap table structure needed for full assessment]
+
+**Execution Velocity:** What evidence demonstrates this team can ship and iterate fast?
+- Time from idea to MVP
+- Speed of customer acquisition (first 10 customers timeline)
+- Iteration frequency (product updates, pivots made quickly)
+- Quality of early team/advisors attracted
+- Relevant: "Built and launched MVP in 6 weeks while both founders were employed full-time"
 ` : ""}${sectionName === "Vision" ? `
 **Fund Economics Lens**:
 - Power Law potential: Can this be a fund-returner?
