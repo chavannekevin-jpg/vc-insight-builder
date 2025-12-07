@@ -65,7 +65,7 @@ export const HeroSection = () => {
               onClick={() => navigate('/auth')}
               className="px-8 py-4 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-105"
             >
-              Access the Hub & Library →
+              Get Your VC Memo →
             </button>
             <button
               onClick={() => navigate('/about')}
@@ -77,7 +77,7 @@ export const HeroSection = () => {
 
           {/* Social proof hint */}
           <p className="text-sm text-muted-foreground pt-2">
-            Create a free account to access the complete knowledge library
+            See your startup through a VC's eyes — discover blind spots before your pitch
           </p>
         </div>
       </div>
