@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { ChevronDown, FileText } from "lucide-react";
+import { ChevronDown, BookOpen } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { MemoCardGrid } from "./MemoCardGrid";
+import { MemoNarrative } from "./MemoNarrative";
 import { MemoHighlight } from "./MemoHighlight";
 import { MemoKeyPoints } from "./MemoKeyPoints";
 import { MemoParagraph, MemoHighlight as MemoHighlightType } from "@/types/memo";
@@ -32,13 +32,13 @@ export const MemoCollapsibleOverview = ({
       <CollapsibleTrigger className="w-full">
         <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors cursor-pointer group">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-secondary/20 flex items-center justify-center">
-              <FileText className="w-5 h-5 text-secondary-foreground" />
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-primary" />
             </div>
             <div className="text-left">
-              <span className="font-semibold text-foreground">Company Overview</span>
+              <span className="font-semibold text-foreground">VC-Style Analysis</span>
               <p className="text-xs text-muted-foreground">
-                Key facts, metrics & takeaways
+                How investors would present this story
               </p>
             </div>
           </div>
@@ -48,24 +48,29 @@ export const MemoCollapsibleOverview = ({
         </div>
       </CollapsibleTrigger>
       
-      <CollapsibleContent className="space-y-6 pt-4">
-        {/* Card Grid for paragraphs */}
+      <CollapsibleContent className="space-y-6 pt-6 pl-2 pr-2">
+        {/* VC-Style Narrative */}
         {paragraphs && paragraphs.length > 0 && (
-          <MemoCardGrid paragraphs={paragraphs} />
+          <MemoNarrative paragraphs={paragraphs} />
         )}
 
-        {/* Highlights */}
+        {/* Key Metrics */}
         {highlights && highlights.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {highlights.map((highlight, i) => (
-              <MemoHighlight key={i} metric={highlight.metric} label={highlight.label} />
-            ))}
+          <div className="pt-4 border-t border-border/30">
+            <h4 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Key Metrics</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {highlights.map((highlight, i) => (
+                <MemoHighlight key={i} metric={highlight.metric} label={highlight.label} />
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Key Points */}
+        {/* Key Takeaways */}
         {keyPoints && keyPoints.length > 0 && (
-          <MemoKeyPoints points={keyPoints} />
+          <div className="pt-4 border-t border-border/30">
+            <MemoKeyPoints points={keyPoints} />
+          </div>
         )}
       </CollapsibleContent>
     </Collapsible>
