@@ -466,6 +466,42 @@ serve(async (req) => {
 
     const enhancedSections: Record<string, any> = {};
 
+    // ============================================
+    // Research competitors using AI before generating Competition section
+    // ============================================
+    let competitorResearch: any = null;
+    try {
+      console.log("Researching competitors via AI...");
+      const userProvidedCompetitors = responses?.filter(r => 
+        r.question_key.startsWith('competition_') || r.question_key === 'competitive_moat'
+      ).map(r => r.answer).join('\n') || "";
+      
+      const competitorResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/research-competitors`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          companyName: company.name,
+          description: company.description,
+          problem: problemInfo,
+          solution: solutionInfo,
+          industry: company.category || marketContext?.marketVertical || "Technology",
+          userProvidedCompetitors
+        }),
+      });
+
+      if (competitorResponse.ok) {
+        competitorResearch = await competitorResponse.json();
+        console.log("Competitor research completed:", competitorResearch?.marketType || "Unknown market type");
+      } else {
+        console.warn("Failed to research competitors, proceeding without it");
+      }
+    } catch (competitorError) {
+      console.warn("Error researching competitors:", competitorError);
+    }
+
     // Process each section in order
     for (const sectionName of sectionOrder) {
       const sectionResponses = responsesBySection[sectionName];
@@ -511,6 +547,56 @@ NOTE: This market intelligence was AI-estimated based on the company's problem, 
       let sectionFinancialStr = financialContextStr;
       if (sectionName === "Market" && financialContextStr) {
         sectionFinancialStr += `\n\n**CRITICAL FOR MARKET SECTION:** You MUST include a bottoms-up analysis using the ACV data above. Calculate exactly how many customers are needed to reach €10M, €50M, and €100M ARR. This is essential for SOM sizing.`;
+      }
+
+      // Add competitor research context for Competition section
+      let competitorContextStr = "";
+      if (sectionName === "Competition" && competitorResearch && !competitorResearch.error) {
+        competitorContextStr = `\n\n--- AI-RESEARCHED COMPETITOR INTELLIGENCE ---
+**IMPORTANT: This is AI-researched competitor data. Use these REAL company names and insights in your analysis.**
+
+**Market Classification:** ${competitorResearch.marketType || "Unknown"}
+**Rationale:** ${competitorResearch.marketTypeRationale || "N/A"}
+
+**INCUMBENTS/GORILLAS:**
+${(competitorResearch.incumbents || []).map((c: any) => `
+- **${c.name}** ${c.estimatedSize ? `(${c.estimatedSize})` : ''}
+  - Description: ${c.description}
+  - Strengths: ${(c.strengths || []).join(', ')}
+  - Weaknesses: ${(c.weaknesses || []).join(', ')}
+  - Target Market: ${c.targetMarket}
+  - Threat Level: ${c.threatLevel}`).join('\n') || "None identified"}
+
+**DIRECT COMPETITORS:**
+${(competitorResearch.directCompetitors || []).map((c: any) => `
+- **${c.name}** ${c.funding ? `(${c.funding})` : ''}
+  - Description: ${c.description}
+  - Strengths: ${(c.strengths || []).join(', ')}
+  - Weaknesses: ${(c.weaknesses || []).join(', ')}
+  - Differentiation: ${c.differentiation}
+  - Threat Level: ${c.threatLevel}`).join('\n') || "None identified"}
+
+**ADJACENT SOLUTIONS:**
+${(competitorResearch.adjacentSolutions || []).map((c: any) => `
+- **${c.name}**: ${c.description}
+  - How they compete: ${c.howTheyCompete}`).join('\n') || "None identified"}
+
+**CRITICAL ASSESSMENT (BE HONEST!):**
+- Founder Claims Valid: ${competitorResearch.criticalAssessment?.founderClaimsValid === true ? 'YES' : competitorResearch.criticalAssessment?.founderClaimsValid === false ? 'NO' : 'UNCLEAR'}
+- Reasoning: ${competitorResearch.criticalAssessment?.reasoning || "N/A"}
+- Major Concerns: ${(competitorResearch.criticalAssessment?.majorConcerns || []).join('; ') || "None identified"}
+- Potential Moats: ${(competitorResearch.criticalAssessment?.potentialMoats || []).join('; ') || "None identified"}
+- Recommended Beachhead: ${competitorResearch.criticalAssessment?.recommendedBeachhead || "N/A"}
+- Overall Competitive Position: ${competitorResearch.criticalAssessment?.overallCompetitivePosition || "N/A"}
+- Honest Verdict: ${competitorResearch.criticalAssessment?.honestVerdict || "N/A"}
+
+**INSTRUCTIONS FOR COMPETITION SECTION:**
+1. USE the specific competitor names above in your analysis
+2. If the Critical Assessment indicates weak positioning, SAY SO CLEARLY
+3. If "Founder Claims Valid" is NO, explain why their differentiation claims don't hold up
+4. Be pragmatic and critical — VCs value honesty over cheerleading
+5. If this is clearly a Red Ocean with strong, well-funded players, acknowledge the challenges
+--- END COMPETITOR INTELLIGENCE ---`;
       }
 
       // Build quality criteria context for this section
@@ -744,12 +830,12 @@ CRITICAL ANALYSIS REQUIREMENTS:
 - If you would hesitate to invest, say so clearly
 ${criteriaContextStr}
 
-Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}
+Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${competitorContextStr}
 
 Raw information:
 ${combinedContent}
 
-${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above to enrich your analysis.\n\n' : ''}Return ONLY valid JSON with this exact structure:
+${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above to enrich your analysis.\n\n' : ''}${sectionName === "Competition" && competitorResearch ? 'CRITICAL: You MUST use the AI-researched competitor names and data above. Be honest about competitive positioning — if the company faces strong, well-funded competitors, acknowledge the challenges.\n\n' : ''}Return ONLY valid JSON with this exact structure:
 {
   "narrative": {
     "paragraphs": [
