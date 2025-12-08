@@ -13,6 +13,9 @@ const CONFIDENCE_THRESHOLD = 0.6;
 // Timeout for AI API call (90 seconds)
 const AI_TIMEOUT_MS = 90000;
 
+// Max file size (2MB) - edge functions have limited memory
+const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -86,6 +89,18 @@ serve(async (req) => {
 
     console.log('Content type detected:', contentType, { isImage, isPDF });
 
+    // Check file size before loading into memory
+    const contentLength = deckResponse.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > MAX_FILE_SIZE_BYTES) {
+      console.error('File too large:', contentLength, 'bytes');
+      return new Response(
+        JSON.stringify({ 
+          error: 'File too large. Please upload a PDF under 2MB or compress your deck.' 
+        }),
+        { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     let messages: any[] = [];
 
     // System prompt with EXACT questionnaire keys matching the current 8-question questionnaire
@@ -149,14 +164,25 @@ For missing information, set content to null and confidence to 0.`;
 
     // Read file as binary for both images and PDFs
     const fileBuffer = await deckResponse.arrayBuffer();
-    const uint8Array = new Uint8Array(fileBuffer);
+    const fileSize = fileBuffer.byteLength;
     
-    // Use Deno's optimized base64 encoding (much faster than loop-based)
+    console.log('File size:', fileSize, 'bytes (~', Math.round(fileSize / 1024), 'KB)');
+    
+    // Double-check file size after download (in case content-length was missing)
+    if (fileSize > MAX_FILE_SIZE_BYTES) {
+      console.error('File too large after download:', fileSize, 'bytes');
+      return new Response(
+        JSON.stringify({ 
+          error: 'File too large. Please upload a PDF under 2MB or compress your deck.' 
+        }),
+        { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Use Deno's optimized base64 encoding
     const encodeStart = Date.now();
     const base64Content = base64Encode(fileBuffer);
     console.log(`Base64 encoding took ${Date.now() - encodeStart}ms`);
-    
-    console.log('File size:', uint8Array.length, 'bytes (~', Math.round(uint8Array.length / 1024), 'KB)');
 
     if (isImage) {
       // For images, use vision capability
