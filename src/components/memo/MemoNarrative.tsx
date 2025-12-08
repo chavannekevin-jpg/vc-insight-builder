@@ -6,6 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { parseMarkdownBold } from "@/lib/markdownParser";
 
 interface MemoNarrativeProps {
   paragraphs: MemoParagraph[];
@@ -111,35 +112,6 @@ const frameworkPatterns = [
   /\b(Red Ocean|Blue Ocean|Purple Ocean)\b/gi,
   /\b(Beachhead|Category Creation)\b/gi,
 ];
-
-// Parse markdown bold (**text**) to styled spans
-const parseMarkdownBold = (text: string): React.ReactNode[] => {
-  const parts: React.ReactNode[] = [];
-  const regex = /\*\*([^*]+)\*\*/g;
-  let lastIndex = 0;
-  let match;
-
-  while ((match = regex.exec(text)) !== null) {
-    // Add text before the match
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-    // Add the bold text
-    parts.push(
-      <strong key={match.index} className="font-semibold text-foreground">
-        {match[1]}
-      </strong>
-    );
-    lastIndex = match.index + match[0].length;
-  }
-
-  // Add remaining text
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-
-  return parts.length > 0 ? parts : [text];
-};
 
 // Framework highlight component with tooltip
 const FrameworkHighlight = ({ text }: { text: string }) => {

@@ -1,4 +1,5 @@
 import { TrendingUp } from "lucide-react";
+import { renderMarkdownText } from "@/lib/markdownParser";
 
 interface MemoBenchmarkingProps {
   text?: string;
@@ -20,7 +21,7 @@ export const MemoBenchmarking = ({ text }: MemoBenchmarkingProps) => {
       {/* Content */}
       <div className="pl-13">
         <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-          {text}
+          {renderMarkdownText(text)}
         </p>
       </div>
     </div>

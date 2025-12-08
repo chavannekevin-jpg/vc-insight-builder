@@ -1,4 +1,5 @@
 import { CheckCircle2 } from "lucide-react";
+import { renderMarkdownText } from "@/lib/markdownParser";
 
 interface MemoKeyPointsProps {
   points: string[];
@@ -21,7 +22,7 @@ export const MemoKeyPoints = ({ points }: MemoKeyPointsProps) => {
             <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/15 flex-shrink-0 mt-0.5">
               <CheckCircle2 className="w-4 h-4 text-primary" />
             </div>
-            <p className="text-foreground leading-relaxed font-medium">{point}</p>
+            <p className="text-foreground leading-relaxed font-medium">{renderMarkdownText(point)}</p>
           </div>
         ))}
       </div>

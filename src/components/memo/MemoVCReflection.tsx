@@ -1,4 +1,5 @@
 import { Eye } from "lucide-react";
+import { renderMarkdownText } from "@/lib/markdownParser";
 
 interface MemoVCReflectionProps {
   text: string;
@@ -18,7 +19,7 @@ export const MemoVCReflection = ({ text }: MemoVCReflectionProps) => {
       {/* Content */}
       <div className="pl-13">
         <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-          {text}
+          {renderMarkdownText(text)}
         </p>
       </div>
     </div>

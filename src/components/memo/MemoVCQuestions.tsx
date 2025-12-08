@@ -2,6 +2,7 @@ import { useState } from "react";
 import { HelpCircle, ChevronDown, Brain, FileText } from "lucide-react";
 import { MemoVCQuestion } from "@/types/memo";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { renderMarkdownText } from "@/lib/markdownParser";
 
 interface MemoVCQuestionsProps {
   questions: (string | MemoVCQuestion)[];
@@ -43,12 +44,12 @@ export const MemoVCQuestions = ({ questions }: MemoVCQuestionsProps) => {
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <CollapsibleTrigger className="w-full">
-                    <div className="flex items-start gap-3 p-4 hover:bg-background/80 transition-colors cursor-pointer">
+                      <div className="flex items-start gap-3 p-4 hover:bg-background/80 transition-colors cursor-pointer">
                       <div className="flex items-center justify-center w-7 h-7 rounded-full bg-accent/20 flex-shrink-0 mt-0.5">
                         <span className="text-sm font-bold text-accent">{index + 1}</span>
                       </div>
                       <p className="text-foreground leading-relaxed font-medium text-left flex-1">
-                        {questionText}
+                        {renderMarkdownText(questionText)}
                       </p>
                       <ChevronDown 
                         className={`w-5 h-5 text-muted-foreground transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} 
@@ -67,7 +68,7 @@ export const MemoVCQuestions = ({ questions }: MemoVCQuestionsProps) => {
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground leading-relaxed pl-6">
-                          {question.vcRationale}
+                          {renderMarkdownText(question.vcRationale)}
                         </p>
                       </div>
 
@@ -80,7 +81,7 @@ export const MemoVCQuestions = ({ questions }: MemoVCQuestionsProps) => {
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground leading-relaxed pl-6">
-                          {question.whatToPrepare}
+                          {renderMarkdownText(question.whatToPrepare)}
                         </p>
                       </div>
                     </div>
@@ -100,7 +101,7 @@ export const MemoVCQuestions = ({ questions }: MemoVCQuestionsProps) => {
               <div className="flex items-center justify-center w-7 h-7 rounded-full bg-accent/20 flex-shrink-0 mt-0.5">
                 <span className="text-sm font-bold text-accent">{index + 1}</span>
               </div>
-              <p className="text-foreground leading-relaxed font-medium">{questionText}</p>
+              <p className="text-foreground leading-relaxed font-medium">{renderMarkdownText(questionText)}</p>
             </div>
           );
         })}
