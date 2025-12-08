@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Mail, Eye, Sparkles } from "lucide-react";
+import { Eye, Sparkles } from "lucide-react";
 
 interface VCQuickTake {
   verdict: string;
@@ -18,35 +18,57 @@ interface VCRejectionPreviewProps {
   onGetFullMemo: () => void;
 }
 
-// Helper to create a redacted preview of a concern
-const createRedactedText = (concern: string): { visible: string; redacted: boolean } => {
-  const words = concern.split(' ');
-  if (words.length <= 3) {
-    return { visible: words[0], redacted: true };
-  }
-  return { visible: words.slice(0, 2).join(' '), redacted: true };
+// Clean a concern string for use in prose
+const cleanConcern = (concern: string): string => {
+  return concern
+    .replace(/^[-•]\s*/, '')
+    .replace(/^[A-Z]/, (c) => c.toLowerCase())
+    .replace(/\.+$/, '')
+    .trim();
 };
 
-// Transform concern into VC-speak for the main rejection
-const reframeAsVCSpeak = (concern: string): string => {
-  // Add some VC flavor to the concern
-  const prefixes = [
-    "Frankly,",
-    "To be direct:",
-    "Our view:",
-    "The issue is",
-  ];
-  const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+// Generate natural email body based on concerns and readiness
+const generateEmailBody = (
+  companyName: string,
+  concerns: string[],
+  readinessLevel: "LOW" | "MEDIUM" | "HIGH"
+): { mainParagraph: string; passStatement: string; closing: string } => {
+  const cleanedConcerns = concerns.slice(0, 3).map(cleanConcern);
   
-  // Clean up the concern text
-  let reframed = concern.replace(/^[-•]\s*/, '').trim();
-  
-  // Make sure it ends with a period
-  if (!reframed.endsWith('.') && !reframed.endsWith('?') && !reframed.endsWith('!')) {
-    reframed += '.';
+  let mainParagraph = "";
+  let passStatement = "";
+  let closing = "";
+
+  if (readinessLevel === "LOW") {
+    // More direct rejection for LOW readiness
+    if (cleanedConcerns.length >= 3) {
+      mainParagraph = `After reviewing internally, the team felt that ${cleanedConcerns[0]}. We also had concerns around ${cleanedConcerns[1]}, and questions about ${cleanedConcerns[2]}.`;
+    } else if (cleanedConcerns.length === 2) {
+      mainParagraph = `After reviewing internally, the team felt that ${cleanedConcerns[0]}. We also had questions around ${cleanedConcerns[1]}.`;
+    } else if (cleanedConcerns.length === 1) {
+      mainParagraph = `After reviewing internally, the team felt that ${cleanedConcerns[0]}.`;
+    } else {
+      mainParagraph = `After reviewing internally, the team didn't see a clear path to venture-scale outcomes at this stage.`;
+    }
+    
+    passStatement = "For these reasons, we won't be moving forward.";
+    closing = "We appreciate your transparency and wish you the best in the next steps.";
+    
+  } else {
+    // Softer, more encouraging tone for MEDIUM/HIGH readiness
+    if (cleanedConcerns.length >= 2) {
+      mainParagraph = `While we find the space interesting, we're not yet convinced that ${cleanedConcerns[0]}. We'd also want to see clearer signals around ${cleanedConcerns[1]}.`;
+    } else if (cleanedConcerns.length === 1) {
+      mainParagraph = `While we find the space interesting, we're not yet convinced that ${cleanedConcerns[0]}.`;
+    } else {
+      mainParagraph = `While we find the space interesting, we'd want to see stronger signals of market pull before moving forward.`;
+    }
+    
+    passStatement = "We'll follow along and would be happy to re-evaluate as things evolve.";
+    closing = "All the best,";
   }
-  
-  return `${randomPrefix} ${reframed.charAt(0).toLowerCase() + reframed.slice(1)}`;
+
+  return { mainParagraph, passStatement, closing };
 };
 
 export function VCRejectionPreview({
@@ -57,113 +79,56 @@ export function VCRejectionPreview({
   onPreviewMemo,
   onGetFullMemo,
 }: VCRejectionPreviewProps) {
-  const { concerns, strengths, readinessLevel } = vcQuickTake;
-  
-  // Main rejection reason
-  const mainConcern = concerns[0] 
-    ? reframeAsVCSpeak(concerns[0])
-    : "We couldn't identify a clear path to venture-scale returns at this stage.";
-  
-  // Additional redacted concerns
-  const additionalConcerns = concerns.slice(1, 3).map(createRedactedText);
-  
-  // Acknowledge a strength if readiness is not LOW
-  const acknowledgment = readinessLevel !== 'LOW' && strengths[0] 
-    ? strengths[0].replace(/^[-•]\s*/, '').trim()
-    : null;
+  const { concerns, readinessLevel } = vcQuickTake;
+  const { mainParagraph, passStatement, closing } = generateEmailBody(
+    companyName,
+    concerns,
+    readinessLevel
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg p-0 gap-0 border-border/50 bg-card overflow-hidden">
         {/* Email Header */}
         <div className="bg-muted/50 border-b border-border px-6 py-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Mail className="w-5 h-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground">This is what VCs see</p>
-              <p className="text-sm font-medium text-foreground">Inbox Preview</p>
-            </div>
-          </div>
-          
           <div className="space-y-1 text-sm">
             <div className="flex gap-2">
-              <span className="text-muted-foreground w-12">From:</span>
+              <span className="text-muted-foreground w-16">From:</span>
               <span className="text-foreground">Sarah Chen, Partner</span>
             </div>
             <div className="flex gap-2">
-              <span className="text-muted-foreground w-12">To:</span>
+              <span className="text-muted-foreground w-16">To:</span>
               <span className="text-foreground">Founder</span>
             </div>
             <div className="flex gap-2">
-              <span className="text-muted-foreground w-12">Re:</span>
-              <span className="text-foreground">{companyName} — Following Up</span>
+              <span className="text-muted-foreground w-16">Subject:</span>
+              <span className="text-foreground">Re: {companyName} — Following Up</span>
             </div>
           </div>
         </div>
         
         {/* Email Body */}
-        <div className="px-6 py-5 space-y-4">
-          <p className="text-sm text-foreground">Hi,</p>
-          
-          <p className="text-sm text-foreground">
-            Thanks for walking us through {companyName}. The team reviewed your materials carefully.
+        <div className="px-6 py-6 space-y-4">
+          <p className="text-sm text-foreground leading-relaxed">
+            Thank you for walking us through {companyName}.
           </p>
           
-          <p className="text-sm text-foreground">
-            I'll be direct: <span className="text-destructive font-medium">we're passing.</span>
+          <p className="text-sm text-foreground leading-relaxed">
+            {mainParagraph}
           </p>
           
-          {/* Main concern in quote style */}
-          <div className="border-l-2 border-primary/50 pl-4 py-1">
-            <p className="text-sm text-muted-foreground italic">
-              "{mainConcern}"
-            </p>
-          </div>
+          <p className="text-sm text-foreground leading-relaxed">
+            {passStatement}
+          </p>
           
-          {/* Additional redacted concerns */}
-          {additionalConcerns.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-sm text-foreground">We also flagged:</p>
-              <ul className="space-y-1.5 text-sm">
-                {additionalConcerns.map((item, idx) => (
-                  <li key={idx} className="flex items-center gap-2">
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-foreground">{item.visible}</span>
-                    {item.redacted && (
-                      <span className="inline-flex gap-0.5">
-                        {[...Array(5)].map((_, i) => (
-                          <span 
-                            key={i} 
-                            className="inline-block w-2 h-3.5 bg-muted-foreground/60 rounded-sm"
-                          />
-                        ))}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          {/* Strength acknowledgment */}
-          {acknowledgment && (
-            <div className="border-l-2 border-primary/30 pl-4 py-1 bg-primary/5 rounded-r">
-              <p className="text-sm text-muted-foreground">
-                That said, {acknowledgment.charAt(0).toLowerCase() + acknowledgment.slice(1)}
-                {!acknowledgment.endsWith('.') && '.'}
-              </p>
-            </div>
-          )}
-          
-          <p className="text-sm text-foreground">
-            Best of luck with the raise.
+          <p className="text-sm text-foreground leading-relaxed">
+            {closing}
           </p>
           
           {/* Signature */}
-          <div className="pt-2 border-t border-border/50">
-            <p className="text-sm text-foreground font-medium">— Sarah Chen</p>
+          <div className="pt-4">
+            <p className="text-sm text-foreground">Best regards,</p>
+            <p className="text-sm text-foreground font-medium mt-2">Sarah Chen</p>
             <p className="text-xs text-muted-foreground">Partner, Apex Ventures</p>
           </div>
         </div>
@@ -171,7 +136,7 @@ export function VCRejectionPreview({
         {/* CTA Section */}
         <div className="border-t border-border bg-muted/30 px-6 py-5">
           <p className="text-xs text-center text-muted-foreground mb-4">
-            See the full analysis behind this email — and how to fix it.
+            See the full analysis behind this feedback — and how to address it.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-3">
