@@ -397,6 +397,9 @@ export default function GeneratedMemo() {
           vcQuickTake={memoContent.vcQuickTake}
           onPreviewMemo={handlePreviewMemo}
           onGetFullMemo={handleGetFullMemo}
+          founderName={companyInfo.founderName}
+          industry={companyInfo.category}
+          stage={companyInfo.stage}
         />
       )}
       
