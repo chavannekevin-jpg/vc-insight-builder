@@ -12,6 +12,7 @@ import { SmartFillModal } from "@/components/SmartFillModal";
 import { MemoLoadingScreen } from "@/components/MemoLoadingScreen";
 import { LockedSectionOverlay } from "@/components/memo/LockedSectionOverlay";
 import { UnlockMemoCTA } from "@/components/memo/UnlockMemoCTA";
+import { VCRejectionPreview } from "@/components/memo/VCRejectionPreview";
 import { ArrowLeft, RefreshCw, Printer, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph } from "@/types/memo";
@@ -58,6 +59,9 @@ export default function GeneratedMemo() {
   const [smartQuestions, setSmartQuestions] = useState<SmartQuestion[]>([]);
   const [smartSummary, setSmartSummary] = useState("");
   const [gapAnalysis, setGapAnalysis] = useState<GapAnalysis | null>(null);
+  
+  // VC Rejection Preview state
+  const [showRejectionPreview, setShowRejectionPreview] = useState(false);
   const [pendingGeneration, setPendingGeneration] = useState(false);
 
   const handlePrint = () => {
@@ -225,6 +229,11 @@ export default function GeneratedMemo() {
 
       setMemoContent(functionData.structuredContent);
       setCompanyInfo(functionData.company);
+      
+      // Show rejection preview for non-premium users after generation
+      if (!hasPremium && functionData.structuredContent?.vcQuickTake) {
+        setShowRejectionPreview(true);
+      }
     } catch (error: any) {
       console.error("Error generating memo:", error);
       toast({
@@ -352,6 +361,16 @@ export default function GeneratedMemo() {
     return <MemoLoadingScreen analyzing={analyzing} />;
   }
 
+  // Handlers for VC Rejection Preview
+  const handlePreviewMemo = () => {
+    setShowRejectionPreview(false);
+  };
+
+  const handleGetFullMemo = () => {
+    setShowRejectionPreview(false);
+    navigate(`/checkout-memo?companyId=${companyId}`);
+  };
+
   if (!memoContent || !companyInfo) {
     return (
       <div className="min-h-screen bg-background">
@@ -368,6 +387,18 @@ export default function GeneratedMemo() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      
+      {/* VC Rejection Preview Modal */}
+      {memoContent.vcQuickTake && (
+        <VCRejectionPreview
+          open={showRejectionPreview}
+          onOpenChange={setShowRejectionPreview}
+          companyName={companyInfo.name}
+          vcQuickTake={memoContent.vcQuickTake}
+          onPreviewMemo={handlePreviewMemo}
+          onGetFullMemo={handleGetFullMemo}
+        />
+      )}
       
       {/* Floating Navigation */}
       <MemoNavigation sections={memoContent.sections} hasQuickTake={hasQuickTake} />
