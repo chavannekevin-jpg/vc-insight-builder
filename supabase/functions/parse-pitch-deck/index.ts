@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.84.0";
+import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,10 +10,16 @@ const corsHeaders = {
 // Confidence threshold for auto-filling
 const CONFIDENCE_THRESHOLD = 0.6;
 
+// Timeout for AI API call (90 seconds)
+const AI_TIMEOUT_MS = 90000;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const startTime = Date.now();
+  console.log('Starting deck parse request...');
 
   try {
     // Authentication check
@@ -142,18 +149,14 @@ For missing information, set content to null and confidence to 0.`;
 
     // Read file as binary for both images and PDFs
     const fileBuffer = await deckResponse.arrayBuffer();
-    
-    // Convert to base64 in chunks to avoid stack overflow with large files
     const uint8Array = new Uint8Array(fileBuffer);
-    let base64Content = '';
-    const chunkSize = 8192;
-    for (let i = 0; i < uint8Array.length; i += chunkSize) {
-      const chunk = uint8Array.slice(i, i + chunkSize);
-      base64Content += String.fromCharCode(...chunk);
-    }
-    base64Content = btoa(base64Content);
     
-    console.log('File size:', uint8Array.length, 'bytes');
+    // Use Deno's optimized base64 encoding (much faster than loop-based)
+    const encodeStart = Date.now();
+    const base64Content = base64Encode(fileBuffer);
+    console.log(`Base64 encoding took ${Date.now() - encodeStart}ms`);
+    
+    console.log('File size:', uint8Array.length, 'bytes (~', Math.round(uint8Array.length / 1024), 'KB)');
 
     if (isImage) {
       // For images, use vision capability
@@ -216,19 +219,41 @@ ${textContent.substring(0, 50000)}`
     }
 
     console.log('Sending to AI for analysis...');
+    const aiStart = Date.now();
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages,
-        response_format: { type: 'json_object' }
-      }),
-    });
+    // Create AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+
+    let aiResponse;
+    try {
+      aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages,
+          response_format: { type: 'json_object' }
+        }),
+        signal: controller.signal
+      });
+    } catch (fetchError: unknown) {
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        console.error('AI request timed out after', AI_TIMEOUT_MS, 'ms');
+        return new Response(
+          JSON.stringify({ error: 'Analysis timed out. Try uploading a smaller file or fewer pages.' }),
+          { status: 504, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw fetchError;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    console.log(`AI analysis took ${Date.now() - aiStart}ms`);
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
@@ -283,14 +308,16 @@ ${textContent.substring(0, 50000)}`
       .filter((section: any) => section.confidence >= CONFIDENCE_THRESHOLD && section.content)
       .length;
 
-    console.log(`Successfully parsed pitch deck. High confidence extractions: ${highConfidenceCount}`);
+    const totalTime = Date.now() - startTime;
+    console.log(`Successfully parsed pitch deck in ${totalTime}ms. High confidence extractions: ${highConfidenceCount}`);
 
     return new Response(
       JSON.stringify({
         success: true,
         data: parsedContent,
         confidenceThreshold: CONFIDENCE_THRESHOLD,
-        highConfidenceCount
+        highConfidenceCount,
+        processingTimeMs: totalTime
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
