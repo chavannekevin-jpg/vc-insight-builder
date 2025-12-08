@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -15,7 +15,8 @@ import {
   Sparkles, 
   Edit2, 
   ChevronRight,
-  FileText
+  FileText,
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -58,6 +59,7 @@ const SECTION_LABELS: Record<string, { label: string; section: string }> = {
 
 // Confidence threshold for pre-filling
 const CONFIDENCE_THRESHOLD = 0.6;
+const PROCESSING_TIMEOUT_MS = 120000; // 2 minute timeout
 
 type WizardStep = 'upload' | 'processing' | 'review' | 'complete';
 
@@ -78,8 +80,40 @@ export const DeckImportWizard = ({
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState<Record<string, string>>({});
   const [highConfidenceCount, setHighConfidenceCount] = useState(0);
+  const [isCancelled, setIsCancelled] = useState(false);
+  
+  // Refs for cleanup
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup on unmount or dialog close
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const resetWizard = () => {
+    // Cancel any ongoing operations
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
     setStep('upload');
     setSelectedFile(null);
     setIsProcessing(false);
@@ -89,42 +123,82 @@ export const DeckImportWizard = ({
     setEditingSection(null);
     setEditedContent({});
     setHighConfidenceCount(0);
+    setIsCancelled(false);
   };
 
   const handleFileSelect = async (file: File) => {
     setSelectedFile(file);
   };
 
+  const handleCancel = () => {
+    console.log('[DeckImport] Cancel requested');
+    setIsCancelled(true);
+    
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
+    toast.info('Import cancelled');
+    resetWizard();
+  };
+
   const processUpload = async () => {
     if (!selectedFile) return;
 
+    // Reset cancelled state and create new abort controller
+    setIsCancelled(false);
+    abortControllerRef.current = new AbortController();
+    
     setStep('processing');
     setIsProcessing(true);
     setProcessingProgress(5);
     setProcessingStage('Authenticating...');
 
+    // Set up timeout
+    timeoutRef.current = setTimeout(() => {
+      console.error('[DeckImport] Processing timeout after 2 minutes');
+      toast.error('Processing timed out. Try uploading a smaller file.');
+      handleCancel();
+    }, PROCESSING_TIMEOUT_MS);
+
     try {
+      console.log('[DeckImport] Starting upload process for:', selectedFile.name);
+      
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error('Not authenticated');
       }
+      console.log('[DeckImport] User authenticated:', user.id);
 
+      if (isCancelled) return;
+      
       setProcessingProgress(10);
       setProcessingStage('Uploading deck...');
 
       // Upload file to storage
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      console.log('[DeckImport] Uploading to:', fileName);
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('pitch-decks')
         .upload(fileName, selectedFile);
 
       if (uploadError) {
+        console.error('[DeckImport] Upload error:', uploadError);
         throw new Error('Failed to upload file: ' + uploadError.message);
       }
+      console.log('[DeckImport] Upload successful:', uploadData);
 
+      if (isCancelled) return;
+      
       setProcessingProgress(25);
       setProcessingStage('Preparing for analysis...');
 
@@ -134,20 +208,26 @@ export const DeckImportWizard = ({
         .createSignedUrl(fileName, 3600); // 1 hour expiry
 
       if (!urlData?.signedUrl) {
+        console.error('[DeckImport] Failed to get signed URL');
         throw new Error('Failed to get file URL');
       }
+      console.log('[DeckImport] Got signed URL');
 
+      if (isCancelled) return;
+      
       setProcessingProgress(30);
       setProcessingStage('AI is reading your deck...');
 
       // Animate progress while waiting for AI
-      const progressInterval = setInterval(() => {
+      progressIntervalRef.current = setInterval(() => {
         setProcessingProgress(prev => {
           if (prev >= 85) return prev;
           return prev + Math.random() * 5;
         });
       }, 2000);
 
+      console.log('[DeckImport] Calling parse-pitch-deck function');
+      
       // Call the parse function
       const { data: parseResult, error: parseError } = await supabase.functions.invoke('parse-pitch-deck', {
         body: {
@@ -157,12 +237,20 @@ export const DeckImportWizard = ({
         }
       });
 
-      clearInterval(progressInterval);
-
-      if (parseError) {
-        throw new Error('Failed to analyze deck: ' + parseError.message);
+      // Clear progress interval
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
       }
 
+      if (parseError) {
+        console.error('[DeckImport] Parse error:', parseError);
+        throw new Error('Failed to analyze deck: ' + parseError.message);
+      }
+      console.log('[DeckImport] Parse result:', parseResult);
+
+      if (isCancelled) return;
+      
       setProcessingProgress(95);
       setProcessingStage('Finalizing extraction...');
 
@@ -171,16 +259,26 @@ export const DeckImportWizard = ({
         setHighConfidenceCount(parseResult.highConfidenceCount || 0);
         setProcessingProgress(100);
         setStep('review');
+        console.log('[DeckImport] Successfully extracted data');
       } else {
         throw new Error('No data extracted from deck');
       }
 
     } catch (error) {
-      console.error('Deck processing error:', error);
+      if (isCancelled) {
+        console.log('[DeckImport] Operation was cancelled');
+        return;
+      }
+      console.error('[DeckImport] Processing error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to process deck';
       toast.error(errorMessage);
       setStep('upload');
     } finally {
+      // Clear timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
       setIsProcessing(false);
     }
   };
@@ -306,6 +404,16 @@ export const DeckImportWizard = ({
               <p className="text-xs text-muted-foreground/60">
                 {Math.round(processingProgress)}% complete
               </p>
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleCancel}
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
             </div>
           )}
 

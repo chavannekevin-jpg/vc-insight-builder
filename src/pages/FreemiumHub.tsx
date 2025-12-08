@@ -69,6 +69,7 @@ export default function FreemiumHub() {
   const [responses, setResponses] = useState<MemoResponse[]>([]);
   const [generatingTagline, setGeneratingTagline] = useState(false);
   const [tagline, setTagline] = useState<string>("");
+  const [taglineAttempted, setTaglineAttempted] = useState(false);
   const [deckWizardOpen, setDeckWizardOpen] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
@@ -105,12 +106,12 @@ export default function FreemiumHub() {
     }
   }, [companyData?.id, responsesLoaded]);
 
-  // Generate tagline when company loads
+  // Generate tagline when company loads - only attempt once
   useEffect(() => {
-    if (company?.name && !tagline && !generatingTagline) {
+    if (company?.name && !tagline && !generatingTagline && !taglineAttempted) {
       generateTagline(company);
     }
-  }, [company?.name, tagline, generatingTagline]);
+  }, [company?.name, tagline, generatingTagline, taglineAttempted]);
 
   const loadMemoAndResponses = useCallback(async (companyId: string) => {
     try {
@@ -190,6 +191,7 @@ export default function FreemiumHub() {
 
   const generateTagline = async (companyData: Company) => {
     setGeneratingTagline(true);
+    setTaglineAttempted(true); // Mark as attempted to prevent infinite loop
     
     // Add timeout safety
     const timeoutPromise = new Promise((_, reject) => 
