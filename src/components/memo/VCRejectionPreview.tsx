@@ -18,27 +18,72 @@ interface VCRejectionPreviewProps {
   onGetFullMemo: () => void;
 }
 
-// Generate simple, professional rejection email like real VCs write
+// Map concern keywords to subtle VC language hints
+const getConcernHint = (concern: string): string | null => {
+  const lowerConcern = concern.toLowerCase();
+  
+  if (lowerConcern.includes("market") || lowerConcern.includes("tam") || lowerConcern.includes("size")) {
+    return "questions around the size of the addressable opportunity";
+  }
+  if (lowerConcern.includes("competition") || lowerConcern.includes("defensib") || lowerConcern.includes("moat")) {
+    return "concerns about long-term defensibility in this space";
+  }
+  if (lowerConcern.includes("traction") || lowerConcern.includes("revenue") || lowerConcern.includes("customer")) {
+    return "we'd need to see more proof points around customer demand";
+  }
+  if (lowerConcern.includes("team") || lowerConcern.includes("experience") || lowerConcern.includes("founder")) {
+    return "questions around execution capabilities at this stage";
+  }
+  if (lowerConcern.includes("unit economics") || lowerConcern.includes("business model") || lowerConcern.includes("monetiz")) {
+    return "uncertainty about the path to sustainable unit economics";
+  }
+  if (lowerConcern.includes("timing") || lowerConcern.includes("early") || lowerConcern.includes("premature")) {
+    return "questions about whether the market is ready for this solution";
+  }
+  if (lowerConcern.includes("scale") || lowerConcern.includes("growth")) {
+    return "concerns about the scalability of the current approach";
+  }
+  if (lowerConcern.includes("differentiat") || lowerConcern.includes("unique") || lowerConcern.includes("commodity")) {
+    return "questions around what truly differentiates this from alternatives";
+  }
+  return null;
+};
+
+// Generate simple, professional rejection email with subtle insights from concerns
 const generateEmailBody = (
-  readinessLevel: "LOW" | "MEDIUM" | "HIGH"
+  readinessLevel: "LOW" | "MEDIUM" | "HIGH",
+  concerns: string[]
 ): { opening: string; mainParagraph: string; closing: string } => {
+  
+  // Extract 1-2 subtle hints from the actual concerns
+  const hints: string[] = [];
+  for (const concern of concerns) {
+    const hint = getConcernHint(concern);
+    if (hint && !hints.includes(hint) && hints.length < 2) {
+      hints.push(hint);
+    }
+  }
+  
+  const hintText = hints.length > 0 
+    ? `We had ${hints.join(" and ")}. ` 
+    : "";
   
   if (readinessLevel === "LOW") {
     return {
       opening: "We've taken time to review your company internally.",
-      mainParagraph: "At this stage, we're not comfortable with the scalability and defensibility of the business relative to our fund's risk profile. While the product solves a real problem, we see challenges in building a large, venture-scale outcome.",
+      mainParagraph: `${hintText}At this stage, we're not comfortable with the scalability relative to our fund's risk profile. While the product solves a real problem, we see challenges in building a large, venture-scale outcome.`,
       closing: "We appreciate the openness of the discussion and wish you success moving forward."
     };
   } else if (readinessLevel === "MEDIUM") {
     return {
       opening: "Thank you for walking us through your business.",
-      mainParagraph: "While we find the space interesting, we're not yet convinced that the urgency and willingness to pay are strong enough at this stage to build a venture-scale outcome. We'd want to see clearer signals of pull from the market.",
+      mainParagraph: `While we find the space interesting, ${hints.length > 0 ? hints.join(" and ") + ". We're" : "we're"} not yet convinced that the signals are strong enough at this stage to build a venture-scale outcome.`,
       closing: "We'll follow along and would be happy to re-evaluate as things evolve."
     };
   } else {
     return {
       opening: "Thank you for the thoughtful discussion about your company.",
-      mainParagraph: "We think there's something compelling here, but at this stage, we'd like to see a bit more traction before we can get comfortable. The opportunity is interesting, but the timing isn't quite right for us.",
+      mainParagraph: `We think there's something compelling here. ${hintText}At this stage, we'd like to see a bit more before we can get comfortable. The opportunity is interesting, but the timing isn't quite right for us.`,
       closing: "Please do keep us updated on your progress — we'd love to revisit this in a few months."
     };
   }
@@ -52,8 +97,8 @@ export function VCRejectionPreview({
   onPreviewMemo,
   onGetFullMemo,
 }: VCRejectionPreviewProps) {
-  const { readinessLevel } = vcQuickTake;
-  const { opening, mainParagraph, closing } = generateEmailBody(readinessLevel);
+  const { readinessLevel, concerns } = vcQuickTake;
+  const { opening, mainParagraph, closing } = generateEmailBody(readinessLevel, concerns);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
