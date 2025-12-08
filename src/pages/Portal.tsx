@@ -55,11 +55,8 @@ export default function Portal() {
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [microFeedback, setMicroFeedback] = useState<string>("");
   const [showCelebration, setShowCelebration] = useState(false);
   const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
-  const [isFetchingFeedback, setIsFetchingFeedback] = useState(false);
-  const [feedbackTimeoutId, setFeedbackTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [founderScore, setFounderScore] = useState(0);
   const [showNeonFlash, setShowNeonFlash] = useState(false);
   const [memoSubmitted, setMemoSubmitted] = useState(false);
@@ -156,16 +153,6 @@ export default function Portal() {
     return () => subscription.unsubscribe();
   }, [navigate, toast, searchParams]);
 
-  // Load AI feedback for current question when responses are loaded or question changes
-  useEffect(() => {
-    if (!loading && currentStep < allQuestions.length && responses[allQuestions[currentStep].question_key]) {
-      const currentQuestion = allQuestions[currentStep];
-      const existingAnswer = responses[currentQuestion.question_key];
-      if (existingAnswer && existingAnswer.trim().length > 0) {
-        fetchAIFeedback(currentQuestion.question_key, currentQuestion.question, existingAnswer);
-      }
-    }
-  }, [currentStep, loading, allQuestions.length]);
 
   const loadCompanyData = async (userId: string) => {
     try {
@@ -269,37 +256,6 @@ export default function Portal() {
     }
   };
 
-  // Fetch AI VC coach feedback
-  const fetchAIFeedback = async (questionKey: string, question: string, answer: string) => {
-    if (!answer || answer.trim().length === 0) {
-      setMicroFeedback("");
-      return;
-    }
-
-    setIsFetchingFeedback(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('vc-coach-feedback', {
-        body: { question, answer, questionKey }
-      });
-
-      if (error) throw error;
-      
-      if (data?.feedback) {
-        setMicroFeedback(data.feedback);
-      }
-    } catch (error: any) {
-      console.error("Error fetching AI feedback:", error);
-      // Fallback to simple feedback
-      const length = answer.trim().length;
-      if (length < 100) {
-        setMicroFeedback("Keep going... investors need more detail here.");
-      } else {
-        setMicroFeedback("Good start. Can you add more specifics?");
-      }
-    } finally {
-      setIsFetchingFeedback(false);
-    }
-  };
 
   const handleAnswerChange = async (questionKey: string, answer: string) => {
     // Don't save if admin is viewing
@@ -316,19 +272,6 @@ export default function Portal() {
     } else if (questionKey === 'competitive_moat' && answer.trim().length > 100) {
       setShowAIInsight('competitive_moat');
     }
-
-    // Clear previous timeout
-    if (feedbackTimeoutId) {
-      clearTimeout(feedbackTimeoutId);
-    }
-
-    // Debounce AI feedback call
-    const timeoutId = setTimeout(() => {
-      const question = allQuestions.find(q => q.question_key === questionKey)?.question || "";
-      fetchAIFeedback(questionKey, question, answer);
-    }, 1500);
-    
-    setFeedbackTimeoutId(timeoutId);
 
     const currentQuestion = allQuestions[currentStep];
     // Check if section is completed
@@ -440,17 +383,9 @@ export default function Portal() {
       setTimeout(() => setShowNeonFlash(false), 200);
       
       setIsAnimating(true);
-      setMicroFeedback("");
-      setIsFetchingFeedback(false);
       setTimeout(() => {
         setCurrentStep(currentStep + 1);
         setIsAnimating(false);
-        // Fetch AI feedback for existing answer
-        const nextQ = allQuestions[currentStep + 1];
-        const existingAnswer = responses[nextQ.question_key];
-        if (existingAnswer && existingAnswer.trim().length > 0) {
-          fetchAIFeedback(nextQ.question_key, nextQ.question, existingAnswer);
-        }
       }, 150);
     }
   };
@@ -458,17 +393,9 @@ export default function Portal() {
   const handlePrevious = () => {
     if (currentStep > 0) {
       setIsAnimating(true);
-      setMicroFeedback("");
-      setIsFetchingFeedback(false);
       setTimeout(() => {
         setCurrentStep(currentStep - 1);
         setIsAnimating(false);
-        // Fetch AI feedback for existing answer
-        const prevQ = allQuestions[currentStep - 1];
-        const existingAnswer = responses[prevQ.question_key];
-        if (existingAnswer && existingAnswer.trim().length > 0) {
-          fetchAIFeedback(prevQ.question_key, prevQ.question, existingAnswer);
-        }
       }, 150);
     }
   };
@@ -609,19 +536,6 @@ export default function Portal() {
                     )}
                   </div>
 
-                  {/* AI Feedback */}
-                  {microFeedback && (
-                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                      <p className="text-sm text-foreground">
-                        {isFetchingFeedback ? (
-                          <span className="animate-pulse">Analyzing...</span>
-                        ) : (
-                          microFeedback
-                        )}
-                      </p>
-                    </div>
-                  )}
-
                   {/* AI Insights */}
                   {showAIInsight === 'target_customer' && currentQuestion.question_key === 'target_customer' && (
                     <AIInsightCard 
@@ -675,16 +589,9 @@ export default function Portal() {
                       <Button
                         onClick={() => {
                           setIsAnimating(true);
-                          setMicroFeedback("");
-                          setIsFetchingFeedback(false);
                           setTimeout(() => {
                             setCurrentStep(allQuestions.length - 1);
                             setIsAnimating(false);
-                            const lastQ = allQuestions[allQuestions.length - 1];
-                            const existingAnswer = responses[lastQ.question_key];
-                            if (existingAnswer && existingAnswer.trim().length > 0) {
-                              fetchAIFeedback(lastQ.question_key, lastQ.question, existingAnswer);
-                            }
                           }, 150);
                         }}
                         variant="ghost"
