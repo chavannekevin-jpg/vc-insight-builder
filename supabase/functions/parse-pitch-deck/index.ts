@@ -13,8 +13,8 @@ const CONFIDENCE_THRESHOLD = 0.6;
 // Timeout for AI API call (90 seconds)
 const AI_TIMEOUT_MS = 90000;
 
-// Max file size (2MB) - edge functions have limited memory
-const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
+// Max file size (5MB) - safe for edge function memory
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -98,9 +98,9 @@ serve(async (req) => {
       console.error('File too large:', fileSizeBytes, 'bytes');
       return new Response(
         JSON.stringify({ 
-          error: `File too large (${fileSizeMB}MB). Maximum size is 2MB. Compress your deck at ilovepdf.com/compress_pdf`,
+          error: `File too large (${fileSizeMB}MB). Maximum size is 5MB. Compress your deck at ilovepdf.com/compress_pdf`,
           fileSizeMB: parseFloat(fileSizeMB),
-          maxSizeMB: 2
+          maxSizeMB: 5
         }),
         { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -179,9 +179,9 @@ For missing information, set content to null and confidence to 0.`;
       console.error('File too large after download:', fileSize, 'bytes');
       return new Response(
         JSON.stringify({ 
-          error: `File too large (${actualSizeMB}MB). Maximum size is 2MB. Compress your deck at ilovepdf.com/compress_pdf`,
+          error: `File too large (${actualSizeMB}MB). Maximum size is 5MB. Compress your deck at ilovepdf.com/compress_pdf`,
           fileSizeMB: parseFloat(actualSizeMB),
-          maxSizeMB: 2
+          maxSizeMB: 5
         }),
         { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
