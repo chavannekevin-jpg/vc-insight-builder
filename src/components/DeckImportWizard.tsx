@@ -249,13 +249,13 @@ export const DeckImportWizard = ({
         // Check for file too large error (413)
         if (parseError.message?.includes('413') || parseError.message?.includes('too large')) {
           toast.error(
-            'File too large for analysis. Please compress your deck to under 2MB.',
+            'File too large for analysis. Please compress your deck to under 5MB.',
             {
               description: 'Try ilovepdf.com/compress_pdf or smallpdf.com/compress-pdf',
               duration: 8000,
             }
           );
-          throw new Error('File too large. Please compress your deck to under 2MB.');
+          throw new Error('File too large. Please compress your deck to under 5MB.');
         }
         
         throw new Error('Failed to analyze deck: ' + parseError.message);
