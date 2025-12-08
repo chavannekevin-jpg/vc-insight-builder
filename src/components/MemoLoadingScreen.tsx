@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress";
 
 interface MemoLoadingScreenProps {
   analyzing?: boolean;
+  progressMessage?: string;
 }
 
 const loadingSteps = [

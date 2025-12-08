@@ -101,79 +101,36 @@ async function fetchWithRetry(
   throw lastError || new Error('All retry attempts failed');
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+// Main background generation function
+async function generateMemoInBackground(
+  companyId: string,
+  jobId: string,
+  force: boolean
+) {
   const startTime = Date.now();
-  console.log("=== Starting generate-full-memo function ===");
-
+  console.log(`=== Starting background memo generation for job ${jobId} ===`);
+  
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  );
+  
   try {
-    // Authentication check - verify user has access to this company
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      console.error("No authorization header provided");
-      return new Response(
-        JSON.stringify({ error: "Authentication required" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
-    // Create anon client to verify user token
-    const anonClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: authError } = await anonClient.auth.getUser(token);
-    
-    if (authError || !userData.user) {
-      console.error("Authentication failed:", authError);
-      return new Response(
-        JSON.stringify({ error: "Invalid authentication token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const userId = userData.user.id;
-    console.log(`Authenticated user: ${userId}`);
-
-    const { companyId, force = false } = await req.json();
-    console.log(`Request received: companyId=${companyId}, force=${force}`);
-    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Fetch company details and verify ownership
+    // Fetch company details
     const { data: company, error: companyError } = await supabaseClient
       .from("companies")
       .select("*")
       .eq("id", companyId)
       .single();
 
-    if (companyError) {
-      console.error("Error fetching company:", companyError);
+    if (companyError || !company) {
       throw new Error("Failed to fetch company details");
-    }
-
-    // Verify user owns this company
-    if (company.founder_id !== userId) {
-      console.error(`Access denied: User ${userId} does not own company ${companyId}`);
-      return new Response(
-        JSON.stringify({ error: "Access denied" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
 
     // Fetch all memo responses for this company
@@ -183,7 +140,6 @@ serve(async (req) => {
       .eq("company_id", companyId);
 
     if (responsesError) {
-      console.error("Error fetching responses:", responsesError);
       throw new Error("Failed to fetch company responses");
     }
 
@@ -199,7 +155,7 @@ serve(async (req) => {
     // Create a map of section names to prompts
     const customPrompts: Record<string, string> = {};
     if (promptsData) {
-      promptsData.forEach((p) => {
+      promptsData.forEach((p: any) => {
         customPrompts[p.section_name] = p.prompt;
       });
     }
@@ -226,7 +182,7 @@ serve(async (req) => {
         "traction_proof": "Traction",
         "vision_ask": "Vision"
       };
-      qualityCriteria.forEach((c) => {
+      qualityCriteria.forEach((c: any) => {
         const section = keyToSection[c.question_key];
         if (section) {
           criteriaBySection[section] = c;
@@ -235,7 +191,7 @@ serve(async (req) => {
     }
     console.log("Quality criteria loaded for sections:", Object.keys(criteriaBySection));
 
-    // Define section order (USP section removed, merged into Competition; Investment Thesis added at end)
+    // Define section order
     const sectionOrder = [
       "Problem",
       "Solution",
@@ -1372,40 +1328,181 @@ Return ONLY valid JSON with this exact structure:
     }
 
     const totalDuration = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(`=== Memo generation completed successfully in ${totalDuration}s ===`);
+    console.log(`=== Background memo generation completed successfully in ${totalDuration}s ===`);
     
-    return new Response(
-      JSON.stringify({ 
-        structuredContent: structuredContent,
-        company: {
-          name: company.name,
-          stage: company.stage,
-          category: company.category,
-          description: company.description
-        },
-        memoId: memoId,
-        generationTime: totalDuration
-      }), 
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    // Update job status to completed
+    await supabaseClient
+      .from("memo_generation_jobs")
+      .update({ 
+        status: "completed",
+        completed_at: new Date().toISOString()
+      })
+      .eq("id", jobId);
+      
+    console.log(`Job ${jobId} marked as completed`);
+    
   } catch (error) {
     const errorDuration = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.error(`=== Error in generate-full-memo function after ${errorDuration}s ===`);
+    console.error(`=== Error in background memo generation after ${errorDuration}s ===`);
     console.error("Error details:", error);
     console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
     
+    // Update job status to failed
+    await supabaseClient
+      .from("memo_generation_jobs")
+      .update({ 
+        status: "failed",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+        completed_at: new Date().toISOString()
+      })
+      .eq("id", jobId);
+      
+    console.log(`Job ${jobId} marked as failed`);
+  }
+}
+
+// HTTP request handler
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  console.log("=== generate-full-memo request received ===");
+
+  try {
+    // Authentication check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const anonClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: authError } = await anonClient.auth.getUser(token);
+    
+    if (authError || !userData.user) {
+      console.error("Authentication failed:", authError);
+      return new Response(
+        JSON.stringify({ error: "Invalid authentication token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = userData.user.id;
+    console.log(`Authenticated user: ${userId}`);
+
+    const { companyId, force = false } = await req.json();
+    console.log(`Request received: companyId=${companyId}, force=${force}`);
+
+    if (!companyId) {
+      return new Response(
+        JSON.stringify({ error: "Company ID is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify company ownership
+    const { data: company, error: companyError } = await supabaseClient
+      .from("companies")
+      .select("founder_id, name")
+      .eq("id", companyId)
+      .single();
+
+    if (companyError || !company) {
+      console.error("Error fetching company:", companyError);
+      return new Response(
+        JSON.stringify({ error: "Company not found" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (company.founder_id !== userId) {
+      console.error(`Access denied: User ${userId} does not own company ${companyId}`);
+      return new Response(
+        JSON.stringify({ error: "Access denied" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check if there's already a job in progress for this company
+    const { data: existingJob } = await supabaseClient
+      .from("memo_generation_jobs")
+      .select("id, status, started_at")
+      .eq("company_id", companyId)
+      .in("status", ["pending", "processing"])
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingJob && !force) {
+      console.log(`Existing job found: ${existingJob.id} with status ${existingJob.status}`);
+      return new Response(
+        JSON.stringify({ 
+          jobId: existingJob.id,
+          status: existingJob.status,
+          message: "Generation already in progress"
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Create new job record
+    const { data: newJob, error: jobError } = await supabaseClient
+      .from("memo_generation_jobs")
+      .insert({
+        company_id: companyId,
+        status: "processing",
+        started_at: new Date().toISOString()
+      })
+      .select("id")
+      .single();
+
+    if (jobError || !newJob) {
+      console.error("Error creating job:", jobError);
+      return new Response(
+        JSON.stringify({ error: "Failed to create generation job" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Created job ${newJob.id} for company ${companyId}`);
+
+    // Start background generation using EdgeRuntime.waitUntil
+    // This allows the function to return immediately while processing continues
+    (globalThis as any).EdgeRuntime?.waitUntil?.(
+      generateMemoInBackground(companyId, newJob.id, force)
+    );
+
+    // Return immediately with job ID
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Unknown error",
-        details: error instanceof Error ? error.stack : String(error),
-        duration: errorDuration
+        jobId: newJob.id,
+        status: "processing",
+        message: "Memo generation started"
       }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+
+  } catch (error) {
+    console.error("Error in generate-full-memo handler:", error);
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : "Unknown error"
+      }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
