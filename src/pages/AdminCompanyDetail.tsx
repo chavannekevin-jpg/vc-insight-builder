@@ -85,6 +85,14 @@ const AdminCompanyDetail = () => {
     if (!companyId) return;
 
     try {
+      // Fetch active question keys first
+      const { data: activeQuestions } = await supabase
+        .from("questionnaire_questions")
+        .select("question_key")
+        .eq("is_active", true);
+
+      const activeQuestionKeys = (activeQuestions || []).map(q => q.question_key);
+
       // Fetch company details
       const { data: companyData, error: companyError } = await supabase
         .from("companies")
@@ -108,7 +116,7 @@ const AdminCompanyDetail = () => {
         created_at: companyData.created_at,
       });
 
-      // Fetch responses
+      // Fetch responses - only for active questions
       const { data: responsesData, error: responsesError } = await supabase
         .from("memo_responses")
         .select("question_key, answer, updated_at")
@@ -117,7 +125,12 @@ const AdminCompanyDetail = () => {
 
       if (responsesError) throw responsesError;
 
-      setResponses(responsesData || []);
+      // Filter to only active question responses
+      const activeResponses = (responsesData || []).filter(
+        r => activeQuestionKeys.includes(r.question_key)
+      );
+
+      setResponses(activeResponses);
     } catch (error) {
       console.error("Error fetching company data:", error);
       toast({

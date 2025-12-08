@@ -21,8 +21,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Search, Eye } from "lucide-react";
+import { LogOut, Search, Eye, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface CompanyData {
   id: string;
@@ -43,6 +54,8 @@ const Admin = () => {
   const [companies, setCompanies] = useState<CompanyData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
+  const [orphanedCount, setOrphanedCount] = useState(0);
+  const [cleaningUp, setCleaningUp] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -79,6 +92,7 @@ const Admin = () => {
 
       setIsAdmin(true);
       fetchCompanies();
+      countOrphanedResponses();
     } catch (error) {
       console.error("Auth error:", error);
       navigate("/");
@@ -89,6 +103,14 @@ const Admin = () => {
 
   const fetchCompanies = async () => {
     try {
+      // First fetch active question keys
+      const { data: activeQuestions } = await supabase
+        .from("questionnaire_questions")
+        .select("question_key")
+        .eq("is_active", true);
+
+      const activeQuestionKeys = (activeQuestions || []).map(q => q.question_key);
+
       const { data: companiesData, error } = await supabase
         .from("companies")
         .select(`
@@ -103,13 +125,18 @@ const Admin = () => {
 
       if (error) throw error;
 
-      // Get response counts for each company
+      // Get response counts for each company (only for active questions)
       const companiesWithCounts = await Promise.all(
         (companiesData || []).map(async (company) => {
-          const { count } = await supabase
+          const { data: responses } = await supabase
             .from("memo_responses")
-            .select("*", { count: "exact", head: true })
+            .select("question_key, answer")
             .eq("company_id", company.id);
+
+          // Count only responses for active questions that have actual answers
+          const activeResponsesCount = (responses || []).filter(
+            r => activeQuestionKeys.includes(r.question_key) && r.answer?.trim()
+          ).length;
 
           return {
             id: company.id,
@@ -118,7 +145,7 @@ const Admin = () => {
             founder_id: company.founder_id,
             created_at: company.created_at,
             founder_email: (company.profiles as any)?.email || "N/A",
-            responses_count: count || 0,
+            responses_count: activeResponsesCount,
           };
         })
       );
@@ -131,6 +158,76 @@ const Admin = () => {
         description: "Failed to load companies data",
         variant: "destructive",
       });
+    }
+  };
+
+  const countOrphanedResponses = async () => {
+    try {
+      const { data: activeQuestions } = await supabase
+        .from("questionnaire_questions")
+        .select("question_key")
+        .eq("is_active", true);
+
+      const activeQuestionKeys = (activeQuestions || []).map(q => q.question_key);
+
+      const { data: allResponses } = await supabase
+        .from("memo_responses")
+        .select("question_key");
+
+      const orphaned = (allResponses || []).filter(
+        r => !activeQuestionKeys.includes(r.question_key)
+      );
+
+      setOrphanedCount(orphaned.length);
+    } catch (error) {
+      console.error("Error counting orphaned responses:", error);
+    }
+  };
+
+  const cleanupOrphanedResponses = async () => {
+    setCleaningUp(true);
+    try {
+      const { data: activeQuestions } = await supabase
+        .from("questionnaire_questions")
+        .select("question_key")
+        .eq("is_active", true);
+
+      const activeQuestionKeys = (activeQuestions || []).map(q => q.question_key);
+
+      // Get all orphaned responses
+      const { data: allResponses } = await supabase
+        .from("memo_responses")
+        .select("id, question_key");
+
+      const orphanedIds = (allResponses || [])
+        .filter(r => !activeQuestionKeys.includes(r.question_key))
+        .map(r => r.id);
+
+      if (orphanedIds.length > 0) {
+        const { error } = await supabase
+          .from("memo_responses")
+          .delete()
+          .in("id", orphanedIds);
+
+        if (error) throw error;
+
+        toast({
+          title: "Cleanup Complete",
+          description: `Deleted ${orphanedIds.length} orphaned responses`,
+        });
+
+        setOrphanedCount(0);
+        fetchCompanies();
+      }
+    } catch (error) {
+      console.error("Error cleaning up orphaned responses:", error);
+      toast({
+        title: "Error",
+        description: "Failed to cleanup orphaned responses",
+        variant: "destructive",
+      });
+    } finally {
+      setCleaningUp(false);
     }
   };
 
@@ -265,6 +362,43 @@ const Admin = () => {
               </p>
             </ModernCard>
           </div>
+
+          {orphanedCount > 0 && (
+            <ModernCard className="border-destructive/50 bg-destructive/5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-2">
+                    Cleanup Orphaned Data
+                  </h2>
+                  <p className="text-muted-foreground">
+                    {orphanedCount} responses for inactive questions found
+                  </p>
+                </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={cleaningUp}>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {cleaningUp ? "Cleaning..." : "Cleanup"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete orphaned responses?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete {orphanedCount} responses for questions that are no longer active. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={cleanupOrphanedResponses}>
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </ModernCard>
+          )}
           
           <ModernCard>
             <h2 className="text-2xl font-bold text-foreground mb-2">
