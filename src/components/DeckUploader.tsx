@@ -13,8 +13,8 @@ interface DeckUploaderProps {
 export const DeckUploader = ({
   onFileSelect,
   isUploading = false,
-  acceptedFormats = ['.pdf', '.pptx', '.png', '.jpg', '.jpeg', '.webp'],
-  maxSizeMB = 50
+  acceptedFormats = ['.pdf', '.png', '.jpg', '.jpeg', '.webp'],
+  maxSizeMB = 2
 }: DeckUploaderProps) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -136,7 +136,7 @@ export const DeckUploader = ({
             </div>
 
             <div className="flex flex-wrap justify-center gap-2">
-              {['PDF', 'PPTX', 'PNG', 'JPG'].map(format => (
+              {['PDF', 'PNG', 'JPG'].map(format => (
                 <span
                   key={format}
                   className="px-2 py-1 text-xs rounded-md bg-muted text-muted-foreground"
@@ -146,9 +146,31 @@ export const DeckUploader = ({
               ))}
             </div>
 
-            <p className="text-xs text-muted-foreground">
-              Maximum file size: {maxSizeMB}MB
-            </p>
+            <div className="text-center space-y-1">
+              <p className="text-xs text-muted-foreground">
+                Maximum file size: {maxSizeMB}MB
+              </p>
+              <p className="text-xs text-muted-foreground/70">
+                File too large? Compress it with{' '}
+                <a 
+                  href="https://www.ilovepdf.com/compress_pdf" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="underline hover:text-primary"
+                >
+                  ILovePDF
+                </a>
+                {' '}or{' '}
+                <a 
+                  href="https://smallpdf.com/compress-pdf" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="underline hover:text-primary"
+                >
+                  Smallpdf
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       ) : (
