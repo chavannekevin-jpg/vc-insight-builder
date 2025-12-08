@@ -73,6 +73,7 @@ export const DeckImportWizard = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
+  const [processingStage, setProcessingStage] = useState<string>('');
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState<Record<string, string>>({});
@@ -83,6 +84,7 @@ export const DeckImportWizard = ({
     setSelectedFile(null);
     setIsProcessing(false);
     setProcessingProgress(0);
+    setProcessingStage('');
     setExtractedData(null);
     setEditingSection(null);
     setEditedContent({});
@@ -98,7 +100,8 @@ export const DeckImportWizard = ({
 
     setStep('processing');
     setIsProcessing(true);
-    setProcessingProgress(10);
+    setProcessingProgress(5);
+    setProcessingStage('Authenticating...');
 
     try {
       // Get current user
@@ -107,7 +110,8 @@ export const DeckImportWizard = ({
         throw new Error('Not authenticated');
       }
 
-      setProcessingProgress(20);
+      setProcessingProgress(10);
+      setProcessingStage('Uploading deck...');
 
       // Upload file to storage
       const fileExt = selectedFile.name.split('.').pop();
@@ -121,7 +125,8 @@ export const DeckImportWizard = ({
         throw new Error('Failed to upload file: ' + uploadError.message);
       }
 
-      setProcessingProgress(40);
+      setProcessingProgress(25);
+      setProcessingStage('Preparing for analysis...');
 
       // Get signed URL for the uploaded file
       const { data: urlData } = await supabase.storage
@@ -132,7 +137,16 @@ export const DeckImportWizard = ({
         throw new Error('Failed to get file URL');
       }
 
-      setProcessingProgress(50);
+      setProcessingProgress(30);
+      setProcessingStage('AI is reading your deck...');
+
+      // Animate progress while waiting for AI
+      const progressInterval = setInterval(() => {
+        setProcessingProgress(prev => {
+          if (prev >= 85) return prev;
+          return prev + Math.random() * 5;
+        });
+      }, 2000);
 
       // Call the parse function
       const { data: parseResult, error: parseError } = await supabase.functions.invoke('parse-pitch-deck', {
@@ -143,25 +157,28 @@ export const DeckImportWizard = ({
         }
       });
 
+      clearInterval(progressInterval);
+
       if (parseError) {
         throw new Error('Failed to analyze deck: ' + parseError.message);
       }
 
-      setProcessingProgress(90);
+      setProcessingProgress(95);
+      setProcessingStage('Finalizing extraction...');
 
       if (parseResult?.data) {
         setExtractedData(parseResult.data);
         setHighConfidenceCount(parseResult.highConfidenceCount || 0);
+        setProcessingProgress(100);
         setStep('review');
       } else {
         throw new Error('No data extracted from deck');
       }
 
-      setProcessingProgress(100);
-
     } catch (error) {
       console.error('Deck processing error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to process deck');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process deck';
+      toast.error(errorMessage);
       setStep('upload');
     } finally {
       setIsProcessing(false);
@@ -278,13 +295,17 @@ export const DeckImportWizard = ({
               </div>
 
               <div className="text-center space-y-2">
-                <p className="font-medium">Analyzing your pitch deck...</p>
+                <p className="font-medium">{processingStage || 'Analyzing your pitch deck...'}</p>
                 <p className="text-sm text-muted-foreground">
-                  Our AI is extracting company information and questionnaire answers
+                  This may take 30-60 seconds for larger decks
                 </p>
               </div>
 
               <Progress value={processingProgress} className="w-64" />
+              
+              <p className="text-xs text-muted-foreground/60">
+                {Math.round(processingProgress)}% complete
+              </p>
             </div>
           )}
 
