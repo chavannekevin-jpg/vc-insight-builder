@@ -21,6 +21,46 @@ function sanitizeJsonString(str: string): string {
     });
 }
 
+// Helper function to normalize VC questions to enhanced format
+function normalizeVCQuestions(questions: any[]): any[] {
+  if (!Array.isArray(questions)) return [];
+  
+  return questions.map((q, index) => {
+    // If it's already an object with the required properties, return as-is
+    if (typeof q === 'object' && q !== null && q.question) {
+      return {
+        question: q.question,
+        vcRationale: q.vcRationale || "This question helps VCs assess the viability and scalability of the opportunity.",
+        whatToPrepare: q.whatToPrepare || "Prepare specific data, metrics, or evidence to address this concern."
+      };
+    }
+    
+    // If it's a string, transform to enhanced format
+    if (typeof q === 'string') {
+      return {
+        question: q,
+        vcRationale: "This question helps VCs assess the viability and scalability of the opportunity.",
+        whatToPrepare: "Prepare specific data, metrics, or evidence to address this concern."
+      };
+    }
+    
+    // Fallback for unexpected formats
+    return {
+      question: `Key question ${index + 1}`,
+      vcRationale: "This question helps VCs assess the viability and scalability of the opportunity.",
+      whatToPrepare: "Prepare specific data, metrics, or evidence to address this concern."
+    };
+  });
+}
+
+// Helper function to normalize a section's vcReflection questions
+function normalizeSectionQuestions(section: any): any {
+  if (section?.vcReflection?.questions) {
+    section.vcReflection.questions = normalizeVCQuestions(section.vcReflection.questions);
+  }
+  return section;
+}
+
 // Helper function to retry API calls with exponential backoff
 async function fetchWithRetry(
   url: string, 
@@ -983,7 +1023,7 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
                       content: `Write a brief ${sectionName} analysis for ${company.name}. Data: ${combinedContent.substring(0, 1000)}
 
 Return EXACTLY this JSON structure with your content filled in:
-{"narrative":{"paragraphs":[{"text":"Main analysis paragraph here.","emphasis":"high"},{"text":"Supporting details.","emphasis":"normal"}],"keyPoints":["Key point 1","Key point 2","Key point 3"]},"vcReflection":{"analysis":"Critical assessment.","questions":["Question 1?","Question 2?"],"conclusion":"Summary conclusion."}}`,
+{"narrative":{"paragraphs":[{"text":"Main analysis paragraph here.","emphasis":"high"},{"text":"Supporting details.","emphasis":"normal"}],"keyPoints":["Key point 1","Key point 2","Key point 3"]},"vcReflection":{"analysis":"Critical assessment.","questions":[{"question":"Key question 1?","vcRationale":"Why VCs care about this","whatToPrepare":"Evidence to address this"},{"question":"Key question 2?","vcRationale":"Why VCs care about this","whatToPrepare":"Evidence to address this"}],"conclusion":"Summary conclusion."}}`,
                     },
                   ],
                   temperature: 0.3,
@@ -1079,7 +1119,13 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
   },
   "vcReflection": {
     "analysis": "your complete comparative benchmarking and assessment",
-    "questions": ["critical question 1", "question 2", "question 3", "question 4", "question 5"],
+    "questions": [
+      {"question": "critical question 1", "vcRationale": "Why VCs care about this from fund economics perspective", "whatToPrepare": "Evidence/data to address this"},
+      {"question": "question 2", "vcRationale": "Economic reasoning behind this question", "whatToPrepare": "Preparation guidance"},
+      {"question": "question 3", "vcRationale": "Economic reasoning behind this question", "whatToPrepare": "Preparation guidance"},
+      {"question": "question 4", "vcRationale": "Economic reasoning behind this question", "whatToPrepare": "Preparation guidance"},
+      {"question": "question 5", "vcRationale": "Economic reasoning behind this question", "whatToPrepare": "Preparation guidance"}
+    ],
     "benchmarking": "your complete benchmarking insights with real-world comparables",
     "conclusion": "your strict, non-biased final investment decision with reasoning"
   }
@@ -1277,6 +1323,12 @@ Return ONLY valid JSON with this exact structure:
     if (generatedSectionCount < 3) {
       console.error(`WARNING: Only ${generatedSectionCount} sections generated, expected at least 3`);
       throw new Error(`Incomplete memo generation: only ${generatedSectionCount} sections generated`);
+    }
+
+    // Normalize all VC questions to enhanced format before saving
+    console.log("Normalizing VC questions to enhanced format...");
+    for (const sectionName of Object.keys(enhancedSections)) {
+      enhancedSections[sectionName] = normalizeSectionQuestions(enhancedSections[sectionName]);
     }
 
     // Save memo to database with structured content
