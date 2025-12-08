@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const hasRedirected = useRef(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -23,33 +25,42 @@ export default function Auth() {
   const selectedPrice = searchParams.get('price');
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Check for existing session once on mount
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user && !hasRedirected.current) {
+          hasRedirected.current = true;
+          const redirect = searchParams.get('redirect') || '/hub';
+          navigate(redirect, { replace: true });
+        }
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+    
+    checkSession();
+
+    // Set up auth state listener for future changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Redirect authenticated users immediately
-        if (session?.user && event === 'SIGNED_IN') {
+        // Only redirect on explicit sign-in events, not on initial load
+        if (session?.user && event === 'SIGNED_IN' && !hasRedirected.current) {
+          hasRedirected.current = true;
           const redirect = searchParams.get('redirect') || '/hub';
-          navigate(redirect);
+          navigate(redirect, { replace: true });
         }
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        const redirect = searchParams.get('redirect') || '/hub';
-        navigate(redirect);
-      }
-    });
-
     return () => subscription.unsubscribe();
-  }, [navigate, searchParams]);
+  }, []); // Empty dependency array - only run once on mount
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,6 +144,18 @@ export default function Auth() {
       setLoading(false);
     }
   };
+
+  // Show loading state while checking auth
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen gradient-hero flex items-center justify-center">
+        <div className="text-foreground flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+          <span>Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (session && user) {
     return (
