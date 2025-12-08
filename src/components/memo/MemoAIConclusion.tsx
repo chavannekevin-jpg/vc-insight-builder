@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import { renderMarkdownText } from "@/lib/markdownParser";
 
 interface MemoAIConclusionProps {
   text: string;
@@ -21,7 +22,7 @@ export const MemoAIConclusion = ({ text }: MemoAIConclusionProps) => {
       {/* Content */}
       <div className="relative pl-13">
         <p className="text-foreground font-medium leading-relaxed whitespace-pre-wrap">
-          {text}
+          {renderMarkdownText(text)}
         </p>
       </div>
     </div>

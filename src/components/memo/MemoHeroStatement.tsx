@@ -1,4 +1,5 @@
 import { Quote } from "lucide-react";
+import { renderMarkdownText } from "@/lib/markdownParser";
 
 interface MemoHeroStatementProps {
   text: string;
@@ -11,7 +12,7 @@ export const MemoHeroStatement = ({ text }: MemoHeroStatementProps) => {
         <Quote className="w-8 h-8 text-primary rotate-180" />
       </div>
       <p className="text-xl font-semibold text-foreground leading-relaxed pl-8 pr-4 py-2 border-l-4 border-primary bg-gradient-to-r from-primary/5 to-transparent rounded-r-xl">
-        {text}
+        {renderMarkdownText(text)}
       </p>
     </div>
   );
