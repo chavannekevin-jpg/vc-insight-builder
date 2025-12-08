@@ -91,11 +91,16 @@ serve(async (req) => {
 
     // Check file size before loading into memory
     const contentLength = deckResponse.headers.get('content-length');
-    if (contentLength && parseInt(contentLength) > MAX_FILE_SIZE_BYTES) {
-      console.error('File too large:', contentLength, 'bytes');
+    const fileSizeBytes = contentLength ? parseInt(contentLength) : 0;
+    const fileSizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(1);
+    
+    if (fileSizeBytes > MAX_FILE_SIZE_BYTES) {
+      console.error('File too large:', fileSizeBytes, 'bytes');
       return new Response(
         JSON.stringify({ 
-          error: 'File too large. Please upload a PDF under 2MB or compress your deck.' 
+          error: `File too large (${fileSizeMB}MB). Maximum size is 2MB. Compress your deck at ilovepdf.com/compress_pdf`,
+          fileSizeMB: parseFloat(fileSizeMB),
+          maxSizeMB: 2
         }),
         { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -170,10 +175,13 @@ For missing information, set content to null and confidence to 0.`;
     
     // Double-check file size after download (in case content-length was missing)
     if (fileSize > MAX_FILE_SIZE_BYTES) {
+      const actualSizeMB = (fileSize / (1024 * 1024)).toFixed(1);
       console.error('File too large after download:', fileSize, 'bytes');
       return new Response(
         JSON.stringify({ 
-          error: 'File too large. Please upload a PDF under 2MB or compress your deck.' 
+          error: `File too large (${actualSizeMB}MB). Maximum size is 2MB. Compress your deck at ilovepdf.com/compress_pdf`,
+          fileSizeMB: parseFloat(actualSizeMB),
+          maxSizeMB: 2
         }),
         { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
