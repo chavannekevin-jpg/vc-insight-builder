@@ -209,31 +209,73 @@ export default function GeneratedMemo() {
   const generateMemo = async (companyIdToGenerate: string, force: boolean = false) => {
     setLoading(true);
     try {
-      console.log("Generating memo...");
-      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-full-memo', {
+      console.log("Starting memo generation...");
+      
+      // Step 1: Start generation and get jobId
+      const { data: startData, error: startError } = await supabase.functions.invoke('generate-full-memo', {
         body: { companyId: companyIdToGenerate, force }
       });
 
-      if (functionError) {
-        console.error("GeneratedMemo: Edge function error:", functionError);
+      if (startError) {
+        console.error("GeneratedMemo: Edge function error:", startError);
         throw new Error(
-          functionError.message === "Not Found" || functionError.status === 404
+          startError.message === "Not Found" || startError.status === 404
             ? "Memo generation service is currently unavailable. Please try again in a moment."
-            : functionError.message || "Failed to generate memo"
+            : startError.message || "Failed to start memo generation"
         );
       }
 
-      if (!functionData || !functionData.structuredContent) {
-        throw new Error("No structured content returned from generation");
+      if (!startData?.jobId) {
+        throw new Error("No job ID returned from generation");
       }
 
-      setMemoContent(functionData.structuredContent);
-      setCompanyInfo(functionData.company);
-      
-      // Show rejection preview for non-premium users after generation
-      if (!hasPremium && functionData.structuredContent?.vcQuickTake) {
-        setShowRejectionPreview(true);
+      const jobId = startData.jobId;
+      console.log(`Memo generation job started: ${jobId}`);
+
+      // Step 2: Poll for completion
+      const pollInterval = 5000; // 5 seconds
+      const maxPolls = 60; // 5 minutes max
+      let pollCount = 0;
+
+      while (pollCount < maxPolls) {
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        pollCount++;
+
+        console.log(`Polling job status (attempt ${pollCount})...`);
+        
+        const { data: statusData, error: statusError } = await supabase.functions.invoke('check-memo-job', {
+          body: { jobId }
+        });
+
+        if (statusError) {
+          console.error("Error checking job status:", statusError);
+          // Continue polling on error
+          continue;
+        }
+
+        if (statusData.status === "completed") {
+          console.log("Memo generation completed!");
+          setMemoContent(statusData.structuredContent);
+          setCompanyInfo(statusData.company);
+          
+          // Show rejection preview for non-premium users after generation
+          if (!hasPremium && statusData.structuredContent?.vcQuickTake) {
+            setShowRejectionPreview(true);
+          }
+          return;
+        }
+
+        if (statusData.status === "failed") {
+          throw new Error(statusData.error || "Memo generation failed");
+        }
+
+        // Still processing - update could show progress message
+        console.log(`Job status: ${statusData.status}, elapsed: ${statusData.elapsedSeconds}s - ${statusData.message}`);
       }
+
+      // Timeout reached
+      throw new Error("Memo generation timed out. Please refresh and check if your memo is ready.");
+
     } catch (error: any) {
       console.error("Error generating memo:", error);
       toast({
@@ -266,47 +308,71 @@ export default function GeneratedMemo() {
     
     setRegenerating(true);
     
-    const warningTimeout = setTimeout(() => {
-      toast({
-        title: "Still Processing",
-        description: "This may take 60-90 seconds as we generate all sections with critical analysis...",
-      });
-    }, 10000);
-    
     try {
       console.log("Regenerating memo with force=true...");
       const startTime = Date.now();
       
-      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-full-memo', {
+      // Step 1: Start regeneration
+      const { data: startData, error: startError } = await supabase.functions.invoke('generate-full-memo', {
         body: { companyId, force: true }
       });
 
-      clearTimeout(warningTimeout);
-      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-      console.log(`Memo regeneration completed in ${duration}s`);
-
-      if (functionError) {
-        console.error("GeneratedMemo: Regenerate function error:", functionError);
+      if (startError) {
+        console.error("GeneratedMemo: Regenerate function error:", startError);
         throw new Error(
-          functionError.message === "Not Found" || functionError.status === 404
+          startError.message === "Not Found" || startError.status === 404
             ? "Memo generation service (404). The edge function may not be deployed yet."
-            : functionError.message || "Failed to regenerate memo"
+            : startError.message || "Failed to regenerate memo"
         );
       }
 
-      if (!functionData || !functionData.structuredContent) {
-        throw new Error("No structured content returned from function");
+      if (!startData?.jobId) {
+        throw new Error("No job ID returned from regeneration");
       }
 
-      setMemoContent(functionData.structuredContent);
-      setCompanyInfo(functionData.company);
-      
-      toast({
-        title: "Success",
-        description: `Memo regenerated with critical VC analysis in ${duration}s`
-      });
+      const jobId = startData.jobId;
+      console.log(`Regeneration job started: ${jobId}`);
+
+      // Step 2: Poll for completion
+      const pollInterval = 5000;
+      const maxPolls = 60;
+      let pollCount = 0;
+
+      while (pollCount < maxPolls) {
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        pollCount++;
+
+        const { data: statusData, error: statusError } = await supabase.functions.invoke('check-memo-job', {
+          body: { jobId }
+        });
+
+        if (statusError) {
+          console.error("Error checking job status:", statusError);
+          continue;
+        }
+
+        if (statusData.status === "completed") {
+          const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+          console.log(`Memo regeneration completed in ${duration}s`);
+          
+          setMemoContent(statusData.structuredContent);
+          setCompanyInfo(statusData.company);
+          
+          toast({
+            title: "Success",
+            description: `Memo regenerated with critical VC analysis in ${duration}s`
+          });
+          return;
+        }
+
+        if (statusData.status === "failed") {
+          throw new Error(statusData.error || "Memo regeneration failed");
+        }
+      }
+
+      throw new Error("Memo regeneration timed out. Please refresh and check if your memo is ready.");
+
     } catch (error: any) {
-      clearTimeout(warningTimeout);
       console.error("Error regenerating memo:", error);
       
       toast({
