@@ -14,7 +14,7 @@ export const DeckUploader = ({
   onFileSelect,
   isUploading = false,
   acceptedFormats = ['.pdf', '.png', '.jpg', '.jpeg', '.webp'],
-  maxSizeMB = 20
+  maxSizeMB = 8
 }: DeckUploaderProps) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
