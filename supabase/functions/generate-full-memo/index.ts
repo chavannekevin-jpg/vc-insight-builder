@@ -21,42 +21,89 @@ function sanitizeJsonString(str: string): string {
     });
 }
 
-// Helper function to normalize VC questions to enhanced format
-function normalizeVCQuestions(questions: any[]): any[] {
+// Helper function to normalize VC questions to enhanced format with contextual rationale
+function normalizeVCQuestions(questions: any[], sectionName?: string): any[] {
   if (!Array.isArray(questions)) return [];
   
+  // Generate context-aware fallback rationale based on section
+  const getRationale = (question: string, section?: string): string => {
+    const q = question.toLowerCase();
+    const s = (section || '').toLowerCase();
+    
+    if (q.includes('competitor') || q.includes('differentiat') || s.includes('competition')) {
+      return "VCs invest in companies that can defend their position. Understanding competitive dynamics reveals whether you have a sustainable advantage or are in a race to the bottom.";
+    }
+    if (q.includes('customer') || q.includes('retention') || q.includes('churn')) {
+      return "Customer retention is the ultimate proof of value. High churn means your product isn't solving the problem well enough, regardless of how fast you acquire customers.";
+    }
+    if (q.includes('revenue') || q.includes('pricing') || q.includes('monetiz') || s.includes('business')) {
+      return "Unit economics determine whether growth creates or destroys value. VCs need to see a path to profitability at scale.";
+    }
+    if (q.includes('team') || q.includes('founder') || q.includes('hire') || s.includes('team')) {
+      return "VCs bet on teams, not just ideas. Execution capability and founder-market fit are often the difference between success and failure.";
+    }
+    if (q.includes('market') || q.includes('tam') || q.includes('scale')) {
+      return "Market size determines outcome potential. VCs need to believe this can be a fund-returning investment, which requires large addressable markets.";
+    }
+    if (q.includes('traction') || q.includes('growth') || q.includes('metric')) {
+      return "Traction is the best predictor of future success. VCs look for evidence of product-market fit through measurable, repeatable growth.";
+    }
+    return "This question probes a critical assumption that could make or break the investment thesis. VCs need concrete evidence, not promises.";
+  };
+  
+  const getPreparation = (question: string): string => {
+    const q = question.toLowerCase();
+    
+    if (q.includes('why') || q.includes('how')) {
+      return "Prepare a clear, specific answer with concrete examples and data. Generic responses will raise red flags about depth of understanding.";
+    }
+    if (q.includes('data') || q.includes('metric') || q.includes('number')) {
+      return "Gather specific metrics with clear definitions and methodology. Show trends over time, not just snapshots. Include benchmarks for context.";
+    }
+    if (q.includes('risk') || q.includes('concern') || q.includes('challenge')) {
+      return "Acknowledge the risk honestly, then explain your mitigation strategy with specific actions and timelines. VCs respect founders who understand their vulnerabilities.";
+    }
+    if (q.includes('competitor') || q.includes('alternative')) {
+      return "Create a detailed competitive matrix showing your differentiation. Include both direct competitors and alternative solutions customers currently use.";
+    }
+    return "Prepare specific evidence: customer testimonials, contracts, metrics, or third-party validation. Anecdotes without data will not satisfy skeptical investors.";
+  };
+  
   return questions.map((q, index) => {
-    // If it's already an object with the required properties, return as-is
+    // If it's already an object with the required properties and they're substantive, return as-is
     if (typeof q === 'object' && q !== null && q.question) {
+      const hasSubstantiveRationale = q.vcRationale && q.vcRationale.length > 50;
+      const hasSubstantivePrep = q.whatToPrepare && q.whatToPrepare.length > 50;
+      
       return {
         question: q.question,
-        vcRationale: q.vcRationale || "This question helps VCs assess the viability and scalability of the opportunity.",
-        whatToPrepare: q.whatToPrepare || "Prepare specific data, metrics, or evidence to address this concern."
+        vcRationale: hasSubstantiveRationale ? q.vcRationale : getRationale(q.question, sectionName),
+        whatToPrepare: hasSubstantivePrep ? q.whatToPrepare : getPreparation(q.question)
       };
     }
     
-    // If it's a string, transform to enhanced format
+    // If it's a string, transform to enhanced format with contextual content
     if (typeof q === 'string') {
       return {
         question: q,
-        vcRationale: "This question helps VCs assess the viability and scalability of the opportunity.",
-        whatToPrepare: "Prepare specific data, metrics, or evidence to address this concern."
+        vcRationale: getRationale(q, sectionName),
+        whatToPrepare: getPreparation(q)
       };
     }
     
     // Fallback for unexpected formats
     return {
       question: `Key question ${index + 1}`,
-      vcRationale: "This question helps VCs assess the viability and scalability of the opportunity.",
-      whatToPrepare: "Prepare specific data, metrics, or evidence to address this concern."
+      vcRationale: "This question probes a critical assumption in the investment thesis. VCs need concrete evidence before committing capital.",
+      whatToPrepare: "Prepare specific data, customer testimonials, or third-party validation to address this concern convincingly."
     };
   });
 }
 
 // Helper function to normalize a section's vcReflection questions
-function normalizeSectionQuestions(section: any): any {
+function normalizeSectionQuestions(section: any, sectionName?: string): any {
   if (section?.vcReflection?.questions) {
-    section.vcReflection.questions = normalizeVCQuestions(section.vcReflection.questions);
+    section.vcReflection.questions = normalizeVCQuestions(section.vcReflection.questions, sectionName);
   }
   return section;
 }
@@ -1284,7 +1331,7 @@ Return ONLY valid JSON with this exact structure:
     // Normalize all VC questions to enhanced format before saving
     console.log("Normalizing VC questions to enhanced format...");
     for (const sectionName of Object.keys(enhancedSections)) {
-      enhancedSections[sectionName] = normalizeSectionQuestions(enhancedSections[sectionName]);
+      enhancedSections[sectionName] = normalizeSectionQuestions(enhancedSections[sectionName], sectionName);
     }
 
     // Save memo to database with structured content
