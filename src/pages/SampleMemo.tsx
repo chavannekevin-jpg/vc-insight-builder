@@ -15,7 +15,12 @@ import { MemoAIConclusion } from "@/components/memo/MemoAIConclusion";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoVCScaleCard } from "@/components/memo/MemoVCScaleCard";
 import { MemoTeamList, TeamMember } from "@/components/memo/MemoTeamList";
+import { MemoMoatScoreCard } from "@/components/memo/MemoMoatScoreCard";
+import { MemoTeamGapCard } from "@/components/memo/MemoTeamGapCard";
+import { MemoExitPathCard } from "@/components/memo/MemoExitPathCard";
+import { MemoUnitEconomicsCard } from "@/components/memo/MemoUnitEconomicsCard";
 import type { MemoStructuredContent, MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
+import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
 
 // Sample team data for CarbonPrint demo
 const SAMPLE_TEAM: TeamMember[] = [
@@ -55,6 +60,40 @@ const SAMPLE_VC_QUICK_TAKE: MemoVCQuickTakeType = {
   readinessLevel: "MEDIUM",
   readinessRationale: "Strong fundamentals but needs to prove enterprise sales velocity and competitive differentiation before Series A."
 };
+
+// Sample Moat Scores for CarbonPrint demo
+const SAMPLE_MOAT_SCORES: MoatScores = {
+  networkEffects: { score: 4, evidence: '"...supply chain data creates marketplace dynamics..."' },
+  switchingCosts: { score: 8, evidence: '"...deep ERP integrations and workflow embedding..."' },
+  dataAdvantage: { score: 9, evidence: '"...proprietary carbon measurement algorithms..."' },
+  brandTrust: { score: 6, evidence: '"...enterprise certifications and Fortune 500 logos..."' },
+  costAdvantage: { score: 3, evidence: 'Not emphasized' },
+  overallScore: 60
+};
+
+// Sample Unit Economics for CarbonPrint demo
+const SAMPLE_UNIT_ECONOMICS: UnitEconomicsData = {
+  ltv: 45000,
+  cac: 12000,
+  ltvCacRatio: 3.75,
+  paybackMonths: 9,
+  grossMargin: 78,
+  monthlyChurn: 1.8
+};
+
+// Sample Exit Path Data for CarbonPrint demo
+const SAMPLE_EXIT_DATA: ExitPathData = {
+  currentARR: 96600, // $8,050 MRR * 12
+  category: "Climate Tech",
+  revenueMultiple: { low: 6, mid: 10, high: 15 }
+};
+
+// Sample Team Members for Team Gap Card
+const SAMPLE_TEAM_EXTRACTED: ExtractedTeamMember[] = [
+  { name: "Sarah Chen", role: "CEO" },
+  { name: "Marcus Rodriguez", role: "CTO" },
+  { name: "Jennifer Liu", role: "COO" }
+];
 
 const DEMO_COMPANY_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -288,7 +327,14 @@ const SampleMemo = () => {
 
                       {/* Team List - show structured founder list for team section */}
                       {isTeamSection && (
-                        <MemoTeamList members={SAMPLE_TEAM} showEquity={true} />
+                        <>
+                          <MemoTeamList members={SAMPLE_TEAM} showEquity={true} />
+                          <MemoTeamGapCard 
+                            teamMembers={SAMPLE_TEAM_EXTRACTED}
+                            stage="Seed"
+                            companyName="CarbonPrint"
+                          />
+                        </>
                       )}
                     </div>
                   )}
@@ -301,6 +347,30 @@ const SampleMemo = () => {
                       currentMRR={8050}
                       companyName="CarbonPrint"
                       category="Climate Tech"
+                    />
+                  )}
+
+                  {/* Moat Score Card - show after Competition section */}
+                  {isCompetitionSection && (
+                    <MemoMoatScoreCard 
+                      moatScores={SAMPLE_MOAT_SCORES}
+                      companyName="CarbonPrint"
+                    />
+                  )}
+
+                  {/* Unit Economics Card - show after Business Model section */}
+                  {section.title.toLowerCase().includes('business') && (
+                    <MemoUnitEconomicsCard 
+                      unitEconomics={SAMPLE_UNIT_ECONOMICS}
+                      companyName="CarbonPrint"
+                    />
+                  )}
+
+                  {/* Exit Path Card - show after Investment Thesis/Vision section */}
+                  {(section.title.toLowerCase().includes('vision') || section.title.toLowerCase().includes('thesis')) && (
+                    <MemoExitPathCard 
+                      exitData={SAMPLE_EXIT_DATA}
+                      companyName="CarbonPrint"
                     />
                   )}
 
