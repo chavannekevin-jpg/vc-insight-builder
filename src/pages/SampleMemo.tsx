@@ -163,14 +163,14 @@ const SampleMemo = () => {
                 <Sparkles className="w-6 h-6 text-primary-foreground animate-pulse" />
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-bold neon-pink uppercase tracking-wide">✨ Sample Preview - Limited Content Unlocked</p>
+                <p className="text-sm font-bold neon-pink uppercase tracking-wide">✨ Full Sample Memo - CarbonPrint</p>
                 <p className="text-sm text-foreground leading-relaxed">
-                  This is a <strong className="neon-pink">partial sample</strong> with fictional data. Premium analysis elements are blurred to protect our proprietary methodology 
-                  (including market benchmarking, VC perspectives, and investor questions). Your full personalized memo includes <strong className="neon-pink">8 comprehensive sections</strong> 
-                  with complete, unblurred insights: Problem, Solution, Market, Competition & Defensibility, Team, Business Model, Traction, and Investment Thesis.
+                  This is a <strong className="neon-pink">complete sample memo</strong> for a fictional climate tech startup. See exactly what you'll get: 
+                  honest VC analysis, critical questions investors would ask, market benchmarking, and the full investment thesis.
+                  <strong className="neon-pink"> Your memo will be personalized to your startup.</strong>
                 </p>
                 <p className="text-xs text-muted-foreground italic pt-1">
-                  🔒 Several sections and premium subsections are locked to showcase structure while protecting IP.
+                  📊 Only the Competition section is previewed to protect our competitive analysis methodology.
                 </p>
               </div>
             </div>
@@ -180,33 +180,35 @@ const SampleMemo = () => {
         {/* Memo Sections */}
         <div className="space-y-16">
           {memoContent.sections.map((section, index) => {
-            const shouldBlurEntireSection = ['Solution', 'Competition'].includes(section.title);
-            const shouldBlurBenchmarking = section.title === 'Problem';
-            const shouldBlurVCReflection = section.title === 'Market';
-            const shouldBlurQuestions = section.title === 'Traction';
+            // Only blur Competition section - everything else is fully visible
+            const isCompetitionSection = section.title === 'Competition' || section.title.toLowerCase().includes('competition');
             
             return (
               <MemoSection key={index} title={section.title} index={index}>
-                {shouldBlurEntireSection && (
-                  <div className="absolute inset-0 z-10 bg-background/60 backdrop-blur-lg rounded-3xl flex items-center justify-center">
-                    <div className="bg-card/95 border-2 border-primary/50 rounded-2xl p-6 shadow-glow-strong text-center max-w-md mx-auto hover-lift">
+                {/* Competition section gets a teaser overlay */}
+                {isCompetitionSection && (
+                  <div className="absolute inset-0 z-10 bg-background/70 backdrop-blur-md rounded-3xl flex items-center justify-center">
+                    <div className="bg-card/95 border-2 border-primary/50 rounded-2xl p-8 shadow-glow-strong text-center max-w-lg mx-auto hover-lift">
                       <div className="w-14 h-14 rounded-full gradient-primary flex items-center justify-center mx-auto mb-4 shadow-glow pulse-glow">
                         <svg className="w-7 h-7 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                       </div>
-                      <h3 className="text-lg font-bold neon-pink mb-2">🔒 Unlock Full Analysis</h3>
-                      <p className="text-sm text-foreground mb-4">
-                        This section is available in your personalized memo
+                      <h3 className="text-xl font-bold neon-pink mb-3">Competition Analysis Preview</h3>
+                      <p className="text-sm text-foreground mb-2">
+                        Our AI identified <strong className="neon-pink">4 direct competitors</strong> and <strong className="neon-pink">3 adjacent threats</strong> in this market.
+                      </p>
+                      <p className="text-xs text-muted-foreground mb-5">
+                        This section includes defensibility scoring, competitive moat analysis, and investor concerns about market positioning.
                       </p>
                       <Button size="sm" className="gradient-primary hover:shadow-glow-strong transition-all" onClick={() => navigate('/memo-builder')}>
                         <Sparkles className="w-4 h-4 mr-2" />
-                        Create Your Memo
+                        Get Your Competitive Analysis
                       </Button>
                     </div>
                   </div>
                 )}
-                <div className={shouldBlurEntireSection ? 'blur-sm pointer-events-none select-none' : ''}>
+                <div className={isCompetitionSection ? 'blur-sm pointer-events-none select-none' : ''}>
                   {/* Narrative Content */}
                   {(section.narrative || section.paragraphs || section.highlights || section.keyPoints) && (
                     <div className="space-y-8">
@@ -239,7 +241,7 @@ const SampleMemo = () => {
                     </div>
                   )}
 
-                  {/* VC Reflection */}
+                  {/* VC Reflection - Now fully visible for all sections */}
                   {section.vcReflection && (
                     <div className="mt-10 space-y-8 pt-8 border-t border-border/50">
                       <div className="flex items-center gap-2 mb-6">
@@ -248,55 +250,20 @@ const SampleMemo = () => {
                         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
                       </div>
                       
-                      {/* VC Analysis - blur for Market section */}
-                      <div className={shouldBlurVCReflection ? 'relative' : ''}>
-                        {shouldBlurVCReflection && (
-                          <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                            <div className="bg-card/95 border-2 border-primary/50 rounded-xl px-4 py-3 shadow-glow text-center hover-punch">
-                              <p className="text-xs font-bold neon-pink mb-1">🔒 Premium Analysis</p>
-                              <p className="text-xs text-foreground">Available in your personalized memo</p>
-                            </div>
-                          </div>
-                        )}
-                        <div className={shouldBlurVCReflection ? 'blur-sm select-none' : ''}>
-                          <MemoVCReflection text={section.vcReflection.analysis} />
-                        </div>
-                      </div>
+                      {/* VC Analysis - fully visible */}
+                      <MemoVCReflection text={section.vcReflection.analysis} />
                       
-                      {/* Investor Questions - blur for Traction section */}
+                      {/* Investor Questions - fully visible */}
                       {section.vcReflection.questions && section.vcReflection.questions.length > 0 && (
-                        <div className={shouldBlurQuestions ? 'relative' : ''}>
-                          {shouldBlurQuestions && (
-                            <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                              <div className="bg-card/95 border-2 border-primary/50 rounded-xl px-4 py-3 shadow-glow text-center hover-punch">
-                                <p className="text-xs font-bold neon-pink mb-1">🔒 Premium Analysis</p>
-                                <p className="text-xs text-foreground">Available in your personalized memo</p>
-                              </div>
-                            </div>
-                          )}
-                          <div className={shouldBlurQuestions ? 'blur-sm select-none' : ''}>
-                            <MemoVCQuestions questions={section.vcReflection.questions} />
-                          </div>
-                        </div>
+                        <MemoVCQuestions questions={section.vcReflection.questions} />
                       )}
                       
-                      {/* Benchmarking - blur for Problem section */}
+                      {/* Benchmarking - fully visible */}
                       {section.vcReflection.benchmarking && (
-                        <div className={shouldBlurBenchmarking ? 'relative' : ''}>
-                          {shouldBlurBenchmarking && (
-                            <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                              <div className="bg-card/95 border-2 border-primary/50 rounded-xl px-4 py-3 shadow-glow text-center hover-punch">
-                                <p className="text-xs font-bold neon-pink mb-1">🔒 Premium Analysis</p>
-                                <p className="text-xs text-foreground">Available in your personalized memo</p>
-                              </div>
-                            </div>
-                          )}
-                          <div className={shouldBlurBenchmarking ? 'blur-sm select-none' : ''}>
-                            <MemoBenchmarking text={section.vcReflection.benchmarking} />
-                          </div>
-                        </div>
+                        <MemoBenchmarking text={section.vcReflection.benchmarking} />
                       )}
                       
+                      {/* Conclusion - fully visible */}
                       <MemoAIConclusion text={section.vcReflection.conclusion} />
                     </div>
                   )}
@@ -326,64 +293,22 @@ const SampleMemo = () => {
           </div>
 
             {/* Placeholder Locked Sections */}
-            {['Go-to-Market Strategy', 'Investment Thesis (Final VC Assessment)'].map((title, idx) => (
-              <MemoSection key={`locked-${idx}`} title={title} index={memoContent.sections.length + idx}>
-                <div className="absolute inset-0 z-10 bg-background/60 backdrop-blur-lg rounded-3xl flex items-center justify-center">
-                  <div className="bg-card/95 border-2 border-primary/50 rounded-2xl p-6 shadow-glow-strong text-center max-w-md mx-auto hover-lift">
-                    <div className="w-14 h-14 rounded-full gradient-primary flex items-center justify-center mx-auto mb-4 shadow-glow pulse-glow">
-                      <svg className="w-7 h-7 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-lg font-bold neon-pink mb-2">🔒 Unlock Full Analysis</h3>
-                    <p className="text-sm text-foreground mb-4">
-                      This section is available in your personalized memo
+            {/* Investment Thesis section - shown if present in data, or add a teaser */}
+            {!memoContent.sections.some(s => s.title.toLowerCase().includes('thesis') || s.title.toLowerCase().includes('investment')) && (
+              <MemoSection key="investment-thesis" title="Investment Thesis" index={memoContent.sections.length}>
+                <div className="space-y-8">
+                  <MemoParagraph 
+                    text="The Investment Thesis section synthesizes all previous analysis into a clear verdict: should VCs invest? This includes risk-adjusted assessment, key assumptions that must prove true, and specific conditions for success."
+                    emphasis="high"
+                  />
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
+                    <p className="text-sm text-muted-foreground text-center">
+                      Your personalized memo will include a complete investment thesis tailored to your startup's specific strengths, weaknesses, and market opportunity.
                     </p>
-                    <Button size="sm" className="gradient-primary hover:shadow-glow-strong transition-all" onClick={() => navigate('/memo-builder')}>
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Create Your Memo
-                    </Button>
-                  </div>
-                </div>
-                <div className="blur-sm pointer-events-none select-none">
-                  {/* Placeholder content */}
-                  <div className="space-y-8">
-                    <MemoParagraph 
-                      text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-                      emphasis="high"
-                    />
-                    <MemoParagraph 
-                      text="Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-                      emphasis="normal"
-                    />
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 my-8">
-                      <MemoHighlight metric="XX%" label="Sample metric" />
-                      <MemoHighlight metric="€XXM" label="Sample value" />
-                      <MemoHighlight metric="XX" label="Sample count" />
-                    </div>
-                    <MemoKeyPoints points={[
-                      "Sample key point for demonstration purposes",
-                      "Another sample takeaway showing structure",
-                      "Third sample point illustrating format"
-                    ]} />
-                  </div>
-                  <div className="mt-10 space-y-8 pt-8 border-t border-border/50">
-                    <div className="flex items-center gap-2 mb-6">
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-                      <span className="text-xs font-semibold text-primary uppercase tracking-wider">Investor Perspective</span>
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-                    </div>
-                    <MemoVCReflection text="Sample VC reflection text that demonstrates the format and structure of our investor analysis. This section provides deep insights into how VCs would evaluate this aspect of your business." />
-                    <MemoVCQuestions questions={[
-                      "Sample investor question about your business?",
-                      "Another critical question VCs would ask?",
-                      "Third important question for validation?"
-                    ]} />
-                    <MemoAIConclusion text="Sample investment synopsis showing how we synthesize the analysis into actionable insights for founders and investors." />
                   </div>
                 </div>
               </MemoSection>
-            ))}
+            )}
 
           {/* Call to Action */}
           <div className="mt-24 relative overflow-hidden rounded-3xl border-2 border-primary/40 shadow-glow-strong animate-fade-in hover-neon-pulse" style={{ animationDelay: '0.5s' }}>
