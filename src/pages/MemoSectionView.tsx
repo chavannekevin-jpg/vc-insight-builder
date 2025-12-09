@@ -213,17 +213,17 @@ export default function MemoSectionView() {
               defaultOpen={true}
             />
 
+            {/* Problem Section - Pain Validator - Available for all users */}
+            {isProblemSection && (
+              <MemoPainValidatorCard 
+                problemText={sectionText}
+                companyName={companyInfo?.name || 'Company'}
+              />
+            )}
+
             {/* Section-Specific Strategic Cards - Premium Only */}
             {hasPremium && (
               <>
-                {/* Problem Section - Pain Validator */}
-                {isProblemSection && (
-                  <MemoPainValidatorCard 
-                    problemText={sectionText}
-                    companyName={companyInfo?.name || 'Company'}
-                  />
-                )}
-
                 {/* Solution Section - Differentiation Matrix */}
                 {isSolutionSection && (
                   <MemoDifferentiationCard 
