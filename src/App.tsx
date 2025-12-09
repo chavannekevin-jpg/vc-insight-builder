@@ -82,6 +82,8 @@ const AdminUserAccess = lazy(() => import("./pages/AdminUserAccess"));
 const AdminPricing = lazy(() => import("./pages/AdminPricing"));
 const CheckoutMemo = lazy(() => import("./pages/CheckoutMemo"));
 const SampleMemo = lazy(() => import("./pages/SampleMemo"));
+const SampleMemoSectionView = lazy(() => import("./pages/SampleMemoSectionView"));
+const SampleMemoCompletionScreen = lazy(() => import("./pages/SampleMemoCompletionScreen"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const RoastYourBaby = lazy(() => import("./pages/RoastYourBaby"));
@@ -172,6 +174,8 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/sample-memo" element={<SampleMemo />} />
+            <Route path="/sample-memo/section" element={<SampleMemoSectionView />} />
+            <Route path="/sample-memo/complete" element={<SampleMemoCompletionScreen />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/articles" element={<AdminArticles />} />
             <Route path="/admin/prompts" element={<AdminPrompts />} />

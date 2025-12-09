@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, Sparkles } from "lucide-react";
@@ -100,13 +100,24 @@ const DEMO_COMPANY_ID = '00000000-0000-0000-0000-000000000001';
 
 const SampleMemo = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const viewMode = searchParams.get("view"); // 'full' for full memo, otherwise redirect to wizard
+  
   const [loading, setLoading] = useState(true);
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
+  const [shouldRedirectToWizard, setShouldRedirectToWizard] = useState(false);
 
   useEffect(() => {
     fetchMemo();
-  }, []);
+  }, [viewMode]);
+  
+  // Redirect to wizard mode if not in full view mode
+  useEffect(() => {
+    if (shouldRedirectToWizard) {
+      navigate('/sample-memo/section?section=0', { replace: true });
+    }
+  }, [shouldRedirectToWizard, navigate]);
 
   const fetchMemo = async () => {
     try {
@@ -122,6 +133,12 @@ const SampleMemo = () => {
       if (fetchError) throw fetchError;
 
       if (existingMemo && existingMemo.structured_content) {
+        // Check if we should redirect to wizard mode
+        if (viewMode !== 'full') {
+          setShouldRedirectToWizard(true);
+          setLoading(false);
+          return;
+        }
         setMemoContent(existingMemo.structured_content as unknown as MemoStructuredContent);
         setCompanyInfo(existingMemo.company);
       } else {
