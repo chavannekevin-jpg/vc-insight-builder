@@ -6,11 +6,26 @@ import { renderMarkdownText } from "@/lib/markdownParser";
 
 interface MemoVCQuestionsProps {
   questions: (string | MemoVCQuestion)[];
+  defaultAllOpen?: boolean;
 }
 
-export const MemoVCQuestions = ({ questions }: MemoVCQuestionsProps) => {
-  // Default to first question open
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+export const MemoVCQuestions = ({ questions, defaultAllOpen = false }: MemoVCQuestionsProps) => {
+  // Track multiple open indices when defaultAllOpen is true
+  const [openIndices, setOpenIndices] = useState<Set<number>>(
+    () => defaultAllOpen ? new Set(questions.map((_, i) => i)) : new Set([0])
+  );
+  
+  const toggleIndex = (index: number) => {
+    setOpenIndices(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
 
   if (!questions || questions.length === 0) return null;
 
@@ -29,7 +44,7 @@ export const MemoVCQuestions = ({ questions }: MemoVCQuestionsProps) => {
         {questions.map((question, index) => {
           const isEnhanced = isEnhancedQuestion(question);
           const questionText = isEnhanced ? question.question : question;
-          const isOpen = openIndex === index;
+          const isOpen = openIndices.has(index);
 
           if (isEnhanced) {
             // Enhanced question with expandable VC rationale
@@ -37,7 +52,7 @@ export const MemoVCQuestions = ({ questions }: MemoVCQuestionsProps) => {
               <Collapsible 
                 key={index} 
                 open={isOpen}
-                onOpenChange={(open) => setOpenIndex(open ? index : null)}
+                onOpenChange={() => toggleIndex(index)}
               >
                 <div 
                   className="rounded-lg bg-background/60 border border-border/30 overflow-hidden animate-fade-in"

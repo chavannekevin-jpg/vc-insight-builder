@@ -12,7 +12,49 @@ import { MemoVCReflection } from "@/components/memo/MemoVCReflection";
 import { MemoVCQuestions } from "@/components/memo/MemoVCQuestions";
 import { MemoBenchmarking } from "@/components/memo/MemoBenchmarking";
 import { MemoAIConclusion } from "@/components/memo/MemoAIConclusion";
-import type { MemoStructuredContent } from "@/types/memo";
+import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
+import { MemoVCScaleCard } from "@/components/memo/MemoVCScaleCard";
+import { MemoTeamList, TeamMember } from "@/components/memo/MemoTeamList";
+import type { MemoStructuredContent, MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
+
+// Sample team data for CarbonPrint demo
+const SAMPLE_TEAM: TeamMember[] = [
+  {
+    name: "Sarah Chen",
+    role: "CEO",
+    equity: "45%",
+    description: "Former sustainability lead at Google Cloud. MBA from Stanford. Built and sold climate analytics startup (acquired by Autodesk, 2021). Deep relationships with Fortune 500 sustainability officers."
+  },
+  {
+    name: "Marcus Rodriguez",
+    role: "CTO",
+    equity: "35%",
+    description: "Ex-Amazon principal engineer, 12 years building large-scale data infrastructure. PhD in Environmental Science from MIT. Holds 3 patents in carbon measurement algorithms."
+  },
+  {
+    name: "Jennifer Liu",
+    role: "COO",
+    equity: "20%",
+    description: "Former McKinsey partner specializing in sustainability practice. Scaled operations at two climate tech startups from seed to Series B. Expert in enterprise sales cycles."
+  }
+];
+
+// Sample VC Quick Take for demo
+const SAMPLE_VC_QUICK_TAKE: MemoVCQuickTakeType = {
+  verdict: "CarbonPrint shows strong founder-market fit and addresses a genuine regulatory tailwind. The product demonstrates clear differentiation, but unit economics need validation at scale. Worth a deeper dive if the TAM assumptions hold.",
+  concerns: [
+    "Enterprise sales cycle may be longer than projected (9-12 months vs stated 3-6)",
+    "Crowded market with well-funded competitors like Watershed and Persefoni",
+    "Regulatory dependency - business model relies on continued ESG mandates"
+  ],
+  strengths: [
+    "Exceptional team pedigree with direct domain expertise",
+    "Strong early traction with recognizable logos (Disney, Unilever)",
+    "Proprietary data moat from supply chain integrations"
+  ],
+  readinessLevel: "MEDIUM",
+  readinessRationale: "Strong fundamentals but needs to prove enterprise sales velocity and competitive differentiation before Series A."
+};
 
 const DEMO_COMPANY_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -177,11 +219,16 @@ const SampleMemo = () => {
           </div>
         </div>
 
+        {/* VC Quick Take - Green/Red flags summary */}
+        <MemoVCQuickTake quickTake={memoContent.vcQuickTake || SAMPLE_VC_QUICK_TAKE} showTeaser={false} />
+
         {/* Memo Sections */}
         <div className="space-y-16">
           {memoContent.sections.map((section, index) => {
             // Only blur Competition section - everything else is fully visible
             const isCompetitionSection = section.title === 'Competition' || section.title.toLowerCase().includes('competition');
+            const isTeamSection = section.title === 'Team' || section.title.toLowerCase().includes('team');
+            const isBusinessModelSection = section.title === 'Business Model' || section.title.toLowerCase().includes('business model');
             
             return (
               <MemoSection key={index} title={section.title} index={index}>
@@ -238,7 +285,22 @@ const SampleMemo = () => {
                       {(section.narrative?.keyPoints || section.keyPoints) && (
                         <MemoKeyPoints points={section.narrative?.keyPoints || section.keyPoints || []} />
                       )}
+
+                      {/* Team List - show structured founder list for team section */}
+                      {isTeamSection && (
+                        <MemoTeamList members={SAMPLE_TEAM} showEquity={true} />
+                      )}
                     </div>
+                  )}
+
+                  {/* $100M ARR Scale Card - show after Business Model section */}
+                  {isBusinessModelSection && (
+                    <MemoVCScaleCard 
+                      avgMonthlyRevenue={350}
+                      currentCustomers={23}
+                      currentMRR={8050}
+                      companyName="CarbonPrint"
+                    />
                   )}
 
                   {/* VC Reflection - Now fully visible for all sections */}
@@ -253,9 +315,9 @@ const SampleMemo = () => {
                       {/* VC Analysis - fully visible */}
                       <MemoVCReflection text={section.vcReflection.analysis} />
                       
-                      {/* Investor Questions - fully visible */}
+                      {/* Investor Questions - fully visible with all expanded */}
                       {section.vcReflection.questions && section.vcReflection.questions.length > 0 && (
-                        <MemoVCQuestions questions={section.vcReflection.questions} />
+                        <MemoVCQuestions questions={section.vcReflection.questions} defaultAllOpen={true} />
                       )}
                       
                       {/* Benchmarking - fully visible */}
