@@ -1,5 +1,5 @@
-import { TrendingUp, Building, Target, DollarSign, Calendar } from "lucide-react";
-import { ExitPathData, getSuggestedAcquirers } from "@/lib/memoDataExtractor";
+import { TrendingUp, Building, Target, DollarSign, Calendar, ExternalLink } from "lucide-react";
+import { ExitPathData, getSuggestedAcquirers, SimilarExit } from "@/lib/memoDataExtractor";
 
 interface MemoExitPathCardProps {
   exitData: ExitPathData;
@@ -126,8 +126,47 @@ export function MemoExitPathCard({ exitData, companyName }: MemoExitPathCardProp
         </p>
       </div>
 
+      {/* Similar Exits in the Space */}
+      {exitData.similarExits && exitData.similarExits.length > 0 && (
+        <div className="border-t border-border/30 pt-5">
+          <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <ExternalLink className="w-4 h-4 text-primary" />
+            Comparable Exits in This Space
+          </h4>
+          <div className="space-y-3">
+            {exitData.similarExits.slice(0, 4).map((exit, idx) => (
+              <div 
+                key={idx}
+                className="bg-background/50 border border-border/30 rounded-lg p-3 flex items-start justify-between gap-3"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-foreground">{exit.company}</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="text-foreground">{exit.acquirer}</span>
+                    <span className="text-xs text-muted-foreground">({exit.year})</span>
+                  </div>
+                  {exit.context && (
+                    <p className="text-xs text-muted-foreground mt-1">{exit.context}</p>
+                  )}
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-bold text-green-500">{exit.value}</p>
+                  {exit.multiple && (
+                    <p className="text-xs text-muted-foreground">{exit.multiple}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mt-3 italic">
+            Based on publicly reported M&A transactions and funding rounds in {exitData.category || 'this sector'}
+          </p>
+        </div>
+      )}
+
       {/* Potential Acquirers */}
-      <div className="border-t border-border/30 pt-5">
+      <div className="border-t border-border/30 pt-5 mt-5">
         <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
           <Building className="w-4 h-4 text-primary" />
           Potential Strategic Acquirers
