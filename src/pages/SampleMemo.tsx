@@ -281,30 +281,7 @@ const SampleMemo = () => {
               
               return (
                 <MemoSection key={index} title={section.title} index={index}>
-                  {/* Competition section gets a teaser overlay */}
-                  {isCompetitionSection && (
-                    <div className="absolute inset-0 z-10 bg-background/70 backdrop-blur-md rounded-3xl flex items-center justify-center">
-                      <div className="bg-card/95 border-2 border-primary/50 rounded-2xl p-8 shadow-glow-strong text-center max-w-lg mx-auto hover-lift">
-                        <div className="w-14 h-14 rounded-full gradient-primary flex items-center justify-center mx-auto mb-4 shadow-glow pulse-glow">
-                          <svg className="w-7 h-7 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                          </svg>
-                        </div>
-                        <h3 className="text-xl font-bold neon-pink mb-3">Competition Analysis Preview</h3>
-                        <p className="text-sm text-foreground mb-2">
-                          Our AI identified <strong className="neon-pink">4 direct competitors</strong> and <strong className="neon-pink">3 adjacent threats</strong> in this market.
-                        </p>
-                        <p className="text-xs text-muted-foreground mb-5">
-                          This section includes defensibility scoring, competitive moat analysis, and investor concerns about market positioning.
-                        </p>
-                        <Button size="sm" className="gradient-primary hover:shadow-glow-strong transition-all" onClick={() => navigate('/memo-builder')}>
-                          <Sparkles className="w-4 h-4 mr-2" />
-                          Get Your Competitive Analysis
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  <div className={isCompetitionSection ? 'blur-sm pointer-events-none select-none' : ''}>
+                  <div>
                     {/* Narrative Content */}
                     {(section.narrative || section.paragraphs || section.highlights || section.keyPoints) && (
                       <div className="space-y-8">
