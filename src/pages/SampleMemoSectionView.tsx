@@ -142,6 +142,7 @@ export default function SampleMemoSectionView() {
   const goToSection = (index: number) => {
     if (index >= 0 && index < totalSections) {
       navigate(`/sample-memo/section?section=${index}`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -165,9 +166,8 @@ export default function SampleMemoSectionView() {
   const heroParagraph = narrative.paragraphs?.find((p: MemoParagraph) => p.emphasis === "high");
   const otherParagraphs = narrative.paragraphs?.filter((p: MemoParagraph) => p.emphasis !== "high") || [];
 
-  // Track if exit path shown
-  let exitPathShown = false;
-  const showExitPath = !exitPathShown && (isThesisSection || isVisionSection);
+  // Exit Path only on Vision section (not Thesis)
+  const showExitPath = isVisionSection;
 
   return (
     <div className="min-h-screen bg-background">

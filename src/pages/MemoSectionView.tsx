@@ -118,6 +118,7 @@ export default function MemoSectionView() {
   const goToSection = (index: number) => {
     if (index >= 0 && index < totalSections) {
       navigate(`/memo/section?companyId=${companyId}&section=${index}`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -289,8 +290,8 @@ export default function MemoSectionView() {
                   />
                 )}
 
-                {/* Vision/Thesis Section - Exit Path Card */}
-                {(isThesisSection || isVisionSection) && (
+                {/* Vision Section - Exit Path Card (only on Vision, not Thesis) */}
+                {isVisionSection && (
                   <MemoExitPathCard 
                     exitData={{
                       category: companyInfo?.category || 'Technology',

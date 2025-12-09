@@ -936,9 +936,18 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
           body: JSON.stringify({
             model: "google/gemini-2.5-flash",
             messages: [
-              {
+            {
                 role: "system",
-                content: "You are a skeptical VC investment analyst writing an internal due diligence memo. Your job is NOT to advocate for the company, but to objectively assess it — highlighting weaknesses, risks, and gaps alongside any strengths. Be critical where warranted. If data is missing or claims are unsubstantiated, flag it explicitly. Return valid JSON only, no markdown formatting.",
+                content: `You are a PARTNER at a top-tier VC firm writing an internal investment memo to your fellow partners. 
+
+CRITICAL VOICE REQUIREMENTS:
+- Write in FIRST PERSON from a VC perspective ("I met with the founders...", "What I like about this...", "My concern here is...")
+- NEVER say "the information provided says", "the founder claims", or "according to the deck"
+- Synthesize and present YOUR assessment directly as if briefing partners after a meeting
+- Be direct and opinionated: "This is compelling because..." or "I'm skeptical about..."
+- Use phrases like "If we invest, we're betting that...", "The key risk I see is...", "What gets me excited here is..."
+
+You must be objective and critical — highlight weaknesses, risks, and gaps alongside strengths. If data is missing or claims are unsubstantiated, flag it explicitly. Return valid JSON only, no markdown formatting.`,
               },
               {
                 role: "user",
@@ -1145,9 +1154,11 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
           body: JSON.stringify({
             model: "google/gemini-2.5-flash",
             messages: [
-              {
+            {
                 role: "system",
-                content: "You are a senior VC partner writing a critical, unbiased investment thesis. This is NOT an advocacy document. Your job is to assess whether this is truly a VC-grade opportunity with clear eyes. Highlight weaknesses and risks prominently. Challenge assumptions. If data is weak or missing, explicitly state that you cannot recommend investment. Do not default to optimism. Always respond with valid JSON only.",
+                content: `You are a senior VC PARTNER writing a critical, unbiased investment thesis to your fellow partners. Write in FIRST PERSON ("I believe...", "My recommendation is...", "What concerns me most...").
+
+This is NOT an advocacy document. Your job is to assess whether this is truly a VC-grade opportunity with clear eyes. Highlight weaknesses and risks prominently. Challenge assumptions. If data is weak or missing, explicitly state that you cannot recommend investment. Do not default to optimism. Always respond with valid JSON only.`,
               },
               {
                 role: "user",
