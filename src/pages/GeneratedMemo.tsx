@@ -23,6 +23,9 @@ import { MemoVCQuestions } from "@/components/memo/MemoVCQuestions";
 import { MemoVCReflection } from "@/components/memo/MemoVCReflection";
 import { MemoBenchmarking } from "@/components/memo/MemoBenchmarking";
 import { MemoAIConclusion } from "@/components/memo/MemoAIConclusion";
+import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
+import { MemoMomentumCard } from "@/components/memo/MemoMomentumCard";
+import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCard";
 import { extractMoatScores, extractTeamMembers, extractUnitEconomics } from "@/lib/memoDataExtractor";
 import { ArrowLeft, RefreshCw, Printer, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -563,12 +566,16 @@ export default function GeneratedMemo() {
               };
 
               // Section type detection
-              const isTeamSection = section.title.toLowerCase().includes('team');
-              const isMarketSection = section.title.toLowerCase().includes('market');
-              const isCompetitionSection = section.title.toLowerCase().includes('competition');
-              const isBusinessSection = section.title.toLowerCase().includes('business');
-              const isThesisSection = section.title.toLowerCase().includes('thesis');
-              const isVisionSection = section.title.toLowerCase().includes('vision');
+              const titleLower = section.title.toLowerCase();
+              const isProblemSection = titleLower.includes('problem');
+              const isSolutionSection = titleLower.includes('solution');
+              const isTeamSection = titleLower.includes('team');
+              const isMarketSection = titleLower.includes('market');
+              const isCompetitionSection = titleLower.includes('competition');
+              const isBusinessSection = titleLower.includes('business');
+              const isTractionSection = titleLower.includes('traction');
+              const isThesisSection = titleLower.includes('thesis');
+              const isVisionSection = titleLower.includes('vision');
               
               // Determine if we should show exit path (only once, prefer thesis over vision)
               const showExitPath = !exitPathShown && (isThesisSection || isVisionSection);
@@ -602,6 +609,22 @@ export default function GeneratedMemo() {
                   {/* Strategic Cards - Premium Only */}
                   {hasPremium && (
                     <>
+                      {/* Problem Section - Pain Validator */}
+                      {isProblemSection && (
+                        <MemoPainValidatorCard 
+                          problemText={sectionText}
+                          companyName={companyInfo?.name || 'Company'}
+                        />
+                      )}
+
+                      {/* Solution Section - Differentiation Matrix */}
+                      {isSolutionSection && (
+                        <MemoDifferentiationCard 
+                          solutionText={sectionText}
+                          companyName={companyInfo?.name || 'Company'}
+                        />
+                      )}
+                    
                       {/* Team Section Cards */}
                       {isTeamSection && extractedTeamMembers.length > 0 && (
                         <>
@@ -638,6 +661,15 @@ export default function GeneratedMemo() {
                         <MemoMoatScoreCard 
                           moatScores={extractedMoatScores}
                           companyName={companyInfo?.name || 'Company'}
+                        />
+                      )}
+
+                      {/* Traction Section - Momentum Scorecard */}
+                      {isTractionSection && (
+                        <MemoMomentumCard 
+                          tractionText={sectionText}
+                          companyName={companyInfo?.name || 'Company'}
+                          stage={companyInfo?.stage || 'Pre-seed'}
                         />
                       )}
 
