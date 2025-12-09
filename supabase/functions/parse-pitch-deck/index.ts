@@ -13,8 +13,8 @@ const CONFIDENCE_THRESHOLD = 0.6;
 // Timeout for AI API call (90 seconds)
 const AI_TIMEOUT_MS = 90000;
 
-// Max file size (5MB) - safe for edge function memory
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+// Max file size (20MB) - supports larger pitch decks
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
