@@ -68,10 +68,10 @@ export const HeroSection = () => {
               Get Your VC Memo →
             </button>
             <button
-              onClick={() => navigate('/about')}
+              onClick={() => navigate('/sample-memo')}
               className="px-8 py-4 rounded-lg bg-muted border border-border text-foreground font-semibold text-lg hover:bg-muted/80 transition-all"
             >
-              Learn More
+              See a Sample Memo
             </button>
           </div>
 

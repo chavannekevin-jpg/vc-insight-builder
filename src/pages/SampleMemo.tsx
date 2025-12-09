@@ -69,7 +69,7 @@ const SampleMemo = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <p className="text-lg text-foreground">Unable to load sample memo</p>
-          <Button className="gradient-primary shadow-glow" onClick={() => navigate('/vcbrain')}>Back to Hub</Button>
+          <Button className="gradient-primary shadow-glow" onClick={() => navigate('/')}>Back to Home</Button>
         </div>
       </div>
     );
@@ -83,11 +83,11 @@ const SampleMemo = () => {
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
-              onClick={() => navigate('/vcbrain')}
+              onClick={() => navigate('/')}
               className="gap-2 hover:bg-primary/10 transition-colors neon-pink"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="font-medium">Back to Hub</span>
+              <span className="font-medium">Back to Home</span>
             </Button>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center shadow-glow">
