@@ -19,7 +19,8 @@ import { MemoMoatScoreCard } from "@/components/memo/MemoMoatScoreCard";
 import { MemoTeamGapCard } from "@/components/memo/MemoTeamGapCard";
 import { MemoExitPathCard } from "@/components/memo/MemoExitPathCard";
 import { MemoUnitEconomicsCard } from "@/components/memo/MemoUnitEconomicsCard";
-import type { MemoStructuredContent, MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
+import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
+import type { MemoStructuredContent, MemoVCQuickTake as MemoVCQuickTakeType, MemoParagraph as MemoParagraphType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
 
 // Sample team data for CarbonPrint demo
@@ -268,12 +269,17 @@ const SampleMemo = () => {
             
             return memoContent.sections.map((section, index) => {
               // Section type detection
+              const isProblemSection = section.title.toLowerCase().includes('problem');
               const isCompetitionSection = section.title === 'Competition' || section.title.toLowerCase().includes('competition');
               const isTeamSection = section.title === 'Team' || section.title.toLowerCase().includes('team');
               const isMarketSection = section.title === 'Market' || section.title.toLowerCase().includes('market');
               const isBusinessSection = section.title.toLowerCase().includes('business');
               const isThesisSection = section.title.toLowerCase().includes('thesis');
               const isVisionSection = section.title.toLowerCase().includes('vision');
+              
+              // Get section text for Pain Validator
+              const sectionParagraphs = section.narrative?.paragraphs || section.paragraphs || [];
+              const sectionText = sectionParagraphs.map((p: MemoParagraphType) => p.text).join(' ');
               
               // Determine if we should show exit path (only once, prefer thesis over vision)
               const showExitPath = !exitPathShown && (isThesisSection || isVisionSection);
@@ -324,6 +330,14 @@ const SampleMemo = () => {
                           </>
                         )}
                       </div>
+                    )}
+
+                    {/* Pain Validator Card - show after Problem section */}
+                    {isProblemSection && (
+                      <MemoPainValidatorCard 
+                        problemText={sectionText}
+                        companyName="CarbonPrint"
+                      />
                     )}
 
                     {/* $100M ARR Scale Card - show after Market section */}
