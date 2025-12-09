@@ -73,6 +73,7 @@ const EducationalContent = lazy(() => import("./pages/EducationalContent"));
 const GeneratedMemo = lazy(() => import("./pages/GeneratedMemo"));
 const MemoOverview = lazy(() => import("./pages/MemoOverview"));
 const MemoSectionView = lazy(() => import("./pages/MemoSectionView"));
+const MemoCompletionScreen = lazy(() => import("./pages/MemoCompletionScreen"));
 const PreSeedGuide = lazy(() => import("./pages/PreSeedGuide"));
 const ProblemSlideGuide = lazy(() => import("./pages/ProblemSlideGuide"));
 const SolutionSlideGuide = lazy(() => import("./pages/SolutionSlideGuide"));
@@ -156,6 +157,7 @@ const App = () => (
             <Route path="/memo" element={<GeneratedMemo />} />
             <Route path="/memo/overview" element={<MemoOverview />} />
             <Route path="/memo/section" element={<MemoSectionView />} />
+            <Route path="/memo/complete" element={<MemoCompletionScreen />} />
             <Route path="/company" element={<CompanyProfile />} />
             <Route path="/company-profile" element={<CompanyProfile />} />
             <Route path="/company/profile/edit" element={<CompanyProfileEdit />} />

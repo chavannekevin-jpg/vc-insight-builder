@@ -60,6 +60,7 @@ export default function GeneratedMemo() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const companyId = searchParams.get("companyId");
+  const viewMode = searchParams.get("view"); // 'full' for full memo, otherwise redirect to wizard
   
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
@@ -68,6 +69,7 @@ export default function GeneratedMemo() {
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
   const [hasPremium, setHasPremium] = useState(false);
+  const [shouldRedirectToWizard, setShouldRedirectToWizard] = useState(false);
   
   // Smart fill state
   const [showSmartFill, setShowSmartFill] = useState(false);
@@ -196,6 +198,14 @@ export default function GeneratedMemo() {
             setLoading(false);
           }
         } else {
+          // Memo exists - check if we should redirect to wizard mode
+          if (viewMode !== 'full') {
+            // Redirect to section-by-section wizard
+            setShouldRedirectToWizard(true);
+            setLoading(false);
+            return;
+          }
+          
           const { data: companyData, error: companyError } = await supabase
             .from("companies")
             .select("*")
@@ -219,7 +229,14 @@ export default function GeneratedMemo() {
       }
     };
     init();
-  }, [companyId, navigate]);
+  }, [companyId, navigate, viewMode]);
+  
+  // Redirect to wizard mode if memo exists and not in full view mode
+  useEffect(() => {
+    if (shouldRedirectToWizard && companyId) {
+      navigate(`/memo/section?companyId=${companyId}&section=0`, { replace: true });
+    }
+  }, [shouldRedirectToWizard, companyId, navigate]);
 
   const generateMemo = async (companyIdToGenerate: string, force: boolean = false) => {
     setLoading(true);
