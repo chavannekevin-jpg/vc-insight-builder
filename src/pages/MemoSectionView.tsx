@@ -160,41 +160,28 @@ export default function MemoSectionView() {
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/50">
         <div className="container mx-auto px-4 py-3 max-w-5xl">
           <div className="flex items-center justify-between gap-4">
-            {/* Back to Overview */}
-            <Button variant="ghost" size="sm" onClick={() => navigate(`/memo/overview?companyId=${companyId}`)}>
-              <Grid className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Overview</span>
-            </Button>
-            
-            {/* Section Progress */}
-            <div className="flex-1 max-w-md">
+            {/* Section Title & Progress */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {sectionIndex + 1} / {totalSections}
+                <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full whitespace-nowrap">
+                  {sectionIndex + 1} of {totalSections}
                 </span>
-                <Progress value={progressPercent} className="h-2 flex-1" />
+              </div>
+              <div className="flex-1 max-w-xs">
+                <Progress value={progressPercent} className="h-1.5" />
               </div>
             </div>
             
-            {/* Navigation Arrows */}
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={() => goToSection(sectionIndex - 1)}
-                disabled={sectionIndex === 0}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={() => goToSection(sectionIndex + 1)}
-                disabled={sectionIndex === totalSections - 1}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
+            {/* Escape Hatch - View Full Memo */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Full Memo</span>
+            </Button>
           </div>
         </div>
       </div>
@@ -346,45 +333,78 @@ export default function MemoSectionView() {
 
         {/* Bottom Navigation */}
         <div className="mt-12 pt-8 border-t border-border/50">
-          <div className="flex items-center justify-between">
-            <Button 
-              variant="outline"
-              onClick={() => goToSection(sectionIndex - 1)}
-              disabled={sectionIndex === 0}
-              className="gap-2"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Previous Section</span>
-              <span className="sm:hidden">Prev</span>
-            </Button>
+          <div className="flex flex-col gap-4">
+            {/* Main Navigation - Next/Previous */}
+            <div className="flex items-center justify-between">
+              <Button 
+                variant="outline"
+                onClick={() => goToSection(sectionIndex - 1)}
+                disabled={sectionIndex === 0}
+                className="gap-2"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Previous</span>
+              </Button>
+              
+              {/* Progress Dots */}
+              <div className="flex items-center gap-1.5">
+                {Array.from({ length: totalSections }).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => goToSection(idx)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      idx === sectionIndex 
+                        ? 'bg-primary w-6' 
+                        : idx < sectionIndex 
+                          ? 'bg-primary/50' 
+                          : 'bg-muted-foreground/30'
+                    }`}
+                  />
+                ))}
+              </div>
+              
+              <Button 
+                variant={sectionIndex === totalSections - 1 ? "default" : "default"}
+                onClick={() => {
+                  if (sectionIndex === totalSections - 1) {
+                    navigate(`/memo/complete?companyId=${companyId}`);
+                  } else {
+                    goToSection(sectionIndex + 1);
+                  }
+                }}
+                className="gap-2"
+              >
+                <span className="hidden sm:inline">
+                  {sectionIndex === totalSections - 1 ? 'Complete Review' : 'Next Section'}
+                </span>
+                <span className="sm:hidden">
+                  {sectionIndex === totalSections - 1 ? 'Done' : 'Next'}
+                </span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
             
-            <Button 
-              variant="ghost"
-              onClick={() => navigate(`/memo/overview?companyId=${companyId}`)}
-            >
-              <Grid className="w-4 h-4 mr-2" />
-              All Sections
-            </Button>
-            
-            <Button 
-              variant={sectionIndex === totalSections - 1 ? "default" : "outline"}
-              onClick={() => {
-                if (sectionIndex === totalSections - 1) {
-                  navigate(`/memo/overview?companyId=${companyId}`);
-                } else {
-                  goToSection(sectionIndex + 1);
-                }
-              }}
-              className="gap-2"
-            >
-              <span className="hidden sm:inline">
-                {sectionIndex === totalSections - 1 ? 'Complete' : 'Next Section'}
-              </span>
-              <span className="sm:hidden">
-                {sectionIndex === totalSections - 1 ? 'Done' : 'Next'}
-              </span>
-              {sectionIndex < totalSections - 1 && <ChevronRight className="w-4 h-4" />}
-            </Button>
+            {/* Secondary Actions */}
+            <div className="flex items-center justify-center gap-4 pt-2">
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`/memo/overview?companyId=${companyId}`)}
+                className="text-muted-foreground"
+              >
+                <Grid className="w-4 h-4 mr-2" />
+                All Sections
+              </Button>
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
+                className="text-muted-foreground"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                View Full Memo
+              </Button>
+            </div>
           </div>
         </div>
       </div>

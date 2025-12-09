@@ -155,18 +155,18 @@ export default function MemoOverview() {
           
           <div className="flex gap-3">
             <Button 
+              variant="default" 
+              onClick={() => navigate(`/memo/section?companyId=${companyId}&section=0`)}
+            >
+              <ArrowRight className="w-4 h-4 mr-2" />
+              Start Reading
+            </Button>
+            <Button 
               variant="outline" 
-              onClick={() => navigate(`/memo?companyId=${companyId}`)}
+              onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
             >
               <Eye className="w-4 h-4 mr-2" />
               Full Memo
-            </Button>
-            <Button 
-              variant="default" 
-              onClick={() => window.print()}
-            >
-              <Printer className="w-4 h-4 mr-2" />
-              Print
             </Button>
           </div>
         </div>
@@ -251,9 +251,17 @@ export default function MemoOverview() {
           <h3 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Button 
+              variant="default" 
+              className="h-auto py-4 flex-col gap-2"
+              onClick={() => navigate(`/memo/section?companyId=${companyId}&section=0`)}
+            >
+              <ArrowRight className="w-5 h-5" />
+              <span>Start Section-by-Section</span>
+            </Button>
+            <Button 
               variant="outline" 
               className="h-auto py-4 flex-col gap-2"
-              onClick={() => navigate(`/memo?companyId=${companyId}`)}
+              onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
             >
               <BookOpen className="w-5 h-5" />
               <span>View Full Memo</span>
