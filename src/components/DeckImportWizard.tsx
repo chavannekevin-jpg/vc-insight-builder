@@ -381,6 +381,7 @@ export const DeckImportWizard = ({
               <DeckUploader 
                 onFileSelect={handleFileSelect}
                 isUploading={isProcessing}
+                maxSizeMB={8}
               />
 
               {selectedFile && (
