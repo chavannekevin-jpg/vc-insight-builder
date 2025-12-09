@@ -1,18 +1,117 @@
-import { Calculator, TrendingUp, Target, AlertTriangle, Info } from "lucide-react";
+import { Calculator, TrendingUp, Target, AlertTriangle, Info, Lightbulb, DollarSign, Users, Layers, Zap, ArrowUpRight } from "lucide-react";
 import { renderMarkdownText } from "@/lib/markdownParser";
 
+export interface ScaleStrategy {
+  title: string;
+  description: string;
+  impact: "high" | "medium" | "low";
+  icon: "pricing" | "expansion" | "upsell" | "efficiency" | "partnership";
+  benchmark?: string;
+}
+
 interface MemoVCScaleCardProps {
-  avgMonthlyRevenue?: number;  // ARPU in dollars
+  avgMonthlyRevenue?: number;
   currentCustomers?: number;
   currentMRR?: number;
   companyName?: string;
+  category?: string;
+  strategies?: ScaleStrategy[];
 }
+
+// Default strategies based on VC thinking patterns
+const generateDefaultStrategies = (
+  avgMonthlyRevenue: number,
+  customersNeeded: number,
+  category?: string
+): ScaleStrategy[] => {
+  const strategies: ScaleStrategy[] = [];
+
+  // Pricing strategy - always relevant
+  if (avgMonthlyRevenue < 500) {
+    strategies.push({
+      title: "Enterprise Tier Expansion",
+      description: `Introduce a premium enterprise tier at $2,000-5,000/month. Converting just 5% of customers to enterprise would reduce the customer count needed by 40-60%.`,
+      impact: "high",
+      icon: "pricing",
+      benchmark: "Top SaaS companies derive 60%+ revenue from enterprise tiers"
+    });
+  } else {
+    strategies.push({
+      title: "Usage-Based Pricing Layer",
+      description: `Add consumption-based pricing on top of base subscription. Companies using hybrid pricing see 20-30% higher expansion revenue.`,
+      impact: "high",
+      icon: "pricing",
+      benchmark: "Snowflake, Datadog, Twilio all use hybrid pricing models"
+    });
+  }
+
+  // Cross-sell strategy
+  strategies.push({
+    title: "Adjacent Product Cross-Sell",
+    description: `Expand into complementary offerings: analytics dashboards, compliance reporting, or API access. Each additional product increases LTV by 30-50% on average.`,
+    impact: "high",
+    icon: "upsell",
+    benchmark: "Multi-product companies have 2-3x higher valuations at exit"
+  });
+
+  // Channel partnerships
+  strategies.push({
+    title: "Channel Partnership Acceleration",
+    description: `Partner with established players for distribution. Channel partners can 3-5x customer acquisition velocity with lower CAC.`,
+    impact: "medium",
+    icon: "partnership",
+    benchmark: "HubSpot's partner program drives 40% of new revenue"
+  });
+
+  // Market expansion
+  strategies.push({
+    title: "Vertical Market Expansion",
+    description: `Customize solution for high-value verticals (finance, healthcare, enterprise). Vertical-specific solutions command 2-3x premium pricing.`,
+    impact: "medium",
+    icon: "expansion",
+    benchmark: "Veeva built $30B business on vertical SaaS for life sciences"
+  });
+
+  // Efficiency play
+  if (customersNeeded > 50000) {
+    strategies.push({
+      title: "Product-Led Growth Motion",
+      description: `Implement freemium/self-serve to reduce CAC and increase velocity. PLG companies grow 2x faster with 50% lower CAC than sales-led peers.`,
+      impact: "high",
+      icon: "efficiency",
+      benchmark: "Atlassian, Slack, Zoom all scaled via PLG to billion-dollar outcomes"
+    });
+  }
+
+  return strategies.slice(0, 4); // Return top 4 strategies
+};
+
+const getStrategyIcon = (iconType: ScaleStrategy["icon"]) => {
+  switch (iconType) {
+    case "pricing": return DollarSign;
+    case "expansion": return ArrowUpRight;
+    case "upsell": return Layers;
+    case "efficiency": return Zap;
+    case "partnership": return Users;
+    default: return Lightbulb;
+  }
+};
+
+const getImpactColor = (impact: ScaleStrategy["impact"]) => {
+  switch (impact) {
+    case "high": return "bg-success/20 text-success border-success/30";
+    case "medium": return "bg-warning/20 text-warning border-warning/30";
+    case "low": return "bg-muted/30 text-muted-foreground border-border/30";
+  }
+};
 
 export const MemoVCScaleCard = ({ 
   avgMonthlyRevenue = 300, 
   currentCustomers = 0,
   currentMRR = 0,
-  companyName = "This company"
+  companyName = "This company",
+  category,
+  strategies
 }: MemoVCScaleCardProps) => {
   const targetARR = 100_000_000; // $100M
   const annualValue = avgMonthlyRevenue * 12;
@@ -29,6 +128,9 @@ export const MemoVCScaleCard = ({
     return Math.ceil(Math.log(targetARR / currentARR) / Math.log(1 + growthRate));
   };
 
+  // Use provided strategies or generate defaults
+  const displayStrategies = strategies || generateDefaultStrategies(avgMonthlyRevenue, customersNeeded, category);
+
   return (
     <div className="relative animate-fade-in my-10">
       {/* Glow effect */}
@@ -43,7 +145,7 @@ export const MemoVCScaleCard = ({
             </div>
             <div>
               <h3 className="text-xl font-display font-bold text-foreground">The VC Scale Test</h3>
-              <p className="text-muted-foreground text-sm">Path to $100M ARR</p>
+              <p className="text-muted-foreground text-sm">Path to $100M ARR & How to Accelerate</p>
             </div>
           </div>
         </div>
@@ -130,7 +232,7 @@ export const MemoVCScaleCard = ({
                       <div key={rate} className="bg-background/40 rounded-lg p-3 text-center border border-border/30">
                         <p className="text-xs text-muted-foreground">{label} growth</p>
                         <p className="text-lg font-bold text-foreground">
-                          {years ? `${years} years` : 'N/A'}
+                          {years ? `${years} years` : "N/A"}
                         </p>
                       </div>
                     );
@@ -140,6 +242,52 @@ export const MemoVCScaleCard = ({
             </div>
           )}
 
+          {/* VC Strategies to Accelerate - NEW SECTION */}
+          <div className="space-y-4 pt-4 border-t border-border/50">
+            <div className="flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-warning" />
+              <h4 className="font-semibold text-foreground">VC-Backed Strategies to Accelerate Scale</h4>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Based on industry benchmarks and successful scaling patterns, here are high-leverage moves to reach $100M ARR faster:
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {displayStrategies.map((strategy, index) => {
+                const Icon = getStrategyIcon(strategy.icon);
+                return (
+                  <div
+                    key={index}
+                    className="bg-background/60 rounded-xl p-4 border border-border/30 hover:border-primary/30 transition-all duration-200 animate-fade-in"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h5 className="font-semibold text-foreground text-sm">{strategy.title}</h5>
+                          <span className={`px-2 py-0.5 rounded text-xs font-semibold border ${getImpactColor(strategy.impact)}`}>
+                            {strategy.impact.toUpperCase()}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                          {strategy.description}
+                        </p>
+                        {strategy.benchmark && (
+                          <p className="text-xs text-primary/80 italic">
+                            📊 {strategy.benchmark}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Verdict */}
           <div className="bg-gradient-to-r from-warning/10 to-warning/5 rounded-xl p-4 border border-warning/30">
             <div className="flex items-start gap-3">
@@ -148,8 +296,8 @@ export const MemoVCScaleCard = ({
                 <p className="font-semibold text-foreground mb-1">VC Perspective</p>
                 <p className="text-sm text-muted-foreground">
                   {currentCustomers > 0 
-                    ? `At current traction, exponential growth or higher ARPU tiers are needed to reach venture scale. VCs will probe how realistic the path to ${customersNeeded.toLocaleString()} paying customers is.`
-                    : `VCs will calculate whether the market can support ${customersNeeded.toLocaleString()} customers at this price point, and if the company can capture enough of that market.`
+                    ? `At current traction, the path to ${customersNeeded.toLocaleString()} customers requires either exponential growth, ARPU expansion, or a combination. Smart VCs will ask which of these strategies you're prioritizing and how they map to your market dynamics.`
+                    : `VCs will probe whether the market can support ${customersNeeded.toLocaleString()} customers and which combination of these strategies will get you there fastest. Having a clear POV on your scaling playbook is critical.`
                   }
                 </p>
               </div>

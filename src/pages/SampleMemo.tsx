@@ -225,10 +225,10 @@ const SampleMemo = () => {
         {/* Memo Sections */}
         <div className="space-y-16">
           {memoContent.sections.map((section, index) => {
-            // Only blur Competition section - everything else is fully visible
+            // Section type detection
             const isCompetitionSection = section.title === 'Competition' || section.title.toLowerCase().includes('competition');
             const isTeamSection = section.title === 'Team' || section.title.toLowerCase().includes('team');
-            const isBusinessModelSection = section.title === 'Business Model' || section.title.toLowerCase().includes('business model');
+            const isMarketSection = section.title === 'Market' || section.title.toLowerCase().includes('market');
             
             return (
               <MemoSection key={index} title={section.title} index={index}>
@@ -293,13 +293,14 @@ const SampleMemo = () => {
                     </div>
                   )}
 
-                  {/* $100M ARR Scale Card - show after Business Model section */}
-                  {isBusinessModelSection && (
+                  {/* $100M ARR Scale Card - show after Market section */}
+                  {isMarketSection && (
                     <MemoVCScaleCard 
                       avgMonthlyRevenue={350}
                       currentCustomers={23}
                       currentMRR={8050}
                       companyName="CarbonPrint"
+                      category="Climate Tech"
                     />
                   )}
 
