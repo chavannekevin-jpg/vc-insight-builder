@@ -107,24 +107,71 @@ export function extractTeamMembers(teamStoryText: string): ExtractedTeamMember[]
 
   const members: ExtractedTeamMember[] = [];
   
-  // Common role patterns
+  // Extended role keywords
+  const roleKeywords = 'CEO|CTO|COO|CFO|CMO|CPO|VP|Head|Director|Founder|Co-founder|Chief|Lead|Manager|Engineer|President';
+  
+  // Common role patterns - expanded to catch more formats
   const rolePatterns = [
-    /(?:^|\n|,\s*)([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*[-–]\s*(CEO|CTO|COO|CFO|CMO|CPO|VP|Head|Director|Founder|Co-founder)/gi,
-    /(?:^|\n|,\s*)([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*\((CEO|CTO|COO|CFO|CMO|CPO|VP|Head|Director|Founder|Co-founder)[^)]*\)/gi,
-    /(CEO|CTO|COO|CFO|CMO|CPO):\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/gi
+    // Name - Role format
+    new RegExp(`(?:^|\\n|,\\s*|\\*\\*|\\*|\\•)\\s*([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s*[-–—:]\\s*(${roleKeywords}[^,\\n]*)`, 'gi'),
+    // Name (Role) format
+    new RegExp(`([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s*\\((${roleKeywords}[^)]+)\\)`, 'gi'),
+    // Role: Name format
+    new RegExp(`(${roleKeywords}):\\s*([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)`, 'gi'),
+    // **Name** as Role format (markdown)
+    new RegExp(`\\*\\*([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\*\\*[^\\n]*(${roleKeywords}[^,\\n]*)`, 'gi'),
+    // Name, Role format (comma separated)
+    new RegExp(`([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?),\\s*(${roleKeywords}[^,\\n]*)`, 'gi'),
+    // Bullet point format: • Name - Role
+    new RegExp(`[\\•\\-\\*]\\s*([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s*[-–:]\\s*(${roleKeywords}[^\\n]*)`, 'gi'),
+    // "as the CEO" or "serves as CEO" format
+    new RegExp(`([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)(?:\\s+(?:is|as|serves as)\\s+(?:the\\s+)?)(${roleKeywords}[^,\\.\\n]*)`, 'gi')
   ];
 
   rolePatterns.forEach(pattern => {
     let match;
     while ((match = pattern.exec(teamStoryText)) !== null) {
-      const name = match[1]?.trim() || match[2]?.trim();
-      const role = match[2]?.trim() || match[1]?.trim();
+      let name = match[1]?.trim();
+      let role = match[2]?.trim();
       
-      if (name && role && !members.some(m => m.name.toLowerCase() === name.toLowerCase())) {
+      // Handle Role: Name format where role comes first
+      if (name && /^(CEO|CTO|COO|CFO|CMO|CPO)$/i.test(name)) {
+        [name, role] = [role, name];
+      }
+      
+      // Clean up role (remove extra punctuation/markdown)
+      if (role) {
+        role = role.replace(/^\*+|\*+$/g, '').replace(/\s+/g, ' ').trim();
+      }
+      
+      // Validate name looks like a real name (has letters, reasonable length)
+      const isValidName = name && 
+        name.length >= 2 && 
+        name.length <= 50 && 
+        /^[A-Z][a-z]+(\s+[A-Z][a-z]+)*$/.test(name);
+      
+      if (isValidName && role && !members.some(m => m.name.toLowerCase() === name.toLowerCase())) {
         members.push({ name, role });
       }
     }
   });
+
+  // If no members found with patterns, try to extract from structured text
+  if (members.length === 0) {
+    // Look for common team section patterns
+    const lines = teamStoryText.split('\n');
+    for (const line of lines) {
+      // Simple "Name is the Role" pattern
+      const simpleMatch = line.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:is|as)\s+(?:the\s+)?(CEO|CTO|COO|CFO|CMO|CPO|Founder|Co-founder)/i);
+      if (simpleMatch) {
+        const name = simpleMatch[1].trim();
+        const role = simpleMatch[2].trim();
+        if (!members.some(m => m.name.toLowerCase() === name.toLowerCase())) {
+          members.push({ name, role });
+        }
+      }
+    }
+  }
 
   return members;
 }

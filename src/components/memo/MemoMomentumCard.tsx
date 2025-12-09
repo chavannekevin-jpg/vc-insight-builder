@@ -1,8 +1,12 @@
-import { TrendingUp, Rocket, Users, BarChart3, Zap, AlertTriangle, Target } from "lucide-react";
+import { useState } from "react";
+import { TrendingUp, Rocket, Users, BarChart3, Zap, Target, Edit2, Save, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface MomentumMetrics {
   growthRate: number | null;
   userCount: number | null;
+  mrr: number | null;
   revenueSignals: string[];
   retentionSignals: string[];
   velocitySignals: string[];
@@ -48,6 +52,22 @@ function extractMomentumMetrics(text: string): MomentumMetrics {
       break;
     }
   }
+
+  // Extract MRR
+  const mrrPatterns = [
+    /\$?([\d,]+)\s*mrr/gi,
+    /mrr[:\s]+\$?([\d,]+)/gi,
+    /€([\d,]+)\s*mrr/gi
+  ];
+  
+  let mrr: number | null = null;
+  for (const pattern of mrrPatterns) {
+    const match = pattern.exec(text);
+    if (match) {
+      mrr = parseFloat(match[1].replace(/,/g, ''));
+      break;
+    }
+  }
   
   // Revenue signals
   const revenueKeywords = ['revenue', 'arr', 'mrr', 'paying', 'monetizing', 'sales', 'contracts', 'deals'];
@@ -64,6 +84,7 @@ function extractMomentumMetrics(text: string): MomentumMetrics {
   return {
     growthRate,
     userCount,
+    mrr,
     revenueSignals,
     retentionSignals,
     velocitySignals
@@ -90,6 +111,13 @@ function getMomentumScore(metrics: MomentumMetrics, stage: string): number {
     const threshold = stageThresholds[stage.toLowerCase()] || 500;
     if (metrics.userCount >= threshold) score += 20;
     else if (metrics.userCount >= threshold / 2) score += 10;
+  }
+
+  // MRR scoring
+  if (metrics.mrr) {
+    if (metrics.mrr >= 50000) score += 15;
+    else if (metrics.mrr >= 10000) score += 10;
+    else if (metrics.mrr >= 1000) score += 5;
   }
   
   // Signal scoring
@@ -130,27 +158,136 @@ function getStageBenchmarks(stage: string): { metric: string; benchmark: string;
 }
 
 export function MemoMomentumCard({ tractionText, companyName, stage }: MemoMomentumCardProps) {
-  const metrics = extractMomentumMetrics(tractionText);
+  const extractedMetrics = extractMomentumMetrics(tractionText);
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [manualMetrics, setManualMetrics] = useState({
+    growthRate: extractedMetrics.growthRate?.toString() || '',
+    userCount: extractedMetrics.userCount?.toString() || '',
+    mrr: extractedMetrics.mrr?.toString() || ''
+  });
+  
+  // Use manual metrics if available, otherwise use extracted
+  const metrics: MomentumMetrics = {
+    growthRate: manualMetrics.growthRate ? parseFloat(manualMetrics.growthRate) : extractedMetrics.growthRate,
+    userCount: manualMetrics.userCount ? parseFloat(manualMetrics.userCount) : extractedMetrics.userCount,
+    mrr: manualMetrics.mrr ? parseFloat(manualMetrics.mrr) : extractedMetrics.mrr,
+    revenueSignals: extractedMetrics.revenueSignals,
+    retentionSignals: extractedMetrics.retentionSignals,
+    velocitySignals: extractedMetrics.velocitySignals
+  };
+  
   const score = getMomentumScore(metrics, stage);
   const trajectory = getGrowthTrajectory(score);
   const benchmarks = getStageBenchmarks(stage);
   
-  const hasData = metrics.growthRate || metrics.userCount || 
+  const hasData = metrics.growthRate || metrics.userCount || metrics.mrr ||
                   metrics.revenueSignals.length > 0 || 
                   metrics.retentionSignals.length > 0;
+
+  const hasNoNumericData = !metrics.growthRate && !metrics.userCount && !metrics.mrr;
   
   return (
     <div className="my-10 bg-gradient-to-br from-card via-card to-green-500/5 border border-border/50 rounded-2xl p-6 md:p-8 shadow-lg">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-          <TrendingUp className="w-6 h-6 text-green-500" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+            <TrendingUp className="w-6 h-6 text-green-500" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-foreground">Momentum Scorecard</h3>
+            <p className="text-sm text-muted-foreground">Is {companyName} on a venture trajectory?</p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-bold text-foreground">Momentum Scorecard</h3>
-          <p className="text-sm text-muted-foreground">Is {companyName} on a venture trajectory?</p>
-        </div>
+        
+        {/* Edit Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsEditing(!isEditing)}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          {isEditing ? (
+            <>
+              <X className="w-4 h-4 mr-1" />
+              Cancel
+            </>
+          ) : (
+            <>
+              <Edit2 className="w-4 h-4 mr-1" />
+              {hasNoNumericData ? 'Add Data' : 'Edit'}
+            </>
+          )}
+        </Button>
       </div>
+
+      {/* Manual Input Mode */}
+      {isEditing && (
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-5 mb-6">
+          <h4 className="text-sm font-semibold text-foreground mb-4">Enter Your Traction Metrics</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Growth Rate (% MoM)</label>
+              <Input
+                type="number"
+                placeholder="e.g., 15"
+                value={manualMetrics.growthRate}
+                onChange={(e) => setManualMetrics(prev => ({ ...prev, growthRate: e.target.value }))}
+                className="bg-background"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Users/Customers</label>
+              <Input
+                type="number"
+                placeholder="e.g., 1000"
+                value={manualMetrics.userCount}
+                onChange={(e) => setManualMetrics(prev => ({ ...prev, userCount: e.target.value }))}
+                className="bg-background"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">MRR ($)</label>
+              <Input
+                type="number"
+                placeholder="e.g., 10000"
+                value={manualMetrics.mrr}
+                onChange={(e) => setManualMetrics(prev => ({ ...prev, mrr: e.target.value }))}
+                className="bg-background"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end mt-4">
+            <Button
+              size="sm"
+              onClick={() => setIsEditing(false)}
+              className="gap-2"
+            >
+              <Save className="w-4 h-4" />
+              Save & Calculate
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Prompt to add data if none exists */}
+      {hasNoNumericData && !isEditing && (
+        <div className="bg-muted/30 border border-border/30 rounded-xl p-5 mb-6 text-center">
+          <p className="text-sm text-muted-foreground mb-3">
+            No traction metrics detected. Add your data to get an accurate momentum score.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+            className="gap-2"
+          >
+            <Edit2 className="w-4 h-4" />
+            Enter Metrics
+          </Button>
+        </div>
+      )}
 
       {/* Overall Momentum Score */}
       <div className="bg-background/50 border border-border/30 rounded-xl p-5 mb-6">
@@ -178,8 +315,8 @@ export function MemoMomentumCard({ tractionText, companyName, stage }: MemoMomen
         </div>
       </div>
 
-      {/* Key Metrics Extracted */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      {/* Key Metrics */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-background/50 border border-border/30 rounded-xl p-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-green-500" />
@@ -193,17 +330,27 @@ export function MemoMomentumCard({ tractionText, companyName, stage }: MemoMomen
         <div className="bg-background/50 border border-border/30 rounded-xl p-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Users className="w-4 h-4 text-blue-500" />
-            <span className="text-xs text-muted-foreground uppercase">Users/Customers</span>
+            <span className="text-xs text-muted-foreground uppercase">Customers</span>
           </div>
           <p className="text-2xl font-bold text-foreground">
             {metrics.userCount ? metrics.userCount.toLocaleString() : '—'}
           </p>
-          <p className="text-xs text-muted-foreground">detected</p>
+          <p className="text-xs text-muted-foreground">total</p>
+        </div>
+        <div className="bg-background/50 border border-border/30 rounded-xl p-4 text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <BarChart3 className="w-4 h-4 text-purple-500" />
+            <span className="text-xs text-muted-foreground uppercase">MRR</span>
+          </div>
+          <p className="text-2xl font-bold text-foreground">
+            {metrics.mrr ? `$${metrics.mrr.toLocaleString()}` : '—'}
+          </p>
+          <p className="text-xs text-muted-foreground">monthly</p>
         </div>
       </div>
 
       {/* Traction Signals */}
-      {hasData && (
+      {hasData && (metrics.revenueSignals.length > 0 || metrics.retentionSignals.length > 0 || metrics.velocitySignals.length > 0) && (
         <div className="mb-6 space-y-3">
           <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Zap className="w-4 h-4 text-primary" />

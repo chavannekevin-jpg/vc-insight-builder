@@ -1,5 +1,7 @@
-import { Calculator, TrendingUp, Target, AlertTriangle, Info, Lightbulb, DollarSign, Users, Layers, Zap, ArrowUpRight } from "lucide-react";
-import { renderMarkdownText } from "@/lib/markdownParser";
+import { useState } from "react";
+import { Calculator, TrendingUp, Target, AlertTriangle, Info, Lightbulb, DollarSign, Users, Layers, Zap, ArrowUpRight, Edit2, Save, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export interface ScaleStrategy {
   title: string;
@@ -106,13 +108,27 @@ const getImpactColor = (impact: ScaleStrategy["impact"]) => {
 };
 
 export const MemoVCScaleCard = ({ 
-  avgMonthlyRevenue = 300, 
-  currentCustomers = 0,
-  currentMRR = 0,
+  avgMonthlyRevenue: initialAvgMonthlyRevenue = 0, 
+  currentCustomers: initialCurrentCustomers = 0,
+  currentMRR: initialCurrentMRR = 0,
   companyName = "This company",
   category,
   strategies
 }: MemoVCScaleCardProps) => {
+  const hasInitialData = initialAvgMonthlyRevenue > 0 || initialCurrentMRR > 0;
+  
+  const [isEditing, setIsEditing] = useState(!hasInitialData);
+  const [editedValues, setEditedValues] = useState({
+    avgMonthlyRevenue: initialAvgMonthlyRevenue > 0 ? initialAvgMonthlyRevenue.toString() : '',
+    currentCustomers: initialCurrentCustomers > 0 ? initialCurrentCustomers.toString() : '',
+    currentMRR: initialCurrentMRR > 0 ? initialCurrentMRR.toString() : ''
+  });
+
+  // Calculate values - use edited or initial
+  const avgMonthlyRevenue = parseFloat(editedValues.avgMonthlyRevenue) || initialAvgMonthlyRevenue || 300;
+  const currentCustomers = parseFloat(editedValues.currentCustomers) || initialCurrentCustomers || 0;
+  const currentMRR = parseFloat(editedValues.currentMRR) || initialCurrentMRR || 0;
+
   const targetARR = 100_000_000; // $100M
   const annualValue = avgMonthlyRevenue * 12;
   const customersNeeded = Math.ceil(targetARR / annualValue);
@@ -131,6 +147,10 @@ export const MemoVCScaleCard = ({
   // Use provided strategies or generate defaults
   const displayStrategies = strategies || generateDefaultStrategies(avgMonthlyRevenue, customersNeeded, category);
 
+  const handleSave = () => {
+    setIsEditing(false);
+  };
+
   return (
     <div className="relative animate-fade-in my-10">
       {/* Glow effect */}
@@ -139,18 +159,82 @@ export const MemoVCScaleCard = ({
       <div className="relative bg-card border-2 border-primary/30 rounded-3xl overflow-hidden shadow-lg">
         {/* Header */}
         <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-transparent p-6 border-b border-border/50">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 shadow-lg">
-              <Calculator className="w-7 h-7 text-primary-foreground" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 shadow-lg">
+                <Calculator className="w-7 h-7 text-primary-foreground" />
+              </div>
+              <div>
+                <h3 className="text-xl font-display font-bold text-foreground">The VC Scale Test</h3>
+                <p className="text-muted-foreground text-sm">Path to $100M ARR & How to Accelerate</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-xl font-display font-bold text-foreground">The VC Scale Test</h3>
-              <p className="text-muted-foreground text-sm">Path to $100M ARR & How to Accelerate</p>
-            </div>
+            
+            {/* Edit Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {isEditing ? (
+                <>
+                  <Save className="w-4 h-4 mr-1" />
+                  Save
+                </>
+              ) : (
+                <>
+                  <Edit2 className="w-4 h-4 mr-1" />
+                  Edit
+                </>
+              )}
+            </Button>
           </div>
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Data Input Mode */}
+          {isEditing && (
+            <div className="bg-primary/5 border border-primary/20 rounded-xl p-5">
+              <h4 className="text-sm font-semibold text-foreground mb-4">Enter Your Financial Data</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Avg Revenue Per Customer ($/mo)</label>
+                  <Input
+                    type="number"
+                    placeholder="e.g., 300"
+                    value={editedValues.avgMonthlyRevenue}
+                    onChange={(e) => setEditedValues(prev => ({ ...prev, avgMonthlyRevenue: e.target.value }))}
+                    className="bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Current Customers</label>
+                  <Input
+                    type="number"
+                    placeholder="e.g., 50"
+                    value={editedValues.currentCustomers}
+                    onChange={(e) => setEditedValues(prev => ({ ...prev, currentCustomers: e.target.value }))}
+                    className="bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Current MRR ($)</label>
+                  <Input
+                    type="number"
+                    placeholder="e.g., 15000"
+                    value={editedValues.currentMRR}
+                    onChange={(e) => setEditedValues(prev => ({ ...prev, currentMRR: e.target.value }))}
+                    className="bg-background"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3 italic">
+                Tip: ACV = Average Contract Value (annual). Divide by 12 for monthly.
+              </p>
+            </div>
+          )}
+
           {/* Why $100M Matters */}
           <div className="bg-muted/30 rounded-xl p-5 border border-border/50">
             <div className="flex items-start gap-3 mb-3">
@@ -242,7 +326,7 @@ export const MemoVCScaleCard = ({
             </div>
           )}
 
-          {/* VC Strategies to Accelerate - NEW SECTION */}
+          {/* VC Strategies to Accelerate */}
           <div className="space-y-4 pt-4 border-t border-border/50">
             <div className="flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-warning" />
