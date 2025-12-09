@@ -263,147 +263,158 @@ const SampleMemo = () => {
 
         {/* Memo Sections */}
         <div className="space-y-16">
-          {memoContent.sections.map((section, index) => {
-            // Section type detection
-            const isCompetitionSection = section.title === 'Competition' || section.title.toLowerCase().includes('competition');
-            const isTeamSection = section.title === 'Team' || section.title.toLowerCase().includes('team');
-            const isMarketSection = section.title === 'Market' || section.title.toLowerCase().includes('market');
+          {(() => {
+            let exitPathShown = false;
             
-            return (
-              <MemoSection key={index} title={section.title} index={index}>
-                {/* Competition section gets a teaser overlay */}
-                {isCompetitionSection && (
-                  <div className="absolute inset-0 z-10 bg-background/70 backdrop-blur-md rounded-3xl flex items-center justify-center">
-                    <div className="bg-card/95 border-2 border-primary/50 rounded-2xl p-8 shadow-glow-strong text-center max-w-lg mx-auto hover-lift">
-                      <div className="w-14 h-14 rounded-full gradient-primary flex items-center justify-center mx-auto mb-4 shadow-glow pulse-glow">
-                        <svg className="w-7 h-7 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                      </div>
-                      <h3 className="text-xl font-bold neon-pink mb-3">Competition Analysis Preview</h3>
-                      <p className="text-sm text-foreground mb-2">
-                        Our AI identified <strong className="neon-pink">4 direct competitors</strong> and <strong className="neon-pink">3 adjacent threats</strong> in this market.
-                      </p>
-                      <p className="text-xs text-muted-foreground mb-5">
-                        This section includes defensibility scoring, competitive moat analysis, and investor concerns about market positioning.
-                      </p>
-                      <Button size="sm" className="gradient-primary hover:shadow-glow-strong transition-all" onClick={() => navigate('/memo-builder')}>
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        Get Your Competitive Analysis
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                <div className={isCompetitionSection ? 'blur-sm pointer-events-none select-none' : ''}>
-                  {/* Narrative Content */}
-                  {(section.narrative || section.paragraphs || section.highlights || section.keyPoints) && (
-                    <div className="space-y-8">
-                      {/* Paragraphs */}
-                      {(section.narrative?.paragraphs || section.paragraphs)?.map((para, pIndex) => (
-                        <MemoParagraph
-                          key={pIndex}
-                          text={para.text}
-                          emphasis={para.emphasis}
-                        />
-                      ))}
-
-                      {/* Highlights */}
-                      {(section.narrative?.highlights || section.highlights) && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 my-8">
-                          {(section.narrative?.highlights || section.highlights)?.map((highlight, hIndex) => (
-                            <MemoHighlight
-                              key={hIndex}
-                              metric={highlight.metric}
-                              label={highlight.label}
-                            />
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Key Points */}
-                      {(section.narrative?.keyPoints || section.keyPoints) && (
-                        <MemoKeyPoints points={section.narrative?.keyPoints || section.keyPoints || []} />
-                      )}
-
-                      {/* Team List - show structured founder list for team section */}
-                      {isTeamSection && (
-                        <>
-                          <MemoTeamList members={SAMPLE_TEAM} showEquity={true} />
-                          <MemoTeamGapCard 
-                            teamMembers={SAMPLE_TEAM_EXTRACTED}
-                            stage="Seed"
-                            companyName="CarbonPrint"
-                          />
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  {/* $100M ARR Scale Card - show after Market section */}
-                  {isMarketSection && (
-                    <MemoVCScaleCard 
-                      avgMonthlyRevenue={350}
-                      currentCustomers={23}
-                      currentMRR={8050}
-                      companyName="CarbonPrint"
-                      category="Climate Tech"
-                    />
-                  )}
-
-                  {/* Moat Score Card - show after Competition section */}
+            return memoContent.sections.map((section, index) => {
+              // Section type detection
+              const isCompetitionSection = section.title === 'Competition' || section.title.toLowerCase().includes('competition');
+              const isTeamSection = section.title === 'Team' || section.title.toLowerCase().includes('team');
+              const isMarketSection = section.title === 'Market' || section.title.toLowerCase().includes('market');
+              const isBusinessSection = section.title.toLowerCase().includes('business');
+              const isThesisSection = section.title.toLowerCase().includes('thesis');
+              const isVisionSection = section.title.toLowerCase().includes('vision');
+              
+              // Determine if we should show exit path (only once, prefer thesis over vision)
+              const showExitPath = !exitPathShown && (isThesisSection || isVisionSection);
+              if (showExitPath) exitPathShown = true;
+              
+              return (
+                <MemoSection key={index} title={section.title} index={index}>
+                  {/* Competition section gets a teaser overlay */}
                   {isCompetitionSection && (
-                    <MemoMoatScoreCard 
-                      moatScores={SAMPLE_MOAT_SCORES}
-                      companyName="CarbonPrint"
-                    />
-                  )}
-
-                  {/* Unit Economics Card - show after Business Model section */}
-                  {section.title.toLowerCase().includes('business') && (
-                    <MemoUnitEconomicsCard 
-                      unitEconomics={SAMPLE_UNIT_ECONOMICS}
-                      companyName="CarbonPrint"
-                    />
-                  )}
-
-                  {/* Exit Path Card - show after Investment Thesis/Vision section */}
-                  {(section.title.toLowerCase().includes('vision') || section.title.toLowerCase().includes('thesis')) && (
-                    <MemoExitPathCard 
-                      exitData={SAMPLE_EXIT_DATA}
-                      companyName="CarbonPrint"
-                    />
-                  )}
-
-                  {/* VC Reflection - Now fully visible for all sections */}
-                  {section.vcReflection && (
-                    <div className="mt-10 space-y-8 pt-8 border-t border-border/50">
-                      <div className="flex items-center gap-2 mb-6">
-                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-                        <span className="text-xs font-semibold text-primary uppercase tracking-wider">Investor Perspective</span>
-                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                    <div className="absolute inset-0 z-10 bg-background/70 backdrop-blur-md rounded-3xl flex items-center justify-center">
+                      <div className="bg-card/95 border-2 border-primary/50 rounded-2xl p-8 shadow-glow-strong text-center max-w-lg mx-auto hover-lift">
+                        <div className="w-14 h-14 rounded-full gradient-primary flex items-center justify-center mx-auto mb-4 shadow-glow pulse-glow">
+                          <svg className="w-7 h-7 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-xl font-bold neon-pink mb-3">Competition Analysis Preview</h3>
+                        <p className="text-sm text-foreground mb-2">
+                          Our AI identified <strong className="neon-pink">4 direct competitors</strong> and <strong className="neon-pink">3 adjacent threats</strong> in this market.
+                        </p>
+                        <p className="text-xs text-muted-foreground mb-5">
+                          This section includes defensibility scoring, competitive moat analysis, and investor concerns about market positioning.
+                        </p>
+                        <Button size="sm" className="gradient-primary hover:shadow-glow-strong transition-all" onClick={() => navigate('/memo-builder')}>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Get Your Competitive Analysis
+                        </Button>
                       </div>
-                      
-                      {/* VC Analysis - fully visible */}
-                      <MemoVCReflection text={section.vcReflection.analysis} />
-                      
-                      {/* Investor Questions - fully visible with all expanded */}
-                      {section.vcReflection.questions && section.vcReflection.questions.length > 0 && (
-                        <MemoVCQuestions questions={section.vcReflection.questions} defaultAllOpen={true} />
-                      )}
-                      
-                      {/* Benchmarking - fully visible */}
-                      {section.vcReflection.benchmarking && (
-                        <MemoBenchmarking text={section.vcReflection.benchmarking} />
-                      )}
-                      
-                      {/* Conclusion - fully visible */}
-                      <MemoAIConclusion text={section.vcReflection.conclusion} />
                     </div>
                   )}
-                </div>
-              </MemoSection>
-            );
-          })}
+                  <div className={isCompetitionSection ? 'blur-sm pointer-events-none select-none' : ''}>
+                    {/* Narrative Content */}
+                    {(section.narrative || section.paragraphs || section.highlights || section.keyPoints) && (
+                      <div className="space-y-8">
+                        {/* Paragraphs */}
+                        {(section.narrative?.paragraphs || section.paragraphs)?.map((para, pIndex) => (
+                          <MemoParagraph
+                            key={pIndex}
+                            text={para.text}
+                            emphasis={para.emphasis}
+                          />
+                        ))}
+
+                        {/* Highlights */}
+                        {(section.narrative?.highlights || section.highlights) && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 my-8">
+                            {(section.narrative?.highlights || section.highlights)?.map((highlight, hIndex) => (
+                              <MemoHighlight
+                                key={hIndex}
+                                metric={highlight.metric}
+                                label={highlight.label}
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Key Points */}
+                        {(section.narrative?.keyPoints || section.keyPoints) && (
+                          <MemoKeyPoints points={section.narrative?.keyPoints || section.keyPoints || []} />
+                        )}
+
+                        {/* Team List - show structured founder list for team section */}
+                        {isTeamSection && (
+                          <>
+                            <MemoTeamList members={SAMPLE_TEAM} showEquity={true} />
+                            <MemoTeamGapCard 
+                              teamMembers={SAMPLE_TEAM_EXTRACTED}
+                              stage="Seed"
+                              companyName="CarbonPrint"
+                            />
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    {/* $100M ARR Scale Card - show after Market section */}
+                    {isMarketSection && (
+                      <MemoVCScaleCard 
+                        avgMonthlyRevenue={350}
+                        currentCustomers={23}
+                        currentMRR={8050}
+                        companyName="CarbonPrint"
+                        category="Climate Tech"
+                      />
+                    )}
+
+                    {/* Moat Score Card - show after Competition section */}
+                    {isCompetitionSection && (
+                      <MemoMoatScoreCard 
+                        moatScores={SAMPLE_MOAT_SCORES}
+                        companyName="CarbonPrint"
+                      />
+                    )}
+
+                    {/* Unit Economics Card - show after Business Model section */}
+                    {isBusinessSection && (
+                      <MemoUnitEconomicsCard 
+                        unitEconomics={SAMPLE_UNIT_ECONOMICS}
+                        companyName="CarbonPrint"
+                      />
+                    )}
+
+                    {/* Exit Path Card - show ONCE after Investment Thesis or Vision section */}
+                    {showExitPath && (
+                      <MemoExitPathCard 
+                        exitData={SAMPLE_EXIT_DATA}
+                        companyName="CarbonPrint"
+                      />
+                    )}
+
+                    {/* VC Reflection - Now fully visible for all sections */}
+                    {section.vcReflection && (
+                      <div className="mt-10 space-y-8 pt-8 border-t border-border/50">
+                        <div className="flex items-center gap-2 mb-6">
+                          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                          <span className="text-xs font-semibold text-primary uppercase tracking-wider">Investor Perspective</span>
+                          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                        </div>
+                        
+                        {/* VC Analysis - fully visible */}
+                        <MemoVCReflection text={section.vcReflection.analysis} />
+                        
+                        {/* Investor Questions - fully visible with all expanded */}
+                        {section.vcReflection.questions && section.vcReflection.questions.length > 0 && (
+                          <MemoVCQuestions questions={section.vcReflection.questions} defaultAllOpen={true} />
+                        )}
+                        
+                        {/* Benchmarking - fully visible */}
+                        {section.vcReflection.benchmarking && (
+                          <MemoBenchmarking text={section.vcReflection.benchmarking} />
+                        )}
+                        
+                        {/* Conclusion - fully visible */}
+                        <MemoAIConclusion text={section.vcReflection.conclusion} />
+                      </div>
+                    )}
+                  </div>
+                </MemoSection>
+              );
+            });
+          })()}
 
           {/* Mid-page CTA - appears after viewing some sections */}
           <div className="my-16 relative overflow-hidden gradient-primary rounded-3xl p-8 border-2 border-primary/30 shadow-glow-strong animate-fade-in hover-lift">
