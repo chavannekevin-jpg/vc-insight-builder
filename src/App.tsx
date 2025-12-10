@@ -47,6 +47,14 @@ const InvestorScorecard = lazy(() => import("./pages/vcbrain/InvestorScorecard")
 const FundingInstruments = lazy(() => import("./pages/vcbrain/FundingInstruments"));
 const KeyTermsExplained = lazy(() => import("./pages/vcbrain/KeyTermsExplained"));
 const NegotiationTactics = lazy(() => import("./pages/vcbrain/NegotiationTactics"));
+const LimitedPartners = lazy(() => import("./pages/vcbrain/LimitedPartners"));
+const SPVAndSyndication = lazy(() => import("./pages/vcbrain/SPVAndSyndication"));
+const VCFundraisingCycles = lazy(() => import("./pages/vcbrain/VCFundraisingCycles"));
+const VCDealflow = lazy(() => import("./pages/vcbrain/VCDealflow"));
+const VCSelectionProcess = lazy(() => import("./pages/vcbrain/VCSelectionProcess"));
+const DataRoomGuide = lazy(() => import("./pages/vcbrain/DataRoomGuide"));
+const VCStructure = lazy(() => import("./pages/vcbrain/VCStructure"));
+const InvestmentCommittee = lazy(() => import("./pages/vcbrain/InvestmentCommittee"));
 
 const Portal = lazy(() => import("./pages/Portal"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -152,6 +160,14 @@ const App = () => (
               <Route path="deals/instruments" element={<FundingInstruments />} />
               <Route path="deals/terms" element={<KeyTermsExplained />} />
               <Route path="deals/negotiation" element={<NegotiationTactics />} />
+              <Route path="vc-operations/limited-partners" element={<LimitedPartners />} />
+              <Route path="vc-operations/spv-syndication" element={<SPVAndSyndication />} />
+              <Route path="vc-operations/fundraising-cycles" element={<VCFundraisingCycles />} />
+              <Route path="how-vcs-work/dealflow" element={<VCDealflow />} />
+              <Route path="how-vcs-work/selection-process" element={<VCSelectionProcess />} />
+              <Route path="how-vcs-work/data-room" element={<DataRoomGuide />} />
+              <Route path="how-vcs-work/structure" element={<VCStructure />} />
+              <Route path="how-vcs-work/investment-committee" element={<InvestmentCommittee />} />
             </Route>
             <Route path="/pre-seed-guide" element={<PreSeedGuide />} />
             <Route path="/problem-slide-guide" element={<ProblemSlideGuide />} />

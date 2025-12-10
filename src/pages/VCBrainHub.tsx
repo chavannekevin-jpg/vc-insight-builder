@@ -25,6 +25,36 @@ const navigationSections: NavSection[] = [{
   }, {
     label: "Stage Comparison",
     path: "/vcbrain/stage-comparison"
+  }, {
+    label: "SPVs & Syndication",
+    path: "/vcbrain/vc-operations/spv-syndication"
+  }]
+}, {
+  title: "How VCs Work",
+  items: [{
+    label: "VC Firm Structure",
+    path: "/vcbrain/how-vcs-work/structure"
+  }, {
+    label: "Dealflow & Sourcing",
+    path: "/vcbrain/how-vcs-work/dealflow"
+  }, {
+    label: "Selection & Due Diligence",
+    path: "/vcbrain/how-vcs-work/selection-process"
+  }, {
+    label: "Investment Committee",
+    path: "/vcbrain/how-vcs-work/investment-committee"
+  }, {
+    label: "Building a Data Room",
+    path: "/vcbrain/how-vcs-work/data-room"
+  }]
+}, {
+  title: "VC Fund Dynamics",
+  items: [{
+    label: "Limited Partners (LPs)",
+    path: "/vcbrain/vc-operations/limited-partners"
+  }, {
+    label: "VC Fundraising Cycles",
+    path: "/vcbrain/vc-operations/fundraising-cycles"
   }]
 }, {
   title: "Pitch Deck Library",
