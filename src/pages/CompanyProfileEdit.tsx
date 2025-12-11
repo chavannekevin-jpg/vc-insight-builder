@@ -12,13 +12,14 @@ import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
 
 const SECTIONS = [
-  { key: "problem_description", title: "Problem", description: "What problem are you solving and how do you know it hurts?" },
-  { key: "solution_description", title: "Solution", description: "How does your product solve this problem?" },
+  { key: "problem_core", title: "Problem", description: "What problem are you solving and how do you know it hurts?" },
+  { key: "solution_core", title: "Solution", description: "How does your product solve this problem?" },
   { key: "target_customer", title: "Target Customer", description: "Who is your ideal customer and how big is the market?" },
-  { key: "competitive_advantage", title: "Competition", description: "Who are your competitors and what's your edge?" },
-  { key: "founder_background", title: "Team", description: "Why are you the right team to build this?" },
-  { key: "revenue_model", title: "Business Model", description: "How do you make money?" },
-  { key: "current_traction", title: "Traction", description: "What progress have you made so far?" }
+  { key: "competitive_moat", title: "Competition", description: "Who are your competitors and what's your edge?" },
+  { key: "team_story", title: "Team", description: "Why are you the right team to build this?" },
+  { key: "business_model", title: "Business Model", description: "How do you make money?" },
+  { key: "traction_proof", title: "Traction", description: "What progress have you made so far?" },
+  { key: "vision_ask", title: "Vision & Ask", description: "Where are you going and what do you need?" }
 ];
 
 const responseSchema = z.object({
@@ -142,13 +143,14 @@ export default function CompanyProfileEdit() {
       
       const updates: SectionData = { ...currentData };
       const sectionMapping = {
-        "problem_description": generatedData.problem_description,
-        "solution_description": generatedData.solution_description,
+        "problem_core": generatedData.problem_core || generatedData.problem_description,
+        "solution_core": generatedData.solution_core || generatedData.solution_description,
         "target_customer": generatedData.target_customer,
-        "competitive_advantage": generatedData.competitive_advantage,
-        "founder_background": generatedData.founder_background,
-        "revenue_model": generatedData.revenue_model,
-        "current_traction": generatedData.current_traction
+        "competitive_moat": generatedData.competitive_moat || generatedData.competitive_advantage,
+        "team_story": generatedData.team_story || generatedData.founder_background,
+        "business_model": generatedData.business_model || generatedData.revenue_model,
+        "traction_proof": generatedData.traction_proof || generatedData.current_traction,
+        "vision_ask": generatedData.vision_ask
       };
 
       // Only update sections that are empty
