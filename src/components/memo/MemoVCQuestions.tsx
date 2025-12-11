@@ -15,6 +15,9 @@ export const MemoVCQuestions = ({ questions, defaultAllOpen = false }: MemoVCQue
     () => defaultAllOpen ? new Set(questions.map((_, i) => i)) : new Set([0])
   );
   
+  // Helper to safely convert to string
+  const safeText = (text: unknown) => typeof text === 'string' ? text : String(text || '');
+  
   const toggleIndex = (index: number) => {
     setOpenIndices(prev => {
       const next = new Set(prev);
@@ -64,10 +67,10 @@ export const MemoVCQuestions = ({ questions, defaultAllOpen = false }: MemoVCQue
                         <span className="text-sm font-bold text-accent">{index + 1}</span>
                       </div>
                       <p className="text-foreground leading-relaxed font-medium text-left flex-1">
-                        {renderMarkdownText(questionText)}
+                        {renderMarkdownText(safeText(questionText))}
                       </p>
                       <ChevronDown 
-                        className={`w-5 h-5 text-muted-foreground transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} 
+                        className={`w-5 h-5 text-muted-foreground transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
                       />
                     </div>
                   </CollapsibleTrigger>
@@ -83,7 +86,7 @@ export const MemoVCQuestions = ({ questions, defaultAllOpen = false }: MemoVCQue
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground leading-relaxed pl-6">
-                          {renderMarkdownText(question.vcRationale)}
+                          {renderMarkdownText(safeText(question.vcRationale))}
                         </p>
                       </div>
 
@@ -96,7 +99,7 @@ export const MemoVCQuestions = ({ questions, defaultAllOpen = false }: MemoVCQue
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground leading-relaxed pl-6">
-                          {renderMarkdownText(question.whatToPrepare)}
+                          {renderMarkdownText(safeText(question.whatToPrepare))}
                         </p>
                       </div>
                     </div>
@@ -116,7 +119,7 @@ export const MemoVCQuestions = ({ questions, defaultAllOpen = false }: MemoVCQue
               <div className="flex items-center justify-center w-7 h-7 rounded-full bg-accent/20 flex-shrink-0 mt-0.5">
                 <span className="text-sm font-bold text-accent">{index + 1}</span>
               </div>
-              <p className="text-foreground leading-relaxed font-medium">{renderMarkdownText(questionText)}</p>
+              <p className="text-foreground leading-relaxed font-medium">{renderMarkdownText(safeText(questionText))}</p>
             </div>
           );
         })}

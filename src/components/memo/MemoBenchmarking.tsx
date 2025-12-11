@@ -7,6 +7,9 @@ interface MemoBenchmarkingProps {
 
 export const MemoBenchmarking = ({ text }: MemoBenchmarkingProps) => {
   if (!text) return null;
+  
+  // Guard against objects being passed instead of strings
+  const safeText = typeof text === 'string' ? text : String(text || '');
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-muted/50 bg-gradient-to-br from-muted/20 to-muted/10 p-6 mt-6">
@@ -21,7 +24,7 @@ export const MemoBenchmarking = ({ text }: MemoBenchmarkingProps) => {
       {/* Content */}
       <div className="pl-13">
         <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-          {renderMarkdownText(text)}
+          {renderMarkdownText(safeText)}
         </p>
       </div>
     </div>

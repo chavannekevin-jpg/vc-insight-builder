@@ -6,6 +6,10 @@ interface MemoHighlightProps {
 }
 
 export const MemoHighlight = ({ metric, label }: MemoHighlightProps) => {
+  // Guard against objects being passed instead of strings
+  const safeMetric = typeof metric === 'string' ? metric : String(metric || '');
+  const safeLabel = typeof label === 'string' ? label : String(label || '');
+  
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-background p-8 hover:shadow-xl hover:border-primary/50 transition-all duration-300 hover:scale-[1.03]">
       {/* Animated background gradient */}
@@ -19,10 +23,10 @@ export const MemoHighlight = ({ metric, label }: MemoHighlightProps) => {
       {/* Content */}
       <div className="relative">
         <div className="text-5xl font-display font-bold text-primary mb-3 group-hover:scale-105 transition-transform">
-          {metric}
+          {safeMetric}
         </div>
         <div className="text-sm font-medium text-muted-foreground leading-snug">
-          {label}
+          {safeLabel}
         </div>
       </div>
     </div>
