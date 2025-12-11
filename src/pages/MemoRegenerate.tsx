@@ -4,28 +4,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ArrowLeft, ChevronDown, ChevronUp, Loader2, RotateCcw, Pencil, Check, Sparkles, User, AlertCircle } from "lucide-react";
+import { 
+  ArrowLeft, ChevronDown, ChevronUp, Loader2, RotateCcw, Pencil, Check, 
+  Sparkles, User, AlertCircle, Target, Lightbulb, Users, Shield, 
+  UserCircle, Wallet, TrendingUp, Rocket, LucideIcon 
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface SectionConfig {
   key: string;
   title: string;
   description: string;
-  icon: string;
+  icon: LucideIcon;
 }
 
 const SECTIONS: SectionConfig[] = [
-  { key: "problem_core", title: "Problem", description: "What problem are you solving?", icon: "🎯" },
-  { key: "solution_core", title: "Solution", description: "How does your product solve this?", icon: "💡" },
-  { key: "target_customer", title: "Target Customer", description: "Who is your ideal customer?", icon: "👥" },
-  { key: "competitive_moat", title: "Competition", description: "What's your competitive edge?", icon: "⚔️" },
-  { key: "team_story", title: "Team", description: "Why are you the right team?", icon: "🧑‍💼" },
-  { key: "business_model", title: "Business Model", description: "How do you make money?", icon: "💰" },
-  { key: "traction_proof", title: "Traction", description: "What progress have you made?", icon: "📈" },
-  { key: "vision_ask", title: "Vision & Ask", description: "Where are you going and what do you need?", icon: "🚀" }
+  { key: "problem_core", title: "Problem", description: "What problem are you solving?", icon: Target },
+  { key: "solution_core", title: "Solution", description: "How does your product solve this?", icon: Lightbulb },
+  { key: "target_customer", title: "Target Customer", description: "Who is your ideal customer?", icon: Users },
+  { key: "competitive_moat", title: "Competition", description: "What's your competitive edge?", icon: Shield },
+  { key: "team_story", title: "Team", description: "Why are you the right team?", icon: UserCircle },
+  { key: "business_model", title: "Business Model", description: "How do you make money?", icon: Wallet },
+  { key: "traction_proof", title: "Traction", description: "What progress have you made?", icon: TrendingUp },
+  { key: "vision_ask", title: "Vision & Ask", description: "Where are you going and what do you need?", icon: Rocket }
 ];
 
 interface ResponseData {
@@ -301,7 +305,7 @@ export default function MemoRegenerate() {
                       <div className="flex items-center justify-between">
                         <CollapsibleTrigger asChild>
                           <button className="flex items-center gap-3 text-left flex-1 hover:opacity-80 transition-opacity">
-                            <span className="text-xl">{section.icon}</span>
+                            <section.icon className="w-5 h-5 text-primary" />
                             <div className="flex-1">
                               <CardTitle className="text-base flex items-center gap-2">
                                 {section.title}
