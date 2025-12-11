@@ -28,12 +28,10 @@
   <!-- LinkedIn specific -->
   <meta name="author" content="VC Brain">
   
-  <!-- Redirect for human users -->
-  <meta http-equiv="refresh" content="0;url=/sample-memo?view=full">
-  
   <script>
-    // Immediate redirect for browsers (faster than meta refresh)
-    window.location.replace('/sample-memo?view=full');
+    // Redirect human users to SPA - add query param to bypass static HTML
+    // Crawlers don't execute JS so they see the OG tags
+    window.location.replace(window.location.origin + '/sample-memo?view=full');
   </script>
 </head>
 <body>
