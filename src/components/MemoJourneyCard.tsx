@@ -39,7 +39,7 @@ export const MemoJourneyCard = memo(({
   }, [memoGenerated, hasPaid, percentage]);
 
   const navigateToPortal = useCallback(() => navigate("/portal"), [navigate]);
-  const navigateToMemo = useCallback(() => navigate("/generated-memo"), [navigate]);
+  const navigateToMemo = useCallback(() => navigate(`/memo?companyId=${companyId}`), [navigate, companyId]);
   const navigateToCheckout = useCallback(() => navigate(`/checkout-memo?companyId=${companyId}`), [navigate, companyId]);
 
   const renderContent = () => {
