@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
@@ -26,7 +26,9 @@ import { MemoAIConclusion } from "@/components/memo/MemoAIConclusion";
 import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
 import { MemoMomentumCard } from "@/components/memo/MemoMomentumCard";
 import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCard";
+import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 import { extractMoatScores, extractTeamMembers, extractUnitEconomics } from "@/lib/memoDataExtractor";
+import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { ArrowLeft, RefreshCw, Printer, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph } from "@/types/memo";
@@ -482,6 +484,11 @@ export default function GeneratedMemo() {
 
   const hasQuickTake = !!memoContent.vcQuickTake;
 
+  // Extract action plan from memo content
+  const actionPlan = useMemo(() => {
+    if (!memoContent) return null;
+    return extractActionPlan(memoContent, memoContent.vcQuickTake);
+  }, [memoContent]);
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -568,6 +575,11 @@ export default function GeneratedMemo() {
           <div data-section="quick-take">
             <MemoVCQuickTake quickTake={memoContent.vcQuickTake} showTeaser={!hasPremium} />
           </div>
+        )}
+
+        {/* Action Plan - Premium only */}
+        {hasPremium && actionPlan && actionPlan.items.length > 0 && (
+          <MemoActionPlan actionPlan={actionPlan} companyName={companyInfo?.name} />
         )}
 
         {/* Memo Sections */}
