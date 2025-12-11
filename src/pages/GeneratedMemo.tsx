@@ -299,39 +299,72 @@ export default function GeneratedMemo() {
     }
   }, [shouldRedirectToWizard, companyId, navigate]);
 
-  // Helper to fetch tool data after memo generation
-  const fetchToolData = async (companyIdToFetch: string) => {
-    try {
-      const { data: toolData } = await supabase
-        .from("memo_tool_data")
-        .select("*")
-        .eq("company_id", companyIdToFetch);
-      
-      if (toolData && toolData.length > 0) {
-        const toolsMap: Record<string, EnhancedSectionTools> = {};
-        toolData.forEach((tool) => {
-          const sectionName = tool.section_name;
-          if (!toolsMap[sectionName]) {
-            toolsMap[sectionName] = {};
-          }
-          const aiData = tool.ai_generated_data as Record<string, any> || {};
-          const userOverrides = tool.user_overrides as Record<string, any> || {};
-          const mergedData = {
-            ...aiData,
-            ...userOverrides,
-            dataSource: tool.data_source || "ai-complete"
-          };
-          (toolsMap[sectionName] as any)[tool.tool_name] = 
-            ["sectionScore", "benchmarks", "caseStudy", "vcInvestmentLogic", "actionPlan90Day", "leadInvestorRequirements"].includes(tool.tool_name)
-              ? mergedData
-              : { aiGenerated: aiData, userOverrides: userOverrides, dataSource: tool.data_source || "ai-complete" };
-        });
-        setSectionTools(toolsMap);
-        console.log("Tool data fetched successfully:", Object.keys(toolsMap));
-      }
-    } catch (error) {
-      console.error("Error fetching tool data:", error);
+  // Helper to fetch memo and tool data from database (same as initial load)
+  const fetchMemoFromDatabase = async (companyIdToFetch: string) => {
+    console.log("Fetching memo from database...");
+    
+    // Fetch memo
+    const { data: memo, error: memoError } = await supabase
+      .from("memos")
+      .select("structured_content, company_id")
+      .eq("company_id", companyIdToFetch)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (memoError) {
+      throw new Error("Failed to fetch memo from database");
     }
+
+    if (!memo?.structured_content) {
+      throw new Error("Memo content not found in database");
+    }
+
+    // Fetch company data
+    const { data: companyData, error: companyError } = await supabase
+      .from("companies")
+      .select("*")
+      .eq("id", companyIdToFetch)
+      .maybeSingle();
+
+    if (companyError) {
+      throw new Error("Failed to fetch company data");
+    }
+
+    // Fetch tool data
+    const { data: toolData } = await supabase
+      .from("memo_tool_data")
+      .select("*")
+      .eq("company_id", companyIdToFetch);
+    
+    if (toolData && toolData.length > 0) {
+      const toolsMap: Record<string, EnhancedSectionTools> = {};
+      toolData.forEach((tool) => {
+        const sectionName = tool.section_name;
+        if (!toolsMap[sectionName]) {
+          toolsMap[sectionName] = {};
+        }
+        const aiData = tool.ai_generated_data as Record<string, any> || {};
+        const userOverrides = tool.user_overrides as Record<string, any> || {};
+        const mergedData = {
+          ...aiData,
+          ...userOverrides,
+          dataSource: tool.data_source || "ai-complete"
+        };
+        (toolsMap[sectionName] as any)[tool.tool_name] = 
+          ["sectionScore", "benchmarks", "caseStudy", "vcInvestmentLogic", "actionPlan90Day", "leadInvestorRequirements"].includes(tool.tool_name)
+            ? mergedData
+            : { aiGenerated: aiData, userOverrides: userOverrides, dataSource: tool.data_source || "ai-complete" };
+      });
+      setSectionTools(toolsMap);
+      console.log("Tool data fetched:", Object.keys(toolsMap));
+    }
+
+    setMemoContent(memo.structured_content as unknown as MemoStructuredContent);
+    setCompanyInfo(companyData);
+    console.log("Memo loaded from database successfully");
+    
+    return memo.structured_content;
   };
 
   const generateMemo = async (companyIdToGenerate: string, force: boolean = false) => {
@@ -377,20 +410,18 @@ export default function GeneratedMemo() {
 
         if (statusError) {
           console.error("Error checking job status:", statusError);
-          // Continue polling on error
           continue;
         }
 
         if (statusData.status === "completed") {
-          console.log("Memo generation completed!");
-          setMemoContent(statusData.structuredContent);
-          setCompanyInfo(statusData.company);
+          console.log("Memo generation completed! Fetching from database...");
           
-          // CRITICAL: Fetch tool data after memo generation completes
-          await fetchToolData(companyIdToGenerate);
+          // CRITICAL FIX: Fetch from database instead of using statusData directly
+          // This ensures data consistency and goes through the same code path as navigation
+          const content = await fetchMemoFromDatabase(companyIdToGenerate);
           
           // Show rejection preview for non-premium users after generation
-          if (!hasPremium && statusData.structuredContent?.vcQuickTake) {
+          if (!hasPremium && (content as any)?.vcQuickTake) {
             setShowRejectionPreview(true);
           }
           return;
@@ -400,11 +431,9 @@ export default function GeneratedMemo() {
           throw new Error(statusData.error || "Memo generation failed");
         }
 
-        // Still processing - update could show progress message
         console.log(`Job status: ${statusData.status}, elapsed: ${statusData.elapsedSeconds}s - ${statusData.message}`);
       }
 
-      // Timeout reached
       throw new Error("Memo generation timed out. Please refresh and check if your memo is ready.");
 
     } catch (error: any) {
@@ -484,13 +513,10 @@ export default function GeneratedMemo() {
 
         if (statusData.status === "completed") {
           const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-          console.log(`Memo regeneration completed in ${duration}s`);
+          console.log(`Memo regeneration completed in ${duration}s, fetching from database...`);
           
-          setMemoContent(statusData.structuredContent);
-          setCompanyInfo(statusData.company);
-          
-          // CRITICAL: Fetch tool data after regeneration completes
-          await fetchToolData(companyId);
+          // CRITICAL FIX: Fetch from database instead of using statusData directly
+          await fetchMemoFromDatabase(companyId);
           
           toast({
             title: "Success",
