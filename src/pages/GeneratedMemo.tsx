@@ -31,9 +31,35 @@ import { extractMoatScores, extractTeamMembers, extractUnitEconomics } from "@/l
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { ArrowLeft, RefreshCw, Printer, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { MemoStructuredContent, MemoParagraph } from "@/types/memo";
+import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+
+// Import new VC tools
+import {
+  SectionScoreCard,
+  VCInvestmentLogicCard,
+  Section90DayPlan,
+  LeadInvestorCard,
+  SectionBenchmarks,
+  MicroCaseStudyCard,
+  ProblemEvidenceThreshold,
+  ProblemFounderBlindSpot,
+  SolutionTechnicalDefensibility,
+  SolutionCommoditizationTeardown,
+  SolutionCompetitorBuildAnalysis,
+  MarketTAMCalculator,
+  MarketReadinessIndexCard,
+  MarketVCNarrativeCard,
+  CompetitionChessboardCard,
+  CompetitionMoatDurabilityCard,
+  TeamCredibilityGapCard,
+  BusinessModelStressTestCard,
+  TractionDepthTestCard,
+  VisionMilestoneMapCard,
+  VisionScenarioPlanningCard,
+  VisionExitNarrativeCard
+} from "@/components/memo/tools";
 
 interface SmartQuestion {
   questionKey: string;
@@ -72,6 +98,7 @@ export default function GeneratedMemo() {
   const [companyInfo, setCompanyInfo] = useState<any>(null);
   const [hasPremium, setHasPremium] = useState(false);
   const [shouldRedirectToWizard, setShouldRedirectToWizard] = useState(false);
+  const [sectionTools, setSectionTools] = useState<Record<string, EnhancedSectionTools>>({});
   
   // Smart fill state
   const [showSmartFill, setShowSmartFill] = useState(false);
@@ -218,6 +245,35 @@ export default function GeneratedMemo() {
 
           setMemoContent(memo.structured_content as unknown as MemoStructuredContent);
           setCompanyInfo(companyData);
+          
+          // Fetch tool data for this company
+          const { data: toolData } = await supabase
+            .from("memo_tool_data")
+            .select("*")
+            .eq("company_id", companyId);
+          
+          if (toolData && toolData.length > 0) {
+            const toolsMap: Record<string, EnhancedSectionTools> = {};
+            toolData.forEach((tool) => {
+              const sectionName = tool.section_name;
+              if (!toolsMap[sectionName]) {
+                toolsMap[sectionName] = {};
+              }
+              const aiData = tool.ai_generated_data as Record<string, any> || {};
+              const userOverrides = tool.user_overrides as Record<string, any> || {};
+              const mergedData = {
+                ...aiData,
+                ...userOverrides,
+                dataSource: tool.data_source || "ai-complete"
+              };
+              (toolsMap[sectionName] as any)[tool.tool_name] = 
+                ["sectionScore", "benchmarks", "caseStudy", "vcInvestmentLogic", "actionPlan90Day", "leadInvestorRequirements"].includes(tool.tool_name)
+                  ? mergedData
+                  : { aiGenerated: aiData, userOverrides: userOverrides, dataSource: tool.data_source || "ai-complete" };
+            });
+            setSectionTools(toolsMap);
+          }
+          
           setLoading(false);
         }
       } catch (error: any) {
@@ -620,8 +676,19 @@ export default function GeneratedMemo() {
               const heroParagraph = narrative.paragraphs?.find((p: MemoParagraph) => p.emphasis === "high");
               const otherParagraphs = narrative.paragraphs?.filter((p: MemoParagraph) => p.emphasis !== "high") || [];
 
+              // Get section-specific tools data
+              const currentSectionTools = sectionTools[section.title] || {};
+
               const sectionContent = (
                 <MemoSection key={section.title} title={section.title} index={index}>
+                  {/* Section Score Card - Premium Only */}
+                  {hasPremium && currentSectionTools?.sectionScore && (
+                    <SectionScoreCard
+                      sectionName={section.title}
+                      score={currentSectionTools.sectionScore}
+                    />
+                  )}
+
                   {/* Hero Statement - always visible */}
                   {heroParagraph && (
                     <MemoHeroStatement text={heroParagraph.text} />
@@ -635,27 +702,85 @@ export default function GeneratedMemo() {
                     defaultOpen={true}
                   />
 
-                  {/* Problem Section - Pain Validator - Available for all users */}
+                  {/* Problem Section Tools */}
                   {isProblemSection && (
-                    <MemoPainValidatorCard 
-                      problemText={sectionText}
-                      companyName={companyInfo?.name || 'Company'}
-                    />
+                    <div className="space-y-6">
+                      <MemoPainValidatorCard 
+                        problemText={sectionText}
+                        companyName={companyInfo?.name || 'Company'}
+                      />
+                      {hasPremium && currentSectionTools?.evidenceThreshold && (
+                        <ProblemEvidenceThreshold data={currentSectionTools.evidenceThreshold} />
+                      )}
+                      {hasPremium && currentSectionTools?.founderBlindSpot && (
+                        <ProblemFounderBlindSpot data={currentSectionTools.founderBlindSpot} />
+                      )}
+                    </div>
                   )}
 
-                  {/* Strategic Cards - Premium Only */}
-                  {hasPremium && (
-                    <>
-                      {/* Solution Section - Differentiation Matrix */}
-                      {isSolutionSection && (
-                        <MemoDifferentiationCard 
-                          solutionText={sectionText}
+                  {/* Solution Section Tools */}
+                  {isSolutionSection && hasPremium && (
+                    <div className="space-y-6">
+                      <MemoDifferentiationCard 
+                        solutionText={sectionText}
+                        companyName={companyInfo?.name || 'Company'}
+                      />
+                      {currentSectionTools?.technicalDefensibility && (
+                        <SolutionTechnicalDefensibility data={currentSectionTools.technicalDefensibility} />
+                      )}
+                      {currentSectionTools?.commoditizationTeardown && (
+                        <SolutionCommoditizationTeardown data={currentSectionTools.commoditizationTeardown} />
+                      )}
+                      {currentSectionTools?.competitorBuildAnalysis && (
+                        <SolutionCompetitorBuildAnalysis data={currentSectionTools.competitorBuildAnalysis} />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Market Section Tools */}
+                  {isMarketSection && hasPremium && (
+                    <div className="space-y-6">
+                      <MemoVCScaleCard 
+                        avgMonthlyRevenue={100}
+                        currentCustomers={0}
+                        currentMRR={0}
+                        companyName={companyInfo?.name || 'Company'}
+                        category={companyInfo?.category || 'Technology'}
+                      />
+                      {currentSectionTools?.bottomsUpTAM && (
+                        <MarketTAMCalculator data={currentSectionTools.bottomsUpTAM} />
+                      )}
+                      {currentSectionTools?.marketReadinessIndex && (
+                        <MarketReadinessIndexCard data={currentSectionTools.marketReadinessIndex} />
+                      )}
+                      {currentSectionTools?.vcMarketNarrative && (
+                        <MarketVCNarrativeCard data={currentSectionTools.vcMarketNarrative} />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Competition Section Tools */}
+                  {isCompetitionSection && hasPremium && (
+                    <div className="space-y-6">
+                      {extractedMoatScores && (
+                        <MemoMoatScoreCard 
+                          moatScores={extractedMoatScores}
                           companyName={companyInfo?.name || 'Company'}
                         />
                       )}
-                    
-                      {/* Team Section Cards */}
-                      {isTeamSection && extractedTeamMembers.length > 0 && (
+                      {currentSectionTools?.competitorChessboard && (
+                        <CompetitionChessboardCard data={currentSectionTools.competitorChessboard} />
+                      )}
+                      {currentSectionTools?.moatDurability && (
+                        <CompetitionMoatDurabilityCard data={currentSectionTools.moatDurability} />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Team Section Tools */}
+                  {isTeamSection && hasPremium && (
+                    <div className="space-y-6">
+                      {extractedTeamMembers.length > 0 && (
                         <>
                           <MemoTeamList 
                             members={extractedTeamMembers.map(tm => ({
@@ -673,44 +798,53 @@ export default function GeneratedMemo() {
                           />
                         </>
                       )}
-
-                      {/* Market Section - VC Scale Card */}
-                      {isMarketSection && (
-                        <MemoVCScaleCard 
-                          avgMonthlyRevenue={100}
-                          currentCustomers={0}
-                          currentMRR={0}
-                          companyName={companyInfo?.name || 'Company'}
-                          category={companyInfo?.category || 'Technology'}
-                        />
+                      {currentSectionTools?.credibilityGapAnalysis && (
+                        <TeamCredibilityGapCard data={currentSectionTools.credibilityGapAnalysis} />
                       )}
+                    </div>
+                  )}
 
-                      {/* Competition Section - Moat Score Card */}
-                      {isCompetitionSection && extractedMoatScores && (
-                        <MemoMoatScoreCard 
-                          moatScores={extractedMoatScores}
-                          companyName={companyInfo?.name || 'Company'}
-                        />
-                      )}
-
-                      {/* Traction Section - Momentum Scorecard */}
-                      {isTractionSection && (
-                        <MemoMomentumCard 
-                          tractionText={sectionText}
-                          companyName={companyInfo?.name || 'Company'}
-                          stage={companyInfo?.stage || 'Pre-seed'}
-                        />
-                      )}
-
-                      {/* Business Model Section - Unit Economics Card */}
-                      {isBusinessSection && extractedUnitEconomics && (
+                  {/* Business Model Section Tools */}
+                  {isBusinessSection && hasPremium && (
+                    <div className="space-y-6">
+                      {extractedUnitEconomics && (
                         <MemoUnitEconomicsCard 
                           unitEconomics={extractedUnitEconomics}
                           companyName={companyInfo?.name || 'Company'}
                         />
                       )}
+                      {currentSectionTools?.modelStressTest && (
+                        <BusinessModelStressTestCard data={currentSectionTools.modelStressTest} />
+                      )}
+                    </div>
+                  )}
 
-                      {/* Vision/Thesis Section - Exit Path Card (shown once) */}
+                  {/* Traction Section Tools */}
+                  {isTractionSection && hasPremium && (
+                    <div className="space-y-6">
+                      <MemoMomentumCard 
+                        tractionText={sectionText}
+                        companyName={companyInfo?.name || 'Company'}
+                        stage={companyInfo?.stage || 'Pre-seed'}
+                      />
+                      {currentSectionTools?.tractionDepthTest && (
+                        <TractionDepthTestCard data={currentSectionTools.tractionDepthTest} />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Vision Section Tools */}
+                  {isVisionSection && hasPremium && (
+                    <div className="space-y-6">
+                      {currentSectionTools?.vcMilestoneMap && (
+                        <VisionMilestoneMapCard data={currentSectionTools.vcMilestoneMap} />
+                      )}
+                      {currentSectionTools?.scenarioPlanning && (
+                        <VisionScenarioPlanningCard data={currentSectionTools.scenarioPlanning} />
+                      )}
+                      {currentSectionTools?.exitNarrative && (
+                        <VisionExitNarrativeCard data={currentSectionTools.exitNarrative} />
+                      )}
                       {showExitPath && (
                         <MemoExitPathCard 
                           exitData={{
@@ -720,7 +854,20 @@ export default function GeneratedMemo() {
                           companyName={companyInfo?.name || 'Company'}
                         />
                       )}
-                    </>
+                    </div>
+                  )}
+
+                  {/* Section Benchmarks - Premium Only */}
+                  {hasPremium && currentSectionTools?.benchmarks && (
+                    <SectionBenchmarks
+                      sectionName={section.title}
+                      benchmarks={currentSectionTools.benchmarks}
+                    />
+                  )}
+
+                  {/* Micro Case Study - Premium Only */}
+                  {hasPremium && currentSectionTools?.caseStudy && (
+                    <MicroCaseStudyCard caseStudy={currentSectionTools.caseStudy} />
                   )}
 
                   {/* VC Perspective - Full details for premium users */}
@@ -748,6 +895,30 @@ export default function GeneratedMemo() {
                     ) : (
                       <MemoCollapsibleVC vcReflection={section.vcReflection} defaultOpen={true} />
                     )
+                  )}
+
+                  {/* VC Investment Logic Card - Premium Only */}
+                  {hasPremium && currentSectionTools?.vcInvestmentLogic && (
+                    <VCInvestmentLogicCard
+                      sectionName={section.title}
+                      logic={currentSectionTools.vcInvestmentLogic}
+                    />
+                  )}
+
+                  {/* 90-Day Action Plan - Premium Only */}
+                  {hasPremium && currentSectionTools?.actionPlan90Day && (
+                    <Section90DayPlan
+                      sectionName={section.title}
+                      plan={currentSectionTools.actionPlan90Day}
+                    />
+                  )}
+
+                  {/* Lead Investor Requirements - Premium Only */}
+                  {hasPremium && currentSectionTools?.leadInvestorRequirements && (
+                    <LeadInvestorCard
+                      sectionName={section.title}
+                      requirements={currentSectionTools.leadInvestorRequirements}
+                    />
                   )}
                 </MemoSection>
               );
