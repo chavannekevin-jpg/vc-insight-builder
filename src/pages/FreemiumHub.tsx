@@ -414,7 +414,7 @@ export default function FreemiumHub() {
 
   const completedQuestions = responses.filter(r => r.answer && r.answer.trim()).length;
   const totalQuestions = cachedTotalQuestions;
-  const memoGenerated = memo && memo.status === "generated";
+  const memoGenerated = memo && memo.status === "completed";
   const hasPaid = company?.has_premium ?? hasPaidData;
 
   // Get next section to complete
