@@ -630,7 +630,7 @@ export default function FreemiumHub() {
                                     });
                                     return;
                                   }
-                                  navigate(`/memo?companyId=${company.id}&regenerate=true`);
+                                  navigate(`/memo/regenerate?companyId=${company.id}`);
                                 }}
                                 className="border-primary/50 hover:bg-primary/10"
                               >

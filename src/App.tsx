@@ -90,6 +90,7 @@ const AdminArticles = lazy(() => import("./pages/AdminArticles"));
 const AdminCompanyDetail = lazy(() => import("./pages/AdminCompanyDetail"));
 const AdminPrompts = lazy(() => import("./pages/AdminPrompts"));
 const MemoBuilder = lazy(() => import("./pages/MemoBuilder"));
+const MemoRegenerate = lazy(() => import("./pages/MemoRegenerate"));
 const Intake = lazy(() => import("./pages/Intake"));
 const FreemiumHub = lazy(() => import("./pages/FreemiumHub"));
 const EducationalContent = lazy(() => import("./pages/EducationalContent"));
@@ -230,6 +231,7 @@ const App = () => (
             <Route path="/problem-slide-guide" element={<ProblemSlideGuide />} />
             <Route path="/solution-slide-guide" element={<SolutionSlideGuide />} />
             <Route path="/memo" element={<HooksErrorBoundary><GeneratedMemo /></HooksErrorBoundary>} />
+            <Route path="/memo/regenerate" element={<MemoRegenerate />} />
             <Route path="/memo/overview" element={<MemoOverview />} />
             <Route path="/memo/section" element={<MemoSectionView />} />
             <Route path="/memo/complete" element={<MemoCompletionScreen />} />
