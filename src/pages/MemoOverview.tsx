@@ -235,9 +235,9 @@ export default function MemoOverview() {
           {memoContent.sections.map((section, index) => {
             const { icon, color } = getSectionMeta(section.title);
             const summary = getSectionSummary(section);
-            // Section 0 is VC Quick Take, so Problem is section 1 (free), everything else locked
+            // Section 0 is VC Quick Take (free), everything else locked for non-premium
             const actualSectionIndex = index + 1;
-            const isLocked = !hasPremium && actualSectionIndex > 1;
+            const isLocked = !hasPremium && actualSectionIndex > 0;
             
             return (
               <Link
@@ -258,8 +258,8 @@ export default function MemoOverview() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs text-muted-foreground font-medium">Section {actualSectionIndex + 1}</span>
-                      {actualSectionIndex === 1 && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-medium">Free</span>
+                      {isLocked && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">Premium</span>
                       )}
                     </div>
                     <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">

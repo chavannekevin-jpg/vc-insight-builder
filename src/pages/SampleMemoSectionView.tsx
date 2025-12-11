@@ -20,7 +20,7 @@ import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
-import { ChevronLeft, ChevronRight, Grid, BookOpen, ArrowLeft, Sparkles, Rocket, Zap } from "lucide-react";
+import { ChevronLeft, ChevronRight, Grid, BookOpen, ArrowLeft, Sparkles, Rocket, Zap, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { MemoStructuredContent, MemoParagraph, MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
@@ -218,7 +218,30 @@ export default function SampleMemoSectionView() {
           {/* Sample Memo Badge */}
           <div className="mb-6 flex items-center gap-2 text-sm text-primary">
             <Sparkles className="w-4 h-4" />
-            <span className="font-medium">Sample Memo: CarbonPrint</span>
+            <span className="font-medium">Sample Memo: {companyInfo?.name || 'CarbonPrint'}</span>
+          </div>
+
+          {/* Free Preview Context Card */}
+          <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-bold text-primary px-2 py-1 bg-primary/20 rounded-full">
+                FREE PREVIEW
+              </span>
+              <span className="text-xs text-muted-foreground">Page 1 of {totalSections}</span>
+            </div>
+            <h3 className="text-lg font-bold mb-2 text-foreground">
+              This Is What VCs Think About {companyInfo?.name || 'CarbonPrint'}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              The VC Quick Take summarizes the investment verdict, top concerns, and critical action items. 
+              The full memo contains {totalSections - 1} more deep-dive sections with VC questions, competitive analysis, 
+              and specific fixes for each weakness.
+            </p>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <span>📄 {totalSections} detailed sections</span>
+              <span>❓ VC questions with prep guides</span>
+              <span>🎯 Actionable fixes for every issue</span>
+            </div>
           </div>
 
           {/* VC Quick Take Header */}
@@ -244,9 +267,32 @@ export default function SampleMemoSectionView() {
           {/* Action Plan */}
           {actionPlan && actionPlan.items.length > 0 && (
             <div className="mt-8">
-              <MemoActionPlan actionPlan={actionPlan} companyName="CarbonPrint" />
+              <MemoActionPlan actionPlan={actionPlan} companyName={companyInfo?.name || 'CarbonPrint'} />
             </div>
           )}
+
+          {/* Urgency CTA */}
+          <div className="mt-8 p-6 rounded-xl bg-destructive/5 border border-destructive/20">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-foreground mb-1">
+                  73% of startups get rejected based on problems like these
+                </p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  The remaining {totalSections - 1} sections show exactly how VCs analyze each area and what you can do to fix every concern before your pitch.
+                </p>
+                <Button 
+                  onClick={() => navigate('/auth')}
+                  className="w-full sm:w-auto"
+                >
+                  Get Your Own Memo →
+                </Button>
+              </div>
+            </div>
+          </div>
 
           {/* Bottom Navigation */}
           <div className="mt-12 pt-8 border-t border-border/50">
@@ -377,7 +423,7 @@ export default function SampleMemoSectionView() {
         {sectionIndex === 1 && (
           <div className="mb-6 flex items-center gap-2 text-sm text-primary">
             <Sparkles className="w-4 h-4" />
-            <span className="font-medium">Sample Memo: CarbonPrint</span>
+            <span className="font-medium">Sample Memo: {companyInfo?.name || 'CarbonPrint'}</span>
           </div>
         )}
 
@@ -397,7 +443,7 @@ export default function SampleMemoSectionView() {
           {isProblemSection && (
             <MemoPainValidatorCard 
               problemText={sectionText}
-              companyName="CarbonPrint"
+              companyName={companyInfo?.name || 'CarbonPrint'}
             />
           )}
 
@@ -407,8 +453,8 @@ export default function SampleMemoSectionView() {
               <MemoTeamList members={SAMPLE_TEAM} showEquity={true} />
               <MemoTeamGapCard 
                 teamMembers={SAMPLE_TEAM_EXTRACTED}
-                stage="Seed"
-                companyName="CarbonPrint"
+                stage={companyInfo?.stage || 'Pre-Seed'}
+                companyName={companyInfo?.name || 'CarbonPrint'}
               />
             </>
           )}
@@ -419,8 +465,8 @@ export default function SampleMemoSectionView() {
               avgMonthlyRevenue={350}
               currentCustomers={23}
               currentMRR={8050}
-              companyName="CarbonPrint"
-              category="Climate Tech"
+              companyName={companyInfo?.name || 'CarbonPrint'}
+              category={companyInfo?.category || 'Climate Tech'}
             />
           )}
 
@@ -428,7 +474,7 @@ export default function SampleMemoSectionView() {
           {isCompetitionSection && (
             <MemoMoatScoreCard 
               moatScores={SAMPLE_MOAT_SCORES}
-              companyName="CarbonPrint"
+              companyName={companyInfo?.name || 'CarbonPrint'}
             />
           )}
 
@@ -436,7 +482,7 @@ export default function SampleMemoSectionView() {
           {isBusinessSection && (
             <MemoUnitEconomicsCard 
               unitEconomics={SAMPLE_UNIT_ECONOMICS}
-              companyName="CarbonPrint"
+              companyName={companyInfo?.name || 'CarbonPrint'}
             />
           )}
 
@@ -444,7 +490,7 @@ export default function SampleMemoSectionView() {
           {showExitPath && (
             <MemoExitPathCard 
               exitData={SAMPLE_EXIT_DATA}
-              companyName="CarbonPrint"
+              companyName={companyInfo?.name || 'CarbonPrint'}
             />
           )}
 
