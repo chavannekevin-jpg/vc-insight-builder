@@ -3,6 +3,7 @@ import { Target, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
 import { EditableToolCard } from "./EditableToolCard";
 import { TractionDepthTest, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
+import { safeText, safeArray, safeNumber, mergeToolData } from "@/lib/toolDataUtils";
 
 interface TractionDepthTestCardProps {
   data: EditableTool<TractionDepthTest>;
@@ -11,7 +12,17 @@ interface TractionDepthTestCardProps {
 
 export const TractionDepthTestCard = ({ data, onUpdate }: TractionDepthTestCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const currentData = data.userOverrides ? { ...data.aiGenerated, ...data.userOverrides } : data.aiGenerated;
+  
+  // Early return if data is invalid
+  if (!data?.aiGenerated) {
+    return null;
+  }
+  
+  const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
+  const tractionType = safeText(currentData.tractionType) || "Unknown";
+  const sustainabilityScore = safeNumber(currentData.sustainabilityScore, 50);
+  const redFlags = safeArray<string>(currentData.redFlags);
+  const positiveSignals = safeArray<string>(currentData.positiveSignals);
 
   const getTypeStyle = (type: string) => {
     switch (type) {
@@ -23,7 +34,7 @@ export const TractionDepthTestCard = ({ data, onUpdate }: TractionDepthTestCardP
     }
   };
 
-  const typeStyle = getTypeStyle(currentData.tractionType);
+  const typeStyle = getTypeStyle(tractionType);
 
   return (
     <EditableToolCard
@@ -45,17 +56,17 @@ export const TractionDepthTestCard = ({ data, onUpdate }: TractionDepthTestCardP
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">Traction Type</p>
-            <p className={cn("text-xl font-bold", typeStyle.text)}>{currentData.tractionType}</p>
+            <p className={cn("text-xl font-bold", typeStyle.text)}>{tractionType}</p>
             <p className="text-sm text-muted-foreground">{typeStyle.desc}</p>
           </div>
           <div className="text-right">
             <p className="text-sm text-muted-foreground">Sustainability</p>
             <p className={cn(
               "text-2xl font-bold",
-              currentData.sustainabilityScore >= 70 ? "text-emerald-500" :
-              currentData.sustainabilityScore >= 50 ? "text-amber-500" : "text-red-500"
+              sustainabilityScore >= 70 ? "text-emerald-500" :
+              sustainabilityScore >= 50 ? "text-amber-500" : "text-red-500"
             )}>
-              {currentData.sustainabilityScore}/100
+              {sustainabilityScore}/100
             </p>
           </div>
         </div>
@@ -69,10 +80,10 @@ export const TractionDepthTestCard = ({ data, onUpdate }: TractionDepthTestCardP
             <span className="text-sm font-medium text-red-600">Red Flags</span>
           </div>
           <ul className="space-y-1">
-            {currentData.redFlags.map((flag, idx) => (
+            {redFlags.map((flag, idx) => (
               <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
                 <span className="text-red-500">•</span>
-                {flag}
+                {safeText(flag)}
               </li>
             ))}
           </ul>
@@ -85,10 +96,10 @@ export const TractionDepthTestCard = ({ data, onUpdate }: TractionDepthTestCardP
             <span className="text-sm font-medium text-emerald-600">Positive Signals</span>
           </div>
           <ul className="space-y-1">
-            {currentData.positiveSignals.map((signal, idx) => (
+            {positiveSignals.map((signal, idx) => (
               <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
                 <span className="text-emerald-500">✓</span>
-                {signal}
+                {safeText(signal)}
               </li>
             ))}
           </ul>
