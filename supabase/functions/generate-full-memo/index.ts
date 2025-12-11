@@ -1427,41 +1427,10 @@ serve(async (req) => {
 
   console.log("=== generate-full-memo request received ===");
 
+  // Demo company ID for sample memo generation
+  const DEMO_COMPANY_ID = "00000000-0000-0000-0000-000000000001";
+
   try {
-    // Authentication check
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      console.error("No authorization header provided");
-      return new Response(
-        JSON.stringify({ error: "Authentication required" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
-    const anonClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: authError } = await anonClient.auth.getUser(token);
-    
-    if (authError || !userData.user) {
-      console.error("Authentication failed:", authError);
-      return new Response(
-        JSON.stringify({ error: "Invalid authentication token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const userId = userData.user.id;
-    console.log(`Authenticated user: ${userId}`);
-
     const { companyId, force = false } = await req.json();
     console.log(`Request received: companyId=${companyId}, force=${force}`);
 
@@ -1472,27 +1441,69 @@ serve(async (req) => {
       );
     }
 
-    // Verify company ownership
-    const { data: company, error: companyError } = await supabaseClient
-      .from("companies")
-      .select("founder_id, name")
-      .eq("id", companyId)
-      .single();
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
 
-    if (companyError || !company) {
-      console.error("Error fetching company:", companyError);
-      return new Response(
-        JSON.stringify({ error: "Company not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    // Allow demo company regeneration without auth (for admin purposes)
+    const isDemoCompany = companyId === DEMO_COMPANY_ID;
+    let userId: string | null = null;
 
-    if (company.founder_id !== userId) {
-      console.error(`Access denied: User ${userId} does not own company ${companyId}`);
-      return new Response(
-        JSON.stringify({ error: "Access denied" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    if (!isDemoCompany) {
+      // Authentication check for non-demo companies
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) {
+        console.error("No authorization header provided");
+        return new Response(
+          JSON.stringify({ error: "Authentication required" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const anonClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? ""
       );
+
+      const token = authHeader.replace("Bearer ", "");
+      const { data: userData, error: authError } = await anonClient.auth.getUser(token);
+      
+      if (authError || !userData.user) {
+        console.error("Authentication failed:", authError);
+        return new Response(
+          JSON.stringify({ error: "Invalid authentication token" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      userId = userData.user.id;
+      console.log(`Authenticated user: ${userId}`);
+
+      // Verify company ownership for non-demo companies
+      const { data: company, error: companyError } = await supabaseClient
+        .from("companies")
+        .select("founder_id, name")
+        .eq("id", companyId)
+        .single();
+
+      if (companyError || !company) {
+        console.error("Error fetching company:", companyError);
+        return new Response(
+          JSON.stringify({ error: "Company not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (company.founder_id !== userId) {
+        console.error(`Access denied: User ${userId} does not own company ${companyId}`);
+        return new Response(
+          JSON.stringify({ error: "Access denied" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      console.log("Demo company detected - bypassing auth check");
     }
 
     // Check if there's already a job in progress for this company
