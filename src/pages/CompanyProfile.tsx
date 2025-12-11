@@ -28,33 +28,29 @@ interface MemoResponse {
 
 const QUESTION_LABELS: Record<string, { section: string; title: string }> = {
   // Problem Section
-  problem_description: { section: "Problem", title: "What Makes People Suffer?" },
-  problem_validation: { section: "Problem", title: "How Do You Know This Hurts?" },
+  problem_core: { section: "Problem", title: "Core Problem" },
   
   // Solution Section
-  solution_description: { section: "Solution", title: "Your Killer Solution" },
-  solution_demo: { section: "Solution", title: "Show, Don't Tell" },
+  solution_core: { section: "Solution", title: "Core Solution" },
   
   // Market Section
-  market_size: { section: "Market", title: "How Big Is This Thing?" },
-  market_timing: { section: "Market", title: "Why Now?" },
-  target_customer: { section: "Market", title: "Who Pays You?" },
+  target_customer: { section: "Market", title: "Target Customer" },
   
   // Competition Section
-  competitors: { section: "Competition", title: "Who Else Wants This?" },
-  competitive_advantage: { section: "Competition", title: "Your Competitive Edge" },
+  competitive_moat: { section: "Competition", title: "Competitive Edge" },
   
   // Team Section
-  founder_background: { section: "Team", title: "Why You?" },
-  team_composition: { section: "Team", title: "The Band" },
+  team_story: { section: "Team", title: "Team Story" },
   
   // Business Model Section
-  revenue_model: { section: "Business Model", title: "Show Me The Money" },
-  unit_economics: { section: "Business Model", title: "The Math" },
+  business_model: { section: "Business Model", title: "Business Model" },
+  unit_economics: { section: "Business Model", title: "Unit Economics" },
   
   // Traction Section
-  current_traction: { section: "Traction", title: "Proof of Life" },
-  key_milestones: { section: "Traction", title: "What's Next?" },
+  traction_proof: { section: "Traction", title: "Traction Proof" },
+  
+  // Vision Section
+  vision_ask: { section: "Vision", title: "Vision & Ask" },
 };
 
 export default function CompanyProfile() {
@@ -329,14 +325,14 @@ export default function CompanyProfile() {
 
       // Save extracted sections as memo responses
       const sectionKeyMappings: Record<string, string> = {
-        problem_statement: "problem_description",
-        solution_description: "solution_description",
-        target_market: "market_size",
-        business_model: "revenue_model",
-        competitive_landscape: "competitors",
-        team_background: "founder_background",
-        traction_metrics: "current_traction",
-        funding_ask: "key_milestones",
+        problem_statement: "problem_core",
+        solution_description: "solution_core",
+        target_market: "target_customer",
+        business_model: "business_model",
+        competitive_landscape: "competitive_moat",
+        team_background: "team_story",
+        traction_metrics: "traction_proof",
+        funding_ask: "vision_ask",
       };
 
       const newResponses: MemoResponse[] = [];
@@ -581,7 +577,7 @@ export default function CompanyProfile() {
         )}
 
         {/* Memo Sections */}
-        {["Problem", "Solution", "Market", "Competition", "Team", "Business Model", "Traction"].map(
+        {["Problem", "Solution", "Market", "Competition", "Team", "Business Model", "Traction", "Vision"].map(
           (sectionName) => {
             // Get the primary question key for this section
             const primaryQuestionKey = Object.entries(QUESTION_LABELS).find(
