@@ -598,23 +598,45 @@ export default function FreemiumHub() {
                             Access your latest generated memo and supporting materials
                           </p>
                         </div>
-                        <Button
-                          onClick={() => {
-                            if (!company?.id) {
-                              toast({
-                                title: "Error",
-                                description: "Company ID not found. Please refresh the page.",
-                                variant: "destructive"
-                              });
-                              return;
-                            }
-                            navigate(`/memo?companyId=${company.id}`);
-                          }}
-                          className="gradient-primary shadow-glow"
-                        >
-                          View Memo
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
+                        <div className="flex items-center gap-3">
+                          {hasPaid && (
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                if (!company?.id) {
+                                  toast({
+                                    title: "Error",
+                                    description: "Company ID not found. Please refresh the page.",
+                                    variant: "destructive"
+                                  });
+                                  return;
+                                }
+                                navigate(`/memo?companyId=${company.id}&regenerate=true`);
+                              }}
+                              className="border-primary/50 hover:bg-primary/10"
+                            >
+                              <RotateCcw className="w-4 h-4 mr-2" />
+                              Regenerate
+                            </Button>
+                          )}
+                          <Button
+                            onClick={() => {
+                              if (!company?.id) {
+                                toast({
+                                  title: "Error",
+                                  description: "Company ID not found. Please refresh the page.",
+                                  variant: "destructive"
+                                });
+                                return;
+                              }
+                              navigate(`/memo?companyId=${company.id}`);
+                            }}
+                            className="gradient-primary shadow-glow"
+                          >
+                            View Memo
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

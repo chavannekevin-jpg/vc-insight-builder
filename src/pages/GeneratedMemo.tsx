@@ -89,9 +89,10 @@ interface GapAnalysis {
 
 export default function GeneratedMemo() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const companyId = searchParams.get("companyId");
   const viewMode = searchParams.get("view"); // 'full' for full memo, otherwise redirect to wizard
+  const shouldRegenerate = searchParams.get("regenerate") === "true";
   
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
@@ -231,7 +232,9 @@ export default function GeneratedMemo() {
           }
         } else {
           // Memo exists - check if we should redirect to wizard mode
-          if (viewMode !== 'full') {
+          // Don't redirect if regenerate param is set (user wants to regenerate)
+          const regenerateParam = searchParams.get("regenerate") === "true";
+          if (viewMode !== 'full' && !regenerateParam) {
             // Redirect to section-by-section wizard
             setShouldRedirectToWizard(true);
             setLoading(false);
@@ -294,10 +297,23 @@ export default function GeneratedMemo() {
   
   // Redirect to wizard mode if memo exists and not in full view mode
   useEffect(() => {
-    if (shouldRedirectToWizard && companyId) {
+    if (shouldRedirectToWizard && companyId && !shouldRegenerate) {
       navigate(`/memo/section?companyId=${companyId}&section=0`, { replace: true });
     }
-  }, [shouldRedirectToWizard, companyId, navigate]);
+  }, [shouldRedirectToWizard, companyId, navigate, shouldRegenerate]);
+
+  // Handle regenerate param from URL (for premium users regenerating from dashboard)
+  useEffect(() => {
+    if (shouldRegenerate && companyId && hasPremium && !loading && !regenerating && memoContent) {
+      console.log("Auto-regenerating memo due to regenerate URL param...");
+      // Clear the regenerate param from URL to prevent re-triggering
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("regenerate");
+      setSearchParams(newParams, { replace: true });
+      // Trigger regeneration
+      handleRegenerate();
+    }
+  }, [shouldRegenerate, companyId, hasPremium, loading, regenerating, memoContent]);
 
   // Helper to fetch memo and tool data from database (same as initial load)
   const fetchMemoFromDatabase = async (companyIdToFetch: string) => {
