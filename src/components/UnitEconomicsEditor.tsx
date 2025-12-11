@@ -134,7 +134,7 @@ export function UnitEconomicsEditor({ companyId, existingMetrics, onSave }: Unit
     }
   };
 
-  const filledCount = Object.values(metrics).filter(v => v.trim()).length;
+  const filledCount = Object.values(metrics).filter(v => v && typeof v === 'string' && v.trim()).length;
 
   return (
     <div className="bg-card border border-border rounded-xl p-6 space-y-6">
