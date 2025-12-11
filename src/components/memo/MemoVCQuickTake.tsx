@@ -8,10 +8,23 @@ interface MemoVCQuickTakeProps {
 }
 
 export const MemoVCQuickTake = ({ quickTake, showTeaser = false }: MemoVCQuickTakeProps) => {
-  const { verdict, concerns, strengths, readinessLevel, readinessRationale } = quickTake;
-  
   // Helper to safely render text
   const safeText = (text: unknown) => typeof text === 'string' ? text : String(text || '');
+  
+  // Helper to safely get arrays - CRITICAL for preventing React error #310
+  const safeArray = (arr: unknown): string[] => {
+    if (Array.isArray(arr)) return arr;
+    if (arr === null || arr === undefined) return [];
+    console.warn('MemoVCQuickTake: Expected array but received:', typeof arr, arr);
+    return [];
+  };
+  
+  // Safely extract values with fallbacks
+  const verdict = quickTake?.verdict || '';
+  const concerns = safeArray(quickTake?.concerns);
+  const strengths = safeArray(quickTake?.strengths);
+  const readinessLevel = quickTake?.readinessLevel || 'MEDIUM';
+  const readinessRationale = quickTake?.readinessRationale || '';
 
   const readinessConfig = {
     LOW: {

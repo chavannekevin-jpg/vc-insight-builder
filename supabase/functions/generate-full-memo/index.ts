@@ -1311,14 +1311,52 @@ Return ONLY valid JSON with this exact structure:
           quickTakeContent = quickTakeContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
           try {
             vcQuickTake = JSON.parse(quickTakeContent);
-            console.log("✓ Successfully generated VC Quick Take");
+            
+            // CRITICAL: Validate vcQuickTake structure to prevent React error #310
+            // Ensure concerns and strengths are always arrays
+            if (!Array.isArray(vcQuickTake.concerns)) {
+              console.warn('vcQuickTake.concerns is not an array, fixing:', typeof vcQuickTake.concerns);
+              vcQuickTake.concerns = [];
+            }
+            if (!Array.isArray(vcQuickTake.strengths)) {
+              console.warn('vcQuickTake.strengths is not an array, fixing:', typeof vcQuickTake.strengths);
+              vcQuickTake.strengths = [];
+            }
+            // Ensure verdict is a string
+            if (typeof vcQuickTake.verdict !== 'string') {
+              console.warn('vcQuickTake.verdict is not a string, fixing:', typeof vcQuickTake.verdict);
+              vcQuickTake.verdict = String(vcQuickTake.verdict || '');
+            }
+            // Ensure readinessLevel is valid
+            if (!['LOW', 'MEDIUM', 'HIGH'].includes(vcQuickTake.readinessLevel)) {
+              console.warn('vcQuickTake.readinessLevel is invalid, defaulting to MEDIUM:', vcQuickTake.readinessLevel);
+              vcQuickTake.readinessLevel = 'MEDIUM';
+            }
+            
+            console.log("✓ Successfully generated and validated VC Quick Take");
           } catch (parseError) {
             console.warn("Failed to parse VC Quick Take, trying sanitization...");
             try {
               vcQuickTake = JSON.parse(sanitizeJsonString(quickTakeContent));
+              
+              // Apply same validation after sanitization
+              if (!Array.isArray(vcQuickTake.concerns)) vcQuickTake.concerns = [];
+              if (!Array.isArray(vcQuickTake.strengths)) vcQuickTake.strengths = [];
+              if (typeof vcQuickTake.verdict !== 'string') vcQuickTake.verdict = String(vcQuickTake.verdict || '');
+              if (!['LOW', 'MEDIUM', 'HIGH'].includes(vcQuickTake.readinessLevel)) vcQuickTake.readinessLevel = 'MEDIUM';
+              
               console.log("✓ Generated VC Quick Take after sanitization");
             } catch (e) {
               console.error("VC Quick Take parsing failed completely:", e);
+              // Provide a safe fallback structure
+              vcQuickTake = {
+                verdict: "Analysis in progress - please regenerate if this persists.",
+                concerns: [],
+                strengths: [],
+                readinessLevel: "MEDIUM",
+                readinessRationale: "Unable to fully parse assessment. Consider regenerating."
+              };
+              console.log("✓ Using fallback VC Quick Take structure");
             }
           }
         }
