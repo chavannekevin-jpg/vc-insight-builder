@@ -9,10 +9,11 @@ import { Progress } from "@/components/ui/progress";
 import { 
   ArrowLeft, ArrowRight, Printer, RefreshCw, BookOpen, 
   AlertTriangle, Target, Lightbulb, Users, TrendingUp, 
-  DollarSign, Shield, Rocket, Eye
+  DollarSign, Shield, Rocket, Eye, Zap
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent } from "@/types/memo";
+import { extractActionPlan } from "@/lib/actionPlanExtractor";
 
 const sectionIcons: Record<string, React.ReactNode> = {
   'problem': <AlertTriangle className="w-5 h-5" />,
@@ -139,7 +140,12 @@ export default function MemoOverview() {
     return null;
   }
 
-  const totalSections = memoContent.sections.length;
+  // Total sections includes VC Quick Take (section 0) + all memo sections
+  const totalSections = memoContent.sections.length + 1;
+  
+  // Get action plan item count for VC Quick Take card
+  const actionPlan = memoContent.vcQuickTake ? extractActionPlan(memoContent, memoContent.vcQuickTake) : null;
+  const actionItemCount = actionPlan?.items.length || 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -189,13 +195,6 @@ export default function MemoOverview() {
           </div>
         </div>
 
-        {/* Quick Take */}
-        {memoContent.vcQuickTake && (
-          <div className="mb-8">
-            <MemoVCQuickTake quickTake={memoContent.vcQuickTake} showTeaser={!hasPremium} />
-          </div>
-        )}
-
         {/* Section Progress */}
         <div className="bg-card/50 border border-border/50 rounded-xl p-4 mb-8">
           <div className="flex items-center justify-between mb-2">
@@ -207,15 +206,43 @@ export default function MemoOverview() {
 
         {/* Section Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {/* VC Quick Take Card - Always First, Always Free */}
+          <Link
+            to={`/memo/section?companyId=${companyId}&section=0`}
+            className="group relative bg-gradient-to-br from-primary/20 to-primary/5 border-primary/30 rounded-xl p-5 border transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-background/80 flex items-center justify-center text-primary shrink-0">
+                <Zap className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs text-primary font-medium">Start Here</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-medium">Free</span>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                  VC Quick Take
+                </h3>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  Investment verdict, key concerns{actionItemCount > 0 ? `, and ${actionItemCount} action items` : ''} to address before pitching
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+            </div>
+          </Link>
+
+          {/* Regular Memo Sections - Index shifted by 1 */}
           {memoContent.sections.map((section, index) => {
             const { icon, color } = getSectionMeta(section.title);
             const summary = getSectionSummary(section);
-            const isLocked = !hasPremium && index > 0;
+            // Section 0 is VC Quick Take, so Problem is section 1 (free), everything else locked
+            const actualSectionIndex = index + 1;
+            const isLocked = !hasPremium && actualSectionIndex > 1;
             
             return (
               <Link
                 key={section.title}
-                to={isLocked ? `/checkout-memo?companyId=${companyId}` : `/memo/section?companyId=${companyId}&section=${index}`}
+                to={isLocked ? `/checkout-memo?companyId=${companyId}` : `/memo/section?companyId=${companyId}&section=${actualSectionIndex}`}
                 className={`group relative bg-gradient-to-br ${color} rounded-xl p-5 border transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${isLocked ? 'opacity-60' : ''}`}
               >
                 {isLocked && (
@@ -230,7 +257,10 @@ export default function MemoOverview() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs text-muted-foreground font-medium">Section {index + 1}</span>
+                      <span className="text-xs text-muted-foreground font-medium">Section {actualSectionIndex + 1}</span>
+                      {actualSectionIndex === 1 && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-medium">Free</span>
+                      )}
                     </div>
                     <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                       {section.title}
