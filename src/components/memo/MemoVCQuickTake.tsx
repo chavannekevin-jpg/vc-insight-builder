@@ -9,6 +9,9 @@ interface MemoVCQuickTakeProps {
 
 export const MemoVCQuickTake = ({ quickTake, showTeaser = false }: MemoVCQuickTakeProps) => {
   const { verdict, concerns, strengths, readinessLevel, readinessRationale } = quickTake;
+  
+  // Helper to safely render text
+  const safeText = (text: unknown) => typeof text === 'string' ? text : String(text || '');
 
   const readinessConfig = {
     LOW: {
@@ -57,7 +60,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false }: MemoVCQuickTa
         {/* Verdict */}
         <div className="mb-8 p-5 rounded-xl bg-muted/30 border border-border/30">
           <p className="text-lg text-foreground leading-relaxed font-medium italic">
-            "{renderMarkdownText(verdict)}"
+            "{renderMarkdownText(safeText(verdict))}"
           </p>
         </div>
 
@@ -67,7 +70,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false }: MemoVCQuickTa
             <ReadinessIcon className={`w-6 h-6 ${config.color}`} />
             <div>
               <span className={`font-bold ${config.color}`}>{config.label}</span>
-              <p className="text-sm text-muted-foreground mt-1">{renderMarkdownText(readinessRationale)}</p>
+              <p className="text-sm text-muted-foreground mt-1">{renderMarkdownText(safeText(readinessRationale))}</p>
             </div>
           </div>
         </div>
@@ -92,7 +95,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false }: MemoVCQuickTa
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 text-destructive text-xs font-bold flex items-center justify-center mt-0.5">
                     {index + 1}
                   </span>
-                  <p className="text-sm text-foreground leading-relaxed">{renderMarkdownText(concern)}</p>
+                  <p className="text-sm text-foreground leading-relaxed">{renderMarkdownText(safeText(concern))}</p>
                 </div>
               ))}
             </div>
@@ -116,7 +119,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false }: MemoVCQuickTa
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-success/20 text-success text-xs font-bold flex items-center justify-center mt-0.5">
                     {index + 1}
                   </span>
-                  <p className="text-sm text-foreground leading-relaxed">{renderMarkdownText(strength)}</p>
+                  <p className="text-sm text-foreground leading-relaxed">{renderMarkdownText(safeText(strength))}</p>
                 </div>
               ))}
             </div>

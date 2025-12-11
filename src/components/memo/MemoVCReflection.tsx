@@ -6,6 +6,9 @@ interface MemoVCReflectionProps {
 }
 
 export const MemoVCReflection = ({ text }: MemoVCReflectionProps) => {
+  // Guard against objects being passed instead of strings
+  const safeText = typeof text === 'string' ? text : String(text || '');
+  
   return (
     <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-6 mt-6">
       {/* Header */}
@@ -19,7 +22,7 @@ export const MemoVCReflection = ({ text }: MemoVCReflectionProps) => {
       {/* Content */}
       <div className="pl-13">
         <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-          {renderMarkdownText(text)}
+          {renderMarkdownText(safeText)}
         </p>
       </div>
     </div>

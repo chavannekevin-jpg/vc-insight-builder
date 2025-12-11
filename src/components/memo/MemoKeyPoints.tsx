@@ -6,6 +6,9 @@ interface MemoKeyPointsProps {
 }
 
 export const MemoKeyPoints = ({ points }: MemoKeyPointsProps) => {
+  // Helper to safely convert to string
+  const safeText = (text: unknown) => typeof text === 'string' ? text : String(text || '');
+  
   return (
     <div className="bg-gradient-to-br from-muted/40 to-muted/20 rounded-2xl p-8 border border-border/50 shadow-sm">
       <h4 className="text-sm font-semibold text-primary mb-6 uppercase tracking-wider flex items-center gap-2">
@@ -22,7 +25,7 @@ export const MemoKeyPoints = ({ points }: MemoKeyPointsProps) => {
             <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/15 flex-shrink-0 mt-0.5">
               <CheckCircle2 className="w-4 h-4 text-primary" />
             </div>
-            <p className="text-foreground leading-relaxed font-medium">{renderMarkdownText(point)}</p>
+            <p className="text-foreground leading-relaxed font-medium">{renderMarkdownText(safeText(point))}</p>
           </div>
         ))}
       </div>

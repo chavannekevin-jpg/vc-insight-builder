@@ -71,7 +71,9 @@ const parseConclusion = (text: string) => {
 };
 
 export const MemoAIConclusion = ({ text }: MemoAIConclusionProps) => {
-  const parsed = parseConclusion(text);
+  // Guard against objects being passed instead of strings
+  const safeText = typeof text === 'string' ? text : String(text || '');
+  const parsed = parseConclusion(safeText);
   const hasStructuredContent = parsed.merits.length > 0 || parsed.considerations.length > 0 || parsed.recommendation;
 
   return (
