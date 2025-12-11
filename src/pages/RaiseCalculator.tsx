@@ -56,7 +56,7 @@ export default function RaiseCalculator() {
   const [arrStatus, setARRStatus] = useState("");
   const [milestoneReady, setMilestoneReady] = useState(false);
 
-  // Load company data
+  // Load company data and saved inputs
   useEffect(() => {
     const loadCompany = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -85,6 +85,68 @@ export default function RaiseCalculator() {
         if (memo && memo.structured_content) {
           setHasMemo(true);
           setMemoCompanyId(companies[0].id);
+        }
+        
+        // Load saved inputs from memo_responses
+        const { data: savedInputs } = await supabase
+          .from("memo_responses")
+          .select("question_key, answer")
+          .eq("company_id", companies[0].id)
+          .in("question_key", [
+            "financial_monthly_burn",
+            "financial_one_off_costs",
+            "financial_revenue_start_month",
+            "financial_current_mrr",
+            "financial_mrr_growth",
+            "financial_arr_target",
+            "financial_milestone",
+            "financial_market_risk",
+            "financial_execution_speed",
+            "financial_dilution",
+            "financial_buffer_mode"
+          ]);
+        
+        if (savedInputs && savedInputs.length > 0) {
+          savedInputs.forEach(({ question_key, answer }) => {
+            if (!answer) return;
+            const numValue = parseFloat(answer.replace(/[^0-9.-]/g, ""));
+            
+            switch (question_key) {
+              case "financial_monthly_burn":
+                if (!isNaN(numValue)) setMonthlyBurn(numValue);
+                break;
+              case "financial_one_off_costs":
+                if (!isNaN(numValue)) setOneOffCosts(numValue);
+                break;
+              case "financial_revenue_start_month":
+                if (!isNaN(numValue)) setRevenueStartMonth(numValue);
+                break;
+              case "financial_current_mrr":
+                if (!isNaN(numValue)) setCurrentMRR(numValue);
+                break;
+              case "financial_mrr_growth":
+                if (!isNaN(numValue)) setMonthlyMRRGrowth(numValue);
+                break;
+              case "financial_arr_target":
+                if (!isNaN(numValue)) setARRTarget(numValue);
+                break;
+              case "financial_milestone":
+                setMilestone(answer);
+                break;
+              case "financial_market_risk":
+                setMarketRisk(answer);
+                break;
+              case "financial_execution_speed":
+                setExecutionSpeed(answer);
+                break;
+              case "financial_dilution":
+                if (!isNaN(numValue)) setDilution([numValue]);
+                break;
+              case "financial_buffer_mode":
+                setBufferMode(answer);
+                break;
+            }
+          });
         }
       }
     };
@@ -208,48 +270,48 @@ export default function RaiseCalculator() {
     setIsConfirming(true);
 
     try {
-      // Save raise amount
-      const { error: raiseError } = await supabase
-        .from("memo_responses")
-        .upsert({
-          company_id: companyId,
-          question_key: "raise_amount",
-          answer: `${formatCurrency(recommendedRaise)}`
-        }, {
-          onConflict: "company_id,question_key"
-        });
+      // Save all inputs to memo_responses for reuse across tools
+      const inputsToSave = [
+        { question_key: "financial_monthly_burn", answer: String(monthlyBurn) },
+        { question_key: "financial_one_off_costs", answer: String(oneOffCosts) },
+        { question_key: "financial_revenue_start_month", answer: String(revenueStartMonth) },
+        { question_key: "financial_current_mrr", answer: String(currentMRR) },
+        { question_key: "financial_mrr_growth", answer: String(monthlyMRRGrowth) },
+        { question_key: "financial_arr_target", answer: String(arrTarget) },
+        { question_key: "financial_milestone", answer: milestone },
+        { question_key: "financial_market_risk", answer: marketRisk },
+        { question_key: "financial_execution_speed", answer: executionSpeed },
+        { question_key: "financial_dilution", answer: String(dilution[0]) },
+        { question_key: "financial_buffer_mode", answer: bufferMode },
+        // Also save outputs
+        { question_key: "raise_amount", answer: formatCurrency(recommendedRaise) },
+        { question_key: "valuation_pre_money", answer: formatCurrency(impliedValuation) },
+        { question_key: "runway_months", answer: `${totalRunway} months` },
+        { question_key: "projected_arr", answer: formatCurrency(projectedARR) },
+        { question_key: "projected_mrr", answer: formatCurrency(projectedMRR) },
+      ];
 
-      if (raiseError) throw raiseError;
+      // Batch upsert all data
+      for (const input of inputsToSave) {
+        const { error } = await supabase
+          .from("memo_responses")
+          .upsert({
+            company_id: companyId,
+            question_key: input.question_key,
+            answer: input.answer,
+            source: "raise_calculator"
+          }, {
+            onConflict: "company_id,question_key"
+          });
 
-      // Save implied valuation
-      const { error: valuationError } = await supabase
-        .from("memo_responses")
-        .upsert({
-          company_id: companyId,
-          question_key: "valuation_pre_money",
-          answer: `${formatCurrency(impliedValuation)}`
-        }, {
-          onConflict: "company_id,question_key"
-        });
-
-      if (valuationError) throw valuationError;
-
-      // Save runway
-      const { error: runwayError } = await supabase
-        .from("memo_responses")
-        .upsert({
-          company_id: companyId,
-          question_key: "runway_months",
-          answer: `${totalRunway} months`
-        }, {
-          onConflict: "company_id,question_key"
-        });
-
-      if (runwayError) throw runwayError;
+        if (error) {
+          console.error(`Error saving ${input.question_key}:`, error);
+        }
+      }
 
       toast({
         title: "Success",
-        description: "Your raise plan has been saved to your company profile.",
+        description: "Your raise plan and financial data have been saved.",
       });
 
       // Navigate back to hub after short delay
