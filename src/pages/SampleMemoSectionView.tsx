@@ -133,6 +133,11 @@ export default function SampleMemoSectionView() {
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
 
+  // Scroll to top when section changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [sectionIndex]);
+
   useEffect(() => {
     const fetchMemo = async () => {
       try {

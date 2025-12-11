@@ -42,6 +42,11 @@ export default function MemoSectionView() {
   const [companyInfo, setCompanyInfo] = useState<any>(null);
   const [hasPremium, setHasPremium] = useState(false);
 
+  // Scroll to top when section changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [sectionIndex]);
+
   useEffect(() => {
     const loadMemo = async () => {
       if (!companyId) {
