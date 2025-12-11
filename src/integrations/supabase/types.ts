@@ -348,6 +348,50 @@ export type Database = {
           },
         ]
       }
+      memo_tool_data: {
+        Row: {
+          ai_generated_data: Json | null
+          company_id: string
+          created_at: string | null
+          data_source: string | null
+          id: string
+          section_name: string
+          tool_name: string
+          updated_at: string | null
+          user_overrides: Json | null
+        }
+        Insert: {
+          ai_generated_data?: Json | null
+          company_id: string
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          section_name: string
+          tool_name: string
+          updated_at?: string | null
+          user_overrides?: Json | null
+        }
+        Update: {
+          ai_generated_data?: Json | null
+          company_id?: string
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          section_name?: string
+          tool_name?: string
+          updated_at?: string | null
+          user_overrides?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memo_tool_data_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memos: {
         Row: {
           company_id: string
