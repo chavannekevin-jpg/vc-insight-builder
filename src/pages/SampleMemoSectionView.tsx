@@ -20,7 +20,7 @@ import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
-import { ChevronLeft, ChevronRight, Grid, BookOpen, ArrowLeft, Sparkles, Rocket, Zap, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Grid, BookOpen, ArrowLeft, Sparkles, Rocket, Zap, AlertTriangle, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import type { MemoStructuredContent, MemoParagraph, MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
@@ -235,15 +235,31 @@ export default function SampleMemoSectionView() {
                 </div>
               </div>
               
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => navigate('/sample-memo?view=full')}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <BookOpen className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Full Memo</span>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => {
+                    const shareUrl = 'https://uglybaby.co/sample-memo/section?section=0';
+                    const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+                    window.open(linkedInUrl, '_blank', 'width=600,height=600');
+                  }}
+                  className="text-muted-foreground hover:text-[#0A66C2] hover:bg-[#0A66C2]/10"
+                  title="Share on LinkedIn"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span className="hidden sm:inline ml-2">Share</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => navigate('/sample-memo?view=full')}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Full Memo</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
