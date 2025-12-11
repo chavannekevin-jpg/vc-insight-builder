@@ -1,9 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Search, Book, TrendingUp, AlertTriangle, Wrench, ChevronRight, ChevronDown, Home } from "lucide-react";
+import { Search, Book, TrendingUp, AlertTriangle, Wrench, ChevronRight, ChevronDown, Home, Sparkles, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+
+// Insider articles for daily rotation
+const insiderArticles = [
+  { label: "VCs Pick Power Laws", path: "/vcbrain/insider/power-laws", teaser: "Why portfolio math matters more than your startup story." },
+  { label: "Pitching a Return Profile", path: "/vcbrain/insider/return-profile", teaser: "You're not pitching a company. The difference changes everything." },
+  { label: "Good Business ≠ Good VC Bet", path: "/vcbrain/insider/good-business-bad-vc", teaser: "Great company doesn't always mean great VC outcome." },
+  { label: "VCs Are Managed Pessimists", path: "/vcbrain/insider/managed-pessimists", teaser: "What diligence actually feels like inside the fund." },
+  { label: "VCs Bet on Asymmetry", path: "/vcbrain/insider/asymmetry", teaser: "How outsized outcomes justify irrational-seeming decisions." },
+  { label: "Liquidity Is Your Customer", path: "/vcbrain/insider/liquidity-not-customer", teaser: "Why exits, not revenue, drive VC decision-making." },
+  { label: "After the Pitch Room", path: "/vcbrain/insider/after-pitch-room", teaser: "Internal partner meetings, deal debates, and silent vetoes." },
+  { label: "Scored When You're Not There", path: "/vcbrain/insider/scored-not-in-room", teaser: "IC dynamics and partner psychology revealed." },
+  { label: "One Partner Can Kill You", path: "/vcbrain/insider/one-partner-kill", teaser: "Politics inside funds that founders never see." },
+  { label: "Why VCs Ghost Founders", path: "/vcbrain/insider/why-vcs-ghost", teaser: "It's not personal. It's structural." },
+  { label: "Follow-On Capital Decisions", path: "/vcbrain/insider/follow-on-capital", teaser: "Why today's 'yes' doesn't guarantee tomorrow's check." },
+  { label: "Ownership vs. Valuation", path: "/vcbrain/insider/ownership-vs-valuation", teaser: "Math beats ego. Always." },
+];
+
+// Get daily article based on date
+const getDailyArticle = () => {
+  const today = new Date();
+  const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+  return insiderArticles[dayOfYear % insiderArticles.length];
+};
 interface NavSection {
   title: string;
   items: {
@@ -285,6 +308,28 @@ export default function VCBrainHub() {
                 <Input type="text" placeholder="What startup truth do you want to face today?" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10 h-12 text-base bg-card border-border" />
               </div>
             </div>
+
+            {/* Article of the Day - Only show on hub root */}
+            {location.pathname === '/vcbrain' && (
+              <div className="mb-8 p-6 rounded-xl bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent border border-amber-500/30 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">Insider Take of the Day</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">{getDailyArticle().label}</h3>
+                  <p className="text-muted-foreground text-sm mb-4">{getDailyArticle().teaser}</p>
+                  <Button 
+                    variant="outline" 
+                    className="border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500 text-foreground"
+                    onClick={() => navigate(getDailyArticle().path)}
+                  >
+                    Read Now <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Content Outlet */}
             <Outlet />
