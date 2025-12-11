@@ -1,6 +1,7 @@
-import { Calendar, Clock, Target, AlertCircle } from "lucide-react";
+import { Calendar, Clock, Target } from "lucide-react";
 import { Section90DayPlan as Section90DayPlanType, SectionActionItem } from "@/types/memo";
 import { cn } from "@/lib/utils";
+import { safeText, safeArray } from "@/lib/toolDataUtils";
 
 interface Section90DayPlanProps {
   plan: Section90DayPlanType;
@@ -8,8 +9,19 @@ interface Section90DayPlanProps {
 }
 
 export const Section90DayPlan = ({ plan, sectionName }: Section90DayPlanProps) => {
-  const getPriorityStyle = (priority: SectionActionItem["priority"]) => {
-    switch (priority) {
+  // Early return if data is invalid
+  if (!plan || typeof plan !== 'object') {
+    return null;
+  }
+
+  const safeActions = safeArray<SectionActionItem>(plan?.actions);
+  if (safeActions.length === 0) {
+    return null;
+  }
+
+  const getPriorityStyle = (priority: unknown) => {
+    const p = safeText(priority);
+    switch (p) {
       case "critical":
         return {
           bg: "bg-red-500/10",
@@ -24,7 +36,7 @@ export const Section90DayPlan = ({ plan, sectionName }: Section90DayPlanProps) =
           text: "text-amber-600",
           dot: "bg-amber-500"
         };
-      case "nice-to-have":
+      default:
         return {
           bg: "bg-blue-500/10",
           border: "border-blue-500/30",
@@ -37,7 +49,7 @@ export const Section90DayPlan = ({ plan, sectionName }: Section90DayPlanProps) =
   const timelineOrder = ["Week 1-2", "Week 3-4", "Month 2", "Month 3"];
   
   const groupedActions = timelineOrder.reduce((acc, timeline) => {
-    acc[timeline] = plan.actions.filter(a => a.timeline === timeline);
+    acc[timeline] = safeActions.filter(a => safeText(a?.timeline) === timeline);
     return acc;
   }, {} as Record<string, SectionActionItem[]>);
 
@@ -50,7 +62,7 @@ export const Section90DayPlan = ({ plan, sectionName }: Section90DayPlanProps) =
         </div>
         <div>
           <h4 className="font-semibold text-foreground">90-Day Action Plan</h4>
-          <p className="text-xs text-muted-foreground">Fix {sectionName} issues immediately</p>
+          <p className="text-xs text-muted-foreground">Fix {safeText(sectionName)} issues immediately</p>
         </div>
       </div>
 
@@ -71,7 +83,7 @@ export const Section90DayPlan = ({ plan, sectionName }: Section90DayPlanProps) =
               {/* Actions */}
               <div className="space-y-2 pl-6 border-l-2 border-muted ml-2">
                 {actions.map((action, idx) => {
-                  const style = getPriorityStyle(action.priority);
+                  const style = getPriorityStyle(action?.priority);
                   return (
                     <div 
                       key={idx}
@@ -90,11 +102,11 @@ export const Section90DayPlan = ({ plan, sectionName }: Section90DayPlanProps) =
 
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-foreground">{action.action}</p>
+                          <p className="text-sm font-medium text-foreground">{safeText(action?.action)}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <Target className="w-3 h-3 text-muted-foreground" />
                             <span className="text-xs text-muted-foreground">
-                              Success metric: {action.metric}
+                              Success metric: {safeText(action?.metric)}
                             </span>
                           </div>
                         </div>
@@ -103,7 +115,7 @@ export const Section90DayPlan = ({ plan, sectionName }: Section90DayPlanProps) =
                           style.bg,
                           style.text
                         )}>
-                          {action.priority}
+                          {safeText(action?.priority)}
                         </span>
                       </div>
                     </div>
