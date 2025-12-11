@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PageLoadingSkeleton } from "@/components/LoadingSkeleton";
+import { HooksErrorBoundary } from "@/components/HooksErrorBoundary";
 
 // Eagerly load the index page for fast initial load
 import Index from "./pages/Index";
@@ -133,7 +134,7 @@ const App = () => (
             <Route path="/portal" element={<Portal />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/intake" element={<Intake />} />
-            <Route path="/hub" element={<FreemiumHub />} />
+            <Route path="/hub" element={<HooksErrorBoundary><FreemiumHub /></HooksErrorBoundary>} />
             <Route path="/roast-your-baby" element={<RoastYourBaby />} />
             <Route path="/dilution-lab" element={<DilutionLab />} />
             <Route path="/hub/:slug" element={<EducationalContent />} />
@@ -228,7 +229,7 @@ const App = () => (
             <Route path="/pre-seed-guide" element={<PreSeedGuide />} />
             <Route path="/problem-slide-guide" element={<ProblemSlideGuide />} />
             <Route path="/solution-slide-guide" element={<SolutionSlideGuide />} />
-            <Route path="/memo" element={<GeneratedMemo />} />
+            <Route path="/memo" element={<HooksErrorBoundary><GeneratedMemo /></HooksErrorBoundary>} />
             <Route path="/memo/overview" element={<MemoOverview />} />
             <Route path="/memo/section" element={<MemoSectionView />} />
             <Route path="/memo/complete" element={<MemoCompletionScreen />} />
