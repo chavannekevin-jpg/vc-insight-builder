@@ -39,22 +39,22 @@ const Pricing = () => {
       color: "secondary"
     },
     {
-      name: "Investment Memo Builder",
-      subtitle: "Your Fundraising Weapon",
+      name: "VC Due Diligence Simulation",
+      subtitle: "The Memo That Could Kill Your Round",
       price: `€${memoFinalPrice.toFixed(2)}`,
       originalPrice: memoPricing?.early_access_enabled ? `€${memoPricing.base_price.toFixed(2)}` : null,
-      description: "Professional memo that VCs actually read",
+      description: "The internal analysis partners use to pass or pursue—now in your hands",
       icon: Sparkles,
       features: [
         { text: "Everything in Freemium", included: true, bold: true },
-        { text: "One personalized investment memorandum", included: true },
-        { text: "Tailored to your business model", included: true },
-        { text: "All supporting materials and insights", included: true },
-        { text: "Actionable feedback on your pitch", included: true },
+        { text: "The internal memo VCs write about you", included: true },
+        { text: "Every weakness exposed before your pitch", included: true },
+        { text: "Deal-killing red flags surfaced first", included: true },
+        { text: "Specific fixes to strengthen your position", included: true },
         { text: "Unlimited memo updates", included: false },
         { text: "Network exposure to 400+ investors", included: false }
       ],
-      cta: "Build My Memo",
+      cta: "Get the Memo",
       popular: true,
       color: "primary",
       waitlistBadge: memoPricing?.early_access_enabled
@@ -242,13 +242,13 @@ const Pricing = () => {
         <div className="max-w-4xl mx-auto text-center">
           <ModernCard className="shadow-xl">
             <div className="space-y-6 py-8">
-              <h2 className="text-3xl font-serif">Stop Wasting Time on Bad Pitches</h2>
+              <h2 className="text-3xl font-serif">Know What Kills Your Round—Before VCs Do</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Start with free access to everything you need. Pay only when you're ready to raise.
+                Start with free access to VC frameworks. Get the memo when you're ready to see yourself through their eyes.
                 <br />
-                <span className="font-semibold text-foreground">No BS. No surprises.</span>
+                <span className="font-semibold text-foreground">The internal analysis that decides your fate.</span>
               </p>
-              <Button 
+              <Button
                 size="lg"
                 onClick={() => navigate('/auth')}
                 className="gradient-primary px-8 shadow-glow hover:shadow-glow-strong"
