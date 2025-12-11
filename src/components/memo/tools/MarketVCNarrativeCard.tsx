@@ -3,6 +3,7 @@ import { MessageSquare, Briefcase } from "lucide-react";
 import { EditableToolCard } from "./EditableToolCard";
 import { VCMarketNarrative, EditableTool } from "@/types/memo";
 import { Textarea } from "@/components/ui/textarea";
+import { safeText, mergeToolData, isValidEditableTool } from "@/lib/toolDataUtils";
 
 interface MarketVCNarrativeCardProps {
   data: EditableTool<VCMarketNarrative>;
@@ -10,9 +11,18 @@ interface MarketVCNarrativeCardProps {
 }
 
 export const MarketVCNarrativeCard = ({ data, onUpdate }: MarketVCNarrativeCardProps) => {
+  // Early return if data is invalid
+  if (!isValidEditableTool<VCMarketNarrative>(data)) {
+    return null;
+  }
+
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(data.userOverrides || data.aiGenerated);
-  const currentData = data.userOverrides ? { ...data.aiGenerated, ...data.userOverrides } : data.aiGenerated;
+  const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
+
+  const pitchToIC = safeText(currentData?.pitchToIC);
+  const marketTiming = safeText(currentData?.marketTiming);
+  const whyNow = safeText(currentData?.whyNow);
 
   const handleSave = () => {
     onUpdate?.(editData);
@@ -35,49 +45,55 @@ export const MarketVCNarrativeCard = ({ data, onUpdate }: MarketVCNarrativeCardP
       accentColor="primary"
     >
       {/* Pitch to IC */}
-      <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 mb-4">
-        <p className="text-sm font-medium text-primary mb-2 flex items-center gap-2">
-          <MessageSquare className="w-4 h-4" />
-          How a Partner Would Pitch This Market to IC
-        </p>
-        {isEditing ? (
-          <Textarea
-            value={editData.pitchToIC || currentData.pitchToIC}
-            onChange={(e) => setEditData({ ...editData, pitchToIC: e.target.value })}
-            className="min-h-[100px]"
-          />
-        ) : (
-          <p className="text-foreground italic">"{currentData.pitchToIC}"</p>
-        )}
-      </div>
+      {pitchToIC && (
+        <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 mb-4">
+          <p className="text-sm font-medium text-primary mb-2 flex items-center gap-2">
+            <MessageSquare className="w-4 h-4" />
+            How a Partner Would Pitch This Market to IC
+          </p>
+          {isEditing ? (
+            <Textarea
+              value={safeText(editData?.pitchToIC) || pitchToIC}
+              onChange={(e) => setEditData({ ...editData, pitchToIC: e.target.value })}
+              className="min-h-[100px]"
+            />
+          ) : (
+            <p className="text-foreground italic">"{pitchToIC}"</p>
+          )}
+        </div>
+      )}
 
       {/* Market Timing */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
-          <p className="text-sm font-medium text-emerald-600 mb-1">Market Timing</p>
-          {isEditing ? (
-            <Textarea
-              value={editData.marketTiming || currentData.marketTiming}
-              onChange={(e) => setEditData({ ...editData, marketTiming: e.target.value })}
-              className="min-h-[80px]"
-            />
-          ) : (
-            <p className="text-sm text-muted-foreground">{currentData.marketTiming}</p>
-          )}
-        </div>
+        {marketTiming && (
+          <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+            <p className="text-sm font-medium text-emerald-600 mb-1">Market Timing</p>
+            {isEditing ? (
+              <Textarea
+                value={safeText(editData?.marketTiming) || marketTiming}
+                onChange={(e) => setEditData({ ...editData, marketTiming: e.target.value })}
+                className="min-h-[80px]"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">{marketTiming}</p>
+            )}
+          </div>
+        )}
 
-        <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
-          <p className="text-sm font-medium text-blue-600 mb-1">Why Now?</p>
-          {isEditing ? (
-            <Textarea
-              value={editData.whyNow || currentData.whyNow}
-              onChange={(e) => setEditData({ ...editData, whyNow: e.target.value })}
-              className="min-h-[80px]"
-            />
-          ) : (
-            <p className="text-sm text-muted-foreground">{currentData.whyNow}</p>
-          )}
-        </div>
+        {whyNow && (
+          <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
+            <p className="text-sm font-medium text-blue-600 mb-1">Why Now?</p>
+            {isEditing ? (
+              <Textarea
+                value={safeText(editData?.whyNow) || whyNow}
+                onChange={(e) => setEditData({ ...editData, whyNow: e.target.value })}
+                className="min-h-[80px]"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">{whyNow}</p>
+            )}
+          </div>
+        )}
       </div>
     </EditableToolCard>
   );

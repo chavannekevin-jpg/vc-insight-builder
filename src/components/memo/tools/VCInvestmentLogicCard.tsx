@@ -1,6 +1,7 @@
 import { ThumbsUp, ThumbsDown, AlertCircle, Sparkles } from "lucide-react";
 import { VCInvestmentLogic } from "@/types/memo";
 import { cn } from "@/lib/utils";
+import { safeText } from "@/lib/toolDataUtils";
 
 interface VCInvestmentLogicCardProps {
   logic: VCInvestmentLogic;
@@ -8,8 +9,17 @@ interface VCInvestmentLogicCardProps {
 }
 
 export const VCInvestmentLogicCard = ({ logic, sectionName }: VCInvestmentLogicCardProps) => {
+  // Early return if data is invalid
+  if (!logic || typeof logic !== 'object') {
+    return null;
+  }
+
+  const decision = safeText(logic?.decision);
+  const reasoning = safeText(logic?.reasoning);
+  const keyCondition = safeText(logic?.keyCondition);
+
   const getDecisionStyle = () => {
-    switch (logic.decision) {
+    switch (decision) {
       case "EXCITED":
         return {
           bg: "bg-emerald-500/10",
@@ -42,6 +52,14 @@ export const VCInvestmentLogicCard = ({ logic, sectionName }: VCInvestmentLogicC
           icon: <ThumbsDown className="w-5 h-5" />,
           label: "Likely Pass"
         };
+      default:
+        return {
+          bg: "bg-muted/10",
+          border: "border-border/30",
+          text: "text-muted-foreground",
+          icon: <AlertCircle className="w-5 h-5" />,
+          label: "Unknown"
+        };
     }
   };
 
@@ -63,7 +81,7 @@ export const VCInvestmentLogicCard = ({ logic, sectionName }: VCInvestmentLogicC
         </div>
         <div>
           <h4 className="font-semibold text-foreground">VC Investment Logic</h4>
-          <p className="text-xs text-muted-foreground">Based on {sectionName} alone</p>
+          <p className="text-xs text-muted-foreground">Based on {safeText(sectionName)} alone</p>
         </div>
         <div className={cn(
           "ml-auto px-3 py-1 rounded-full text-sm font-medium",
@@ -76,15 +94,19 @@ export const VCInvestmentLogicCard = ({ logic, sectionName }: VCInvestmentLogicC
 
       {/* Reasoning */}
       <div className="space-y-3">
-        <div>
-          <p className="text-sm text-muted-foreground mb-1">VC Reasoning</p>
-          <p className="text-foreground">{logic.reasoning}</p>
-        </div>
+        {reasoning && (
+          <div>
+            <p className="text-sm text-muted-foreground mb-1">VC Reasoning</p>
+            <p className="text-foreground">{reasoning}</p>
+          </div>
+        )}
         
-        <div className="p-3 rounded-lg bg-background/50 border border-border/50">
-          <p className="text-xs font-medium text-muted-foreground mb-1">Key Condition to Move Forward</p>
-          <p className="text-sm text-foreground font-medium">{logic.keyCondition}</p>
-        </div>
+        {keyCondition && (
+          <div className="p-3 rounded-lg bg-background/50 border border-border/50">
+            <p className="text-xs font-medium text-muted-foreground mb-1">Key Condition to Move Forward</p>
+            <p className="text-sm text-foreground font-medium">{keyCondition}</p>
+          </div>
+        )}
       </div>
     </div>
   );

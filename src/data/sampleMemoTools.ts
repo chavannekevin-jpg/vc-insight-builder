@@ -396,6 +396,34 @@ export const SAMPLE_SECTION_TOOLS: Record<string, EnhancedSectionTools> = {
       },
       dataSource: "ai-complete"
     }
+  },
+  "Investment Thesis": {
+    sectionScore: {
+      score: 60,
+      label: "Developing",
+      vcBenchmark: 65,
+      percentile: "Average",
+      whatThisTellsVC: "The thesis is coherent but needs stronger differentiation. VCs see potential but want clearer path to category leadership.",
+      fundabilityImpact: "Fundable at Seed with the right team, but Series A will require proven traction metrics."
+    },
+    vcInvestmentLogic: {
+      decision: "INTERESTED",
+      reasoning: "The market opportunity is real and timing is good. Team has relevant experience. Main question is execution speed and competitive differentiation.",
+      keyCondition: "Demonstrate 3x growth in next two quarters while maintaining unit economics"
+    },
+    actionPlan90Day: {
+      actions: [
+        { action: "Refine positioning to clearly differentiate from enterprise players", timeline: "Week 1-2", metric: "Updated pitch deck and messaging", priority: "critical" },
+        { action: "Secure 3 reference customers willing to speak with VCs", timeline: "Month 2", metric: "3 referenceable customers", priority: "important" },
+        { action: "Build financial model showing path to $10M ARR", timeline: "Month 3", metric: "Detailed financial model", priority: "important" }
+      ]
+    },
+    leadInvestorRequirements: {
+      requirements: ["Clear path to $100M+ revenue", "Defensible competitive position", "Strong founder-market fit"],
+      dealbreakers: ["Unclear differentiation", "Weak unit economics", "No evidence of product-market fit"],
+      wouldWantToSee: ["Customer testimonials", "Retention metrics", "Clear go-to-market strategy"],
+      investorParagraph: "I'd want to see that you can win in a crowded market. Show me the unique insight that makes you 10x better for your target customer, and prove it with retention data."
+    }
   }
 };
 

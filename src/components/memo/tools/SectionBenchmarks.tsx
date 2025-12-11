@@ -1,6 +1,7 @@
 import { BarChart3, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { SectionBenchmark } from "@/types/memo";
 import { cn } from "@/lib/utils";
+import { safeText, safeArray } from "@/lib/toolDataUtils";
 
 interface SectionBenchmarksProps {
   benchmarks: SectionBenchmark[];
@@ -8,11 +9,18 @@ interface SectionBenchmarksProps {
 }
 
 export const SectionBenchmarks = ({ benchmarks, sectionName }: SectionBenchmarksProps) => {
-  const getPercentileStyle = (percentile: string) => {
-    if (percentile.toLowerCase().includes("top") || percentile.toLowerCase().includes("above")) {
+  // Early return if data is invalid
+  const safeBenchmarks = safeArray<SectionBenchmark>(benchmarks);
+  if (safeBenchmarks.length === 0) {
+    return null;
+  }
+
+  const getPercentileStyle = (percentile: unknown) => {
+    const p = safeText(percentile).toLowerCase();
+    if (p.includes("top") || p.includes("above")) {
       return { icon: <TrendingUp className="w-4 h-4" />, color: "text-emerald-500" };
     }
-    if (percentile.toLowerCase().includes("below") || percentile.toLowerCase().includes("lower")) {
+    if (p.includes("below") || p.includes("lower")) {
       return { icon: <TrendingDown className="w-4 h-4" />, color: "text-red-500" };
     }
     return { icon: <Minus className="w-4 h-4" />, color: "text-amber-500" };
@@ -27,7 +35,7 @@ export const SectionBenchmarks = ({ benchmarks, sectionName }: SectionBenchmarks
         </div>
         <div>
           <h4 className="font-semibold text-foreground">Industry Benchmarks</h4>
-          <p className="text-xs text-muted-foreground">{sectionName} comparison</p>
+          <p className="text-xs text-muted-foreground">{safeText(sectionName)} comparison</p>
         </div>
       </div>
 
@@ -44,26 +52,26 @@ export const SectionBenchmarks = ({ benchmarks, sectionName }: SectionBenchmarks
             </tr>
           </thead>
           <tbody>
-            {benchmarks.map((benchmark, idx) => {
-              const percentileStyle = getPercentileStyle(benchmark.percentile);
+            {safeBenchmarks.map((benchmark, idx) => {
+              const percentileStyle = getPercentileStyle(benchmark?.percentile);
               return (
                 <tr key={idx} className="border-b border-border/30 last:border-0">
                   <td className="py-3 px-3">
-                    <span className="text-sm font-medium text-foreground">{benchmark.metric}</span>
+                    <span className="text-sm font-medium text-foreground">{safeText(benchmark?.metric)}</span>
                   </td>
                   <td className="py-3 px-3 text-center">
-                    <span className="text-sm font-semibold text-primary">{benchmark.yourValue}</span>
+                    <span className="text-sm font-semibold text-primary">{safeText(benchmark?.yourValue)}</span>
                   </td>
                   <td className="py-3 px-3 text-center">
-                    <span className="text-sm text-muted-foreground">{benchmark.seedBenchmark}</span>
+                    <span className="text-sm text-muted-foreground">{safeText(benchmark?.seedBenchmark)}</span>
                   </td>
                   <td className="py-3 px-3 text-center">
-                    <span className="text-sm text-muted-foreground">{benchmark.seriesABenchmark}</span>
+                    <span className="text-sm text-muted-foreground">{safeText(benchmark?.seriesABenchmark)}</span>
                   </td>
                   <td className="py-3 px-3 text-center">
                     <span className={cn("inline-flex items-center gap-1 text-sm font-medium", percentileStyle.color)}>
                       {percentileStyle.icon}
-                      {benchmark.percentile}
+                      {safeText(benchmark?.percentile)}
                     </span>
                   </td>
                 </tr>
@@ -75,10 +83,10 @@ export const SectionBenchmarks = ({ benchmarks, sectionName }: SectionBenchmarks
 
       {/* Insights */}
       <div className="mt-4 space-y-2">
-        {benchmarks.map((benchmark, idx) => (
+        {safeBenchmarks.map((benchmark, idx) => (
           <div key={idx} className="p-2 rounded-lg bg-muted/30 text-sm">
-            <span className="font-medium text-foreground">{benchmark.metric}:</span>{" "}
-            <span className="text-muted-foreground">{benchmark.insight}</span>
+            <span className="font-medium text-foreground">{safeText(benchmark?.metric)}:</span>{" "}
+            <span className="text-muted-foreground">{safeText(benchmark?.insight)}</span>
           </div>
         ))}
       </div>
