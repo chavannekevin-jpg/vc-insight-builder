@@ -266,9 +266,9 @@ const Admin = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-primary">UglyBaby Admin</h1>
           <div className="flex items-center gap-2">
-            <Button onClick={() => navigate("/")} variant="outline" size="sm">
+            <Button onClick={() => navigate("/portal")} variant="outline" size="sm">
               <Home className="w-4 h-4 mr-2" />
-              Home
+              Dashboard
             </Button>
             <Button onClick={handleLogout} variant="outline" size="sm">
               <LogOut className="w-4 h-4 mr-2" />
