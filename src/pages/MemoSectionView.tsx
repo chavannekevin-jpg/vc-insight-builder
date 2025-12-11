@@ -27,7 +27,7 @@ import { extractMoatScores, extractTeamMembers, extractUnitEconomics } from "@/l
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Grid, BookOpen, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Grid, BookOpen, Zap, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph } from "@/types/memo";
 
@@ -121,8 +121,8 @@ export default function MemoSectionView() {
     return null;
   }
 
-  // Locking: Section 0 (VC Quick Take) and Section 1 (Problem) are free
-  const isLocked = !hasPremium && sectionIndex > 1;
+  // Locking: Only Section 0 (VC Quick Take) is free
+  const isLocked = !hasPremium && sectionIndex > 0;
   const progressPercent = ((sectionIndex + 1) / totalSections) * 100;
 
   const goToSection = (index: number) => {
@@ -170,6 +170,29 @@ export default function MemoSectionView() {
         </div>
         
         <div className="container mx-auto px-4 py-8 max-w-5xl">
+          {/* Free Preview Context Card */}
+          <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-bold text-primary px-2 py-1 bg-primary/20 rounded-full">
+                FREE PREVIEW
+              </span>
+              <span className="text-xs text-muted-foreground">Page 1 of {totalSections}</span>
+            </div>
+            <h3 className="text-lg font-bold mb-2 text-foreground">
+              This Is What VCs Think About {companyInfo?.name}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              The VC Quick Take summarizes the investment verdict, top concerns, and critical action items. 
+              The full memo contains {totalSections - 1} more deep-dive sections with VC questions, competitive analysis, 
+              and specific fixes for each weakness.
+            </p>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <span>📄 {totalSections} detailed sections</span>
+              <span>❓ VC questions with prep guides</span>
+              <span>🎯 Actionable fixes for every issue</span>
+            </div>
+          </div>
+
           {/* VC Quick Take Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4">
@@ -196,6 +219,31 @@ export default function MemoSectionView() {
           {actionPlan && actionPlan.items.length > 0 && (
             <div className="mt-8">
               <MemoActionPlan actionPlan={actionPlan} companyName={companyInfo?.name} />
+            </div>
+          )}
+
+          {/* Urgency CTA for non-premium users */}
+          {!hasPremium && (
+            <div className="mt-8 p-6 rounded-xl bg-destructive/5 border border-destructive/20">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-foreground mb-1">
+                    73% of startups get rejected based on problems like these
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    The remaining {totalSections - 1} sections show exactly how VCs analyze each area and what you can do to fix every concern before your pitch.
+                  </p>
+                  <Button 
+                    onClick={() => navigate(`/checkout-memo?companyId=${companyId}`)}
+                    className="w-full sm:w-auto"
+                  >
+                    Unlock Full Memo →
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
 

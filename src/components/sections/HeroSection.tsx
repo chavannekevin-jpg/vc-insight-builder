@@ -25,17 +25,17 @@ export const HeroSection = () => {
 
           {/* Main headline */}
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.15] max-w-5xl mx-auto">
-            <span className="inline-block">VCs Write Internal Memos</span>{" "}
+            <span className="inline-block">The Analysis That Kills Your Deal</span>{" "}
             <span 
               className="text-primary font-bold inline-block"
               style={{ 
                 textShadow: '0 0 10px hsl(var(--primary) / 0.6), 0 0 20px hsl(var(--primary) / 0.4), 0 0 30px hsl(var(--primary) / 0.2)'
               }}
             >
-              to Kill Deals
+              Happens Behind Closed Doors
             </span>
             <br />
-            <span className="inline-block">See Yours Before They Do</span>
+            <span className="inline-block">Read It Before They Do</span>
           </h1>
 
           {/* Subheadline */}
@@ -71,7 +71,7 @@ export const HeroSection = () => {
               onClick={() => navigate('/sample-memo')}
               className="px-8 py-4 rounded-lg bg-muted border border-border text-foreground font-semibold text-lg hover:bg-muted/80 transition-all"
             >
-              See What VCs See
+              Preview Sample Memo
             </button>
           </div>
 
