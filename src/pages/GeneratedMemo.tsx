@@ -61,6 +61,9 @@ import {
   VisionExitNarrativeCard
 } from "@/components/memo/tools";
 
+// Import sample tools as fallback
+import { SAMPLE_SECTION_TOOLS } from "@/data/sampleMemoTools";
+
 interface SmartQuestion {
   questionKey: string;
   question: string;
@@ -676,8 +679,8 @@ export default function GeneratedMemo() {
               const heroParagraph = narrative.paragraphs?.find((p: MemoParagraph) => p.emphasis === "high");
               const otherParagraphs = narrative.paragraphs?.filter((p: MemoParagraph) => p.emphasis !== "high") || [];
 
-              // Get section-specific tools data
-              const currentSectionTools = sectionTools[section.title] || {};
+              // Get section-specific tools data - use sample data as fallback
+              const currentSectionTools = sectionTools[section.title] || SAMPLE_SECTION_TOOLS[section.title] || {};
 
               const sectionContent = (
                 <MemoSection key={section.title} title={section.title} index={index}>

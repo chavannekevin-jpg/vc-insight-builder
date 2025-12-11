@@ -12,9 +12,23 @@ interface MemoNarrativeProps {
   paragraphs: MemoParagraph[];
 }
 
-const highlightFrameworks = (text: string): React.ReactNode => {
+// Helper to safely convert any value to string
+const safeText = (text: unknown): string => {
+  if (typeof text === 'string') return text;
+  if (text === null || text === undefined) return '';
+  if (typeof text === 'object') {
+    console.warn('MemoNarrative received object instead of string:', text);
+    return JSON.stringify(text);
+  }
+  return String(text);
+};
+
+const highlightFrameworks = (text: unknown): React.ReactNode => {
+  const safeString = safeText(text);
+  if (!safeString) return null;
+  
   // First parse markdown bold, then highlight frameworks
-  const parsedBold = parseMarkdownBold(text);
+  const parsedBold = parseMarkdownBold(safeString);
   
   return parsedBold.map((part, partIndex) => {
     // If it's already a React element (bold text), leave it
@@ -71,15 +85,18 @@ const highlightFrameworks = (text: string): React.ReactNode => {
 export const MemoNarrative = ({ paragraphs }: MemoNarrativeProps) => {
   if (!paragraphs || paragraphs.length === 0) return null;
 
+  // Filter out invalid paragraphs and ensure text is string
+  const validParagraphs = paragraphs.filter(p => p && (typeof p.text === 'string' || p.text));
+
   // Check if any paragraph contains a framework reference
-  const hasFramework = paragraphs.some(p => {
-    const text = p.text.toLowerCase();
+  const hasFramework = validParagraphs.some(p => {
+    const text = safeText(p.text).toLowerCase();
     return Object.keys(frameworkIcons).some(key => text.includes(key));
   });
 
   // Get the primary framework icon if present
   const PrimaryIcon = hasFramework 
-    ? paragraphs.reduce<React.ElementType | null>((acc, p) => acc || getFrameworkIcon(p.text), null)
+    ? validParagraphs.reduce<React.ElementType | null>((acc, p) => acc || getFrameworkIcon(safeText(p.text)), null)
     : null;
 
   return (
@@ -95,8 +112,9 @@ export const MemoNarrative = ({ paragraphs }: MemoNarrativeProps) => {
         )}
 
         <div className="space-y-5">
-          {paragraphs.map((paragraph, index) => {
+          {validParagraphs.map((paragraph, index) => {
             const isQuote = paragraph.emphasis === "quote";
+            const paragraphText = safeText(paragraph.text);
             
             if (isQuote) {
               return (
@@ -105,7 +123,7 @@ export const MemoNarrative = ({ paragraphs }: MemoNarrativeProps) => {
                   className="border-l-4 border-pink-500 pl-5 py-2 my-6 italic text-foreground/80 bg-muted/30 rounded-r-lg pr-4"
                 >
                   <p className="text-base leading-relaxed m-0">
-                    {highlightFrameworks(paragraph.text)}
+                    {highlightFrameworks(paragraphText)}
                   </p>
                 </blockquote>
               );
@@ -118,7 +136,7 @@ export const MemoNarrative = ({ paragraphs }: MemoNarrativeProps) => {
                   key={index}
                   className="text-lg text-foreground leading-relaxed first-letter:text-2xl first-letter:font-bold first-letter:text-foreground"
                 >
-                  {highlightFrameworks(paragraph.text)}
+                  {highlightFrameworks(paragraphText)}
                 </p>
               );
             }
@@ -128,7 +146,7 @@ export const MemoNarrative = ({ paragraphs }: MemoNarrativeProps) => {
                 key={index}
                 className="text-base text-foreground/90 leading-relaxed"
               >
-                {highlightFrameworks(paragraph.text)}
+                {highlightFrameworks(paragraphText)}
               </p>
             );
           })}
