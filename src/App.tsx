@@ -56,6 +56,20 @@ const DataRoomGuide = lazy(() => import("./pages/vcbrain/DataRoomGuide"));
 const VCStructure = lazy(() => import("./pages/vcbrain/VCStructure"));
 const InvestmentCommittee = lazy(() => import("./pages/vcbrain/InvestmentCommittee"));
 
+// Insider Takes
+const PowerLaws = lazy(() => import("./pages/vcbrain/insider/PowerLaws"));
+const ReturnProfile = lazy(() => import("./pages/vcbrain/insider/ReturnProfile"));
+const GoodBusinessBadVC = lazy(() => import("./pages/vcbrain/insider/GoodBusinessBadVC"));
+const ManagedPessimists = lazy(() => import("./pages/vcbrain/insider/ManagedPessimists"));
+const Asymmetry = lazy(() => import("./pages/vcbrain/insider/Asymmetry"));
+const LiquidityNotCustomer = lazy(() => import("./pages/vcbrain/insider/LiquidityNotCustomer"));
+const AfterPitchRoom = lazy(() => import("./pages/vcbrain/insider/AfterPitchRoom"));
+const ScoredNotInRoom = lazy(() => import("./pages/vcbrain/insider/ScoredNotInRoom"));
+const OnePartnerKill = lazy(() => import("./pages/vcbrain/insider/OnePartnerKill"));
+const WhyVCsGhost = lazy(() => import("./pages/vcbrain/insider/WhyVCsGhost"));
+const FollowOnCapital = lazy(() => import("./pages/vcbrain/insider/FollowOnCapital"));
+const OwnershipVsValuation = lazy(() => import("./pages/vcbrain/insider/OwnershipVsValuation"));
+
 const Portal = lazy(() => import("./pages/Portal"));
 const Auth = lazy(() => import("./pages/Auth"));
 const About = lazy(() => import("./pages/About"));
@@ -125,49 +139,91 @@ const App = () => (
             <Route path="/hub/:slug" element={<EducationalContent />} />
             <Route path="/vcbrain" element={<VCBrainHub />}>
               <Route index element={<VCBrainHome />} />
+              {/* Insider Takes */}
+              <Route path="insider/power-laws" element={<PowerLaws />} />
+              <Route path="insider/return-profile" element={<ReturnProfile />} />
+              <Route path="insider/good-business-bad-vc" element={<GoodBusinessBadVC />} />
+              <Route path="insider/managed-pessimists" element={<ManagedPessimists />} />
+              <Route path="insider/asymmetry" element={<Asymmetry />} />
+              <Route path="insider/liquidity-not-customer" element={<LiquidityNotCustomer />} />
+              <Route path="insider/after-pitch-room" element={<AfterPitchRoom />} />
+              <Route path="insider/scored-not-in-room" element={<ScoredNotInRoom />} />
+              <Route path="insider/one-partner-kill" element={<OnePartnerKill />} />
+              <Route path="insider/why-vcs-ghost" element={<WhyVCsGhost />} />
+              <Route path="insider/follow-on-capital" element={<FollowOnCapital />} />
+              <Route path="insider/ownership-vs-valuation" element={<OwnershipVsValuation />} />
+              {/* How VCs Work */}
+              <Route path="how-vcs-work/structure" element={<VCStructure />} />
+              <Route path="how-vcs-work/dealflow" element={<VCDealflow />} />
+              <Route path="how-vcs-work/selection-process" element={<VCSelectionProcess />} />
+              <Route path="how-vcs-work/investment-committee" element={<InvestmentCommittee />} />
+              <Route path="how-vcs-work/data-room" element={<DataRoomGuide />} />
+              {/* VC Fund Dynamics */}
+              <Route path="vc-mechanics/limited-partners" element={<LimitedPartners />} />
+              <Route path="vc-mechanics/fundraising-cycles" element={<VCFundraisingCycles />} />
+              {/* Stage Guides */}
+              <Route path="stages/angel" element={<AngelStage />} />
+              <Route path="stages/pre-seed" element={<PreSeedStage />} />
+              <Route path="stages/seed" element={<SeedStage />} />
+              <Route path="stages/comparison" element={<StageComparison />} />
+              <Route path="stages/spv-syndication" element={<SPVAndSyndication />} />
+              {/* Legacy routes */}
               <Route path="angel" element={<AngelStage />} />
               <Route path="pre-seed" element={<PreSeedStage />} />
               <Route path="seed" element={<SeedStage />} />
+              <Route path="stage-comparison" element={<StageComparison />} />
+              <Route path="vc-operations/limited-partners" element={<LimitedPartners />} />
+              <Route path="vc-operations/spv-syndication" element={<SPVAndSyndication />} />
+              <Route path="vc-operations/fundraising-cycles" element={<VCFundraisingCycles />} />
+              {/* Pitch Deck Library */}
+              <Route path="deck-building/executive-summary" element={<ExecutiveSummarySlide />} />
+              <Route path="deck-building/problem" element={<ProblemSlide />} />
+              <Route path="deck-building/solution" element={<SolutionSlide />} />
+              <Route path="deck-building/product" element={<ProductSlide />} />
+              <Route path="deck-building/market" element={<MarketSlide />} />
+              <Route path="deck-building/competition" element={<CompetitionSlide />} />
+              <Route path="deck-building/traction" element={<TractionSlide />} />
+              <Route path="deck-building/financials" element={<FinancialsSlide />} />
+              <Route path="deck-building/team" element={<TeamSlide />} />
+              <Route path="deck-building/gtm" element={<GTMSlide />} />
+              <Route path="deck-building/vision" element={<VisionSlide />} />
+              <Route path="deck-building/ask" element={<AskSlide />} />
+              {/* Legacy deck routes */}
               <Route path="deck/problem" element={<ProblemSlide />} />
               <Route path="deck/solution" element={<SolutionSlide />} />
               <Route path="deck/product" element={<ProductSlide />} />
               <Route path="deck/market" element={<MarketSlide />} />
               <Route path="deck/traction" element={<TractionSlide />} />
               <Route path="deck/team" element={<TeamSlide />} />
-              <Route path="guides/angels" element={<WhatAngelsWant />} />
-              <Route path="guides/traction" element={<EarlyTraction />} />
-              <Route path="guides/tam" element={<FakeTAMs />} />
-              <Route path="guides/death" element={<WhyStartupsDie />} />
-              <Route path="stage-comparison" element={<StageComparison />} />
               <Route path="deck/competition" element={<CompetitionSlide />} />
               <Route path="deck/financials" element={<FinancialsSlide />} />
               <Route path="deck/vision" element={<VisionSlide />} />
               <Route path="deck/ask" element={<AskSlide />} />
               <Route path="deck/gtm" element={<GTMSlide />} />
               <Route path="deck/executive-summary" element={<ExecutiveSummarySlide />} />
+              {/* Tactical Guides */}
+              <Route path="guides/angels" element={<WhatAngelsWant />} />
+              <Route path="guides/traction" element={<EarlyTraction />} />
+              <Route path="guides/tam" element={<FakeTAMs />} />
               <Route path="guides/demos" element={<BuildingDemos />} />
               <Route path="guides/pitching" element={<PitchingWithoutHype />} />
               <Route path="guides/founder-fit" element={<FounderMarketFit />} />
               <Route path="guides/timeline" element={<FundraisingTimeline />} />
+              <Route path="guides/death" element={<WhyStartupsDie />} />
+              {/* Founder Mistakes */}
               <Route path="mistakes/fatal" element={<FatalErrors />} />
               <Route path="mistakes/red-flags" element={<RedFlagsVCsSpot />} />
               <Route path="mistakes/deck-disasters" element={<DeckDisasters />} />
               <Route path="mistakes/email-fails" element={<EmailPitchFails />} />
+              {/* Tools & Resources */}
               <Route path="tools/glossary" element={<VCGlossary />} />
               <Route path="tools/red-flags" element={<RedFlagDatabase />} />
               <Route path="tools/checklist" element={<PitchChecklist />} />
               <Route path="tools/scorecard" element={<InvestorScorecard />} />
+              {/* Term Sheets & Deals */}
               <Route path="deals/instruments" element={<FundingInstruments />} />
               <Route path="deals/terms" element={<KeyTermsExplained />} />
               <Route path="deals/negotiation" element={<NegotiationTactics />} />
-              <Route path="vc-operations/limited-partners" element={<LimitedPartners />} />
-              <Route path="vc-operations/spv-syndication" element={<SPVAndSyndication />} />
-              <Route path="vc-operations/fundraising-cycles" element={<VCFundraisingCycles />} />
-              <Route path="how-vcs-work/dealflow" element={<VCDealflow />} />
-              <Route path="how-vcs-work/selection-process" element={<VCSelectionProcess />} />
-              <Route path="how-vcs-work/data-room" element={<DataRoomGuide />} />
-              <Route path="how-vcs-work/structure" element={<VCStructure />} />
-              <Route path="how-vcs-work/investment-committee" element={<InvestmentCommittee />} />
             </Route>
             <Route path="/pre-seed-guide" element={<PreSeedGuide />} />
             <Route path="/problem-slide-guide" element={<ProblemSlideGuide />} />

@@ -12,22 +12,43 @@ interface NavSection {
   }[];
 }
 const navigationSections: NavSection[] = [{
-  title: "Stage Guides",
+  title: "Insider Takes",
   items: [{
-    label: "Angel Stage",
-    path: "/vcbrain/angel"
+    label: "VCs Pick Power Laws",
+    path: "/vcbrain/insider/power-laws"
   }, {
-    label: "Pre-Seed Stage",
-    path: "/vcbrain/pre-seed"
+    label: "Pitching a Return Profile",
+    path: "/vcbrain/insider/return-profile"
   }, {
-    label: "Seed Stage",
-    path: "/vcbrain/seed"
+    label: "Good Business ≠ Good VC Bet",
+    path: "/vcbrain/insider/good-business-bad-vc"
   }, {
-    label: "Stage Comparison",
-    path: "/vcbrain/stage-comparison"
+    label: "VCs Are Managed Pessimists",
+    path: "/vcbrain/insider/managed-pessimists"
   }, {
-    label: "SPVs & Syndication",
-    path: "/vcbrain/vc-operations/spv-syndication"
+    label: "VCs Bet on Asymmetry",
+    path: "/vcbrain/insider/asymmetry"
+  }, {
+    label: "Liquidity Is Your Customer",
+    path: "/vcbrain/insider/liquidity-not-customer"
+  }, {
+    label: "After the Pitch Room",
+    path: "/vcbrain/insider/after-pitch-room"
+  }, {
+    label: "Scored When You're Not There",
+    path: "/vcbrain/insider/scored-not-in-room"
+  }, {
+    label: "One Partner Can Kill You",
+    path: "/vcbrain/insider/one-partner-kill"
+  }, {
+    label: "Why VCs Ghost Founders",
+    path: "/vcbrain/insider/why-vcs-ghost"
+  }, {
+    label: "Follow-On Capital Decisions",
+    path: "/vcbrain/insider/follow-on-capital"
+  }, {
+    label: "Ownership vs. Valuation",
+    path: "/vcbrain/insider/ownership-vs-valuation"
   }]
 }, {
   title: "How VCs Work",
@@ -51,49 +72,67 @@ const navigationSections: NavSection[] = [{
   title: "VC Fund Dynamics",
   items: [{
     label: "Limited Partners (LPs)",
-    path: "/vcbrain/vc-operations/limited-partners"
+    path: "/vcbrain/vc-mechanics/limited-partners"
   }, {
     label: "VC Fundraising Cycles",
-    path: "/vcbrain/vc-operations/fundraising-cycles"
+    path: "/vcbrain/vc-mechanics/fundraising-cycles"
+  }]
+}, {
+  title: "Stage Guides",
+  items: [{
+    label: "Angel Stage",
+    path: "/vcbrain/stages/angel"
+  }, {
+    label: "Pre-Seed Stage",
+    path: "/vcbrain/stages/pre-seed"
+  }, {
+    label: "Seed Stage",
+    path: "/vcbrain/stages/seed"
+  }, {
+    label: "Stage Comparison",
+    path: "/vcbrain/stages/comparison"
+  }, {
+    label: "SPVs & Syndication",
+    path: "/vcbrain/stages/spv-syndication"
   }]
 }, {
   title: "Pitch Deck Library",
   items: [{
     label: "Executive Summary",
-    path: "/vcbrain/deck/executive-summary"
+    path: "/vcbrain/deck-building/executive-summary"
   }, {
     label: "Problem Slide",
-    path: "/vcbrain/deck/problem"
+    path: "/vcbrain/deck-building/problem"
   }, {
     label: "Solution Slide",
-    path: "/vcbrain/deck/solution"
+    path: "/vcbrain/deck-building/solution"
   }, {
     label: "Product Slide",
-    path: "/vcbrain/deck/product"
+    path: "/vcbrain/deck-building/product"
   }, {
     label: "Market Slide",
-    path: "/vcbrain/deck/market"
+    path: "/vcbrain/deck-building/market"
   }, {
     label: "Competition Slide",
-    path: "/vcbrain/deck/competition"
+    path: "/vcbrain/deck-building/competition"
   }, {
     label: "Traction Slide",
-    path: "/vcbrain/deck/traction"
+    path: "/vcbrain/deck-building/traction"
   }, {
     label: "Financials Slide",
-    path: "/vcbrain/deck/financials"
+    path: "/vcbrain/deck-building/financials"
   }, {
     label: "Team Slide",
-    path: "/vcbrain/deck/team"
+    path: "/vcbrain/deck-building/team"
   }, {
     label: "GTM Slide",
-    path: "/vcbrain/deck/gtm"
+    path: "/vcbrain/deck-building/gtm"
   }, {
     label: "Vision Slide",
-    path: "/vcbrain/deck/vision"
+    path: "/vcbrain/deck-building/vision"
   }, {
     label: "Ask Slide",
-    path: "/vcbrain/deck/ask"
+    path: "/vcbrain/deck-building/ask"
   }]
 }, {
   title: "Term Sheets & Deals",
