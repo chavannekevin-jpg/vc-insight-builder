@@ -18,13 +18,14 @@ interface SectionConfig {
 }
 
 const SECTIONS: SectionConfig[] = [
-  { key: "problem_description", title: "Problem", description: "What problem are you solving?", icon: "🎯" },
-  { key: "solution_description", title: "Solution", description: "How does your product solve this?", icon: "💡" },
+  { key: "problem_core", title: "Problem", description: "What problem are you solving?", icon: "🎯" },
+  { key: "solution_core", title: "Solution", description: "How does your product solve this?", icon: "💡" },
   { key: "target_customer", title: "Target Customer", description: "Who is your ideal customer?", icon: "👥" },
-  { key: "competitive_advantage", title: "Competition", description: "What's your competitive edge?", icon: "⚔️" },
-  { key: "founder_background", title: "Team", description: "Why are you the right team?", icon: "🧑‍💼" },
-  { key: "revenue_model", title: "Business Model", description: "How do you make money?", icon: "💰" },
-  { key: "current_traction", title: "Traction", description: "What progress have you made?", icon: "📈" }
+  { key: "competitive_moat", title: "Competition", description: "What's your competitive edge?", icon: "⚔️" },
+  { key: "team_story", title: "Team", description: "Why are you the right team?", icon: "🧑‍💼" },
+  { key: "business_model", title: "Business Model", description: "How do you make money?", icon: "💰" },
+  { key: "traction_proof", title: "Traction", description: "What progress have you made?", icon: "📈" },
+  { key: "vision_ask", title: "Vision & Ask", description: "Where are you going and what do you need?", icon: "🚀" }
 ];
 
 interface ResponseData {
