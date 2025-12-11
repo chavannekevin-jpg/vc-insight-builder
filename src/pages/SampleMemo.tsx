@@ -25,6 +25,35 @@ import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import type { MemoStructuredContent, MemoVCQuickTake as MemoVCQuickTakeType, MemoParagraph as MemoParagraphType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
 
+// Import new VC tools
+import {
+  SectionScoreCard,
+  VCInvestmentLogicCard,
+  Section90DayPlan,
+  LeadInvestorCard,
+  SectionBenchmarks,
+  MicroCaseStudyCard,
+  ProblemEvidenceThreshold,
+  ProblemFounderBlindSpot,
+  SolutionTechnicalDefensibility,
+  SolutionCommoditizationTeardown,
+  SolutionCompetitorBuildAnalysis,
+  MarketTAMCalculator,
+  MarketReadinessIndexCard,
+  MarketVCNarrativeCard,
+  CompetitionChessboardCard,
+  CompetitionMoatDurabilityCard,
+  TeamCredibilityGapCard,
+  BusinessModelStressTestCard,
+  TractionDepthTestCard,
+  VisionMilestoneMapCard,
+  VisionScenarioPlanningCard,
+  VisionExitNarrativeCard
+} from "@/components/memo/tools";
+
+// Import sample tool data
+import { SAMPLE_SECTION_TOOLS } from "@/data/sampleMemoTools";
+
 // Sample team data for CarbonPrint demo
 const SAMPLE_TEAM: TeamMember[] = [
   {
@@ -313,9 +342,23 @@ const SampleMemo = () => {
               const showExitPath = !exitPathShown && (isThesisSection || isVisionSection);
               if (showExitPath) exitPathShown = true;
               
+              // Get section-specific tools data
+              const sectionToolsKey = section.title;
+              const sectionTools = SAMPLE_SECTION_TOOLS[sectionToolsKey];
+              const isTractionSection = section.title.toLowerCase().includes('traction');
+              const isSolutionSection = section.title.toLowerCase().includes('solution');
+              
               return (
                 <MemoSection key={index} title={section.title} index={index}>
-                  <div>
+                  <div className="space-y-8">
+                    {/* Section Score Card - Shows for all sections with tools */}
+                    {sectionTools?.sectionScore && (
+                      <SectionScoreCard
+                        sectionName={section.title}
+                        score={sectionTools.sectionScore}
+                      />
+                    )}
+
                     {/* Narrative Content */}
                     {(section.narrative || section.paragraphs || section.highlights || section.keyPoints) && (
                       <div className="space-y-8">
@@ -360,39 +403,119 @@ const SampleMemo = () => {
                       </div>
                     )}
 
-                    {/* Pain Validator Card - show after Problem section */}
-                    {isProblemSection && (
-                      <MemoPainValidatorCard 
-                        problemText={sectionText}
-                        companyName="CarbonPrint"
-                      />
+                    {/* Problem Section Tools */}
+                    {isProblemSection && sectionTools && (
+                      <div className="space-y-6">
+                        <MemoPainValidatorCard 
+                          problemText={sectionText}
+                          companyName="CarbonPrint"
+                        />
+                        {sectionTools.evidenceThreshold && (
+                          <ProblemEvidenceThreshold data={sectionTools.evidenceThreshold} />
+                        )}
+                        {sectionTools.founderBlindSpot && (
+                          <ProblemFounderBlindSpot data={sectionTools.founderBlindSpot} />
+                        )}
+                      </div>
                     )}
 
-                    {/* $100M ARR Scale Card - show after Market section */}
-                    {isMarketSection && (
-                      <MemoVCScaleCard 
-                        avgMonthlyRevenue={350}
-                        currentCustomers={23}
-                        currentMRR={8050}
-                        companyName="CarbonPrint"
-                        category="Climate Tech"
-                      />
+                    {/* Solution Section Tools */}
+                    {isSolutionSection && sectionTools && (
+                      <div className="space-y-6">
+                        {sectionTools.technicalDefensibility && (
+                          <SolutionTechnicalDefensibility data={sectionTools.technicalDefensibility} />
+                        )}
+                        {sectionTools.commoditizationTeardown && (
+                          <SolutionCommoditizationTeardown data={sectionTools.commoditizationTeardown} />
+                        )}
+                        {sectionTools.competitorBuildAnalysis && (
+                          <SolutionCompetitorBuildAnalysis data={sectionTools.competitorBuildAnalysis} />
+                        )}
+                      </div>
                     )}
 
-                    {/* Moat Score Card - show after Competition section */}
-                    {isCompetitionSection && (
-                      <MemoMoatScoreCard 
-                        moatScores={SAMPLE_MOAT_SCORES}
-                        companyName="CarbonPrint"
-                      />
+                    {/* Market Section Tools */}
+                    {isMarketSection && sectionTools && (
+                      <div className="space-y-6">
+                        <MemoVCScaleCard 
+                          avgMonthlyRevenue={350}
+                          currentCustomers={23}
+                          currentMRR={8050}
+                          companyName="CarbonPrint"
+                          category="Climate Tech"
+                        />
+                        {sectionTools.bottomsUpTAM && (
+                          <MarketTAMCalculator data={sectionTools.bottomsUpTAM} />
+                        )}
+                        {sectionTools.marketReadinessIndex && (
+                          <MarketReadinessIndexCard data={sectionTools.marketReadinessIndex} />
+                        )}
+                        {sectionTools.vcMarketNarrative && (
+                          <MarketVCNarrativeCard data={sectionTools.vcMarketNarrative} />
+                        )}
+                      </div>
                     )}
 
-                    {/* Unit Economics Card - show after Business Model section */}
-                    {isBusinessSection && (
-                      <MemoUnitEconomicsCard 
-                        unitEconomics={SAMPLE_UNIT_ECONOMICS}
-                        companyName="CarbonPrint"
-                      />
+                    {/* Competition Section Tools */}
+                    {isCompetitionSection && sectionTools && (
+                      <div className="space-y-6">
+                        <MemoMoatScoreCard 
+                          moatScores={SAMPLE_MOAT_SCORES}
+                          companyName="CarbonPrint"
+                        />
+                        {sectionTools.competitorChessboard && (
+                          <CompetitionChessboardCard data={sectionTools.competitorChessboard} />
+                        )}
+                        {sectionTools.moatDurability && (
+                          <CompetitionMoatDurabilityCard data={sectionTools.moatDurability} />
+                        )}
+                      </div>
+                    )}
+
+                    {/* Team Section Tools */}
+                    {isTeamSection && sectionTools && (
+                      <div className="space-y-6">
+                        {sectionTools.credibilityGapAnalysis && (
+                          <TeamCredibilityGapCard data={sectionTools.credibilityGapAnalysis} />
+                        )}
+                      </div>
+                    )}
+
+                    {/* Business Model Section Tools */}
+                    {isBusinessSection && sectionTools && (
+                      <div className="space-y-6">
+                        <MemoUnitEconomicsCard 
+                          unitEconomics={SAMPLE_UNIT_ECONOMICS}
+                          companyName="CarbonPrint"
+                        />
+                        {sectionTools.modelStressTest && (
+                          <BusinessModelStressTestCard data={sectionTools.modelStressTest} />
+                        )}
+                      </div>
+                    )}
+
+                    {/* Traction Section Tools */}
+                    {isTractionSection && sectionTools && (
+                      <div className="space-y-6">
+                        {sectionTools.tractionDepthTest && (
+                          <TractionDepthTestCard data={sectionTools.tractionDepthTest} />
+                        )}
+                      </div>
+                    )}
+
+                    {/* Vision Section Tools */}
+                    {isVisionSection && sectionTools && (
+                      <div className="space-y-6">
+                        {sectionTools.vcMilestoneMap && (
+                          <VisionMilestoneMapCard data={sectionTools.vcMilestoneMap} />
+                        )}
+                        {sectionTools.scenarioPlanning && (
+                          <VisionScenarioPlanningCard data={sectionTools.scenarioPlanning} />
+                        )}
+                        {sectionTools.exitNarrative && (
+                          <VisionExitNarrativeCard data={sectionTools.exitNarrative} />
+                        )}
+                      </div>
                     )}
 
                     {/* Exit Path Card - show ONCE after Investment Thesis or Vision section */}
@@ -401,6 +524,19 @@ const SampleMemo = () => {
                         exitData={SAMPLE_EXIT_DATA}
                         companyName="CarbonPrint"
                       />
+                    )}
+
+                    {/* Section Benchmarks - Shows for all sections with benchmarks */}
+                    {sectionTools?.benchmarks && (
+                      <SectionBenchmarks
+                        sectionName={section.title}
+                        benchmarks={sectionTools.benchmarks}
+                      />
+                    )}
+
+                    {/* Micro Case Study - Shows for all sections with case study */}
+                    {sectionTools?.caseStudy && (
+                      <MicroCaseStudyCard caseStudy={sectionTools.caseStudy} />
                     )}
 
                     {/* VC Reflection - Now fully visible for all sections */}
@@ -428,6 +564,30 @@ const SampleMemo = () => {
                         {/* Conclusion - fully visible */}
                         <MemoAIConclusion text={section.vcReflection.conclusion} />
                       </div>
+                    )}
+
+                    {/* VC Investment Logic Card - At the end of each section */}
+                    {sectionTools?.vcInvestmentLogic && (
+                      <VCInvestmentLogicCard
+                        sectionName={section.title}
+                        logic={sectionTools.vcInvestmentLogic}
+                      />
+                    )}
+
+                    {/* 90-Day Action Plan - At the end of each section */}
+                    {sectionTools?.actionPlan90Day && (
+                      <Section90DayPlan
+                        sectionName={section.title}
+                        plan={sectionTools.actionPlan90Day}
+                      />
+                    )}
+
+                    {/* Lead Investor Requirements - At the end of each section */}
+                    {sectionTools?.leadInvestorRequirements && (
+                      <LeadInvestorCard
+                        sectionName={section.title}
+                        requirements={sectionTools.leadInvestorRequirements}
+                      />
                     )}
                   </div>
                 </MemoSection>

@@ -25,6 +25,35 @@ import { toast } from "sonner";
 import type { MemoStructuredContent, MemoParagraph, MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
 
+// Import new VC tools
+import {
+  SectionScoreCard,
+  VCInvestmentLogicCard,
+  Section90DayPlan,
+  LeadInvestorCard,
+  SectionBenchmarks,
+  MicroCaseStudyCard,
+  ProblemEvidenceThreshold,
+  ProblemFounderBlindSpot,
+  SolutionTechnicalDefensibility,
+  SolutionCommoditizationTeardown,
+  SolutionCompetitorBuildAnalysis,
+  MarketTAMCalculator,
+  MarketReadinessIndexCard,
+  MarketVCNarrativeCard,
+  CompetitionChessboardCard,
+  CompetitionMoatDurabilityCard,
+  TeamCredibilityGapCard,
+  BusinessModelStressTestCard,
+  TractionDepthTestCard,
+  VisionMilestoneMapCard,
+  VisionScenarioPlanningCard,
+  VisionExitNarrativeCard
+} from "@/components/memo/tools";
+
+// Import sample tool data
+import { SAMPLE_SECTION_TOOLS } from "@/data/sampleMemoTools";
+
 const DEMO_COMPANY_ID = '00000000-0000-0000-0000-000000000001';
 
 // Sample data for CarbonPrint demo
@@ -363,6 +392,8 @@ export default function SampleMemoSectionView() {
   const isBusinessSection = titleLower.includes('business');
   const isThesisSection = titleLower.includes('thesis');
   const isVisionSection = titleLower.includes('vision');
+  const isTractionSection = titleLower.includes('traction');
+  const isSolutionSection = titleLower.includes('solution');
 
   const narrative = currentSection!.narrative || {
     paragraphs: currentSection!.paragraphs,
@@ -376,6 +407,9 @@ export default function SampleMemoSectionView() {
 
   // Exit Path only on Vision section (not Thesis)
   const showExitPath = isVisionSection;
+
+  // Get section-specific tools data
+  const sectionTools = SAMPLE_SECTION_TOOLS[currentSection!.title];
 
   return (
     <div className="min-h-screen bg-background">
@@ -428,6 +462,14 @@ export default function SampleMemoSectionView() {
         )}
 
         <MemoSection title={currentSection!.title} index={actualSectionIndex}>
+          {/* Section Score Card */}
+          {sectionTools?.sectionScore && (
+            <SectionScoreCard
+              sectionName={currentSection!.title}
+              score={sectionTools.sectionScore}
+            />
+          )}
+
           {/* Hero Statement */}
           {heroParagraph && <MemoHeroStatement text={heroParagraph.text} />}
 
@@ -439,59 +481,146 @@ export default function SampleMemoSectionView() {
             defaultOpen={true}
           />
 
-          {/* Problem Section - Pain Validator */}
+          {/* Problem Section Tools */}
           {isProblemSection && (
-            <MemoPainValidatorCard 
-              problemText={sectionText}
-              companyName={companyInfo?.name || 'CarbonPrint'}
-            />
+            <div className="space-y-6">
+              <MemoPainValidatorCard 
+                problemText={sectionText}
+                companyName={companyInfo?.name || 'CarbonPrint'}
+              />
+              {sectionTools?.evidenceThreshold && (
+                <ProblemEvidenceThreshold data={sectionTools.evidenceThreshold} />
+              )}
+              {sectionTools?.founderBlindSpot && (
+                <ProblemFounderBlindSpot data={sectionTools.founderBlindSpot} />
+              )}
+            </div>
+          )}
+
+          {/* Solution Section Tools */}
+          {isSolutionSection && sectionTools && (
+            <div className="space-y-6">
+              {sectionTools.technicalDefensibility && (
+                <SolutionTechnicalDefensibility data={sectionTools.technicalDefensibility} />
+              )}
+              {sectionTools.commoditizationTeardown && (
+                <SolutionCommoditizationTeardown data={sectionTools.commoditizationTeardown} />
+              )}
+              {sectionTools.competitorBuildAnalysis && (
+                <SolutionCompetitorBuildAnalysis data={sectionTools.competitorBuildAnalysis} />
+              )}
+            </div>
           )}
 
           {/* Team Section */}
           {isTeamSection && (
-            <>
+            <div className="space-y-6">
               <MemoTeamList members={SAMPLE_TEAM} showEquity={true} />
               <MemoTeamGapCard 
                 teamMembers={SAMPLE_TEAM_EXTRACTED}
                 stage={companyInfo?.stage || 'Pre-Seed'}
                 companyName={companyInfo?.name || 'CarbonPrint'}
               />
-            </>
+              {sectionTools?.credibilityGapAnalysis && (
+                <TeamCredibilityGapCard data={sectionTools.credibilityGapAnalysis} />
+              )}
+            </div>
           )}
 
-          {/* Market Section - VC Scale Card */}
+          {/* Market Section Tools */}
           {isMarketSection && (
-            <MemoVCScaleCard 
-              avgMonthlyRevenue={350}
-              currentCustomers={23}
-              currentMRR={8050}
-              companyName={companyInfo?.name || 'CarbonPrint'}
-              category={companyInfo?.category || 'Climate Tech'}
-            />
+            <div className="space-y-6">
+              <MemoVCScaleCard 
+                avgMonthlyRevenue={350}
+                currentCustomers={23}
+                currentMRR={8050}
+                companyName={companyInfo?.name || 'CarbonPrint'}
+                category={companyInfo?.category || 'Climate Tech'}
+              />
+              {sectionTools?.bottomsUpTAM && (
+                <MarketTAMCalculator data={sectionTools.bottomsUpTAM} />
+              )}
+              {sectionTools?.marketReadinessIndex && (
+                <MarketReadinessIndexCard data={sectionTools.marketReadinessIndex} />
+              )}
+              {sectionTools?.vcMarketNarrative && (
+                <MarketVCNarrativeCard data={sectionTools.vcMarketNarrative} />
+              )}
+            </div>
           )}
 
-          {/* Competition Section - Moat Score Card */}
+          {/* Competition Section Tools */}
           {isCompetitionSection && (
-            <MemoMoatScoreCard 
-              moatScores={SAMPLE_MOAT_SCORES}
-              companyName={companyInfo?.name || 'CarbonPrint'}
-            />
+            <div className="space-y-6">
+              <MemoMoatScoreCard 
+                moatScores={SAMPLE_MOAT_SCORES}
+                companyName={companyInfo?.name || 'CarbonPrint'}
+              />
+              {sectionTools?.competitorChessboard && (
+                <CompetitionChessboardCard data={sectionTools.competitorChessboard} />
+              )}
+              {sectionTools?.moatDurability && (
+                <CompetitionMoatDurabilityCard data={sectionTools.moatDurability} />
+              )}
+            </div>
           )}
 
-          {/* Business Model Section - Unit Economics Card */}
+          {/* Business Model Section Tools */}
           {isBusinessSection && (
-            <MemoUnitEconomicsCard 
-              unitEconomics={SAMPLE_UNIT_ECONOMICS}
-              companyName={companyInfo?.name || 'CarbonPrint'}
-            />
+            <div className="space-y-6">
+              <MemoUnitEconomicsCard 
+                unitEconomics={SAMPLE_UNIT_ECONOMICS}
+                companyName={companyInfo?.name || 'CarbonPrint'}
+              />
+              {sectionTools?.modelStressTest && (
+                <BusinessModelStressTestCard data={sectionTools.modelStressTest} />
+              )}
+            </div>
           )}
 
-          {/* Vision/Thesis Section - Exit Path Card */}
+          {/* Traction Section Tools */}
+          {isTractionSection && sectionTools && (
+            <div className="space-y-6">
+              {sectionTools.tractionDepthTest && (
+                <TractionDepthTestCard data={sectionTools.tractionDepthTest} />
+              )}
+            </div>
+          )}
+
+          {/* Vision Section Tools */}
+          {isVisionSection && (
+            <div className="space-y-6">
+              {sectionTools?.vcMilestoneMap && (
+                <VisionMilestoneMapCard data={sectionTools.vcMilestoneMap} />
+              )}
+              {sectionTools?.scenarioPlanning && (
+                <VisionScenarioPlanningCard data={sectionTools.scenarioPlanning} />
+              )}
+              {sectionTools?.exitNarrative && (
+                <VisionExitNarrativeCard data={sectionTools.exitNarrative} />
+              )}
+            </div>
+          )}
+
+          {/* Exit Path Card */}
           {showExitPath && (
             <MemoExitPathCard 
               exitData={SAMPLE_EXIT_DATA}
               companyName={companyInfo?.name || 'CarbonPrint'}
             />
+          )}
+
+          {/* Section Benchmarks */}
+          {sectionTools?.benchmarks && (
+            <SectionBenchmarks
+              sectionName={currentSection!.title}
+              benchmarks={sectionTools.benchmarks}
+            />
+          )}
+
+          {/* Micro Case Study */}
+          {sectionTools?.caseStudy && (
+            <MicroCaseStudyCard caseStudy={sectionTools.caseStudy} />
           )}
 
           {/* VC Perspective */}
@@ -515,6 +644,30 @@ export default function SampleMemoSectionView() {
               
               <MemoAIConclusion text={currentSection!.vcReflection.conclusion} />
             </div>
+          )}
+
+          {/* VC Investment Logic Card */}
+          {sectionTools?.vcInvestmentLogic && (
+            <VCInvestmentLogicCard
+              sectionName={currentSection!.title}
+              logic={sectionTools.vcInvestmentLogic}
+            />
+          )}
+
+          {/* 90-Day Action Plan */}
+          {sectionTools?.actionPlan90Day && (
+            <Section90DayPlan
+              sectionName={currentSection!.title}
+              plan={sectionTools.actionPlan90Day}
+            />
+          )}
+
+          {/* Lead Investor Requirements */}
+          {sectionTools?.leadInvestorRequirements && (
+            <LeadInvestorCard
+              sectionName={currentSection!.title}
+              requirements={sectionTools.leadInvestorRequirements}
+            />
           )}
         </MemoSection>
 
