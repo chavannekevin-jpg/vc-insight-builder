@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, DollarSign, Target, Clock, ArrowRight, Calculator } from "lucide-react";
+import { TrendingUp, DollarSign, Target, Clock, ArrowRight, Calculator, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface MemoResponse {
@@ -35,16 +35,23 @@ export function FinancialMetricsDashboard({ responses }: FinancialMetricsDashboa
     } catch {}
   }
 
-  const formatCurrency = (value: string | null | undefined) => {
-    if (!value) return null;
-    const num = parseFloat(value);
+  const formatCurrency = (value: string | number | null | undefined) => {
+    if (value === null || value === undefined) return null;
+    const num = typeof value === 'string' ? parseFloat(value) : value;
     if (isNaN(num)) return null;
-    if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `$${(num / 1000).toFixed(0)}K`;
-    return `$${num.toFixed(0)}`;
+    if (num >= 1000000) return `€${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `€${(num / 1000).toFixed(0)}K`;
+    return `€${num.toFixed(0)}`;
   };
 
-  const hasFinancialData = raiseAmount || valuationPreMoney || runwayMonths || projectedArr || currentMrr || monthlyBurn || unitEconomics;
+  // Check for data from unit economics extracted from memo
+  const hasUnitEconomicsData = unitEconomics && (
+    unitEconomics.arr || unitEconomics.carr || unitEconomics.mrr || 
+    unitEconomics.customers || unitEconomics.acv || unitEconomics.ltv || 
+    unitEconomics.cac || unitEconomics.revenue || unitEconomics.growthRate
+  );
+
+  const hasFinancialData = raiseAmount || valuationPreMoney || runwayMonths || projectedArr || currentMrr || monthlyBurn || hasUnitEconomicsData;
 
   if (!hasFinancialData) {
     return (
@@ -113,24 +120,79 @@ export function FinancialMetricsDashboard({ responses }: FinancialMetricsDashboa
     }
   ].filter(m => m.value);
 
-  // Add unit economics metrics if available
+  // Add unit economics metrics if available (extracted from memo)
   if (unitEconomics) {
+    // ARR from memo (prioritize over projectedArr response)
+    if (unitEconomics.arr) {
+      metrics.push({
+        label: "ARR",
+        value: formatCurrency(unitEconomics.arr),
+        icon: <TrendingUp className="w-4 h-4" />,
+        color: "text-emerald-600 bg-emerald-500/10"
+      });
+    }
+    
+    // CARR (Committed ARR) - common in B2B
+    if (unitEconomics.carr) {
+      metrics.push({
+        label: "CARR",
+        value: formatCurrency(unitEconomics.carr),
+        icon: <TrendingUp className="w-4 h-4" />,
+        color: "text-teal-600 bg-teal-500/10"
+      });
+    }
+    
+    // MRR from memo
+    if (unitEconomics.mrr) {
+      metrics.push({
+        label: "MRR",
+        value: formatCurrency(unitEconomics.mrr),
+        icon: <TrendingUp className="w-4 h-4" />,
+        color: "text-pink-600 bg-pink-500/10"
+      });
+    }
+    
+    // Customer count
+    if (unitEconomics.customers) {
+      metrics.push({
+        label: "Customers",
+        value: unitEconomics.customers.toString(),
+        icon: <Users className="w-4 h-4" />,
+        color: "text-indigo-600 bg-indigo-500/10"
+      });
+    }
+    
+    // ACV (Average Contract Value)
+    if (unitEconomics.acv) {
+      metrics.push({
+        label: "ACV",
+        value: formatCurrency(unitEconomics.acv),
+        icon: <DollarSign className="w-4 h-4" />,
+        color: "text-violet-600 bg-violet-500/10"
+      });
+    }
+    
+    // LTV
     if (unitEconomics.ltv) {
       metrics.push({
         label: "LTV",
-        value: formatCurrency(unitEconomics.ltv.toString()),
+        value: formatCurrency(unitEconomics.ltv),
         icon: <DollarSign className="w-4 h-4" />,
         color: "text-cyan-600 bg-cyan-500/10"
       });
     }
+    
+    // CAC
     if (unitEconomics.cac) {
       metrics.push({
         label: "CAC",
-        value: formatCurrency(unitEconomics.cac.toString()),
+        value: formatCurrency(unitEconomics.cac),
         icon: <DollarSign className="w-4 h-4" />,
         color: "text-orange-600 bg-orange-500/10"
       });
     }
+    
+    // LTV:CAC ratio
     if (unitEconomics.ltv && unitEconomics.cac && unitEconomics.cac > 0) {
       const ratio = (unitEconomics.ltv / unitEconomics.cac).toFixed(1);
       metrics.push({
@@ -138,6 +200,26 @@ export function FinancialMetricsDashboard({ responses }: FinancialMetricsDashboa
         value: `${ratio}x`,
         icon: <TrendingUp className="w-4 h-4" />,
         color: parseFloat(ratio) >= 3 ? "text-emerald-600 bg-emerald-500/10" : "text-amber-600 bg-amber-500/10"
+      });
+    }
+    
+    // Growth rate
+    if (unitEconomics.growthRate) {
+      metrics.push({
+        label: "Growth",
+        value: `${unitEconomics.growthRate}%`,
+        icon: <TrendingUp className="w-4 h-4" />,
+        color: unitEconomics.growthRate >= 10 ? "text-emerald-600 bg-emerald-500/10" : "text-amber-600 bg-amber-500/10"
+      });
+    }
+    
+    // Revenue (if no ARR/MRR)
+    if (unitEconomics.revenue && !unitEconomics.arr && !unitEconomics.mrr) {
+      metrics.push({
+        label: "Revenue",
+        value: formatCurrency(unitEconomics.revenue),
+        icon: <DollarSign className="w-4 h-4" />,
+        color: "text-emerald-600 bg-emerald-500/10"
       });
     }
   }

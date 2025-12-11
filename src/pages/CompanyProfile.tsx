@@ -95,20 +95,132 @@ const extractMemoSectionContent = (section: MemoSection): string => {
   return "";
 };
 
-// Extract unit economics from Business Model section
+// Parse currency amounts from text (supports €, $, and various formats)
+const parseCurrencyAmount = (text: string): number | null => {
+  // Match patterns like: €126K, $1.2M, €18,000, $500k, 126K EUR, etc.
+  const match = text.match(/[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?(?:\s*(?:EUR|USD|€|\$))?/);
+  if (!match) return null;
+  
+  let value = parseFloat(match[1].replace(/,/g, ''));
+  if (isNaN(value)) return null;
+  
+  const multiplier = match[2]?.toUpperCase();
+  if (multiplier === 'K') value *= 1000;
+  if (multiplier === 'M') value *= 1000000;
+  
+  return value;
+};
+
+// Extract unit economics from Business Model and Traction sections using pattern matching
 const extractUnitEconomicsFromMemo = (sections: MemoSection[]): Record<string, any> | null => {
   const businessModelSection = sections.find(s => s.title === "Business Model");
-  if (!businessModelSection?.tools?.unitEconomics?.aiGenerated) return null;
+  const tractionSection = sections.find(s => s.title === "Traction & Proof Points");
   
-  const { metrics, pricing } = businessModelSection.tools.unitEconomics.aiGenerated;
-  if (!metrics && !pricing) return null;
+  const businessModelText = businessModelSection ? extractMemoSectionContent(businessModelSection) : "";
+  const tractionText = tractionSection ? extractMemoSectionContent(tractionSection) : "";
+  const combinedText = `${businessModelText}\n${tractionText}`;
   
-  return {
-    ...metrics,
-    pricingModel: pricing?.model,
-    price: pricing?.price,
-    pricingInterval: pricing?.interval
-  };
+  if (!combinedText.trim()) return null;
+  
+  const extracted: Record<string, any> = {};
+  
+  // Extract ARR (Annual Recurring Revenue)
+  const arrMatch = combinedText.match(/(?:ARR|annual recurring revenue)[:\s]*[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i) ||
+                   combinedText.match(/[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*ARR/i);
+  if (arrMatch) {
+    let arr = parseFloat(arrMatch[1].replace(/,/g, ''));
+    if (arrMatch[2]?.toUpperCase() === 'K') arr *= 1000;
+    if (arrMatch[2]?.toUpperCase() === 'M') arr *= 1000000;
+    extracted.arr = arr;
+  }
+  
+  // Extract CARR (Committed ARR) - common in B2B SaaS
+  const carrMatch = combinedText.match(/(?:CARR|committed ARR)[:\s]*[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i) ||
+                    combinedText.match(/[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*CARR/i);
+  if (carrMatch) {
+    let carr = parseFloat(carrMatch[1].replace(/,/g, ''));
+    if (carrMatch[2]?.toUpperCase() === 'K') carr *= 1000;
+    if (carrMatch[2]?.toUpperCase() === 'M') carr *= 1000000;
+    extracted.carr = carr;
+  }
+  
+  // Extract MRR (Monthly Recurring Revenue)
+  const mrrMatch = combinedText.match(/(?:MRR|monthly recurring revenue)[:\s]*[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i) ||
+                   combinedText.match(/[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*MRR/i);
+  if (mrrMatch) {
+    let mrr = parseFloat(mrrMatch[1].replace(/,/g, ''));
+    if (mrrMatch[2]?.toUpperCase() === 'K') mrr *= 1000;
+    if (mrrMatch[2]?.toUpperCase() === 'M') mrr *= 1000000;
+    extracted.mrr = mrr;
+  }
+  
+  // Extract customer count
+  const customerMatch = combinedText.match(/(\d+)\s*(?:paying\s+)?customers?/i) ||
+                        combinedText.match(/customers?[:\s]*(\d+)/i);
+  if (customerMatch) {
+    extracted.customers = parseInt(customerMatch[1]);
+  }
+  
+  // Extract ACV (Average Contract Value)
+  const acvMatch = combinedText.match(/(?:ACV|average contract value)[:\s]*[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i);
+  if (acvMatch) {
+    let acv = parseFloat(acvMatch[1].replace(/,/g, ''));
+    if (acvMatch[2]?.toUpperCase() === 'K') acv *= 1000;
+    if (acvMatch[2]?.toUpperCase() === 'M') acv *= 1000000;
+    extracted.acv = acv;
+  }
+  
+  // Extract LTV (Lifetime Value)
+  const ltvMatch = combinedText.match(/(?:LTV|lifetime value|CLV)[:\s]*[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i);
+  if (ltvMatch) {
+    let ltv = parseFloat(ltvMatch[1].replace(/,/g, ''));
+    if (ltvMatch[2]?.toUpperCase() === 'K') ltv *= 1000;
+    if (ltvMatch[2]?.toUpperCase() === 'M') ltv *= 1000000;
+    extracted.ltv = ltv;
+  }
+  
+  // Extract CAC (Customer Acquisition Cost)
+  const cacMatch = combinedText.match(/(?:CAC|customer acquisition cost)[:\s]*[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i);
+  if (cacMatch) {
+    let cac = parseFloat(cacMatch[1].replace(/,/g, ''));
+    if (cacMatch[2]?.toUpperCase() === 'K') cac *= 1000;
+    if (cacMatch[2]?.toUpperCase() === 'M') cac *= 1000000;
+    extracted.cac = cac;
+  }
+  
+  // Extract pricing tiers (SME, Enterprise, etc.)
+  const pricingPatterns = [
+    { key: 'pricingSME', pattern: /SME[:\s]*[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?(?:\s*(?:per year|annually|\/year|ARR))?/i },
+    { key: 'pricingEnterprise', pattern: /Enterprise[:\s]*[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?(?:\s*(?:per year|annually|\/year|ARR))?/i },
+    { key: 'setupFee', pattern: /(?:setup|onboarding)\s*(?:fee)?[:\s]*[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i },
+  ];
+  
+  for (const { key, pattern } of pricingPatterns) {
+    const match = combinedText.match(pattern);
+    if (match) {
+      let value = parseFloat(match[1].replace(/,/g, ''));
+      if (match[2]?.toUpperCase() === 'K') value *= 1000;
+      if (match[2]?.toUpperCase() === 'M') value *= 1000000;
+      extracted[key] = value;
+    }
+  }
+  
+  // Extract growth rate
+  const growthMatch = combinedText.match(/(\d+(?:\.\d+)?)\s*%\s*(?:growth|MoM|month[- ]over[- ]month)/i);
+  if (growthMatch) {
+    extracted.growthRate = parseFloat(growthMatch[1]);
+  }
+  
+  // Extract revenue if not ARR/MRR
+  const revenueMatch = combinedText.match(/(?:revenue|sales)[:\s]*[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i);
+  if (revenueMatch && !extracted.arr && !extracted.mrr) {
+    let revenue = parseFloat(revenueMatch[1].replace(/,/g, ''));
+    if (revenueMatch[2]?.toUpperCase() === 'K') revenue *= 1000;
+    if (revenueMatch[2]?.toUpperCase() === 'M') revenue *= 1000000;
+    extracted.revenue = revenue;
+  }
+  
+  return Object.keys(extracted).length > 0 ? extracted : null;
 };
 
 export default function CompanyProfile() {
