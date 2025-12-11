@@ -114,6 +114,12 @@ export default function GeneratedMemo() {
   const [showRejectionPreview, setShowRejectionPreview] = useState(false);
   const [pendingGeneration, setPendingGeneration] = useState(false);
 
+  // IMPORTANT: useMemo must be called before any early returns to follow Rules of Hooks
+  const actionPlan = useMemo(() => {
+    if (!memoContent) return null;
+    return extractActionPlan(memoContent, memoContent.vcQuickTake);
+  }, [memoContent]);
+
   const handlePrint = () => {
     window.print();
   };
@@ -638,11 +644,7 @@ export default function GeneratedMemo() {
     vcQuickTakeStrengthsIsArray: memoContent.vcQuickTake ? Array.isArray(memoContent.vcQuickTake.strengths) : 'N/A',
   });
 
-  // Extract action plan from memo content
-  const actionPlan = useMemo(() => {
-    if (!memoContent) return null;
-    return extractActionPlan(memoContent, memoContent.vcQuickTake);
-  }, [memoContent]);
+  // actionPlan is now computed at the top of the component (before early returns)
   return (
     <div className="min-h-screen bg-background">
       <Header />
