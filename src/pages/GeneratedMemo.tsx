@@ -299,6 +299,41 @@ export default function GeneratedMemo() {
     }
   }, [shouldRedirectToWizard, companyId, navigate]);
 
+  // Helper to fetch tool data after memo generation
+  const fetchToolData = async (companyIdToFetch: string) => {
+    try {
+      const { data: toolData } = await supabase
+        .from("memo_tool_data")
+        .select("*")
+        .eq("company_id", companyIdToFetch);
+      
+      if (toolData && toolData.length > 0) {
+        const toolsMap: Record<string, EnhancedSectionTools> = {};
+        toolData.forEach((tool) => {
+          const sectionName = tool.section_name;
+          if (!toolsMap[sectionName]) {
+            toolsMap[sectionName] = {};
+          }
+          const aiData = tool.ai_generated_data as Record<string, any> || {};
+          const userOverrides = tool.user_overrides as Record<string, any> || {};
+          const mergedData = {
+            ...aiData,
+            ...userOverrides,
+            dataSource: tool.data_source || "ai-complete"
+          };
+          (toolsMap[sectionName] as any)[tool.tool_name] = 
+            ["sectionScore", "benchmarks", "caseStudy", "vcInvestmentLogic", "actionPlan90Day", "leadInvestorRequirements"].includes(tool.tool_name)
+              ? mergedData
+              : { aiGenerated: aiData, userOverrides: userOverrides, dataSource: tool.data_source || "ai-complete" };
+        });
+        setSectionTools(toolsMap);
+        console.log("Tool data fetched successfully:", Object.keys(toolsMap));
+      }
+    } catch (error) {
+      console.error("Error fetching tool data:", error);
+    }
+  };
+
   const generateMemo = async (companyIdToGenerate: string, force: boolean = false) => {
     setLoading(true);
     try {
@@ -350,6 +385,9 @@ export default function GeneratedMemo() {
           console.log("Memo generation completed!");
           setMemoContent(statusData.structuredContent);
           setCompanyInfo(statusData.company);
+          
+          // CRITICAL: Fetch tool data after memo generation completes
+          await fetchToolData(companyIdToGenerate);
           
           // Show rejection preview for non-premium users after generation
           if (!hasPremium && statusData.structuredContent?.vcQuickTake) {
@@ -450,6 +488,9 @@ export default function GeneratedMemo() {
           
           setMemoContent(statusData.structuredContent);
           setCompanyInfo(statusData.company);
+          
+          // CRITICAL: Fetch tool data after regeneration completes
+          await fetchToolData(companyId);
           
           toast({
             title: "Success",
