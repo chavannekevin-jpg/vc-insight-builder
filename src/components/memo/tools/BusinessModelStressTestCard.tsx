@@ -3,6 +3,7 @@ import { FlaskConical, AlertTriangle, TrendingDown } from "lucide-react";
 import { EditableToolCard } from "./EditableToolCard";
 import { ModelStressTest, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
+import { safeText, safeArray, safeNumber, mergeToolData } from "@/lib/toolDataUtils";
 
 interface BusinessModelStressTestProps {
   data: EditableTool<ModelStressTest>;
@@ -11,17 +12,26 @@ interface BusinessModelStressTestProps {
 
 export const BusinessModelStressTestCard = ({ data, onUpdate }: BusinessModelStressTestProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const currentData = data.userOverrides ? { ...data.aiGenerated, ...data.userOverrides } : data.aiGenerated;
+  
+  // Early return if data is invalid
+  if (!data?.aiGenerated) {
+    return null;
+  }
+  
+  const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
+  const overallResilience = safeText(currentData.overallResilience) || "Medium";
+  const scenarios = safeArray<{ scenario: string; impact: string; survivalProbability: number; mitigations: string[] }>(currentData.scenarios);
 
-  const getResilienceStyle = (resilience: "Low" | "Medium" | "High") => {
+  const getResilienceStyle = (resilience: string) => {
     switch (resilience) {
       case "High": return { bg: "bg-emerald-500/10", text: "text-emerald-600", label: "Resilient" };
       case "Medium": return { bg: "bg-amber-500/10", text: "text-amber-600", label: "Moderate" };
       case "Low": return { bg: "bg-red-500/10", text: "text-red-600", label: "Fragile" };
+      default: return { bg: "bg-muted", text: "text-foreground", label: "Unknown" };
     }
   };
 
-  const resilienceStyle = getResilienceStyle(currentData.overallResilience);
+  const resilienceStyle = getResilienceStyle(overallResilience);
 
   return (
     <EditableToolCard
@@ -48,42 +58,51 @@ export const BusinessModelStressTestCard = ({ data, onUpdate }: BusinessModelStr
       </div>
 
       {/* Scenarios */}
-      <div className="space-y-3">
-        {currentData.scenarios.map((scenario, idx) => (
-          <div key={idx} className="p-4 rounded-lg border border-border/50 bg-card">
-            <div className="flex items-start justify-between gap-3 mb-2">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-500" />
-                <h5 className="font-medium text-foreground">{scenario.scenario}</h5>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Survival</p>
-                <p className={cn(
-                  "font-semibold",
-                  scenario.survivalProbability >= 70 ? "text-emerald-500" :
-                  scenario.survivalProbability >= 40 ? "text-amber-500" : "text-red-500"
-                )}>
-                  {scenario.survivalProbability}%
-                </p>
-              </div>
-            </div>
+      {scenarios.length > 0 && (
+        <div className="space-y-3">
+          {scenarios.map((scenario, idx) => {
+            const survivalProbability = safeNumber(scenario?.survivalProbability, 50);
+            const mitigations = safeArray<string>(scenario?.mitigations);
             
-            <p className="text-sm text-muted-foreground mb-3">{scenario.impact}</p>
-            
-            <div className="p-2 rounded bg-muted/30">
-              <p className="text-xs font-medium text-muted-foreground mb-1">Mitigations</p>
-              <ul className="space-y-1">
-                {scenario.mitigations.map((m, mIdx) => (
-                  <li key={mIdx} className="text-sm text-foreground flex items-start gap-2">
-                    <span className="text-emerald-500">→</span>
-                    {m}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        ))}
-      </div>
+            return (
+              <div key={idx} className="p-4 rounded-lg border border-border/50 bg-card">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-500" />
+                    <h5 className="font-medium text-foreground">{safeText(scenario?.scenario)}</h5>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">Survival</p>
+                    <p className={cn(
+                      "font-semibold",
+                      survivalProbability >= 70 ? "text-emerald-500" :
+                      survivalProbability >= 40 ? "text-amber-500" : "text-red-500"
+                    )}>
+                      {survivalProbability}%
+                    </p>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-muted-foreground mb-3">{safeText(scenario?.impact)}</p>
+                
+                {mitigations.length > 0 && (
+                  <div className="p-2 rounded bg-muted/30">
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Mitigations</p>
+                    <ul className="space-y-1">
+                      {mitigations.map((m, mIdx) => (
+                        <li key={mIdx} className="text-sm text-foreground flex items-start gap-2">
+                          <span className="text-emerald-500">→</span>
+                          {safeText(m)}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </EditableToolCard>
   );
 };

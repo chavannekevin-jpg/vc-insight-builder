@@ -3,6 +3,7 @@ import { Users, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { EditableToolCard } from "./EditableToolCard";
 import { CredibilityGapAnalysis, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
+import { safeText, safeArray, safeNumber, mergeToolData } from "@/lib/toolDataUtils";
 
 interface TeamCredibilityGapCardProps {
   data: EditableTool<CredibilityGapAnalysis>;
@@ -11,13 +12,24 @@ interface TeamCredibilityGapCardProps {
 
 export const TeamCredibilityGapCard = ({ data, onUpdate }: TeamCredibilityGapCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const currentData = data.userOverrides ? { ...data.aiGenerated, ...data.userOverrides } : data.aiGenerated;
+  
+  // Early return if data is invalid
+  if (!data?.aiGenerated) {
+    return null;
+  }
+  
+  const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
+  const overallCredibility = safeNumber(currentData.overallCredibility, 50);
+  const currentSkills = safeArray<string>(currentData.currentSkills);
+  const expectedSkills = safeArray<string>(currentData.expectedSkills);
+  const gaps = safeArray<{ skill: string; mitigation: string; severity: "Critical" | "Important" | "Minor" }>(currentData.gaps);
 
-  const getSeverityStyle = (severity: "Critical" | "Important" | "Minor") => {
+  const getSeverityStyle = (severity: string) => {
     switch (severity) {
       case "Critical": return { bg: "bg-red-500/10", border: "border-red-500/30", text: "text-red-600" };
       case "Important": return { bg: "bg-amber-500/10", border: "border-amber-500/30", text: "text-amber-600" };
       case "Minor": return { bg: "bg-blue-500/10", border: "border-blue-500/30", text: "text-blue-600" };
+      default: return { bg: "bg-muted", border: "border-border", text: "text-foreground" };
     }
   };
 
@@ -50,13 +62,13 @@ export const TeamCredibilityGapCard = ({ data, onUpdate }: TeamCredibilityGapCar
             <circle 
               cx="32" cy="32" r="28" 
               stroke="currentColor" strokeWidth="6" fill="none" 
-              strokeDasharray={`${currentData.overallCredibility * 1.76} 176`}
-              className={getCredibilityColor(currentData.overallCredibility)}
+              strokeDasharray={`${overallCredibility * 1.76} 176`}
+              className={getCredibilityColor(overallCredibility)}
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className={cn("text-lg font-bold", getCredibilityColor(currentData.overallCredibility))}>
-              {currentData.overallCredibility}
+            <span className={cn("text-lg font-bold", getCredibilityColor(overallCredibility))}>
+              {overallCredibility}
             </span>
           </div>
         </div>
@@ -74,8 +86,8 @@ export const TeamCredibilityGapCard = ({ data, onUpdate }: TeamCredibilityGapCar
             <span className="text-sm font-medium text-emerald-600">Current Skills</span>
           </div>
           <ul className="space-y-1">
-            {currentData.currentSkills.map((skill, idx) => (
-              <li key={idx} className="text-sm text-muted-foreground">• {skill}</li>
+            {currentSkills.map((skill, idx) => (
+              <li key={idx} className="text-sm text-muted-foreground">• {safeText(skill)}</li>
             ))}
           </ul>
         </div>
@@ -85,33 +97,35 @@ export const TeamCredibilityGapCard = ({ data, onUpdate }: TeamCredibilityGapCar
             <span className="text-sm font-medium text-blue-600">VCs Expect</span>
           </div>
           <ul className="space-y-1">
-            {currentData.expectedSkills.map((skill, idx) => (
-              <li key={idx} className="text-sm text-muted-foreground">• {skill}</li>
+            {expectedSkills.map((skill, idx) => (
+              <li key={idx} className="text-sm text-muted-foreground">• {safeText(skill)}</li>
             ))}
           </ul>
         </div>
       </div>
 
       {/* Gaps */}
-      <div className="space-y-2">
-        <p className="text-sm font-medium text-foreground">Identified Gaps</p>
-        {currentData.gaps.map((gap, idx) => {
-          const style = getSeverityStyle(gap.severity);
-          return (
-            <div key={idx} className={cn("p-3 rounded-lg border", style.bg, style.border)}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-medium text-foreground">{gap.skill}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{gap.mitigation}</p>
+      {gaps.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-foreground">Identified Gaps</p>
+          {gaps.map((gap, idx) => {
+            const style = getSeverityStyle(safeText(gap?.severity));
+            return (
+              <div key={idx} className={cn("p-3 rounded-lg border", style.bg, style.border)}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-foreground">{safeText(gap?.skill)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{safeText(gap?.mitigation)}</p>
+                  </div>
+                  <span className={cn("px-2 py-0.5 rounded text-xs font-medium", style.text)}>
+                    {safeText(gap?.severity)}
+                  </span>
                 </div>
-                <span className={cn("px-2 py-0.5 rounded text-xs font-medium", style.text)}>
-                  {gap.severity}
-                </span>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </EditableToolCard>
   );
 };
