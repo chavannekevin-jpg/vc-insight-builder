@@ -68,3 +68,6 @@ verify_jwt = false
 
 [functions.check-memo-job]
 verify_jwt = false
+
+[functions.og-meta-handler]
+verify_jwt = false
