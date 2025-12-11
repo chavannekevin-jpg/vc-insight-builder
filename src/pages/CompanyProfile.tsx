@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Edit, Sparkles, Loader2, Check, X, Zap, Rocket, Upload } from "lucide-react";
+import { FileText, Edit, Sparkles, Loader2, Check, X, Zap, Rocket, Upload, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { QuickFillWizard } from "@/components/QuickFillWizard";
 import { DeckImportWizard } from "@/components/DeckImportWizard";
@@ -23,7 +23,21 @@ interface Company {
 
 interface MemoResponse {
   question_key: string;
-  answer: string;
+  answer: string | null;
+  source?: string | null;
+}
+
+interface MemoSection {
+  title: string;
+  narrative?: {
+    paragraphs?: Array<{ text: string }>;
+    keyPoints?: string[];
+  };
+  overview?: string;
+}
+
+interface StructuredContent {
+  sections?: MemoSection[];
 }
 
 const QUESTION_LABELS: Record<string, { section: string; title: string }> = {
@@ -53,6 +67,32 @@ const QUESTION_LABELS: Record<string, { section: string; title: string }> = {
   vision_ask: { section: "Vision", title: "Vision & Ask" },
 };
 
+// Map memo section titles to question keys
+const MEMO_SECTION_TO_QUESTION_KEY: Record<string, string> = {
+  "Problem": "problem_core",
+  "Solution": "solution_core",
+  "Market": "target_customer",
+  "Competition": "competitive_moat",
+  "Team": "team_story",
+  "Business Model": "business_model",
+  "Traction": "traction_proof",
+  "Vision": "vision_ask",
+};
+
+// Extract text content from memo section
+const extractMemoSectionContent = (section: MemoSection): string => {
+  if (section.overview) return section.overview;
+  
+  if (section.narrative?.paragraphs) {
+    return section.narrative.paragraphs
+      .map(p => p.text)
+      .filter(Boolean)
+      .join("\n\n");
+  }
+  
+  return "";
+};
+
 export default function CompanyProfile() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -60,12 +100,82 @@ export default function CompanyProfile() {
   const [responses, setResponses] = useState<MemoResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [enhancing, setEnhancing] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [hasMemo, setHasMemo] = useState(false);
+  const [memoStructuredContent, setMemoStructuredContent] = useState<StructuredContent | null>(null);
   const [editingCompanyName, setEditingCompanyName] = useState(false);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editedCompanyName, setEditedCompanyName] = useState("");
   const [editedSectionContent, setEditedSectionContent] = useState("");
   const [wizardOpen, setWizardOpen] = useState(false);
   const [deckWizardOpen, setDeckWizardOpen] = useState(false);
+
+  // Sync memo content to responses
+  const syncMemoToResponses = async (companyId: string, structuredContent: StructuredContent, currentResponses: MemoResponse[]) => {
+    if (!structuredContent?.sections) return currentResponses;
+    
+    setSyncing(true);
+    const newResponses: MemoResponse[] = [];
+    
+    try {
+      for (const section of structuredContent.sections) {
+        const questionKey = MEMO_SECTION_TO_QUESTION_KEY[section.title];
+        if (!questionKey) continue;
+        
+        const content = extractMemoSectionContent(section);
+        if (!content) continue;
+        
+        // Check if response already exists with content
+        const existingResponse = currentResponses.find(r => r.question_key === questionKey);
+        if (existingResponse?.answer?.trim()) continue; // Don't overwrite user content
+        
+        // Upsert the response from memo
+        const { error } = await supabase
+          .from("memo_responses")
+          .upsert({
+            company_id: companyId,
+            question_key: questionKey,
+            answer: content,
+            source: "memo_sync"
+          }, {
+            onConflict: "company_id,question_key"
+          });
+        
+        if (!error) {
+          newResponses.push({
+            question_key: questionKey,
+            answer: content,
+            source: "memo_sync"
+          });
+        }
+      }
+      
+      if (newResponses.length > 0) {
+        toast({
+          title: "Synced from memo",
+          description: `${newResponses.length} sections imported from your generated memo.`,
+        });
+      }
+      
+      // Merge with existing responses
+      const merged = [...currentResponses];
+      newResponses.forEach(nr => {
+        const idx = merged.findIndex(r => r.question_key === nr.question_key);
+        if (idx >= 0) {
+          merged[idx] = nr;
+        } else {
+          merged.push(nr);
+        }
+      });
+      
+      return merged;
+    } catch (error) {
+      console.error("Memo sync error:", error);
+      return currentResponses;
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   useEffect(() => {
     const loadCompanyData = async () => {
@@ -92,13 +202,36 @@ export default function CompanyProfile() {
       // Load questionnaire responses
       const { data: memoResponses } = await supabase
         .from("memo_responses")
-        .select("question_key, answer")
+        .select("question_key, answer, source")
         .eq("company_id", companies[0].id);
 
-      if (memoResponses) {
-        setResponses(memoResponses);
+      let currentResponses: MemoResponse[] = (memoResponses || []) as MemoResponse[];
+      
+      // Check if a completed memo exists
+      const { data: memo } = await supabase
+        .from("memos")
+        .select("structured_content")
+        .eq("company_id", companies[0].id)
+        .eq("status", "completed")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (memo?.structured_content) {
+        setHasMemo(true);
+        const structuredContent = memo.structured_content as StructuredContent;
+        setMemoStructuredContent(structuredContent);
+        
+        // Auto-sync empty sections from memo
+        const hasEmptySections = ["problem_core", "solution_core", "target_customer", "competitive_moat", "team_story", "business_model", "traction_proof", "vision_ask"]
+          .some(key => !currentResponses.find(r => r.question_key === key)?.answer?.trim());
+        
+        if (hasEmptySections) {
+          currentResponses = await syncMemoToResponses(companies[0].id, structuredContent, currentResponses);
+        }
       }
-
+      
+      setResponses(currentResponses);
       setEditedCompanyName(companies[0].name);
       setLoading(false);
     };
@@ -461,6 +594,30 @@ export default function CompanyProfile() {
               <Zap className="w-4 h-4" />
               Quick Fill
             </Button>
+            {hasMemo && memoStructuredContent && (
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  if (!company) return;
+                  const updated = await syncMemoToResponses(company.id, memoStructuredContent, responses);
+                  setResponses(updated);
+                }}
+                disabled={syncing}
+                className="gap-2"
+              >
+                {syncing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4" />
+                    Sync from Memo
+                  </>
+                )}
+              </Button>
+            )}
             <Button
               onClick={handleEnhanceContent}
               disabled={enhancing || responses.length === 0}
