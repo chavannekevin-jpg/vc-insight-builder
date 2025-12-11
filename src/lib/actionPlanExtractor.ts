@@ -82,22 +82,39 @@ const EXAMPLE_LIBRARY = {
 };
 
 export function extractActionPlan(
-  memoContent: MemoStructuredContent,
-  vcQuickTake?: { concerns: string[]; strengths: string[] }
+  memoContent: MemoStructuredContent | null | undefined,
+  vcQuickTake?: { concerns?: string[] | unknown; strengths?: string[] | unknown } | null
 ): ActionPlanData {
+  // Early return with safe defaults if memoContent is invalid
+  if (!memoContent || !memoContent.sections || !Array.isArray(memoContent.sections)) {
+    console.warn('extractActionPlan: Invalid memoContent, returning empty plan');
+    return {
+      items: [],
+      overallUrgency: "moderate",
+      summaryLine: "Complete your memo sections to generate an action plan."
+    };
+  }
+
   const items: ActionItem[] = [];
   let idCounter = 1;
 
+  // Safely get concerns array
+  const safeConcerns = Array.isArray(vcQuickTake?.concerns) ? vcQuickTake.concerns : [];
+
   // Process VC Quick Take concerns first (highest signal)
-  if (vcQuickTake?.concerns) {
-    vcQuickTake.concerns.forEach(concern => {
-      const category = categorizeIssue(concern);
+  if (safeConcerns.length > 0) {
+    safeConcerns.forEach((concern: unknown) => {
+      // Ensure concern is a string
+      const concernText = typeof concern === 'string' ? concern : String(concern || '');
+      if (!concernText) return;
+      
+      const category = categorizeIssue(concernText);
       const existing = items.find(i => i.category === category);
       
       if (!existing) {
         items.push(createActionItem(
           `action-${idCounter++}`,
-          concern,
+          concernText,
           category,
           items.length + 1 as 1 | 2 | 3 | 4 | 5
         ));

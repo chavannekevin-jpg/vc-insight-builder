@@ -626,6 +626,18 @@ export default function GeneratedMemo() {
 
   const hasQuickTake = !!memoContent.vcQuickTake;
 
+  // Debug logging for memo content structure
+  console.log('GeneratedMemo render - memoContent structure:', {
+    hasSections: !!memoContent.sections,
+    sectionsCount: memoContent.sections?.length || 0,
+    hasVcQuickTake: !!memoContent.vcQuickTake,
+    vcQuickTakeType: typeof memoContent.vcQuickTake,
+    vcQuickTakeConcernsType: memoContent.vcQuickTake ? typeof memoContent.vcQuickTake.concerns : 'N/A',
+    vcQuickTakeConcernsIsArray: memoContent.vcQuickTake ? Array.isArray(memoContent.vcQuickTake.concerns) : 'N/A',
+    vcQuickTakeStrengthsType: memoContent.vcQuickTake ? typeof memoContent.vcQuickTake.strengths : 'N/A',
+    vcQuickTakeStrengthsIsArray: memoContent.vcQuickTake ? Array.isArray(memoContent.vcQuickTake.strengths) : 'N/A',
+  });
+
   // Extract action plan from memo content
   const actionPlan = useMemo(() => {
     if (!memoContent) return null;
