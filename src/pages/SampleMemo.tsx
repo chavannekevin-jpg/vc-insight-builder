@@ -1,5 +1,5 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,8 @@ import { MemoTeamGapCard } from "@/components/memo/MemoTeamGapCard";
 import { MemoExitPathCard } from "@/components/memo/MemoExitPathCard";
 import { MemoUnitEconomicsCard } from "@/components/memo/MemoUnitEconomicsCard";
 import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
+import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
+import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import type { MemoStructuredContent, MemoVCQuickTake as MemoVCQuickTakeType, MemoParagraph as MemoParagraphType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
 
@@ -278,6 +280,15 @@ const SampleMemo = () => {
 
         {/* VC Quick Take - Green/Red flags summary */}
         <MemoVCQuickTake quickTake={memoContent.vcQuickTake || SAMPLE_VC_QUICK_TAKE} showTeaser={false} />
+
+        {/* Action Plan - extracted from memo content */}
+        {(() => {
+          const quickTake = memoContent.vcQuickTake || SAMPLE_VC_QUICK_TAKE;
+          const actionPlan = extractActionPlan(memoContent, quickTake);
+          return actionPlan && actionPlan.items.length > 0 && (
+            <MemoActionPlan actionPlan={actionPlan} companyName={companyInfo?.name} />
+          );
+        })()}
 
         {/* Memo Sections */}
         <div className="space-y-16">
