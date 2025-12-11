@@ -10,7 +10,7 @@ import { CompanySummaryCard } from "@/components/CompanySummaryCard";
 import { ToolsRow } from "@/components/ToolsRow";
 import { CollapsedLibrary } from "@/components/CollapsedLibrary";
 import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
-import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame } from "lucide-react";
+import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/hooks/useCompany";
@@ -600,24 +600,44 @@ export default function FreemiumHub() {
                         </div>
                         <div className="flex items-center gap-3">
                           {hasPaid && (
-                            <Button
-                              variant="outline"
-                              onClick={() => {
-                                if (!company?.id) {
-                                  toast({
-                                    title: "Error",
-                                    description: "Company ID not found. Please refresh the page.",
-                                    variant: "destructive"
-                                  });
-                                  return;
-                                }
-                                navigate(`/memo?companyId=${company.id}&regenerate=true`);
-                              }}
-                              className="border-primary/50 hover:bg-primary/10"
-                            >
-                              <RotateCcw className="w-4 h-4 mr-2" />
-                              Regenerate
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                onClick={() => {
+                                  if (!company?.id) {
+                                    toast({
+                                      title: "Error",
+                                      description: "Company ID not found. Please refresh the page.",
+                                      variant: "destructive"
+                                    });
+                                    return;
+                                  }
+                                  navigate(`/memo/overview?companyId=${company.id}`);
+                                }}
+                                className="border-primary/50 hover:bg-primary/10"
+                              >
+                                <LayoutGrid className="w-4 h-4 mr-2" />
+                                Overview
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() => {
+                                  if (!company?.id) {
+                                    toast({
+                                      title: "Error",
+                                      description: "Company ID not found. Please refresh the page.",
+                                      variant: "destructive"
+                                    });
+                                    return;
+                                  }
+                                  navigate(`/memo?companyId=${company.id}&regenerate=true`);
+                                }}
+                                className="border-primary/50 hover:bg-primary/10"
+                              >
+                                <RotateCcw className="w-4 h-4 mr-2" />
+                                Regenerate
+                              </Button>
+                            </>
                           )}
                           <Button
                             onClick={() => {

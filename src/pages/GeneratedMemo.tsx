@@ -612,6 +612,10 @@ export default function GeneratedMemo() {
   // Handlers for VC Rejection Preview
   const handlePreviewMemo = () => {
     setShowRejectionPreview(false);
+    // Redirect non-premium users to wizard view instead of full memo
+    if (!hasPremium && companyId) {
+      navigate(`/memo/section?companyId=${companyId}&section=0`, { replace: true });
+    }
   };
 
   const handleGetFullMemo = () => {
@@ -1023,23 +1027,16 @@ export default function GeneratedMemo() {
                 </MemoSection>
               );
 
-              // First section (Problem) + Quick Take is always visible
-              if (index === 0) {
-                return (
-                  <div key={section.title}>
-                    {sectionContent}
-                    {/* Show CTA after Problem section if not premium */}
-                    {!hasPremium && <UnlockMemoCTA />}
-                  </div>
-                );
-              }
-
-              // Remaining sections: blur if not premium
+              // ALL sections are locked for free users - only VC Quick Take is free
               if (!hasPremium) {
                 return (
-                  <LockedSectionOverlay key={section.title} sectionTitle={section.title}>
-                    {sectionContent}
-                  </LockedSectionOverlay>
+                  <div key={section.title}>
+                    <LockedSectionOverlay sectionTitle={section.title}>
+                      {sectionContent}
+                    </LockedSectionOverlay>
+                    {/* Show CTA after first section */}
+                    {index === 0 && <UnlockMemoCTA />}
+                  </div>
                 );
               }
 
