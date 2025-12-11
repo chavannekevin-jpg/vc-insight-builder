@@ -6,6 +6,9 @@ interface MemoParagraphProps {
 }
 
 export const MemoParagraph = ({ text, emphasis = "normal" }: MemoParagraphProps) => {
+  // Guard against objects being passed instead of strings
+  const safeText = typeof text === 'string' ? text : String(text || '');
+  
   return (
     <div
       className={cn(
@@ -16,7 +19,7 @@ export const MemoParagraph = ({ text, emphasis = "normal" }: MemoParagraphProps)
         (emphasis === "normal" || emphasis === "narrative") && "text-muted-foreground text-base"
       )}
     >
-      {text}
+      {safeText}
     </div>
   );
 };

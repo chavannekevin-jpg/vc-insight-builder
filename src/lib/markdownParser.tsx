@@ -6,6 +6,12 @@ import React from "react";
 export const parseMarkdownBold = (text: string): React.ReactNode[] => {
   if (!text) return [];
   
+  // Guard against objects being passed instead of strings
+  if (typeof text !== 'string') {
+    console.warn('parseMarkdownBold received non-string:', text);
+    return [String(text)];
+  }
+  
   const parts: React.ReactNode[] = [];
   const regex = /\*\*([^*]+)\*\*/g;
   let lastIndex = 0;
@@ -39,5 +45,12 @@ export const parseMarkdownBold = (text: string): React.ReactNode[] => {
  */
 export const renderMarkdownText = (text: string): React.ReactNode => {
   if (!text) return null;
+  
+  // Guard against objects being passed instead of strings
+  if (typeof text !== 'string') {
+    console.warn('renderMarkdownText received non-string:', text);
+    return <>{String(text)}</>;
+  }
+  
   return <>{parseMarkdownBold(text)}</>;
 };
