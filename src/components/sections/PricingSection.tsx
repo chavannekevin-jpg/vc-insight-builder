@@ -36,19 +36,19 @@ export const PricingSection = () => {
     },
     {
       title: "Premium Memo",
-      subtitle: "Personalized Investment Memo",
+      subtitle: "VC Due Diligence Simulation",
       price: `€${memoFinalPrice.toFixed(2)}`,
       originalPrice: memoPricing?.early_access_enabled ? `€${memoPricing.base_price.toFixed(2)}` : undefined,
       discount: memoPricing?.early_access_enabled ? `Early Access - ${memoPricing.early_access_discount}% OFF` : undefined,
       features: [
         "Everything in Free, plus:",
-        "Personalized investment memo",
-        "VC-quality analysis of your startup",
-        "Actionable feedback and insights",
-        "Pitch strengthening recommendations",
+        "The internal memo VCs write about you",
+        "Every weakness exposed before your pitch",
+        "Deal-killing red flags surfaced first",
+        "Specific fixes to strengthen your position",
         "Company profile shared to VC network (optional)"
       ],
-      cta: "Upgrade to Premium →",
+      cta: "Get the Memo →",
       highlight: true,
       color: "green" as const
     },

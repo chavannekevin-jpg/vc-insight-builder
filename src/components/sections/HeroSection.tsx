@@ -18,29 +18,29 @@ export const HeroSection = () => {
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
-            <span className="text-sm font-medium text-primary">10 Years as a VC</span>
+            <span className="text-sm font-medium text-primary">10 Years Inside VC Funds</span>
             <span className="text-muted-foreground">•</span>
-            <span className="text-sm text-muted-foreground">Thousands of Pitches Reviewed</span>
+            <span className="text-sm text-muted-foreground">Thousands of Internal Memos Written</span>
           </div>
 
           {/* Main headline */}
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.15] max-w-5xl mx-auto">
-            <span className="inline-block">I've Rejected</span>{" "}
+            <span className="inline-block">VCs Write Internal Memos</span>{" "}
             <span 
               className="text-primary font-bold inline-block"
               style={{ 
                 textShadow: '0 0 10px hsl(var(--primary) / 0.6), 0 0 20px hsl(var(--primary) / 0.4), 0 0 30px hsl(var(--primary) / 0.2)'
               }}
             >
-              Thousands of Founders
+              to Kill Deals
             </span>
             <br />
-            <span className="inline-block">Here's How Not to Be Next</span>
+            <span className="inline-block">See Yours Before They Do</span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            After a decade of rejecting founders, I built this platform with my investment framework, resources, and tools—so you can master what actually works before you pitch.
+            Every deal gets an internal memo. Partners use it to pass or pursue. After a decade writing them, I'll generate yours—so you can fix what kills rounds before it costs you.
           </p>
 
           {/* Three-tier value prop */}
@@ -65,19 +65,19 @@ export const HeroSection = () => {
               onClick={() => navigate('/auth')}
               className="px-8 py-4 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-105"
             >
-              Get Your VC Memo →
+              Get the Memo Before They Write It →
             </button>
             <button
               onClick={() => navigate('/sample-memo')}
               className="px-8 py-4 rounded-lg bg-muted border border-border text-foreground font-semibold text-lg hover:bg-muted/80 transition-all"
             >
-              See a Sample Memo
+              See What VCs See
             </button>
           </div>
 
           {/* Social proof hint */}
           <p className="text-sm text-muted-foreground pt-2">
-            See your startup through a VC's eyes — discover blind spots before your pitch
+            The internal analysis that decides your fate — now in your hands
           </p>
         </div>
       </div>

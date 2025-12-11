@@ -239,17 +239,17 @@ export default function CheckoutMemo() {
               textShadow: '0 0 20px hsl(var(--primary) / 0.5), 0 0 40px hsl(var(--primary) / 0.3)'
             }}
           >
-            Get Your Investment Memo
+            The Memo VCs Would Write About You
           </h1>
           <p className="text-lg text-muted-foreground">
-            Complete your purchase to generate your professional investment memorandum
+            Every deal gets an internal memo. This is yours—before it costs you the round.
           </p>
         </div>
 
         <ModernCard className="p-8 space-y-6">
           <div className="flex items-center justify-between pb-6 border-b border-border">
             <div>
-              <h3 className="text-2xl font-serif font-bold mb-1">Investment Memo</h3>
+              <h3 className="text-2xl font-serif font-bold mb-1">VC Due Diligence Simulation</h3>
               <p className="text-muted-foreground">One-time purchase</p>
             </div>
             <Sparkles className="w-8 h-8 text-primary" />
@@ -257,12 +257,12 @@ export default function CheckoutMemo() {
 
           <ul className="space-y-3 py-4">
             {[
-              "AI-powered professional investment memo",
-              "Market analysis and competitive landscape",
-              "Financial projections and metrics",
-              "Risk assessment and mitigation strategies",
-              "Investor-ready format",
-              "Instant generation and download"
+              "The internal memo partners use to pass or pursue",
+              "Every weakness VCs will identify—exposed first",
+              "Deal-killing red flags surfaced before your pitch",
+              "Specific fixes to strengthen your position",
+              "The analysis that decides if you get a second meeting",
+              "Instant generation—know today what VCs will think"
             ].map((feature, idx) => (
               <li key={idx} className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
