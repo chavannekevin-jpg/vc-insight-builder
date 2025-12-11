@@ -1,7 +1,7 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText, Sparkles } from "lucide-react";
+import { ArrowLeft, FileText, Sparkles, Share2, Linkedin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MemoSection } from "@/components/memo/MemoSection";
@@ -219,11 +219,31 @@ const SampleMemo = () => {
               <ArrowLeft className="w-4 h-4" />
               <span className="font-medium">Back to Home</span>
             </Button>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center shadow-glow">
-                <FileText className="w-4 h-4 neon-pink" />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center shadow-glow">
+                  <FileText className="w-4 h-4 neon-pink" />
+                </div>
+                <span className="text-sm font-medium neon-pink">Sample Investment Memo</span>
               </div>
-              <span className="text-sm font-medium neon-pink">Sample Investment Memo</span>
+              
+              {/* LinkedIn Share Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 border-[#0A66C2]/30 hover:bg-[#0A66C2]/10 hover:border-[#0A66C2]/50 text-[#0A66C2] transition-all"
+                onClick={() => {
+                  const shareUrl = encodeURIComponent('https://uglybaby.co/sample-memo?view=full');
+                  window.open(
+                    `https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`,
+                    'linkedin-share',
+                    'width=600,height=600'
+                  );
+                }}
+              >
+                <Linkedin className="w-4 h-4" />
+                <span className="hidden sm:inline">Share</span>
+              </Button>
             </div>
           </div>
         </div>
