@@ -57,6 +57,9 @@ import {
   VisionExitNarrativeCard
 } from "@/components/memo/tools";
 
+// Import sample tools as fallback
+import { SAMPLE_SECTION_TOOLS } from "@/data/sampleMemoTools";
+
 export default function MemoSectionView() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -408,8 +411,8 @@ export default function MemoSectionView() {
   const problemText = problemSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
                      problemSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
 
-  // Get section-specific tools data
-  const currentSectionTools = sectionTools[currentSection!.title] || {};
+  // Get section-specific tools data - use sample data as fallback
+  const currentSectionTools = sectionTools[currentSection!.title] || SAMPLE_SECTION_TOOLS[currentSection!.title] || {};
   return (
     <div className="min-h-screen bg-background">
       <Header />
