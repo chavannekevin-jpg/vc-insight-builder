@@ -56,7 +56,57 @@ serve(async (req) => {
     // Base URL for the app
     const baseUrl = 'https://uglybaby.co';
     
-    // Sample memo specific meta tags
+    // Section-by-section sample memo wizard view
+    if (path.includes('sample-memo/section')) {
+      const ogHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Step Inside a Real VC Investment Memo | UglyBaby</title>
+  
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="Step Inside a Real VC Investment Memo | UglyBaby">
+  <meta name="description" content="See exactly how VCs analyze startups. Interactive walkthrough of a real investment memo - verdict, concerns, and what they'd fix.">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="${baseUrl}/sample-memo/section?section=0">
+  <meta property="og:title" content="Step Inside a Real VC Investment Memo">
+  <meta property="og:description" content="See exactly how VCs analyze startups. Interactive walkthrough of a real investment memo - verdict, concerns, and what they'd fix.">
+  <meta property="og:image" content="${baseUrl}/sample-memo-og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="UglyBaby">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="${baseUrl}/sample-memo/section?section=0">
+  <meta property="twitter:title" content="Step Inside a Real VC Investment Memo">
+  <meta property="twitter:description" content="See exactly how VCs analyze startups. Interactive walkthrough of a real investment memo.">
+  <meta property="twitter:image" content="${baseUrl}/sample-memo-og.png">
+  
+  <!-- LinkedIn specific -->
+  <meta name="author" content="UglyBaby">
+  <meta property="article:author" content="UglyBaby">
+</head>
+<body>
+  <h1>Step Inside a Real VC Investment Memo</h1>
+  <p>See exactly how VCs analyze startups.</p>
+  <p>Interactive walkthrough of a real investment memo - verdict, concerns, and what they'd fix.</p>
+  <a href="${baseUrl}/sample-memo/section?section=0">Start the walkthrough</a>
+</body>
+</html>`;
+
+      return new Response(ogHtml, {
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'public, max-age=3600'
+        },
+      });
+    }
+
+    // Full sample memo page
     if (path.includes('sample-memo')) {
       const ogHtml = `<!DOCTYPE html>
 <html lang="en">
