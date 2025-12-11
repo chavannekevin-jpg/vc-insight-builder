@@ -17,9 +17,12 @@ import { MemoUnitEconomicsCard } from "@/components/memo/MemoUnitEconomicsCard";
 import { MemoExitPathCard } from "@/components/memo/MemoExitPathCard";
 import { MemoVCScaleCard } from "@/components/memo/MemoVCScaleCard";
 import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
-import { ChevronLeft, ChevronRight, Grid, BookOpen, ArrowLeft, Sparkles, Rocket } from "lucide-react";
+import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
+import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
+import { extractActionPlan } from "@/lib/actionPlanExtractor";
+import { ChevronLeft, ChevronRight, Grid, BookOpen, ArrowLeft, Sparkles, Rocket, Zap } from "lucide-react";
 import { toast } from "sonner";
-import type { MemoStructuredContent, MemoParagraph } from "@/types/memo";
+import type { MemoStructuredContent, MemoParagraph, MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
 
 const DEMO_COMPANY_ID = '00000000-0000-0000-0000-000000000001';
@@ -76,6 +79,22 @@ const SAMPLE_EXIT_DATA: ExitPathData = {
   revenueMultiple: { low: 6, mid: 10, high: 15 }
 };
 
+const SAMPLE_VC_QUICK_TAKE: MemoVCQuickTakeType = {
+  verdict: "CarbonPrint shows strong fundamentals with an experienced team and growing market demand for carbon tracking solutions. The regulatory tailwinds and enterprise traction create compelling investment potential.",
+  readinessLevel: "MEDIUM",
+  readinessRationale: "Strong team and market timing, but needs more traction data and validated unit economics before Series A readiness.",
+  concerns: [
+    "Unit economics need validation at scale",
+    "Competition from established sustainability platforms",
+    "Customer concentration risk with limited enterprise clients"
+  ],
+  strengths: [
+    "Strong founding team with relevant industry experience",
+    "Clear regulatory tailwinds driving demand",
+    "Early enterprise traction with Fortune 500 logos"
+  ]
+};
+
 export default function SampleMemoSectionView() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -129,10 +148,15 @@ export default function SampleMemoSectionView() {
     return null;
   }
 
-  const totalSections = memoContent.sections.length;
-  const currentSection = memoContent.sections[sectionIndex];
+  // Total sections includes VC Quick Take (section 0) + all memo sections
+  const totalSections = memoContent.sections.length + 1;
   
-  if (!currentSection) {
+  // Section 0 = VC Quick Take, Section 1+ = actual memo sections
+  const isVCQuickTakePage = sectionIndex === 0;
+  const actualSectionIndex = sectionIndex - 1;
+  const currentSection = isVCQuickTakePage ? null : memoContent.sections[actualSectionIndex];
+  
+  if (!isVCQuickTakePage && !currentSection) {
     navigate('/sample-memo?view=full');
     return null;
   }
@@ -146,8 +170,146 @@ export default function SampleMemoSectionView() {
     }
   };
 
+  // Render VC Quick Take page (Section 0)
+  if (isVCQuickTakePage) {
+    const vcQuickTake = memoContent.vcQuickTake || SAMPLE_VC_QUICK_TAKE;
+    const actionPlan = extractActionPlan(memoContent, vcQuickTake);
+
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Sticky Navigation Bar */}
+        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/50">
+          <div className="container mx-auto px-4 py-3 max-w-5xl">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/')}
+                  className="gap-2 text-muted-foreground hover:text-foreground"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Home</span>
+                </Button>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full whitespace-nowrap">
+                    {sectionIndex + 1} of {totalSections}
+                  </span>
+                </div>
+                <div className="flex-1 max-w-xs">
+                  <Progress value={progressPercent} className="h-1.5" />
+                </div>
+              </div>
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate('/sample-memo?view=full')}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Full Memo</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        <div className="container mx-auto px-4 py-8 max-w-5xl">
+          {/* Sample Memo Badge */}
+          <div className="mb-6 flex items-center gap-2 text-sm text-primary">
+            <Sparkles className="w-4 h-4" />
+            <span className="font-medium">Sample Memo: CarbonPrint</span>
+          </div>
+
+          {/* VC Quick Take Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Zap className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
+                  VC Quick Take
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Investment verdict, key concerns, and action plan
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* VC Quick Take Content */}
+          <MemoVCQuickTake quickTake={vcQuickTake} showTeaser={false} />
+
+          {/* Action Plan */}
+          {actionPlan && actionPlan.items.length > 0 && (
+            <div className="mt-8">
+              <MemoActionPlan actionPlan={actionPlan} companyName="CarbonPrint" />
+            </div>
+          )}
+
+          {/* Bottom Navigation */}
+          <div className="mt-12 pt-8 border-t border-border/50">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate('/')}
+                  className="gap-2"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Home</span>
+                </Button>
+                
+                {/* Progress Dots */}
+                <div className="flex items-center gap-1.5">
+                  {Array.from({ length: totalSections }).map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => goToSection(idx)}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        idx === sectionIndex 
+                          ? 'bg-primary w-6' 
+                          : idx < sectionIndex 
+                            ? 'bg-primary/50' 
+                            : 'bg-muted-foreground/30'
+                      }`}
+                    />
+                  ))}
+                </div>
+                
+                <Button 
+                  variant="default"
+                  onClick={() => goToSection(1)}
+                  className="gap-2"
+                >
+                  <span className="hidden sm:inline">Next: Problem</span>
+                  <span className="sm:hidden">Next</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              <div className="flex items-center justify-center gap-4 pt-2">
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/sample-memo?view=full')}
+                  className="text-muted-foreground"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  View Full Memo
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Regular section rendering (Section 1+)
   // Section type detection
-  const titleLower = currentSection.title.toLowerCase();
+  const titleLower = currentSection!.title.toLowerCase();
   const isProblemSection = titleLower.includes('problem');
   const isTeamSection = titleLower.includes('team');
   const isMarketSection = titleLower.includes('market');
@@ -156,10 +318,10 @@ export default function SampleMemoSectionView() {
   const isThesisSection = titleLower.includes('thesis');
   const isVisionSection = titleLower.includes('vision');
 
-  const narrative = currentSection.narrative || {
-    paragraphs: currentSection.paragraphs,
-    highlights: currentSection.highlights,
-    keyPoints: currentSection.keyPoints
+  const narrative = currentSection!.narrative || {
+    paragraphs: currentSection!.paragraphs,
+    highlights: currentSection!.highlights,
+    keyPoints: currentSection!.keyPoints
   };
 
   const sectionText = narrative.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
@@ -212,14 +374,14 @@ export default function SampleMemoSectionView() {
       
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Sample Memo Badge */}
-        {sectionIndex === 0 && (
+        {sectionIndex === 1 && (
           <div className="mb-6 flex items-center gap-2 text-sm text-primary">
             <Sparkles className="w-4 h-4" />
             <span className="font-medium">Sample Memo: CarbonPrint</span>
           </div>
         )}
 
-        <MemoSection title={currentSection.title} index={sectionIndex}>
+        <MemoSection title={currentSection!.title} index={actualSectionIndex}>
           {/* Hero Statement */}
           {heroParagraph && <MemoHeroStatement text={heroParagraph.text} />}
 
@@ -287,7 +449,7 @@ export default function SampleMemoSectionView() {
           )}
 
           {/* VC Perspective */}
-          {currentSection.vcReflection && (
+          {currentSection!.vcReflection && (
             <div className="mt-10 space-y-8 pt-8 border-t border-border/50">
               <div className="flex items-center gap-2 mb-6">
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
@@ -295,17 +457,17 @@ export default function SampleMemoSectionView() {
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
               </div>
               
-              <MemoVCReflection text={currentSection.vcReflection.analysis} />
+              <MemoVCReflection text={currentSection!.vcReflection.analysis} />
               
-              {currentSection.vcReflection.questions && currentSection.vcReflection.questions.length > 0 && (
-                <MemoVCQuestions questions={currentSection.vcReflection.questions} defaultAllOpen={true} />
+              {currentSection!.vcReflection.questions && currentSection!.vcReflection.questions.length > 0 && (
+                <MemoVCQuestions questions={currentSection!.vcReflection.questions} defaultAllOpen={true} />
               )}
               
-              {currentSection.vcReflection.benchmarking && (
-                <MemoBenchmarking text={currentSection.vcReflection.benchmarking} />
+              {currentSection!.vcReflection.benchmarking && (
+                <MemoBenchmarking text={currentSection!.vcReflection.benchmarking} />
               )}
               
-              <MemoAIConclusion text={currentSection.vcReflection.conclusion} />
+              <MemoAIConclusion text={currentSection!.vcReflection.conclusion} />
             </div>
           )}
         </MemoSection>
