@@ -10,8 +10,7 @@ import { MemoCollapsibleVC } from "@/components/memo/MemoCollapsibleVC";
 import { MemoNavigation } from "@/components/memo/MemoNavigation";
 import { SmartFillModal } from "@/components/SmartFillModal";
 import { MemoLoadingScreen } from "@/components/MemoLoadingScreen";
-import { LockedSectionOverlay } from "@/components/memo/LockedSectionOverlay";
-import { UnlockMemoCTA } from "@/components/memo/UnlockMemoCTA";
+// LockedSectionOverlay removed - freemium users don't see content at all
 import { VCRejectionPreview } from "@/components/memo/VCRejectionPreview";
 import { MemoVCScaleCard } from "@/components/memo/MemoVCScaleCard";
 import { MemoTeamList } from "@/components/memo/MemoTeamList";
@@ -742,7 +741,36 @@ export default function GeneratedMemo() {
           <MemoActionPlan actionPlan={actionPlan} companyName={companyInfo?.name} />
         )}
 
-        {/* Memo Sections */}
+        {/* Memo Sections - For non-premium users, only show locked placeholders */}
+        {!hasPremium ? (
+          <div className="space-y-6">
+            {/* Locked Section Placeholders for freemium users */}
+            <div className="bg-card/50 border border-border/50 rounded-2xl p-6 text-center">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <AlertTriangle className="w-6 h-6 text-muted-foreground" />
+                <h3 className="text-lg font-semibold text-muted-foreground">
+                  {memoContent.sections.length} Premium Sections Available
+                </h3>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2 mb-6">
+                {memoContent.sections.map((section, idx) => (
+                  <span 
+                    key={idx}
+                    className="px-3 py-1.5 rounded-full bg-muted/50 text-muted-foreground text-sm border border-border/30"
+                  >
+                    🔒 {section.title}
+                  </span>
+                ))}
+              </div>
+              <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
+                Unlock detailed VC analysis, strategic tools, benchmarks, and actionable insights for each section.
+              </p>
+              <Button onClick={() => navigate(`/checkout-memo?companyId=${companyId}`)}>
+                Unlock Full Memo
+              </Button>
+            </div>
+          </div>
+        ) : (
         <div className="space-y-8">
           {(() => {
             let exitPathShown = false;
@@ -1027,23 +1055,11 @@ export default function GeneratedMemo() {
                 </MemoSection>
               );
 
-              // ALL sections are locked for free users - only VC Quick Take is free
-              if (!hasPremium) {
-                return (
-                  <div key={section.title}>
-                    <LockedSectionOverlay sectionTitle={section.title}>
-                      {sectionContent}
-                    </LockedSectionOverlay>
-                    {/* Show CTA after first section */}
-                    {index === 0 && <UnlockMemoCTA />}
-                  </div>
-                );
-              }
-
               return sectionContent;
             });
           })()}
         </div>
+        )}
       </div>
     </div>
   );

@@ -227,15 +227,28 @@ export default function MemoSectionView() {
                 </div>
               </div>
               
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <BookOpen className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Full Memo</span>
-              </Button>
+              {/* Full Memo button - redirect to checkout for freemium, show for premium */}
+              {hasPremium ? (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Full Memo</span>
+                </Button>
+              ) : (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => navigate(`/checkout-memo?companyId=${companyId}`)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Unlock Full</span>
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -369,15 +382,18 @@ export default function MemoSectionView() {
                   <Grid className="w-4 h-4 mr-2" />
                   All Sections
                 </Button>
-                <Button 
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
-                  className="text-muted-foreground"
-                >
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  View Full Memo
-                </Button>
+                {/* Full Memo button - only for premium users */}
+                {hasPremium && (
+                  <Button 
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
+                    className="text-muted-foreground"
+                  >
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    View Full Memo
+                  </Button>
+                )}
               </div>
             </div>
           </div>
