@@ -22,7 +22,7 @@ import { MemoMomentumCard } from "@/components/memo/MemoMomentumCard";
 import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
-import { LockedSectionOverlay } from "@/components/memo/LockedSectionOverlay";
+
 import { extractMoatScores, extractTeamMembers, extractUnitEconomics } from "@/lib/memoDataExtractor";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { Button } from "@/components/ui/button";
@@ -186,7 +186,14 @@ export default function MemoSectionView() {
   }
 
   // Locking: Only Section 0 (VC Quick Take) is free
+  // Non-premium users trying to access paid sections get redirected to checkout
   const isLocked = !hasPremium && sectionIndex > 0;
+  
+  if (isLocked) {
+    navigate(`/checkout-memo?companyId=${companyId}`, { replace: true });
+    return null;
+  }
+  
   const progressPercent = ((sectionIndex + 1) / totalSections) * 100;
 
   const goToSection = (index: number) => {
@@ -448,21 +455,7 @@ export default function MemoSectionView() {
       </div>
       
       <div className="container mx-auto px-4 py-8 max-w-5xl">
-        {/* Locked Overlay for Premium Sections */}
-        {isLocked ? (
-          <LockedSectionOverlay sectionTitle={currentSection!.title}>
-            <MemoSection title={currentSection!.title} index={actualSectionIndex}>
-              {heroParagraph && <MemoHeroStatement text={heroParagraph.text} />}
-              <MemoCollapsibleOverview
-                paragraphs={otherParagraphs}
-                highlights={narrative.highlights}
-                keyPoints={narrative.keyPoints}
-                defaultOpen={true}
-              />
-            </MemoSection>
-          </LockedSectionOverlay>
-        ) : (
-          <MemoSection title={currentSection!.title} index={actualSectionIndex}>
+        <MemoSection title={currentSection!.title} index={actualSectionIndex}>
             {/* Section Score Card - Premium Only */}
             {hasPremium && currentSectionTools?.sectionScore && (
               <SectionScoreCard
@@ -700,7 +693,6 @@ export default function MemoSectionView() {
               />
             )}
           </MemoSection>
-        )}
 
         {/* Bottom Navigation */}
         <div className="mt-12 pt-8 border-t border-border/50">
