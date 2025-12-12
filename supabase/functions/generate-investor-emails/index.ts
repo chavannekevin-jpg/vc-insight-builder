@@ -22,15 +22,20 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch company details
+    // Fetch company details including premium status
     const { data: company, error: companyError } = await supabase
       .from("companies")
-      .select("name, description, stage, category")
+      .select("name, description, stage, category, has_premium")
       .eq("id", companyId)
       .single();
 
     if (companyError || !company) {
       throw new Error("Company not found");
+    }
+
+    // SECURITY: Verify premium access
+    if (!company.has_premium) {
+      throw new Error("Premium access required for email generation");
     }
 
     // Fetch memo

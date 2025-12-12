@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { 
@@ -10,6 +12,55 @@ export default function MemoCompletionScreen() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const companyId = searchParams.get("companyId");
+  const [loading, setLoading] = useState(true);
+  const [hasPremium, setHasPremium] = useState(false);
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (!companyId) {
+        navigate("/portal");
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
+      // Check premium status
+      const { data: company } = await supabase
+        .from("companies")
+        .select("has_premium, founder_id")
+        .eq("id", companyId)
+        .maybeSingle();
+
+      // Verify ownership and premium status
+      if (!company || company.founder_id !== user.id) {
+        navigate("/portal");
+        return;
+      }
+
+      if (!company.has_premium) {
+        // Non-premium users shouldn't access completion screen for full memo
+        navigate(`/checkout-memo?companyId=${companyId}`, { replace: true });
+        return;
+      }
+
+      setHasPremium(true);
+      setLoading(false);
+    };
+
+    checkAccess();
+  }, [companyId, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   const keyTakeaways = [
     { icon: Target, label: "Problem clearly defined" },

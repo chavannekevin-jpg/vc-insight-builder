@@ -20,6 +20,7 @@ export default function InvestorEmailGenerator() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [hasMemo, setHasMemo] = useState(false);
+  const [hasPremium, setHasPremium] = useState(false);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [emails, setEmails] = useState<EmailTemplate[]>([]);
 
@@ -36,10 +37,10 @@ export default function InvestorEmailGenerator() {
         return;
       }
 
-      // Check if user has a company with a memo
+      // Check if user has a company with a memo AND premium access
       const { data: companies } = await supabase
         .from("companies")
-        .select("id")
+        .select("id, has_premium")
         .eq("founder_id", user.id)
         .limit(1);
 
@@ -49,16 +50,27 @@ export default function InvestorEmailGenerator() {
         return;
       }
 
+      const company = companies[0];
+
+      // Check for premium access
+      if (!company.has_premium) {
+        setHasMemo(false);
+        setHasPremium(false);
+        setLoading(false);
+        return;
+      }
+
       const { data: memos } = await supabase
         .from("memos")
         .select("id, structured_content")
-        .eq("company_id", companies[0].id)
+        .eq("company_id", company.id)
         .not("structured_content", "is", null)
         .limit(1);
 
       if (memos && memos.length > 0) {
         setHasMemo(true);
-        setCompanyId(companies[0].id);
+        setHasPremium(true);
+        setCompanyId(company.id);
       }
       
       setLoading(false);
@@ -110,7 +122,8 @@ export default function InvestorEmailGenerator() {
     );
   }
 
-  if (!hasMemo) {
+  // Show upgrade CTA if no memo or no premium
+  if (!hasMemo || !hasPremium) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
@@ -126,12 +139,17 @@ export default function InvestorEmailGenerator() {
 
           <Card className="p-8 text-center">
             <Mail className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl font-display font-bold mb-2">No Memo Found</h2>
+            <h2 className="text-2xl font-display font-bold mb-2">
+              {!hasMemo ? "No Memo Found" : "Premium Feature"}
+            </h2>
             <p className="text-muted-foreground mb-6">
-              You need to generate an investment memo before using this tool.
+              {!hasMemo 
+                ? "You need to generate an investment memo before using this tool."
+                : "The Outreach Lab is available for premium memo holders. Unlock your full memo to access personalized investor email templates."
+              }
             </p>
-            <Button onClick={() => navigate("/portal")}>
-              Create Your Memo
+            <Button onClick={() => navigate(!hasMemo ? "/portal" : "/pricing")}>
+              {!hasMemo ? "Create Your Memo" : "Upgrade to Premium"}
             </Button>
           </Card>
         </main>
