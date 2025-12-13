@@ -22,11 +22,11 @@ export interface PricingSettings {
 
 const defaultPricing: PricingSettings = {
   memo_pricing: {
-    base_price: 59.99,
+    base_price: 29.99,
     currency: "EUR",
     early_access_discount: 50,
     early_access_enabled: true,
-    original_price: 119.99,
+    original_price: 59.99,
     show_original_price: true,
   },
   network_pricing: {

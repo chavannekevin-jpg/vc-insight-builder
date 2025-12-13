@@ -42,6 +42,12 @@ verify_jwt = false
 [functions.verify-payment]
 verify_jwt = false
 
+[functions.create-regeneration-checkout]
+verify_jwt = false
+
+[functions.verify-regeneration-payment]
+verify_jwt = false
+
 [functions.parse-pitch-deck]
 verify_jwt = false
 

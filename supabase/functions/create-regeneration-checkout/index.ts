@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
+  console.log(`[CREATE-REGENERATION-CHECKOUT] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -32,8 +32,8 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { companyId, discountCode, discountPercent, discountId } = await req.json();
-    logStep("Request data", { companyId, discountCode, discountPercent });
+    const { companyId } = await req.json();
+    logStep("Request data", { companyId });
 
     if (!companyId) throw new Error("Company ID is required");
 
@@ -49,46 +49,28 @@ serve(async (req) => {
       logStep("Found existing customer", { customerId });
     }
 
-    // Base price ID for Investment Memo (€29.99)
-    const priceId = "price_1SdrXTBWC1HPYGJSDL5DUYDu";
+    // Regeneration price ID (€8.99)
+    const priceId = "price_1SdrXfBWC1HPYGJSXdXZM1lu";
     
-    // Build line items
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
-      {
-        price: priceId,
-        quantity: 1,
-      },
-    ];
-
-    // Build session params
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
+    const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: lineItems,
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}&companyId=${companyId}`,
-      cancel_url: `${req.headers.get("origin")}/checkout-memo?companyId=${companyId}`,
+      success_url: `${req.headers.get("origin")}/regeneration-success?session_id={CHECKOUT_SESSION_ID}&companyId=${companyId}`,
+      cancel_url: `${req.headers.get("origin")}/memo-regenerate?companyId=${companyId}`,
       metadata: {
         companyId,
         userId: user.id,
-        discountCode: discountCode || "",
-        discountId: discountId || "",
+        purchaseType: "regeneration",
       },
-    };
+    });
 
-    // Apply discount if provided (allow up to 100%)
-    if (discountPercent && discountPercent > 0 && discountPercent <= 100) {
-      // Create a coupon for this specific discount
-      const coupon = await stripe.coupons.create({
-        percent_off: discountPercent,
-        duration: "once",
-        name: `Discount: ${discountCode}`,
-      });
-      sessionParams.discounts = [{ coupon: coupon.id }];
-      logStep("Created discount coupon", { couponId: coupon.id, percent: discountPercent });
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionParams);
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
     return new Response(JSON.stringify({ url: session.url, sessionId: session.id }), {

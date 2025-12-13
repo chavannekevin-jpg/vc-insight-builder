@@ -109,6 +109,7 @@ const SampleMemo = lazy(() => import("./pages/SampleMemo"));
 const SampleMemoSectionView = lazy(() => import("./pages/SampleMemoSectionView"));
 const SampleMemoCompletionScreen = lazy(() => import("./pages/SampleMemoCompletionScreen"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const RegenerationSuccess = lazy(() => import("./pages/RegenerationSuccess"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const RoastYourBaby = lazy(() => import("./pages/RoastYourBaby"));
 const DilutionLab = lazy(() => import("./pages/DilutionLab"));
@@ -261,6 +262,8 @@ const App = () => (
             <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
             <Route path="/checkout-memo" element={<CheckoutMemo />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/regeneration-success" element={<RegenerationSuccess />} />
+            <Route path="/memo-regenerate" element={<MemoRegenerate />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
