@@ -209,6 +209,7 @@ export const Header = () => {
     { name: "Hub", path: "/hub" },
     { name: "Product", path: "/product" },
     { name: "Pricing", path: "/pricing" },
+    { name: "Accelerators", path: "/accelerators" },
     { name: "About", path: "/about" }
   ];
 
