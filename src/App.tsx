@@ -113,6 +113,7 @@ const RegenerationSuccess = lazy(() => import("./pages/RegenerationSuccess"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const RoastYourBaby = lazy(() => import("./pages/RoastYourBaby"));
 const DilutionLab = lazy(() => import("./pages/DilutionLab"));
+const AcceleratorLanding = lazy(() => import("./pages/AcceleratorLanding"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -139,6 +140,7 @@ const App = () => (
             <Route path="/hub" element={<HooksErrorBoundary><FreemiumHub /></HooksErrorBoundary>} />
             <Route path="/roast-your-baby" element={<RoastYourBaby />} />
             <Route path="/dilution-lab" element={<DilutionLab />} />
+            <Route path="/accelerators" element={<AcceleratorLanding />} />
             <Route path="/hub/:slug" element={<EducationalContent />} />
             <Route path="/vcbrain" element={<VCBrainHub />}>
               <Route index element={<VCBrainHome />} />
