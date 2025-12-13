@@ -10,7 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { 
   ArrowLeft, ChevronDown, ChevronUp, Loader2, RotateCcw, Pencil, Check, 
   Sparkles, User, AlertCircle, Target, Lightbulb, Users, Shield, 
-  UserCircle, Wallet, TrendingUp, Rocket, LucideIcon 
+  UserCircle, Wallet, TrendingUp, Rocket, LucideIcon, CreditCard
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -47,7 +47,10 @@ export default function MemoRegenerate() {
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
   const [companyName, setCompanyName] = useState("");
+  const [generationsAvailable, setGenerationsAvailable] = useState(0);
+  const [generationsUsed, setGenerationsUsed] = useState(0);
   const [responses, setResponses] = useState<Record<string, ResponseData>>({});
   const [editedData, setEditedData] = useState<Record<string, string>>({});
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
@@ -72,7 +75,7 @@ export default function MemoRegenerate() {
       // Load company
       const { data: company, error: companyError } = await supabase
         .from("companies")
-        .select("id, name, has_premium")
+        .select("id, name, has_premium, generations_available, generations_used")
         .eq("id", companyId)
         .eq("founder_id", session.user.id)
         .single();
@@ -90,6 +93,8 @@ export default function MemoRegenerate() {
       }
 
       setCompanyName(company.name);
+      setGenerationsAvailable((company as any).generations_available || 0);
+      setGenerationsUsed((company as any).generations_used || 0);
 
       // Load responses
       const { data: memoResponses, error: responsesError } = await supabase
@@ -165,6 +170,16 @@ export default function MemoRegenerate() {
   };
 
   const handleSaveAndRegenerate = async () => {
+    // Check if user has generation credits
+    if (generationsAvailable <= 0) {
+      toast({ 
+        title: "No Generation Credits", 
+        description: "Purchase additional generation credits to regenerate your memo.",
+        variant: "destructive" 
+      });
+      return;
+    }
+
     setSaving(true);
     try {
       const changedSections = getChangedSections();
@@ -191,6 +206,15 @@ export default function MemoRegenerate() {
         }
       }
 
+      // Decrement generation credit
+      await supabase
+        .from("companies")
+        .update({ 
+          generations_available: generationsAvailable - 1,
+          generations_used: generationsUsed + 1
+        })
+        .eq("id", companyId);
+
       toast({
         title: "Changes Saved",
         description: `${changedSections.length} section(s) updated. Regenerating memo...`
@@ -203,6 +227,31 @@ export default function MemoRegenerate() {
       toast({ title: "Error", description: "Failed to save changes", variant: "destructive" });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePurchaseCredit = async () => {
+    setPurchasing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-regeneration-checkout', {
+        body: { companyId }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (error) {
+      console.error("Purchase error:", error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to start checkout. Please try again.",
+        variant: "destructive" 
+      });
+      setPurchasing(false);
     }
   };
 
@@ -271,6 +320,47 @@ export default function MemoRegenerate() {
             <CardContent className="py-4">
               <p className="text-sm text-muted-foreground">Regenerating memo for</p>
               <p className="text-lg font-semibold">{companyName}</p>
+            </CardContent>
+          </Card>
+
+          {/* Generation Credits Card */}
+          <Card className={`border-2 ${generationsAvailable > 0 ? 'border-success/30 bg-success/5' : 'border-warning/30 bg-warning/5'}`}>
+            <CardContent className="py-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${generationsAvailable > 0 ? 'bg-success/20' : 'bg-warning/20'}`}>
+                  <RotateCcw className={`w-5 h-5 ${generationsAvailable > 0 ? 'text-success' : 'text-warning'}`} />
+                </div>
+                <div>
+                  <p className="font-medium">
+                    {generationsAvailable > 0 
+                      ? `${generationsAvailable} Generation Credit${generationsAvailable !== 1 ? 's' : ''} Available`
+                      : 'No Generation Credits'
+                    }
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {generationsUsed > 0 ? `${generationsUsed} used so far` : 'First generation included with purchase'}
+                  </p>
+                </div>
+              </div>
+              {generationsAvailable === 0 && (
+                <Button 
+                  onClick={handlePurchaseCredit}
+                  disabled={purchasing}
+                  className="gap-2"
+                >
+                  {purchasing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-4 h-4" />
+                      Buy Credit - €8.99
+                    </>
+                  )}
+                </Button>
+              )}
             </CardContent>
           </Card>
 
@@ -415,23 +505,43 @@ export default function MemoRegenerate() {
               <Button variant="outline" onClick={() => navigate("/hub")}>
                 Cancel
               </Button>
-              <Button
-                onClick={handleSaveAndRegenerate}
-                disabled={saving}
-                className="gap-2"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <RotateCcw className="w-4 h-4" />
-                    {hasChanges() ? "Save & Regenerate" : "Regenerate Memo"}
-                  </>
-                )}
-              </Button>
+              {generationsAvailable > 0 ? (
+                <Button
+                  onClick={handleSaveAndRegenerate}
+                  disabled={saving}
+                  className="gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <RotateCcw className="w-4 h-4" />
+                      {hasChanges() ? "Save & Regenerate" : "Regenerate Memo"}
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handlePurchaseCredit}
+                  disabled={purchasing}
+                  className="gap-2"
+                >
+                  {purchasing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-4 h-4" />
+                      Buy Credit to Regenerate - €8.99
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         </div>

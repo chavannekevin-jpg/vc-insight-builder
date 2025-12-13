@@ -57,6 +57,8 @@ export type Database = {
           deck_url: string | null
           description: string | null
           founder_id: string
+          generations_available: number
+          generations_used: number
           has_premium: boolean | null
           id: string
           name: string
@@ -72,6 +74,8 @@ export type Database = {
           deck_url?: string | null
           description?: string | null
           founder_id: string
+          generations_available?: number
+          generations_used?: number
           has_premium?: boolean | null
           id?: string
           name: string
@@ -87,6 +91,8 @@ export type Database = {
           deck_url?: string | null
           description?: string | null
           founder_id?: string
+          generations_available?: number
+          generations_used?: number
           has_premium?: boolean | null
           id?: string
           name?: string

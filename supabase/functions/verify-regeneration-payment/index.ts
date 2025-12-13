@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[VERIFY-PAYMENT] ${step}${detailsStr}`);
+  console.log(`[VERIFY-REGENERATION-PAYMENT] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -74,79 +74,36 @@ serve(async (req) => {
       });
     }
 
-    // Check if already processed
-    const { data: existingPurchase } = await supabaseClient
-      .from("memo_purchases")
-      .select("id")
-      .eq("company_id", companyId)
-      .eq("user_id", user.id)
-      .maybeSingle();
+    // Add generation credit to the company
+    const { data: company, error: fetchError } = await supabaseClient
+      .from("companies")
+      .select("generations_available")
+      .eq("id", companyId)
+      .single();
 
-    if (existingPurchase) {
-      logStep("Purchase already processed", { companyId });
-      // Ensure premium is still granted (in case previous update failed)
-      await supabaseClient
-        .from("companies")
-        .update({ has_premium: true })
-        .eq("id", companyId);
-      return new Response(JSON.stringify({ success: true, alreadyProcessed: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+    if (fetchError) {
+      logStep("Error fetching company", { error: fetchError });
+      throw new Error("Failed to fetch company");
     }
 
-    // Record the purchase
-    const amountPaid = (session.amount_total || 0) / 100;
-    const { error: purchaseError } = await supabaseClient
-      .from("memo_purchases")
-      .insert({
-        user_id: user.id,
-        company_id: companyId,
-        amount_paid: amountPaid,
-        discount_code_used: metadata.discountCode || null,
-      });
+    const newGenerationsAvailable = (company?.generations_available || 0) + 1;
 
-    if (purchaseError) {
-      logStep("Error recording purchase", { error: purchaseError });
-      throw new Error("Failed to record purchase");
-    }
-    logStep("Purchase recorded", { companyId, amountPaid });
-
-    // Grant premium access and 1 generation credit
     const { error: updateError } = await supabaseClient
       .from("companies")
-      .update({ 
-        has_premium: true,
-        generations_available: 1,
-        generations_used: 0
-      })
+      .update({ generations_available: newGenerationsAvailable })
       .eq("id", companyId);
 
     if (updateError) {
-      logStep("Error granting premium access", { error: updateError });
-      throw new Error("Failed to grant premium access");
-    }
-    logStep("Premium access and generation credit granted", { companyId });
-
-    // Update discount code usage if applicable
-    const discountId = metadata.discountId;
-    if (discountId) {
-      const { data: currentCode } = await supabaseClient
-        .from("discount_codes")
-        .select("uses")
-        .eq("id", discountId)
-        .single();
-
-      if (currentCode) {
-        await supabaseClient
-          .from("discount_codes")
-          .update({ uses: currentCode.uses + 1 })
-          .eq("id", discountId);
-        logStep("Discount code usage updated", { discountId });
-      }
+      logStep("Error updating generations", { error: updateError });
+      throw new Error("Failed to update generation credits");
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    logStep("Generation credit added", { companyId, newGenerationsAvailable });
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      generationsAvailable: newGenerationsAvailable 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

@@ -51,7 +51,7 @@ const Pricing = () => {
         { text: "Every weakness exposed before your pitch", included: true },
         { text: "Deal-killing red flags surfaced first", included: true },
         { text: "Specific fixes to strengthen your position", included: true },
-        { text: "Unlimited memo updates", included: false },
+        { text: "1 memo generation included (€8.99/extra)", included: true },
         { text: "Network exposure to 400+ investors", included: false }
       ],
       cta: "Get the Memo",

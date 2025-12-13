@@ -14,7 +14,7 @@ export const PricingSection = () => {
   
   const memoFinalPrice = memoPricing?.early_access_enabled 
     ? memoPricing.base_price * (1 - memoPricing.early_access_discount / 100)
-    : memoPricing?.base_price ?? 59.99;
+    : memoPricing?.base_price ?? 29.99;
 
   const pricingOptions = [
     {
@@ -46,6 +46,7 @@ export const PricingSection = () => {
         "Every weakness exposed before your pitch",
         "Deal-killing red flags surfaced first",
         "Specific fixes to strengthen your position",
+        "1 memo generation included (€8.99/extra)",
         "Company profile shared to VC network (optional)"
       ],
       cta: "Get the Memo →",
