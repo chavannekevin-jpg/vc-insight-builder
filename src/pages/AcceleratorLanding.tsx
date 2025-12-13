@@ -47,23 +47,23 @@ const AcceleratorLanding = () => {
   const whatFoundersGet = [
     {
       icon: BookOpen,
-      title: "Investment Memorandum",
-      description: "8-section VC analysis: problem, solution, market, competition, traction, team, business model, and ask."
+      title: "Full Investment Memorandum",
+      description: "8 sections of VC-grade analysis covering problem, solution, market, competition, traction, team, business model, and the ask. Written like the internal memo that decides their fate."
     },
     {
       icon: Wrench,
-      title: "22+ VC Tools",
-      description: "TAM calculators, moat scores, unit economics, 90-day plans, competitive teardowns."
+      title: "22+ Section-Specific Tools",
+      description: "TAM calculators, moat durability scores, unit economics breakdowns, 90-day action plans, competitive teardowns—tools that turn analysis into action."
     },
     {
       icon: Brain,
-      title: "VC Brain Hub",
-      description: "60+ articles on how VCs actually think—insider knowledge most programs can't provide."
+      title: "VC Brain Knowledge Hub",
+      description: "60+ articles on how VCs actually think, from insider takes to pitch mechanics. The education most accelerators can't provide because they've never sat on the other side."
     },
     {
       icon: BarChart3,
-      title: "Founder Toolkit",
-      description: "Raise calculators, valuation models, dilution labs, investor email generators."
+      title: "Founder Tools Suite",
+      description: "Raise calculators, valuation models, dilution labs, investor email generators. The operational toolkit for fundraising execution."
     }
   ];
 
@@ -203,28 +203,31 @@ const AcceleratorLanding = () => {
         </div>
       </section>
 
-      {/* What Founders Get - Horizontal cards */}
+      {/* What Each Startup Gets - Fuller cards */}
       <section className="py-16 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center gap-3 mb-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-3 mb-4">
             <Zap className="w-5 h-5 text-primary" />
             <h2 className="text-xl font-bold">Each startup receives</h2>
           </div>
+          <p className="text-sm text-muted-foreground mb-8 max-w-2xl">
+            Not a 10-minute feedback session. A permanent resource they can work from for months.
+          </p>
 
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-5">
             {whatFoundersGet.map((item, idx) => {
               const Icon = item.icon;
               return (
                 <div 
                   key={idx} 
-                  className="flex items-start gap-4 p-5 rounded-xl border border-border/50 bg-card/50 hover:border-primary/30 transition-colors"
+                  className="flex items-start gap-4 p-6 rounded-xl border border-border/50 bg-card/50 hover:border-primary/30 transition-colors"
                 >
-                  <div className="p-2 rounded-lg bg-primary/5 flex-shrink-0">
+                  <div className="p-3 rounded-lg bg-primary/10 flex-shrink-0">
                     <Icon className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm mb-1">{item.title}</h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
+                    <h3 className="font-semibold mb-2">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
                   </div>
                 </div>
               );
@@ -273,35 +276,91 @@ const AcceleratorLanding = () => {
         </div>
       </section>
 
-      {/* How It Works - Simple flow */}
+      {/* How It Works - Detailed flow */}
       <section className="py-16 px-6">
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center gap-3 mb-10">
             <Sparkles className="w-5 h-5 text-primary" />
             <h2 className="text-xl font-bold">How it works</h2>
           </div>
 
-          <div className="space-y-6">
-            <div className="flex gap-4">
+          <div className="space-y-8">
+            <div className="flex gap-5">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-primary">1</div>
               <div>
-                <h3 className="font-semibold mb-1">Founders complete the questionnaire</h3>
-                <p className="text-sm text-muted-foreground">Structured questions about problem, solution, market, traction, team, business model, and ask. Built on the exact questions VCs ask internally.</p>
+                <h3 className="font-semibold mb-2">Founders complete the questionnaire</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Each founder fills out a structured questionnaire about their business—problem, solution, market, traction, team, business model, and fundraising ask. This isn't a pitch deck review. It's a deep diagnostic built on the exact questions VCs ask themselves when deciding whether to pursue a deal.
+                </p>
               </div>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-5">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-primary">2</div>
               <div>
-                <h3 className="font-semibold mb-1">Ugly Baby generates the memo</h3>
-                <p className="text-sm text-muted-foreground">A full investment memorandum—the same document written internally at VC funds before partner meetings. Scores, gaps, and actionable insights.</p>
+                <h3 className="font-semibold mb-2">Ugly Baby generates the investment memo</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  From those answers, Ugly Baby generates a full investment memorandum: the same document that would be written internally at a VC fund before a partner meeting. Founders see how they'd be scored, where their gaps are, and what needs to change—while there's still time to change it.
+                </p>
               </div>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-5">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-primary">3</div>
               <div>
-                <h3 className="font-semibold mb-1">Program gets cohort-wide visibility</h3>
-                <p className="text-sm text-muted-foreground">See fundability gaps across all startups. Route mentors effectively. Enter Demo Day with confidence, not hope.</p>
+                <h3 className="font-semibold mb-2">Program gets cohort-wide visibility</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Every startup gets the same rigorous analysis, applied consistently, at the start of the program. You can see—at a glance—which companies are fundable, which need specific interventions, and which are fundamentally misaligned with what VCs look for.
+                </p>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why This Matters - Detailed explanation */}
+      <section className="py-16 px-6 bg-muted/20 border-y border-border/30">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-xl font-bold mb-8">Why this matters for your program</h2>
+          
+          <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
+            <p>
+              Most accelerators run on intuition. Mentors form impressions in the first meeting. Program managers allocate resources based on gut feel. Demo Day outcomes depend on which founders happened to get the right advice at the right time.
+            </p>
+            <p>
+              Ugly Baby changes the baseline. Every startup gets the same rigorous analysis, applied consistently, at the start of the program. You can see—at a glance—which companies are fundable, which need specific interventions, and which are fundamentally misaligned with what VCs look for.
+            </p>
+            <p>
+              This isn't about being harsh. It's about being honest early enough that honesty is still useful.
+            </p>
+          </div>
+
+          <div className="mt-10 grid sm:grid-cols-2 gap-4">
+            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                Cohort-wide visibility
+              </h3>
+              <p className="text-xs text-muted-foreground">See fundability gaps across all startups, not just the ones that speak up.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                Mentor efficiency
+              </h3>
+              <p className="text-xs text-muted-foreground">Every mentor session starts with context, not discovery.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                Founder accountability
+              </h3>
+              <p className="text-xs text-muted-foreground">Founders can't hide behind vague pitches—the memo exposes what's missing.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                Demo Day confidence
+              </h3>
+              <p className="text-xs text-muted-foreground">When every pitch has been stress-tested, fewer bomb on stage.</p>
             </div>
           </div>
         </div>
