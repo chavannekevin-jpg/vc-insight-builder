@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 export const Footer = memo(() => {
   const links = [
     { label: "About", href: "/about" },
+    { label: "Accelerators", href: "/accelerators" },
     { label: "FAQ", href: "#" },
     { label: "Terms", href: "#" },
     { label: "Privacy", href: "#" },
