@@ -117,18 +117,18 @@ const AcceleratorLanding = () => {
               <Button
                 size="lg"
                 className="px-8 py-6 text-lg gap-2"
-                onClick={() => window.location.href = 'mailto:accelerators@uglybaby.dev?subject=Cohort%20Inquiry'}
+                onClick={() => navigate('/sample-memo')}
               >
-                <Mail className="w-5 h-5" />
-                Get Cohort Pricing
+                <Eye className="w-5 h-5" />
+                See What It Looks Like
               </Button>
               <Button
                 variant="outline"
                 size="lg"
                 className="px-8 py-6 text-lg"
-                onClick={() => navigate('/sample-memo')}
+                onClick={() => window.location.href = 'mailto:accelerators@uglybaby.dev?subject=Cohort%20Inquiry'}
               >
-                See a Sample Memo
+                Contact Us
               </Button>
             </div>
           </div>
@@ -314,11 +314,63 @@ const AcceleratorLanding = () => {
             <Button
               size="lg"
               className="gap-2"
-              onClick={() => window.location.href = 'mailto:accelerators@uglybaby.dev?subject=Cohort%20Inquiry'}
+              onClick={() => navigate('/sample-memo')}
             >
-              Request Cohort Pricing
+              See What It Looks Like
               <ArrowRight className="w-4 h-4" />
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Value Explanation Section */}
+      <section className="py-20 px-6 sm:px-8 lg:px-12 bg-muted/30">
+        <div className="max-w-4xl mx-auto">
+          <div className="space-y-8">
+            <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-8">
+              <h3 className="text-2xl font-bold mb-4">What Actually Happens</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Each founder in your cohort fills out a structured questionnaire about their business—problem, solution, market, traction, team, business model, and fundraising ask. This isn't a pitch deck review. It's a deep diagnostic built on the exact questions VCs ask themselves when deciding whether to pursue a deal.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                From those answers, Ugly Baby generates a full investment memorandum: the same document that would be written internally at a VC fund before a partner meeting. Founders see how they'd be scored, where their gaps are, and what needs to change—while there's still time to change it.
+              </p>
+            </div>
+
+            <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-8">
+              <h3 className="text-2xl font-bold mb-4">Why This Matters for Your Program</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Most accelerators run on intuition. Mentors form impressions in the first meeting. Program managers allocate resources based on gut feel. Demo Day outcomes depend on which founders happened to get the right advice at the right time.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Ugly Baby changes the baseline. Every startup gets the same rigorous analysis, applied consistently, at the start of the program. You can see—at a glance—which companies are fundable, which need specific interventions, and which are fundamentally misaligned with what VCs look for.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                This isn't about being harsh. It's about being honest early enough that honesty is still useful.
+              </p>
+            </div>
+
+            <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-8">
+              <h3 className="text-2xl font-bold mb-4">What You Get as a Program</h3>
+              <ul className="space-y-3 text-muted-foreground">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span><strong className="text-foreground">Cohort-wide visibility:</strong> See fundability gaps across all startups, not just the ones that speak up</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span><strong className="text-foreground">Mentor efficiency:</strong> Every mentor session starts with context, not discovery</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span><strong className="text-foreground">Founder accountability:</strong> Founders can't hide behind vague pitches—the memo exposes what's missing</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span><strong className="text-foreground">Demo Day confidence:</strong> When every pitch has been stress-tested, fewer bomb on stage</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -338,18 +390,18 @@ const AcceleratorLanding = () => {
             <Button
               size="lg"
               className="px-8 py-6 text-lg gap-2"
-              onClick={() => window.location.href = 'mailto:accelerators@uglybaby.dev?subject=Cohort%20Inquiry'}
+              onClick={() => navigate('/sample-memo')}
             >
-              <Mail className="w-5 h-5" />
-              Contact for Cohort Pricing
+              <Eye className="w-5 h-5" />
+              See What It Looks Like
             </Button>
             <Button
               variant="outline"
               size="lg"
               className="px-8 py-6 text-lg"
-              onClick={() => navigate('/sample-memo')}
+              onClick={() => window.location.href = 'mailto:accelerators@uglybaby.dev?subject=Cohort%20Inquiry'}
             >
-              Preview the Memo
+              Contact for Pricing
             </Button>
           </div>
         </div>
