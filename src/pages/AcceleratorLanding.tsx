@@ -77,7 +77,7 @@ const AcceleratorLanding = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Hero Section - Lighter, more spacious */}
+      {/* Hero Section */}
       <section className="relative py-24 md:py-32 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-primary/5 to-transparent rounded-full blur-3xl" />
@@ -122,7 +122,7 @@ const AcceleratorLanding = () => {
         </div>
       </section>
 
-      {/* Problem/Solution - Clean two-column */}
+      {/* Problem/Solution */}
       <section className="py-16 px-6 border-t border-border/30">
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 md:gap-16">
@@ -177,77 +177,220 @@ const AcceleratorLanding = () => {
         </div>
       </section>
 
-      {/* The Analysis Deep Dive */}
+      {/* The VC Framework Section */}
       <section className="py-16 px-6 bg-muted/20 border-y border-border/30">
         <div className="max-w-4xl mx-auto">
           <div className="mb-12">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              What the analysis actually examines
+              The VC framework behind the analysis
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              This isn't pitch deck feedback. It's the same scrutiny applied inside VC funds when partners decide whether to pursue a deal—or pass.
+              This isn't pitch deck feedback. It's the same decision framework used inside VC funds when partners evaluate whether to pursue a deal—or pass. Each section of the memo applies a specific analytical lens that investors use internally.
             </p>
           </div>
 
-          <div className="space-y-8">
-            <div className="border-l-2 border-primary/30 pl-6">
-              <h3 className="font-semibold mb-2">Problem Validity</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Is the problem real, or a solution looking for a problem? Is there evidence beyond founder conviction? VCs look for pain that people are already paying to solve—badly. The analysis surfaces whether founders have validated demand or are building on assumption.
+          {/* 8 Sections Grid */}
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
+            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">1</span>
+                Problem
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Is the pain real and quantified? VCs look for evidence of burning problems people are already paying to solve—badly.
               </p>
+              <div className="text-xs text-primary/70 space-y-1">
+                <div>→ Evidence Threshold Tool: grades proof quality A-F</div>
+                <div>→ Founder Blind Spot Detector: surfaces assumptions</div>
+              </div>
             </div>
 
-            <div className="border-l-2 border-primary/30 pl-6">
-              <h3 className="font-semibold mb-2">Solution Defensibility</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Can this be copied in six months by a well-funded competitor? Is there technical depth, proprietary data, or network effects? The analysis identifies whether the moat is real or imagined—and what it would take to build one.
+            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
+                Solution
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Can this be copied in 6 months? Is there technical depth, proprietary data, or network effects that create real moats?
               </p>
+              <div className="text-xs text-primary/70 space-y-1">
+                <div>→ Technical Defensibility Score: rates moat strength</div>
+                <div>→ Commoditization Teardown: feature-by-feature clone risk</div>
+                <div>→ Competitor Build Analysis: time/cost to replicate</div>
+              </div>
             </div>
 
-            <div className="border-l-2 border-primary/30 pl-6">
-              <h3 className="font-semibold mb-2">Market Logic</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Beyond inflated TAM slides: Is this market big enough to return a fund? Is timing right? Are there structural tailwinds? The analysis stress-tests market assumptions against what investors actually look for—not what founders want to believe.
+            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
+                Market
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Beyond inflated TAMs: Is this market big enough to return a fund? Is timing right? Are there structural tailwinds?
               </p>
+              <div className="text-xs text-primary/70 space-y-1">
+                <div>→ Bottoms-Up TAM Calculator: verifiable market sizing</div>
+                <div>→ Market Readiness Index: regulatory/urgency/WTP scores</div>
+                <div>→ VC Narrative Builder: how to pitch to investment committee</div>
+              </div>
             </div>
 
-            <div className="border-l-2 border-primary/30 pl-6">
-              <h3 className="font-semibold mb-2">Traction Quality</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Revenue isn't always signal. The analysis distinguishes between vanity metrics and proof of repeatable demand. Are customers paying? Returning? Referring? Or is growth fueled by unsustainable spend and one-off deals?
+            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
+                Competition
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Who else is solving this? What will well-funded competitors do in 12 months? Where's the defensible position?
               </p>
+              <div className="text-xs text-primary/70 space-y-1">
+                <div>→ Competitor Chessboard: predicts competitor moves</div>
+                <div>→ Moat Durability Score: how long before erosion</div>
+              </div>
             </div>
 
-            <div className="border-l-2 border-primary/30 pl-6">
-              <h3 className="font-semibold mb-2">Team-Market Fit</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Why this team, for this problem, at this moment? VCs bet on founders who have an unfair advantage—domain expertise, network access, or a unique insight competitors can't replicate. The analysis surfaces whether that advantage exists or needs to be built.
+            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">5</span>
+                Traction
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Revenue isn't always signal. Distinguishes vanity metrics from proof of repeatable demand.
               </p>
+              <div className="text-xs text-primary/70 space-y-1">
+                <div>→ Traction Depth Test: quality vs. quantity analysis</div>
+                <div>→ Stage Benchmarks: how you compare to funded peers</div>
+              </div>
             </div>
 
-            <div className="border-l-2 border-primary/30 pl-6">
-              <h3 className="font-semibold mb-2">Unit Economics Viability</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Does the business model make sense at scale? What's the path to profitability? The analysis exposes whether current economics can improve with scale—or whether growth just accelerates losses.
+            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">6</span>
+                Team
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Why this team, for this problem, at this moment? What unfair advantage do they bring?
               </p>
+              <div className="text-xs text-primary/70 space-y-1">
+                <div>→ Credibility Gap Analysis: skills vs. requirements</div>
+                <div>→ Founder-Market Fit Mapping: comparison to successful exits</div>
+              </div>
             </div>
 
-            <div className="border-l-2 border-primary/30 pl-6">
-              <h3 className="font-semibold mb-2">Fundability Assessment</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                The honest question: Would a professional investor pursue this? Not "is this a good business," but "is this a venture-scale opportunity?" Some great companies aren't VC-fundable. Better to know now than after 50 rejections.
+            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">7</span>
+                Business Model
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Do the unit economics work at scale? What's the path to profitability—or is growth just accelerating losses?
               </p>
+              <div className="text-xs text-primary/70 space-y-1">
+                <div>→ Model Stress Test: survival under adverse scenarios</div>
+                <div>→ Cash Efficiency Benchmark: burn multiple vs. peers</div>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">8</span>
+                The Ask
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Is the raise amount justified? Is the valuation reasonable? Does the use of funds make sense?
+              </p>
+              <div className="text-xs text-primary/70 space-y-1">
+                <div>→ Milestone Mapping: what this capital should achieve</div>
+                <div>→ Scenario Planning: upside/base/downside paths</div>
+                <div>→ Exit Narrative: how this becomes a VC-returnable outcome</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Embedded Tools Section */}
+      <section className="py-16 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              22+ analytical tools embedded in every memo
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              The memo isn't just narrative—it's structured analysis. Each section includes specific tools that turn VC logic into actionable insights.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <div className="p-6 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-3">Scoring & Benchmarking</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Every section gets a 0-100 score benchmarked against what VCs expect at Seed and Series A. Founders see exactly where they stand relative to funded peers—not abstract feedback, but percentile rankings based on real investment criteria.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">Section Scores</span>
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">VC Benchmarks</span>
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">Percentile Rankings</span>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-3">VC Investment Logic</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                For each section, founders see the actual decision a VC would make: PASS, CAUTIOUS, INTERESTED, or STRONG INTEREST. Plus the reasoning and specific conditions required to move the needle. No more wondering "what do investors think?"—it's written explicitly.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">Decision Signals</span>
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">Key Conditions</span>
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">IC Reasoning</span>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-3">90-Day Action Plans</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Every section generates a prioritized action plan: critical vs. important tasks, specific timelines, measurable metrics. Founders leave with a roadmap to fix what's broken—not just awareness that something is wrong.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">Prioritized Actions</span>
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">Week-by-Week Timeline</span>
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">Success Metrics</span>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-3">Lead Investor Requirements</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                What would a lead investor need to see before writing a check? Each section includes explicit requirements, dealbreakers, and a paragraph written from the investor's perspective explaining their concerns and conditions.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">Must-Haves</span>
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">Dealbreakers</span>
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">Investor Perspective</span>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-xl border border-border/50 bg-card/30">
+              <h3 className="font-semibold mb-3">Comparable Case Studies</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Real examples of companies that faced similar challenges and how they solved them. Each case study includes the problem, the fix, the outcome, and the timeframe—so founders can learn from relevant precedent.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">Similar Companies</span>
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">What They Fixed</span>
+                <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">Outcomes</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Why Analysis > Feedback */}
-      <section className="py-16 px-6">
+      <section className="py-16 px-6 bg-muted/20 border-y border-border/30">
         <div className="max-w-4xl mx-auto">
           <div className="mb-10">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Why analysis beats feedback
+              Why this beats typical feedback
             </h2>
           </div>
 
@@ -271,19 +414,23 @@ const AcceleratorLanding = () => {
                   <span className="text-destructive/60 mt-0.5">→</span>
                   Focuses on presentation, not fundability
                 </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-destructive/60 mt-0.5">→</span>
+                  No structured methodology or benchmarks
+                </li>
               </ul>
             </div>
 
             <div className="space-y-4">
-              <h3 className="font-semibold text-primary/80">VC-grade analysis</h3>
+              <h3 className="font-semibold text-primary/80">Ugly Baby analysis</h3>
               <ul className="space-y-3 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-primary/70 mt-0.5 flex-shrink-0" />
-                  Built on the actual decision framework VCs use internally
+                  Built on actual VC decision frameworks
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-primary/70 mt-0.5 flex-shrink-0" />
-                  Applied consistently across every startup in the cohort
+                  Applied consistently across every startup
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-primary/70 mt-0.5 flex-shrink-0" />
@@ -293,11 +440,15 @@ const AcceleratorLanding = () => {
                   <CheckCircle2 className="w-4 h-4 text-primary/70 mt-0.5 flex-shrink-0" />
                   Evaluates investment potential, not pitch polish
                 </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary/70 mt-0.5 flex-shrink-0" />
+                  Quantified scores and stage-specific benchmarks
+                </li>
               </ul>
             </div>
           </div>
 
-          <div className="mt-10 p-6 rounded-xl bg-muted/30 border border-border/50">
+          <div className="mt-10 p-6 rounded-xl bg-card/50 border border-border/50">
             <p className="text-sm text-muted-foreground leading-relaxed">
               <strong className="text-foreground">The uncomfortable reality:</strong> Most founders get rejected for reasons they never understand. VCs rarely explain their real concerns—it's not worth the awkwardness or potential conflict. Ugly Baby surfaces those concerns explicitly, in writing, while there's still time to address them.
             </p>
@@ -305,8 +456,8 @@ const AcceleratorLanding = () => {
         </div>
       </section>
 
-      {/* Program Benefits - Minimal grid */}
-      <section className="py-16 px-6 bg-muted/20 border-y border-border/30">
+      {/* Program Benefits */}
+      <section className="py-16 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-bold">
@@ -331,8 +482,8 @@ const AcceleratorLanding = () => {
         </div>
       </section>
 
-      {/* What Each Startup Gets - Fuller cards */}
-      <section className="py-16 px-6">
+      {/* What Each Startup Gets */}
+      <section className="py-16 px-6 bg-muted/20 border-y border-border/30">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-4">
             <Zap className="w-5 h-5 text-primary" />
@@ -364,47 +515,7 @@ const AcceleratorLanding = () => {
         </div>
       </section>
 
-      {/* Pricing - Clean inline */}
-      <section className="py-16 px-6 bg-muted/20 border-y border-border/30">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">Cohort Pricing</h2>
-            <p className="text-sm text-muted-foreground">
-              Retail is €59.99/startup. Program-level pricing reflects value at scale.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-stretch justify-center gap-4 max-w-2xl mx-auto">
-            {cohortPricing.map((tier, idx) => (
-              <div 
-                key={idx}
-                className={`flex-1 p-6 rounded-xl text-center transition-all ${
-                  tier.featured 
-                    ? 'bg-primary/5 border-2 border-primary/30' 
-                    : 'bg-card/50 border border-border/50'
-                }`}
-              >
-                <div className="text-xs text-muted-foreground mb-1">{tier.label}</div>
-                <div className="text-3xl font-bold text-primary">{tier.pricePerStartup}</div>
-                <div className="text-xs text-muted-foreground mt-1">{tier.size} startups</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-8">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => navigate('/sample-memo')}
-            >
-              Preview a full memo
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works - Detailed flow */}
+      {/* How It Works */}
       <section className="py-16 px-6">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-3 mb-10">
@@ -444,58 +555,48 @@ const AcceleratorLanding = () => {
         </div>
       </section>
 
-      {/* Why This Matters - Detailed explanation */}
+      {/* Pricing */}
       <section className="py-16 px-6 bg-muted/20 border-y border-border/30">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-xl font-bold mb-8">Why this matters for your program</h2>
-          
-          <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
-            <p>
-              Most accelerators run on intuition. Mentors form impressions in the first meeting. Program managers allocate resources based on gut feel. Demo Day outcomes depend on which founders happened to get the right advice at the right time.
-            </p>
-            <p>
-              Ugly Baby changes the baseline. Every startup gets the same rigorous analysis, applied consistently, at the start of the program. You can see—at a glance—which companies are fundable, which need specific interventions, and which are fundamentally misaligned with what VCs look for.
-            </p>
-            <p>
-              This isn't about being harsh. It's about being honest early enough that honesty is still useful.
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">Cohort Pricing</h2>
+            <p className="text-sm text-muted-foreground">
+              Retail is €59.99/startup. Program-level pricing reflects value at scale.
             </p>
           </div>
 
-          <div className="mt-10 grid sm:grid-cols-2 gap-4">
-            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
-              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-primary" />
-                Cohort-wide visibility
-              </h3>
-              <p className="text-xs text-muted-foreground">See fundability gaps across all startups, not just the ones that speak up.</p>
-            </div>
-            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
-              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-primary" />
-                Mentor efficiency
-              </h3>
-              <p className="text-xs text-muted-foreground">Every mentor session starts with context, not discovery.</p>
-            </div>
-            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
-              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-primary" />
-                Founder accountability
-              </h3>
-              <p className="text-xs text-muted-foreground">Founders can't hide behind vague pitches—the memo exposes what's missing.</p>
-            </div>
-            <div className="p-5 rounded-xl border border-border/50 bg-card/30">
-              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-primary" />
-                Demo Day confidence
-              </h3>
-              <p className="text-xs text-muted-foreground">When every pitch has been stress-tested, fewer bomb on stage.</p>
-            </div>
+          <div className="flex flex-col sm:flex-row items-stretch justify-center gap-4 max-w-2xl mx-auto">
+            {cohortPricing.map((tier, idx) => (
+              <div 
+                key={idx}
+                className={`flex-1 p-6 rounded-xl text-center transition-all ${
+                  tier.featured 
+                    ? 'bg-primary/5 border-2 border-primary/30' 
+                    : 'bg-card/50 border border-border/50'
+                }`}
+              >
+                <div className="text-xs text-muted-foreground mb-1">{tier.label}</div>
+                <div className="text-3xl font-bold text-primary">{tier.pricePerStartup}</div>
+                <div className="text-xs text-muted-foreground mt-1">{tier.size} startups</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => navigate('/sample-memo')}
+            >
+              Preview a full memo
+              <ArrowRight className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* Final CTA - Minimal */}
-      <section className="py-20 px-6 border-t border-border/30">
+      {/* Final CTA */}
+      <section className="py-20 px-6">
         <div className="max-w-2xl mx-auto text-center space-y-6">
           <h2 className="text-2xl md:text-3xl font-bold">
             One investor lens.
