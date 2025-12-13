@@ -577,7 +577,8 @@ const AcceleratorLanding = () => {
               >
                 <div className="text-xs text-muted-foreground mb-1">{tier.label}</div>
                 <div className="text-3xl font-bold text-primary">{tier.pricePerStartup}</div>
-                <div className="text-xs text-muted-foreground mt-1">{tier.size} startups</div>
+                <div className="text-xs text-muted-foreground mt-1">per startup</div>
+                <div className="text-xs text-muted-foreground/60 mt-0.5">{tier.size} startups</div>
               </div>
             ))}
           </div>
