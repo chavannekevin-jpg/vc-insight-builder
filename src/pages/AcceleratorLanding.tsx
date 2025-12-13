@@ -177,6 +177,134 @@ const AcceleratorLanding = () => {
         </div>
       </section>
 
+      {/* The Analysis Deep Dive */}
+      <section className="py-16 px-6 bg-muted/20 border-y border-border/30">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              What the analysis actually examines
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              This isn't pitch deck feedback. It's the same scrutiny applied inside VC funds when partners decide whether to pursue a deal—or pass.
+            </p>
+          </div>
+
+          <div className="space-y-8">
+            <div className="border-l-2 border-primary/30 pl-6">
+              <h3 className="font-semibold mb-2">Problem Validity</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Is the problem real, or a solution looking for a problem? Is there evidence beyond founder conviction? VCs look for pain that people are already paying to solve—badly. The analysis surfaces whether founders have validated demand or are building on assumption.
+              </p>
+            </div>
+
+            <div className="border-l-2 border-primary/30 pl-6">
+              <h3 className="font-semibold mb-2">Solution Defensibility</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Can this be copied in six months by a well-funded competitor? Is there technical depth, proprietary data, or network effects? The analysis identifies whether the moat is real or imagined—and what it would take to build one.
+              </p>
+            </div>
+
+            <div className="border-l-2 border-primary/30 pl-6">
+              <h3 className="font-semibold mb-2">Market Logic</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Beyond inflated TAM slides: Is this market big enough to return a fund? Is timing right? Are there structural tailwinds? The analysis stress-tests market assumptions against what investors actually look for—not what founders want to believe.
+              </p>
+            </div>
+
+            <div className="border-l-2 border-primary/30 pl-6">
+              <h3 className="font-semibold mb-2">Traction Quality</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Revenue isn't always signal. The analysis distinguishes between vanity metrics and proof of repeatable demand. Are customers paying? Returning? Referring? Or is growth fueled by unsustainable spend and one-off deals?
+              </p>
+            </div>
+
+            <div className="border-l-2 border-primary/30 pl-6">
+              <h3 className="font-semibold mb-2">Team-Market Fit</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Why this team, for this problem, at this moment? VCs bet on founders who have an unfair advantage—domain expertise, network access, or a unique insight competitors can't replicate. The analysis surfaces whether that advantage exists or needs to be built.
+              </p>
+            </div>
+
+            <div className="border-l-2 border-primary/30 pl-6">
+              <h3 className="font-semibold mb-2">Unit Economics Viability</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Does the business model make sense at scale? What's the path to profitability? The analysis exposes whether current economics can improve with scale—or whether growth just accelerates losses.
+              </p>
+            </div>
+
+            <div className="border-l-2 border-primary/30 pl-6">
+              <h3 className="font-semibold mb-2">Fundability Assessment</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                The honest question: Would a professional investor pursue this? Not "is this a good business," but "is this a venture-scale opportunity?" Some great companies aren't VC-fundable. Better to know now than after 50 rejections.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Analysis > Feedback */}
+      <section className="py-16 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              Why analysis beats feedback
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <h3 className="font-semibold text-destructive/80">Typical mentor feedback</h3>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="text-destructive/60 mt-0.5">→</span>
+                  Based on individual experience and pattern-matching
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-destructive/60 mt-0.5">→</span>
+                  Varies wildly depending on who you talk to
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-destructive/60 mt-0.5">→</span>
+                  Often filtered to be "constructive" rather than honest
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-destructive/60 mt-0.5">→</span>
+                  Focuses on presentation, not fundability
+                </li>
+              </ul>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="font-semibold text-primary/80">VC-grade analysis</h3>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary/70 mt-0.5 flex-shrink-0" />
+                  Built on the actual decision framework VCs use internally
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary/70 mt-0.5 flex-shrink-0" />
+                  Applied consistently across every startup in the cohort
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary/70 mt-0.5 flex-shrink-0" />
+                  Designed to surface hard truths, not preserve feelings
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary/70 mt-0.5 flex-shrink-0" />
+                  Evaluates investment potential, not pitch polish
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-10 p-6 rounded-xl bg-muted/30 border border-border/50">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              <strong className="text-foreground">The uncomfortable reality:</strong> Most founders get rejected for reasons they never understand. VCs rarely explain their real concerns—it's not worth the awkwardness or potential conflict. Ugly Baby surfaces those concerns explicitly, in writing, while there's still time to address them.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Program Benefits - Minimal grid */}
       <section className="py-16 px-6 bg-muted/20 border-y border-border/30">
         <div className="max-w-5xl mx-auto">
