@@ -126,7 +126,7 @@ const AcceleratorLanding = () => {
                 variant="outline"
                 size="lg"
                 className="px-8 py-6 text-lg"
-                onClick={() => window.location.href = 'mailto:accelerators@uglybaby.dev?subject=Cohort%20Inquiry'}
+                onClick={() => window.location.href = 'mailto:chavanne.kevin@gmail.com?subject=Accelerator%20Cohort%20Inquiry'}
               >
                 Contact Us
               </Button>
@@ -399,7 +399,7 @@ const AcceleratorLanding = () => {
               variant="outline"
               size="lg"
               className="px-8 py-6 text-lg"
-              onClick={() => window.location.href = 'mailto:accelerators@uglybaby.dev?subject=Cohort%20Inquiry'}
+              onClick={() => window.location.href = 'mailto:chavanne.kevin@gmail.com?subject=Accelerator%20Cohort%20Inquiry'}
             >
               Contact for Pricing
             </Button>
