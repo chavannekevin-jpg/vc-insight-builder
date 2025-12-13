@@ -14,7 +14,7 @@ export const PricingSection = () => {
   
   const memoFinalPrice = memoPricing?.early_access_enabled 
     ? memoPricing.base_price * (1 - memoPricing.early_access_discount / 100)
-    : memoPricing?.base_price ?? 29.99;
+    : memoPricing?.base_price ?? 59.99;
 
   const pricingOptions = [
     {
@@ -56,19 +56,18 @@ export const PricingSection = () => {
     {
       title: "VIP Package",
       subtitle: "Premium + Network Access",
-      price: `€${(networkPricing?.base_price ?? 399).toFixed(2)}`,
+      price: `€${(networkPricing?.base_price ?? 159.99).toFixed(2)}`,
       features: [
         "Everything in Premium, plus:",
-        "Priority memo delivery (1 week)",
-        "Direct push to 100+ global investors",
-        "Personal introductions from Kevin",
-        "Priority support",
-        "Early access to new features"
+        "Unlimited memo regenerations",
+        "Direct push to 400+ global investors",
+        "Personal introductions when there's interest"
       ],
-      cta: "Get VIP Access →",
+      cta: "Coming Soon",
       highlight: false,
       color: "accent" as const,
-      badge: "Most Exclusive"
+      badge: "Coming Soon",
+      comingSoon: true
     }
   ];
 
@@ -147,10 +146,11 @@ export const PricingSection = () => {
                 </ul>
 
                 <Button 
-                  onClick={() => handleSelectPlan(option)}
+                  onClick={() => !option.comingSoon && handleSelectPlan(option)}
                   className={option.highlight ? "w-full gradient-primary hover-neon-pulse" : "w-full hover-neon-pulse"}
                   variant={option.highlight ? "default" : "outline"}
                   size="lg"
+                  disabled={option.comingSoon}
                 >
                   {option.cta}
                 </Button>

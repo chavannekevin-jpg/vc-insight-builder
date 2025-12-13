@@ -67,16 +67,14 @@ const Pricing = () => {
       icon: Users,
       features: [
         { text: "Everything in Memo Builder", included: true, bold: true },
-        { text: "Unlimited memo updates", included: true },
+        { text: "Unlimited memo regenerations", included: true },
         { text: "Profile shared with 400+ investors", included: true },
-        { text: "Direct introductions when there's interest", included: true },
-        { text: "Priority memo delivery (7 days)", included: true },
-        { text: "Priority support throughout", included: true },
-        { text: "Results-based investor matching", included: true }
+        { text: "Direct introductions when there's interest", included: true }
       ],
-      cta: "Get Network Access",
+      cta: "Coming Soon",
       popular: false,
-      color: "accent"
+      color: "accent",
+      comingSoon: true
     }
   ];
 
@@ -200,10 +198,11 @@ const Pricing = () => {
                     </ul>
 
                     <Button 
-                      onClick={() => navigate(plan.name === "Freemium" ? '/auth' : `/auth?plan=${encodeURIComponent(plan.name)}&price=${encodeURIComponent(plan.price)}`)}
+                      onClick={() => !plan.comingSoon && navigate(plan.name === "Freemium" ? '/auth' : `/auth?plan=${encodeURIComponent(plan.name)}&price=${encodeURIComponent(plan.price)}`)}
                       className={plan.popular ? "w-full gradient-primary hover-neon-pulse" : "w-full hover-neon-pulse"}
                       variant={plan.popular ? "default" : "outline"}
                       size="lg"
+                      disabled={plan.comingSoon}
                     >
                       {plan.cta}
                     </Button>
