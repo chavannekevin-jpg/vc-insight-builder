@@ -15,7 +15,7 @@ const Pricing = () => {
   const networkPricing = pricingSettings?.network_pricing;
 
   const memoFinalPrice = memoPricing?.early_access_enabled 
-    ? Math.round(memoPricing.base_price * (1 - memoPricing.early_access_discount / 100) * 100) / 100
+    ? Math.floor(memoPricing.base_price * 100 * (1 - memoPricing.early_access_discount / 100)) / 100
     : memoPricing?.base_price ?? 59.99;
 
   const pricingPlans = [
