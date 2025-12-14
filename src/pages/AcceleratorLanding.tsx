@@ -72,7 +72,6 @@ const AcceleratorLanding = () => {
       size: "5-10", 
       pricePerStartup: "€149", 
       label: "Small Cohort", 
-      minimum: "€1,200 min",
       perks: ["Unlimited memos", "Full tool suite"]
     },
     { 
@@ -80,14 +79,12 @@ const AcceleratorLanding = () => {
       pricePerStartup: "€129", 
       label: "Standard", 
       featured: true,
-      minimum: "€2,500 min",
       perks: ["Unlimited memos", "Full tool suite", "Cohort analytics"]
     },
     { 
       size: "25+", 
       pricePerStartup: "€99", 
       label: "Large Cohort",
-      minimum: "Custom",
       perks: ["Unlimited memos", "Full tool suite", "Cohort analytics"]
     }
   ];
@@ -603,7 +600,7 @@ const AcceleratorLanding = () => {
                 <div className="text-3xl font-bold text-primary">{tier.pricePerStartup}</div>
                 <div className="text-xs text-muted-foreground mt-1">per startup</div>
                 <div className="text-xs text-muted-foreground/60 mt-0.5">{tier.size} startups</div>
-                <div className="text-xs font-medium text-primary/80 mt-2">{tier.minimum}</div>
+                
                 
                 <div className="mt-4 pt-4 border-t border-border/30 space-y-1.5">
                   {tier.perks.map((perk, perkIdx) => (
