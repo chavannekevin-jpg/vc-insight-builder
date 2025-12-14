@@ -83,9 +83,22 @@ export const AnswerOptimizerWizard = ({
     return () => clearTimeout(timer);
   }, [answer, analyzeAnswer]);
 
-  // Don't show anything if answer is too short
+  // Show helpful prompt if answer is too short
   if (!answer || answer.length < 30) {
-    return null;
+    const charsNeeded = 30 - (answer?.length || 0);
+    return (
+      <div className={cn('mt-3 rounded-lg border bg-primary/5 border-primary/20', className)}>
+        <div className="px-4 py-3 flex items-center gap-3">
+          <Lightbulb className="h-4 w-4 text-primary shrink-0" />
+          <span className="text-sm text-muted-foreground">
+            Add more detail to unlock quality insights
+          </span>
+          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full whitespace-nowrap">
+            {charsNeeded} more chars
+          </span>
+        </div>
+      </div>
+    );
   }
 
   const getScoreColor = (score: number) => {
