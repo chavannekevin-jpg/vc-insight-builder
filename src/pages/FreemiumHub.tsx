@@ -122,6 +122,20 @@ export default function FreemiumHub() {
     }
   }, [authLoading, companyLoading, isAuthenticated, companyData, navigate]);
 
+  // Loading timeout recovery - redirect to auth if stuck loading
+  useEffect(() => {
+    if (!authLoading && !companyLoading) return;
+    
+    const timeout = setTimeout(() => {
+      if (authLoading || companyLoading) {
+        console.warn("Dashboard loading timeout - forcing refresh");
+        window.location.reload();
+      }
+    }, 8000); // 8 second timeout
+    
+    return () => clearTimeout(timeout);
+  }, [authLoading, companyLoading]);
+
   // Load memo details and responses when company is available
   useEffect(() => {
     if (companyData?.id && !responsesLoaded) {
