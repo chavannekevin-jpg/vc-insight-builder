@@ -68,9 +68,28 @@ const AcceleratorLanding = () => {
   ];
 
   const cohortPricing = [
-    { size: "5-10", pricePerStartup: "€49", label: "Small Cohort" },
-    { size: "11-25", pricePerStartup: "€39", label: "Standard", featured: true },
-    { size: "25+", pricePerStartup: "€29-35", label: "Large Cohort" }
+    { 
+      size: "5-10", 
+      pricePerStartup: "€149", 
+      label: "Small Cohort", 
+      minimum: "€1,200 min",
+      perks: ["Unlimited memos", "Full tool suite"]
+    },
+    { 
+      size: "11-25", 
+      pricePerStartup: "€129", 
+      label: "Standard", 
+      featured: true,
+      minimum: "€2,500 min",
+      perks: ["Unlimited memos", "Full tool suite", "Priority support"]
+    },
+    { 
+      size: "25+", 
+      pricePerStartup: "€99", 
+      label: "Large Cohort",
+      minimum: "Custom",
+      perks: ["Unlimited memos", "Full tool suite", "Priority support", "Cohort analytics"]
+    }
   ];
 
   return (
@@ -557,33 +576,58 @@ const AcceleratorLanding = () => {
 
       {/* Pricing */}
       <section className="py-16 px-6 bg-muted/20 border-y border-border/30">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold mb-2">Cohort Pricing</h2>
-            <p className="text-sm text-muted-foreground">
-              Retail is €59.99/startup. Program-level pricing reflects value at scale.
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+              Retail: €29.99/memo + €8.99 per regeneration. Program pricing includes <strong className="text-foreground">unlimited memos per startup</strong>—no regeneration fees, ever.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch justify-center gap-4 max-w-2xl mx-auto">
+          <div className="grid sm:grid-cols-3 gap-5 max-w-3xl mx-auto mb-8">
             {cohortPricing.map((tier, idx) => (
               <div 
                 key={idx}
-                className={`flex-1 p-6 rounded-xl text-center transition-all ${
+                className={`p-6 rounded-xl text-center transition-all ${
                   tier.featured 
-                    ? 'bg-primary/5 border-2 border-primary/30' 
+                    ? 'bg-primary/5 border-2 border-primary/30 relative' 
                     : 'bg-card/50 border border-border/50'
                 }`}
               >
-                <div className="text-xs text-muted-foreground mb-1">{tier.label}</div>
+                {tier.featured && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full">
+                    Most Popular
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground mb-2">{tier.label}</div>
                 <div className="text-3xl font-bold text-primary">{tier.pricePerStartup}</div>
                 <div className="text-xs text-muted-foreground mt-1">per startup</div>
                 <div className="text-xs text-muted-foreground/60 mt-0.5">{tier.size} startups</div>
+                <div className="text-xs font-medium text-primary/80 mt-2">{tier.minimum}</div>
+                
+                <div className="mt-4 pt-4 border-t border-border/30 space-y-1.5">
+                  {tier.perks.map((perk, perkIdx) => (
+                    <div key={perkIdx} className="text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+                      <CheckCircle2 className="w-3 h-3 text-primary/70" />
+                      {perk}
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
 
-          <div className="text-center mt-8">
+          <div className="bg-card/30 border border-border/50 rounded-xl p-5 max-w-2xl mx-auto mb-8">
+            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              Why unlimited memos matter
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Retail users get 1 memo and pay €8.99 for each regeneration. Program startups can regenerate as often as needed—after mentor feedback, after pivots, before Demo Day. The memo becomes a living document that evolves with the company, not a one-time snapshot.
+            </p>
+          </div>
+
+          <div className="text-center">
             <Button
               variant="outline"
               className="gap-2"
