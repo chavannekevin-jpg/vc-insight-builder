@@ -26,19 +26,22 @@ export const useCompany = (userId: string | undefined): CompanyData => {
   const { data: company, isLoading: companyLoading } = useQuery({
     queryKey: ["company", userId],
     queryFn: async () => {
-      if (!userId) return null;
-      const { data } = await supabase
+      if (!userId) throw new Error("No user ID provided");
+      const { data, error } = await supabase
         .from("companies")
         .select("*")
         .eq("founder_id", userId)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
+      if (error) throw error;
       return data as Company | null;
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 2, // 2 minutes
     gcTime: 1000 * 60 * 15, // 15 minutes
+    retry: 2,
+    retryDelay: 1000,
   });
 
   const { data: memoData, isLoading: memoLoading } = useQuery({

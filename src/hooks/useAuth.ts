@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface AuthState {
   user: any | null;
@@ -11,11 +11,21 @@ interface AuthState {
 
 export const useAuth = (): AuthState => {
   const queryClient = useQueryClient();
+  const [initializing, setInitializing] = useState(true);
 
-  // Listen for auth state changes and invalidate cache
+  // Listen for auth state changes and update cache directly
   useEffect(() => {
+    // First, get the initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      queryClient.setQueryData(["auth-session"], session);
+      setInitializing(false);
+    });
+
+    // Then set up the listener for future changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      queryClient.invalidateQueries({ queryKey: ["auth-session"] });
+      // Update query cache directly to prevent race conditions
+      queryClient.setQueryData(["auth-session"], session);
+      // Invalidate user role to refetch with new session
       queryClient.invalidateQueries({ queryKey: ["user-role"] });
     });
 
@@ -53,6 +63,6 @@ export const useAuth = (): AuthState => {
     user: session?.user ?? null,
     isAuthenticated: !!session,
     isAdmin,
-    isLoading: sessionLoading || roleLoading,
+    isLoading: initializing || sessionLoading || roleLoading,
   };
 };
