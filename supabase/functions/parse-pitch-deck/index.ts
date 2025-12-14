@@ -13,8 +13,8 @@ const CONFIDENCE_THRESHOLD = 0.6;
 // Timeout for AI API call (90 seconds)
 const AI_TIMEOUT_MS = 90000;
 
-// Max file size (8MB) - safe limit to avoid memory issues with base64 encoding
-const MAX_FILE_SIZE_BYTES = 8 * 1024 * 1024;
+// Max file size (20MB) - increased limit for larger decks
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -98,9 +98,9 @@ serve(async (req) => {
       console.error('File too large:', fileSizeBytes, 'bytes');
       return new Response(
         JSON.stringify({ 
-          error: `File too large (${fileSizeMB}MB). Maximum size is 8MB. Compress your deck at ilovepdf.com/compress_pdf`,
+          error: `File too large (${fileSizeMB}MB). Maximum size is 20MB. Compress your deck at ilovepdf.com/compress_pdf`,
           fileSizeMB: parseFloat(fileSizeMB),
-          maxSizeMB: 8
+          maxSizeMB: 20
         }),
         { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -179,9 +179,9 @@ For missing information, set content to null and confidence to 0.`;
       console.error('File too large after download:', fileSize, 'bytes');
       return new Response(
         JSON.stringify({ 
-          error: `File too large (${actualSizeMB}MB). Maximum size is 8MB. Compress your deck at ilovepdf.com/compress_pdf`,
+          error: `File too large (${actualSizeMB}MB). Maximum size is 20MB. Compress your deck at ilovepdf.com/compress_pdf`,
           fileSizeMB: parseFloat(actualSizeMB),
-          maxSizeMB: 8
+          maxSizeMB: 20
         }),
         { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
