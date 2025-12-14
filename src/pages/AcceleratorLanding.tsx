@@ -47,8 +47,8 @@ const AcceleratorLanding = () => {
   const whatFoundersGet = [
     {
       icon: BookOpen,
-      title: "Full Investment Memorandum",
-      description: "8 sections of VC-grade analysis covering problem, solution, market, competition, traction, team, business model, and the ask. Written like the internal memo that decides their fate."
+      title: "Full Investment Analysis",
+      description: "8 sections of VC-grade analysis covering problem, solution, market, competition, traction, team, business model, and the ask. Written like the internal document that decides their fate."
     },
     {
       icon: Wrench,
@@ -72,20 +72,20 @@ const AcceleratorLanding = () => {
       size: "5-10", 
       pricePerStartup: "€149", 
       label: "Small Cohort", 
-      perks: ["Unlimited memos", "Full tool suite"]
+      perks: ["Unlimited analyses", "Full tool suite"]
     },
     { 
       size: "11-25", 
       pricePerStartup: "€129", 
       label: "Standard", 
       featured: true,
-      perks: ["Unlimited memos", "Full tool suite", "Cohort analytics"]
+      perks: ["Unlimited analyses", "Full tool suite", "Cohort analytics"]
     },
     { 
       size: "25+", 
       pricePerStartup: "€99", 
       label: "Large Cohort",
-      perks: ["Unlimited memos", "Full tool suite", "Cohort analytics"]
+      perks: ["Unlimited analyses", "Full tool suite", "Cohort analytics"]
     }
   ];
 
@@ -201,7 +201,7 @@ const AcceleratorLanding = () => {
               The VC framework behind the analysis
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              This isn't pitch deck feedback. It's the same decision framework used inside VC funds when partners evaluate whether to pursue a deal—or pass. Each section of the memo applies a specific analytical lens that investors use internally.
+              This isn't pitch deck feedback. It's the same decision framework used inside VC funds when partners evaluate whether to pursue a deal—or pass. Each section of the analysis applies a specific analytical lens that investors use internally.
             </p>
           </div>
 
@@ -330,10 +330,10 @@ const AcceleratorLanding = () => {
         <div className="max-w-4xl mx-auto">
           <div className="mb-10">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              22+ analytical tools embedded in every memo
+              22+ analytical tools embedded in every analysis
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              The memo isn't just narrative—it's structured analysis. Each section includes specific tools that turn VC logic into actionable insights.
+              The analysis isn't just narrative—it's structured insight. Each section includes specific tools that turn VC logic into actionable insights.
             </p>
           </div>
 
@@ -552,9 +552,9 @@ const AcceleratorLanding = () => {
             <div className="flex gap-5">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-primary">2</div>
               <div>
-                <h3 className="font-semibold mb-2">Ugly Baby generates the investment memo</h3>
+                <h3 className="font-semibold mb-2">Ugly Baby generates the investment analysis</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  From those answers, Ugly Baby generates a full investment memorandum: the same document that would be written internally at a VC fund before a partner meeting. Founders see how they'd be scored, where their gaps are, and what needs to change—while there's still time to change it.
+                  From those answers, Ugly Baby generates a full investment analysis: the same document that would be written internally at a VC fund before a partner meeting. Founders see how they'd be scored, where their gaps are, and what needs to change—while there's still time to change it.
                 </p>
               </div>
             </div>
@@ -577,7 +577,7 @@ const AcceleratorLanding = () => {
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold mb-2">Cohort Pricing</h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              Retail: €29.99/memo + €8.99 per regeneration. Program pricing includes <strong className="text-foreground">unlimited memos per startup</strong>—no regeneration fees, ever.
+              Retail: €29.99/analysis + €8.99 per regeneration. Program pricing includes <strong className="text-foreground">unlimited analyses per startup</strong>—no regeneration fees, ever.
             </p>
           </div>
 
@@ -617,10 +617,10 @@ const AcceleratorLanding = () => {
           <div className="bg-card/30 border border-border/50 rounded-xl p-5 max-w-2xl mx-auto mb-8">
             <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
-              Why unlimited memos matter
+              Why unlimited analyses matter
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Retail users get 1 memo and pay €8.99 for each regeneration. Program startups can regenerate as often as needed—after mentor feedback, after pivots, before Demo Day. The memo becomes a living document that evolves with the company, not a one-time snapshot.
+              Retail users get 1 analysis and pay €8.99 for each regeneration. Program startups can regenerate as often as needed—after mentor feedback, after pivots, before Demo Day. The analysis becomes a living document that evolves with the company, not a one-time snapshot.
             </p>
           </div>
 
@@ -630,7 +630,7 @@ const AcceleratorLanding = () => {
               className="gap-2"
               onClick={() => navigate('/sample-memo')}
             >
-              Preview a full memo
+              Preview a full analysis
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
