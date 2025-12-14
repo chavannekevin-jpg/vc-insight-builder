@@ -81,14 +81,14 @@ const AcceleratorLanding = () => {
       label: "Standard", 
       featured: true,
       minimum: "€2,500 min",
-      perks: ["Unlimited memos", "Full tool suite", "Priority support"]
+      perks: ["Unlimited memos", "Full tool suite", "Cohort analytics"]
     },
     { 
       size: "25+", 
       pricePerStartup: "€99", 
       label: "Large Cohort",
       minimum: "Custom",
-      perks: ["Unlimited memos", "Full tool suite", "Priority support", "Cohort analytics"]
+      perks: ["Unlimited memos", "Full tool suite", "Cohort analytics"]
     }
   ];
 
