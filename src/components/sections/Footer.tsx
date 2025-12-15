@@ -40,7 +40,7 @@ export const Footer = memo(() => {
           </p>
           <div className="pt-2">
             <a 
-              href="https://www.linkedin.com/in/kevinchavanne/"
+              href="https://www.linkedin.com/in/kevin-chavanne-1b8a368a/"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
