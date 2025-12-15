@@ -98,6 +98,27 @@ const AdminEmails = () => {
 <p><a href="https://memotool.co/portal">Continue Your Profile →</a></p>
 <p>Best,<br/>The MemoTool Team</p>`,
     },
+    {
+      name: "Incomplete Memo Nudge",
+      subject: "Quick check-in on your memo 👋",
+      content: `<p>Hey there,</p>
+
+<p>Thanks for joining the Ugly Baby platform, great to have you on-board.</p>
+
+<p>I noticed you've already started preparing your investment memorandum, but didn't complete the process yet.</p>
+
+<p>I wanted to quickly reach out in case something wasn't clear or if you paused intentionally.</p>
+
+<p>I've attached a sample memo so you can see exactly what you'll receive once it's completed: a clear, investor-style analysis of your startup, highlighting key risks, blind spots, and concrete action items you can act on immediately.</p>
+
+<p>👉 <a href="https://memotool.co/sample-memo" style="color: #8b5cf6; text-decoration: underline;">View Sample Memo</a></p>
+
+<p>To make it easier to move forward, I'm keeping the <strong>50% launch discount active until Christmas</strong>.</p>
+
+<p>If you have any questions, feedback, or blockers — I'm all ears and happy to help.</p>
+
+<p>Cheers,<br/>Kev</p>`,
+    },
   ];
 
   useEffect(() => {
