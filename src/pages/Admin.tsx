@@ -369,6 +369,17 @@ const Admin = () => {
             </ModernCard>
           </div>
 
+          <div onClick={() => navigate("/admin/emails")} className="cursor-pointer">
+            <ModernCard className="hover:border-primary/50 transition-colors h-full">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Email Center
+              </h2>
+              <p className="text-muted-foreground">
+                Send emails and manage communications
+              </p>
+            </ModernCard>
+          </div>
+
           {orphanedCount > 0 && (
             <ModernCard className="border-destructive/50 bg-destructive/5">
               <div className="flex items-center justify-between">
