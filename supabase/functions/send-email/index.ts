@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,18 +52,38 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending email to: ${Array.isArray(to) ? to.join(", ") : to}`);
     console.log(`Subject: ${subject}`);
 
-    const emailResponse = await resend.emails.send({
-      from: from || "MemoTool <onboarding@resend.dev>",
-      to: Array.isArray(to) ? to : [to],
-      subject,
-      html: html || undefined,
-      text: text || undefined,
-      reply_to: replyTo || undefined,
+    const emailResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: from || "MemoTool <onboarding@resend.dev>",
+        to: Array.isArray(to) ? to : [to],
+        subject,
+        html: html || undefined,
+        text: text || undefined,
+        reply_to: replyTo || undefined,
+      }),
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    const data = await emailResponse.json();
 
-    return new Response(JSON.stringify({ success: true, data: emailResponse }), {
+    if (!emailResponse.ok) {
+      console.error("Resend API error:", data);
+      return new Response(
+        JSON.stringify({ error: data.message || "Failed to send email" }),
+        {
+          status: emailResponse.status,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    console.log("Email sent successfully:", data);
+
+    return new Response(JSON.stringify({ success: true, data }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
