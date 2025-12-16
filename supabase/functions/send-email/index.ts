@@ -59,12 +59,12 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: from || "MemoTool <onboarding@resend.dev>",
+        from: from || "Kev from Ugly Baby <kev@vc-brain.com>",
         to: Array.isArray(to) ? to : [to],
         subject,
         html: html || undefined,
         text: text || undefined,
-        reply_to: replyTo || undefined,
+        reply_to: replyTo || "kev@vc-brain.com",
       }),
     });
 
