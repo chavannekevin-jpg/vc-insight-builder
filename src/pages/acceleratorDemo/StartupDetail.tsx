@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { DemoModeBanner } from "@/components/acceleratorDemo/DemoModeBanner";
 import { AcceleratorDemoHeader } from "@/components/acceleratorDemo/AcceleratorDemoHeader";
 import { MentorBriefingCard } from "@/components/acceleratorDemo/MentorBriefingCard";
+import { DemoWrapper } from "@/components/acceleratorDemo/DemoWrapper";
 import { getStartupById } from "@/data/acceleratorDemo/demoStartups";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -111,6 +112,7 @@ const StartupDetail = () => {
     .sort(([, a], [, b]) => a - b);
 
   return (
+    <DemoWrapper>
     <div className="min-h-screen bg-background">
       <DemoModeBanner />
       <AcceleratorDemoHeader />
@@ -279,6 +281,7 @@ const StartupDetail = () => {
         </div>
       </main>
     </div>
+    </DemoWrapper>
   );
 };
 

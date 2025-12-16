@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { DemoModeBanner } from "@/components/acceleratorDemo/DemoModeBanner";
 import { AcceleratorDemoHeader } from "@/components/acceleratorDemo/AcceleratorDemoHeader";
+import { DemoWrapper } from "@/components/acceleratorDemo/DemoWrapper";
 import { getStartupById } from "@/data/acceleratorDemo/demoStartups";
 import { getDemoMemo } from "@/data/acceleratorDemo/demoMemos";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,7 @@ const StartupMemo = () => {
   };
 
   return (
+    <DemoWrapper>
     <div className="min-h-screen bg-background">
       <DemoModeBanner />
       <AcceleratorDemoHeader />
@@ -197,6 +199,7 @@ const StartupMemo = () => {
         </div>
       </main>
     </div>
+    </DemoWrapper>
   );
 };
 

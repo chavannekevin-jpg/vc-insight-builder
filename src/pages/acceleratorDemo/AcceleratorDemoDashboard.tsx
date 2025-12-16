@@ -2,6 +2,7 @@ import { DemoModeBanner } from "@/components/acceleratorDemo/DemoModeBanner";
 import { AcceleratorDemoHeader } from "@/components/acceleratorDemo/AcceleratorDemoHeader";
 import { CohortStatsBar } from "@/components/acceleratorDemo/CohortStatsBar";
 import { StartupCard } from "@/components/acceleratorDemo/StartupCard";
+import { DemoWrapper } from "@/components/acceleratorDemo/DemoWrapper";
 import { DEMO_ACCELERATOR } from "@/data/acceleratorDemo/acceleratorProfile";
 import { DEMO_STARTUPS, getStartupsByStatus } from "@/data/acceleratorDemo/demoStartups";
 import { useNavigate } from "react-router-dom";
@@ -29,6 +30,7 @@ const AcceleratorDemoDashboard = () => {
     .slice(0, 3);
 
   return (
+    <DemoWrapper>
     <div className="min-h-screen bg-background">
       <DemoModeBanner />
       <AcceleratorDemoHeader />
@@ -203,6 +205,7 @@ const AcceleratorDemoDashboard = () => {
         </div>
       </main>
     </div>
+    </DemoWrapper>
   );
 };
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DemoModeBanner } from "@/components/acceleratorDemo/DemoModeBanner";
 import { AcceleratorDemoHeader } from "@/components/acceleratorDemo/AcceleratorDemoHeader";
+import { DemoWrapper } from "@/components/acceleratorDemo/DemoWrapper";
 import { DEMO_STARTUPS, DemoStartup } from "@/data/acceleratorDemo/demoStartups";
 import {
   RadarChart,
@@ -108,6 +109,7 @@ const CompareStartups = () => {
   });
 
   return (
+    <DemoWrapper>
     <div className="min-h-screen bg-background">
       <DemoModeBanner />
       <AcceleratorDemoHeader />
@@ -368,6 +370,7 @@ const CompareStartups = () => {
         </div>
       </main>
     </div>
+    </DemoWrapper>
   );
 };
 

@@ -3,6 +3,7 @@ import { DemoModeBanner } from "@/components/acceleratorDemo/DemoModeBanner";
 import { AcceleratorDemoHeader } from "@/components/acceleratorDemo/AcceleratorDemoHeader";
 import { CohortStatsBar } from "@/components/acceleratorDemo/CohortStatsBar";
 import { StartupCard } from "@/components/acceleratorDemo/StartupCard";
+import { DemoWrapper } from "@/components/acceleratorDemo/DemoWrapper";
 import { DEMO_STARTUPS, DemoStartup } from "@/data/acceleratorDemo/demoStartups";
 import { Search, SlidersHorizontal, ArrowUpDown, Grid3X3, List } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -72,6 +73,7 @@ const CohortOverview = () => {
   ];
 
   return (
+    <DemoWrapper>
     <div className="min-h-screen bg-background">
       <DemoModeBanner />
       <AcceleratorDemoHeader />
@@ -206,6 +208,7 @@ const CohortOverview = () => {
         )}
       </main>
     </div>
+    </DemoWrapper>
   );
 };
 
