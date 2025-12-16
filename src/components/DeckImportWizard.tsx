@@ -16,9 +16,11 @@ import {
   Edit2, 
   ChevronRight,
   FileText,
-  X
+  X,
+  ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { convertPDFToImages, shouldConvertPDF, type PDFConversionProgress } from '@/lib/pdfToImages';
 
 interface ExtractedSection {
   content: string | null;
@@ -179,43 +181,107 @@ export const DeckImportWizard = ({
 
       if (isCancelled) return;
       
-      setProcessingProgress(10);
-      setProcessingStage('Uploading deck...');
-
-      // Upload file to storage
-      const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      console.log('[DeckImport] Uploading to:', fileName);
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('pitch-decks')
-        .upload(fileName, selectedFile);
-
-      if (uploadError) {
-        console.error('[DeckImport] Upload error:', uploadError);
-        throw new Error('Failed to upload file: ' + uploadError.message);
+      // Check if we need to convert PDF to images (for large PDFs)
+      const needsConversion = shouldConvertPDF(selectedFile);
+      let imageUrls: string[] = [];
+      
+      if (needsConversion) {
+        console.log('[DeckImport] Large PDF detected, converting to images client-side');
+        setProcessingProgress(10);
+        setProcessingStage('Converting PDF pages to images...');
+        
+        try {
+          const { images, pageCount } = await convertPDFToImages(
+            selectedFile,
+            (progress: PDFConversionProgress) => {
+              if (progress.stage === 'converting') {
+                const conversionProgress = 10 + (progress.currentPage / progress.totalPages) * 15;
+                setProcessingProgress(conversionProgress);
+                setProcessingStage(`Converting page ${progress.currentPage} of ${progress.totalPages}...`);
+              }
+            }
+          );
+          
+          console.log('[DeckImport] PDF converted to', images.length, 'images');
+          setProcessingProgress(25);
+          setProcessingStage('Uploading converted images...');
+          
+          // Upload each image and get signed URLs
+          for (let i = 0; i < images.length; i++) {
+            if (isCancelled) return;
+            
+            const imageBlob = images[i];
+            const imageName = `${user.id}/${Date.now()}-page-${i + 1}.jpg`;
+            
+            const { error: uploadError } = await supabase.storage
+              .from('pitch-decks')
+              .upload(imageName, imageBlob, { contentType: 'image/jpeg' });
+            
+            if (uploadError) {
+              console.error('[DeckImport] Image upload error:', uploadError);
+              throw new Error(`Failed to upload page ${i + 1}`);
+            }
+            
+            const { data: urlData } = await supabase.storage
+              .from('pitch-decks')
+              .createSignedUrl(imageName, 3600);
+            
+            if (urlData?.signedUrl) {
+              imageUrls.push(urlData.signedUrl);
+            }
+            
+            const uploadProgress = 25 + ((i + 1) / images.length) * 10;
+            setProcessingProgress(uploadProgress);
+          }
+          
+          console.log('[DeckImport] Uploaded', imageUrls.length, 'images');
+        } catch (conversionError) {
+          console.error('[DeckImport] PDF conversion failed:', conversionError);
+          toast.error('Failed to convert PDF. Trying direct upload...');
+          // Fall back to direct upload
+          imageUrls = [];
+        }
       }
-      console.log('[DeckImport] Upload successful:', uploadData);
+      
+      // If no image conversion (small file or fallback), upload directly
+      if (imageUrls.length === 0) {
+        setProcessingProgress(10);
+        setProcessingStage('Uploading deck...');
+
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        console.log('[DeckImport] Uploading to:', fileName);
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('pitch-decks')
+          .upload(fileName, selectedFile);
+
+        if (uploadError) {
+          console.error('[DeckImport] Upload error:', uploadError);
+          throw new Error('Failed to upload file: ' + uploadError.message);
+        }
+        console.log('[DeckImport] Upload successful:', uploadData);
+
+        if (isCancelled) return;
+        
+        setProcessingProgress(25);
+        setProcessingStage('Preparing for analysis...');
+
+        const { data: urlData } = await supabase.storage
+          .from('pitch-decks')
+          .createSignedUrl(fileName, 3600);
+
+        if (!urlData?.signedUrl) {
+          console.error('[DeckImport] Failed to get signed URL');
+          throw new Error('Failed to get file URL');
+        }
+        
+        imageUrls = [urlData.signedUrl];
+      }
 
       if (isCancelled) return;
       
-      setProcessingProgress(25);
-      setProcessingStage('Preparing for analysis...');
-
-      // Get signed URL for the uploaded file
-      const { data: urlData } = await supabase.storage
-        .from('pitch-decks')
-        .createSignedUrl(fileName, 3600); // 1 hour expiry
-
-      if (!urlData?.signedUrl) {
-        console.error('[DeckImport] Failed to get signed URL');
-        throw new Error('Failed to get file URL');
-      }
-      console.log('[DeckImport] Got signed URL');
-
-      if (isCancelled) return;
-      
-      setProcessingProgress(30);
+      setProcessingProgress(35);
       setProcessingStage('AI is reading your deck...');
 
       // Animate progress while waiting for AI
@@ -226,12 +292,13 @@ export const DeckImportWizard = ({
         });
       }, 2000);
 
-      console.log('[DeckImport] Calling parse-pitch-deck function');
+      console.log('[DeckImport] Calling parse-pitch-deck function with', imageUrls.length, 'URL(s)');
       
-      // Call the parse function
+      // Call the parse function with either single URL or multiple image URLs
       const { data: parseResult, error: parseError } = await supabase.functions.invoke('parse-pitch-deck', {
         body: {
-          deckUrl: urlData.signedUrl,
+          deckUrl: imageUrls.length === 1 ? imageUrls[0] : undefined,
+          imageUrls: imageUrls.length > 1 ? imageUrls : undefined,
           companyName,
           companyDescription
         }

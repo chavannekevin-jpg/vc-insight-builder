@@ -13,8 +13,11 @@ const CONFIDENCE_THRESHOLD = 0.6;
 // Timeout for AI API call (90 seconds)
 const AI_TIMEOUT_MS = 90000;
 
-// Max file size (20MB) - increased limit for larger decks
-const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
+// Max file size for single file upload (10MB) - reduced for memory safety
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+
+// Max size per image when processing multiple images (3MB each)
+const MAX_IMAGE_SIZE_BYTES = 3 * 1024 * 1024;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -53,11 +56,14 @@ serve(async (req) => {
 
     console.log(`Authenticated user: ${userData.user.id}`);
 
-    const { deckUrl, companyName, companyDescription } = await req.json();
+    const { deckUrl, imageUrls, companyName, companyDescription } = await req.json();
 
-    if (!deckUrl) {
+    // Support both single deckUrl and multiple imageUrls
+    const hasMultipleImages = Array.isArray(imageUrls) && imageUrls.length > 0;
+    
+    if (!deckUrl && !hasMultipleImages) {
       return new Response(
-        JSON.stringify({ error: 'Deck URL is required' }),
+        JSON.stringify({ error: 'Deck URL or image URLs are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -71,44 +77,13 @@ serve(async (req) => {
       );
     }
 
-    console.log('Parsing pitch deck:', { deckUrl, companyName });
+    console.log('Parsing pitch deck:', { 
+      mode: hasMultipleImages ? 'multi-image' : 'single-file',
+      imageCount: hasMultipleImages ? imageUrls.length : 1,
+      companyName 
+    });
 
-    // Fetch the deck content
-    const deckResponse = await fetch(deckUrl);
-    if (!deckResponse.ok) {
-      console.error('Failed to fetch deck:', deckResponse.status);
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch deck file' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const contentType = deckResponse.headers.get('content-type') || '';
-    const isImage = contentType.startsWith('image/');
-    const isPDF = contentType.includes('pdf');
-
-    console.log('Content type detected:', contentType, { isImage, isPDF });
-
-    // Check file size before loading into memory
-    const contentLength = deckResponse.headers.get('content-length');
-    const fileSizeBytes = contentLength ? parseInt(contentLength) : 0;
-    const fileSizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(1);
-    
-    if (fileSizeBytes > MAX_FILE_SIZE_BYTES) {
-      console.error('File too large:', fileSizeBytes, 'bytes');
-      return new Response(
-        JSON.stringify({ 
-          error: `File too large (${fileSizeMB}MB). Maximum size is 20MB. Compress your deck at ilovepdf.com/compress_pdf`,
-          fileSizeMB: parseFloat(fileSizeMB),
-          maxSizeMB: 20
-        }),
-        { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    let messages: any[] = [];
-
-    // System prompt with EXACT questionnaire keys matching the current 8-question questionnaire
+    // System prompt with EXACT questionnaire keys
     const systemPrompt = `You are an expert VC analyst who extracts structured information from pitch decks. 
 Analyze the provided pitch deck and extract as much relevant information as possible.
 
@@ -167,89 +142,181 @@ CONFIDENCE SCORING GUIDELINES:
 Be thorough but accurate. Only extract what you can actually find or reasonably infer.
 For missing information, set content to null and confidence to 0.`;
 
-    // Read file as binary for both images and PDFs
-    const fileBuffer = await deckResponse.arrayBuffer();
-    const fileSize = fileBuffer.byteLength;
-    
-    console.log('File size:', fileSize, 'bytes (~', Math.round(fileSize / 1024), 'KB)');
-    
-    // Double-check file size after download (in case content-length was missing)
-    if (fileSize > MAX_FILE_SIZE_BYTES) {
-      const actualSizeMB = (fileSize / (1024 * 1024)).toFixed(1);
-      console.error('File too large after download:', fileSize, 'bytes');
-      return new Response(
-        JSON.stringify({ 
-          error: `File too large (${actualSizeMB}MB). Maximum size is 20MB. Compress your deck at ilovepdf.com/compress_pdf`,
-          fileSizeMB: parseFloat(actualSizeMB),
-          maxSizeMB: 20
-        }),
-        { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    // Use Deno's optimized base64 encoding
-    const encodeStart = Date.now();
-    const base64Content = base64Encode(fileBuffer);
-    console.log(`Base64 encoding took ${Date.now() - encodeStart}ms`);
+    let messages: any[] = [];
 
-    if (isImage) {
-      // For images, use vision capability
-      const mimeType = contentType || 'image/png';
-      console.log('Processing as image:', mimeType);
-
-      messages = [
-        { role: 'system', content: systemPrompt },
+    if (hasMultipleImages) {
+      // Process multiple images (from client-side PDF conversion)
+      console.log('Processing', imageUrls.length, 'images from client-side conversion');
+      
+      const imageContent: any[] = [
         {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `Analyze this pitch deck slide/image and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}`
-            },
-            {
-              type: 'image_url',
-              image_url: { url: `data:${mimeType};base64,${base64Content}` }
-            }
-          ]
+          type: 'text',
+          text: `Analyze these ${imageUrls.length} pitch deck slides and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}`
         }
       ];
-    } else if (isPDF) {
-      // For PDFs, send as base64 document to Gemini (it has native PDF support)
-      console.log('Processing as PDF document');
-
-      messages = [
-        { role: 'system', content: systemPrompt },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `Analyze this pitch deck PDF and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}`
-            },
-            {
-              type: 'image_url',
-              image_url: { url: `data:application/pdf;base64,${base64Content}` }
-            }
-          ]
+      
+      // Fetch and encode each image
+      for (let i = 0; i < imageUrls.length; i++) {
+        const url = imageUrls[i];
+        console.log(`Fetching image ${i + 1}/${imageUrls.length}`);
+        
+        try {
+          const imageResponse = await fetch(url);
+          if (!imageResponse.ok) {
+            console.warn(`Failed to fetch image ${i + 1}:`, imageResponse.status);
+            continue;
+          }
+          
+          const imageBuffer = await imageResponse.arrayBuffer();
+          const imageSize = imageBuffer.byteLength;
+          
+          // Skip images that are too large
+          if (imageSize > MAX_IMAGE_SIZE_BYTES) {
+            console.warn(`Image ${i + 1} too large (${imageSize} bytes), skipping`);
+            continue;
+          }
+          
+          const base64Image = base64Encode(imageBuffer);
+          const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+          
+          imageContent.push({
+            type: 'image_url',
+            image_url: { url: `data:${contentType};base64,${base64Image}` }
+          });
+          
+          console.log(`Added image ${i + 1}, size: ${imageSize} bytes`);
+        } catch (imgError) {
+          console.error(`Error processing image ${i + 1}:`, imgError);
         }
-      ];
-    } else {
-      // For PPTX or other formats - try to read as text (limited support)
-      console.log('Processing as other format (limited support)');
-      const textContent = new TextDecoder().decode(fileBuffer);
+      }
+      
+      if (imageContent.length === 1) {
+        // Only the text prompt, no images loaded
+        return new Response(
+          JSON.stringify({ error: 'Failed to load any images from the deck' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       
       messages = [
         { role: 'system', content: systemPrompt },
-        {
-          role: 'user',
-          content: `Analyze this pitch deck content and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}
+        { role: 'user', content: imageContent }
+      ];
+      
+    } else {
+      // Process single file (original flow)
+      const deckResponse = await fetch(deckUrl);
+      if (!deckResponse.ok) {
+        console.error('Failed to fetch deck:', deckResponse.status);
+        return new Response(
+          JSON.stringify({ error: 'Failed to fetch deck file' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const contentType = deckResponse.headers.get('content-type') || '';
+      const isImage = contentType.startsWith('image/');
+      const isPDF = contentType.includes('pdf');
+
+      console.log('Content type detected:', contentType, { isImage, isPDF });
+
+      // Check file size before loading into memory
+      const contentLength = deckResponse.headers.get('content-length');
+      const fileSizeBytes = contentLength ? parseInt(contentLength) : 0;
+      const fileSizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(1);
+      
+      if (fileSizeBytes > MAX_FILE_SIZE_BYTES) {
+        console.error('File too large:', fileSizeBytes, 'bytes');
+        return new Response(
+          JSON.stringify({ 
+            error: `File too large (${fileSizeMB}MB). Maximum size is 10MB for direct upload. For larger decks, please use a supported format that enables client-side conversion.`,
+            fileSizeMB: parseFloat(fileSizeMB),
+            maxSizeMB: 10
+          }),
+          { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Read file as binary
+      const fileBuffer = await deckResponse.arrayBuffer();
+      const fileSize = fileBuffer.byteLength;
+      
+      console.log('File size:', fileSize, 'bytes (~', Math.round(fileSize / 1024), 'KB)');
+      
+      // Double-check file size after download
+      if (fileSize > MAX_FILE_SIZE_BYTES) {
+        const actualSizeMB = (fileSize / (1024 * 1024)).toFixed(1);
+        console.error('File too large after download:', fileSize, 'bytes');
+        return new Response(
+          JSON.stringify({ 
+            error: `File too large (${actualSizeMB}MB). Maximum size is 10MB.`,
+            fileSizeMB: parseFloat(actualSizeMB),
+            maxSizeMB: 10
+          }),
+          { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      const encodeStart = Date.now();
+      const base64Content = base64Encode(fileBuffer);
+      console.log(`Base64 encoding took ${Date.now() - encodeStart}ms`);
+
+      if (isImage) {
+        const mimeType = contentType || 'image/png';
+        console.log('Processing as image:', mimeType);
+
+        messages = [
+          { role: 'system', content: systemPrompt },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Analyze this pitch deck slide/image and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}`
+              },
+              {
+                type: 'image_url',
+                image_url: { url: `data:${mimeType};base64,${base64Content}` }
+              }
+            ]
+          }
+        ];
+      } else if (isPDF) {
+        console.log('Processing as PDF document');
+
+        messages = [
+          { role: 'system', content: systemPrompt },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Analyze this pitch deck PDF and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}`
+              },
+              {
+                type: 'image_url',
+                image_url: { url: `data:application/pdf;base64,${base64Content}` }
+              }
+            ]
+          }
+        ];
+      } else {
+        console.log('Processing as other format (limited support)');
+        const textContent = new TextDecoder().decode(fileBuffer);
+        
+        messages = [
+          { role: 'system', content: systemPrompt },
+          {
+            role: 'user',
+            content: `Analyze this pitch deck content and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}
 
 Note: This file format may have limited extraction capability. Extract what you can.
 
 Deck content:
 ${textContent.substring(0, 50000)}`
-        }
-      ];
+          }
+        ];
+      }
     }
 
     console.log('Sending to AI for analysis...');
@@ -326,7 +393,6 @@ ${textContent.substring(0, 50000)}`
     // Parse the JSON response
     let parsedContent;
     try {
-      // Clean up potential markdown formatting
       const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       parsedContent = JSON.parse(cleanContent);
     } catch (parseError) {
