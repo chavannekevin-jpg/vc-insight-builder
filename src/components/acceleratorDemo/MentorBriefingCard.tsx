@@ -1,4 +1,4 @@
-import { Lightbulb, Target, MessageSquare, Clock, CheckCircle2 } from "lucide-react";
+import { Lightbulb, Target, MessageSquare, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DemoStartup } from "@/data/acceleratorDemo/demoStartups";
 
@@ -84,15 +84,15 @@ export const MentorBriefingCard = ({ startup }: MentorBriefingCardProps) => {
   const recommendations = getSessionRecommendations();
 
   return (
-    <div className="bg-card/80 border border-border/50 rounded-xl overflow-hidden">
+    <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
       {/* Header */}
-      <div className="bg-primary/10 border-b border-primary/20 px-5 py-4">
+      <div className="bg-primary/5 border-b border-primary/10 px-5 py-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
             <Lightbulb className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold">Mentor Briefing</h3>
+            <h3 className="font-semibold text-foreground">Mentor Briefing</h3>
             <p className="text-sm text-muted-foreground">Session recommendations for {startup.name}</p>
           </div>
         </div>
@@ -111,26 +111,26 @@ export const MentorBriefingCard = ({ startup }: MentorBriefingCardProps) => {
 
         {/* Session Recommendations */}
         <div>
-          <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
+          <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 text-foreground">
             <MessageSquare className="w-4 h-4 text-muted-foreground" />
             Recommended Sessions
           </h4>
           <div className="space-y-4">
             {recommendations.map((rec, index) => (
-              <div key={index} className="border border-border/30 rounded-lg p-4">
+              <div key={index} className="border border-border rounded-lg p-4 bg-muted/30">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
+                  <span className="text-xs font-bold text-primary-foreground bg-primary px-2 py-0.5 rounded">
                     Session {index + 1}
                   </span>
-                  <h5 className="font-medium text-sm">{rec.focus}</h5>
+                  <h5 className="font-medium text-sm text-foreground">{rec.focus}</h5>
                 </div>
                 <div className="space-y-2 text-xs">
                   <div>
-                    <span className="text-muted-foreground">Preparation:</span>
+                    <span className="text-muted-foreground font-medium">Preparation:</span>
                     <p className="text-foreground/80 mt-0.5">{rec.preparation}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Target Outcome:</span>
+                    <span className="text-muted-foreground font-medium">Target Outcome:</span>
                     <p className="text-foreground/80 mt-0.5">{rec.outcome}</p>
                   </div>
                 </div>
@@ -141,11 +141,11 @@ export const MentorBriefingCard = ({ startup }: MentorBriefingCardProps) => {
 
         {/* Key Concerns to Address */}
         <div>
-          <h4 className="text-sm font-semibold mb-3">Top Concerns to Address</h4>
+          <h4 className="text-sm font-semibold mb-3 text-foreground">Top Concerns to Address</h4>
           <div className="space-y-2">
             {startup.topConcerns.map((concern, index) => (
               <div key={index} className="flex items-start gap-2 text-sm">
-                <span className="text-destructive/70 mt-0.5">•</span>
+                <span className="text-destructive mt-0.5">•</span>
                 <span className="text-muted-foreground">{concern}</span>
               </div>
             ))}
@@ -154,7 +154,7 @@ export const MentorBriefingCard = ({ startup }: MentorBriefingCardProps) => {
 
         {/* Strengths to Leverage */}
         <div>
-          <h4 className="text-sm font-semibold mb-3">Strengths to Leverage</h4>
+          <h4 className="text-sm font-semibold mb-3 text-foreground">Strengths to Leverage</h4>
           <div className="space-y-2">
             {startup.topStrengths.map((strength, index) => (
               <div key={index} className="flex items-start gap-2 text-sm">
@@ -166,7 +166,7 @@ export const MentorBriefingCard = ({ startup }: MentorBriefingCardProps) => {
         </div>
 
         {/* Quick Stats */}
-        <div className="pt-4 border-t border-border/30">
+        <div className="pt-4 border-t border-border">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className={cn(

@@ -157,7 +157,7 @@ const StartupDetail = () => {
             </div>
 
             {/* Score & Progress */}
-            <div className="flex items-center gap-6 p-4 bg-card/50 border border-border/50 rounded-xl">
+            <div className="flex items-center gap-6 p-4 bg-card border border-border rounded-xl shadow-sm">
               <div className="text-center">
                 <div className={cn("text-4xl font-bold", getScoreColor(startup.fundabilityScore))}>
                   {startup.fundabilityScore}
@@ -182,10 +182,11 @@ const StartupDetail = () => {
               <div className="flex-1">
                 <Button
                   onClick={() => navigate(`/accelerator-demo/startup/${startup.id}/memo`)}
-                  className="w-full"
+                  size="lg"
+                  className="w-full shadow-md"
                 >
-                  <FileText className="w-4 h-4 mr-2" />
-                  View Full Memo
+                  <FileText className="w-5 h-5 mr-2" />
+                  View Full Investment Memo
                 </Button>
               </div>
             </div>
@@ -197,7 +198,7 @@ const StartupDetail = () => {
           {/* Left Column - Section Scores */}
           <div className="lg:col-span-2 space-y-6">
             {/* Section Scores */}
-            <section className="bg-card/50 border border-border/50 rounded-xl p-6">
+            <section className="bg-card border border-border rounded-xl p-6 shadow-sm">
               <h2 className="text-xl font-semibold mb-6">Section Scores</h2>
               <div className="space-y-4">
                 {Object.entries(startup.sectionScores).map(([section, score]) => (
@@ -225,7 +226,7 @@ const StartupDetail = () => {
             </section>
 
             {/* Founders */}
-            <section className="bg-card/50 border border-border/50 rounded-xl p-6">
+            <section className="bg-card border border-border rounded-xl p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-6">
                 <Users className="w-5 h-5 text-muted-foreground" />
                 <h2 className="text-xl font-semibold">Founding Team</h2>
@@ -249,7 +250,7 @@ const StartupDetail = () => {
             </section>
 
             {/* Priority Areas */}
-            <section className="bg-card/50 border border-border/50 rounded-xl p-6">
+            <section className="bg-card border border-border rounded-xl p-6 shadow-sm">
               <h2 className="text-xl font-semibold mb-6">Priority Improvement Areas</h2>
               <div className="space-y-4">
                 {sortedSections.slice(0, 3).map(([section, score]) => (

@@ -342,6 +342,57 @@ All colors MUST be HSL.
   }
 
   /* Print Styles for PDF Export - Preserve Dark Theme */
+  /* Accelerator Portal Light Theme */
+  .accelerator-portal {
+    --background: 220 20% 97%;
+    --foreground: 220 20% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 15%;
+
+    --primary: 220 85% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 220 85% 60%;
+
+    --secondary: 200 80% 45%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 15% 92%;
+    --muted-foreground: 220 15% 45%;
+
+    --accent: 250 75% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 145 65% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 35 90% 45%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 220 15% 85%;
+    --input: 220 15% 85%;
+    --ring: 220 85% 50%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(220 85% 50%), hsl(200 80% 45%));
+    --gradient-secondary: linear-gradient(135deg, hsl(200 80% 45%), hsl(250 75% 55%));
+    --gradient-accent: linear-gradient(135deg, hsl(220 85% 50% / 0.1), hsl(200 80% 45% / 0.1));
+    --gradient-hero: linear-gradient(180deg, hsl(220 20% 97%), hsl(220 25% 94%));
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-glow: 0 4px 14px rgba(59, 130, 246, 0.15);
+    --shadow-glow-strong: 0 8px 25px rgba(59, 130, 246, 0.25);
+  }
+
   @media print {
     /* Force color printing to preserve the dark theme */
     * {
