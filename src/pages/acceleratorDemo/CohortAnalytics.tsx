@@ -1,5 +1,6 @@
 import { DemoModeBanner } from "@/components/acceleratorDemo/DemoModeBanner";
 import { AcceleratorDemoHeader } from "@/components/acceleratorDemo/AcceleratorDemoHeader";
+import { DemoWrapper } from "@/components/acceleratorDemo/DemoWrapper";
 import { DEMO_STARTUPS, getCohortStats } from "@/data/acceleratorDemo/demoStartups";
 import { DEMO_ACCELERATOR } from "@/data/acceleratorDemo/acceleratorProfile";
 import {
@@ -111,6 +112,7 @@ const CohortAnalytics = () => {
   };
 
   return (
+    <DemoWrapper>
     <div className="min-h-screen bg-background">
       <DemoModeBanner />
       <AcceleratorDemoHeader />
@@ -393,6 +395,7 @@ const CohortAnalytics = () => {
         </div>
       </main>
     </div>
+    </DemoWrapper>
   );
 };
 
