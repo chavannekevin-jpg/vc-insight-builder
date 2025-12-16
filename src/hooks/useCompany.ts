@@ -90,17 +90,31 @@ export const useCompany = (userId: string | undefined): CompanyData => {
       const [responsesResult, questionsResult] = await Promise.all([
         supabase
           .from("memo_responses")
-          .select("id")
+          .select("question_key, answer")
           .eq("company_id", company.id)
           .not("answer", "is", null),
         supabase
           .from("questionnaire_questions")
-          .select("id")
+          .select("question_key")
           .eq("is_active", true),
       ]);
       
+      const activeKeys = new Set(questionsResult.data?.map(q => q.question_key) ?? []);
+      
+      // Only count responses that:
+      // 1. Match an active question key
+      // 2. Have substantial content (not placeholder text)
+      const validResponses = (responsesResult.data ?? []).filter(r => {
+        if (!activeKeys.has(r.question_key)) return false;
+        const answer = r.answer?.trim() ?? '';
+        if (answer.length < 50) return false;
+        // Filter out placeholder answers
+        if (answer.toLowerCase().startsWith('not specified yet')) return false;
+        return true;
+      });
+      
       return {
-        completed: responsesResult.data?.length ?? 0,
+        completed: validResponses.length,
         total: questionsResult.data?.length ?? 0,
       };
     },
