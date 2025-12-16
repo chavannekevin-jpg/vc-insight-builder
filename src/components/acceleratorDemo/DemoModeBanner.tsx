@@ -10,7 +10,7 @@ export const DemoModeBanner = () => {
   if (dismissed) return null;
 
   return (
-    <div className="bg-primary/10 border-b border-primary/20 px-4 py-2">
+    <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border-b border-primary/20 px-4 py-2">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-sm">
           <Info className="w-4 h-4 text-primary" />

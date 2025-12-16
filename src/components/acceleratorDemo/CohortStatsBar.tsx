@@ -50,7 +50,7 @@ export const CohortStatsBar = () => {
         return (
           <div
             key={item.label}
-            className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2 shadow-sm"
+            className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2 shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
           >
             <div className="flex items-center gap-2">
               <Icon className={cn("w-4 h-4", item.color)} />
