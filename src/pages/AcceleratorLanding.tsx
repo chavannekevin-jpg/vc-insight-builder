@@ -198,7 +198,7 @@ const AcceleratorLanding = () => {
                 variant="ghost"
                 size="lg"
                 className="text-muted-foreground"
-                onClick={() => window.location.href = 'mailto:chavanne.kevin@gmail.com?subject=How%20would%20my%20cohort%20be%20mapped?'}
+                onClick={() => navigate('/accelerator-demo')}
               >
                 See how your cohort would be mapped →
               </Button>
@@ -556,7 +556,7 @@ const AcceleratorLanding = () => {
             <Button
               variant="outline"
               size="lg"
-              onClick={() => window.location.href = 'mailto:chavanne.kevin@gmail.com?subject=How%20would%20my%20cohort%20be%20mapped?'}
+              onClick={() => navigate('/accelerator-demo')}
             >
               See how your cohort would be mapped
             </Button>
