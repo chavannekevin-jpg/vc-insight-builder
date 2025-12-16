@@ -119,6 +119,8 @@ const AcceleratorLanding = lazy(() => import("./pages/AcceleratorLanding"));
 // Accelerator Demo Pages
 const AcceleratorDemoDashboard = lazy(() => import("./pages/acceleratorDemo/AcceleratorDemoDashboard"));
 const CohortOverview = lazy(() => import("./pages/acceleratorDemo/CohortOverview"));
+const StartupDetail = lazy(() => import("./pages/acceleratorDemo/StartupDetail"));
+const StartupMemo = lazy(() => import("./pages/acceleratorDemo/StartupMemo"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -149,6 +151,8 @@ const App = () => (
             {/* Accelerator Demo Routes */}
             <Route path="/accelerator-demo" element={<AcceleratorDemoDashboard />} />
             <Route path="/accelerator-demo/cohort" element={<CohortOverview />} />
+            <Route path="/accelerator-demo/startup/:id" element={<StartupDetail />} />
+            <Route path="/accelerator-demo/startup/:id/memo" element={<StartupMemo />} />
             <Route path="/hub/:slug" element={<EducationalContent />} />
             <Route path="/vcbrain" element={<VCBrainHub />}>
               <Route index element={<VCBrainHome />} />
