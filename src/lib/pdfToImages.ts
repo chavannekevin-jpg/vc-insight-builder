@@ -1,8 +1,3 @@
-import * as pdfjsLib from 'pdfjs-dist';
-
-// Set the worker source - use CDN for reliability (v3.x compatible)
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
-
 export interface PDFConversionProgress {
   currentPage: number;
   totalPages: number;
@@ -35,6 +30,12 @@ export async function convertPDFToImages(
   console.log('[pdfToImages] Starting conversion for:', file.name, 'size:', file.size);
   
   onProgress?.({ currentPage: 0, totalPages: 0, stage: 'loading' });
+  
+  // Dynamically import pdfjs-dist only when needed
+  const pdfjsLib = await import('pdfjs-dist');
+  
+  // Set the worker source
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
   
   // Load the PDF
   const arrayBuffer = await file.arrayBuffer();
