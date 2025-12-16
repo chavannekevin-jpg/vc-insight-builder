@@ -10,7 +10,7 @@ import { CompanySummaryCard } from "@/components/CompanySummaryCard";
 import { ToolsRow } from "@/components/ToolsRow";
 import { CollapsedLibrary } from "@/components/CollapsedLibrary";
 import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
-import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid } from "lucide-react";
+import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/hooks/useCompany";
@@ -585,6 +585,27 @@ export default function FreemiumHub() {
                 completedQuestions={completedQuestions}
                 totalQuestions={totalQuestions}
               />
+              
+              {/* Always-available Upload Deck button */}
+              <Card className="border border-dashed border-primary/40 hover:border-primary/60 transition-colors">
+                <CardContent className="p-4">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 h-auto py-3 text-left"
+                    onClick={() => setDeckWizardOpen(true)}
+                  >
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Upload className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">Upload Pitch Deck</p>
+                      <p className="text-xs text-muted-foreground">
+                        {responses.length > 0 ? "Update answers from deck" : "Auto-fill your profile"}
+                      </p>
+                    </div>
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Center Column: Main Card */}
