@@ -67,7 +67,8 @@ export const StartupCard = ({ startup }: StartupCardProps) => {
       onClick={() => navigate(`/accelerator-demo/startup/${startup.id}`)}
       className={cn(
         "group bg-card border-2 rounded-xl p-5 cursor-pointer transition-all duration-300",
-        "hover:shadow-lg hover:border-primary/50 hover:-translate-y-1",
+        "hover:shadow-lg hover:-translate-y-1",
+        "hover:border-primary/50 hover:shadow-[0_8px_30px_rgba(0,200,180,0.15)]",
         status.borderColor
       )}
     >
@@ -95,9 +96,8 @@ export const StartupCard = ({ startup }: StartupCardProps) => {
         {/* Prominent Memo Button */}
         <Button
           size="sm"
-          variant="outline"
           onClick={handleMemoClick}
-          className="h-7 px-3 text-xs font-medium border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground"
+          className="h-7 px-3 text-xs font-medium gradient-primary text-primary-foreground shadow-md hover:shadow-glow transition-all"
         >
           <FileText className="w-3 h-3 mr-1.5" />
           View Memo

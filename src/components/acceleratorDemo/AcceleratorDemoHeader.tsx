@@ -15,12 +15,12 @@ export const AcceleratorDemoHeader = () => {
   const location = useLocation();
 
   return (
-    <header className="border-b border-border bg-card shadow-sm sticky top-0 z-40">
+    <header className="border-b border-border bg-card/80 backdrop-blur-sm shadow-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo & Accelerator Name */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center shadow-glow">
               <Building2 className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
@@ -41,7 +41,7 @@ export const AcceleratorDemoHeader = () => {
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-md"
+                      ? "gradient-primary text-primary-foreground shadow-md"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
@@ -53,8 +53,8 @@ export const AcceleratorDemoHeader = () => {
           </nav>
 
           {/* Week Badge */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full border border-border">
-            <span className="text-xs text-muted-foreground">Week</span>
+          <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full border border-primary/20">
+            <span className="text-xs text-muted-foreground font-medium">Week</span>
             <span className="text-sm font-bold text-primary">{DEMO_ACCELERATOR.currentWeek}</span>
             <span className="text-xs text-muted-foreground">/ 12</span>
           </div>
