@@ -55,8 +55,8 @@ const AdminEmails = () => {
   const templates = [
     {
       name: "Welcome Email",
-      subject: "Welcome to MemoTool! 🚀",
-      content: `<h1>Welcome to MemoTool!</h1>
+      subject: "Welcome to Ugly Baby! 🚀",
+      content: `<h1>Welcome to Ugly Baby!</h1>
 <p>Hi there,</p>
 <p>Thank you for signing up! We're excited to help you prepare your startup for fundraising.</p>
 <p>Here's what you can do:</p>
@@ -66,7 +66,7 @@ const AdminEmails = () => {
   <li>Generate your VC-ready memo</li>
 </ul>
 <p>If you have any questions, just reply to this email.</p>
-<p>Best,<br/>The MemoTool Team</p>`,
+<p>Cheers,<br/>Kev</p>`,
     },
     {
       name: "Discount Announcement",
@@ -76,7 +76,7 @@ const AdminEmails = () => {
 <p>We're offering a special discount on memo generation.</p>
 <p><strong>Use code: SPECIAL20</strong> to get 20% off!</p>
 <p>This offer expires soon, so don't wait.</p>
-<p>Best,<br/>The MemoTool Team</p>`,
+<p>Cheers,<br/>Kev</p>`,
     },
     {
       name: "Memo Ready",
@@ -84,9 +84,9 @@ const AdminEmails = () => {
       content: `<h1>Your Memo is Ready!</h1>
 <p>Hi there,</p>
 <p>Great news! Your investment memo has been generated and is ready to view.</p>
-<p><a href="https://memotool.co/portal">View Your Memo →</a></p>
+<p><a href="https://vc-brain.com/sample-memo">View Your Memo →</a></p>
 <p>If you have any questions or feedback, let us know!</p>
-<p>Best,<br/>The MemoTool Team</p>`,
+<p>Cheers,<br/>Kev</p>`,
     },
     {
       name: "Reminder",
@@ -95,8 +95,8 @@ const AdminEmails = () => {
 <p>Hi there,</p>
 <p>We noticed you haven't completed your company profile yet.</p>
 <p>Completing your profile helps us generate a better, more personalized memo for your startup.</p>
-<p><a href="https://memotool.co/portal">Continue Your Profile →</a></p>
-<p>Best,<br/>The MemoTool Team</p>`,
+<p><a href="https://vc-brain.com/portal">Continue Your Profile →</a></p>
+<p>Cheers,<br/>Kev</p>`,
     },
     {
       name: "Incomplete Memo Nudge",
@@ -111,7 +111,7 @@ const AdminEmails = () => {
 
 <p>I've attached a sample memo so you can see exactly what you'll receive once it's completed: a clear, investor-style analysis of your startup, highlighting key risks, blind spots, and concrete action items you can act on immediately.</p>
 
-<p>👉 <a href="https://memotool.co/sample-memo" style="color: #8b5cf6; text-decoration: underline;">View Sample Memo</a></p>
+<p>👉 <a href="https://vc-brain.com/sample-memo" style="color: #8b5cf6; text-decoration: underline;">View Sample Memo</a></p>
 
 <p>To make it easier to move forward, I'm keeping the <strong>50% launch discount active until Christmas</strong>.</p>
 
@@ -541,10 +541,11 @@ const AdminEmails = () => {
                 Emails will be sent from:
               </p>
               <p className="text-sm font-mono mt-1">
-                MemoTool &lt;onboarding@resend.dev&gt;
+                Kev from Ugly Baby &lt;kev@vc-brain.com&gt;
               </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                For custom domains, verify at resend.com/domains
+              <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Custom domain configured
               </p>
             </ModernCard>
           </div>
