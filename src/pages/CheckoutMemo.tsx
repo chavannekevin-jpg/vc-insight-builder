@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ModernCard } from "@/components/ModernCard";
 import { Badge } from "@/components/ui/badge";
-import { Check, CreditCard, Tag, Sparkles } from "lucide-react";
+import { Check, CreditCard, Tag, Sparkles, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
 
@@ -374,6 +374,16 @@ export default function CheckoutMemo() {
                   Pay with Stripe - €{finalPrice.toFixed(2)}
                 </>
               )}
+            </Button>
+
+            <Button 
+              onClick={() => navigate(`/memo?companyId=${companyId}&preview=true`)}
+              variant="ghost"
+              size="sm"
+              className="w-full gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to VC Quick Take
             </Button>
 
             <Button 
