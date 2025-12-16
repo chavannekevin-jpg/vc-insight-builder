@@ -100,7 +100,7 @@ const StartupMemo = () => {
           </div>
 
           {/* Hero Statement */}
-          <div className="p-6 bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/20 rounded-xl">
+          <div className="p-6 bg-primary/5 border border-primary/20 rounded-xl shadow-sm">
             <p className="text-lg font-medium text-foreground leading-relaxed">
               {memoData.heroStatement}
             </p>
@@ -113,7 +113,7 @@ const StartupMemo = () => {
         </section>
 
         {/* Section Navigation */}
-        <nav className="mb-8 p-4 bg-card/50 border border-border/50 rounded-xl">
+        <nav className="mb-8 p-4 bg-card border border-border rounded-xl shadow-sm">
           <h3 className="text-sm font-semibold text-muted-foreground mb-3">Jump to Section</h3>
           <div className="flex flex-wrap gap-2">
             {memoData.sections.map((section, index) => {
@@ -164,7 +164,7 @@ const StartupMemo = () => {
                 </div>
 
                 {/* Section Content */}
-                <div className="bg-card/50 border border-border/50 rounded-xl p-6">
+                <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
                   <p className="text-foreground/90 leading-relaxed mb-6">
                     {section.narrative}
                   </p>
@@ -188,7 +188,7 @@ const StartupMemo = () => {
         </div>
 
         {/* Bottom CTA */}
-        <div className="mt-12 p-6 bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/20 rounded-xl text-center">
+        <div className="mt-12 p-6 bg-primary/5 border border-primary/20 rounded-xl text-center shadow-sm">
           <h3 className="text-lg font-bold mb-2">Want this analysis for your cohort?</h3>
           <p className="text-muted-foreground mb-4">
             Get detailed fundability analysis for every startup in your accelerator program.

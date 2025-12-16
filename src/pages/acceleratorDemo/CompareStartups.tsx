@@ -165,7 +165,7 @@ const CompareStartups = () => {
         </div>
 
         {/* Radar Chart Comparison */}
-        <div className="bg-card/50 border border-border/50 rounded-xl p-6 mb-8">
+        <div className="bg-card border border-border rounded-xl p-6 mb-8 shadow-sm">
           <h3 className="font-semibold mb-6">Section Score Comparison</h3>
           <ResponsiveContainer width="100%" height={400}>
             <RadarChart data={radarData}>
@@ -195,7 +195,7 @@ const CompareStartups = () => {
         </div>
 
         {/* Detailed Comparison Table */}
-        <div className="bg-card/50 border border-border/50 rounded-xl overflow-hidden mb-8">
+        <div className="bg-card border border-border rounded-xl overflow-hidden mb-8 shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -309,7 +309,7 @@ const CompareStartups = () => {
         {/* Strengths & Concerns Comparison */}
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           {/* Top Concerns */}
-          <div className="bg-card/50 border border-border/50 rounded-xl p-6">
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
             <h3 className="font-semibold mb-4 text-destructive/80">Top Concerns</h3>
             <div className="space-y-4">
               {selectedStartups.map((startup, index) => (
@@ -332,7 +332,7 @@ const CompareStartups = () => {
           </div>
 
           {/* Top Strengths */}
-          <div className="bg-card/50 border border-border/50 rounded-xl p-6">
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
             <h3 className="font-semibold mb-4 text-success">Top Strengths</h3>
             <div className="space-y-4">
               {selectedStartups.map((startup, index) => (

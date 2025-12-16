@@ -5,7 +5,8 @@ import { CohortStatsBar } from "@/components/acceleratorDemo/CohortStatsBar";
 import { StartupCard } from "@/components/acceleratorDemo/StartupCard";
 import { DemoWrapper } from "@/components/acceleratorDemo/DemoWrapper";
 import { DEMO_STARTUPS, DemoStartup } from "@/data/acceleratorDemo/demoStartups";
-import { Search, SlidersHorizontal, ArrowUpDown, Grid3X3, List } from "lucide-react";
+import { Search, ArrowUpDown, Grid3X3, List, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -214,9 +215,7 @@ const CohortOverview = () => {
 
 // List view item component
 const StartupListItem = ({ startup }: { startup: DemoStartup }) => {
-  const navigate = (path: string) => {
-    window.location.href = path;
-  };
+  const navigate = useNavigate();
 
   const getScoreColor = (score: number) => {
     if (score >= 75) return "text-success";
@@ -225,17 +224,22 @@ const StartupListItem = ({ startup }: { startup: DemoStartup }) => {
     return "text-destructive";
   };
 
+  const handleMemoClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/accelerator-demo/startup/${startup.id}/memo`);
+  };
+
   return (
     <div
       onClick={() => navigate(`/accelerator-demo/startup/${startup.id}`)}
-      className="bg-card/50 border border-border/50 rounded-xl p-4 cursor-pointer hover:border-primary/40 transition-all flex items-center gap-6"
+      className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:shadow-md hover:border-primary/40 transition-all flex items-center gap-6"
     >
       <div className={cn("text-2xl font-bold w-16 text-center", getScoreColor(startup.fundabilityScore))}>
         {startup.fundabilityScore}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3 mb-1">
-          <h3 className="font-semibold">{startup.name}</h3>
+          <h3 className="font-semibold text-foreground">{startup.name}</h3>
           <span className="text-xs px-2 py-0.5 bg-muted rounded-full text-muted-foreground">
             {startup.category}
           </span>
@@ -250,6 +254,13 @@ const StartupListItem = ({ startup }: { startup: DemoStartup }) => {
           </div>
         ))}
       </div>
+      <button
+        onClick={handleMemoClick}
+        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-primary/30 text-primary rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors"
+      >
+        <FileText className="w-3 h-3" />
+        Memo
+      </button>
       <div className="text-xs text-muted-foreground">
         {startup.founders.length} founder{startup.founders.length > 1 ? "s" : ""}
       </div>

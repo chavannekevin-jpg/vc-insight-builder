@@ -128,34 +128,34 @@ const CohortAnalytics = () => {
 
         {/* Key Metrics Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-card/50 border border-border/50 rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <Target className="w-4 h-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Cohort Average</span>
+              <span className="text-sm text-muted-foreground font-medium">Cohort Average</span>
             </div>
             <div className="text-3xl font-bold text-primary">{stats.avgFundabilityScore}</div>
             <div className="text-xs text-muted-foreground">out of 100</div>
           </div>
-          <div className="bg-card/50 border border-border/50 rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <Users className="w-4 h-4 text-success" />
-              <span className="text-sm text-muted-foreground">Demo Ready</span>
+              <span className="text-sm text-muted-foreground font-medium">Demo Ready</span>
             </div>
             <div className="text-3xl font-bold text-success">{stats.demoReady}</div>
             <div className="text-xs text-muted-foreground">of {stats.totalStartups} startups</div>
           </div>
-          <div className="bg-card/50 border border-border/50 rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-4 h-4 text-success" />
-              <span className="text-sm text-muted-foreground">Strongest Area</span>
+              <span className="text-sm text-muted-foreground font-medium">Strongest Area</span>
             </div>
             <div className="text-xl font-bold text-foreground">{strongestSection.label}</div>
             <div className="text-xs text-muted-foreground">avg {strongestSection.avg}/100</div>
           </div>
-          <div className="bg-card/50 border border-border/50 rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="w-4 h-4 text-warning" />
-              <span className="text-sm text-muted-foreground">Weakest Area</span>
+              <span className="text-sm text-muted-foreground font-medium">Weakest Area</span>
             </div>
             <div className="text-xl font-bold text-foreground">{weakestSection.label}</div>
             <div className="text-xs text-muted-foreground">avg {weakestSection.avg}/100</div>
@@ -165,7 +165,7 @@ const CohortAnalytics = () => {
         {/* Charts Grid */}
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           {/* Fundability Distribution */}
-          <div className="bg-card/50 border border-border/50 rounded-xl p-6">
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
             <h3 className="font-semibold mb-6">Fundability Score Distribution</h3>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={distributionData}>
@@ -189,7 +189,7 @@ const CohortAnalytics = () => {
           </div>
 
           {/* Status Breakdown */}
-          <div className="bg-card/50 border border-border/50 rounded-xl p-6">
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
             <h3 className="font-semibold mb-6">Status Breakdown</h3>
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
@@ -221,7 +221,7 @@ const CohortAnalytics = () => {
         </div>
 
         {/* Section Performance Radar */}
-        <div className="bg-card/50 border border-border/50 rounded-xl p-6 mb-8">
+        <div className="bg-card border border-border rounded-xl p-6 mb-8 shadow-sm">
           <h3 className="font-semibold mb-6">Section Performance (Cohort Average)</h3>
           <ResponsiveContainer width="100%" height={350}>
             <RadarChart data={sectionAverages}>
@@ -248,7 +248,7 @@ const CohortAnalytics = () => {
         </div>
 
         {/* Section Heatmap */}
-        <div className="bg-card/50 border border-border/50 rounded-xl p-6 mb-8">
+        <div className="bg-card border border-border rounded-xl p-6 mb-8 shadow-sm">
           <h3 className="font-semibold mb-6">Section Scores Heatmap</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -312,7 +312,7 @@ const CohortAnalytics = () => {
         {/* Progress & Insights */}
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Weekly Progress Leaders */}
-          <div className="bg-card/50 border border-border/50 rounded-xl p-6">
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-success" />
               Trending Up This Week
@@ -334,7 +334,7 @@ const CohortAnalytics = () => {
           </div>
 
           {/* Needs Attention */}
-          <div className="bg-card/50 border border-border/50 rounded-xl p-6">
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <TrendingDown className="w-5 h-5 text-destructive" />
               Needs Attention
@@ -357,7 +357,7 @@ const CohortAnalytics = () => {
         </div>
 
         {/* Cohort Insights */}
-        <div className="mt-8 bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/20 rounded-xl p-6">
+        <div className="mt-8 bg-primary/5 border border-primary/20 rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold mb-4 flex items-center gap-2">
             <Lightbulb className="w-5 h-5 text-primary" />
             Cohort Insights & Recommendations

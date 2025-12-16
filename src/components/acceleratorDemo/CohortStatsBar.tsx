@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Target, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import { TrendingUp, Target, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { getCohortStats } from "@/data/acceleratorDemo/demoStartups";
 import { cn } from "@/lib/utils";
 
@@ -50,11 +50,11 @@ export const CohortStatsBar = () => {
         return (
           <div
             key={item.label}
-            className="bg-card/50 border border-border/50 rounded-xl p-4 flex flex-col gap-2"
+            className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2 shadow-sm"
           >
             <div className="flex items-center gap-2">
               <Icon className={cn("w-4 h-4", item.color)} />
-              <span className="text-xs text-muted-foreground">{item.label}</span>
+              <span className="text-xs text-muted-foreground font-medium">{item.label}</span>
             </div>
             <div className="flex items-baseline gap-1">
               <span className={cn("text-2xl font-bold", item.color)}>{item.value}</span>

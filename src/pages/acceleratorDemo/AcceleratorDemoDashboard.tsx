@@ -14,7 +14,8 @@ import {
   TrendingUp,
   Users,
   Lightbulb,
-  ChevronRight
+  ChevronRight,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -75,27 +76,43 @@ const AcceleratorDemoDashboard = () => {
                 {priorityInterventions.map((startup) => (
                   <div
                     key={startup.id}
-                    onClick={() => navigate(`/accelerator-demo/startup/${startup.id}`)}
-                    className="bg-card/50 border border-border/50 rounded-xl p-4 cursor-pointer hover:border-primary/40 transition-all"
+                    className="bg-card border border-border rounded-xl p-4 hover:shadow-md transition-all"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold">{startup.name}</h3>
+                          <h3 
+                            className="font-semibold text-foreground hover:text-primary cursor-pointer"
+                            onClick={() => navigate(`/accelerator-demo/startup/${startup.id}`)}
+                          >
+                            {startup.name}
+                          </h3>
                           <span className={`text-sm font-bold ${startup.fundabilityScore < 50 ? "text-destructive" : "text-warning"}`}>
                             {startup.fundabilityScore}/100
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">{startup.mentorFocus}</p>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2 mb-3">
                           {startup.topConcerns.slice(0, 2).map((concern, i) => (
                             <span key={i} className="text-xs bg-destructive/10 text-destructive px-2 py-1 rounded">
                               {concern}
                             </span>
                           ))}
                         </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigate(`/accelerator-demo/startup/${startup.id}/memo`)}
+                          className="h-7 px-3 text-xs border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground"
+                        >
+                          <FileText className="w-3 h-3 mr-1.5" />
+                          View Memo
+                        </Button>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                      <ArrowRight 
+                        className="w-4 h-4 text-muted-foreground cursor-pointer hover:text-primary" 
+                        onClick={() => navigate(`/accelerator-demo/startup/${startup.id}`)}
+                      />
                     </div>
                   </div>
                 ))}
@@ -122,8 +139,8 @@ const AcceleratorDemoDashboard = () => {
           {/* Right Column - Insights & Actions */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <section className="bg-card/50 border border-border/50 rounded-xl p-5">
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <section className="bg-card border border-border rounded-xl p-5 shadow-sm">
+              <h3 className="font-semibold mb-4 flex items-center gap-2 text-foreground">
                 <Lightbulb className="w-4 h-4 text-primary" />
                 Quick Actions
               </h3>
