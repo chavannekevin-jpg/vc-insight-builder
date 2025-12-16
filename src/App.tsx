@@ -116,6 +116,10 @@ const RoastYourBaby = lazy(() => import("./pages/RoastYourBaby"));
 const DilutionLab = lazy(() => import("./pages/DilutionLab"));
 const AcceleratorLanding = lazy(() => import("./pages/AcceleratorLanding"));
 
+// Accelerator Demo Pages
+const AcceleratorDemoDashboard = lazy(() => import("./pages/acceleratorDemo/AcceleratorDemoDashboard"));
+const CohortOverview = lazy(() => import("./pages/acceleratorDemo/CohortOverview"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -142,6 +146,9 @@ const App = () => (
             <Route path="/roast-your-baby" element={<RoastYourBaby />} />
             <Route path="/dilution-lab" element={<DilutionLab />} />
             <Route path="/accelerators" element={<AcceleratorLanding />} />
+            {/* Accelerator Demo Routes */}
+            <Route path="/accelerator-demo" element={<AcceleratorDemoDashboard />} />
+            <Route path="/accelerator-demo/cohort" element={<CohortOverview />} />
             <Route path="/hub/:slug" element={<EducationalContent />} />
             <Route path="/vcbrain" element={<VCBrainHub />}>
               <Route index element={<VCBrainHome />} />
