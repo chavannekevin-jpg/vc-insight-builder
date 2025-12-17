@@ -342,64 +342,66 @@ All colors MUST be HSL.
   }
 
   /* Print Styles for PDF Export - Preserve Dark Theme */
-  /* Accelerator Portal - Vibrant Light Theme */
+  /* Accelerator Portal - Sophisticated Light Theme with Green Neon */
   .accelerator-portal {
-    --background: 210 40% 98%;
-    --foreground: 220 25% 12%;
+    /* Warm light gray background - not pure white */
+    --background: 160 15% 92%;
+    --foreground: 160 30% 8%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 25% 12%;
+    /* Slightly warmer card backgrounds */
+    --card: 160 10% 97%;
+    --card-foreground: 160 30% 8%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 12%;
+    --popover: 160 10% 97%;
+    --popover-foreground: 160 30% 8%;
 
-    /* Electric Teal Primary - Bold & Modern */
-    --primary: 175 85% 40%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 175 90% 50%;
+    /* Neon Green Primary - Electric & Sexy */
+    --primary: 155 100% 45%;
+    --primary-foreground: 160 30% 8%;
+    --primary-glow: 155 100% 55%;
 
-    /* Vibrant Purple Secondary */
-    --secondary: 265 85% 60%;
+    /* Deep Emerald Secondary */
+    --secondary: 165 80% 35%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 25% 93%;
-    --muted-foreground: 220 15% 40%;
+    --muted: 160 15% 85%;
+    --muted-foreground: 160 20% 35%;
 
-    /* Hot Pink Accent */
-    --accent: 330 90% 60%;
-    --accent-foreground: 0 0% 100%;
+    /* Electric Cyan Accent */
+    --accent: 175 100% 45%;
+    --accent-foreground: 160 30% 8%;
 
-    /* Vivid Status Colors */
-    --destructive: 0 85% 55%;
+    /* Status Colors - Vibrant */
+    --destructive: 0 90% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 155 80% 40%;
+    --success: 145 90% 40%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 40 95% 50%;
-    --warning-foreground: 220 25% 12%;
+    --warning: 40 100% 50%;
+    --warning-foreground: 160 30% 8%;
 
-    --border: 210 25% 88%;
-    --input: 210 25% 88%;
-    --ring: 175 85% 40%;
+    --border: 160 20% 80%;
+    --input: 160 20% 80%;
+    --ring: 155 100% 45%;
 
-    /* Epic Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(175 85% 40%), hsl(200 90% 45%));
-    --gradient-secondary: linear-gradient(135deg, hsl(265 85% 60%), hsl(330 90% 60%));
-    --gradient-accent: linear-gradient(135deg, hsl(175 85% 40% / 0.15), hsl(265 85% 60% / 0.1));
-    --gradient-hero: linear-gradient(180deg, hsl(210 40% 98%), hsl(200 35% 95%));
-    --gradient-rebel: linear-gradient(90deg, hsl(175 85% 40%), hsl(265 85% 60%), hsl(330 90% 60%));
+    /* Neon Green Gradients - Provocative & Bold */
+    --gradient-primary: linear-gradient(135deg, hsl(155 100% 45%), hsl(175 100% 45%));
+    --gradient-secondary: linear-gradient(135deg, hsl(165 80% 35%), hsl(155 100% 45%));
+    --gradient-accent: linear-gradient(135deg, hsl(155 100% 45% / 0.15), hsl(175 100% 45% / 0.1));
+    --gradient-hero: linear-gradient(180deg, hsl(160 15% 92%), hsl(160 20% 88%));
+    --gradient-rebel: linear-gradient(90deg, hsl(155 100% 45%), hsl(175 100% 45%), hsl(145 90% 40%));
 
-    /* Vibrant Shadows with Color */
+    /* Green Neon Glow Shadows - Sexy & Electric */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-    --shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 4px 12px rgba(0, 200, 180, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 25px rgba(0, 200, 180, 0.15), 0 4px 10px rgba(0, 0, 0, 0.08);
-    --shadow-xl: 0 20px 40px rgba(0, 200, 180, 0.18), 0 10px 15px rgba(0, 0, 0, 0.08);
-    --shadow-glow: 0 4px 20px rgba(0, 200, 180, 0.25), 0 0 40px rgba(0, 200, 180, 0.1);
-    --shadow-glow-strong: 0 8px 30px rgba(0, 200, 180, 0.35), 0 0 60px rgba(0, 200, 180, 0.15);
-    --shadow-neon-pink: 0 4px 20px rgba(230, 60, 130, 0.25);
-    --shadow-neon-purple: 0 4px 20px rgba(140, 80, 220, 0.25);
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 200, 100, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 220, 130, 0.15), 0 2px 6px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 25px rgba(0, 220, 130, 0.2), 0 4px 10px rgba(0, 0, 0, 0.08);
+    --shadow-xl: 0 20px 40px rgba(0, 220, 130, 0.25), 0 10px 15px rgba(0, 0, 0, 0.08);
+    --shadow-glow: 0 4px 25px rgba(0, 220, 130, 0.35), 0 0 50px rgba(0, 220, 130, 0.15);
+    --shadow-glow-strong: 0 8px 35px rgba(0, 220, 130, 0.45), 0 0 70px rgba(0, 220, 130, 0.2);
+    --shadow-neon-green: 0 4px 25px rgba(0, 220, 130, 0.4), 0 10px 20px rgba(0, 220, 130, 0.2);
+    --shadow-neon-cyan: 0 4px 25px rgba(0, 200, 180, 0.4), 0 10px 20px rgba(0, 200, 180, 0.2);
   }
 
   @media print {
