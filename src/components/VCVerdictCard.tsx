@@ -212,7 +212,7 @@ export const VCVerdictCard = memo(({
   }, [generateVerdict]);
 
   const navigateToPortal = useCallback(() => navigate("/portal"), [navigate]);
-  const navigateToMemo = useCallback(() => navigate(`/memo?companyId=${companyId}`), [navigate, companyId]);
+  const navigateToMemo = useCallback(() => navigate(`/analysis?companyId=${companyId}&view=full`), [navigate, companyId]);
   const navigateToCheckout = useCallback(() => navigate(`/checkout-memo?companyId=${companyId}`), [navigate, companyId]);
 
   // Memo generated state
