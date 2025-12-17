@@ -19,7 +19,7 @@ export function UnlockMemoCTA() {
 
   const handleUnlock = () => {
     if (companyId) {
-      navigate(`/checkout-memo?companyId=${companyId}`);
+      navigate(`/checkout-analysis?companyId=${companyId}`);
     }
   };
 

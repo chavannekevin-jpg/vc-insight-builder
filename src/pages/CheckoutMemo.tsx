@@ -45,7 +45,8 @@ export default function CheckoutMemo() {
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      navigate("/auth");
+      const returnTo = `${window.location.pathname}${window.location.search}`;
+      navigate(`/auth?redirect=${encodeURIComponent(returnTo)}`, { replace: true });
       return;
     }
     setUser(session.user);

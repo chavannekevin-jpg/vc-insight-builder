@@ -40,7 +40,7 @@ export const MemoJourneyCard = memo(({
 
   const navigateToPortal = useCallback(() => navigate("/portal"), [navigate]);
   const navigateToMemo = useCallback(() => navigate(`/analysis?companyId=${companyId}`), [navigate, companyId]);
-  const navigateToCheckout = useCallback(() => navigate(`/checkout-memo?companyId=${companyId}`), [navigate, companyId]);
+  const navigateToCheckout = useCallback(() => navigate(`/checkout-analysis?companyId=${companyId}`), [navigate, companyId]);
 
   const renderContent = () => {
     switch (status) {

@@ -83,7 +83,8 @@ export default function MemoOverview() {
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate("/auth");
+        const returnTo = `${window.location.pathname}${window.location.search}`;
+        navigate(`/auth?redirect=${encodeURIComponent(returnTo)}`, { replace: true });
         return;
       }
 
