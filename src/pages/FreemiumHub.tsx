@@ -586,24 +586,33 @@ export default function FreemiumHub() {
                 totalQuestions={totalQuestions}
               />
               
-              {/* Always-available Upload Deck button */}
-              <Card className="border border-dashed border-primary/40 hover:border-primary/60 transition-colors">
-                <CardContent className="p-4">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-3 h-auto py-3 text-left"
-                    onClick={() => setDeckWizardOpen(true)}
-                  >
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Upload className="w-4 h-4 text-primary" />
+              {/* Hero Deck Upload CTA */}
+              <Card 
+                className="relative overflow-hidden border-2 border-primary/40 hover:border-primary/70 bg-gradient-to-br from-primary/5 via-primary/10 to-secondary/5 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group"
+                onClick={() => setDeckWizardOpen(true)}
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <CardContent className="p-5 relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="px-2 py-0.5 text-xs font-bold bg-primary text-primary-foreground rounded-full">
+                      FAST TRACK
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-xl bg-primary/20 group-hover:bg-primary/30 transition-colors">
+                      <Upload className="w-6 h-6 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-sm">Upload Pitch Deck</p>
-                      <p className="text-xs text-muted-foreground">
-                        {responses.length > 0 ? "Update answers from deck" : "Auto-fill your profile"}
+                      <h3 className="font-bold text-lg mb-1">Upload Your Deck</h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        AI extracts your info and pre-fills the questionnaire
                       </p>
+                      <div className="flex items-center gap-2 text-primary text-sm font-medium">
+                        <Sparkles className="w-4 h-4" />
+                        Save 15+ minutes
+                      </div>
                     </div>
-                  </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>

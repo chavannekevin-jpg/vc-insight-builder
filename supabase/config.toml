@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.send-email]
 verify_jwt = false
+
+[functions.admin-analytics-chat]
+verify_jwt = false
