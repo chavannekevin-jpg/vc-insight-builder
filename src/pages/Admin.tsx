@@ -23,6 +23,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { LogOut, Search, Eye, Trash2, Home } from "lucide-react";
 import { AdminStatsCard } from "@/components/admin/AdminStatsCard";
+import { AdminAnalyticsChat } from "@/components/admin/AdminAnalyticsChat";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -515,6 +516,9 @@ const Admin = () => {
           )}
         </ModernCard>
       </main>
+      
+      {/* AI Analytics Chatbot */}
+      <AdminAnalyticsChat />
     </div>
   );
 };
