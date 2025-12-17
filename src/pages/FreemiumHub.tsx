@@ -11,7 +11,8 @@ import { CompanySummaryCard } from "@/components/CompanySummaryCard";
 import { ToolsRow } from "@/components/ToolsRow";
 import { CollapsedLibrary } from "@/components/CollapsedLibrary";
 import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
-import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload } from "lucide-react";
+import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
+import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/hooks/useCompany";
@@ -101,6 +102,7 @@ export default function FreemiumHub() {
   const [isResetting, setIsResetting] = useState(false);
   const [responsesLoaded, setResponsesLoaded] = useState(false);
   const [cachedVerdict, setCachedVerdict] = useState<any>(null);
+  const [vcQuickTake, setVcQuickTake] = useState<any>(null);
 
   // Map companyData to Company type for compatibility
   const company: Company | null = companyData ? {
@@ -114,12 +116,35 @@ export default function FreemiumHub() {
     vc_verdict_json: (companyData as any).vc_verdict_json || null,
   } : null;
 
-  // Load cached verdict from company data
+  // Load cached verdict and VC Quick Take from company data
   useEffect(() => {
     if (company?.vc_verdict_json) {
       setCachedVerdict(company.vc_verdict_json);
     }
   }, [company?.vc_verdict_json]);
+
+  // Load VC Quick Take for paid users
+  useEffect(() => {
+    const loadQuickTake = async () => {
+      if (!company?.id || !hasPaidData) return;
+      
+      const { data: memoData } = await supabase
+        .from("memos")
+        .select("structured_content")
+        .eq("company_id", company.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (memoData?.structured_content) {
+        const content = memoData.structured_content as any;
+        if (content.vcQuickTake) {
+          setVcQuickTake(content.vcQuickTake);
+        }
+      }
+    };
+    loadQuickTake();
+  }, [company?.id, hasPaidData]);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -537,86 +562,47 @@ export default function FreemiumHub() {
       <main className="container mx-auto px-6 py-12">
         <div className="max-w-4xl mx-auto space-y-8">
           
-          {/* VC Verdict Card - Full Width, Top Priority */}
-          {memoGenerated ? (
+          {/* Main Content based on paid/unpaid status */}
+          {hasPaid && memoGenerated ? (
             <div className="space-y-6">
-              <CompanySummaryCard
-                companyId={company.id}
-                companyName={company.name}
-                companyDescription={company.description || ""}
-                companyStage={company.stage}
-              />
+              {/* VC Quick Take for paid users */}
+              {vcQuickTake && (
+                <MemoVCQuickTake quickTake={vcQuickTake} showTeaser={false} />
+              )}
               
-              {/* Direct link to memo */}
-              <Card className="border-2 border-primary/30 shadow-glow hover:shadow-glow-strong transition-all duration-300">
+              {/* Premium Actions Card */}
+              <Card className="border-2 border-primary/30 shadow-glow">
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-primary" />
-                        <h3 className="text-xl font-serif">Your Investment Memorandum</h3>
-                      </div>
+                      <h3 className="text-xl font-serif font-bold">Your Full Analysis</h3>
                       <p className="text-sm text-muted-foreground">
-                        Access your latest generated memo and supporting materials
+                        Access your complete investment memo and analysis tools
                       </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {hasPaid && (
-                        <>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              if (!company?.id) {
-                                toast({
-                                  title: "Error",
-                                  description: "Company ID not found. Please refresh the page.",
-                                  variant: "destructive"
-                                });
-                                return;
-                              }
-                              navigate(`/analysis/overview?companyId=${company.id}`);
-                            }}
-                            className="border-primary/50 hover:bg-primary/10"
-                          >
-                            <LayoutGrid className="w-4 h-4 mr-2" />
-                            Overview
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              if (!company?.id) {
-                                toast({
-                                  title: "Error",
-                                  description: "Company ID not found. Please refresh the page.",
-                                  variant: "destructive"
-                                });
-                                return;
-                              }
-                              navigate(`/analysis/regenerate?companyId=${company.id}`);
-                            }}
-                            className="border-primary/50 hover:bg-primary/10"
-                          >
-                            <RotateCcw className="w-4 h-4 mr-2" />
-                            Regenerate
-                          </Button>
-                        </>
-                      )}
+                    <div className="flex flex-wrap items-center gap-3">
                       <Button
-                        onClick={() => {
-                          if (!company?.id) {
-                            toast({
-                              title: "Error",
-                              description: "Company ID not found. Please refresh the page.",
-                              variant: "destructive"
-                            });
-                            return;
-                          }
-                          navigate(`/analysis?companyId=${company.id}`);
-                        }}
+                        variant="outline"
+                        onClick={() => navigate(`/analysis/section?companyId=${company.id}&section=0`)}
+                        className="border-primary/50 hover:bg-primary/10"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Full Memo
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => navigate(`/tools`)}
+                        className="border-primary/50 hover:bg-primary/10"
+                      >
+                        <Wrench className="w-4 h-4 mr-2" />
+                        Tools
+                      </Button>
+                      <Button
+                        onClick={() => navigate(`/analysis/overview?companyId=${company.id}`)}
                         className="gradient-primary shadow-glow"
                       >
-                        View Analysis
-                        <ArrowRight className="w-4 h-4 ml-2" />
+                        <LayoutGrid className="w-4 h-4 mr-2" />
+                        Overview
                       </Button>
                     </div>
                   </div>
@@ -649,7 +635,7 @@ export default function FreemiumHub() {
             </div>
           ) : (
             <>
-              {/* AI-Powered VC Verdict - Full Width */}
+              {/* AI-Powered VC Verdict - for unpaid users */}
               <VCVerdictCard
                 companyId={company.id}
                 companyName={company.name}

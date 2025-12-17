@@ -196,7 +196,7 @@ export function SmartFillModal({
             ) : isLastQuestion ? (
               <>
                 <CheckCircle2 className="w-4 h-4" />
-                Done - Generate Memo
+                Done - Build Analysis
               </>
             ) : (
               <>
