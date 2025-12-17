@@ -5,9 +5,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   ArrowRight, AlertTriangle, 
   Eye, CheckCircle2, Lock, Sparkles, 
-  FileText, Flame, Scale, Clock, 
+  FileText, Flame, Scale, 
   ShieldX, MessageSquareX, Zap, Target,
-  Shield, TrendingDown, DollarSign, Users, BarChart3, Rocket
+  Shield, TrendingDown, DollarSign, Users, BarChart3, Rocket,
+  RefreshCw, Briefcase, Code, GraduationCap, Building
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +25,11 @@ interface Strength {
   category: string;
 }
 
+interface NarrativeTransformation {
+  currentNarrative: string;
+  transformedNarrative: string;
+}
+
 interface VCVerdict {
   verdict: string;
   readinessLevel: 'LOW' | 'MEDIUM' | 'HIGH';
@@ -33,6 +39,9 @@ interface VCVerdict {
   marketInsight: string;
   vcFrameworkCheck: string;
   timingWarning?: string;
+  inevitabilityStatement?: string;
+  narrativeTransformation?: NarrativeTransformation;
+  founderProfile?: string;
   hiddenIssuesCount?: number;
 }
 
@@ -71,6 +80,15 @@ const convertLegacyVerdict = (legacy: LegacyVCVerdict): VCVerdict => {
 
 const isLegacyVerdict = (verdict: any): verdict is LegacyVCVerdict => {
   return verdict && 'harsh_observations' in verdict;
+};
+
+// Founder profile display config
+const founderProfileConfig: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
+  'serial_founder': { label: 'Serial Founder', icon: <Rocket className="w-3 h-3" />, color: 'text-primary' },
+  'technical_founder': { label: 'Technical Founder', icon: <Code className="w-3 h-3" />, color: 'text-blue-500' },
+  'business_founder': { label: 'Business Founder', icon: <Briefcase className="w-3 h-3" />, color: 'text-green-500' },
+  'domain_expert': { label: 'Domain Expert', icon: <Building className="w-3 h-3" />, color: 'text-amber-500' },
+  'first_time_founder': { label: 'First-Time Founder', icon: <GraduationCap className="w-3 h-3" />, color: 'text-muted-foreground' },
 };
 
 interface VCVerdictCardProps {
@@ -213,7 +231,7 @@ export const VCVerdictCard = memo(({
         <Skeleton className="h-20 w-full rounded-xl" />
         <div className="text-center text-muted-foreground mt-4">
           <Scale className="w-5 h-5 animate-pulse mx-auto mb-2" />
-          <span className="text-sm">Analyzing like a VC partner...</span>
+          <span className="text-sm">Simulating the room after you leave...</span>
         </div>
       </div>
     );
@@ -235,7 +253,14 @@ export const VCVerdictCard = memo(({
   const concerns = verdict.concerns || [];
   const redFlagsCount = concerns.length;
   const totalHiddenIssues = verdict.hiddenIssuesCount || Math.max(redFlagsCount * 3, 8);
-  const timingWarning = verdict.timingWarning || "This version of your pitch has a 3-week shelf life before market timing works against you.";
+  const inevitabilityStatement = verdict.inevitabilityStatement || 
+    "This pitch fails because the core logic doesn't survive partner scrutiny. It's not about timing—it's about structure.";
+  const narrativeTransformation = verdict.narrativeTransformation || {
+    currentNarrative: "Another pitch that doesn't clear the bar.",
+    transformedNarrative: "A company that understands what VCs actually fund."
+  };
+  const founderProfile = verdict.founderProfile || 'first_time_founder';
+  const profileConfig = founderProfileConfig[founderProfile] || founderProfileConfig['first_time_founder'];
 
   return (
     <div className="relative animate-fade-in">
@@ -243,19 +268,26 @@ export const VCVerdictCard = memo(({
       <div className="absolute inset-0 bg-gradient-to-r from-destructive/40 via-destructive/20 to-amber-600/30 rounded-3xl blur-xl opacity-70" />
       
       <div className="relative bg-card/95 backdrop-blur-sm border border-destructive/40 rounded-3xl overflow-hidden shadow-2xl">
-        {/* Header - Brutal framing */}
+        {/* Header - Room Simulation Framing */}
         <div className="p-6 pb-4 bg-gradient-to-b from-destructive/10 via-destructive/5 to-transparent">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-destructive to-destructive/70 shadow-lg shadow-destructive/30">
-              <MessageSquareX className="w-7 h-7 text-destructive-foreground" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-destructive to-destructive/70 shadow-lg shadow-destructive/30">
+                <MessageSquareX className="w-7 h-7 text-destructive-foreground" />
+              </div>
+              <div>
+                <h2 className="text-xl font-display font-bold text-foreground">What VCs Will Say</h2>
+                <p className="text-destructive font-semibold text-sm">When you leave the room</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-display font-bold text-foreground">What VCs Will Say</h2>
-              <p className="text-destructive font-semibold text-sm">When you leave the room</p>
+            {/* Founder Profile Badge */}
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50 border border-border/50 ${profileConfig.color}`}>
+              {profileConfig.icon}
+              <span className="text-xs font-medium">{profileConfig.label}</span>
             </div>
           </div>
 
-          {/* The Verdict - Like eavesdropping on their rejection */}
+          {/* The Verdict - Eavesdropping on rejection */}
           <div className="p-5 rounded-2xl bg-destructive/15 border border-destructive/40 mb-4">
             <div className="flex items-start gap-3 mb-2">
               <span className="text-destructive text-lg">"</span>
@@ -264,17 +296,25 @@ export const VCVerdictCard = memo(({
               </p>
               <span className="text-destructive text-lg self-end">"</span>
             </div>
-            <p className="text-xs text-muted-foreground pl-6">— What partners say in Monday dealflow meetings</p>
+            <p className="text-xs text-muted-foreground pl-6">— This is not advice. This is what partners say when you're not in the room.</p>
           </div>
 
-          {/* Time Pressure Warning */}
-          <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-3">
-            <Clock className="w-5 h-5 text-amber-500 flex-shrink-0" />
-            <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">{timingWarning}</p>
+          {/* Narrative Transformation Preview */}
+          <div className="p-4 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 border border-border/50">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-destructive font-semibold uppercase tracking-wide mb-1">Today's Narrative</p>
+                <p className="text-sm text-muted-foreground italic">"{narrativeTransformation.currentNarrative}"</p>
+              </div>
+              <div className="border-l border-border/50 pl-4">
+                <p className="text-xs text-primary font-semibold uppercase tracking-wide mb-1">After You Fix This</p>
+                <p className="text-sm text-foreground italic">"{narrativeTransformation.transformedNarrative}"</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Reasons VCs Will Pass - Brutal, incomplete */}
+        {/* Reasons VCs Will Pass - Structural */}
         <div className="px-6 pb-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -283,12 +323,12 @@ export const VCVerdictCard = memo(({
               </div>
               <div>
                 <h3 className="font-bold text-destructive">Reasons VCs Will Pass</h3>
-                <p className="text-xs text-muted-foreground">Issues that would quietly kill your deal in IC</p>
+                <p className="text-xs text-muted-foreground">Structural issues that end the conversation</p>
               </div>
             </div>
           </div>
           
-          {/* Show only 2-3 concerns - create incompleteness */}
+          {/* Show only 2 concerns */}
           <div className="space-y-3">
             {concerns.slice(0, 2).map((concern, i) => (
               <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/25">
@@ -308,7 +348,7 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* What's Hidden - Showcase full value */}
+        {/* What you'll uncover - Transformation framing */}
         <div className="px-6 pb-4">
           <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
             <p className="text-xs text-muted-foreground font-medium mb-3 uppercase tracking-wide">What you'll uncover in the full analysis:</p>
@@ -357,55 +397,59 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* The Cost of Waiting */}
+        {/* Why This Narrative Fails - Inevitability framing */}
         <div className="px-6 pb-4">
           <div className="p-4 rounded-xl bg-gradient-to-r from-destructive/10 to-amber-500/10 border border-destructive/20">
-            <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+            <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
-              The Cost of Waiting
+              Why This Narrative Fails
             </h4>
+            <p className="text-sm text-muted-foreground mb-3">
+              {inevitabilityStatement}
+            </p>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
                 <span className="text-destructive mt-1">•</span>
-                <span>This exact version of your company would <strong className="text-foreground">quietly die</strong> in an Investment Committee room</span>
+                <span>This version of your pitch <strong className="text-foreground">structurally fails</strong> in IC—not because of timing, but because the logic doesn't close</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-destructive mt-1">•</span>
-                <span>These issues <strong className="text-foreground">wouldn't be debated</strong> — they'd be dismissed</span>
+                <span>These issues <strong className="text-foreground">wouldn't be debated</strong>—they'd be dismissed</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-destructive mt-1">•</span>
-                <span>No warm intro or follow-up email saves a pitch with these gaps</span>
+                <span>Every partner sees the same structural gaps. No warm intro changes that.</span>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* The Killer Question */}
+        {/* The Transformation Question */}
         <div className="px-6 pb-4">
           <div className="p-4 rounded-xl border-2 border-dashed border-muted-foreground/30 text-center">
             <p className="text-foreground font-medium">
-              Do you want to walk into your next VC meeting <strong className="text-destructive">blind</strong>, 
-              or with the <strong className="text-primary">exact internal analysis</strong> that determines your outcome?
+              Do you want to walk into your next VC meeting with a narrative that <strong className="text-destructive">fails under scrutiny</strong>, 
+              or one that <strong className="text-primary">changes what they say about you</strong>?
             </p>
           </div>
         </div>
 
-        {/* CTA - "Get the Fix Playbook" */}
+        {/* CTA - "Let me Fix this" */}
         <div className="p-6 pt-3 border-t border-destructive/20 bg-gradient-to-r from-destructive/5 via-transparent to-primary/5">
           <Button 
             onClick={navigateToPortal} 
             className="w-full h-14 text-base font-semibold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" 
             size="lg"
           >
-            Get Your Fix Playbook
+            <RefreshCw className="w-5 h-5 mr-2" />
+            Let me Fix this
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
           <p className="text-xs text-center text-muted-foreground mt-3">
-            The internal analysis that determines whether your next meeting kills or saves the deal
+            Change the internal conversation. Transform how VCs talk about you.
           </p>
           <p className="text-xs text-center text-muted-foreground/60 mt-1">
-            VCs won't tell you this. We will.
+            This is not advice. This is the room after the meeting.
           </p>
         </div>
       </div>
