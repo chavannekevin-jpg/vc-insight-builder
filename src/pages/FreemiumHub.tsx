@@ -675,8 +675,8 @@ export default function FreemiumHub() {
             </Card>
           )}
 
-          {/* Tools Section */}
-          <ToolsRow memoGenerated={!!memoGenerated} />
+          {/* Tools Section - Only unlocked after payment */}
+          <ToolsRow memoGenerated={!!hasPaid} />
 
           {/* Knowledge Library */}
           <CollapsedLibrary stage={company.stage} />
