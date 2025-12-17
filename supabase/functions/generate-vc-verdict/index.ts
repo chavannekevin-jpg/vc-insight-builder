@@ -67,63 +67,64 @@ serve(async (req) => {
 
     const hasData = availableData.length > 0;
 
-    const systemPrompt = `You are a brutally honest senior VC partner who has seen thousands of decks. Your job is to give founders the harsh truth about what partners ACTUALLY say about their company when they leave the room.
+    const systemPrompt = `You are a brutally honest senior VC partner who has seen thousands of pitches across every industry. Your job is to give founders the harsh truth about what partners ACTUALLY say about their company when they leave the room.
 
-Your analysis should be:
-1. SPECIFIC - Reference actual claims, numbers, or statements from their data
-2. HARSH - Use real VC language like "pass", "dead on arrival", "fatal flaw", "non-starter"
-3. PERSONAL - Make it feel like you actually READ their materials, not generic criticism
-4. ACTIONABLE - Each observation should point to something they can fix
+Your analysis should focus on:
+1. MARKET DYNAMICS - Is this market timing right? Are there structural headwinds or tailwinds? What do you know about this space that the founder might not?
+2. STRATEGIC POSITIONING - How does this compare to what's working (or failing) in adjacent markets? What patterns have you seen?
+3. VC ECONOMICS - Does this fit VC portfolio math? Can this be a fund-returner? What's the realistic exit landscape?
+4. FOUNDER BLIND SPOTS - What hard questions will partners ask that founders typically can't answer well?
+
+DO NOT focus on missing data or incomplete profiles. Instead, provide strategic market insights and VC perspective based on what you DO know about:
+- The market/category they're in
+- Their stage and what matters at that stage
+- Patterns you've seen in similar companies
+- Real concerns VCs discuss internally
 
 Severity levels:
-- "fatal": Issues that would cause immediate rejection (no traction at seed, trillion dollar TAM claims, no founder-market fit)
-- "critical": Major red flags that significantly hurt chances (vague customer definition, no competitive moat)
-- "warning": Concerns that need addressing (weak problem validation, unclear revenue model)
+- "fatal": Structural issues with the market, timing, or category that are hard to overcome
+- "critical": Strategic gaps that will come up in every partner meeting  
+- "warning": Areas where founders typically underestimate complexity
 
 Return ONLY valid JSON matching this exact structure:
 {
   "verdict_severity": "HIGH_RISK" | "MODERATE_RISK" | "NEEDS_WORK" | "PROMISING",
   "harsh_observations": [
     {
-      "text": "Specific harsh observation in VC voice",
+      "text": "Strategic insight in VC voice - focus on market/industry dynamics",
       "severity": "fatal" | "critical" | "warning",
       "category": "traction" | "market" | "team" | "product" | "business_model" | "competition"
     }
   ],
-  "key_weakness": "One sentence summary of their biggest vulnerability",
-  "verdict_summary": "2-3 sentence brutal summary of how this would be received in a partner meeting",
+  "key_weakness": "The strategic vulnerability VCs will probe hardest",
+  "verdict_summary": "2-3 sentence summary of how partners would discuss this in a deal review meeting",
   "blind_spots_count": 0
 }
 
-Generate 3-5 observations based on available data. If limited data is available, focus on what's MISSING and why that's concerning.`;
+Generate 3-5 observations. Focus on market insights, competitive dynamics, and strategic concerns - NOT on missing profile fields.`;
 
-    const userPrompt = hasData ? `
-Analyze this ${stage} company: ${companyName}
-${category ? `Category: ${category}` : ''}
-${deckParsed ? '(They uploaded a pitch deck)' : '(No pitch deck uploaded yet)'}
+    const userPrompt = `
+Analyze this ${stage} startup: ${companyName}
+${category ? `Category/Market: ${category}` : ''}
+${companyDescription ? `What they do: "${companyDescription}"` : ''}
 
-Available data:
-${availableData.join('\n')}
+${hasData ? `Additional context from their profile:
+${availableData.join('\n')}` : ''}
 
-Questions NOT answered yet: ${['problem_validation', 'target_customer', 'market_size', 'current_traction', 'competitive_advantage', 'revenue_model', 'founder_background', 'solution_description']
-  .filter(key => !getResponse(key))
-  .join(', ')}
+Based on your knowledge of:
+1. This market/category and its dynamics
+2. What matters at ${stage} stage
+3. Common failure patterns in this space
+4. What VCs actually discuss about companies like this
 
-Generate harsh, specific observations that reference their actual claims. Make it feel like someone actually reviewed their materials. Be ruthless.
-` : `
-Analyze this ${stage} company: ${companyName}
-${category ? `Category: ${category}` : ''}
-${companyDescription ? `Description: "${companyDescription}"` : ''}
+Generate strategic, market-informed observations. Think about:
+- Market timing and structural trends
+- Competitive landscape realities
+- Unit economics challenges typical in this category
+- Why VCs pass on companies in this space
+- What successful companies in this category did differently
 
-This founder just uploaded their deck but hasn't filled out the questionnaire. They have massive blind spots because we can only see surface-level information.
-
-Generate 3-5 harsh observations about:
-1. What we CAN'T assess because they haven't provided depth
-2. What their generic description suggests about their thinking
-3. Why VCs would pass without this information
-4. What assumptions VCs make when founders don't provide data
-
-Make it feel alarming - they need to understand that VCs are judging them harshly based on limited information.
+Be specific about the MARKET and STRATEGY, not about what data is missing from their profile.
 `;
 
     console.log(`Generating verdict for ${companyName} with ${availableData.length} data points`);
@@ -162,36 +163,35 @@ Make it feel alarming - they need to understand that VCs are judging them harshl
       }
     } catch (parseError) {
       console.error('Parse error:', parseError, 'Content:', content);
-      // Fallback verdict
+      // Fallback verdict - focused on market insights, not missing data
+      const categoryInsight = category ? `The ${category} space` : 'This market';
       verdict = {
-        verdict_severity: 'HIGH_RISK',
+        verdict_severity: 'MODERATE_RISK',
         harsh_observations: [
           {
-            text: `"${companyName} hasn't provided enough information to assess. VCs will assume the worst when founders hide details."`,
+            text: `"${categoryInsight} is getting crowded. Without clear differentiation, this becomes a features war that nobody wins."`,
             severity: 'critical',
-            category: 'product'
+            category: 'competition'
           },
           {
-            text: `"No depth on any core metrics. This reads like a company that either has nothing to show or doesn't know what matters."`,
+            text: `"At ${stage}, VCs want to see founder-market fit. What makes this team uniquely positioned to win here?"`,
             severity: 'critical',
-            category: 'traction'
-          },
-          {
-            text: `"At ${stage}, we expect founders to have answers ready. Incomplete profiles signal unprepared founders."`,
-            severity: 'warning',
             category: 'team'
+          },
+          {
+            text: `"The path to $100M ARR in this category typically requires either enterprise sales motion or viral consumer adoption. Which is it?"`,
+            severity: 'warning',
+            category: 'business_model'
           }
         ],
-        key_weakness: "Insufficient information to make any positive assessment",
-        verdict_summary: "This would get passed immediately. Partners can't evaluate what they can't see, and silence usually means there's nothing good to share.",
-        blind_spots_count: 8
+        key_weakness: "Strategic positioning in a competitive landscape needs sharpening",
+        verdict_summary: "Partners would want to understand the 'why now' and 'why this team' before going deeper. The market opportunity exists, but the path to capturing it needs work.",
+        blind_spots_count: 0
       };
     }
 
-    // Calculate blind spots based on missing responses
-    const requiredKeys = ['problem_validation', 'target_customer', 'market_size', 'current_traction', 'competitive_advantage', 'revenue_model', 'founder_background', 'solution_description'];
-    const missingCount = requiredKeys.filter(key => !getResponse(key)).length;
-    verdict.blind_spots_count = missingCount;
+    // Don't calculate blind spots based on missing responses - focus on strategic gaps
+    verdict.blind_spots_count = verdict.harsh_observations.filter(o => o.severity === 'fatal' || o.severity === 'critical').length;
 
     console.log(`Generated verdict for ${companyName}: ${verdict.verdict_severity}, ${verdict.harsh_observations.length} observations`);
 
