@@ -1,8 +1,6 @@
-import { useState } from "react";
-import { AlertCircle, CheckCircle2, AlertTriangle, Lock, ChevronRight, ChevronDown, Scale, Target, Flame, Gavel } from "lucide-react";
+import { AlertCircle, CheckCircle2, AlertTriangle, Lock, ChevronRight, Scale, Target, Flame, Gavel } from "lucide-react";
 import { MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface MemoVCQuickTakeProps {
   quickTake: MemoVCQuickTakeType;
@@ -11,27 +9,6 @@ interface MemoVCQuickTakeProps {
 }
 
 export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: MemoVCQuickTakeProps) => {
-  const [expandedConcerns, setExpandedConcerns] = useState<Set<number>>(new Set());
-  const [expandedStrengths, setExpandedStrengths] = useState<Set<number>>(new Set());
-
-  const toggleConcern = (index: number) => {
-    setExpandedConcerns(prev => {
-      const next = new Set(prev);
-      if (next.has(index)) next.delete(index);
-      else next.add(index);
-      return next;
-    });
-  };
-
-  const toggleStrength = (index: number) => {
-    setExpandedStrengths(prev => {
-      const next = new Set(prev);
-      if (next.has(index)) next.delete(index);
-      else next.add(index);
-      return next;
-    });
-  };
-
   // Helper to safely render text
   const safeText = (text: unknown) => typeof text === 'string' ? text : String(text || '');
   
@@ -167,35 +144,15 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
               </div>
               <div className="space-y-2">
                 {concerns.map((concern, index) => (
-                  <Collapsible
+                  <div 
                     key={index}
-                    open={expandedConcerns.has(index)}
-                    onOpenChange={() => toggleConcern(index)}
+                    className="flex items-start gap-3 p-3 rounded-lg bg-destructive/5 border border-destructive/20"
                   >
-                    <CollapsibleTrigger className="w-full">
-                      <div 
-                        className="flex items-start gap-3 p-3 rounded-lg bg-destructive/5 border border-destructive/20 hover:bg-destructive/10 transition-colors cursor-pointer group"
-                      >
-                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 text-destructive text-xs font-bold flex items-center justify-center mt-0.5">
-                          {index + 1}
-                        </span>
-                        <p className="text-sm text-foreground leading-relaxed text-left flex-1">{safeText(concern)}</p>
-                        <ChevronDown 
-                          className={`w-4 h-4 text-muted-foreground transition-transform duration-200 mt-0.5 ${expandedConcerns.has(index) ? 'rotate-180' : ''}`} 
-                        />
-                      </div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-                      <div className="p-3 pt-0 ml-8">
-                        <div className="p-3 rounded-lg bg-destructive/5 border-l-2 border-destructive/40 mt-2">
-                          <p className="text-xs font-semibold text-destructive mb-1">Why This Matters</p>
-                          <p className="text-sm text-muted-foreground leading-relaxed">
-                            This concern could be a deal-breaker during IC discussion. VCs will probe this area aggressively.
-                          </p>
-                        </div>
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 text-destructive text-xs font-bold flex items-center justify-center mt-0.5">
+                      {index + 1}
+                    </span>
+                    <p className="text-sm text-foreground leading-relaxed">{safeText(concern)}</p>
+                  </div>
                 ))}
               </div>
             </div>
@@ -209,35 +166,15 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
               </div>
               <div className="space-y-2">
                 {strengths.map((strength, index) => (
-                  <Collapsible
+                  <div 
                     key={index}
-                    open={expandedStrengths.has(index)}
-                    onOpenChange={() => toggleStrength(index)}
+                    className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/20"
                   >
-                    <CollapsibleTrigger className="w-full">
-                      <div 
-                        className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/20 hover:bg-success/10 transition-colors cursor-pointer group"
-                      >
-                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-success/20 text-success text-xs font-bold flex items-center justify-center mt-0.5">
-                          {index + 1}
-                        </span>
-                        <p className="text-sm text-foreground leading-relaxed text-left flex-1">{safeText(strength)}</p>
-                        <ChevronDown 
-                          className={`w-4 h-4 text-muted-foreground transition-transform duration-200 mt-0.5 ${expandedStrengths.has(index) ? 'rotate-180' : ''}`} 
-                        />
-                      </div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-                      <div className="p-3 pt-0 ml-8">
-                        <div className="p-3 rounded-lg bg-success/5 border-l-2 border-success/40 mt-2">
-                          <p className="text-xs font-semibold text-success mb-1">How to Leverage</p>
-                          <p className="text-sm text-muted-foreground leading-relaxed">
-                            Lead with this strength in your pitch. It's what will get you to the next meeting.
-                          </p>
-                        </div>
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-success/20 text-success text-xs font-bold flex items-center justify-center mt-0.5">
+                      {index + 1}
+                    </span>
+                    <p className="text-sm text-foreground leading-relaxed">{safeText(strength)}</p>
+                  </div>
                 ))}
               </div>
             </div>
