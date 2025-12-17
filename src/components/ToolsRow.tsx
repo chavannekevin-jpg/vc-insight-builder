@@ -18,28 +18,33 @@ export const ToolsRow = memo(({ memoGenerated = false }: ToolsRowProps) => {
       icon: Calculator,
       title: "Raise Calculator",
       description: "Plan your funding round",
-      available: true,
-      requiresMemo: false,
-      path: "/raise-calculator"
+      available: memoGenerated,
+      requiresMemo: true,
+      path: "/raise-calculator",
+      badge: "After Verdict",
+      lockedReason: "Complete your VC verdict first"
     },
     {
       id: "valuation-calculator",
       icon: TrendingUp,
       title: "Valuation Calculator",
       description: "Estimate your startup's value",
-      available: true,
-      requiresMemo: false,
-      path: "/valuation-calculator"
+      available: memoGenerated,
+      requiresMemo: true,
+      path: "/valuation-calculator",
+      badge: "After Verdict",
+      lockedReason: "Complete your VC verdict first"
     },
     {
       id: "venture-scale-diagnostic",
       icon: Zap,
       title: "Venture Scale Diagnostic",
       description: "Reality check: Are you truly VC-scale?",
-      available: true,
-      requiresMemo: false,
+      available: memoGenerated,
+      requiresMemo: true,
       path: "/venture-scale-diagnostic",
-      badge: "Free"
+      badge: "After Verdict",
+      lockedReason: "Complete your VC verdict first"
     },
     {
       id: "investor-email-generator",
