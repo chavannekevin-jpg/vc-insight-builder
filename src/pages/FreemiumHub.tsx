@@ -6,7 +6,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CompanyBadge } from "@/components/CompanyBadge";
 import { CompanyProfileCard } from "@/components/CompanyProfileCard";
 import { VCVerdictCard } from "@/components/VCVerdictCard";
-import { VCFirstImpression } from "@/components/VCFirstImpression";
 import { StakesReminderBanner } from "@/components/StakesReminderBanner";
 import { CompanySummaryCard } from "@/components/CompanySummaryCard";
 import { ToolsRow } from "@/components/ToolsRow";
@@ -57,6 +56,8 @@ interface Company {
   category: string | null;
   description: string | null;
   has_premium: boolean | null;
+  deck_parsed_at?: string | null;
+  vc_verdict_json?: any;
 }
 
 interface Memo {
@@ -99,6 +100,7 @@ export default function FreemiumHub() {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [responsesLoaded, setResponsesLoaded] = useState(false);
+  const [cachedVerdict, setCachedVerdict] = useState<any>(null);
 
   // Map companyData to Company type for compatibility
   const company: Company | null = companyData ? {
@@ -108,7 +110,16 @@ export default function FreemiumHub() {
     category: companyData.category || null,
     description: companyData.description || null,
     has_premium: companyData.has_premium || null,
+    deck_parsed_at: (companyData as any).deck_parsed_at || null,
+    vc_verdict_json: (companyData as any).vc_verdict_json || null,
   } : null;
+
+  // Load cached verdict from company data
+  useEffect(() => {
+    if (company?.vc_verdict_json) {
+      setCachedVerdict(company.vc_verdict_json);
+    }
+  }, [company?.vc_verdict_json]);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -283,7 +294,6 @@ export default function FreemiumHub() {
         if (updateError) {
           console.error("Error updating company:", updateError);
         }
-        // Note: Company data will be refetched by React Query
       }
 
       // 2. Upsert memo responses for high-confidence extractions
@@ -320,23 +330,18 @@ export default function FreemiumHub() {
         if (updatedResponses) {
           setResponses(updatedResponses);
         }
-
-        toast({
-          title: "Deck imported successfully!",
-          description: "Review your pre-filled answers with our AI guide.",
-        });
-        
-        // Navigate to questionnaire with flag to show welcome guide
-        navigate("/portal?fromDeck=true");
-      } else {
-        toast({
-          title: "Import complete",
-          description: "Let's fill out the questionnaire together.",
-        });
-        
-        // Navigate to questionnaire with flag to show welcome guide
-        navigate("/portal?fromDeck=true");
       }
+
+      // Clear cached verdict to trigger regeneration with new data
+      setCachedVerdict(null);
+      
+      toast({
+        title: "Deck imported successfully!",
+        description: "Your VC verdict is being generated with the new data.",
+      });
+      
+      // Stay on hub - don't navigate away
+      // The VCVerdictCard will regenerate with the new data
 
     } catch (error: any) {
       console.error("Error completing deck import:", error);
@@ -392,7 +397,7 @@ export default function FreemiumHub() {
       // 6. Delete memo_purchases
       await supabase.from('memo_purchases').delete().eq('company_id', company.id);
       
-      // 7. Reset company fields
+      // 7. Reset company fields including verdict
       await supabase
         .from('companies')
         .update({
@@ -402,7 +407,9 @@ export default function FreemiumHub() {
           description: null,
           category: null,
           biggest_challenge: null,
-          has_premium: false
+          has_premium: false,
+          vc_verdict_json: null,
+          verdict_generated_at: null
         })
         .eq('id', company.id);
 
@@ -428,34 +435,15 @@ export default function FreemiumHub() {
     }
   };
 
+  const handleVerdictGenerated = useCallback((verdict: any) => {
+    setCachedVerdict(verdict);
+  }, []);
+
   const completedQuestions = responses.filter(r => r.answer && r.answer.trim()).length;
   const totalQuestions = cachedTotalQuestions;
   const memoGenerated = memo && memo.status === "completed";
   const hasPaid = company?.has_premium ?? hasPaidData;
-
-  // Get next section to complete
-  const getNextSection = () => {
-    const sectionProgress = [
-      { name: "Problem Validation", keys: ["problem_validation"] },
-      { name: "Target Customer", keys: ["target_customer"] },
-      { name: "Market Size", keys: ["market_size"] },
-      { name: "Solution", keys: ["solution_description"] },
-      { name: "Competitive Advantage", keys: ["competitive_advantage"] },
-      { name: "Traction", keys: ["current_traction"] },
-      { name: "Revenue Model", keys: ["revenue_model"] },
-      { name: "Founder Background", keys: ["founder_background"] }
-    ];
-
-    for (const section of sectionProgress) {
-      const sectionComplete = section.keys.every(key =>
-        responses.some(r => r.question_key === key && r.answer && r.answer.trim())
-      );
-      if (!sectionComplete) {
-        return section.name;
-      }
-    }
-    return "your profile";
-  };
+  const deckParsed = !!company?.deck_parsed_at;
 
   const loading = authLoading || companyLoading;
 
@@ -581,118 +569,38 @@ export default function FreemiumHub() {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content - Single Column Layout */}
       <main className="container mx-auto px-6 py-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column: Profile & Quick Actions */}
+        <div className="max-w-4xl mx-auto space-y-8">
+          
+          {/* VC Verdict Card - Full Width, Top Priority */}
+          {memoGenerated ? (
             <div className="space-y-6">
-              <CompanyProfileCard
-                name={company.name}
-                stage={company.stage}
-                sector={company.category || undefined}
-                completedQuestions={completedQuestions}
-                totalQuestions={totalQuestions}
+              <CompanySummaryCard
+                companyId={company.id}
+                companyName={company.name}
+                companyDescription={company.description || ""}
+                companyStage={company.stage}
               />
               
-              {/* Hero Deck Upload CTA */}
-              <Card 
-                className="relative overflow-hidden border-2 border-primary/40 hover:border-primary/70 bg-gradient-to-br from-primary/5 via-primary/10 to-secondary/5 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group"
-                onClick={() => setDeckWizardOpen(true)}
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                <CardContent className="p-5 relative">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="px-2 py-0.5 text-xs font-bold bg-primary text-primary-foreground rounded-full">
-                      FAST TRACK
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-xl bg-primary/20 group-hover:bg-primary/30 transition-colors">
-                      <Upload className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-1">Upload Your Deck</h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        AI extracts your info and pre-fills the questionnaire
-                      </p>
-                      <div className="flex items-center gap-2 text-primary text-sm font-medium">
-                        <Sparkles className="w-4 h-4" />
-                        Save 15+ minutes
+              {/* Direct link to memo */}
+              <Card className="border-2 border-primary/30 shadow-glow hover:shadow-glow-strong transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-primary" />
+                        <h3 className="text-xl font-serif">Your Investment Memorandum</h3>
                       </div>
+                      <p className="text-sm text-muted-foreground">
+                        Access your latest generated memo and supporting materials
+                      </p>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Center Column: Main Card */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Show summary card if user has memo (premium), otherwise show journey card */}
-              {memoGenerated ? (
-                <div className="space-y-6">
-                  <CompanySummaryCard
-                    companyId={company.id}
-                    companyName={company.name}
-                    companyDescription={company.description || ""}
-                    companyStage={company.stage}
-                  />
-                  
-                  {/* Direct link to memo */}
-                  <Card className="border-2 border-primary/30 shadow-glow hover:shadow-glow-strong transition-all duration-300">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-primary" />
-                            <h3 className="text-xl font-serif">Your Investment Memorandum</h3>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            Access your latest generated memo and supporting materials
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          {hasPaid && (
-                            <>
-                              <Button
-                                variant="outline"
-                                onClick={() => {
-                                  if (!company?.id) {
-                                    toast({
-                                      title: "Error",
-                                      description: "Company ID not found. Please refresh the page.",
-                                      variant: "destructive"
-                                    });
-                                    return;
-                                  }
-                                  navigate(`/analysis/overview?companyId=${company.id}`);
-                                }}
-                                className="border-primary/50 hover:bg-primary/10"
-                              >
-                                <LayoutGrid className="w-4 h-4 mr-2" />
-                                Overview
-                              </Button>
-                              <Button
-                                variant="outline"
-                                onClick={() => {
-                                  if (!company?.id) {
-                                    toast({
-                                      title: "Error",
-                                      description: "Company ID not found. Please refresh the page.",
-                                      variant: "destructive"
-                                    });
-                                    return;
-                                  }
-                                  navigate(`/analysis/regenerate?companyId=${company.id}`);
-                                }}
-                                className="border-primary/50 hover:bg-primary/10"
-                              >
-                                <RotateCcw className="w-4 h-4 mr-2" />
-                                Regenerate
-                              </Button>
-                            </>
-                          )}
+                    <div className="flex items-center gap-3">
+                      {hasPaid && (
+                        <>
                           <Button
+                            variant="outline"
                             onClick={() => {
                               if (!company?.id) {
                                 toast({
@@ -702,75 +610,144 @@ export default function FreemiumHub() {
                                 });
                                 return;
                               }
-                              navigate(`/analysis?companyId=${company.id}`);
+                              navigate(`/analysis/overview?companyId=${company.id}`);
                             }}
-                            className="gradient-primary shadow-glow"
+                            className="border-primary/50 hover:bg-primary/10"
                           >
-                            View Analysis
-                            <ArrowRight className="w-4 h-4 ml-2" />
+                            <LayoutGrid className="w-4 h-4 mr-2" />
+                            Overview
                           </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              ) : (
-                <>
-                  {/* VC First Impression - Harsh judgments based on available data */}
-                  <VCFirstImpression 
-                    responses={responses}
-                    companyName={company.name}
-                    stage={company.stage}
-                    category={company.category}
-                  />
-                  
-                  <VCVerdictCard
-                    completedQuestions={completedQuestions}
-                    totalQuestions={totalQuestions}
-                    memoGenerated={!!memoGenerated}
-                    hasPaid={hasPaid}
-                    nextSection={getNextSection()}
-                    companyId={company.id}
-                    onImportDeck={() => setDeckWizardOpen(true)}
-                  />
-                </>
-              )}
-
-              {/* Insider Take of the Day - Only show after memo generated */}
-              {memoGenerated && (
-                <Card className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-transparent overflow-hidden relative">
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                  <CardContent className="p-6 relative">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Flame className="w-4 h-4 text-amber-500" />
-                          <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">Insider Take of the Day</span>
-                        </div>
-                        <h3 className="text-lg font-bold text-foreground">{getDailyArticle().label}</h3>
-                        <p className="text-sm text-muted-foreground">{getDailyArticle().teaser}</p>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        className="shrink-0 border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500"
-                        onClick={() => navigate(getDailyArticle().path)}
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              if (!company?.id) {
+                                toast({
+                                  title: "Error",
+                                  description: "Company ID not found. Please refresh the page.",
+                                  variant: "destructive"
+                                });
+                                return;
+                              }
+                              navigate(`/analysis/regenerate?companyId=${company.id}`);
+                            }}
+                            className="border-primary/50 hover:bg-primary/10"
+                          >
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            Regenerate
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        onClick={() => {
+                          if (!company?.id) {
+                            toast({
+                              title: "Error",
+                              description: "Company ID not found. Please refresh the page.",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
+                          navigate(`/analysis?companyId=${company.id}`);
+                        }}
+                        className="gradient-primary shadow-glow"
                       >
-                        Read <ArrowRight className="w-4 h-4 ml-1" />
+                        View Analysis
+                        <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                  </div>
+                </CardContent>
+              </Card>
 
-              {/* Tools Section */}
-              <ToolsRow memoGenerated={!!memoGenerated} />
+              {/* Insider Take of the Day */}
+              <Card className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-transparent overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <CardContent className="p-6 relative">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Flame className="w-4 h-4 text-amber-500" />
+                        <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">Insider Take of the Day</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-foreground">{getDailyArticle().label}</h3>
+                      <p className="text-sm text-muted-foreground">{getDailyArticle().teaser}</p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="shrink-0 border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500"
+                      onClick={() => navigate(getDailyArticle().path)}
+                    >
+                      Read <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* AI-Powered VC Verdict - Full Width */}
+              <VCVerdictCard
+                companyId={company.id}
+                companyName={company.name}
+                companyDescription={company.description}
+                companyStage={company.stage}
+                companyCategory={company.category}
+                responses={responses}
+                memoGenerated={!!memoGenerated}
+                hasPaid={hasPaid}
+                deckParsed={deckParsed}
+                cachedVerdict={cachedVerdict}
+                onVerdictGenerated={handleVerdictGenerated}
+              />
+            </>
+          )}
 
-          {/* Knowledge Library - Full Width */}
-          <div className="mt-12">
-            <CollapsedLibrary stage={company.stage} />
-          </div>
+          {/* Company Profile Card - Full Width, Below Verdict */}
+          <CompanyProfileCard
+            name={company.name}
+            stage={company.stage}
+            sector={company.category || undefined}
+            completedQuestions={completedQuestions}
+            totalQuestions={totalQuestions}
+          />
+          
+          {/* Fast Track Deck Upload */}
+          {!memoGenerated && (
+            <Card 
+              className="relative overflow-hidden border-2 border-primary/40 hover:border-primary/70 bg-gradient-to-br from-primary/5 via-primary/10 to-secondary/5 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group"
+              onClick={() => setDeckWizardOpen(true)}
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <CardContent className="p-6 relative">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="px-2 py-0.5 text-xs font-bold bg-primary text-primary-foreground rounded-full">
+                    FAST TRACK
+                  </span>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-xl bg-primary/20 group-hover:bg-primary/30 transition-colors">
+                    <Upload className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg mb-1">Upload Your Deck</h3>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      AI extracts your info and pre-fills the questionnaire. Your verdict will update with the new data.
+                    </p>
+                    <div className="flex items-center gap-2 text-primary text-sm font-medium">
+                      <Sparkles className="w-4 h-4" />
+                      Save 15+ minutes
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Tools Section */}
+          <ToolsRow memoGenerated={!!memoGenerated} />
+
+          {/* Knowledge Library */}
+          <CollapsedLibrary stage={company.stage} />
         </div>
       </main>
 

@@ -64,6 +64,8 @@ export type Database = {
           name: string
           stage: string
           updated_at: string
+          vc_verdict_json: Json | null
+          verdict_generated_at: string | null
         }
         Insert: {
           biggest_challenge?: string | null
@@ -81,6 +83,8 @@ export type Database = {
           name: string
           stage: string
           updated_at?: string
+          vc_verdict_json?: Json | null
+          verdict_generated_at?: string | null
         }
         Update: {
           biggest_challenge?: string | null
@@ -98,6 +102,8 @@ export type Database = {
           name?: string
           stage?: string
           updated_at?: string
+          vc_verdict_json?: Json | null
+          verdict_generated_at?: string | null
         }
         Relationships: [
           {

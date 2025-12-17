@@ -203,11 +203,11 @@ export default function Intake() {
 
       toast({
         title: "Deck imported successfully!",
-        description: `Created ${companyName} with ${highConfidenceResponses.length} pre-filled answers.`
+        description: `Created ${companyName}. Your VC verdict is being generated.`
       });
 
-      // Navigate to questionnaire
-      navigate("/portal?fromDeck=true");
+      // Navigate to hub to see the alarming VC verdict
+      navigate("/hub");
     } catch (error: any) {
       console.error("Deck import error:", error);
       toast({
