@@ -303,8 +303,8 @@ export default function MemoSectionView() {
             />
           )}
 
-          {/* Action Plan */}
-          {actionPlan && actionPlan.items.length > 0 && (
+          {/* Action Plan - Only shown to premium users */}
+          {hasPremium && actionPlan && actionPlan.items.length > 0 && (
             <div className="mt-8">
               <MemoActionPlan actionPlan={actionPlan} companyName={companyInfo?.name} />
             </div>
