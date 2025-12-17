@@ -647,7 +647,7 @@ export default function FreemiumHub() {
                                     });
                                     return;
                                   }
-                                  navigate(`/memo/overview?companyId=${company.id}`);
+                                  navigate(`/analysis/overview?companyId=${company.id}`);
                                 }}
                                 className="border-primary/50 hover:bg-primary/10"
                               >
@@ -665,7 +665,7 @@ export default function FreemiumHub() {
                                     });
                                     return;
                                   }
-                                  navigate(`/memo/regenerate?companyId=${company.id}`);
+                                  navigate(`/analysis/regenerate?companyId=${company.id}`);
                                 }}
                                 className="border-primary/50 hover:bg-primary/10"
                               >
@@ -684,11 +684,11 @@ export default function FreemiumHub() {
                                 });
                                 return;
                               }
-                              navigate(`/memo?companyId=${company.id}`);
+                              navigate(`/analysis?companyId=${company.id}`);
                             }}
                             className="gradient-primary shadow-glow"
                           >
-                            View Memo
+                            View Analysis
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </Button>
                         </div>

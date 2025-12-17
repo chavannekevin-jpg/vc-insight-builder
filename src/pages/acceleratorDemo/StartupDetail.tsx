@@ -181,12 +181,12 @@ const StartupDetail = () => {
               <div className="h-12 w-px bg-border" />
               <div className="flex-1">
                 <Button
-                  onClick={() => navigate(`/accelerator-demo/startup/${startup.id}/memo`)}
+                  onClick={() => navigate(`/accelerator-demo/startup/${startup.id}/analysis`)}
                   size="lg"
                   className="w-full shadow-md"
                 >
                   <FileText className="w-5 h-5 mr-2" />
-                  View Full Investment Memo
+                  View Full Investment Analysis
                 </Button>
               </div>
             </div>

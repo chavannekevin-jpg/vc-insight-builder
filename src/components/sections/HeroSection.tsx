@@ -20,7 +20,7 @@ export const HeroSection = () => {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
             <span className="text-sm font-medium text-primary">10 Years Inside VC Funds</span>
             <span className="text-muted-foreground">•</span>
-            <span className="text-sm text-muted-foreground">Thousands of Internal Memos Written</span>
+            <span className="text-sm text-muted-foreground">Thousands of Investment Analyses Written</span>
           </div>
 
           {/* Main headline */}
@@ -54,7 +54,7 @@ export const HeroSection = () => {
               <div className="text-sm text-muted-foreground">My proven investment framework</div>
             </div>
             <div className="p-4 rounded-lg bg-muted/50 border border-border/50 backdrop-blur-sm">
-              <div className="text-2xl font-bold text-primary mb-1">VC Memo</div>
+              <div className="text-2xl font-bold text-primary mb-1">VC Analysis</div>
               <div className="text-sm text-muted-foreground">Tailor made to your business</div>
             </div>
           </div>
@@ -65,13 +65,13 @@ export const HeroSection = () => {
               onClick={() => navigate('/auth')}
               className="px-8 py-4 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-105"
             >
-              Get the Memo Before They Write It →
+              Get Your Analysis Before They Write It →
             </button>
             <button
-              onClick={() => navigate('/sample-memo')}
+              onClick={() => navigate('/sample-analysis')}
               className="px-8 py-4 rounded-lg bg-muted border border-border text-foreground font-semibold text-lg hover:bg-muted/80 transition-all"
             >
-              Preview Sample Memo
+              Preview Sample Analysis
             </button>
           </div>
 

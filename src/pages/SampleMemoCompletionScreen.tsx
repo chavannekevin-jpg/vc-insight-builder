@@ -21,7 +21,7 @@ export default function SampleMemoCompletionScreen() {
             Sample Complete!
           </h1>
           <p className="text-xl text-muted-foreground max-w-lg mx-auto">
-            You've seen what a VC-quality investment memo looks like for CarbonPrint.
+            You've seen what a VC-quality investment analysis looks like for CarbonPrint.
           </p>
         </div>
 
@@ -65,7 +65,7 @@ export default function SampleMemoCompletionScreen() {
         {/* CTA */}
         <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-2xl p-8 text-center">
           <h3 className="text-2xl font-bold text-foreground mb-3">
-            Ready for Your Own Memo?
+            Ready for Your Own Analysis?
           </h3>
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
             Get the same level of VC analysis personalized to your startup. Know exactly how investors will evaluate you.
@@ -77,13 +77,13 @@ export default function SampleMemoCompletionScreen() {
               className="gap-2"
             >
               <Rocket className="w-4 h-4" />
-              Create Your Memo
+              Create Your Analysis
               <ArrowRight className="w-4 h-4" />
             </Button>
             <Button 
               variant="outline"
               size="lg"
-              onClick={() => navigate('/sample-memo?view=full')}
+              onClick={() => navigate('/sample-analysis?view=full')}
               className="gap-2"
             >
               <BookOpen className="w-4 h-4" />

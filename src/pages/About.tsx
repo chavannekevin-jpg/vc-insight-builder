@@ -50,7 +50,7 @@ const About = () => {
                   </p>
 
                   <p>
-                    After <strong>10 years in VC</strong>, reviewing thousands of pitches and writing hundreds of investment memos, 
+                    After <strong>10 years in VC</strong>, reviewing thousands of pitches and writing hundreds of investment analyses, 
                     I keep seeing the same pattern: talented founders with real traction getting rejected because they don't speak our language.
                   </p>
 
@@ -60,7 +60,7 @@ const About = () => {
 
                   <p>
                     So I built this platform. Not as another course or generic template, but as a way to give you <strong>direct access 
-                    to the frameworks I use every single day</strong> to evaluate startups and write investment memos.
+                    to the frameworks I use every single day</strong> to evaluate startups and write investment analyses.
                   </p>
                 </div>
 
@@ -70,7 +70,7 @@ const About = () => {
                     { icon: Briefcase, value: "10+", label: "Years in VC" },
                     { icon: TrendingUp, value: "1000+", label: "Pitches Reviewed" },
                     { icon: Target, value: "50+", label: "Investments Made" },
-                    { icon: Users2, value: "100+", label: "Memos Written" }
+                    { icon: Users2, value: "100+", label: "Analyses Written" }
                   ].map((stat, idx) => {
                     const Icon = stat.icon;
                     return (
