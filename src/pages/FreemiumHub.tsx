@@ -359,7 +359,7 @@ export default function FreemiumHub() {
   };
 
   const handleSoftReset = async () => {
-    if (!company?.id) {
+    if (!company?.id || !user?.id) {
       toast({
         title: "Error",
         description: "No company found to reset",
@@ -397,28 +397,24 @@ export default function FreemiumHub() {
       // 6. Delete memo_purchases
       await supabase.from('memo_purchases').delete().eq('company_id', company.id);
       
-      // 7. Reset company fields including verdict
+      // 7. Delete memo_tool_data
+      await supabase.from('memo_tool_data').delete().eq('company_id', company.id);
+      
+      // 8. Delete roast_question_history
+      await supabase.from('roast_question_history').delete().eq('company_id', company.id);
+      
+      // 9. DELETE the company entirely (this allows full flow restart)
       await supabase
         .from('companies')
-        .update({
-          deck_url: null,
-          deck_parsed_at: null,
-          deck_confidence_scores: null,
-          description: null,
-          category: null,
-          biggest_challenge: null,
-          has_premium: false,
-          vc_verdict_json: null,
-          verdict_generated_at: null
-        })
+        .delete()
         .eq('id', company.id);
 
       toast({
-        title: "Profile reset successfully!",
-        description: "Starting fresh...",
+        title: "Account reset complete!",
+        description: "Redirecting to start fresh...",
       });
       
-      // Sign out and navigate to auth to fully restart the flow
+      // Sign out and navigate to auth for full flow restart
       await supabase.auth.signOut();
       setTimeout(() => {
         navigate("/auth");
