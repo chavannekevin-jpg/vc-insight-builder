@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { LogOut, Search, Eye, Trash2, Home } from "lucide-react";
+import { AdminStatsCard } from "@/components/admin/AdminStatsCard";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -279,7 +280,9 @@ const Admin = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        {/* Statistics Card */}
+        <AdminStatsCard />
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div onClick={() => navigate("/admin/sections")} className="cursor-pointer">
             <ModernCard className="hover:border-primary/50 transition-colors h-full">
