@@ -1246,9 +1246,9 @@ This is NOT an advocacy document. Your job is to assess whether this is truly a 
     let vcQuickTake = null;
     
     try {
-      const quickTakePrompt = `You are a brutally honest senior VC partner providing a rapid 30-second assessment. Your job is to give founders the unvarnished truth about how VCs will perceive their company.
+      const quickTakePrompt = `You are a senior VC partner on an Investment Committee. Your job is NOT to give advice - it's to render a VERDICT. Think of yourself as a judge in a courtroom, not a consultant.
 
-Based on these memo sections, provide a provocative quick take that creates curiosity:
+Based on these memo sections, provide a DIAGNOSTIC assessment - not explanatory feedback:
 
 ${Object.entries(enhancedSections).map(([title, content]) => 
   `### ${title} ###\n${JSON.stringify(content).substring(0, 800)}`
@@ -1256,28 +1256,34 @@ ${Object.entries(enhancedSections).map(([title, content]) =>
 
 Company: ${company.name} (${company.stage} stage, ${company.category || "startup"})
 
-TONE REQUIREMENTS:
-- Be provocative and specific, not generic
-- Lead with the hard truth that founders need to hear
-- Create urgency - what will make VCs pass in the first 2 minutes?
-- Be concrete about blind spots (e.g., "Your pricing is 3x market rate but you haven't justified why")
-- The verdict should make founders think "I need to read the full analysis"
+CRITICAL TONE REQUIREMENTS:
+- You are DIAGNOSING, not ADVISING
+- Frame this as "what the IC decided" not "what you should fix"
+- Create information asymmetry - imply frameworks and criteria they don't fully understand
+- The founder should feel like a ruling was reached elsewhere using rules they haven't seen
+- Make them feel intellectually outmatched but not dismissed
+- This is a sentence handed down, not a lesson taught
 
 Return ONLY valid JSON with this exact structure:
 {
-  "verdict": "A provocative, specific one-sentence assessment that captures the core investment question. Example: 'Strong product vision but the unit economics don't support a VC-scale outcome yet.' or 'Impressive traction but concentration risk means one churned customer kills the story.'",
+  "verdict": "A one-sentence ruling that sounds like a verdict, not advice. Examples: 'The unit economics don't survive IC scrutiny at current scale.' or 'Interesting opportunity that fails the repeatability test.' Frame as what was DECIDED, not what they should DO.",
   "concerns": [
-    "Specific concern #1 with concrete detail - e.g., '60% revenue from 2 customers creates catastrophic concentration risk'",
-    "Specific concern #2 - e.g., 'No evidence of repeatable sales motion beyond founder-led deals'",
-    "Specific concern #3 - e.g., 'CAC:LTV ratio of 1.5:1 means you're paying more to acquire customers than they're worth'"
+    "Frame as IC objections, not feedback. E.g., 'Partner A raised: Customer concentration creates single-point-of-failure risk'",
+    "E.g., 'The traction narrative collapsed under the repeatability criterion'",
+    "E.g., 'Pricing power assumptions failed the competitive moat test'"
   ],
   "strengths": [
-    "Specific strength #1 with evidence - e.g., '85% gross retention signals real product-market fit'",
-    "Specific strength #2 - e.g., 'Founder's 10-year domain experience in this exact vertical'",
-    "Specific strength #3 - e.g., 'Capital-efficient growth: $0 marketing spend for first $100K ARR'"
+    "Frame as what CLEARED the bar. E.g., 'Founder-market fit exceeded the domain expertise threshold'",
+    "E.g., 'Capital efficiency passed the burn multiple criterion'",
+    "E.g., 'Initial retention data met the PMF benchmark'"
   ],
   "readinessLevel": "LOW or MEDIUM or HIGH",
-  "readinessRationale": "One sentence explaining the readiness score with specific gaps. Example: 'HIGH - Strong traction, clear unit economics, and proven team, though competitive moat needs work.' or 'LOW - Missing critical data on CAC, retention, and market sizing that VCs will demand.'"
+  "readinessRationale": "One sentence that sounds like a committee conclusion, not advice. E.g., 'Does not meet the bar for partner-level discussion' or 'Cleared initial screening but requires de-risking on 3 criteria'",
+  "frameworkScore": 0-100 (overall IC framework score - be harsh, most companies score 30-60),
+  "criteriaCleared": 0-8 (how many of 8 evaluation criteria were passed - most early stage companies clear 2-4),
+  "icStoppingPoint": "The section where the IC discussion effectively ended - e.g., 'Traction', 'Unit Economics', 'Market Size', 'Competitive Moat'",
+  "rulingStatement": "A formal-sounding verdict. Options: 'Not ready for partner discussion', 'Requires significant de-risking before IC', 'Passed to associate level only', 'Ready for first partner meeting', 'Strong enough for IC, unlikely to proceed without [specific thing]'",
+  "killerQuestion": "The single most damaging question that derailed the discussion. E.g., 'Where's the evidence of repeatable sales?' or 'What happens when [competitor] builds this?' - this should be the question that made partners look at each other"
 }`;
 
       const quickTakeResponse = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -1333,7 +1339,25 @@ Return ONLY valid JSON with this exact structure:
               vcQuickTake.readinessLevel = 'MEDIUM';
             }
             
-            console.log("✓ Successfully generated and validated VC Quick Take");
+            // Validate new diagnostic fields with sensible defaults
+            if (typeof vcQuickTake.frameworkScore !== 'number' || vcQuickTake.frameworkScore < 0 || vcQuickTake.frameworkScore > 100) {
+              vcQuickTake.frameworkScore = vcQuickTake.readinessLevel === 'LOW' ? 35 : vcQuickTake.readinessLevel === 'MEDIUM' ? 55 : 75;
+            }
+            if (typeof vcQuickTake.criteriaCleared !== 'number' || vcQuickTake.criteriaCleared < 0 || vcQuickTake.criteriaCleared > 8) {
+              vcQuickTake.criteriaCleared = vcQuickTake.readinessLevel === 'LOW' ? 2 : vcQuickTake.readinessLevel === 'MEDIUM' ? 4 : 6;
+            }
+            if (typeof vcQuickTake.icStoppingPoint !== 'string' || !vcQuickTake.icStoppingPoint) {
+              vcQuickTake.icStoppingPoint = vcQuickTake.readinessLevel === 'LOW' ? 'Traction' : 'Competitive Moat';
+            }
+            if (typeof vcQuickTake.rulingStatement !== 'string' || !vcQuickTake.rulingStatement) {
+              vcQuickTake.rulingStatement = vcQuickTake.readinessLevel === 'LOW' ? 'Not ready for partner discussion' : 
+                vcQuickTake.readinessLevel === 'MEDIUM' ? 'Requires significant de-risking before IC' : 'Ready for first partner meeting';
+            }
+            if (typeof vcQuickTake.killerQuestion !== 'string' || !vcQuickTake.killerQuestion) {
+              vcQuickTake.killerQuestion = vcQuickTake.concerns[0] ? vcQuickTake.concerns[0].split(' ').slice(0, 8).join(' ') + '...' : "Where's the evidence?";
+            }
+            
+            console.log("✓ Successfully generated and validated VC Quick Take with diagnostic fields");
           } catch (parseError) {
             console.warn("Failed to parse VC Quick Take, trying sanitization...");
             try {
@@ -1345,16 +1369,28 @@ Return ONLY valid JSON with this exact structure:
               if (typeof vcQuickTake.verdict !== 'string') vcQuickTake.verdict = String(vcQuickTake.verdict || '');
               if (!['LOW', 'MEDIUM', 'HIGH'].includes(vcQuickTake.readinessLevel)) vcQuickTake.readinessLevel = 'MEDIUM';
               
+              // Apply diagnostic field defaults
+              if (typeof vcQuickTake.frameworkScore !== 'number') vcQuickTake.frameworkScore = 45;
+              if (typeof vcQuickTake.criteriaCleared !== 'number') vcQuickTake.criteriaCleared = 3;
+              if (!vcQuickTake.icStoppingPoint) vcQuickTake.icStoppingPoint = 'Traction';
+              if (!vcQuickTake.rulingStatement) vcQuickTake.rulingStatement = 'Requires significant de-risking before IC';
+              if (!vcQuickTake.killerQuestion) vcQuickTake.killerQuestion = "Where's the evidence?";
+              
               console.log("✓ Generated VC Quick Take after sanitization");
             } catch (e) {
               console.error("VC Quick Take parsing failed completely:", e);
-              // Provide a safe fallback structure
+              // Provide a safe fallback structure with all fields
               vcQuickTake = {
                 verdict: "Analysis in progress - please regenerate if this persists.",
                 concerns: [],
                 strengths: [],
                 readinessLevel: "MEDIUM",
-                readinessRationale: "Unable to fully parse assessment. Consider regenerating."
+                readinessRationale: "Unable to fully parse assessment. Consider regenerating.",
+                frameworkScore: 45,
+                criteriaCleared: 3,
+                icStoppingPoint: "Evaluation",
+                rulingStatement: "Evaluation pending",
+                killerQuestion: "Requires regeneration"
               };
               console.log("✓ Using fallback VC Quick Take structure");
             }

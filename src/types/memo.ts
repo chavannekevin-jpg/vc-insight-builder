@@ -29,6 +29,12 @@ export interface MemoVCQuickTake {
   strengths: string[];
   readinessLevel: "LOW" | "MEDIUM" | "HIGH";
   readinessRationale: string;
+  // New diagnostic fields for conversion-optimized teaser
+  frameworkScore?: number; // 0-100 score from IC evaluation
+  criteriaCleared?: number; // out of 8 criteria
+  icStoppingPoint?: string; // which section ended the discussion
+  rulingStatement?: string; // e.g., "Not ready for partner discussion"
+  killerQuestion?: string; // the single question that derailed the pitch
 }
 
 // ============================================
