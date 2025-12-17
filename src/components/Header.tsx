@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, LogIn, LogOut, ChevronDown, RotateCcw, Trash2 } from "lucide-react";
+import { Menu, X, LogIn, LogOut, ChevronDown, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -21,12 +21,8 @@ export const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [hubDropdownOpen, setHubDropdownOpen] = useState(false);
   const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
-  const [hasMemo, setHasMemo] = useState(false);
-  const [memoCompanyId, setMemoCompanyId] = useState<string | null>(null);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
-  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -38,7 +34,6 @@ export const Header = () => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setIsAuthenticated(!!session);
       
-      // Check admin role and memo
       if (session?.user) {
         const { data: roleData } = await supabase
           .from("user_roles")
@@ -48,40 +43,14 @@ export const Header = () => {
           .maybeSingle();
         
         setIsAdmin(!!roleData);
-        
-        // Check if user has a generated memo
-        const { data: companies } = await supabase
-          .from("companies")
-          .select("id")
-          .eq("founder_id", session.user.id)
-          .order("created_at", { ascending: false })
-          .limit(1);
-        
-        if (companies && companies.length > 0) {
-          const { data: memo } = await supabase
-            .from("memos")
-            .select("id, structured_content")
-            .eq("company_id", companies[0].id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          
-          if (memo && memo.structured_content) {
-            setHasMemo(true);
-            setMemoCompanyId(companies[0].id);
-          }
-        }
       } else {
         setIsAdmin(false);
-        setHasMemo(false);
-        setMemoCompanyId(null);
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setIsAuthenticated(!!session);
       
-      // Check admin role and memo on auth state change
       if (session?.user) {
         const { data: roleData } = await supabase
           .from("user_roles")
@@ -91,33 +60,8 @@ export const Header = () => {
           .maybeSingle();
         
         setIsAdmin(!!roleData);
-        
-        // Check if user has a generated memo
-        const { data: companies } = await supabase
-          .from("companies")
-          .select("id")
-          .eq("founder_id", session.user.id)
-          .order("created_at", { ascending: false })
-          .limit(1);
-        
-        if (companies && companies.length > 0) {
-          const { data: memo } = await supabase
-            .from("memos")
-            .select("id, structured_content")
-            .eq("company_id", companies[0].id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          
-          if (memo && memo.structured_content) {
-            setHasMemo(true);
-            setMemoCompanyId(companies[0].id);
-          }
-        }
       } else {
         setIsAdmin(false);
-        setHasMemo(false);
-        setMemoCompanyId(null);
       }
     });
 
@@ -143,18 +87,34 @@ export const Header = () => {
   };
 
   const handleSoftReset = async () => {
-    if (!memoCompanyId) {
-      toast.error("No company found to reset");
-      return;
-    }
-
     setIsResetting(true);
     try {
+      // Fetch user's company ID
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        toast.error("No user session found");
+        return;
+      }
+
+      const { data: companies } = await supabase
+        .from("companies")
+        .select("id")
+        .eq("founder_id", session.user.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (!companies || companies.length === 0) {
+        toast.error("No company found to reset");
+        return;
+      }
+
+      const companyId = companies[0].id;
+
       // 1. Get all memo IDs for this company
       const { data: memos } = await supabase
         .from('memos')
         .select('id')
-        .eq('company_id', memoCompanyId);
+        .eq('company_id', companyId);
       
       // 2. Delete memo_analyses for those memos
       if (memos && memos.length > 0) {
@@ -166,16 +126,16 @@ export const Header = () => {
       }
       
       // 3. Delete memos
-      await supabase.from('memos').delete().eq('company_id', memoCompanyId);
+      await supabase.from('memos').delete().eq('company_id', companyId);
       
       // 4. Delete memo_responses
-      await supabase.from('memo_responses').delete().eq('company_id', memoCompanyId);
+      await supabase.from('memo_responses').delete().eq('company_id', companyId);
       
       // 5. Delete waitlist_signups
-      await supabase.from('waitlist_signups').delete().eq('company_id', memoCompanyId);
+      await supabase.from('waitlist_signups').delete().eq('company_id', companyId);
       
       // 6. Delete memo_purchases
-      await supabase.from('memo_purchases').delete().eq('company_id', memoCompanyId);
+      await supabase.from('memo_purchases').delete().eq('company_id', companyId);
       
       // 7. Reset company fields
       await supabase
@@ -188,9 +148,8 @@ export const Header = () => {
           category: null,
           biggest_challenge: null
         })
-        .eq('id', memoCompanyId);
+        .eq('id', companyId);
 
-      setHasMemo(false);
       toast.success("Profile reset successfully! Refreshing...");
       
       // Refresh the page to reflect changes
@@ -203,44 +162,6 @@ export const Header = () => {
     } finally {
       setIsResetting(false);
       setResetDialogOpen(false);
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    setIsDeletingAccount(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("You must be logged in to delete your account");
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke('delete-account', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-
-      if (error) {
-        console.error("Delete account error:", error);
-        toast.error("Failed to delete account");
-        return;
-      }
-
-      if (data?.success) {
-        toast.success("Account deleted successfully");
-        // Sign out locally and redirect
-        await supabase.auth.signOut();
-        navigate('/');
-      } else {
-        toast.error(data?.error || "Failed to delete account");
-      }
-    } catch (error) {
-      console.error("Delete account exception:", error);
-      toast.error("An error occurred while deleting your account");
-    } finally {
-      setIsDeletingAccount(false);
-      setDeleteAccountDialogOpen(false);
     }
   };
 
@@ -513,29 +434,6 @@ export const Header = () => {
               )}
             </div>
             
-            {/* Delete Account - visible to authenticated users, right after Tools */}
-            {isAuthenticated && (
-              <button
-                onClick={() => setDeleteAccountDialogOpen(true)}
-                className="text-sm font-medium transition-all duration-300 text-muted-foreground hover:neon-pink flex items-center gap-1.5"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete Account
-              </button>
-            )}
-            
-            {/* My Memo link - only show if user has a generated memo */}
-            {isAuthenticated && hasMemo && memoCompanyId && (
-              <Link
-                to={`/analysis?companyId=${memoCompanyId}`}
-                className={`text-sm font-medium transition-all duration-300 ${
-                  location.pathname === "/analysis" ? "neon-pink" : "text-muted-foreground hover:neon-pink"
-                }`}
-              >
-                My Analysis
-              </Link>
-            )}
-            
             {/* Other nav links (Product, Pricing, About) */}
             {navLinks.map((link) => {
               if (link.name === "Home" || link.name === "Hub") return null;
@@ -637,30 +535,6 @@ export const Header = () => {
                   {link.name}
                 </Link>
               ))}
-              {/* My Analysis link in mobile menu */}
-              {isAuthenticated && hasMemo && memoCompanyId && (
-                <Link
-                  to={`/analysis?companyId=${memoCompanyId}&view=full`}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`text-sm font-medium transition-all duration-300 ${
-                    location.pathname === "/analysis" ? "neon-pink" : "text-muted-foreground hover:neon-pink"
-                  }`}
-                >
-                  My Analysis
-                </Link>
-              )}
-              {isAuthenticated && (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setDeleteAccountDialogOpen(true);
-                  }}
-                  className="w-full text-destructive hover:text-destructive/80 transition-all duration-300 cursor-pointer font-medium text-sm flex items-center justify-center gap-2 py-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete Account
-                </button>
-              )}
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -726,35 +600,6 @@ export const Header = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Account Confirmation Dialog */}
-      <AlertDialog open={deleteAccountDialogOpen} onOpenChange={setDeleteAccountDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-destructive">Delete Account Permanently</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete your account and all associated data including:
-              <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
-                <li>Your company profile</li>
-                <li>All questionnaire responses</li>
-                <li>Generated memos and analyses</li>
-                <li>Purchase history</li>
-              </ul>
-              <br />
-              <strong className="text-destructive">This action cannot be undone. Your data cannot be recovered.</strong>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeletingAccount}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteAccount}
-              disabled={isDeletingAccount}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeletingAccount ? "Deleting..." : "Delete My Account"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </header>
   );
 };
