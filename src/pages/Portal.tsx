@@ -403,9 +403,9 @@ export default function Portal() {
   const handleGenerateMemo = () => {
     if (!companyId || !user) return;
     
-    // Navigate directly to memo - the memo page handles the freemium paywall
+    // Navigate directly to analysis (legacy /memo redirects drop query params)
     setMemoSubmitted(true);
-    navigate(`/memo?companyId=${companyId}`);
+    navigate(`/analysis?companyId=${companyId}`);
   };
 
   const currentQuestion = allQuestions[currentStep];
