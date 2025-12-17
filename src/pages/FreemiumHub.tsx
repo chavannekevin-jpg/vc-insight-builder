@@ -359,10 +359,10 @@ export default function FreemiumHub() {
   };
 
   const handleSoftReset = async () => {
-    if (!company?.id || !user?.id) {
+    if (!user?.id) {
       toast({
         title: "Error",
-        description: "No company found to reset",
+        description: "You must be signed in to reset",
         variant: "destructive",
       });
       return;
@@ -370,60 +370,26 @@ export default function FreemiumHub() {
 
     setIsResetting(true);
     try {
-      // 1. Get all memo IDs for this company
-      const { data: memos } = await supabase
-        .from('memos')
-        .select('id')
-        .eq('company_id', company.id);
-      
-      // 2. Delete memo_analyses for those memos
-      if (memos && memos.length > 0) {
-        const memoIds = memos.map(m => m.id);
-        await supabase
-          .from('memo_analyses')
-          .delete()
-          .in('memo_id', memoIds);
-      }
-      
-      // 3. Delete memos
-      await supabase.from('memos').delete().eq('company_id', company.id);
-      
-      // 4. Delete memo_responses
-      await supabase.from('memo_responses').delete().eq('company_id', company.id);
-      
-      // 5. Delete waitlist_signups
-      await supabase.from('waitlist_signups').delete().eq('company_id', company.id);
-      
-      // 6. Delete memo_purchases
-      await supabase.from('memo_purchases').delete().eq('company_id', company.id);
-      
-      // 7. Delete memo_tool_data
-      await supabase.from('memo_tool_data').delete().eq('company_id', company.id);
-      
-      // 8. Delete roast_question_history
-      await supabase.from('roast_question_history').delete().eq('company_id', company.id);
-      
-      // 9. DELETE the company entirely (this allows full flow restart)
-      await supabase
-        .from('companies')
-        .delete()
-        .eq('id', company.id);
+      const { data, error } = await supabase.functions.invoke("admin-reset-flow", {
+        body: {},
+      });
+
+      if (error) throw error;
 
       toast({
-        title: "Account reset complete!",
-        description: "Redirecting to start fresh...",
+        title: "Reset complete",
+        description: "Starting fresh company setup...",
       });
-      
-      // Sign out and navigate to auth for full flow restart
-      await supabase.auth.signOut();
+
+      // Hard refresh to avoid any cached company data (react-query stale cache)
       setTimeout(() => {
-        navigate("/auth");
-      }, 500);
-    } catch (error) {
+        window.location.assign("/intake");
+      }, 300);
+    } catch (error: any) {
       console.error("Reset error:", error);
       toast({
         title: "Reset failed",
-        description: "Failed to reset profile",
+        description: error.message || "Failed to reset",
         variant: "destructive",
       });
     } finally {
