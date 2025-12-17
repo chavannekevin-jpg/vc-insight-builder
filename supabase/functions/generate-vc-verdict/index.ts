@@ -32,6 +32,9 @@ serve(async (req) => {
     const distributionStrategy = getResponse('distribution_strategy');
     const whyNow = getResponse('why_now');
 
+    // Detect founder profile from available signals
+    const founderProfileSignals = detectFounderProfile(founderBackground, traction, stage, category);
+
     // Build rich context
     const contextParts = [];
     if (companyDescription) contextParts.push(`Business: ${companyDescription}`);
@@ -46,64 +49,77 @@ serve(async (req) => {
     if (founderBackground) contextParts.push(`Founder background: ${founderBackground}`);
     if (whyNow) contextParts.push(`Why now: ${whyNow}`);
 
-    const systemPrompt = `You are a brutally honest senior partner at a top-tier VC firm. You've seen 10,000+ pitches. You know exactly why 99% of startups fail to raise. Your job is to deliver the HARSH TRUTH that VCs discuss privately when founders leave the room.
+    const systemPrompt = `You are simulating what partners say to each other when the founder leaves the room. This is NOT advice—this is observation. You are the room after the meeting.
 
-YOUR MISSION: Create URGENCY. This is NOT an educational analysis - it's a WAKE-UP CALL. The founder should feel exposed, uncomfortable, and compelled to act NOW.
+You've seen 10,000+ pitches. You know exactly why 99% of startups fail to raise. Your job is to deliver the HARSH TRUTH that VCs discuss privately.
+
+CRITICAL FRAMING: Focus on STRUCTURAL INEVITABILITY, not time pressure.
+- VCs don't reject companies because of a clock—they reject them because they don't see a credible path to fund-scale outcomes
+- The urgency should come from "this narrative collapses under scrutiny" not "time is running out"
+- Frame issues as structural logic failures, not deadlines
+
+FOUNDER PROFILE DETECTED: ${founderProfileSignals.profile}
+${founderProfileSignals.toneGuidance}
 
 CRITICAL TONE REQUIREMENTS:
-1. Be PROVOCATIVE - use language that creates discomfort. "This pitch would quietly die in an IC room."
-2. Create TIME PRESSURE - reference fund cycles, market windows, competitive threats
-3. WITHHOLD SOLUTIONS - hint at deeper issues without revealing how to fix them
-4. Be CONSEQUENTIAL - make the cost of inaction viscerally clear
-5. Use SPECIFIC VC REJECTION LANGUAGE - phrases VCs actually use when passing
+1. Be PRECISE - every criticism should feel anchored to something specific they said or showed
+2. Focus on INEVITABILITY - why this pitch fails structurally, not temporally
+3. WITHHOLD SOLUTIONS - hint at what changes the narrative without revealing how
+4. Use SPECIFIC VC REJECTION LANGUAGE - phrases VCs actually use when passing
+5. Show the TRANSFORMATION POSSIBILITY - tease how the internal conversation could change
 
 DO NOT:
 - Be empathetic or encouraging
-- Provide solutions or actionable advice (that's what they pay for)
-- Give a balanced view (this is 80% negative, 20% "there's hope IF you fix this")
+- Provide solutions or actionable advice
+- Use generic time-pressure language ("you have X weeks")
 - Comment on data completeness
 
 TONE EXAMPLES:
 ❌ "There are some areas that could be improved..."
-✅ "This would get a polite pass email before you left the parking lot."
+✅ "This gets a polite pass email before you leave the parking lot."
 
 ❌ "Market timing is important to consider..."
-✅ "You have a 6-week window before this market thesis expires. Competitors are already circling."
+✅ "This narrative doesn't survive the 'why won't incumbents crush this?' question. That's structural, not timing."
 
-❌ "Distribution strategy needs work..."
-✅ "No distribution moat = feature, not company. OpenAI ships this in 3 months."
+❌ "You have 6 weeks before..."
+✅ "This pitch fails because there's no defensible answer to the questions partners will ask. Every IC meeting ends the same way."
 
 Return ONLY valid JSON:
 {
-  "verdict": "One brutal sentence - the dismissive thing partners say when you leave the room. Make it sting. Example: 'Another AI wrapper hoping OpenAI doesn't ship their feature next quarter.' or 'Classic solution looking for a problem - founders fell in love with their tech, not their customer.'",
-  "readinessLevel": "LOW" | "MEDIUM" | "HIGH" (90% should be LOW or MEDIUM),
-  "readinessRationale": "2 sentences max. Not advice - a DIAGNOSIS. What's fundamentally broken.",
+  "verdict": "One brutal sentence - the dismissive thing partners say when you leave. Make it sting.",
+  "readinessLevel": "LOW" | "MEDIUM" | "HIGH",
+  "readinessRationale": "2 sentences max. Why this narrative structurally fails under partner scrutiny.",
   "concerns": [
     {
-      "text": "First deal-killer - be specific and harsh. Why would a partner say no in the first 30 seconds?",
+      "text": "First deal-killer - be specific. Why would a partner say no in the first 30 seconds?",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "vcQuote": "The exact dismissive phrase a VC might say internally. Example: 'We see 10 of these a week. What's different?' or 'Great founders, wrong market.'"
+      "vcQuote": "The exact dismissive phrase a VC might say internally."
     },
     {
-      "text": "Second deal-killer - different dimension. Focus on WHY VCs will pass, not how to fix it.",
+      "text": "Second deal-killer - different dimension. Focus on structural failure.",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "vcQuote": "Another internal VC quote. Example: 'The TAM story doesn't hold up under any reasonable assumptions.'"
+      "vcQuote": "Another internal VC quote."
     },
     {
-      "text": "Third concern - hint at deeper systemic issues without revealing everything",
+      "text": "Third concern - hint at deeper systemic issues",
       "category": "market" | "team" | "business_model" | "traction" | "competition"
     }
   ],
   "strengths": [
     {
-      "text": "ONE thing that keeps this from being completely hopeless - but frame it as 'if they fix everything else'",
+      "text": "ONE thing that keeps this from being completely hopeless",
       "category": "market" | "team" | "business_model" | "traction" | "competition"
     }
   ],
-  "marketInsight": "Market-level threat that creates urgency. Reference competitors, market timing, or fund cycle dynamics. Example: 'Three well-funded competitors just raised Series B. The window to establish positioning is 90 days, max.'",
-  "vcFrameworkCheck": "Apply a VC framework that shows what's missing. Example: 'Fails the 'Why won't Google just do this?' test. No distribution moat, no data moat, no network effects.'",
-  "timingWarning": "Urgent time-based warning. Example: 'This pitch has a 4-week shelf life. Fund allocation decisions for this quarter close in 6 weeks - you're not ready.'",
-  "hiddenIssuesCount": number between 5-12 (estimate of total issues, creating FOMO for the full analysis)
+  "marketInsight": "Market-level structural challenge. Why this category is hard.",
+  "vcFrameworkCheck": "Apply a VC framework showing structural gaps.",
+  "inevitabilityStatement": "Why this pitch STRUCTURALLY fails—not timing, but logic. Example: 'This narrative collapses because there's no answer to why customers won't churn to the cheaper alternative. Every partner sees it. None will bet against it.'",
+  "narrativeTransformation": {
+    "currentNarrative": "What VCs currently say: One harsh sentence summarizing how they dismiss this pitch today.",
+    "transformedNarrative": "What they'd say if fixed: One sentence showing the conversation shift. Tease, don't reveal."
+  },
+  "founderProfile": "${founderProfileSignals.profile}",
+  "hiddenIssuesCount": number between 5-12
 }`;
 
     const userPrompt = `STARTUP FOR BRUTAL ASSESSMENT:
@@ -112,19 +128,18 @@ Company: ${companyName || 'Unnamed Startup'}
 Stage: ${stage || 'Early'}
 Category: ${category || 'Technology'}
 
-${contextParts.length > 0 ? `WHAT THEY CLAIM:\n${contextParts.join('\n\n')}` : `LIMITED INFO: They haven't even prepared proper materials. That alone is a red flag. Assess based on ${stage} ${category || 'tech'} companies you've seen fail.`}
+${contextParts.length > 0 ? `WHAT THEY CLAIM:\n${contextParts.join('\n\n')}` : `LIMITED INFO: They haven't even prepared proper materials. That alone is a red flag.`}
 
 REMEMBER:
-- Be brutal. Create urgency. Make them feel exposed.
-- Use specific VC rejection language
-- Hint at deeper issues but don't reveal solutions
-- 80% negative focus
-- Include time pressure
-- Generate a hiddenIssuesCount between 5-12 to create FOMO
+- Be brutal. Focus on structural inevitability.
+- Make criticisms feel anchored to what they actually said
+- Show the gap between current narrative and what would work
+- Include the narrative transformation (before/after)
+- Detect and respond to founder profile: ${founderProfileSignals.profile}
 
-The founder needs to feel like they CANNOT ignore this.`;
+The founder should feel exposed and compelled to fix this NOW.`;
 
-    console.log('Generating provocative VC verdict for:', companyName, '| Context items:', contextParts.length);
+    console.log('Generating VC verdict for:', companyName, '| Profile:', founderProfileSignals.profile);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -160,9 +175,8 @@ The founder needs to feel like they CANNOT ignore this.`;
       }
     } catch (parseError) {
       console.error('Parse error:', parseError, 'Content:', content);
-      // Brutal fallback based on category
       const categoryLower = (category || 'technology').toLowerCase();
-      verdict = generateFallbackVerdict(companyName, stage, categoryLower);
+      verdict = generateFallbackVerdict(companyName, stage, categoryLower, founderProfileSignals.profile);
     }
 
     // Validate and ensure arrays
@@ -171,9 +185,18 @@ The founder needs to feel like they CANNOT ignore this.`;
     if (!verdict.verdict) verdict.verdict = "Another pitch that would get a polite pass email.";
     if (!['LOW', 'MEDIUM', 'HIGH'].includes(verdict.readinessLevel)) verdict.readinessLevel = 'LOW';
     if (!verdict.hiddenIssuesCount) verdict.hiddenIssuesCount = Math.floor(Math.random() * 5) + 6;
-    if (!verdict.timingWarning) verdict.timingWarning = "This pitch has a 3-week shelf life before your window closes.";
+    if (!verdict.inevitabilityStatement) {
+      verdict.inevitabilityStatement = "This pitch fails because the core logic doesn't survive partner scrutiny. It's not about timing—it's about structure.";
+    }
+    if (!verdict.narrativeTransformation) {
+      verdict.narrativeTransformation = {
+        currentNarrative: "Another pitch that doesn't clear the bar.",
+        transformedNarrative: "A company that understands what VCs actually fund."
+      };
+    }
+    if (!verdict.founderProfile) verdict.founderProfile = founderProfileSignals.profile;
 
-    console.log('Successfully generated verdict for:', companyName, 'Level:', verdict.readinessLevel);
+    console.log('Generated verdict for:', companyName, 'Level:', verdict.readinessLevel, 'Profile:', verdict.founderProfile);
 
     return new Response(JSON.stringify(verdict), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -189,44 +212,116 @@ The founder needs to feel like they CANNOT ignore this.`;
   }
 });
 
-// Brutal fallback verdicts - no sugar-coating
-function generateFallbackVerdict(companyName: string, stage: string, category: string) {
+// Detect founder profile from signals
+function detectFounderProfile(founderBackground: string, traction: string, stage: string, category: string): { profile: string; toneGuidance: string } {
+  const bgLower = (founderBackground || '').toLowerCase();
+  const tractionLower = (traction || '').toLowerCase();
+  
+  // Serial founder indicators
+  if (bgLower.includes('exited') || bgLower.includes('sold') || bgLower.includes('previous startup') || 
+      bgLower.includes('founded') || bgLower.includes('co-founded') || bgLower.includes('serial')) {
+    return {
+      profile: 'serial_founder',
+      toneGuidance: 'This is a serial founder. Be direct and skip the basics—they know the game. Focus on why THIS specific bet doesn\'t clear the bar despite their track record. Challenge them on pattern matching from past success.'
+    };
+  }
+  
+  // Technical founder indicators
+  if (bgLower.includes('engineer') || bgLower.includes('developer') || bgLower.includes('phd') ||
+      bgLower.includes('research') || bgLower.includes('technical') || bgLower.includes('built')) {
+    return {
+      profile: 'technical_founder',
+      toneGuidance: 'This is a technical founder. They likely overvalue product and undervalue distribution. Hit hard on go-to-market, sales motion, and why technical excellence alone doesn\'t win. Challenge the "if we build it, they will come" assumption.'
+    };
+  }
+  
+  // MBA/Business founder indicators
+  if (bgLower.includes('mba') || bgLower.includes('consulting') || bgLower.includes('banking') ||
+      bgLower.includes('strategy') || bgLower.includes('business development')) {
+    return {
+      profile: 'business_founder',
+      toneGuidance: 'This is a business-background founder. They likely have a polished deck but may lack technical depth or product intuition. Challenge them on defensibility, technical moat, and whether they can actually build what they\'re pitching.'
+    };
+  }
+  
+  // Domain expert indicators
+  if (bgLower.includes('years in') || bgLower.includes('industry expert') || bgLower.includes('domain') ||
+      bgLower.includes('worked at') || bgLower.includes('led') || bgLower.includes('managed')) {
+    return {
+      profile: 'domain_expert',
+      toneGuidance: 'This is a domain expert founder. They know their industry but may be blind to startup dynamics. Challenge them on why they\'re building a startup vs. a consultancy, and whether their network translates to scalable distribution.'
+    };
+  }
+  
+  // First-time founder (default)
+  return {
+    profile: 'first_time_founder',
+    toneGuidance: 'This is likely a first-time founder. They may not understand VC math or what "fundable" really means. Be direct about the bar they need to clear. Focus on fundamentals: market size, defensibility, and why this team can win.'
+  };
+}
+
+// Fallback verdicts with inevitability framing
+function generateFallbackVerdict(companyName: string, stage: string, category: string, founderProfile: string) {
   const categoryInsights: Record<string, any> = {
     'saas': {
       verdict: "Another horizontal SaaS play hoping product quality beats distribution. It won't.",
-      marketInsight: "The SaaS graveyard is full of great products with no distribution moat. Your 3 well-funded competitors just raised Series B - they'll outspend you 10:1 on sales.",
-      vcFrameworkCheck: "Fails Sequoia's 'why you, why now' test. No clear wedge, no distribution advantage, no data moat. This becomes a feature in someone else's platform.",
-      timingWarning: "You have 8 weeks before Q1 budget allocations freeze. You're not remotely ready for that conversation."
+      marketInsight: "The SaaS graveyard is full of great products with no distribution moat.",
+      vcFrameworkCheck: "Fails Sequoia's 'why you, why now' test. No clear wedge, no distribution advantage.",
+      inevitabilityStatement: "This pitch fails because there's no answer to 'why won't the 10 funded competitors with better distribution win?' That question ends every IC discussion.",
+      narrativeTransformation: {
+        currentNarrative: "Another SaaS tool in a crowded market hoping to out-product the competition.",
+        transformedNarrative: "A company with a wedge strategy that makes distribution inevitable."
+      }
     },
     'fintech': {
-      verdict: "Regulatory complexity + long sales cycles + thin margins = death by a thousand cuts.",
-      marketInsight: "Post-2022 fintech means proving unit economics before scale. Your burn rate says otherwise. The last 20 fintech pitches we saw had the same 'regulatory moat' story - 3 survived.",
-      vcFrameworkCheck: "Fails the 'path to profitability' test. Banking relationships take 18 months to close. Your runway says 12. Do the math.",
-      timingWarning: "Banking partners make integration decisions in Q4. You missed this cycle. That's a 12-month delay."
+      verdict: "Regulatory complexity + long sales cycles + thin margins = structural death spiral.",
+      marketInsight: "Post-2022 fintech means proving unit economics before scale.",
+      vcFrameworkCheck: "Fails the 'path to profitability' test. Banking relationships take 18 months.",
+      inevitabilityStatement: "This pitch fails because the unit economics don't work at any scale partners can model. It's not about timing—the math just doesn't close.",
+      narrativeTransformation: {
+        currentNarrative: "A fintech hoping to figure out unit economics at scale.",
+        transformedNarrative: "A company with proven economics and a clear path through regulatory complexity."
+      }
     },
     'ai': {
-      verdict: "Another AI wrapper betting OpenAI doesn't ship their feature next quarter. They will.",
-      marketInsight: "We've seen 400+ AI startups this year. The ones getting funded have proprietary data or distribution lock-in. You have neither. GPT-5 makes this obsolete.",
-      vcFrameworkCheck: "Fails the 'why won't OpenAI just do this?' test catastrophically. No data moat, no distribution moat, no switching costs. This is a feature, not a company.",
-      timingWarning: "OpenAI's next model drops in 6 weeks. Whatever 'AI advantage' you have expires then."
+      verdict: "Another AI wrapper betting the foundation model providers won't ship their feature.",
+      marketInsight: "We've seen 400+ AI startups this year. The ones getting funded have proprietary data or distribution lock-in.",
+      vcFrameworkCheck: "Fails the 'why won't OpenAI just do this?' test catastrophically.",
+      inevitabilityStatement: "This pitch fails because there's no defensible moat. The moment foundation models improve, this becomes a feature. That's not timing—it's structural.",
+      narrativeTransformation: {
+        currentNarrative: "An AI company hoping to stay ahead of the foundation model providers.",
+        transformedNarrative: "A company with proprietary data and distribution that makes AI capabilities a moat."
+      }
     },
     'marketplace': {
       verdict: "Marketplace without liquidity is just an expensive website nobody visits.",
-      marketInsight: "Marketplace economics are brutal: you need to win one city completely before expanding. Your 'national launch' strategy is how marketplaces die. We've seen this exact playbook fail 50+ times.",
-      vcFrameworkCheck: "Fails the 'cold start' test. No evidence of supply/demand density anywhere. You're burning cash to acquire both sides simultaneously. That's a losing formula.",
-      timingWarning: "Your largest competitor just raised $50M for geographic expansion. They'll be in your target markets in 90 days."
+      marketInsight: "Marketplace economics are brutal: you need to win one city completely before expanding.",
+      vcFrameworkCheck: "Fails the 'cold start' test. No evidence of supply/demand density.",
+      inevitabilityStatement: "This pitch fails because you can't solve the chicken-and-egg problem at national scale. Every marketplace that tried this playbook is dead.",
+      narrativeTransformation: {
+        currentNarrative: "A marketplace trying to solve chicken-and-egg nationally.",
+        transformedNarrative: "A company with density in one market and a playbook to replicate."
+      }
     },
     'healthtech': {
       verdict: "Healthcare sales cycles eat startups for breakfast. Your runway says lunch.",
-      marketInsight: "12-18 month sales cycles + hospital IT budget freezes + regulatory compliance = the healthtech killing fields. We've funded 4 healthtech companies this year. All had existing hospital relationships.",
-      vcFrameworkCheck: "Fails the 'distribution shortcut' test. No strategic partner, no regulatory forcing function, no existing relationships. You're looking at 2+ years to meaningful revenue.",
-      timingWarning: "Hospital budget cycles are annual. You've missed FY24 decisions. Your next window is 9 months away."
+      marketInsight: "12-18 month sales cycles + hospital IT budget freezes = the healthtech killing fields.",
+      vcFrameworkCheck: "Fails the 'distribution shortcut' test. No strategic partner, no regulatory forcing function.",
+      inevitabilityStatement: "This pitch fails because you're asking VCs to bet you'll survive 2+ years of sales cycles with current runway. The math makes that impossible.",
+      narrativeTransformation: {
+        currentNarrative: "A healthtech hoping to survive long enough to close hospital deals.",
+        transformedNarrative: "A company with existing health system relationships and revenue."
+      }
     },
     'default': {
       verdict: "Interesting technology looking for a problem worth solving. The market doesn't care.",
-      marketInsight: "The 'ZIRP-era' playbook of grow-at-all-costs is dead. We're seeing 80% of Series A companies fail to raise B. Your metrics don't clear the bar.",
-      vcFrameworkCheck: "Fails basic VC math. Unclear path to $100M revenue, no obvious moat, market timing story is weak. This is a 'nice to have' not a 'need to have'.",
-      timingWarning: "Fund allocation decisions close in 6 weeks. At your current trajectory, you won't be ready for another 2 quarters."
+      marketInsight: "The 'ZIRP-era' playbook of grow-at-all-costs is dead.",
+      vcFrameworkCheck: "Fails basic VC math. Unclear path to $100M revenue, no obvious moat.",
+      inevitabilityStatement: "This pitch fails because partners can't model a path to fund-returning outcomes. It's not about execution—the opportunity isn't big enough.",
+      narrativeTransformation: {
+        currentNarrative: "A company with a product looking for a large enough market.",
+        transformedNarrative: "A company attacking a clear $1B+ opportunity with differentiated positioning."
+      }
     }
   };
 
@@ -238,29 +333,31 @@ function generateFallbackVerdict(companyName: string, stage: string, category: s
     readinessRationale: `This pitch would get passed in the first partner discussion. The fundamentals don't support the story.`,
     concerns: [
       {
-        text: "Distribution strategy is non-existent. Product-market fit without go-to-market fit creates zombie companies. We've seen this pattern kill 100+ startups.",
+        text: "Distribution strategy is non-existent. Product-market fit without go-to-market fit creates zombie companies.",
         category: "business_model",
         vcQuote: "Great product, no idea how to sell it. Pass."
       },
       {
-        text: "Competitive positioning assumes incumbents won't respond. They will, with 10x your resources and existing customer relationships.",
+        text: "Competitive positioning assumes incumbents won't respond. They will, with 10x your resources.",
         category: "competition",
         vcQuote: "What stops the big players from crushing this in 6 months?"
       },
       {
-        text: "Unit economics are theoretical. Early traction doesn't validate profitable scale. The transition from founder-led to scalable sales is where companies die.",
+        text: "Unit economics are theoretical. The transition from founder-led to scalable sales is where companies die.",
         category: "traction"
       }
     ],
     strengths: [
       {
-        text: `Market timing in ${category} creates a window - but windows close fast, and you're not positioned to capture it.`,
+        text: `Market timing in ${category} creates a window—but only for companies with the right structure.`,
         category: "market"
       }
     ],
     marketInsight: insight.marketInsight,
     vcFrameworkCheck: insight.vcFrameworkCheck,
-    timingWarning: insight.timingWarning,
+    inevitabilityStatement: insight.inevitabilityStatement,
+    narrativeTransformation: insight.narrativeTransformation,
+    founderProfile: founderProfile,
     hiddenIssuesCount: 8
   };
 }
