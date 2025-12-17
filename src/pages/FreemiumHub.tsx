@@ -415,12 +415,12 @@ export default function FreemiumHub() {
 
       toast({
         title: "Profile reset successfully!",
-        description: "Refreshing page...",
+        description: "Starting fresh...",
       });
       
-      // Refresh the page to reflect changes
+      // Navigate to intake to restart the flow
       setTimeout(() => {
-        window.location.reload();
+        navigate("/intake");
       }, 1000);
     } catch (error) {
       console.error("Reset error:", error);
@@ -510,7 +510,7 @@ export default function FreemiumHub() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/portal")}
+              onClick={() => navigate("/company-profile")}
               className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
             >
               <Edit className="w-4 h-4" />
