@@ -165,7 +165,8 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
 
   // ============================================
   // DIAGNOSTIC TEASER VIEW - Designed for conversion
-  // Goal: Make founders feel intellectually outmatched but not dismissed
+  // Goal: Make founders feel exposed and uncertain, not educated
+  // They should leave thinking "I don't fully understand what killed me"
   // ============================================
   return (
     <div className="relative animate-fade-in mb-8">
@@ -184,7 +185,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
             </div>
           </div>
 
-          {/* THE RULING - The verdict as a sentence handed down */}
+          {/* THE RULING - Delivered as a verdict, no explanation */}
           <div className="p-5 rounded-xl bg-muted/50 border border-border/40">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">The Ruling</span>
@@ -192,84 +193,64 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
             <p className={`text-lg font-bold ${config.color}`}>
               {rulingStatement}
             </p>
-            <p className="text-xs text-muted-foreground mt-2">
-              This verdict was reached using 8 evaluation criteria.
-            </p>
           </div>
         </div>
 
-        {/* IC Framework Diagnostic - Mysterious metrics */}
+        {/* IC Framework - Mysterious, unexplained metrics */}
         <div className="px-6 pb-4">
           <div className="p-4 rounded-xl bg-background/50 border border-border/30">
-            <div className="flex items-center gap-2 mb-4">
-              <Target className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-semibold text-foreground">IC Framework Applied</span>
-            </div>
-            
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className={`text-2xl font-bold ${frameworkScore < 50 ? 'text-destructive' : frameworkScore < 70 ? 'text-warning' : 'text-success'}`}>
                   {criteriaCleared}/8
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Criteria cleared</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">passed</p>
               </div>
               <div className="text-center border-x border-border/30">
                 <div className="text-2xl font-bold text-muted-foreground">
                   {frameworkScore}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Framework score</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">score</p>
               </div>
               <div className="text-center">
                 <div className="text-sm font-semibold text-destructive">
                   {icStoppingPoint}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Discussion stopped</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">stopped at</p>
               </div>
             </div>
-            
-            <p className="text-xs text-muted-foreground/70 mt-4 text-center italic">
-              These results reference frameworks you haven't seen yet.
-            </p>
           </div>
         </div>
 
-        {/* The IC Killer Question - Single concern as "the question that ended it" */}
+        {/* The Question That Ended It - No context, no explanation */}
         <div className="px-6 pb-4">
           <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
             <div className="flex items-center gap-2 mb-3">
               <Flame className="w-4 h-4 text-destructive" />
               <span className="text-sm font-semibold text-destructive">The Question That Ended It</span>
             </div>
-            <p className="text-foreground font-medium">
+            <p className="text-foreground font-medium text-lg">
               "{killerQuestion}"
-            </p>
-            <p className="text-xs text-muted-foreground mt-3">
-              This was one of {concerns.length} objections raised. The others are in the brief.
             </p>
           </div>
         </div>
 
-        {/* CTA Section - Access, not content */}
+        {/* CTA Section - Proximity illusion, not generic "locked" */}
         <div className="px-6 pb-6">
           <div className="p-5 rounded-xl bg-gradient-to-r from-muted/80 via-muted/60 to-muted/80 border border-border/40">
             <div className="text-center mb-4">
-              <p className="text-foreground font-semibold">
-                The partners have made their decision.
+              <p className="text-sm text-muted-foreground">
+                This is the internal brief partners debated.
               </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                The IC brief contains their objections, the frameworks applied,
-                and the specific criteria that determined this outcome.
+              <p className="text-sm text-muted-foreground mt-1">
+                The document your champion failed to defend.
               </p>
             </div>
             
-            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground mb-4">
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/70 mb-4">
               <Lock className="w-3 h-3" />
-              <span>Full reasoning locked</span>
+              <span>You're one page away from the IC doc that killed this</span>
             </div>
-            
-            <p className="text-center text-sm text-muted-foreground/80 italic mb-4">
-              This isn't content. This is access.
-            </p>
             
             {onUnlock && (
               <Button 
