@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, LogIn, LogOut, ChevronDown, RotateCcw } from "lucide-react";
+import { Menu, X, LogIn, LogOut, ChevronDown, RotateCcw, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -25,6 +25,8 @@ export const Header = () => {
   const [memoCompanyId, setMemoCompanyId] = useState<string | null>(null);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -201,6 +203,44 @@ export const Header = () => {
     } finally {
       setIsResetting(false);
       setResetDialogOpen(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("You must be logged in to delete your account");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (error) {
+        console.error("Delete account error:", error);
+        toast.error("Failed to delete account");
+        return;
+      }
+
+      if (data?.success) {
+        toast.success("Account deleted successfully");
+        // Sign out locally and redirect
+        await supabase.auth.signOut();
+        navigate('/');
+      } else {
+        toast.error(data?.error || "Failed to delete account");
+      }
+    } catch (error) {
+      console.error("Delete account exception:", error);
+      toast.error("An error occurred while deleting your account");
+    } finally {
+      setIsDeletingAccount(false);
+      setDeleteAccountDialogOpen(false);
     }
   };
 
@@ -521,6 +561,17 @@ export const Header = () => {
                 </button>
               </>
             )}
+            
+            {/* Delete Account - visible to authenticated users */}
+            {isAuthenticated && (
+              <button
+                onClick={() => setDeleteAccountDialogOpen(true)}
+                className="text-sm font-medium transition-all duration-300 text-destructive/70 hover:text-destructive flex items-center gap-1"
+              >
+                <Trash2 className="w-3 h-3" />
+                Delete
+              </button>
+            )}
           </div>
 
           {/* CTA Buttons */}
@@ -598,6 +649,18 @@ export const Header = () => {
                   My Analysis
                 </Link>
               )}
+              {isAuthenticated && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setDeleteAccountDialogOpen(true);
+                  }}
+                  className="w-full text-destructive hover:text-destructive/80 transition-all duration-300 cursor-pointer font-medium text-sm flex items-center justify-center gap-2 py-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Account
+                </button>
+              )}
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -658,6 +721,36 @@ export const Header = () => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isResetting ? "Resetting..." : "Reset Profile"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Account Confirmation Dialog */}
+      <AlertDialog open={deleteAccountDialogOpen} onOpenChange={setDeleteAccountDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">Delete Account Permanently</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete your account and all associated data including:
+              <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
+                <li>Your company profile</li>
+                <li>All questionnaire responses</li>
+                <li>Generated memos and analyses</li>
+                <li>Purchase history</li>
+              </ul>
+              <br />
+              <strong className="text-destructive">This action cannot be undone. Your data cannot be recovered.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingAccount}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={isDeletingAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeletingAccount ? "Deleting..." : "Delete My Account"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

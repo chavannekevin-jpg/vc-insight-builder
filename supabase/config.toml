@@ -86,3 +86,6 @@ verify_jwt = false
 
 [functions.generate-vc-verdict]
 verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
