@@ -548,17 +548,18 @@ const AcceleratorLanding = () => {
             <Button
               size="lg"
               className="gap-2"
-              onClick={() => navigate('/sample-memo')}
+              onClick={() => navigate('/accelerator-demo')}
             >
-              <FileText className="w-4 h-4" />
+              <Eye className="w-4 h-4" />
               Preview a real cohort analysis
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               size="lg"
-              onClick={() => navigate('/accelerator-demo')}
+              className="text-muted-foreground"
+              onClick={() => navigate('/sample-memo')}
             >
-              See how your cohort would be mapped
+              See a full startup analysis →
             </Button>
           </div>
         </div>
