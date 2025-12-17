@@ -73,7 +73,7 @@ export default function SolutionSlide() {
         ]}
       />
 
-      <ConversionBanner message="Struggling to distill your solution into something investors actually care about? The Investment Memo shows you exactly how to position value, not features." />
+      <ConversionBanner message="Struggling to distill your solution into something investors actually care about? The VC Analysis shows you exactly how to position value, not features." />
 
       <div className="prose prose-lg max-w-none text-foreground">
         <h2 className="text-2xl font-bold mb-4">Solution Slide Disasters</h2>
@@ -141,7 +141,7 @@ export default function SolutionSlide() {
           Nail Every Slide in Your Deck
         </h3>
         <p className="text-muted-foreground">
-          The Investment Memorandum Template deconstructs all 12 critical slides—what works, what kills deals, 
+          The VC Analysis deconstructs all 12 critical slides—what works, what kills deals, 
           and how to position your solution for maximum impact.
         </p>
         <Button 

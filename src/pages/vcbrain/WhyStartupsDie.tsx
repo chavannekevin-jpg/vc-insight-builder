@@ -74,7 +74,7 @@ export default function WhyStartupsDie() {
         ]}
       />
 
-      <ConversionBanner message="Want to avoid the mistakes that kill 90% of startups? The Investment Memo breaks down the death traps and how to navigate around them." />
+      <ConversionBanner message="Want to avoid the mistakes that kill 90% of startups? The VC Analysis breaks down the death traps and how to navigate around them." />
 
       <div className="prose prose-lg max-w-none text-foreground">
         <h2 className="text-2xl font-bold mb-4">The Startup Death Spiral</h2>

@@ -159,8 +159,8 @@ export default function BuildingDemos() {
       </ul>
 
       <ConversionBanner 
-        message="Want to learn how VCs evaluate your product demonstration? The Investment Memo Template includes a Product section showing exactly what investors look for."
-        buttonText="Get the Template"
+        message="Want to learn how VCs evaluate your product demonstration? The VC Analysis includes a Product section showing exactly what investors look for."
+        buttonText="Get Your Analysis"
       />
 
       <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">Demo Checklist</h2>

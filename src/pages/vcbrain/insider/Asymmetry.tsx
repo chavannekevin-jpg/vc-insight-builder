@@ -218,9 +218,9 @@ const Asymmetry = () => {
           </div>
 
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 my-8">
-            <h4 className="font-semibold text-foreground mb-3">Asymmetry in Your Investment Memo</h4>
+            <h4 className="font-semibold text-foreground mb-3">Asymmetry in Your VC Analysis</h4>
             <p className="text-muted-foreground mb-4">
-              When VCs discuss your deal at <Link to="/vcbrain/how-vcs-work/investment-committee" className="text-primary hover:underline">Investment Committee</Link>, one of the first questions is: "What's the upside case?" Your memo should paint that picture vividly — not as fantasy, but as calculated possibility.
+              When VCs discuss your deal at <Link to="/vcbrain/how-vcs-work/investment-committee" className="text-primary hover:underline">Investment Committee</Link>, one of the first questions is: "What's the upside case?" Your analysis should paint that picture vividly — not as fantasy, but as calculated possibility.
             </p>
             <p className="text-muted-foreground m-0">
               The memo should also acknowledge the risks (we'll find them anyway). But the ratio of upside narrative to risk discussion should be weighted toward the former. Give us the asymmetry story.

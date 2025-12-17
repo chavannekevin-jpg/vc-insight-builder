@@ -556,7 +556,7 @@ export const Header = () => {
               }}
               className="gradient-primary shadow-glow hover:shadow-glow-strong"
             >
-              Get your Memo
+              Get Your Analysis
             </Button>
           </div>
 
@@ -586,7 +586,7 @@ export const Header = () => {
                   {link.name}
                 </Link>
               ))}
-              {/* My Memo link in mobile menu */}
+              {/* My Analysis link in mobile menu */}
               {isAuthenticated && hasMemo && memoCompanyId && (
                 <Link
                   to={`/memo?companyId=${memoCompanyId}`}
@@ -595,7 +595,7 @@ export const Header = () => {
                     location.pathname === "/memo" ? "neon-pink" : "text-muted-foreground hover:neon-pink"
                   }`}
                 >
-                  My Memo
+                  My Analysis
                 </Link>
               )}
               <button
@@ -631,7 +631,7 @@ export const Header = () => {
                 }}
                 className="gradient-primary w-full shadow-glow"
               >
-                Get your Memo
+                Get Your Analysis
               </Button>
             </div>
           </div>

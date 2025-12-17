@@ -150,9 +150,9 @@ const PowerLaws = () => {
           </p>
 
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 my-8">
-            <h4 className="font-semibold text-foreground mb-3">Why Your Investment Memo Matters</h4>
+            <h4 className="font-semibold text-foreground mb-3">Why Your VC Analysis Matters</h4>
             <p className="text-muted-foreground mb-4">
-              When VCs discuss your company in their <Link to="/vcbrain/how-vcs-work/investment-committee" className="text-primary hover:underline">Investment Committee</Link>, they need ammunition to argue you're a power law candidate. Your investment memo should explicitly address: market size ceiling, path to dominance, and why this company — not competitors — will capture the lion's share.
+              When VCs discuss your company in their <Link to="/vcbrain/how-vcs-work/investment-committee" className="text-primary hover:underline">Investment Committee</Link>, they need ammunition to argue you're a power law candidate. Your analysis should explicitly address: market size ceiling, path to dominance, and why this company — not competitors — will capture the lion's share.
             </p>
             <p className="text-muted-foreground m-0">
               This is exactly why founders who build their memo with us tend to have more productive conversations with VCs — they're speaking the fund's language from day one.

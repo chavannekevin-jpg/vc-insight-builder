@@ -252,7 +252,7 @@ const WhyVCsGhost = () => {
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 my-8">
             <h4 className="font-semibold text-foreground mb-3">Making Your <Link to="/vcbrain/how-vcs-work/dealflow" className="text-primary hover:underline">Dealflow</Link> Position Stronger</h4>
             <p className="text-muted-foreground mb-4">
-              VCs are less likely to ghost founders who seem "in demand." A strong investment memo that you can share with multiple investors simultaneously signals professionalism and creates competitive dynamics.
+              VCs are less likely to ghost founders who seem "in demand." A strong VC analysis that you can share with multiple investors simultaneously signals professionalism and creates competitive dynamics.
             </p>
             <p className="text-muted-foreground m-0">
               When I see a founder running a tight, professional process with a clear <Link to="/vcbrain/how-vcs-work/data-room" className="text-primary hover:underline">data room</Link> and structured timeline, I know they won't wait around for me. That makes me respond faster.

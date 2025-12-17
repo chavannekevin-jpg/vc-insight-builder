@@ -149,8 +149,8 @@ export default function ExecutiveSummarySlide() {
       </div>
 
       <ConversionBanner 
-        message="Want to see how to structure a compelling executive summary? The Investment Memo Template shows exactly how VCs want information presented."
-        buttonText="Get the Template"
+        message="Want to see how to structure a compelling executive summary? The VC Analysis shows exactly how VCs want information presented."
+        buttonText="Get Your Analysis"
       />
 
       <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">Executive Summary Checklist</h2>

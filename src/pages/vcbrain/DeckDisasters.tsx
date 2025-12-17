@@ -178,8 +178,8 @@ export default function DeckDisasters() {
       </ul>
 
       <ConversionBanner 
-        message="Need a professional framework for presenting your company? The Investment Memo Template shows exactly how to structure information for maximum impact."
-        buttonText="Get the Template"
+        message="Need a professional framework for presenting your company? The VC Analysis shows exactly how to structure information for maximum impact."
+        buttonText="Get Your Analysis"
       />
 
       <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">Deck Quality Checklist</h2>

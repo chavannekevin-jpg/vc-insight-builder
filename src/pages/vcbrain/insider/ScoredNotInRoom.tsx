@@ -241,7 +241,7 @@ const ScoredNotInRoom = () => {
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 my-8">
             <h4 className="font-semibold text-foreground mb-3">Building the Scorecard in Your Favor</h4>
             <p className="text-muted-foreground mb-4">
-              When you build your investment memo, you're essentially pre-filling the scorecard. Address team strength explicitly. Make market size undeniable. Present metrics transparently. Acknowledge business model evolution.
+              When you build your VC analysis, you're essentially pre-filling the scorecard. Address team strength explicitly. Make market size undeniable. Present metrics transparently. Acknowledge business model evolution.
             </p>
             <p className="text-muted-foreground m-0">
               The best memos anticipate every scorecard dimension and provide ammunition for each. When your champion walks into IC, they should be able to point to your memo and say, "They've already addressed that — look at page 7."

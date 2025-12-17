@@ -208,8 +208,8 @@ export default function NegotiationTactics() {
       </Callout>
 
       <ConversionBanner 
-        message="The best negotiation leverage is a strong company story. The Investment Memo Template helps you present your company in the most compelling way."
-        buttonText="Get the Template"
+        message="The best negotiation leverage is a strong company story. The VC Analysis helps you present your company in the most compelling way."
+        buttonText="Get Your Analysis"
       />
 
       <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">Negotiation Checklist</h2>

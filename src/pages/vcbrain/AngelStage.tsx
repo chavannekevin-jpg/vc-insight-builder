@@ -75,7 +75,7 @@ export default function AngelStage() {
         ]}
       />
 
-      <ConversionBanner message="Wondering if you're actually ready for angels? The Investment Memo breaks down exactly what stage you're at and what to focus on." />
+      <ConversionBanner message="Wondering if you're actually ready for angels? The VC Analysis breaks down exactly what stage you're at and what to focus on." />
 
       <div className="prose prose-lg max-w-none text-foreground">
         <h2 className="text-2xl font-bold mb-4">Common Angel Stage Failures</h2>
@@ -139,7 +139,7 @@ export default function AngelStage() {
           Ready to Build a Real Angel Strategy?
         </h3>
         <p className="text-muted-foreground">
-          The Investment Memorandum Template shows you exactly how to position yourself for angels, 
+          The VC Analysis shows you exactly how to position yourself for angels, 
           what traction actually matters, and how to avoid the mistakes that kill 90% of seed attempts.
         </p>
         <Button 
@@ -147,7 +147,7 @@ export default function AngelStage() {
           className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
           onClick={() => navigate('/pricing')}
         >
-          Get the Investment Memo
+          Get Your VC Analysis
         </Button>
       </div>
     </div>

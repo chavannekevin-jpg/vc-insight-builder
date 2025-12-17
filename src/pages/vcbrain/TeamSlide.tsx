@@ -73,7 +73,7 @@ export default function TeamSlide() {
         ]}
       />
 
-      <ConversionBanner message="Not sure how to position your team for maximum credibility? The Investment Memo shows you exactly what signals matter and which ones are noise." />
+      <ConversionBanner message="Not sure how to position your team for maximum credibility? The VC Analysis shows you exactly what signals matter and which ones are noise." />
 
       <div className="prose prose-lg max-w-none text-foreground">
         <h2 className="text-2xl font-bold mb-4">Team Slide Disasters</h2>
@@ -143,7 +143,7 @@ export default function TeamSlide() {
           Position Your Team for Maximum Credibility
         </h3>
         <p className="text-muted-foreground">
-          The Investment Memorandum Template shows you how to present your team the way VCs evaluate founders—
+          The VC Analysis shows you how to present your team the way VCs evaluate founders—
           focus on execution, commitment, and founder-market fit, not credentials.
         </p>
         <Button 

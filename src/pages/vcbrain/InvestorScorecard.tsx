@@ -211,8 +211,8 @@ export default function InvestorScorecard() {
       </div>
 
       <ConversionBanner 
-        message="Preparing to meet investors? The Investment Memo Template helps you present your company professionally—so you can attract the best partners."
-        buttonText="Get the Template"
+        message="Preparing to meet investors? The VC Analysis helps you present your company professionally—so you can attract the best partners."
+        buttonText="Get Your Analysis"
       />
 
       <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">Investor Diligence Checklist</h2>

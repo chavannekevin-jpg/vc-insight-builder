@@ -149,8 +149,8 @@ export default function GTMSlide() {
       </div>
 
       <ConversionBanner 
-        message="Need to structure your GTM strategy for investors? The Investment Memo Template includes a complete GTM framework with channel analysis and unit economics."
-        buttonText="Get the Framework"
+        message="Need to structure your GTM strategy for investors? The VC Analysis includes a complete GTM framework with channel analysis and unit economics."
+        buttonText="Get Your Analysis"
       />
 
       <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">GTM Slide Checklist</h2>

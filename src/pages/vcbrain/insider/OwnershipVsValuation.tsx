@@ -253,7 +253,7 @@ const OwnershipVsValuation = () => {
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 my-8">
             <h4 className="font-semibold text-foreground mb-3">Building Your Valuation Narrative</h4>
             <p className="text-muted-foreground mb-4">
-              Your investment memo should justify your valuation with comps, milestones, and future financing logic — not just "comparable companies raised at X."
+              Your VC analysis should justify your valuation with comps, milestones, and future financing logic — not just "comparable companies raised at X."
             </p>
             <p className="text-muted-foreground m-0">
               Show investors you understand the ownership math. Demonstrate that you've thought about their <Link to="/vcbrain/insider/return-profile" className="text-primary hover:underline">return profile</Link>, not just your own dilution. This signals sophistication and makes negotiation easier.

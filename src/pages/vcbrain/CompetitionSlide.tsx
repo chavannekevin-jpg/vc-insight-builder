@@ -119,8 +119,8 @@ export default function CompetitionSlide() {
       </div>
 
       <ConversionBanner 
-        message="Want to see how top founders position against competition? The Investment Memo Template shows you exactly how to frame your competitive advantage."
-        buttonText="Get the Template"
+        message="Want to see how top founders position against competition? The VC Analysis shows you exactly how to frame your competitive advantage."
+        buttonText="Get Your Analysis"
       />
 
       <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">Competition Slide Checklist</h2>
@@ -147,7 +147,7 @@ export default function CompetitionSlide() {
           className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
           onClick={() => navigate('/pricing')}
         >
-          Get Your Investment Memo Template
+          Get Your VC Analysis
         </Button>
       </div>
     </ContentBlock>

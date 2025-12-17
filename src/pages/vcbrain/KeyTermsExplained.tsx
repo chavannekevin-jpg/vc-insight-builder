@@ -184,8 +184,8 @@ export default function KeyTermsExplained() {
       </Callout>
 
       <ConversionBanner 
-        message="Understanding terms is essential, but presenting your company professionally gets you better terms. The Investment Memo Template helps you do both."
-        buttonText="Get the Template"
+        message="Understanding terms is essential, but presenting your company professionally gets you better terms. The VC Analysis helps you do both."
+        buttonText="Get Your Analysis"
       />
 
       <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">Term Sheet Reading Checklist</h2>

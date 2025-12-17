@@ -65,8 +65,8 @@ export function WelcomeDisclaimer({ open, onComplete }: WelcomeDisclaimerProps) 
             
             <div className="space-y-4">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
-                You're About to Build Your{" "}
-                <span className="text-primary neon-pink">Investment Memo</span>
+                You're About to Get Your{" "}
+                <span className="text-primary neon-pink">VC Analysis</span>
               </h2>
               <p className="text-lg text-muted-foreground max-w-md mx-auto">
                 This isn't a template. It's the exact framework I use after reviewing{" "}
@@ -119,7 +119,7 @@ export function WelcomeDisclaimer({ open, onComplete }: WelcomeDisclaimerProps) 
               {[
                 { icon: Target, text: "Each question maps to what VCs actually evaluate" },
                 { icon: Brain, text: "Your answers feed prompts refined over 1,000+ reviews" },
-                { icon: TrendingUp, text: "Output mirrors real investment committee memos" },
+                { icon: TrendingUp, text: "Output mirrors real investment committee analyses" },
                 { icon: BarChart3, text: "Data quality matters—more detail = better analysis" },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
@@ -132,7 +132,7 @@ export function WelcomeDisclaimer({ open, onComplete }: WelcomeDisclaimerProps) 
             <div className="p-4 rounded-lg bg-warning/10 border border-warning/30 max-w-md mx-auto">
               <p className="text-sm text-foreground">
                 <span className="font-bold text-warning">⚠️ Warning:</span>{" "}
-                Generic answers = generic memos.{" "}
+                Generic answers = generic analysis.{" "}
                 <span className="font-semibold">Be specific. Include numbers. Name names.</span>
               </p>
             </div>
@@ -179,7 +179,7 @@ export function WelcomeDisclaimer({ open, onComplete }: WelcomeDisclaimerProps) 
               <p className="text-sm text-foreground">
                 <span className="font-bold text-success">💡 Pro Tip:</span>{" "}
                 When Kev suggests something, it's because VCs will ask for it.
-                Better in the memo than scrambling during due diligence.
+                Better in the analysis than scrambling during due diligence.
               </p>
             </div>
           </div>
@@ -219,7 +219,7 @@ export function WelcomeDisclaimer({ open, onComplete }: WelcomeDisclaimerProps) 
               size="lg"
               className="w-full max-w-sm mx-auto text-lg font-semibold shadow-glow hover:shadow-glow-strong transition-all"
             >
-              Let's Build Your Memo
+              Let's Get Your Analysis
               <ChevronRight className="w-5 h-5 ml-2" />
             </Button>
 

@@ -197,7 +197,7 @@ const ReturnProfile = () => {
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 my-8">
             <h4 className="font-semibold text-foreground mb-3">Making Your Return Profile Crystal Clear</h4>
             <p className="text-muted-foreground mb-4">
-              This is exactly why your investment memo needs a section that explicitly models the return profile for investors. Not just your projections — but the math that shows how an investment in your company could return a meaningful portion of their fund.
+              This is exactly why your VC analysis needs a section that explicitly models the return profile for investors. Not just your projections — but the math that shows how an investment in your company could return a meaningful portion of their fund.
             </p>
             <p className="text-muted-foreground m-0">
               When I champion a deal internally, I need ammunition. Give me the comparable exits. Give me the market size math. Give me the ownership model. Our memo builder helps you structure exactly this narrative.

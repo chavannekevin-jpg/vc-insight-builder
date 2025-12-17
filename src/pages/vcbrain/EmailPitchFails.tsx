@@ -193,8 +193,8 @@ export default function EmailPitchFails() {
       </div>
 
       <ConversionBanner 
-        message="Need compelling content for your investor outreach? The Investment Memo Template gives you the exact structure and proof points VCs want to see."
-        buttonText="Get the Template"
+        message="Need compelling content for your investor outreach? The VC Analysis gives you the exact structure and proof points VCs want to see."
+        buttonText="Get Your Analysis"
       />
 
       <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">Email Pitch Checklist</h2>
