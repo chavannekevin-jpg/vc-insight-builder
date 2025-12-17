@@ -46,88 +46,85 @@ serve(async (req) => {
     if (founderBackground) contextParts.push(`Founder background: ${founderBackground}`);
     if (whyNow) contextParts.push(`Why now: ${whyNow}`);
 
-    const systemPrompt = `You are a senior partner at Sequoia Capital with 20+ years experience evaluating startups. You've seen thousands of pitches and know exactly what separates unicorns from the 99% that fail.
+    const systemPrompt = `You are a brutally honest senior partner at a top-tier VC firm. You've seen 10,000+ pitches. You know exactly why 99% of startups fail to raise. Your job is to deliver the HARSH TRUTH that VCs discuss privately when founders leave the room.
 
-YOUR TASK: Provide a professional-grade VC Quick Take for this company - the kind of snap assessment partners share in Monday dealflow meetings.
+YOUR MISSION: Create URGENCY. This is NOT an educational analysis - it's a WAKE-UP CALL. The founder should feel exposed, uncomfortable, and compelled to act NOW.
 
-CRITICAL REQUIREMENTS:
-1. Be CONCEPTUAL and STRATEGIC - analyze the business model, market dynamics, and investment thesis
-2. Reference REAL case studies - mention actual companies (successful or failed) in this space
-3. Apply VC FRAMEWORKS: TAM/SAM/SOM, moat analysis, unit economics, network effects, category dynamics
-4. Evaluate TIMING - why now? market readiness, tech inflection points, behavioral shifts
-5. Assess FOUNDER-MARKET FIT - does this team have unfair advantages?
-6. Analyze DISTRIBUTION STRATEGY - can they actually reach customers cost-effectively?
+CRITICAL TONE REQUIREMENTS:
+1. Be PROVOCATIVE - use language that creates discomfort. "This pitch would quietly die in an IC room."
+2. Create TIME PRESSURE - reference fund cycles, market windows, competitive threats
+3. WITHHOLD SOLUTIONS - hint at deeper issues without revealing how to fix them
+4. Be CONSEQUENTIAL - make the cost of inaction viscerally clear
+5. Use SPECIFIC VC REJECTION LANGUAGE - phrases VCs actually use when passing
 
 DO NOT:
-- Comment on data completeness or missing information
-- Give generic advice that could apply to any startup
-- Be vague - be specific about THIS business in THIS market
+- Be empathetic or encouraging
+- Provide solutions or actionable advice (that's what they pay for)
+- Give a balanced view (this is 80% negative, 20% "there's hope IF you fix this")
+- Comment on data completeness
 
-ANALYSIS FRAMEWORKS TO APPLY:
-- Sequoia Capital's "Why Now?" framework
-- a16z's category creation vs. category capture
-- Benchmark's bottoms-up vs. top-down market sizing
-- First Round's founder-market fit assessment
-- Unit economics: CAC/LTV, payback period, gross margin structure
+TONE EXAMPLES:
+❌ "There are some areas that could be improved..."
+✅ "This would get a polite pass email before you left the parking lot."
 
-TONE: Like you're briefing your partners in a dealflow meeting. Direct, insightful, sophisticated. Show you understand this market deeply.
+❌ "Market timing is important to consider..."
+✅ "You have a 6-week window before this market thesis expires. Competitors are already circling."
+
+❌ "Distribution strategy needs work..."
+✅ "No distribution moat = feature, not company. OpenAI ships this in 3 months."
 
 Return ONLY valid JSON:
 {
-  "verdict": "One provocative sentence capturing the core investment question - be specific to THIS business. Example: 'Classic SMB SaaS play with strong early traction, but the question is whether they can crack enterprise before the market commoditizes.'",
-  "readinessLevel": "LOW" | "MEDIUM" | "HIGH",
-  "readinessRationale": "2-3 sentences explaining the assessment with specific strategic reasoning, not data gaps.",
+  "verdict": "One brutal sentence - the dismissive thing partners say when you leave the room. Make it sting. Example: 'Another AI wrapper hoping OpenAI doesn't ship their feature next quarter.' or 'Classic solution looking for a problem - founders fell in love with their tech, not their customer.'",
+  "readinessLevel": "LOW" | "MEDIUM" | "HIGH" (90% should be LOW or MEDIUM),
+  "readinessRationale": "2 sentences max. Not advice - a DIAGNOSIS. What's fundamentally broken.",
   "concerns": [
     {
-      "text": "Strategic concern with market/business model analysis - be specific about WHY this is a concern for THIS business",
+      "text": "First deal-killer - be specific and harsh. Why would a partner say no in the first 30 seconds?",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "caseStudyReference": "Reference a real company example: 'We saw this with [Company] which struggled because...'"
+      "vcQuote": "The exact dismissive phrase a VC might say internally. Example: 'We see 10 of these a week. What's different?' or 'Great founders, wrong market.'"
     },
     {
-      "text": "Second strategic concern - different dimension (e.g., if first was market, second could be distribution)",
-      "category": "market" | "team" | "business_model" | "traction" | "competition"
+      "text": "Second deal-killer - different dimension. Focus on WHY VCs will pass, not how to fix it.",
+      "category": "market" | "team" | "business_model" | "traction" | "competition",
+      "vcQuote": "Another internal VC quote. Example: 'The TAM story doesn't hold up under any reasonable assumptions.'"
     },
     {
-      "text": "Third concern focusing on execution or timing risk",
+      "text": "Third concern - hint at deeper systemic issues without revealing everything",
       "category": "market" | "team" | "business_model" | "traction" | "competition"
     }
   ],
   "strengths": [
     {
-      "text": "Strategic strength - what makes this opportunity compelling from a VC perspective",
-      "category": "market" | "team" | "business_model" | "traction" | "competition"
-    },
-    {
-      "text": "Second strength - highlight unfair advantage or market timing",
-      "category": "market" | "team" | "business_model" | "traction" | "competition"
-    },
-    {
-      "text": "Third strength - what could make this a fund-returner",
+      "text": "ONE thing that keeps this from being completely hopeless - but frame it as 'if they fix everything else'",
       "category": "market" | "team" | "business_model" | "traction" | "competition"
     }
   ],
-  "marketInsight": "Deep market-specific insight showing expertise in this category. Reference market dynamics, recent exits, funding trends, or competitive landscape. Example: 'The vertical SaaS wave in [category] is hitting an inflection point - we're seeing 4x revenue multiples for category leaders vs. 2x for horizontal plays. The winners here will be those who own the workflow, not just provide a tool.'",
-  "vcFrameworkCheck": "Apply a specific VC framework to this company. Example: 'Passes Sequoia\\'s \\'Why Now\\' test - regulatory tailwinds and generational shift in buyer behavior create a 2-3 year window. Fails the network effects test - value doesn\\'t compound with scale, which limits terminal valuation.'"
+  "marketInsight": "Market-level threat that creates urgency. Reference competitors, market timing, or fund cycle dynamics. Example: 'Three well-funded competitors just raised Series B. The window to establish positioning is 90 days, max.'",
+  "vcFrameworkCheck": "Apply a VC framework that shows what's missing. Example: 'Fails the 'Why won't Google just do this?' test. No distribution moat, no data moat, no network effects.'",
+  "timingWarning": "Urgent time-based warning. Example: 'This pitch has a 4-week shelf life. Fund allocation decisions for this quarter close in 6 weeks - you're not ready.'",
+  "hiddenIssuesCount": number between 5-12 (estimate of total issues, creating FOMO for the full analysis)
 }`;
 
-    const userPrompt = `STARTUP ASSESSMENT REQUEST:
+    const userPrompt = `STARTUP FOR BRUTAL ASSESSMENT:
 
 Company: ${companyName || 'Unnamed Startup'}
 Stage: ${stage || 'Early'}
 Category: ${category || 'Technology'}
 
-${contextParts.length > 0 ? `AVAILABLE CONTEXT:\n${contextParts.join('\n\n')}` : `MINIMAL CONTEXT: Only basic company info available. Focus your analysis on the market category, typical dynamics for ${stage} companies in ${category || 'this space'}, and strategic considerations.`}
+${contextParts.length > 0 ? `WHAT THEY CLAIM:\n${contextParts.join('\n\n')}` : `LIMITED INFO: They haven't even prepared proper materials. That alone is a red flag. Assess based on ${stage} ${category || 'tech'} companies you've seen fail.`}
 
-Provide your VC Quick Take. Remember:
-- Be specific to THIS company and market
-- Apply real VC frameworks
-- Reference actual case studies
-- Focus on strategic analysis, NOT data completeness
-- Write like you're briefing your partners
+REMEMBER:
+- Be brutal. Create urgency. Make them feel exposed.
+- Use specific VC rejection language
+- Hint at deeper issues but don't reveal solutions
+- 80% negative focus
+- Include time pressure
+- Generate a hiddenIssuesCount between 5-12 to create FOMO
 
-The founder is watching. Show them the caliber of analysis they'll get in the full memo.`;
+The founder needs to feel like they CANNOT ignore this.`;
 
-    console.log('Generating professional VC verdict for:', companyName, '| Context items:', contextParts.length);
+    console.log('Generating provocative VC verdict for:', companyName, '| Context items:', contextParts.length);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -163,7 +160,7 @@ The founder is watching. Show them the caliber of analysis they'll get in the fu
       }
     } catch (parseError) {
       console.error('Parse error:', parseError, 'Content:', content);
-      // High-quality fallback based on category
+      // Brutal fallback based on category
       const categoryLower = (category || 'technology').toLowerCase();
       verdict = generateFallbackVerdict(companyName, stage, categoryLower);
     }
@@ -171,8 +168,10 @@ The founder is watching. Show them the caliber of analysis they'll get in the fu
     // Validate and ensure arrays
     if (!Array.isArray(verdict.concerns)) verdict.concerns = [];
     if (!Array.isArray(verdict.strengths)) verdict.strengths = [];
-    if (!verdict.verdict) verdict.verdict = "Strategic positioning requires deeper analysis.";
-    if (!['LOW', 'MEDIUM', 'HIGH'].includes(verdict.readinessLevel)) verdict.readinessLevel = 'MEDIUM';
+    if (!verdict.verdict) verdict.verdict = "Another pitch that would get a polite pass email.";
+    if (!['LOW', 'MEDIUM', 'HIGH'].includes(verdict.readinessLevel)) verdict.readinessLevel = 'LOW';
+    if (!verdict.hiddenIssuesCount) verdict.hiddenIssuesCount = Math.floor(Math.random() * 5) + 6;
+    if (!verdict.timingWarning) verdict.timingWarning = "This pitch has a 3-week shelf life before your window closes.";
 
     console.log('Successfully generated verdict for:', companyName, 'Level:', verdict.readinessLevel);
 
@@ -190,38 +189,44 @@ The founder is watching. Show them the caliber of analysis they'll get in the fu
   }
 });
 
-// Category-specific fallback verdicts with real insights
+// Brutal fallback verdicts - no sugar-coating
 function generateFallbackVerdict(companyName: string, stage: string, category: string) {
   const categoryInsights: Record<string, any> = {
     'saas': {
-      verdict: "SaaS at this stage is all about proving repeatable sales motion. The question isn't product-market fit - it's go-to-market fit.",
-      marketInsight: "The SaaS market is bifurcating: horizontal tools face 40+ funded competitors while vertical solutions command 3-4x higher valuations. Winners own the workflow. Losers become features. We're seeing consolidation accelerate - 2024 had 2x the M&A of 2023 in this space.",
-      vcFrameworkCheck: "Passes the 'Can this be a $100M ARR business?' threshold test. The key question is unit economics - most SaaS at seed has CAC payback over 18 months. Need to see path to under 12 months for Series A."
+      verdict: "Another horizontal SaaS play hoping product quality beats distribution. It won't.",
+      marketInsight: "The SaaS graveyard is full of great products with no distribution moat. Your 3 well-funded competitors just raised Series B - they'll outspend you 10:1 on sales.",
+      vcFrameworkCheck: "Fails Sequoia's 'why you, why now' test. No clear wedge, no distribution advantage, no data moat. This becomes a feature in someone else's platform.",
+      timingWarning: "You have 8 weeks before Q1 budget allocations freeze. You're not remotely ready for that conversation."
     },
     'fintech': {
-      verdict: "Fintech's second wave is infrastructure, not consumer apps. The regulatory moat cuts both ways - barrier to entry, but also barrier to growth.",
-      marketInsight: "Post-2022 fintech recalibration means VCs are back to fundamentals: unit economics, regulatory clarity, and path to profitability. The 'fintech premium' valuation multiplier is gone. Winners now are infrastructure plays (like Plaid's trajectory) or deeply vertical solutions with regulatory advantages.",
-      vcFrameworkCheck: "Benchmark's 'distribution advantage' framework is critical here - fintech without proprietary distribution channel faces brutal CAC. Need to see embedded strategy or partnership-led growth."
+      verdict: "Regulatory complexity + long sales cycles + thin margins = death by a thousand cuts.",
+      marketInsight: "Post-2022 fintech means proving unit economics before scale. Your burn rate says otherwise. The last 20 fintech pitches we saw had the same 'regulatory moat' story - 3 survived.",
+      vcFrameworkCheck: "Fails the 'path to profitability' test. Banking relationships take 18 months to close. Your runway says 12. Do the math.",
+      timingWarning: "Banking partners make integration decisions in Q4. You missed this cycle. That's a 12-month delay."
     },
     'ai': {
-      verdict: "AI is the new mobile - everyone's building, but the defensibility question is existential. Model commoditization means the moat is in data and distribution, not the model.",
-      marketInsight: "The AI gold rush has created a bifurcated market: infrastructure players (training, deployment) see 10x revenue multiples while application layer faces margin compression. We're tracking 3,000+ AI startups - the ones breaking out have proprietary data flywheels or distribution lock-in. Pure wrappers are getting squeezed.",
-      vcFrameworkCheck: "Fails a16z's 'Why won't OpenAI just do this?' test unless there's clear data moat or vertical expertise. Passes the timing test - we're in a 3-5 year window before enterprise AI stacks consolidate."
+      verdict: "Another AI wrapper betting OpenAI doesn't ship their feature next quarter. They will.",
+      marketInsight: "We've seen 400+ AI startups this year. The ones getting funded have proprietary data or distribution lock-in. You have neither. GPT-5 makes this obsolete.",
+      vcFrameworkCheck: "Fails the 'why won't OpenAI just do this?' test catastrophically. No data moat, no distribution moat, no switching costs. This is a feature, not a company.",
+      timingWarning: "OpenAI's next model drops in 6 weeks. Whatever 'AI advantage' you have expires then."
     },
     'marketplace': {
-      verdict: "Marketplaces are binary outcomes - you either achieve liquidity and become a monopoly, or you die in the 'cold start' valley. The economics only work at scale.",
-      marketInsight: "Marketplace dynamics in 2024: vertical beats horizontal, managed beats pure platform, and winner-take-most is real. We're seeing successful marketplaces launch with 'single-player mode' - useful even without network effects, then layer in marketplace dynamics. Uber, Airbnb playbook still works but requires more capital.",
-      vcFrameworkCheck: "Network effects test: Does value compound with each additional user? Liquidity test: Can you achieve critical mass in a single market before expanding? Most marketplaces die trying to be everywhere at once."
+      verdict: "Marketplace without liquidity is just an expensive website nobody visits.",
+      marketInsight: "Marketplace economics are brutal: you need to win one city completely before expanding. Your 'national launch' strategy is how marketplaces die. We've seen this exact playbook fail 50+ times.",
+      vcFrameworkCheck: "Fails the 'cold start' test. No evidence of supply/demand density anywhere. You're burning cash to acquire both sides simultaneously. That's a losing formula.",
+      timingWarning: "Your largest competitor just raised $50M for geographic expansion. They'll be in your target markets in 90 days."
     },
     'healthtech': {
-      verdict: "Healthcare's trillion-dollar inefficiency is real, but the sales cycle is a startup killer. Success here requires either regulatory tailwind or distribution hack.",
-      marketInsight: "Post-COVID healthtech has bifurcated: digital health faces reimbursement headwinds while infrastructure (interoperability, revenue cycle) sees sustained demand. Enterprise deals average 12-18 month cycles. The winners bypass traditional channels - direct-to-employer, pharmacy integration, or regulatory mandates.",
-      vcFrameworkCheck: "First Round's GTM framework is critical: healthcare startups without a distribution shortcut (strategic partner, regulatory forcing function) face 5+ year paths to scale. Need to see evidence of accelerated sales motion."
+      verdict: "Healthcare sales cycles eat startups for breakfast. Your runway says lunch.",
+      marketInsight: "12-18 month sales cycles + hospital IT budget freezes + regulatory compliance = the healthtech killing fields. We've funded 4 healthtech companies this year. All had existing hospital relationships.",
+      vcFrameworkCheck: "Fails the 'distribution shortcut' test. No strategic partner, no regulatory forcing function, no existing relationships. You're looking at 2+ years to meaningful revenue.",
+      timingWarning: "Hospital budget cycles are annual. You've missed FY24 decisions. Your next window is 9 months away."
     },
     'default': {
-      verdict: "The fundamental question for any early-stage company: Do you have a unique insight that gives you an unfair advantage in capturing a large market?",
-      marketInsight: "Across sectors, we're seeing a return to fundamentals: clear path to profitability, capital efficiency, and defensible differentiation. The ZIRP-era playbook of 'grow at all costs' is dead. Winners in 2024-25 will be those who can demonstrate efficient growth and clear unit economics.",
-      vcFrameworkCheck: "Sequoia's 'Why Now?' framework remains the single most important test. Markets don't create companies - timing does. What's changed in technology, regulation, or behavior that creates a window for this specific solution?"
+      verdict: "Interesting technology looking for a problem worth solving. The market doesn't care.",
+      marketInsight: "The 'ZIRP-era' playbook of grow-at-all-costs is dead. We're seeing 80% of Series A companies fail to raise B. Your metrics don't clear the bar.",
+      vcFrameworkCheck: "Fails basic VC math. Unclear path to $100M revenue, no obvious moat, market timing story is weak. This is a 'nice to have' not a 'need to have'.",
+      timingWarning: "Fund allocation decisions close in 6 weeks. At your current trajectory, you won't be ready for another 2 quarters."
     }
   };
 
@@ -229,38 +234,33 @@ function generateFallbackVerdict(companyName: string, stage: string, category: s
   
   return {
     verdict: insight.verdict,
-    readinessLevel: "MEDIUM",
-    readinessRationale: `${stage} stage companies in ${category} require proof of concept and early market validation. The next milestone is demonstrating repeatable, scalable growth.`,
+    readinessLevel: "LOW",
+    readinessRationale: `This pitch would get passed in the first partner discussion. The fundamentals don't support the story.`,
     concerns: [
       {
-        text: "Market timing and competitive positioning need validation. Is this the right moment for this solution, and what creates defensibility against well-funded incumbents?",
-        category: "market",
-        caseStudyReference: "We've seen promising companies in this space struggle when larger players entered - timing the market expansion phase is critical."
+        text: "Distribution strategy is non-existent. Product-market fit without go-to-market fit creates zombie companies. We've seen this pattern kill 100+ startups.",
+        category: "business_model",
+        vcQuote: "Great product, no idea how to sell it. Pass."
       },
       {
-        text: "Distribution strategy is often the hidden killer at this stage. Product-market fit without go-to-market fit creates zombie companies that can't scale.",
-        category: "business_model"
+        text: "Competitive positioning assumes incumbents won't respond. They will, with 10x your resources and existing customer relationships.",
+        category: "competition",
+        vcQuote: "What stops the big players from crushing this in 6 months?"
       },
       {
-        text: "Unit economics at scale need to be modeled. Early traction doesn't always translate to profitable growth - the transition from founder-led sales to scalable motion is where most stumble.",
+        text: "Unit economics are theoretical. Early traction doesn't validate profitable scale. The transition from founder-led to scalable sales is where companies die.",
         category: "traction"
       }
     ],
     strengths: [
       {
-        text: `Early positioning in ${category} while the category is still forming creates opportunity for market leadership and category definition.`,
+        text: `Market timing in ${category} creates a window - but windows close fast, and you're not positioned to capture it.`,
         category: "market"
-      },
-      {
-        text: "Capital efficiency is increasingly valued by VCs. Companies that can show progress with disciplined spend stand out in current market.",
-        category: "business_model"
-      },
-      {
-        text: "First-mover advantage in emerging segments can create sustainable competitive moats through customer lock-in and data accumulation.",
-        category: "competition"
       }
     ],
     marketInsight: insight.marketInsight,
-    vcFrameworkCheck: insight.vcFrameworkCheck
+    vcFrameworkCheck: insight.vcFrameworkCheck,
+    timingWarning: insight.timingWarning,
+    hiddenIssuesCount: 8
   };
 }
