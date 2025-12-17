@@ -513,6 +513,17 @@ export const Header = () => {
               )}
             </div>
             
+            {/* Delete Account - visible to authenticated users, right after Tools */}
+            {isAuthenticated && (
+              <button
+                onClick={() => setDeleteAccountDialogOpen(true)}
+                className="text-sm font-medium transition-all duration-300 text-muted-foreground hover:neon-pink flex items-center gap-1.5"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Account
+              </button>
+            )}
+            
             {/* My Memo link - only show if user has a generated memo */}
             {isAuthenticated && hasMemo && memoCompanyId && (
               <Link
@@ -560,17 +571,6 @@ export const Header = () => {
                   Reset
                 </button>
               </>
-            )}
-            
-            {/* Delete Account - visible to authenticated users */}
-            {isAuthenticated && (
-              <button
-                onClick={() => setDeleteAccountDialogOpen(true)}
-                className="text-sm font-medium transition-all duration-300 text-destructive/70 hover:text-destructive flex items-center gap-1"
-              >
-                <Trash2 className="w-3 h-3" />
-                Delete
-              </button>
             )}
           </div>
 
