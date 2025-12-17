@@ -259,62 +259,67 @@ export const VCVerdictCard = memo(({
 
   return (
     <div className="relative animate-fade-in">
-      {/* Subtle glow */}
-      <div className="absolute inset-0 bg-gradient-to-r from-destructive/10 via-transparent to-primary/10 rounded-3xl blur-xl opacity-40" />
+      {/* Gradient glow */}
+      <div className="absolute inset-0 bg-gradient-to-r from-destructive/20 via-amber-500/15 to-primary/20 rounded-3xl blur-xl opacity-50" />
       
-      <div className="relative bg-card/95 backdrop-blur-sm border border-border/50 rounded-3xl overflow-hidden">
+      <div className="relative bg-card/95 backdrop-blur-sm border border-border/50 rounded-3xl overflow-hidden shadow-lg">
         {/* Header */}
-        <div className="p-5 pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-                <Scale className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <div>
-                <h2 className="text-lg font-display font-bold">VC Quick Take</h2>
-                <p className="text-xs text-muted-foreground">Preliminary investment scan</p>
-              </div>
+        <div className="p-6 pb-5">
+          <div className="flex items-center gap-4 mb-5">
+            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/60 shadow-lg">
+              <Scale className="w-7 h-7 text-primary-foreground" />
             </div>
-            <Badge className={`${config.bgColor} ${config.color} border ${config.borderColor} text-xs`}>
-              {config.emoji} {config.label}
-            </Badge>
+            <div>
+              <h2 className="text-2xl font-display font-bold text-foreground">VC Quick Take</h2>
+              <p className="text-muted-foreground">Preliminary investment assessment</p>
+            </div>
           </div>
 
-          {/* Main Verdict - Full insight */}
-          <div className="p-4 rounded-xl bg-muted/30 border border-border/30 mb-4">
-            <p className="text-foreground/90 text-sm leading-relaxed italic">
+          {/* Main Verdict Quote */}
+          <div className="p-5 rounded-2xl bg-muted/30 border border-border/30 mb-5">
+            <p className="text-lg text-foreground leading-relaxed font-medium italic">
               "{verdict.verdict}"
             </p>
           </div>
 
-          {/* Readiness Rationale */}
-          <div className={`p-3 rounded-lg ${config.bgColor} border ${config.borderColor} mb-4`}>
-            <p className="text-sm text-foreground/80">
-              <span className={`font-semibold ${config.color}`}>Key gap:</span> {verdict.readinessRationale}
-            </p>
+          {/* Readiness Level */}
+          <div className={`p-4 rounded-xl ${config.bgColor} border ${config.borderColor}`}>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{config.emoji}</span>
+              <div>
+                <span className={`font-bold text-lg ${config.color}`}>{config.label}</span>
+                <p className="text-sm text-muted-foreground mt-0.5">{verdict.readinessRationale}</p>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Red Flags Section */}
-        <div className="px-5 pb-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Flame className="w-4 h-4 text-destructive" />
-              <span className="font-semibold text-sm">{redFlagsCount} Red Flags Identified</span>
+        <div className="px-6 pb-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-destructive/20 flex items-center justify-center">
+                <Flame className="w-5 h-5 text-destructive" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">{redFlagsCount} Red Flags Identified</h3>
+                <p className="text-xs text-muted-foreground">+{hiddenRisksEstimate - redFlagsCount} more likely in full analysis</p>
+              </div>
             </div>
-            <span className="text-[10px] text-muted-foreground bg-destructive/10 px-2 py-0.5 rounded-full">
-              +{hiddenRisksEstimate - redFlagsCount} more likely
-            </span>
           </div>
           
-          <div className="space-y-2">
+          <div className="space-y-3">
             {concerns.slice(0, 3).map((concern, i) => (
-              <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-destructive/5 border border-destructive/15">
-                <AlertCircle className="w-3.5 h-3.5 text-destructive flex-shrink-0 mt-0.5" />
+              <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-destructive/20 text-destructive text-sm font-bold flex items-center justify-center mt-0.5">
+                  {i + 1}
+                </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-foreground/80 leading-relaxed">{concern.text}</p>
+                  <p className="text-sm text-foreground leading-relaxed">{concern.text}</p>
                   {concern.caseStudyReference && (
-                    <p className="text-[10px] text-muted-foreground mt-1 italic">{concern.caseStudyReference}</p>
+                    <p className="text-xs text-muted-foreground mt-2 italic border-l-2 border-destructive/30 pl-2">
+                      {concern.caseStudyReference}
+                    </p>
                   )}
                 </div>
               </div>
@@ -324,13 +329,15 @@ export const VCVerdictCard = memo(({
 
         {/* Market Insight */}
         {verdict.marketInsight && (
-          <div className="px-5 pb-4">
-            <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
-              <div className="flex items-start gap-2">
-                <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div className="px-6 pb-5">
+            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/25">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                  <Lightbulb className="w-5 h-5 text-amber-500" />
+                </div>
                 <div>
-                  <p className="font-semibold text-xs text-foreground mb-1">Market Context</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{verdict.marketInsight}</p>
+                  <h3 className="font-semibold text-foreground mb-1">Market Context</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{verdict.marketInsight}</p>
                 </div>
               </div>
             </div>
@@ -339,13 +346,15 @@ export const VCVerdictCard = memo(({
 
         {/* What Needs to Be Fixed */}
         {verdict.vcFrameworkCheck && (
-          <div className="px-5 pb-4">
-            <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-              <div className="flex items-start gap-2">
-                <Target className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+          <div className="px-6 pb-5">
+            <div className="p-4 rounded-xl bg-primary/10 border border-primary/25">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Target className="w-5 h-5 text-primary" />
+                </div>
                 <div>
-                  <p className="font-semibold text-xs text-foreground mb-1">To Become VC-Ready</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{verdict.vcFrameworkCheck}</p>
+                  <h3 className="font-semibold text-foreground mb-1">To Become VC-Ready</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{verdict.vcFrameworkCheck}</p>
                 </div>
               </div>
             </div>
@@ -354,28 +363,33 @@ export const VCVerdictCard = memo(({
 
         {/* Strengths Preview */}
         {strengths.length > 0 && (
-          <div className="px-5 pb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              <span className="font-semibold text-sm">{strengths.length} Strength{strengths.length > 1 ? 's' : ''} Noted</span>
+          <div className="px-6 pb-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground">{strengths.length} Strength{strengths.length > 1 ? 's' : ''} Noted</h3>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="space-y-2">
               {strengths.slice(0, 2).map((strength, i) => (
-                <span key={i} className="text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                  {strength.text.length > 50 ? strength.text.slice(0, 50) + '...' : strength.text}
-                </span>
+                <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                  <p className="text-sm text-foreground leading-relaxed">{strength.text}</p>
+                </div>
               ))}
             </div>
           </div>
         )}
 
         {/* CTA */}
-        <div className="p-5 pt-2 border-t border-border/30">
-          <Button onClick={navigateToPortal} className="w-full" size="lg">
+        <div className="p-6 pt-2 border-t border-border/30 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
+          <Button onClick={navigateToPortal} className="w-full h-12 text-base" size="lg">
             Get the Full Analysis
-            <ArrowRight className="w-4 h-4 ml-2" />
+            <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
-          <p className="text-[10px] text-center text-muted-foreground mt-2">
+          <p className="text-xs text-center text-muted-foreground mt-3">
             Detailed frameworks, action plans & investor-ready positioning
           </p>
         </div>
