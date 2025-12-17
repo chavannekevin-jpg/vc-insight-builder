@@ -702,42 +702,24 @@ export default function FreemiumHub() {
             </>
           )}
 
-          {/* Company Profile Card - Full Width, Below Verdict */}
-          <CompanyProfileCard
-            name={company.name}
-            stage={company.stage}
-            sector={company.category || undefined}
-            completedQuestions={completedQuestions}
-            totalQuestions={totalQuestions}
-          />
-          
-          {/* Fast Track Deck Upload */}
+          {/* Change Deck Option */}
           {!memoGenerated && (
             <Card 
-              className="relative overflow-hidden border-2 border-primary/40 hover:border-primary/70 bg-gradient-to-br from-primary/5 via-primary/10 to-secondary/5 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group"
+              className="relative overflow-hidden border border-border/50 hover:border-primary/50 bg-card cursor-pointer transition-all duration-300 hover:shadow-md group"
               onClick={() => setDeckWizardOpen(true)}
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-              <CardContent className="p-6 relative">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="px-2 py-0.5 text-xs font-bold bg-primary text-primary-foreground rounded-full">
-                    FAST TRACK
-                  </span>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl bg-primary/20 group-hover:bg-primary/30 transition-colors">
-                    <Upload className="w-6 h-6 text-primary" />
+              <CardContent className="p-4 relative">
+                <div className="flex items-center gap-4">
+                  <div className="p-2 rounded-lg bg-muted group-hover:bg-primary/10 transition-colors">
+                    <Upload className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-lg mb-1">Upload Your Deck</h3>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      AI extracts your info and pre-fills the questionnaire. Your verdict will update with the new data.
+                    <h3 className="font-medium text-sm">Change Deck</h3>
+                    <p className="text-xs text-muted-foreground">
+                      Upload a different deck to refresh your VC verdict
                     </p>
-                    <div className="flex items-center gap-2 text-primary text-sm font-medium">
-                      <Sparkles className="w-4 h-4" />
-                      Save 15+ minutes
-                    </div>
                   </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
               </CardContent>
             </Card>
@@ -748,6 +730,15 @@ export default function FreemiumHub() {
 
           {/* Knowledge Library */}
           <CollapsedLibrary stage={company.stage} />
+
+          {/* Company Profile Card - At Bottom */}
+          <CompanyProfileCard
+            name={company.name}
+            stage={company.stage}
+            sector={company.category || undefined}
+            completedQuestions={completedQuestions}
+            totalQuestions={totalQuestions}
+          />
         </div>
       </main>
 
