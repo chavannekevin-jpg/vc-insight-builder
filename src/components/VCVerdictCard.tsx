@@ -6,7 +6,8 @@ import {
   ArrowRight, AlertTriangle, 
   Eye, CheckCircle2, Lock, Sparkles, 
   FileText, Flame, Scale, Clock, 
-  ShieldX, MessageSquareX, Zap
+  ShieldX, MessageSquareX, Zap, Target,
+  Shield, TrendingDown, DollarSign, Users, BarChart3, Rocket
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -307,22 +308,50 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* What's Hidden - Tease without blur */}
+        {/* What's Hidden - Showcase full value */}
         <div className="px-6 pb-4">
           <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
             <p className="text-xs text-muted-foreground font-medium mb-3 uppercase tracking-wide">What you'll uncover in the full analysis:</p>
-            <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
               <div className="flex items-center gap-2">
-                <Flame className="w-4 h-4 text-destructive" />
-                <span className="text-sm text-foreground">+{totalHiddenIssues} additional critical issues identified</span>
+                <Flame className="w-3.5 h-3.5 text-destructive flex-shrink-0" />
+                <span className="text-xs text-foreground">+{totalHiddenIssues} hidden deal-breakers</span>
               </div>
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-500" />
-                <span className="text-sm text-foreground">Your specific fix playbook</span>
+                <Target className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                <span className="text-xs text-foreground">Section-by-section scores</span>
               </div>
               <div className="flex items-center gap-2">
-                <MessageSquareX className="w-4 h-4 text-primary" />
-                <span className="text-sm text-foreground">IC objection pre-responses</span>
+                <Zap className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                <span className="text-xs text-foreground">90-day fix playbook</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Shield className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                <span className="text-xs text-foreground">Moat durability analysis</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingDown className="w-3.5 h-3.5 text-destructive flex-shrink-0" />
+                <span className="text-xs text-foreground">Competitor 12-month moves</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                <span className="text-xs text-foreground">Bottoms-up TAM model</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                <span className="text-xs text-foreground">Team credibility gaps</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <FileText className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                <span className="text-xs text-foreground">IC objection responses</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                <span className="text-xs text-foreground">Traction depth test</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Rocket className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                <span className="text-xs text-foreground">Exit narrative & acquirers</span>
               </div>
             </div>
           </div>
