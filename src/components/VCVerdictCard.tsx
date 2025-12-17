@@ -307,16 +307,11 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* LOCKED: Additional Issues - Create FOMO */}
+        {/* What's Hidden - Tease without blur */}
         <div className="px-6 pb-4">
-          <div className="relative p-4 rounded-xl bg-muted/50 border border-border/50 overflow-hidden">
-            {/* Blur overlay */}
-            <div className="absolute inset-0 backdrop-blur-[2px] bg-background/60 z-10 flex flex-col items-center justify-center gap-2">
-              <Lock className="w-5 h-5 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground font-medium">Locked</span>
-            </div>
-            {/* Blurred content preview */}
-            <div className="space-y-2 opacity-50">
+          <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
+            <p className="text-xs text-muted-foreground font-medium mb-3 uppercase tracking-wide">What you'll uncover in the full analysis:</p>
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Flame className="w-4 h-4 text-destructive" />
                 <span className="text-sm text-foreground">+{totalHiddenIssues} additional critical issues identified</span>
