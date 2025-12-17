@@ -200,7 +200,7 @@ const AcceleratorLanding = () => {
                 className="text-muted-foreground"
                 onClick={() => navigate('/sample-memo')}
               >
-                See how your startup would be mapped →
+                See a full startup analysis →
               </Button>
             </div>
           </div>
