@@ -77,13 +77,17 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/intake`;
+      const redirectPath = searchParams.get('redirect');
+      const emailRedirectTo =
+        redirectPath && redirectPath.startsWith('/')
+          ? `${window.location.origin}${redirectPath}`
+          : `${window.location.origin}/intake`;
       
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo,
         },
       });
 

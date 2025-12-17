@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { PageLoadingSkeleton } from "@/components/LoadingSkeleton";
 import { HooksErrorBoundary } from "@/components/HooksErrorBoundary";
 
@@ -133,6 +133,12 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const RedirectPreserveSearch = ({ to }: { to: string }) => {
+  const location = useLocation();
+  const search = location.search || "";
+  return <Navigate to={`${to}${search}`} replace />;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -284,11 +290,13 @@ const App = () => (
             <Route path="/regeneration-success" element={<RegenerationSuccess />} />
             <Route path="/analysis-regenerate" element={<MemoRegenerate />} />
             {/* Backward compatibility redirects for old memo URLs */}
-            <Route path="/memo" element={<Navigate to="/analysis" replace />} />
-            <Route path="/memo/*" element={<Navigate to="/analysis" replace />} />
+            <Route path="/memo/section" element={<RedirectPreserveSearch to="/analysis/section" />} />
+            <Route path="/memo/complete" element={<RedirectPreserveSearch to="/analysis/complete" />} />
+            <Route path="/memo" element={<RedirectPreserveSearch to="/analysis" />} />
+            <Route path="/memo/*" element={<RedirectPreserveSearch to="/analysis" />} />
             <Route path="/sample-memo" element={<Navigate to="/sample-analysis" replace />} />
             <Route path="/sample-memo/*" element={<Navigate to="/sample-analysis" replace />} />
-            <Route path="/checkout-memo" element={<Navigate to="/checkout-analysis" replace />} />
+            <Route path="/checkout-memo" element={<RedirectPreserveSearch to="/checkout-analysis" />} />
             <Route path="/memo-regenerate" element={<Navigate to="/analysis-regenerate" replace />} />
             <Route path="/admin/memo-builder" element={<Navigate to="/admin/analysis-builder" replace />} />
             <Route path="/accelerator-demo/startup/:id/memo" element={<Navigate to="/accelerator-demo/startup/:id/analysis" replace />} />

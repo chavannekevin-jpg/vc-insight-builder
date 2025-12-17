@@ -24,7 +24,8 @@ export default function MemoCompletionScreen() {
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate("/auth");
+        const returnTo = `${window.location.pathname}${window.location.search}`;
+        navigate(`/auth?redirect=${encodeURIComponent(returnTo)}`, { replace: true });
         return;
       }
 
@@ -43,7 +44,7 @@ export default function MemoCompletionScreen() {
 
       if (!company.has_premium) {
         // Non-premium users shouldn't access completion screen for full memo
-        navigate(`/checkout-memo?companyId=${companyId}`, { replace: true });
+        navigate(`/checkout-analysis?companyId=${companyId}`, { replace: true });
         return;
       }
 

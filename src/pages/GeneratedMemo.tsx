@@ -613,13 +613,13 @@ export default function GeneratedMemo() {
     setShowRejectionPreview(false);
     // Redirect non-premium users to wizard view instead of full memo
     if (!hasPremium && companyId) {
-      navigate(`/memo/section?companyId=${companyId}&section=0`, { replace: true });
+      navigate(`/analysis/section?companyId=${companyId}&section=0`, { replace: true });
     }
   };
 
   const handleGetFullMemo = () => {
     setShowRejectionPreview(false);
-    navigate(`/checkout-memo?companyId=${companyId}`);
+    navigate(`/checkout-analysis?companyId=${companyId}`);
   };
 
   if (!memoContent || !companyInfo) {
@@ -765,7 +765,7 @@ export default function GeneratedMemo() {
               <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
                 Unlock detailed VC analysis, strategic tools, benchmarks, and actionable insights for each section.
               </p>
-              <Button onClick={() => navigate(`/checkout-memo?companyId=${companyId}`)}>
+              <Button onClick={() => navigate(`/checkout-analysis?companyId=${companyId}`)}>
                 Unlock Full Memo
               </Button>
             </div>

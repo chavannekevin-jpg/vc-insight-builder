@@ -87,7 +87,8 @@ export default function MemoSectionView() {
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate("/auth");
+        const returnTo = `${window.location.pathname}${window.location.search}`;
+        navigate(`/auth?redirect=${encodeURIComponent(returnTo)}`, { replace: true });
         return;
       }
 
@@ -766,7 +767,7 @@ export default function MemoSectionView() {
                 variant={sectionIndex === totalSections - 1 ? "default" : "default"}
                 onClick={() => {
                   if (sectionIndex === totalSections - 1) {
-                    navigate(`/memo/complete?companyId=${companyId}`);
+                    navigate(`/analysis/complete?companyId=${companyId}`);
                   } else {
                     goToSection(sectionIndex + 1);
                   }

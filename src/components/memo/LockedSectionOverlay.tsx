@@ -96,7 +96,7 @@ export function LockedSectionOverlay({ children, sectionTitle }: LockedSectionOv
 
   const handleClick = () => {
     if (companyId) {
-      navigate(`/checkout-memo?companyId=${companyId}`);
+      navigate(`/checkout-analysis?companyId=${companyId}`);
     }
   };
 

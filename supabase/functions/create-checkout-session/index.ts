@@ -67,7 +67,7 @@ serve(async (req) => {
       line_items: lineItems,
       mode: "payment",
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}&companyId=${companyId}`,
-      cancel_url: `${req.headers.get("origin")}/checkout-memo?companyId=${companyId}`,
+      cancel_url: `${req.headers.get("origin")}/checkout-analysis?companyId=${companyId}`,
       metadata: {
         companyId,
         userId: user.id,
