@@ -19,6 +19,9 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 // Max size per image when processing multiple images (3MB each)
 const MAX_IMAGE_SIZE_BYTES = 3 * 1024 * 1024;
 
+// Max number of images to process (to avoid CPU limits)
+const MAX_IMAGES_TO_PROCESS = 8;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -145,58 +148,69 @@ For missing information, set content to null and confidence to 0.`;
     let messages: any[] = [];
 
     if (hasMultipleImages) {
-      // Process multiple images (from client-side PDF conversion)
-      console.log('Processing', imageUrls.length, 'images from client-side conversion');
+      // Limit number of images to avoid CPU limits - take first N slides (most important info)
+      const imagesToProcess = imageUrls.slice(0, MAX_IMAGES_TO_PROCESS);
+      console.log(`Processing ${imagesToProcess.length} of ${imageUrls.length} images (limit: ${MAX_IMAGES_TO_PROCESS})`);
       
-      const imageContent: any[] = [
-        {
-          type: 'text',
-          text: `Analyze these ${imageUrls.length} pitch deck slides and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}`
-        }
-      ];
-      
-      // Fetch and encode each image
-      for (let i = 0; i < imageUrls.length; i++) {
-        const url = imageUrls[i];
-        console.log(`Fetching image ${i + 1}/${imageUrls.length}`);
-        
+      // Fetch all images in parallel for speed
+      const imagePromises = imagesToProcess.map(async (url: string, i: number) => {
         try {
+          console.log(`Fetching image ${i + 1}/${imagesToProcess.length}`);
           const imageResponse = await fetch(url);
           if (!imageResponse.ok) {
             console.warn(`Failed to fetch image ${i + 1}:`, imageResponse.status);
-            continue;
+            return null;
           }
           
           const imageBuffer = await imageResponse.arrayBuffer();
           const imageSize = imageBuffer.byteLength;
           
-          // Skip images that are too large
           if (imageSize > MAX_IMAGE_SIZE_BYTES) {
             console.warn(`Image ${i + 1} too large (${imageSize} bytes), skipping`);
-            continue;
+            return null;
           }
           
           const base64Image = base64Encode(imageBuffer);
           const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
           
-          imageContent.push({
-            type: 'image_url',
-            image_url: { url: `data:${contentType};base64,${base64Image}` }
-          });
-          
-          console.log(`Added image ${i + 1}, size: ${imageSize} bytes`);
+          console.log(`Processed image ${i + 1}, size: ${imageSize} bytes`);
+          return {
+            index: i,
+            content: {
+              type: 'image_url',
+              image_url: { url: `data:${contentType};base64,${base64Image}` }
+            }
+          };
         } catch (imgError) {
           console.error(`Error processing image ${i + 1}:`, imgError);
+          return null;
         }
-      }
+      });
       
-      if (imageContent.length === 1) {
-        // Only the text prompt, no images loaded
+      const results = await Promise.all(imagePromises);
+      
+      // Filter out failed fetches and sort by original index
+      const validImages = results
+        .filter((r): r is { index: number; content: any } => r !== null)
+        .sort((a, b) => a.index - b.index)
+        .map(r => r.content);
+      
+      console.log(`Successfully loaded ${validImages.length} images`);
+      
+      if (validImages.length === 0) {
         return new Response(
           JSON.stringify({ error: 'Failed to load any images from the deck' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+      
+      const imageContent: any[] = [
+        {
+          type: 'text',
+          text: `Analyze these ${validImages.length} pitch deck slides (first ${MAX_IMAGES_TO_PROCESS} of ${imageUrls.length} total) and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}`
+        },
+        ...validImages
+      ];
       
       messages = [
         { role: 'system', content: systemPrompt },
