@@ -79,7 +79,8 @@ export default function MemoSectionView() {
 
   useEffect(() => {
     const loadMemo = async () => {
-      if (!companyId) {
+      if (!companyId || companyId === 'null' || companyId === 'undefined') {
+        console.error('[MemoSectionView] Missing or invalid companyId:', companyId);
         navigate("/portal");
         return;
       }
@@ -189,18 +190,33 @@ export default function MemoSectionView() {
   // Non-premium users trying to access paid sections get redirected to checkout
   const isLocked = !hasPremium && sectionIndex > 0;
   
-  if (isLocked) {
-    navigate(`/checkout-memo?companyId=${companyId}`, { replace: true });
+  if (isLocked && companyId) {
+    console.log('[MemoSectionView] Section locked, redirecting to checkout with companyId:', companyId);
+    navigate(`/checkout-analysis?companyId=${companyId}`, { replace: true });
     return null;
   }
   
   const progressPercent = ((sectionIndex + 1) / totalSections) * 100;
 
   const goToSection = (index: number) => {
+    if (!companyId) {
+      console.error('[MemoSectionView] Cannot navigate - companyId is missing');
+      navigate("/portal");
+      return;
+    }
     if (index >= 0 && index < totalSections) {
       navigate(`/analysis/section?companyId=${companyId}&section=${index}`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  };
+
+  const handleUnlock = () => {
+    if (!companyId) {
+      console.error('[MemoSectionView] Cannot unlock - companyId is missing');
+      navigate("/portal");
+      return;
+    }
+    navigate(`/checkout-analysis?companyId=${companyId}`);
   };
 
   // Render VC Quick Take page (Section 0)
@@ -242,7 +258,7 @@ export default function MemoSectionView() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={() => navigate(`/checkout-memo?companyId=${companyId}`)}
+                  onClick={handleUnlock}
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <BookOpen className="w-4 h-4 mr-2" />
@@ -299,7 +315,7 @@ export default function MemoSectionView() {
             <MemoVCQuickTake 
               quickTake={vcQuickTake} 
               showTeaser={!hasPremium} 
-              onUnlock={() => navigate(`/checkout-memo?companyId=${companyId}`)} 
+              onUnlock={handleUnlock} 
             />
           )}
 
@@ -325,7 +341,7 @@ export default function MemoSectionView() {
                     The remaining {totalSections - 1} sections show exactly how VCs analyze each area and what you can do to fix every concern before your pitch.
                   </p>
                   <Button 
-                    onClick={() => navigate(`/checkout-memo?companyId=${companyId}`)}
+                    onClick={handleUnlock}
                     className="w-full sm:w-auto"
                   >
                     Unlock Full Memo →

@@ -50,10 +50,11 @@ export default function CheckoutMemo() {
     }
     setUser(session.user);
 
-    if (!companyId) {
+    if (!companyId || companyId === 'null' || companyId === 'undefined') {
+      console.error('[CheckoutMemo] Missing or invalid companyId:', companyId);
       toast({
         title: "Invalid request",
-        description: "Company ID is missing.",
+        description: "Company ID is missing. Please go back and try again.",
         variant: "destructive",
       });
       navigate("/portal");
@@ -377,7 +378,7 @@ export default function CheckoutMemo() {
             </Button>
 
             <Button 
-              onClick={() => navigate(`/analysis/section?companyId=${companyId}&section=0`)}
+              onClick={() => companyId ? navigate(`/analysis/section?companyId=${companyId}&section=0`) : navigate('/portal')}
               variant="ghost"
               size="sm"
               className="w-full gap-2"

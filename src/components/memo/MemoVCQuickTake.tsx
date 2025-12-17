@@ -396,7 +396,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
                 className="w-full gap-2"
                 size="lg"
               >
-                Access the Full IC Brief
+                Access the Full Analysis
                 <ChevronRight className="w-4 h-4" />
               </Button>
             )}
