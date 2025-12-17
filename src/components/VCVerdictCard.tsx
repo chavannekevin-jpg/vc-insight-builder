@@ -215,8 +215,9 @@ export const VCVerdictCard = memo(({
   const navigateToMemo = useCallback(() => navigate(`/analysis?companyId=${companyId}&view=full`), [navigate, companyId]);
   const navigateToCheckout = useCallback(() => navigate(`/checkout-analysis?companyId=${companyId}`), [navigate, companyId]);
 
-  // Memo generated state
-  if (memoGenerated) {
+  // Show simplified card only for PAID users with memo
+  // Unpaid users should see the full verdict even if memo is generated
+  if (memoGenerated && hasPaid) {
     return (
       <div className="relative group animate-fade-in">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-secondary/50 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500" />
