@@ -221,7 +221,7 @@ export default function MemoRegenerate() {
       });
 
       // Navigate to regenerate
-      navigate(`/memo?companyId=${companyId}&regenerate=true`);
+      navigate(`/analysis?companyId=${companyId}&regenerate=true`);
     } catch (error) {
       console.error("Error saving:", error);
       toast({ title: "Error", description: "Failed to save changes", variant: "destructive" });

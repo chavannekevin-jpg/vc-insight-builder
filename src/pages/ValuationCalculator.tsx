@@ -500,7 +500,7 @@ export default function ValuationCalculator() {
                           Numbers don't raise capital. Stories do.
                         </p>
                         <Button 
-                          onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
+                          onClick={() => companyId && navigate(`/analysis?companyId=${companyId}&view=full`)}
                           variant="outline"
                           size="sm"
                           className="w-full text-xs border-destructive/40 hover:bg-destructive/20"
@@ -613,7 +613,7 @@ export default function ValuationCalculator() {
                       </div>
                     </div>
                     <Button 
-                      onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
+                      onClick={() => companyId && navigate(`/analysis?companyId=${companyId}&view=full`)}
                       variant="destructive"
                       className="w-full font-bold"
                       size="lg"

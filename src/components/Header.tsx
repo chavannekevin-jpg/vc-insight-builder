@@ -589,10 +589,10 @@ export const Header = () => {
               {/* My Analysis link in mobile menu */}
               {isAuthenticated && hasMemo && memoCompanyId && (
                 <Link
-                  to={`/memo?companyId=${memoCompanyId}`}
+                  to={`/analysis?companyId=${memoCompanyId}&view=full`}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`text-sm font-medium transition-all duration-300 ${
-                    location.pathname === "/memo" ? "neon-pink" : "text-muted-foreground hover:neon-pink"
+                    location.pathname === "/analysis" ? "neon-pink" : "text-muted-foreground hover:neon-pink"
                   }`}
                 >
                   My Analysis

@@ -35,7 +35,7 @@ export default function PaymentSuccess() {
           setVerified(true);
           // Auto-redirect to memo after successful verification
           setTimeout(() => {
-            navigate(`/memo?companyId=${companyId}`);
+            navigate(`/analysis?companyId=${companyId}&view=full`);
           }, 2000);
         } else {
           setError(data?.error || "Payment verification failed");
@@ -121,7 +121,7 @@ export default function PaymentSuccess() {
 
           <div className="pt-4 space-y-3">
             <Button 
-              onClick={() => navigate(`/memo?companyId=${companyId}`)}
+              onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
               size="lg"
               className="w-full gradient-primary shadow-glow hover-neon-pulse font-bold"
             >

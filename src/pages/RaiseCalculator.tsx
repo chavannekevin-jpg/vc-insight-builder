@@ -674,7 +674,7 @@ export default function RaiseCalculator() {
                       Can you actually justify this raise?
                     </p>
                     <Button 
-                      onClick={() => companyId && navigate(`/memo?companyId=${companyId}`)}
+                      onClick={() => companyId && navigate(`/analysis?companyId=${companyId}&view=full`)}
                       variant="outline"
                       size="sm"
                       className="w-full text-xs border-destructive/40 hover:bg-destructive/20"
@@ -865,7 +865,7 @@ export default function RaiseCalculator() {
                   onClick={() => {
                     if (hasMemo && memoCompanyId) {
                       // User has a memo, go to it
-                      navigate(`/memo?companyId=${memoCompanyId}`);
+                      navigate(`/analysis?companyId=${memoCompanyId}&view=full`);
                     } else {
                       // Navigate to pricing
                       navigate('/pricing');
