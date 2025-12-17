@@ -43,32 +43,11 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
   }
 
   function getKillerQuestionFromConcerns(concernsList: string[]): string {
-    if (concernsList.length === 0) return "What evidence supports this will work?";
+    if (concernsList.length === 0) return "Where's the evidence?";
     const firstConcern = concernsList[0];
-    // Transform concern into a pointed question
-    if (firstConcern.toLowerCase().includes('traction')) {
-      return "How do you explain the lack of measurable traction after this long?";
-    }
-    if (firstConcern.toLowerCase().includes('market') || firstConcern.toLowerCase().includes('tam')) {
-      return "Can you prove this market is actually large enough to matter?";
-    }
-    if (firstConcern.toLowerCase().includes('team') || firstConcern.toLowerCase().includes('founder')) {
-      return "Why is this team uniquely positioned to win this market?";
-    }
-    if (firstConcern.toLowerCase().includes('competition') || firstConcern.toLowerCase().includes('competitor')) {
-      return "What stops a well-funded competitor from copying this in six months?";
-    }
-    if (firstConcern.toLowerCase().includes('revenue') || firstConcern.toLowerCase().includes('monetiz')) {
-      return "When will this actually generate meaningful revenue?";
-    }
-    if (firstConcern.toLowerCase().includes('unit economics') || firstConcern.toLowerCase().includes('ltv') || firstConcern.toLowerCase().includes('cac')) {
-      return "Do the unit economics actually work at scale?";
-    }
-    if (firstConcern.toLowerCase().includes('defensib') || firstConcern.toLowerCase().includes('moat')) {
-      return "What is genuinely defensible about this business?";
-    }
-    // Default: use the concern but frame it as a question
-    return "What would you say to a partner who asked: " + firstConcern.split('.')[0] + "?";
+    // Extract first 8 words
+    const words = firstConcern.split(' ').slice(0, 8).join(' ');
+    return words + '...';
   }
 
   const readinessConfig = {
