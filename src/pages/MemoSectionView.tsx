@@ -296,7 +296,11 @@ export default function MemoSectionView() {
 
           {/* VC Quick Take Content */}
           {vcQuickTake && (
-            <MemoVCQuickTake quickTake={vcQuickTake} showTeaser={false} />
+            <MemoVCQuickTake 
+              quickTake={vcQuickTake} 
+              showTeaser={!hasPremium} 
+              onUnlock={() => navigate(`/checkout-memo?companyId=${companyId}`)} 
+            />
           )}
 
           {/* Action Plan */}
