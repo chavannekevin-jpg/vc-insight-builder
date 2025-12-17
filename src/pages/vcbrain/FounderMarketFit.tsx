@@ -152,8 +152,8 @@ export default function FounderMarketFit() {
       </div>
 
       <ConversionBanner 
-        message="Need to articulate your founder-market fit for investors? The Investment Memo Template includes a Team section showing exactly how to position your unique advantages."
-        buttonText="Get the Template"
+        message="Need to articulate your founder-market fit for investors? The VC Analysis includes a Team section showing exactly how to position your unique advantages."
+        buttonText="Get Your Analysis"
       />
 
       <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">Founder-Market Fit Checklist</h2>

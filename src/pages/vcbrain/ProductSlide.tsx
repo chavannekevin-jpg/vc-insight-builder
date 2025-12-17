@@ -73,7 +73,7 @@ export default function ProductSlide() {
         ]}
       />
 
-      <ConversionBanner message="Not sure how to showcase your product without overwhelming investors? The Investment Memo breaks down exactly what to show and what to skip." />
+      <ConversionBanner message="Not sure how to showcase your product without overwhelming investors? The VC Analysis breaks down exactly what to show and what to skip." />
 
       <div className="prose prose-lg max-w-none text-foreground">
         <h2 className="text-2xl font-bold mb-4">Product Slide Killers</h2>

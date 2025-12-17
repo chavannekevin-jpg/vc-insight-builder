@@ -181,7 +181,7 @@ export default function FundraisingTimeline() {
       </div>
 
       <ConversionBanner 
-        message="Planning your fundraise? The Investment Memo Template helps you prepare everything VCs want to see—so you can move faster when the time comes."
+        message="Planning your fundraise? The VC Analysis helps you prepare everything VCs want to see—so you can move faster when the time comes."
         buttonText="Start Preparing"
       />
 

@@ -230,9 +230,9 @@ const FollowOnCapital = () => {
           </div>
 
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 my-8">
-            <h4 className="font-semibold text-foreground mb-3">Your Memo Evolves Too</h4>
+            <h4 className="font-semibold text-foreground mb-3">Your Analysis Evolves Too</h4>
             <p className="text-muted-foreground mb-4">
-              The investment memo you build for your Series A should explicitly address progress since seed. Show me the milestones we agreed to, what happened, what we learned, and why the next phase is even more compelling.
+              The VC analysis you build for your Series A should explicitly address progress since seed. Show me the milestones we agreed to, what happened, what we learned, and why the next phase is even more compelling.
             </p>
             <p className="text-muted-foreground m-0">
               The best founders treat follow-on as a new investment decision — because that's exactly what it is. They don't assume support; they earn it with clear evidence and updated thesis.

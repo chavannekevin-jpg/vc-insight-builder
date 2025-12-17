@@ -91,7 +91,7 @@ export default function VCBrainHome() {
           Stop Learning. Start Executing.
         </h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          You've read enough articles. The Investment Memorandum Template gives you the exact framework 
+          You've read enough articles. The VC Analysis gives you the exact framework 
           VCs use to evaluate your startup. Every section. Every metric. Every red flag.
         </p>
         <Button 
@@ -99,10 +99,10 @@ export default function VCBrainHome() {
           className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
           onClick={() => navigate('/pricing')}
         >
-          Get the Investment Memo
+          Get Your VC Analysis
         </Button>
         <p className="text-xs text-muted-foreground">
-          If this feels overwhelming, that's because fundraising is hard. The memo makes it clear.
+          If this feels overwhelming, that's because fundraising is hard. The analysis makes it clear.
         </p>
       </div>
 
@@ -125,8 +125,8 @@ export default function VCBrainHome() {
             They're how you avoid wasting months.
           </li>
           <li>
-            <strong>Get the memo.</strong> Everything here is free, but it's incomplete. The Investment Memorandum 
-            Template is the full framework. It's how you actually prepare.
+            <strong>Get the analysis.</strong> Everything here is free, but it's incomplete. The VC Analysis 
+            is the full framework. It's how you actually prepare.
           </li>
         </ol>
       </div>

@@ -137,8 +137,8 @@ export default function FatalErrors() {
       </div>
 
       <ConversionBanner 
-        message="The Investment Memo Template helps you avoid these fatal errors by forcing you to think through every critical aspect of your business—before VCs ask."
-        buttonText="Get the Template"
+        message="The VC Analysis helps you avoid these fatal errors by forcing you to think through every critical aspect of your business—before VCs ask."
+        buttonText="Get Your Analysis"
       />
 
       <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">Common Patterns VCs See</h2>

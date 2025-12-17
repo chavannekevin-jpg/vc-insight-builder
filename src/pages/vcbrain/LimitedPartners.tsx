@@ -392,7 +392,7 @@ export default function LimitedPartners() {
           className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
           onClick={() => navigate('/pricing')}
         >
-          Get Your Investment Memo
+          Get Your VC Analysis
         </Button>
       </div>
     </ContentBlock>

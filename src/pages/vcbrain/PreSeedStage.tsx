@@ -119,7 +119,7 @@ export default function PreSeedStage() {
         ]}
       />
 
-      <ConversionBanner message="Not sure if your validation is strong enough? The Investment Memo helps you articulate your evidence in a way that resonates with pre-seed investors." />
+      <ConversionBanner message="Not sure if your validation is strong enough? The VC Analysis helps you articulate your evidence in a way that resonates with pre-seed investors." />
 
       <div className="prose prose-lg max-w-none text-foreground">
         <h2 className="text-2xl font-bold mb-4">Is Retention More Important Than Growth?</h2>
@@ -281,7 +281,7 @@ export default function PreSeedStage() {
           Build Your Pre-Seed Case
         </h3>
         <p className="text-muted-foreground">
-          The Investment Memo helps you frame your validation, articulate your milestones, 
+          The VC Analysis helps you frame your validation, articulate your milestones, 
           and present your company the way institutional investors expect to see it.
         </p>
         <Button 
@@ -289,7 +289,7 @@ export default function PreSeedStage() {
           className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
           onClick={() => navigate('/pricing')}
         >
-          Get the Investment Memo
+          Get Your VC Analysis
         </Button>
       </div>
     </div>

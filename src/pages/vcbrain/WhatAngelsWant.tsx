@@ -76,7 +76,7 @@ export default function WhatAngelsWant() {
         ]}
       />
 
-      <ConversionBanner message="Not sure how to position yourself for angels? The Investment Memo shows you exactly what signals angels look for and how to demonstrate them." />
+      <ConversionBanner message="Not sure how to position yourself for angels? The VC Analysis shows you exactly what signals angels look for and how to demonstrate them." />
 
       <div className="prose prose-lg max-w-none text-foreground">
         <h2 className="text-2xl font-bold mb-4">Common Mistakes That Kill Angel Deals</h2>

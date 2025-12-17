@@ -73,7 +73,7 @@ export default function FakeTAMs() {
         ]}
       />
 
-      <ConversionBanner message="Confused about how to calculate TAM the way VCs do? The Investment Memo shows you the exact bottom-up methodology that actually works." />
+      <ConversionBanner message="Confused about how to calculate TAM the way VCs do? The VC Analysis shows you the exact bottom-up methodology that actually works." />
 
       <div className="prose prose-lg max-w-none text-foreground">
         <h2 className="text-2xl font-bold mb-4">The Anatomy of a Fake TAM</h2>
@@ -143,7 +143,7 @@ export default function FakeTAMs() {
           Build a Defensible Market Story
         </h3>
         <p className="text-muted-foreground">
-          The Investment Memorandum Template shows you how to size markets the way VCs do—bottom-up, 
+          The VC Analysis shows you how to size markets the way VCs do—bottom-up, 
           defensible, and grounded in reality, not delusion.
         </p>
         <Button 

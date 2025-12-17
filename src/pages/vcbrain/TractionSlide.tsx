@@ -76,7 +76,7 @@ export default function TractionSlide() {
         ]}
       />
 
-      <ConversionBanner message="Not sure what traction metrics actually matter for your stage? The Investment Memo breaks down exactly what 'good' looks like at every level." />
+      <ConversionBanner message="Not sure what traction metrics actually matter for your stage? The VC Analysis breaks down exactly what 'good' looks like at every level." />
 
       <div className="prose prose-lg max-w-none text-foreground">
         <h2 className="text-2xl font-bold mb-4">Traction Slide Killers</h2>
@@ -146,7 +146,7 @@ export default function TractionSlide() {
           Master the Metrics That Matter
         </h3>
         <p className="text-muted-foreground">
-          The Investment Memorandum Template breaks down every traction metric VCs evaluate—what's real, 
+          The VC Analysis breaks down every traction metric VCs evaluate—what's real, 
           what's vanity, and exactly how to present your numbers for maximum impact.
         </p>
         <Button 

@@ -176,8 +176,8 @@ export default function RedFlagsVCsSpot() {
       </div>
 
       <ConversionBanner 
-        message="The Investment Memo Template helps you identify and address potential red flags before VCs find them. Structure your story for maximum credibility."
-        buttonText="Get the Template"
+        message="The VC Analysis helps you identify and address potential red flags before VCs find them. Structure your story for maximum credibility."
+        buttonText="Get Your Analysis"
       />
 
       <h2 className="text-2xl font-bold text-foreground mt-10 mb-4">Red Flag Self-Check</h2>

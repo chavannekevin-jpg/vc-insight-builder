@@ -110,7 +110,7 @@ export default function PaymentSuccess() {
               Payment Successful!
             </h1>
             <p className="text-muted-foreground">
-              Thank you for your purchase. Redirecting you to your memo...
+              Thank you for your purchase. Redirecting you to your analysis...
             </p>
           </div>
 
@@ -125,7 +125,7 @@ export default function PaymentSuccess() {
               size="lg"
               className="w-full gradient-primary shadow-glow hover-neon-pulse font-bold"
             >
-              View Your Memo
+              View Your Analysis
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
             

@@ -145,7 +145,7 @@ export default function VCGlossary() {
           Master the Language of VCs
         </h3>
         <p className="text-muted-foreground">
-          The Investment Memorandum breaks down every term, every metric, and every framework 
+          The VC Analysis breaks down every term, every metric, and every framework 
           VCs use to evaluate startups—so you can speak their language fluently.
         </p>
         <Button 

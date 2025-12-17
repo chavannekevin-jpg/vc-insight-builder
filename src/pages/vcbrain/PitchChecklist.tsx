@@ -157,7 +157,7 @@ export default function PitchChecklist() {
           Get the Complete Fundraising Playbook
         </h3>
         <p className="text-muted-foreground">
-          The Investment Memorandum goes deeper than any checklist—it shows you exactly how to prepare, 
+          The VC Analysis goes deeper than any checklist—it shows you exactly how to prepare, 
           pitch, and close investors at every stage.
         </p>
         <Button 
@@ -165,7 +165,7 @@ export default function PitchChecklist() {
           className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
           onClick={() => navigate('/pricing')}
         >
-          Get the Investment Memo
+          Get Your VC Analysis
         </Button>
       </div>
     </div>

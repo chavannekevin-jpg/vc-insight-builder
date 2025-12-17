@@ -73,7 +73,7 @@ export default function ProblemSlide() {
         ]}
       />
 
-      <ConversionBanner message="Struggling to nail your problem statement? The Investment Memo shows you how VCs evaluate problem slides—and the exact framework to make yours stand out." />
+      <ConversionBanner message="Struggling to nail your problem statement? The VC Analysis shows you how VCs evaluate problem slides—and the exact framework to make yours stand out." />
 
       <div className="prose prose-lg max-w-none text-foreground">
         <h2 className="text-2xl font-bold mb-4">Common Problem Slide Disasters</h2>
@@ -134,7 +134,7 @@ export default function ProblemSlide() {
           Master Every Slide in Your Deck
         </h3>
         <p className="text-muted-foreground">
-          The Investment Memorandum Template breaks down all 12 critical slides—what VCs look for, 
+          The VC Analysis breaks down all 12 critical slides—what VCs look for, 
           what kills your chances, and exactly how to fix it.
         </p>
         <Button 

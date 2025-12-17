@@ -225,9 +225,9 @@ const AfterPitchRoom = () => {
           </div>
 
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 my-8">
-            <h4 className="font-semibold text-foreground mb-3">Your Investment Memo as Champion Ammunition</h4>
+            <h4 className="font-semibold text-foreground mb-3">Your VC Analysis as Champion Ammunition</h4>
             <p className="text-muted-foreground mb-4">
-              A well-crafted investment memo is essentially a brief that your champion can use in partner meetings. It preemptively addresses concerns, provides data for common questions, and makes the case so clearly that defending you becomes easier.
+              A well-crafted VC analysis is essentially a brief that your champion can use in partner meetings. It preemptively addresses concerns, provides data for common questions, and makes the case so clearly that defending you becomes easier.
             </p>
             <p className="text-muted-foreground m-0">
               When I champion a deal and the founder has sent me a strong memo, I sometimes literally read sections aloud in partner meetings. "Here's how they address the competitive concern..." Make it easy for me to fight for you.

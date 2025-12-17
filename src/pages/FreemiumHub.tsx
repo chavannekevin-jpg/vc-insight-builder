@@ -535,7 +535,7 @@ export default function FreemiumHub() {
               className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
             >
               <FileText className="w-4 h-4" />
-              Sample Memo
+              Sample Analysis
             </Button>
             <Button
               variant="ghost"

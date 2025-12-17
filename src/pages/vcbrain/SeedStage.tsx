@@ -372,7 +372,7 @@ export default function SeedStage() {
         </p>
       </div>
 
-      <ConversionBanner message="Wondering how VCs will actually evaluate your company? The Investment Memo breaks down exactly what top-tier investors look for at each stage." />
+      <ConversionBanner message="Wondering how VCs will actually evaluate your company? The VC Analysis breaks down exactly what top-tier investors look for at each stage." />
 
       {/* What Good Looks Like */}
       <ComparisonTable
@@ -428,7 +428,7 @@ export default function SeedStage() {
           See How VCs Actually Evaluate Seed Companies
         </h3>
         <p className="text-muted-foreground">
-          The Investment Memorandum shows you exactly how top-tier investors analyze Seed-stage 
+          The VC Analysis shows you exactly how top-tier investors analyze Seed-stage 
           companies—what they look for, what they flag, and how they make decisions.
         </p>
         <Button 

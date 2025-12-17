@@ -76,7 +76,7 @@ export default function EarlyTraction() {
         ]}
       />
 
-      <ConversionBanner message="Confused about what traction signals actually matter? The Investment Memo breaks down real vs. vanity metrics at every stage." />
+      <ConversionBanner message="Confused about what traction signals actually matter? The VC Analysis breaks down real vs. vanity metrics at every stage." />
 
       <div className="prose prose-lg max-w-none text-foreground">
         <h2 className="text-2xl font-bold mb-4">Why Most Founders Get This Wrong</h2>

@@ -160,7 +160,7 @@ export default function RedFlagDatabase() {
           Fix Your Red Flags Before You Raise
         </h3>
         <p className="text-muted-foreground">
-          The Investment Memorandum shows you not just what the red flags are, but how to systematically 
+          The VC Analysis shows you not just what the red flags are, but how to systematically 
           eliminate them before investors see them.
         </p>
         <Button 

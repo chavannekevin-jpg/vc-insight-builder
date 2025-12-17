@@ -73,7 +73,7 @@ export default function MarketSlide() {
         ]}
       />
 
-      <ConversionBanner message="Confused about how to calculate TAM without bullshitting? The Investment Memo shows you the exact bottom-up methodology VCs actually believe." />
+      <ConversionBanner message="Confused about how to calculate TAM without bullshitting? The VC Analysis shows you the exact bottom-up methodology VCs actually believe." />
 
       <div className="prose prose-lg max-w-none text-foreground">
         <h2 className="text-2xl font-bold mb-4">Market Slide Disasters</h2>

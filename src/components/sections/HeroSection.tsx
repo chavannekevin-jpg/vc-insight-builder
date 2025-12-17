@@ -40,7 +40,7 @@ export const HeroSection = () => {
 
           {/* Subheadline */}
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Every deal gets an internal memo. Partners use it to pass or pursue. After a decade writing them, I'll generate yours—so you can fix what kills rounds before it costs you.
+            Every deal gets an internal analysis. Partners use it to pass or pursue. After a decade writing them, I'll generate yours—so you can fix what kills rounds before it costs you.
           </p>
 
           {/* Three-tier value prop */}

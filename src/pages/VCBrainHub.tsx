@@ -276,7 +276,7 @@ export default function VCBrainHub() {
               <p className="text-sm text-muted-foreground">The Brutally Honest Founder Roadmap</p>
             </div>
           </div>
-          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => navigate('/pricing')}> Get Your Investment Memo</Button>
+          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => navigate('/pricing')}>Get Your VC Analysis</Button>
         </div>
       </header>
 
@@ -342,11 +342,11 @@ export default function VCBrainHub() {
                 Stop Guessing
               </div>
               <h3 className="text-xl font-bold text-foreground">
-                Get the Investment Memorandum Template
+                Get Your VC Analysis
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Everything VCs look for in a single document. No fluff. No "maybe this matters." 
-                Just the exact framework used to evaluate your startup.
+                See what VCs really think about your startup. No fluff. No "maybe this matters." 
+                Just the exact verdict they'd write internally.
               </p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-start gap-2">
@@ -363,10 +363,10 @@ export default function VCBrainHub() {
                 </li>
               </ul>
               <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => navigate('/pricing')}>
-                Get the Template
+                Get Your Analysis
               </Button>
               <p className="text-xs text-muted-foreground text-center">
-                If this feels confusing, that's exactly why you need the memo.
+                If this feels confusing, that's exactly why you need the analysis.
               </p>
             </div>
           </aside>
