@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   ArrowRight, AlertTriangle, TrendingUp, 
   Eye, CheckCircle2, Lock, Sparkles, 
-  FileText, AlertCircle, Flame, Scale, Clock, Zap
+  FileText, AlertCircle, Flame, Scale, Lightbulb, Target
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -253,8 +253,9 @@ export const VCVerdictCard = memo(({
 
   const config = readinessConfig[verdict.readinessLevel] || readinessConfig.MEDIUM;
   const concerns = verdict.concerns || [];
+  const strengths = verdict.strengths || [];
   const redFlagsCount = concerns.length;
-  const hiddenRisksEstimate = Math.max(redFlagsCount * 2, 5); // Amplify the problem
+  const hiddenRisksEstimate = Math.max(redFlagsCount * 2, 6);
 
   return (
     <div className="relative animate-fade-in">
@@ -262,8 +263,8 @@ export const VCVerdictCard = memo(({
       <div className="absolute inset-0 bg-gradient-to-r from-destructive/10 via-transparent to-primary/10 rounded-3xl blur-xl opacity-40" />
       
       <div className="relative bg-card/95 backdrop-blur-sm border border-border/50 rounded-3xl overflow-hidden">
-        {/* Compact Header */}
-        <div className="p-5 pb-3">
+        {/* Header */}
+        <div className="p-5 pb-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
@@ -271,7 +272,7 @@ export const VCVerdictCard = memo(({
               </div>
               <div>
                 <h2 className="text-lg font-display font-bold">VC Quick Take</h2>
-                <p className="text-xs text-muted-foreground">Initial investment scan</p>
+                <p className="text-xs text-muted-foreground">Preliminary investment scan</p>
               </div>
             </div>
             <Badge className={`${config.bgColor} ${config.color} border ${config.borderColor} text-xs`}>
@@ -279,71 +280,103 @@ export const VCVerdictCard = memo(({
             </Badge>
           </div>
 
-          {/* Short Verdict Quote */}
-          <p className="text-foreground/90 text-sm italic border-l-2 border-primary/40 pl-3 mb-4">
-            "{verdict.verdict.split('.')[0]}."
-          </p>
+          {/* Main Verdict - Full insight */}
+          <div className="p-4 rounded-xl bg-muted/30 border border-border/30 mb-4">
+            <p className="text-foreground/90 text-sm leading-relaxed italic">
+              "{verdict.verdict}"
+            </p>
+          </div>
+
+          {/* Readiness Rationale */}
+          <div className={`p-3 rounded-lg ${config.bgColor} border ${config.borderColor} mb-4`}>
+            <p className="text-sm text-foreground/80">
+              <span className={`font-semibold ${config.color}`}>Key gap:</span> {verdict.readinessRationale}
+            </p>
+          </div>
         </div>
 
-        {/* Red Flags - Amplified Impact */}
+        {/* Red Flags Section */}
         <div className="px-5 pb-4">
-          <div className="p-4 rounded-xl bg-gradient-to-r from-destructive/10 to-destructive/5 border border-destructive/20">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-destructive" />
-                <span className="font-bold text-destructive">{redFlagsCount} Red Flags Found</span>
-              </div>
-              <span className="text-xs text-muted-foreground bg-destructive/10 px-2 py-1 rounded-full">
-                +{hiddenRisksEstimate - redFlagsCount} likely hidden
-              </span>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Flame className="w-4 h-4 text-destructive" />
+              <span className="font-semibold text-sm">{redFlagsCount} Red Flags Identified</span>
             </div>
-            
-            {/* Show just top 2 concerns briefly */}
-            <div className="space-y-2">
-              {concerns.slice(0, 2).map((concern, i) => (
-                <div key={i} className="flex items-start gap-2 text-sm">
-                  <AlertCircle className="w-3.5 h-3.5 text-destructive flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground/80 line-clamp-1">{concern.text}</span>
+            <span className="text-[10px] text-muted-foreground bg-destructive/10 px-2 py-0.5 rounded-full">
+              +{hiddenRisksEstimate - redFlagsCount} more likely
+            </span>
+          </div>
+          
+          <div className="space-y-2">
+            {concerns.slice(0, 3).map((concern, i) => (
+              <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-destructive/5 border border-destructive/15">
+                <AlertCircle className="w-3.5 h-3.5 text-destructive flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-foreground/80 leading-relaxed">{concern.text}</p>
+                  {concern.caseStudyReference && (
+                    <p className="text-[10px] text-muted-foreground mt-1 italic">{concern.caseStudyReference}</p>
+                  )}
                 </div>
-              ))}
-              {concerns.length > 2 && (
-                <p className="text-xs text-muted-foreground pl-5">
-                  + {concerns.length - 2} more issues VCs will question...
-                </p>
-              )}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Value Proposition Banner */}
-        <div className="px-5 pb-4">
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/30">
-              <Clock className="w-4 h-4 text-primary mx-auto mb-1" />
-              <p className="text-xs font-medium">6+ months</p>
-              <p className="text-[10px] text-muted-foreground">saved in prep</p>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/30">
-              <TrendingUp className="w-4 h-4 text-primary mx-auto mb-1" />
-              <p className="text-xs font-medium">3x higher</p>
-              <p className="text-[10px] text-muted-foreground">close rate</p>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/30">
-              <Zap className="w-4 h-4 text-primary mx-auto mb-1" />
-              <p className="text-xs font-medium">47 VCs</p>
-              <p className="text-[10px] text-muted-foreground">framework built-in</p>
+        {/* Market Insight */}
+        {verdict.marketInsight && (
+          <div className="px-5 pb-4">
+            <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+              <div className="flex items-start gap-2">
+                <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-xs text-foreground mb-1">Market Context</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{verdict.marketInsight}</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* What Needs to Be Fixed */}
+        {verdict.vcFrameworkCheck && (
+          <div className="px-5 pb-4">
+            <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+              <div className="flex items-start gap-2">
+                <Target className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-xs text-foreground mb-1">To Become VC-Ready</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{verdict.vcFrameworkCheck}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Strengths Preview */}
+        {strengths.length > 0 && (
+          <div className="px-5 pb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 text-primary" />
+              <span className="font-semibold text-sm">{strengths.length} Strength{strengths.length > 1 ? 's' : ''} Noted</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {strengths.slice(0, 2).map((strength, i) => (
+                <span key={i} className="text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                  {strength.text.length > 50 ? strength.text.slice(0, 50) + '...' : strength.text}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* CTA */}
-        <div className="p-5 pt-0">
+        <div className="p-5 pt-2 border-t border-border/30">
           <Button onClick={navigateToPortal} className="w-full" size="lg">
-            Fix These & Get VC-Ready
+            Get the Full Analysis
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
           <p className="text-[10px] text-center text-muted-foreground mt-2">
-            Founders who fix flagged issues raise 2.3x faster
+            Detailed frameworks, action plans & investor-ready positioning
           </p>
         </div>
       </div>
