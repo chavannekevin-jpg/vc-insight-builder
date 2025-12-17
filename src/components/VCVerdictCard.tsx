@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
-  ArrowRight, AlertTriangle, TrendingUp, 
+  ArrowRight, AlertTriangle, 
   Eye, CheckCircle2, Lock, Sparkles, 
   FileText, AlertCircle, Flame, Scale, Lightbulb, Target
 } from "lucide-react";
@@ -259,30 +259,30 @@ export const VCVerdictCard = memo(({
 
   return (
     <div className="relative animate-fade-in">
-      {/* Gradient glow */}
-      <div className="absolute inset-0 bg-gradient-to-r from-destructive/20 via-amber-500/15 to-primary/20 rounded-3xl blur-xl opacity-50" />
+      {/* Gradient glow - more dramatic */}
+      <div className="absolute inset-0 bg-gradient-to-r from-destructive/30 via-destructive/15 to-amber-500/20 rounded-3xl blur-xl opacity-60" />
       
-      <div className="relative bg-card/95 backdrop-blur-sm border border-border/50 rounded-3xl overflow-hidden shadow-lg">
-        {/* Header */}
-        <div className="p-6 pb-5">
+      <div className="relative bg-card/95 backdrop-blur-sm border border-destructive/30 rounded-3xl overflow-hidden shadow-lg">
+        {/* Header - More urgent */}
+        <div className="p-6 pb-5 bg-gradient-to-b from-destructive/5 to-transparent">
           <div className="flex items-center gap-4 mb-5">
-            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/60 shadow-lg">
-              <Scale className="w-7 h-7 text-primary-foreground" />
+            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-destructive to-destructive/60 shadow-lg">
+              <Scale className="w-7 h-7 text-destructive-foreground" />
             </div>
             <div>
               <h2 className="text-2xl font-display font-bold text-foreground">VC Quick Take</h2>
-              <p className="text-muted-foreground">Preliminary investment assessment</p>
+              <p className="text-destructive font-medium text-sm">Issues that will cost you the deal</p>
             </div>
           </div>
 
-          {/* Main Verdict Quote */}
-          <div className="p-5 rounded-2xl bg-muted/30 border border-border/30 mb-5">
-            <p className="text-lg text-foreground leading-relaxed font-medium italic">
+          {/* Main Verdict Quote - More provocative */}
+          <div className="p-5 rounded-2xl bg-destructive/10 border border-destructive/30 mb-5">
+            <p className="text-lg text-foreground leading-relaxed font-medium">
               "{verdict.verdict}"
             </p>
           </div>
 
-          {/* Readiness Level */}
+          {/* Readiness Level - Emphasize urgency */}
           <div className={`p-4 rounded-xl ${config.bgColor} border ${config.borderColor}`}>
             <div className="flex items-center gap-3">
               <span className="text-2xl">{config.emoji}</span>
@@ -294,7 +294,7 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* Red Flags Section */}
+        {/* Red Flags Section - Primary focus (80% of attention) */}
         <div className="px-6 pb-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -302,16 +302,19 @@ export const VCVerdictCard = memo(({
                 <Flame className="w-5 h-5 text-destructive" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">{redFlagsCount} Red Flags Identified</h3>
-                <p className="text-xs text-muted-foreground">+{hiddenRisksEstimate - redFlagsCount} more likely in full analysis</p>
+                <h3 className="font-bold text-destructive">{redFlagsCount} Deal-Breakers Identified</h3>
+                <p className="text-xs text-muted-foreground">These will sink your raise if not fixed</p>
               </div>
             </div>
+            <span className="text-xs text-destructive bg-destructive/10 px-2 py-1 rounded-full font-medium">
+              +{hiddenRisksEstimate - redFlagsCount} hidden
+            </span>
           </div>
           
           <div className="space-y-3">
             {concerns.slice(0, 3).map((concern, i) => (
               <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-destructive/5 border border-destructive/20">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-destructive/20 text-destructive text-sm font-bold flex items-center justify-center mt-0.5">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-destructive text-destructive-foreground text-sm font-bold flex items-center justify-center mt-0.5">
                   {i + 1}
                 </span>
                 <div className="flex-1 min-w-0">
@@ -325,9 +328,15 @@ export const VCVerdictCard = memo(({
               </div>
             ))}
           </div>
+          
+          {redFlagsCount > 3 && (
+            <p className="text-xs text-destructive mt-3 text-center font-medium">
+              + {redFlagsCount - 3} more critical issues in full analysis
+            </p>
+          )}
         </div>
 
-        {/* Market Insight */}
+        {/* Market Warning */}
         {verdict.marketInsight && (
           <div className="px-6 pb-5">
             <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/25">
@@ -336,7 +345,7 @@ export const VCVerdictCard = memo(({
                   <Lightbulb className="w-5 h-5 text-amber-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground mb-1">Market Context</h3>
+                  <h3 className="font-semibold text-foreground mb-1">Market Reality Check</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{verdict.marketInsight}</p>
                 </div>
               </div>
@@ -344,53 +353,34 @@ export const VCVerdictCard = memo(({
           </div>
         )}
 
-        {/* What Needs to Be Fixed */}
-        {verdict.vcFrameworkCheck && (
-          <div className="px-6 pb-5">
-            <div className="p-4 rounded-xl bg-primary/10 border border-primary/25">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <Target className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground mb-1">To Become VC-Ready</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{verdict.vcFrameworkCheck}</p>
-                </div>
+        {/* Not All Bad - The 20% hope (positioned as "we can fix this") */}
+        <div className="px-6 pb-5">
+          <div className="p-4 rounded-xl bg-primary/10 border border-primary/25">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <Target className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground mb-1">Not a Dealbreaker Yet</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {strengths.length > 0 
+                    ? `${strengths[0]?.text || ''} — but you need to fix the red flags above before VCs will take you seriously.`
+                    : `These issues are fixable with the right framework. Our deep-dive analysis shows you exactly how to address each one.`
+                  }
+                </p>
               </div>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Strengths Preview */}
-        {strengths.length > 0 && (
-          <div className="px-6 pb-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground">{strengths.length} Strength{strengths.length > 1 ? 's' : ''} Noted</h3>
-            </div>
-            <div className="space-y-2">
-              {strengths.slice(0, 2).map((strength, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center">
-                    {i + 1}
-                  </span>
-                  <p className="text-sm text-foreground leading-relaxed">{strength.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* CTA */}
-        <div className="p-6 pt-2 border-t border-border/30 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
-          <Button onClick={navigateToPortal} className="w-full h-12 text-base" size="lg">
-            Get the Full Analysis
+        {/* CTA - "Let's fix this" */}
+        <div className="p-6 pt-2 border-t border-destructive/20 bg-gradient-to-r from-destructive/5 via-transparent to-destructive/5">
+          <Button onClick={navigateToPortal} className="w-full h-12 text-base bg-primary hover:bg-primary/90" size="lg">
+            Let's Fix This
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
           <p className="text-xs text-center text-muted-foreground mt-3">
-            Detailed frameworks, action plans & investor-ready positioning
+            Deep-dive questionnaire → Actionable fixes → VC-ready positioning
           </p>
         </div>
       </div>
