@@ -12,7 +12,7 @@ import { ToolsRow } from "@/components/ToolsRow";
 import { CollapsedLibrary } from "@/components/CollapsedLibrary";
 import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
-import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench } from "lucide-react";
+import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/hooks/useCompany";
@@ -100,6 +100,8 @@ export default function FreemiumHub() {
   const [deckWizardOpen, setDeckWizardOpen] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [responsesLoaded, setResponsesLoaded] = useState(false);
   const [cachedVerdict, setCachedVerdict] = useState<any>(null);
   const [vcQuickTake, setVcQuickTake] = useState<any>(null);
@@ -424,6 +426,62 @@ export default function FreemiumHub() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to delete your account",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (error) {
+        console.error("Delete account error:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete account",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data?.success) {
+        toast({
+          title: "Account deleted",
+          description: "Your account has been deleted successfully",
+        });
+        await supabase.auth.signOut();
+        navigate('/');
+      } else {
+        toast({
+          title: "Error",
+          description: data?.error || "Failed to delete account",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Delete account exception:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while deleting your account",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingAccount(false);
+      setDeleteAccountDialogOpen(false);
+    }
+  };
+
   const handleVerdictGenerated = useCallback((verdict: any) => {
     setCachedVerdict(verdict);
   }, []);
@@ -482,6 +540,15 @@ export default function FreemiumHub() {
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDeleteAccountDialogOpen(true)}
+              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Account
             </Button>
           </div>
 
@@ -719,6 +786,36 @@ export default function FreemiumHub() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isResetting ? "Resetting..." : "Reset Profile"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Account Confirmation Dialog */}
+      <AlertDialog open={deleteAccountDialogOpen} onOpenChange={setDeleteAccountDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">Delete Account Permanently</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete your account and all associated data including:
+              <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
+                <li>Your company profile</li>
+                <li>All questionnaire responses</li>
+                <li>Generated memos and analyses</li>
+                <li>Purchase history</li>
+              </ul>
+              <br />
+              <strong className="text-destructive">This action cannot be undone. Your data cannot be recovered.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingAccount}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={isDeletingAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeletingAccount ? "Deleting..." : "Delete My Account"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
