@@ -19,7 +19,7 @@ interface CollapsedLibraryProps {
 
 export const CollapsedLibrary = ({ stage }: CollapsedLibraryProps) => {
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false); // Collapsed by default
 
   const getRecommendedForStage = (userStage?: string): { label: string; path: string; badge?: string }[] => {
     const stageMap: Record<string, { label: string; path: string }[]> = {

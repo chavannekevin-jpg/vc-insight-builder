@@ -3,8 +3,13 @@ import { Calculator, TrendingUp, Lock, Zap, Mail, Flame, FlaskConical } from "lu
 import { useNavigate } from "react-router-dom";
 import { ModernCard } from "./ModernCard";
 import { Badge } from "./ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
-export const ToolsRow = memo(() => {
+interface ToolsRowProps {
+  memoGenerated?: boolean;
+}
+
+export const ToolsRow = memo(({ memoGenerated = false }: ToolsRowProps) => {
   const navigate = useNavigate();
 
   const tools = useMemo(() => [
@@ -14,6 +19,7 @@ export const ToolsRow = memo(() => {
       title: "Raise Calculator",
       description: "Plan your funding round",
       available: true,
+      requiresMemo: false,
       path: "/raise-calculator"
     },
     {
@@ -22,6 +28,7 @@ export const ToolsRow = memo(() => {
       title: "Valuation Calculator",
       description: "Estimate your startup's value",
       available: true,
+      requiresMemo: false,
       path: "/valuation-calculator"
     },
     {
@@ -30,78 +37,113 @@ export const ToolsRow = memo(() => {
       title: "Venture Scale Diagnostic",
       description: "Reality check: Are you truly VC-scale?",
       available: true,
+      requiresMemo: false,
       path: "/venture-scale-diagnostic",
-      badge: "New"
+      badge: "Free"
     },
     {
       id: "investor-email-generator",
       icon: Mail,
       title: "Outreach Lab",
       description: "Craft cold email templates from your memo",
-      available: true,
+      available: memoGenerated,
+      requiresMemo: true,
       path: "/investor-email-generator",
-      badge: "Memo Required"
+      badge: "After Verdict",
+      lockedReason: "Complete your VC verdict first"
     },
     {
       id: "roast-your-baby",
       icon: Flame,
       title: "Roast Your Baby",
       description: "Survive 10 brutal VC questions",
-      available: true,
+      available: memoGenerated,
+      requiresMemo: true,
       path: "/roast-your-baby",
-      badge: "Premium"
+      badge: "After Verdict",
+      lockedReason: "Complete your VC verdict first"
     },
     {
       id: "dilution-lab",
       icon: FlaskConical,
       title: "Dilution Lab",
       description: "Simulate funding rounds & cap tables",
-      available: true,
+      available: memoGenerated,
+      requiresMemo: true,
       path: "/dilution-lab",
-      badge: "Premium"
+      badge: "After Verdict",
+      lockedReason: "Complete your VC verdict first"
     }
-  ], []);
+  ], [memoGenerated]);
+
+  const renderToolCard = (tool: typeof tools[0]) => {
+    const Icon = tool.icon;
+    const isLocked = tool.requiresMemo && !tool.available;
+    
+    const cardContent = (
+      <ModernCard
+        hover={tool.available}
+        onClick={tool.available ? () => navigate(tool.path) : undefined}
+        className={isLocked ? "opacity-60 cursor-not-allowed" : ""}
+      >
+        <div className="flex items-start gap-4">
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+            isLocked ? "bg-muted" : "bg-primary/10"
+          }`}>
+            {isLocked ? (
+              <Lock className="w-6 h-6 text-muted-foreground" />
+            ) : (
+              <Icon className="w-6 h-6 text-primary" />
+            )}
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className={`font-semibold ${isLocked ? "text-muted-foreground" : ""}`}>{tool.title}</h4>
+              {tool.badge && (
+                <Badge className={`text-xs ${
+                  isLocked 
+                    ? "bg-muted text-muted-foreground border-muted" 
+                    : "bg-primary/20 text-primary border-primary/40"
+                }`}>
+                  {tool.badge}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">{tool.description}</p>
+          </div>
+        </div>
+      </ModernCard>
+    );
+    
+    if (isLocked && tool.lockedReason) {
+      return (
+        <TooltipProvider key={tool.id}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>{cardContent}</div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{tool.lockedReason}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    
+    return <div key={tool.id}>{cardContent}</div>;
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-display font-semibold">Founder Tools</h3>
-        <p className="text-sm text-muted-foreground">Free calculators to help you plan</p>
+        <p className="text-sm text-muted-foreground">
+          {memoGenerated ? "All tools unlocked" : "Complete your verdict to unlock all tools"}
+        </p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {tools.map((tool) => {
-          const Icon = tool.icon;
-          return (
-            <ModernCard
-              key={tool.id}
-              hover={tool.available}
-              onClick={tool.available ? () => navigate(tool.path) : undefined}
-              className={!tool.available ? "opacity-50" : ""}
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  {tool.available ? (
-                    <Icon className="w-6 h-6 text-primary" />
-                  ) : (
-                    <Lock className="w-6 h-6 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-semibold">{tool.title}</h4>
-                    {tool.badge && (
-                      <Badge className="bg-primary/20 text-primary border-primary/40 text-xs">
-                        {tool.badge}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground">{tool.description}</p>
-                </div>
-              </div>
-            </ModernCard>
-          );
-        })}
+        {tools.map(renderToolCard)}
       </div>
     </div>
   );
