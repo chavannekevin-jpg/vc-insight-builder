@@ -21,6 +21,7 @@ interface Strength {
   category: string;
 }
 
+// New verdict format
 interface VCVerdict {
   verdict: string;
   readinessLevel: 'LOW' | 'MEDIUM' | 'HIGH';
@@ -30,6 +31,46 @@ interface VCVerdict {
   marketInsight: string;
   vcFrameworkCheck: string;
 }
+
+// Old verdict format for backward compatibility
+interface LegacyVCVerdict {
+  verdict_severity: 'HIGH_RISK' | 'MODERATE_RISK' | 'NEEDS_WORK' | 'PROMISING';
+  harsh_observations: Array<{ text: string; severity: string; category: string }>;
+  key_weakness: string;
+  verdict_summary: string;
+  blind_spots_count: number;
+}
+
+// Convert old format to new format
+const convertLegacyVerdict = (legacy: LegacyVCVerdict): VCVerdict => {
+  const severityToLevel: Record<string, 'LOW' | 'MEDIUM' | 'HIGH'> = {
+    'HIGH_RISK': 'LOW',
+    'MODERATE_RISK': 'MEDIUM',
+    'NEEDS_WORK': 'MEDIUM',
+    'PROMISING': 'HIGH'
+  };
+
+  return {
+    verdict: legacy.verdict_summary || "Strategic positioning needs refinement.",
+    readinessLevel: severityToLevel[legacy.verdict_severity] || 'MEDIUM',
+    readinessRationale: legacy.key_weakness || "Further analysis needed.",
+    concerns: (legacy.harsh_observations || []).map(obs => ({
+      text: obs.text,
+      category: obs.category,
+      caseStudyReference: undefined
+    })),
+    strengths: [
+      { text: "Early stage positioning allows for strategic pivots.", category: "market" }
+    ],
+    marketInsight: "Market dynamics require careful positioning.",
+    vcFrameworkCheck: "Complete profile for detailed framework analysis."
+  };
+};
+
+// Check if verdict is in legacy format
+const isLegacyVerdict = (verdict: any): verdict is LegacyVCVerdict => {
+  return verdict && 'harsh_observations' in verdict;
+};
 
 interface VCVerdictCardProps {
   companyId: string;
@@ -41,7 +82,7 @@ interface VCVerdictCardProps {
   memoGenerated: boolean;
   hasPaid: boolean;
   deckParsed?: boolean;
-  cachedVerdict?: VCVerdict | null;
+  cachedVerdict?: VCVerdict | LegacyVCVerdict | null;
   onVerdictGenerated?: (verdict: VCVerdict) => void;
 }
 
@@ -96,9 +137,13 @@ export const VCVerdictCard = memo(({
   memoGenerated,
   hasPaid,
   deckParsed = false,
-  cachedVerdict,
+  cachedVerdict: rawCachedVerdict,
   onVerdictGenerated
 }: VCVerdictCardProps) => {
+  // Convert cached verdict if it's in legacy format
+  const cachedVerdict = rawCachedVerdict 
+    ? (isLegacyVerdict(rawCachedVerdict) ? convertLegacyVerdict(rawCachedVerdict) : rawCachedVerdict as VCVerdict)
+    : null;
   const navigate = useNavigate();
   const [verdict, setVerdict] = useState<VCVerdict | null>(cachedVerdict || null);
   const [loading, setLoading] = useState(!cachedVerdict);
@@ -320,15 +365,17 @@ export const VCVerdictCard = memo(({
       </div>
 
       {/* Market Insight */}
-      <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-6">
-        <div className="flex items-start gap-3">
-          <Lightbulb className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="font-medium text-foreground mb-1">Market Insight</p>
-            <p className="text-sm text-muted-foreground">{verdict.marketInsight}</p>
+      {verdict.marketInsight && (
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-foreground mb-1">Market Insight</p>
+              <p className="text-sm text-muted-foreground">{verdict.marketInsight}</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Concerns & Strengths Grid */}
       <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -339,7 +386,7 @@ export const VCVerdictCard = memo(({
             <span className="font-medium text-sm">Top Concerns</span>
           </div>
           <div className="space-y-3">
-            {verdict.concerns.slice(0, 3).map((concern, index) => {
+            {(verdict.concerns || []).slice(0, 3).map((concern, index) => {
               const Icon = getCategoryIcon(concern.category);
               return (
                 <div 
@@ -370,7 +417,7 @@ export const VCVerdictCard = memo(({
             <span className="font-medium text-sm">What's Working</span>
           </div>
           <div className="space-y-3">
-            {verdict.strengths.slice(0, 3).map((strength, index) => {
+            {(verdict.strengths || []).slice(0, 3).map((strength, index) => {
               const Icon = getCategoryIcon(strength.category);
               return (
                 <div 
@@ -389,15 +436,17 @@ export const VCVerdictCard = memo(({
       </div>
 
       {/* VC Framework Check */}
-      <div className="bg-muted/30 border border-border/50 rounded-xl p-4 mb-6">
-        <div className="flex items-start gap-3">
-          <ShieldAlert className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="font-medium text-foreground mb-1">VC Framework Check</p>
-            <p className="text-sm text-muted-foreground">{verdict.vcFrameworkCheck}</p>
+      {verdict.vcFrameworkCheck && (
+        <div className="bg-muted/30 border border-border/50 rounded-xl p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <ShieldAlert className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-foreground mb-1">VC Framework Check</p>
+              <p className="text-sm text-muted-foreground">{verdict.vcFrameworkCheck}</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* CTA */}
       <Button 
@@ -405,7 +454,7 @@ export const VCVerdictCard = memo(({
         className="w-full text-lg font-semibold"
         onClick={navigateToPortal}
       >
-        Get the Full Analysis
+        Now Let's Fix This
         <ArrowRight className="ml-2 w-5 h-5" />
       </Button>
 
