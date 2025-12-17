@@ -5,7 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   ArrowRight, AlertTriangle, 
   Eye, CheckCircle2, Lock, Sparkles, 
-  FileText, AlertCircle, Flame, Scale, Lightbulb, Target
+  FileText, Flame, Scale, Clock, 
+  ShieldX, MessageSquareX, Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +15,7 @@ interface Concern {
   text: string;
   category: string;
   caseStudyReference?: string;
+  vcQuote?: string;
 }
 
 interface Strength {
@@ -29,6 +31,8 @@ interface VCVerdict {
   strengths: Strength[];
   marketInsight: string;
   vcFrameworkCheck: string;
+  timingWarning?: string;
+  hiddenIssuesCount?: number;
 }
 
 interface LegacyVCVerdict {
@@ -81,30 +85,6 @@ interface VCVerdictCardProps {
   cachedVerdict?: VCVerdict | LegacyVCVerdict | null;
   onVerdictGenerated?: (verdict: VCVerdict) => void;
 }
-
-const readinessConfig = {
-  LOW: {
-    color: "text-destructive",
-    bgColor: "bg-destructive/10",
-    borderColor: "border-destructive/30",
-    label: "Not VC-Ready",
-    emoji: "🔴"
-  },
-  MEDIUM: {
-    color: "text-amber-500",
-    bgColor: "bg-amber-500/10",
-    borderColor: "border-amber-500/30",
-    label: "Needs Work",
-    emoji: "🟡"
-  },
-  HIGH: {
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-    borderColor: "border-primary/30",
-    label: "Strong Position",
-    emoji: "🟢"
-  }
-};
 
 export const VCVerdictCard = memo(({
   companyId,
@@ -251,136 +231,157 @@ export const VCVerdictCard = memo(({
     );
   }
 
-  const config = readinessConfig[verdict.readinessLevel] || readinessConfig.MEDIUM;
   const concerns = verdict.concerns || [];
-  const strengths = verdict.strengths || [];
   const redFlagsCount = concerns.length;
-  const hiddenRisksEstimate = Math.max(redFlagsCount * 2, 6);
+  const totalHiddenIssues = verdict.hiddenIssuesCount || Math.max(redFlagsCount * 3, 8);
+  const timingWarning = verdict.timingWarning || "This version of your pitch has a 3-week shelf life before market timing works against you.";
 
   return (
     <div className="relative animate-fade-in">
-      {/* Gradient glow - more dramatic */}
-      <div className="absolute inset-0 bg-gradient-to-r from-destructive/30 via-destructive/15 to-amber-500/20 rounded-3xl blur-xl opacity-60" />
+      {/* Ominous gradient glow */}
+      <div className="absolute inset-0 bg-gradient-to-r from-destructive/40 via-destructive/20 to-amber-600/30 rounded-3xl blur-xl opacity-70" />
       
-      <div className="relative bg-card/95 backdrop-blur-sm border border-destructive/30 rounded-3xl overflow-hidden shadow-lg">
-        {/* Header - More urgent */}
-        <div className="p-6 pb-5 bg-gradient-to-b from-destructive/5 to-transparent">
-          <div className="flex items-center gap-4 mb-5">
-            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-destructive to-destructive/60 shadow-lg">
-              <Scale className="w-7 h-7 text-destructive-foreground" />
+      <div className="relative bg-card/95 backdrop-blur-sm border border-destructive/40 rounded-3xl overflow-hidden shadow-2xl">
+        {/* Header - Brutal framing */}
+        <div className="p-6 pb-4 bg-gradient-to-b from-destructive/10 via-destructive/5 to-transparent">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-destructive to-destructive/70 shadow-lg shadow-destructive/30">
+              <MessageSquareX className="w-7 h-7 text-destructive-foreground" />
             </div>
             <div>
-              <h2 className="text-2xl font-display font-bold text-foreground">VC Quick Take</h2>
-              <p className="text-destructive font-medium text-sm">Issues that will cost you the deal</p>
+              <h2 className="text-xl font-display font-bold text-foreground">What VCs Will Say</h2>
+              <p className="text-destructive font-semibold text-sm">When you leave the room</p>
             </div>
           </div>
 
-          {/* Main Verdict Quote - More provocative */}
-          <div className="p-5 rounded-2xl bg-destructive/10 border border-destructive/30 mb-5">
-            <p className="text-lg text-foreground leading-relaxed font-medium">
-              "{verdict.verdict}"
-            </p>
+          {/* The Verdict - Like eavesdropping on their rejection */}
+          <div className="p-5 rounded-2xl bg-destructive/15 border border-destructive/40 mb-4">
+            <div className="flex items-start gap-3 mb-2">
+              <span className="text-destructive text-lg">"</span>
+              <p className="text-lg text-foreground leading-relaxed font-medium italic">
+                {verdict.verdict}
+              </p>
+              <span className="text-destructive text-lg self-end">"</span>
+            </div>
+            <p className="text-xs text-muted-foreground pl-6">— What partners say in Monday dealflow meetings</p>
           </div>
 
-          {/* Readiness Level - Emphasize urgency */}
-          <div className={`p-4 rounded-xl ${config.bgColor} border ${config.borderColor}`}>
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">{config.emoji}</span>
-              <div>
-                <span className={`font-bold text-lg ${config.color}`}>{config.label}</span>
-                <p className="text-sm text-muted-foreground mt-0.5">{verdict.readinessRationale}</p>
-              </div>
-            </div>
+          {/* Time Pressure Warning */}
+          <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-3">
+            <Clock className="w-5 h-5 text-amber-500 flex-shrink-0" />
+            <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">{timingWarning}</p>
           </div>
         </div>
 
-        {/* Red Flags Section - Primary focus (80% of attention) */}
-        <div className="px-6 pb-5">
+        {/* Reasons VCs Will Pass - Brutal, incomplete */}
+        <div className="px-6 pb-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-destructive/20 flex items-center justify-center">
-                <Flame className="w-5 h-5 text-destructive" />
+              <div className="w-10 h-10 rounded-xl bg-destructive/20 flex items-center justify-center">
+                <ShieldX className="w-5 h-5 text-destructive" />
               </div>
               <div>
-                <h3 className="font-bold text-destructive">{redFlagsCount} Deal-Breakers Identified</h3>
-                <p className="text-xs text-muted-foreground">These will sink your raise if not fixed</p>
+                <h3 className="font-bold text-destructive">Reasons VCs Will Pass</h3>
+                <p className="text-xs text-muted-foreground">Issues that would quietly kill your deal in IC</p>
               </div>
             </div>
-            <span className="text-xs text-destructive bg-destructive/10 px-2 py-1 rounded-full font-medium">
-              +{hiddenRisksEstimate - redFlagsCount} hidden
-            </span>
           </div>
           
+          {/* Show only 2-3 concerns - create incompleteness */}
           <div className="space-y-3">
-            {concerns.slice(0, 3).map((concern, i) => (
-              <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+            {concerns.slice(0, 2).map((concern, i) => (
+              <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/25">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-destructive text-destructive-foreground text-sm font-bold flex items-center justify-center mt-0.5">
                   {i + 1}
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-foreground leading-relaxed">{concern.text}</p>
-                  {concern.caseStudyReference && (
-                    <p className="text-xs text-muted-foreground mt-2 italic border-l-2 border-destructive/30 pl-2">
-                      {concern.caseStudyReference}
+                  {concern.vcQuote && (
+                    <p className="text-xs text-destructive mt-2 italic">
+                      "{concern.vcQuote}"
                     </p>
                   )}
                 </div>
               </div>
             ))}
           </div>
-          
-          {redFlagsCount > 3 && (
-            <p className="text-xs text-destructive mt-3 text-center font-medium">
-              + {redFlagsCount - 3} more critical issues in full analysis
+        </div>
+
+        {/* LOCKED: Additional Issues - Create FOMO */}
+        <div className="px-6 pb-4">
+          <div className="relative p-4 rounded-xl bg-muted/50 border border-border/50 overflow-hidden">
+            {/* Blur overlay */}
+            <div className="absolute inset-0 backdrop-blur-[2px] bg-background/60 z-10 flex flex-col items-center justify-center gap-2">
+              <Lock className="w-5 h-5 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground font-medium">Locked</span>
+            </div>
+            {/* Blurred content preview */}
+            <div className="space-y-2 opacity-50">
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 text-destructive" />
+                <span className="text-sm text-foreground">+{totalHiddenIssues} additional critical issues identified</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-amber-500" />
+                <span className="text-sm text-foreground">Your specific fix playbook</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MessageSquareX className="w-4 h-4 text-primary" />
+                <span className="text-sm text-foreground">IC objection pre-responses</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* The Cost of Waiting */}
+        <div className="px-6 pb-4">
+          <div className="p-4 rounded-xl bg-gradient-to-r from-destructive/10 to-amber-500/10 border border-destructive/20">
+            <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-500" />
+              The Cost of Waiting
+            </h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="text-destructive mt-1">•</span>
+                <span>This exact version of your company would <strong className="text-foreground">quietly die</strong> in an Investment Committee room</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-destructive mt-1">•</span>
+                <span>These issues <strong className="text-foreground">wouldn't be debated</strong> — they'd be dismissed</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-destructive mt-1">•</span>
+                <span>No warm intro or follow-up email saves a pitch with these gaps</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* The Killer Question */}
+        <div className="px-6 pb-4">
+          <div className="p-4 rounded-xl border-2 border-dashed border-muted-foreground/30 text-center">
+            <p className="text-foreground font-medium">
+              Do you want to walk into your next VC meeting <strong className="text-destructive">blind</strong>, 
+              or with the <strong className="text-primary">exact internal analysis</strong> that determines your outcome?
             </p>
-          )}
-        </div>
-
-        {/* Market Warning */}
-        {verdict.marketInsight && (
-          <div className="px-6 pb-5">
-            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/25">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                  <Lightbulb className="w-5 h-5 text-amber-500" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground mb-1">Market Reality Check</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{verdict.marketInsight}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Not All Bad - The 20% hope (positioned as "we can fix this") */}
-        <div className="px-6 pb-5">
-          <div className="p-4 rounded-xl bg-primary/10 border border-primary/25">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-                <Target className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1">Not a Dealbreaker Yet</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {strengths.length > 0 
-                    ? `${strengths[0]?.text || ''} — but you need to fix the red flags above before VCs will take you seriously.`
-                    : `These issues are fixable with the right framework. Our deep-dive analysis shows you exactly how to address each one.`
-                  }
-                </p>
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* CTA - "Let's fix this" */}
-        <div className="p-6 pt-2 border-t border-destructive/20 bg-gradient-to-r from-destructive/5 via-transparent to-destructive/5">
-          <Button onClick={navigateToPortal} className="w-full h-12 text-base bg-primary hover:bg-primary/90" size="lg">
-            Let's Fix This
+        {/* CTA - "Get the Fix Playbook" */}
+        <div className="p-6 pt-3 border-t border-destructive/20 bg-gradient-to-r from-destructive/5 via-transparent to-primary/5">
+          <Button 
+            onClick={navigateToPortal} 
+            className="w-full h-14 text-base font-semibold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" 
+            size="lg"
+          >
+            Get Your Fix Playbook
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
           <p className="text-xs text-center text-muted-foreground mt-3">
-            Deep-dive questionnaire → Actionable fixes → VC-ready positioning
+            The internal analysis that determines whether your next meeting kills or saves the deal
+          </p>
+          <p className="text-xs text-center text-muted-foreground/60 mt-1">
+            VCs won't tell you this. We will.
           </p>
         </div>
       </div>
