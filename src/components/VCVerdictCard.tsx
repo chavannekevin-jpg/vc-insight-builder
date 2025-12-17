@@ -8,7 +8,8 @@ import {
   FileText, Flame, Scale, 
   ShieldX, MessageSquareX, Zap, Target,
   Shield, TrendingDown, DollarSign, Users, BarChart3, Rocket,
-  RefreshCw, Briefcase, Code, GraduationCap, Building
+  RefreshCw, Briefcase, Code, GraduationCap, Building,
+  ChevronRight
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,12 +84,12 @@ const isLegacyVerdict = (verdict: any): verdict is LegacyVCVerdict => {
 };
 
 // Founder profile display config
-const founderProfileConfig: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  'serial_founder': { label: 'Serial Founder', icon: <Rocket className="w-3 h-3" />, color: 'text-primary' },
-  'technical_founder': { label: 'Technical Founder', icon: <Code className="w-3 h-3" />, color: 'text-blue-500' },
-  'business_founder': { label: 'Business Founder', icon: <Briefcase className="w-3 h-3" />, color: 'text-green-500' },
-  'domain_expert': { label: 'Domain Expert', icon: <Building className="w-3 h-3" />, color: 'text-amber-500' },
-  'first_time_founder': { label: 'First-Time Founder', icon: <GraduationCap className="w-3 h-3" />, color: 'text-muted-foreground' },
+const founderProfileConfig: Record<string, { label: string; icon: React.ReactNode }> = {
+  'serial_founder': { label: 'Serial', icon: <Rocket className="w-3 h-3" /> },
+  'technical_founder': { label: 'Technical', icon: <Code className="w-3 h-3" /> },
+  'business_founder': { label: 'Business', icon: <Briefcase className="w-3 h-3" /> },
+  'domain_expert': { label: 'Domain Expert', icon: <Building className="w-3 h-3" /> },
+  'first_time_founder': { label: 'First-Time', icon: <GraduationCap className="w-3 h-3" /> },
 };
 
 interface VCVerdictCardProps {
@@ -181,40 +182,41 @@ export const VCVerdictCard = memo(({
   // Memo generated state
   if (memoGenerated) {
     return (
-      <div className="relative bg-card border border-border/50 rounded-3xl p-8 shadow-lg animate-fade-in">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 rounded-3xl -z-10" />
-        
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <Badge className={`mb-3 ${hasPaid ? 'bg-primary/10 text-primary border-primary/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'}`}>
-              {hasPaid ? <CheckCircle2 className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
-              {hasPaid ? 'Full Access' : 'Verdict Ready'}
-            </Badge>
-            <h2 className="text-2xl font-display font-bold mb-2">Your Investment Memo</h2>
-            <p className="text-muted-foreground text-sm">
-              {hasPaid ? 'Complete access unlocked' : 'Your VC verdict is ready'}
-            </p>
+      <div className="relative group animate-fade-in">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-secondary/50 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500" />
+        <div className="relative bg-card border border-border/50 rounded-2xl p-8">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <Badge className={`mb-3 ${hasPaid ? 'bg-primary/20 text-primary border-primary/30' : 'bg-warning/20 text-warning border-warning/30'}`}>
+                {hasPaid ? <CheckCircle2 className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+                {hasPaid ? 'Full Access' : 'Verdict Ready'}
+              </Badge>
+              <h2 className="text-2xl font-display font-bold mb-2">Your Investment Memo</h2>
+              <p className="text-muted-foreground text-sm">
+                {hasPaid ? 'Complete access unlocked' : 'Your VC verdict is ready'}
+              </p>
+            </div>
+            {hasPaid ? <CheckCircle2 className="w-10 h-10 text-primary" /> : <FileText className="w-10 h-10 text-warning/50" />}
           </div>
-          {hasPaid ? <CheckCircle2 className="w-10 h-10 text-primary" /> : <FileText className="w-10 h-10 text-amber-500/50" />}
-        </div>
 
-        {hasPaid ? (
-          <Button size="lg" className="w-full" onClick={navigateToMemo}>
-            View Your Memo
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" onClick={navigateToMemo}>
-              <Lock className="w-4 h-4 mr-2" />
-              Preview
+          {hasPaid ? (
+            <Button size="lg" className="w-full shadow-glow" onClick={navigateToMemo}>
+              View Your Memo
+              <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <Button onClick={navigateToCheckout}>
-              <Sparkles className="w-4 h-4 mr-2" />
-              Unlock Full
-            </Button>
-          </div>
-        )}
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <Button variant="outline" onClick={navigateToMemo}>
+                <Lock className="w-4 h-4 mr-2" />
+                Preview
+              </Button>
+              <Button onClick={navigateToCheckout} className="shadow-glow">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Unlock Full
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -222,16 +224,25 @@ export const VCVerdictCard = memo(({
   // Loading state
   if (loading) {
     return (
-      <div className="relative bg-card border border-border/50 rounded-3xl p-6 animate-fade-in">
-        <div className="flex items-center gap-3 mb-4">
-          <Skeleton className="h-10 w-10 rounded-xl" />
-          <Skeleton className="h-5 w-32" />
-        </div>
-        <Skeleton className="h-16 w-full mb-4 rounded-xl" />
-        <Skeleton className="h-20 w-full rounded-xl" />
-        <div className="text-center text-muted-foreground mt-4">
-          <Scale className="w-5 h-5 animate-pulse mx-auto mb-2" />
-          <span className="text-sm">Simulating the room after you leave...</span>
+      <div className="relative animate-fade-in">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-secondary/30 rounded-2xl blur opacity-50 animate-pulse" />
+        <div className="relative bg-card border border-border/50 rounded-2xl p-8">
+          <div className="flex items-center gap-4 mb-6">
+            <Skeleton className="h-12 w-12 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          </div>
+          <Skeleton className="h-24 w-full mb-6 rounded-xl" />
+          <div className="space-y-3">
+            <Skeleton className="h-16 w-full rounded-xl" />
+            <Skeleton className="h-16 w-full rounded-xl" />
+          </div>
+          <div className="flex items-center justify-center gap-3 mt-8 text-muted-foreground">
+            <Scale className="w-5 h-5 animate-pulse" />
+            <span className="text-sm">Simulating the room after you leave...</span>
+          </div>
         </div>
       </div>
     );
@@ -240,21 +251,23 @@ export const VCVerdictCard = memo(({
   // Error state
   if (error || !verdict) {
     return (
-      <div className="relative bg-card border border-destructive/30 rounded-3xl p-6 animate-fade-in">
-        <div className="text-center space-y-3">
-          <AlertTriangle className="w-10 h-10 text-destructive mx-auto" />
-          <p className="text-muted-foreground text-sm">{error || 'Unable to generate verdict'}</p>
-          <Button onClick={generateVerdict} variant="outline" size="sm">Try Again</Button>
+      <div className="relative animate-fade-in">
+        <div className="absolute -inset-0.5 bg-destructive/30 rounded-2xl blur opacity-50" />
+        <div className="relative bg-card border border-destructive/30 rounded-2xl p-8">
+          <div className="text-center space-y-4">
+            <AlertTriangle className="w-12 h-12 text-destructive mx-auto" />
+            <p className="text-muted-foreground">{error || 'Unable to generate verdict'}</p>
+            <Button onClick={generateVerdict} variant="outline" size="sm">Try Again</Button>
+          </div>
         </div>
       </div>
     );
   }
 
   const concerns = verdict.concerns || [];
-  const redFlagsCount = concerns.length;
-  const totalHiddenIssues = verdict.hiddenIssuesCount || Math.max(redFlagsCount * 3, 8);
+  const totalHiddenIssues = verdict.hiddenIssuesCount || Math.max(concerns.length * 3, 8);
   const inevitabilityStatement = verdict.inevitabilityStatement || 
-    "This pitch fails because the core logic doesn't survive partner scrutiny. It's not about timing—it's about structure.";
+    "This pitch fails because the core logic doesn't survive partner scrutiny.";
   const narrativeTransformation = verdict.narrativeTransformation || {
     currentNarrative: "Another pitch that doesn't clear the bar.",
     transformedNarrative: "A company that understands what VCs actually fund."
@@ -262,193 +275,130 @@ export const VCVerdictCard = memo(({
   const founderProfile = verdict.founderProfile || 'first_time_founder';
   const profileConfig = founderProfileConfig[founderProfile] || founderProfileConfig['first_time_founder'];
 
+  const valueItems = [
+    { icon: Flame, text: `+${totalHiddenIssues} hidden deal-breakers`, color: 'text-destructive' },
+    { icon: Target, text: 'Section-by-section scores', color: 'text-primary' },
+    { icon: Zap, text: '90-day fix playbook', color: 'text-warning' },
+    { icon: Shield, text: 'Moat durability analysis', color: 'text-primary' },
+    { icon: TrendingDown, text: 'Competitor moves', color: 'text-destructive' },
+    { icon: DollarSign, text: 'Bottoms-up TAM', color: 'text-success' },
+    { icon: Users, text: 'Team credibility gaps', color: 'text-primary' },
+    { icon: FileText, text: 'IC objection responses', color: 'text-muted-foreground' },
+  ];
+
   return (
     <div className="relative animate-fade-in">
-      {/* Ominous gradient glow */}
-      <div className="absolute inset-0 bg-gradient-to-r from-destructive/40 via-destructive/20 to-amber-600/30 rounded-3xl blur-xl opacity-70" />
+      {/* Glow effect */}
+      <div className="absolute -inset-1 bg-gradient-to-r from-destructive/40 via-primary/30 to-destructive/40 rounded-2xl blur-xl opacity-60" />
       
-      <div className="relative bg-card/95 backdrop-blur-sm border border-destructive/40 rounded-3xl overflow-hidden shadow-2xl">
-        {/* Header - Room Simulation Framing */}
-        <div className="p-6 pb-4 bg-gradient-to-b from-destructive/10 via-destructive/5 to-transparent">
+      <div className="relative bg-card/95 backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
+        {/* Header */}
+        <div className="p-6 border-b border-border/50">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-destructive to-destructive/70 shadow-lg shadow-destructive/30">
-                <MessageSquareX className="w-7 h-7 text-destructive-foreground" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-destructive/20 flex items-center justify-center">
+                <MessageSquareX className="w-5 h-5 text-destructive" />
               </div>
               <div>
-                <h2 className="text-xl font-display font-bold text-foreground">What VCs Will Say</h2>
-                <p className="text-destructive font-semibold text-sm">When you leave the room</p>
+                <h2 className="font-display font-bold text-foreground">The Room After You Leave</h2>
+                <p className="text-xs text-muted-foreground">What VCs say when you're not there</p>
               </div>
             </div>
-            {/* Founder Profile Badge */}
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50 border border-border/50 ${profileConfig.color}`}>
+            <Badge variant="outline" className="text-xs gap-1.5 border-border/50">
               {profileConfig.icon}
-              <span className="text-xs font-medium">{profileConfig.label}</span>
-            </div>
+              {profileConfig.label}
+            </Badge>
           </div>
 
-          {/* The Verdict - Eavesdropping on rejection */}
-          <div className="p-5 rounded-2xl bg-destructive/15 border border-destructive/40 mb-4">
-            <div className="flex items-start gap-3 mb-2">
-              <span className="text-destructive text-lg">"</span>
-              <p className="text-lg text-foreground leading-relaxed font-medium italic">
-                {verdict.verdict}
-              </p>
-              <span className="text-destructive text-lg self-end">"</span>
-            </div>
-            <p className="text-xs text-muted-foreground pl-6">— This is not advice. This is what partners say when you're not in the room.</p>
+          {/* The Verdict Quote */}
+          <div className="relative">
+            <div className="absolute -left-2 top-0 text-4xl text-primary/30 font-serif">"</div>
+            <p className="text-lg text-foreground leading-relaxed pl-6 pr-4 italic">
+              {verdict.verdict}
+            </p>
+            <div className="absolute -right-2 bottom-0 text-4xl text-primary/30 font-serif">"</div>
           </div>
+          <p className="text-xs text-muted-foreground mt-3 pl-6">— Monday IC meeting</p>
+        </div>
 
-          {/* Narrative Transformation Preview */}
-          <div className="p-4 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 border border-border/50">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-destructive font-semibold uppercase tracking-wide mb-1">Today's Narrative</p>
-                <p className="text-sm text-muted-foreground italic">"{narrativeTransformation.currentNarrative}"</p>
-              </div>
-              <div className="border-l border-border/50 pl-4">
-                <p className="text-xs text-primary font-semibold uppercase tracking-wide mb-1">After You Fix This</p>
-                <p className="text-sm text-foreground italic">"{narrativeTransformation.transformedNarrative}"</p>
-              </div>
+        {/* Narrative Transformation */}
+        <div className="px-6 py-4 bg-muted/20 border-b border-border/50">
+          <div className="flex items-stretch gap-4">
+            <div className="flex-1 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+              <p className="text-[10px] uppercase tracking-wider text-destructive font-semibold mb-1">Now</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">"{narrativeTransformation.currentNarrative}"</p>
+            </div>
+            <div className="flex items-center">
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <div className="flex-1 p-3 rounded-lg bg-primary/10 border border-primary/20">
+              <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">After</p>
+              <p className="text-xs text-foreground leading-relaxed">"{narrativeTransformation.transformedNarrative}"</p>
             </div>
           </div>
         </div>
 
-        {/* Reasons VCs Will Pass - Structural */}
-        <div className="px-6 pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-destructive/20 flex items-center justify-center">
-                <ShieldX className="w-5 h-5 text-destructive" />
-              </div>
-              <div>
-                <h3 className="font-bold text-destructive">Reasons VCs Will Pass</h3>
-                <p className="text-xs text-muted-foreground">Structural issues that end the conversation</p>
-              </div>
-            </div>
+        {/* Deal Killers */}
+        <div className="p-6 border-b border-border/50">
+          <div className="flex items-center gap-2 mb-4">
+            <ShieldX className="w-4 h-4 text-destructive" />
+            <h3 className="text-sm font-semibold text-destructive">Why VCs Will Pass</h3>
           </div>
           
-          {/* Show only 2 concerns */}
           <div className="space-y-3">
             {concerns.slice(0, 2).map((concern, i) => (
-              <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/25">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-destructive text-destructive-foreground text-sm font-bold flex items-center justify-center mt-0.5">
-                  {i + 1}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground leading-relaxed">{concern.text}</p>
-                  {concern.vcQuote && (
-                    <p className="text-xs text-destructive mt-2 italic">
-                      "{concern.vcQuote}"
-                    </p>
-                  )}
+              <div key={i} className="group relative">
+                <div className="flex gap-3 p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-destructive/30 transition-colors">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 text-destructive text-xs font-bold flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-foreground leading-relaxed">{concern.text}</p>
+                    {concern.vcQuote && (
+                      <p className="text-xs text-destructive/80 mt-2 italic">"{concern.vcQuote}"</p>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* What you'll uncover - Transformation framing */}
-        <div className="px-6 pb-4">
-          <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
-            <p className="text-xs text-muted-foreground font-medium mb-3 uppercase tracking-wide">What you'll uncover in the full analysis:</p>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-              <div className="flex items-center gap-2">
-                <Flame className="w-3.5 h-3.5 text-destructive flex-shrink-0" />
-                <span className="text-xs text-foreground">+{totalHiddenIssues} hidden deal-breakers</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Target className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                <span className="text-xs text-foreground">Section-by-section scores</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                <span className="text-xs text-foreground">90-day fix playbook</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Shield className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                <span className="text-xs text-foreground">Moat durability analysis</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <TrendingDown className="w-3.5 h-3.5 text-destructive flex-shrink-0" />
-                <span className="text-xs text-foreground">Competitor 12-month moves</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
-                <span className="text-xs text-foreground">Bottoms-up TAM model</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                <span className="text-xs text-foreground">Team credibility gaps</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <FileText className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs text-foreground">IC objection responses</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <BarChart3 className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                <span className="text-xs text-foreground">Traction depth test</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Rocket className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                <span className="text-xs text-foreground">Exit narrative & acquirers</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Why This Narrative Fails - Inevitability framing */}
-        <div className="px-6 pb-4">
-          <div className="p-4 rounded-xl bg-gradient-to-r from-destructive/10 to-amber-500/10 border border-destructive/20">
-            <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-              Why This Narrative Fails
-            </h4>
-            <p className="text-sm text-muted-foreground mb-3">
+        {/* Why This Fails - Inevitability */}
+        <div className="px-6 py-4 bg-gradient-to-r from-destructive/5 to-transparent border-b border-border/50">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {inevitabilityStatement}
             </p>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <span className="text-destructive mt-1">•</span>
-                <span>This version of your pitch <strong className="text-foreground">structurally fails</strong> in IC—not because of timing, but because the logic doesn't close</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-destructive mt-1">•</span>
-                <span>These issues <strong className="text-foreground">wouldn't be debated</strong>—they'd be dismissed</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-destructive mt-1">•</span>
-                <span>Every partner sees the same structural gaps. No warm intro changes that.</span>
-              </li>
-            </ul>
           </div>
         </div>
 
-        {/* The Transformation Question */}
-        <div className="px-6 pb-4">
-          <div className="p-4 rounded-xl border-2 border-dashed border-muted-foreground/30 text-center">
-            <p className="text-foreground font-medium">
-              Do you want to walk into your next VC meeting with a narrative that <strong className="text-destructive">fails under scrutiny</strong>, 
-              or one that <strong className="text-primary">changes what they say about you</strong>?
-            </p>
+        {/* Value Props Grid */}
+        <div className="p-6 border-b border-border/50">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">In the full analysis</p>
+          <div className="grid grid-cols-4 gap-2">
+            {valueItems.map((item, i) => (
+              <div key={i} className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
+                <item.icon className={`w-4 h-4 ${item.color}`} />
+                <span className="text-[10px] text-center text-muted-foreground leading-tight">{item.text}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* CTA - "Let me Fix this" */}
-        <div className="p-6 pt-3 border-t border-destructive/20 bg-gradient-to-r from-destructive/5 via-transparent to-primary/5">
+        {/* CTA Section */}
+        <div className="p-6 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
           <Button 
             onClick={navigateToPortal} 
-            className="w-full h-14 text-base font-semibold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" 
+            className="w-full h-12 text-sm font-semibold shadow-glow hover-neon-pulse" 
             size="lg"
           >
-            <RefreshCw className="w-5 h-5 mr-2" />
+            <RefreshCw className="w-4 h-4 mr-2" />
             Let me Fix this
-            <ArrowRight className="w-5 h-5 ml-2" />
+            <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
-          <p className="text-xs text-center text-muted-foreground mt-3">
-            Change the internal conversation. Transform how VCs talk about you.
-          </p>
-          <p className="text-xs text-center text-muted-foreground/60 mt-1">
+          <p className="text-[10px] text-center text-muted-foreground mt-3">
             This is not advice. This is the room after the meeting.
           </p>
         </div>
