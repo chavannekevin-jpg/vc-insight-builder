@@ -5,129 +5,88 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface VerdictRequest {
-  companyName: string;
-  companyDescription?: string;
-  stage: string;
-  category?: string;
-  responses: Array<{ question_key: string; answer: string | null }>;
-  deckParsed?: boolean;
-}
-
-interface HarshObservation {
-  text: string;
-  severity: 'fatal' | 'critical' | 'warning';
-  category: string;
-}
-
-interface VerdictResponse {
-  verdict_severity: 'HIGH_RISK' | 'MODERATE_RISK' | 'NEEDS_WORK' | 'PROMISING';
-  harsh_observations: HarshObservation[];
-  key_weakness: string;
-  verdict_summary: string;
-  blind_spots_count: number;
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { companyName, companyDescription, stage, category, responses, deckParsed } = await req.json() as VerdictRequest;
+    const { companyName, companyDescription, stage, category, responses, deckParsed } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Extract specific response data for personalization
-    const getResponse = (key: string) => responses?.find(r => r.question_key === key)?.answer?.trim() || '';
-    
-    const problemValidation = getResponse('problem_validation');
-    const targetCustomer = getResponse('target_customer');
-    const marketSize = getResponse('market_size');
-    const traction = getResponse('current_traction');
-    const competitiveAdvantage = getResponse('competitive_advantage');
-    const revenueModel = getResponse('revenue_model');
-    const founderBackground = getResponse('founder_background');
-    const solutionDescription = getResponse('solution_description');
+    // Build context from responses
+    const responseContext = responses
+      ?.filter((r: any) => r.answer && r.answer.trim())
+      .map((r: any) => `${r.question_key}: ${r.answer}`)
+      .join('\n') || '';
 
-    // Build context string with available data
-    const availableData = [];
-    if (problemValidation) availableData.push(`Problem: "${problemValidation.slice(0, 300)}..."`);
-    if (targetCustomer) availableData.push(`Target Customer: "${targetCustomer.slice(0, 200)}..."`);
-    if (marketSize) availableData.push(`Market Size: "${marketSize.slice(0, 200)}..."`);
-    if (traction) availableData.push(`Traction: "${traction.slice(0, 200)}..."`);
-    if (competitiveAdvantage) availableData.push(`Competitive Advantage: "${competitiveAdvantage.slice(0, 200)}..."`);
-    if (revenueModel) availableData.push(`Revenue Model: "${revenueModel.slice(0, 200)}..."`);
-    if (founderBackground) availableData.push(`Founder Background: "${founderBackground.slice(0, 200)}..."`);
-    if (solutionDescription) availableData.push(`Solution: "${solutionDescription.slice(0, 300)}..."`);
-    if (companyDescription) availableData.push(`Company Description: "${companyDescription.slice(0, 300)}..."`);
+    const systemPrompt = `You are a senior VC partner at a top-tier fund (Sequoia, a16z, Benchmark caliber). Your job is to give founders a brutally honest but BALANCED preview of how VCs will perceive their company.
 
-    const hasData = availableData.length > 0;
+CRITICAL: You must provide MARKET-LEVEL INSIGHTS, not just critique of their materials.
 
-    const systemPrompt = `You are a brutally honest senior VC partner who has seen thousands of pitches across every industry. Your job is to give founders the harsh truth about what partners ACTUALLY say about their company when they leave the room.
+Your analysis should demonstrate:
+1. Deep knowledge of the SPECIFIC market/category they're in
+2. References to REAL failed and successful startups in this space (by name)
+3. Understanding of VC investment frameworks (Sequoia Capital Efficiency, a16z category creation, etc.)
+4. The TIMING question - why now matters in this market
+5. Pattern recognition from similar companies
 
-Your analysis should focus on:
-1. MARKET DYNAMICS - Is this market timing right? Are there structural headwinds or tailwinds? What do you know about this space that the founder might not?
-2. STRATEGIC POSITIONING - How does this compare to what's working (or failing) in adjacent markets? What patterns have you seen?
-3. VC ECONOMICS - Does this fit VC portfolio math? Can this be a fund-returner? What's the realistic exit landscape?
-4. FOUNDER BLIND SPOTS - What hard questions will partners ask that founders typically can't answer well?
+TONE: Insightful industry expert, not a deck reviewer. You're sharing what you KNOW about this space, not just what's missing from their deck.
 
-DO NOT focus on missing data or incomplete profiles. Instead, provide strategic market insights and VC perspective based on what you DO know about:
-- The market/category they're in
-- Their stage and what matters at that stage
-- Patterns you've seen in similar companies
-- Real concerns VCs discuss internally
-
-Severity levels:
-- "fatal": Structural issues with the market, timing, or category that are hard to overcome
-- "critical": Strategic gaps that will come up in every partner meeting  
-- "warning": Areas where founders typically underestimate complexity
-
-Return ONLY valid JSON matching this exact structure:
+Return ONLY valid JSON with this exact structure:
 {
-  "verdict_severity": "HIGH_RISK" | "MODERATE_RISK" | "NEEDS_WORK" | "PROMISING",
-  "harsh_observations": [
+  "verdict": "One provocative sentence summarizing the core investment question for this company",
+  "readinessLevel": "LOW" | "MEDIUM" | "HIGH",
+  "readinessRationale": "2-3 sentences explaining why, with market context",
+  "concerns": [
     {
-      "text": "Strategic insight in VC voice - focus on market/industry dynamics",
-      "severity": "fatal" | "critical" | "warning",
-      "category": "traction" | "market" | "team" | "product" | "business_model" | "competition"
+      "text": "Market-informed concern with specific framework or case study reference",
+      "category": "market" | "team" | "business_model" | "traction" | "competition",
+      "caseStudyReference": "Optional: real company example like 'Similar to how Homejoy failed due to...'"
     }
   ],
-  "key_weakness": "The strategic vulnerability VCs will probe hardest",
-  "verdict_summary": "2-3 sentence summary of how partners would discuss this in a deal review meeting",
-  "blind_spots_count": 0
+  "strengths": [
+    {
+      "text": "What a VC would genuinely find compelling about this opportunity",
+      "category": "market" | "team" | "business_model" | "traction" | "competition"
+    }
+  ],
+  "marketInsight": "A deep observation about this specific market/category showing insider knowledge - trends, timing, competitive dynamics, recent exits, funding patterns",
+  "vcFrameworkCheck": "Which VC framework this passes or fails, with the specific test name (e.g., 'Fails Sequoia's Why Now test', 'Passes a16z's category creation criteria')"
 }
 
-Generate 3-5 observations. Focus on market insights, competitive dynamics, and strategic concerns - NOT on missing profile fields.`;
+REQUIREMENTS:
+- 2-3 concerns with at least one case study reference
+- 2-3 strengths (find genuine positives even if challenging)
+- Market insight must be SPECIFIC to their category, not generic
+- Reference REAL companies that failed or succeeded in this space
+- Use authentic VC terminology: fund returner, terminal TAM, zero-to-one, category winner, capital efficiency, burn multiple, etc.
+- Do NOT focus on missing deck content or profile gaps - focus on the BUSINESS and MARKET`;
 
-    const userPrompt = `
-Analyze this ${stage} startup: ${companyName}
-${category ? `Category/Market: ${category}` : ''}
-${companyDescription ? `What they do: "${companyDescription}"` : ''}
+    const userPrompt = `Analyze this startup through VC eyes:
 
-${hasData ? `Additional context from their profile:
-${availableData.join('\n')}` : ''}
+Company: ${companyName || 'Unnamed Startup'}
+Description: ${companyDescription || 'No description provided'}
+Stage: ${stage || 'Unknown'}
+Category/Industry: ${category || 'Not specified'}
+Has Pitch Deck: ${deckParsed ? 'Yes' : 'No'}
 
-Based on your knowledge of:
-1. This market/category and its dynamics
-2. What matters at ${stage} stage
-3. Common failure patterns in this space
-4. What VCs actually discuss about companies like this
+${responseContext ? `Additional Context:\n${responseContext}` : ''}
 
-Generate strategic, market-informed observations. Think about:
-- Market timing and structural trends
-- Competitive landscape realities
-- Unit economics challenges typical in this category
-- Why VCs pass on companies in this space
-- What successful companies in this category did differently
+Provide your VC verdict focusing on:
+1. What you KNOW about this market from your deal flow and portfolio experience
+2. Failed companies in this space and why they failed
+3. What would make this a "fund returner" vs a "nice business"
+4. The timing question for this category
+5. Genuine strengths alongside concerns
 
-Be specific about the MARKET and STRATEGY, not about what data is missing from their profile.
-`;
+Remember: You're an industry insider sharing knowledge, not a deck critic pointing out missing slides.`;
 
-    console.log(`Generating verdict for ${companyName} with ${availableData.length} data points`);
+    console.log('Generating market-intelligence VC verdict for:', companyName);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -153,7 +112,7 @@ Be specific about the MARKET and STRATEGY, not about what data is missing from t
     const data = await response.json();
     const content = data.choices[0]?.message?.content || '';
 
-    let verdict: VerdictResponse;
+    let verdict;
     try {
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -163,37 +122,38 @@ Be specific about the MARKET and STRATEGY, not about what data is missing from t
       }
     } catch (parseError) {
       console.error('Parse error:', parseError, 'Content:', content);
-      // Fallback verdict - focused on market insights, not missing data
-      const categoryInsight = category ? `The ${category} space` : 'This market';
+      // Fallback with market-focused content
       verdict = {
-        verdict_severity: 'MODERATE_RISK',
-        harsh_observations: [
+        verdict: "Strong concept, but the path to category leadership remains unclear in a competitive market.",
+        readinessLevel: "MEDIUM",
+        readinessRationale: "Early-stage companies in this space have historically struggled with differentiation. The market timing appears favorable, but execution risk is high without clear moat development.",
+        concerns: [
           {
-            text: `"${categoryInsight} is getting crowded. Without clear differentiation, this becomes a features war that nobody wins."`,
-            severity: 'critical',
-            category: 'competition'
+            text: "The market has seen multiple well-funded attempts that couldn't achieve escape velocity. Capital alone doesn't guarantee category creation.",
+            category: "market",
+            caseStudyReference: "Similar pattern to what we saw with many 2021 'future of work' companies that raised large rounds but couldn't sustain growth."
           },
           {
-            text: `"At ${stage}, VCs want to see founder-market fit. What makes this team uniquely positioned to win here?"`,
-            severity: 'critical',
-            category: 'team'
-          },
-          {
-            text: `"The path to $100M ARR in this category typically requires either enterprise sales motion or viral consumer adoption. Which is it?"`,
-            severity: 'warning',
-            category: 'business_model'
+            text: "Unit economics at scale remain unproven for this business model. Most comparable exits have been acqui-hires rather than venture-scale outcomes.",
+            category: "business_model"
           }
         ],
-        key_weakness: "Strategic positioning in a competitive landscape needs sharpening",
-        verdict_summary: "Partners would want to understand the 'why now' and 'why this team' before going deeper. The market opportunity exists, but the path to capturing it needs work.",
-        blind_spots_count: 0
+        strengths: [
+          {
+            text: "The timing for this category appears favorable with recent tailwinds in user behavior and technology infrastructure.",
+            category: "market"
+          },
+          {
+            text: "Early positioning before market saturation could provide first-mover advantages if executed well.",
+            category: "competition"
+          }
+        ],
+        marketInsight: "This category has historically been capital-intensive with long sales cycles. The winners have typically combined strong bottoms-up adoption with enterprise sales motion. Recent successful exits share a common pattern of becoming 'system of record' rather than 'nice-to-have' tool.",
+        vcFrameworkCheck: "Passes the 'large market' test but needs stronger evidence for the 'Why now?' and 'Why you?' questions that every partnership meeting will probe."
       };
     }
 
-    // Don't calculate blind spots based on missing responses - focus on strategic gaps
-    verdict.blind_spots_count = verdict.harsh_observations.filter(o => o.severity === 'fatal' || o.severity === 'critical').length;
-
-    console.log(`Generated verdict for ${companyName}: ${verdict.verdict_severity}, ${verdict.harsh_observations.length} observations`);
+    console.log('Successfully generated verdict for:', companyName, 'Level:', verdict.readinessLevel);
 
     return new Response(JSON.stringify(verdict), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

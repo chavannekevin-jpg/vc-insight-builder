@@ -2,22 +2,33 @@ import { memo, useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight, AlertTriangle, ShieldAlert, Target, TrendingDown, Users, DollarSign, Zap, Skull, Eye, CheckCircle2, Lock, Sparkles, FileText } from "lucide-react";
+import { 
+  ArrowRight, AlertTriangle, ShieldAlert, Target, TrendingDown, 
+  Users, DollarSign, Zap, Eye, CheckCircle2, Lock, Sparkles, 
+  FileText, Lightbulb, AlertCircle, CheckCircle, Scale
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-interface HarshObservation {
+interface Concern {
   text: string;
-  severity: 'fatal' | 'critical' | 'warning';
+  category: string;
+  caseStudyReference?: string;
+}
+
+interface Strength {
+  text: string;
   category: string;
 }
 
 interface VCVerdict {
-  verdict_severity: 'HIGH_RISK' | 'MODERATE_RISK' | 'NEEDS_WORK' | 'PROMISING';
-  harsh_observations: HarshObservation[];
-  key_weakness: string;
-  verdict_summary: string;
-  blind_spots_count: number;
+  verdict: string;
+  readinessLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+  readinessRationale: string;
+  concerns: Concern[];
+  strengths: Strength[];
+  marketInsight: string;
+  vcFrameworkCheck: string;
 }
 
 interface VCVerdictCardProps {
@@ -46,36 +57,32 @@ const getCategoryIcon = (category: string) => {
   }
 };
 
-const getSeverityStyles = (severity: string) => {
-  switch (severity) {
-    case 'fatal':
-      return 'border-l-destructive bg-destructive/5';
-    case 'critical':
-      return 'border-l-amber-500 bg-amber-500/5';
-    case 'warning':
-      return 'border-l-muted-foreground bg-muted/30';
+const getReadinessConfig = (level: string) => {
+  switch (level) {
+    case 'LOW':
+      return { 
+        text: 'NEEDS WORK', 
+        className: 'bg-destructive/20 text-destructive border-destructive/30',
+        color: 'text-destructive'
+      };
+    case 'MEDIUM':
+      return { 
+        text: 'GETTING THERE', 
+        className: 'bg-amber-500/20 text-amber-600 border-amber-500/30',
+        color: 'text-amber-500'
+      };
+    case 'HIGH':
+      return { 
+        text: 'PROMISING', 
+        className: 'bg-primary/20 text-primary border-primary/30',
+        color: 'text-primary'
+      };
     default:
-      return 'border-l-muted-foreground bg-muted/30';
-  }
-};
-
-const getVerdictColor = (severity: string) => {
-  switch (severity) {
-    case 'HIGH_RISK': return 'text-destructive';
-    case 'MODERATE_RISK': return 'text-amber-500';
-    case 'NEEDS_WORK': return 'text-amber-400';
-    case 'PROMISING': return 'text-primary';
-    default: return 'text-muted-foreground';
-  }
-};
-
-const getVerdictBadge = (severity: string) => {
-  switch (severity) {
-    case 'HIGH_RISK': return { text: 'HIGH RISK', className: 'bg-destructive/20 text-destructive border-destructive/30' };
-    case 'MODERATE_RISK': return { text: 'MODERATE RISK', className: 'bg-amber-500/20 text-amber-600 border-amber-500/30' };
-    case 'NEEDS_WORK': return { text: 'NEEDS WORK', className: 'bg-amber-400/20 text-amber-500 border-amber-400/30' };
-    case 'PROMISING': return { text: 'PROMISING', className: 'bg-primary/20 text-primary border-primary/30' };
-    default: return { text: 'ANALYZING', className: 'bg-muted text-muted-foreground border-border' };
+      return { 
+        text: 'ANALYZING', 
+        className: 'bg-muted text-muted-foreground border-border',
+        color: 'text-muted-foreground'
+      };
   }
 };
 
@@ -100,7 +107,7 @@ export const VCVerdictCard = memo(({
   const generateVerdict = useCallback(async () => {
     if (memoGenerated) {
       setLoading(false);
-      return; // Don't generate verdict if memo already exists
+      return;
     }
 
     setLoading(true);
@@ -227,27 +234,33 @@ export const VCVerdictCard = memo(({
   // Loading state
   if (loading) {
     return (
-      <div className="relative bg-card border-2 border-destructive/30 rounded-3xl p-8 animate-fade-in">
-        <div className="absolute inset-0 bg-gradient-to-br from-destructive/5 via-transparent to-destructive/5 rounded-3xl -z-10" />
+      <div className="relative bg-card border-2 border-border rounded-3xl p-8 animate-fade-in">
+        <div className="absolute inset-0 bg-gradient-to-br from-muted/20 via-transparent to-muted/20 rounded-3xl -z-10" />
         
         <div className="flex items-center justify-between mb-6">
           <div>
-            <Skeleton className="h-6 w-24 mb-3" />
+            <Skeleton className="h-6 w-28 mb-3" />
             <Skeleton className="h-10 w-64 mb-2" />
             <Skeleton className="h-5 w-80" />
           </div>
           <div className="relative">
-            <Skull className="w-12 h-12 text-destructive/30 animate-pulse" />
+            <Scale className="w-12 h-12 text-muted-foreground/30 animate-pulse" />
           </div>
         </div>
 
-        <div className="space-y-4 mb-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="pl-4 border-l-2 border-destructive/30 py-3">
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-          ))}
+        <Skeleton className="h-20 w-full mb-6 rounded-xl" />
+
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          <div className="space-y-3">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </div>
+          <div className="space-y-3">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </div>
         </div>
 
         <div className="text-center text-muted-foreground">
@@ -255,7 +268,7 @@ export const VCVerdictCard = memo(({
             <Eye className="w-5 h-5 animate-pulse" />
             <span className="text-sm font-medium">Analyzing through VC eyes...</span>
           </div>
-          <p className="text-xs">This takes a few seconds</p>
+          <p className="text-xs">Researching your market and competitive landscape</p>
         </div>
       </div>
     );
@@ -276,71 +289,112 @@ export const VCVerdictCard = memo(({
     );
   }
 
-  const verdictBadge = getVerdictBadge(verdict.verdict_severity);
+  const readinessConfig = getReadinessConfig(verdict.readinessLevel);
 
   return (
-    <div className="relative bg-card border-2 border-destructive/30 rounded-3xl p-8 animate-fade-in overflow-hidden">
+    <div className="relative bg-card border-2 border-border rounded-3xl p-8 animate-fade-in overflow-hidden">
       {/* Background effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-destructive/5 via-transparent to-destructive/5 rounded-3xl -z-10" />
-      <div className="absolute top-0 right-0 w-64 h-64 bg-destructive/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 -z-10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-muted/10 via-transparent to-muted/10 rounded-3xl -z-10" />
       
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <div className="flex items-center gap-3 mb-3">
-            <Badge className={verdictBadge.className}>
-              <AlertTriangle className="w-3 h-3 mr-1" />
-              {verdictBadge.text}
-            </Badge>
-            {verdict.blind_spots_count > 0 && (
-              <span className="text-xs text-destructive font-medium">
-                {verdict.blind_spots_count} blind spot{verdict.blind_spots_count !== 1 ? 's' : ''} detected
-              </span>
-            )}
-          </div>
-          <h2 className="text-3xl font-display font-bold mb-2">Your VC Verdict</h2>
+          <Badge className={readinessConfig.className}>
+            <Scale className="w-3 h-3 mr-1" />
+            {readinessConfig.text}
+          </Badge>
+          <h2 className="text-3xl font-display font-bold mt-3 mb-2">Your VC Verdict</h2>
           <p className="text-muted-foreground">What partners say when you leave the room</p>
         </div>
-        <Skull className={`w-12 h-12 ${getVerdictColor(verdict.verdict_severity)}`} />
+        <Scale className={`w-10 h-10 ${readinessConfig.color}`} />
       </div>
 
-      {/* Summary - the "hook" */}
-      <div className="bg-background/50 border border-border/50 rounded-xl p-4 mb-6">
-        <p className="text-sm italic text-muted-foreground">
-          "{verdict.verdict_summary}"
+      {/* Main Verdict Quote */}
+      <div className="bg-background/50 border border-border/50 rounded-xl p-5 mb-6">
+        <p className="text-lg font-medium text-foreground leading-relaxed">
+          "{verdict.verdict}"
+        </p>
+        <p className="text-sm text-muted-foreground mt-3">
+          {verdict.readinessRationale}
         </p>
       </div>
 
-      {/* Harsh Observations */}
-      <div className="space-y-3 mb-6">
-        {verdict.harsh_observations.map((observation, index) => {
-          const Icon = getCategoryIcon(observation.category);
-          return (
-            <div 
-              key={index} 
-              className={`pl-4 border-l-4 ${getSeverityStyles(observation.severity)} rounded-r-lg py-3 pr-4`}
-            >
-              <div className="flex items-start gap-3">
-                <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                  observation.severity === 'fatal' ? 'text-destructive' : 
-                  observation.severity === 'critical' ? 'text-amber-500' : 'text-muted-foreground'
-                }`} />
-                <p className="text-sm text-foreground/90">
-                  {observation.text}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+      {/* Market Insight */}
+      <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-6">
+        <div className="flex items-start gap-3">
+          <Lightbulb className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium text-foreground mb-1">Market Insight</p>
+            <p className="text-sm text-muted-foreground">{verdict.marketInsight}</p>
+          </div>
+        </div>
       </div>
 
-      {/* Key Weakness Callout */}
-      <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 mb-6">
+      {/* Concerns & Strengths Grid */}
+      <div className="grid md:grid-cols-2 gap-6 mb-6">
+        {/* Concerns */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <AlertCircle className="w-4 h-4 text-amber-500" />
+            <span className="font-medium text-sm">Top Concerns</span>
+          </div>
+          <div className="space-y-3">
+            {verdict.concerns.slice(0, 3).map((concern, index) => {
+              const Icon = getCategoryIcon(concern.category);
+              return (
+                <div 
+                  key={index} 
+                  className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3"
+                >
+                  <div className="flex items-start gap-2">
+                    <Icon className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-foreground/90">{concern.text}</p>
+                      {concern.caseStudyReference && (
+                        <p className="text-xs text-muted-foreground mt-1 italic">
+                          {concern.caseStudyReference}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Strengths */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle className="w-4 h-4 text-primary" />
+            <span className="font-medium text-sm">What's Working</span>
+          </div>
+          <div className="space-y-3">
+            {verdict.strengths.slice(0, 3).map((strength, index) => {
+              const Icon = getCategoryIcon(strength.category);
+              return (
+                <div 
+                  key={index} 
+                  className="bg-primary/5 border border-primary/20 rounded-lg p-3"
+                >
+                  <div className="flex items-start gap-2">
+                    <Icon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-foreground/90">{strength.text}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* VC Framework Check */}
+      <div className="bg-muted/30 border border-border/50 rounded-xl p-4 mb-6">
         <div className="flex items-start gap-3">
-          <ShieldAlert className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+          <ShieldAlert className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-destructive mb-1">Critical Blind Spot</p>
-            <p className="text-sm text-muted-foreground">{verdict.key_weakness}</p>
+            <p className="font-medium text-foreground mb-1">VC Framework Check</p>
+            <p className="text-sm text-muted-foreground">{verdict.vcFrameworkCheck}</p>
           </div>
         </div>
       </div>
@@ -348,17 +402,17 @@ export const VCVerdictCard = memo(({
       {/* CTA */}
       <Button 
         size="lg" 
-        className="w-full text-lg font-semibold bg-primary hover:bg-primary/90"
+        className="w-full text-lg font-semibold"
         onClick={navigateToPortal}
       >
-        Remove Blind Spots
+        Get the Full Analysis
         <ArrowRight className="ml-2 w-5 h-5" />
       </Button>
 
       {/* Footer */}
       <div className="mt-6 pt-6 border-t border-border/50">
         <p className="text-xs text-muted-foreground text-center">
-          Average founder spends 6–9 months fundraising. One wrong narrative can kill a round permanently.
+          This is a preview. Complete your profile to get specific, actionable feedback for your fundraise.
         </p>
       </div>
     </div>
