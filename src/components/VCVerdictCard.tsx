@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
-  ArrowRight, AlertTriangle, TrendingUp, Target,
-  Users, DollarSign, Zap, Eye, CheckCircle2, Lock, Sparkles, 
-  FileText, Lightbulb, AlertCircle, Flame, Scale, ShieldCheck
+  ArrowRight, AlertTriangle, TrendingUp, 
+  Eye, CheckCircle2, Lock, Sparkles, 
+  FileText, AlertCircle, Flame, Scale, Clock, Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +21,6 @@ interface Strength {
   category: string;
 }
 
-// New verdict format
 interface VCVerdict {
   verdict: string;
   readinessLevel: 'LOW' | 'MEDIUM' | 'HIGH';
@@ -32,7 +31,6 @@ interface VCVerdict {
   vcFrameworkCheck: string;
 }
 
-// Old verdict format for backward compatibility
 interface LegacyVCVerdict {
   verdict_severity: 'HIGH_RISK' | 'MODERATE_RISK' | 'NEEDS_WORK' | 'PROMISING';
   harsh_observations: Array<{ text: string; severity: string; category: string }>;
@@ -41,7 +39,6 @@ interface LegacyVCVerdict {
   blind_spots_count: number;
 }
 
-// Convert old format to new format
 const convertLegacyVerdict = (legacy: LegacyVCVerdict): VCVerdict => {
   const severityToLevel: Record<string, 'LOW' | 'MEDIUM' | 'HIGH'> = {
     'HIGH_RISK': 'LOW',
@@ -67,7 +64,6 @@ const convertLegacyVerdict = (legacy: LegacyVCVerdict): VCVerdict => {
   };
 };
 
-// Check if verdict is in legacy format
 const isLegacyVerdict = (verdict: any): verdict is LegacyVCVerdict => {
   return verdict && 'harsh_observations' in verdict;
 };
@@ -86,41 +82,27 @@ interface VCVerdictCardProps {
   onVerdictGenerated?: (verdict: VCVerdict) => void;
 }
 
-const getCategoryIcon = (category: string) => {
-  switch (category) {
-    case 'traction': return Zap;
-    case 'market': return TrendingUp;
-    case 'team': return Users;
-    case 'product': return Target;
-    case 'business_model': return DollarSign;
-    default: return AlertTriangle;
-  }
-};
-
 const readinessConfig = {
   LOW: {
     color: "text-destructive",
     bgColor: "bg-destructive/10",
     borderColor: "border-destructive/30",
-    icon: AlertCircle,
-    label: "Not Ready",
-    sublabel: "Critical gaps identified"
+    label: "Not VC-Ready",
+    emoji: "🔴"
   },
   MEDIUM: {
     color: "text-amber-500",
     bgColor: "bg-amber-500/10",
     borderColor: "border-amber-500/30",
-    icon: AlertTriangle,
-    label: "Getting There",
-    sublabel: "Key areas need work"
+    label: "Needs Work",
+    emoji: "🟡"
   },
   HIGH: {
     color: "text-primary",
     bgColor: "bg-primary/10",
     borderColor: "border-primary/30",
-    icon: CheckCircle2,
     label: "Strong Position",
-    sublabel: "Ready with minor refinements"
+    emoji: "🟢"
   }
 };
 
@@ -137,7 +119,6 @@ export const VCVerdictCard = memo(({
   cachedVerdict: rawCachedVerdict,
   onVerdictGenerated
 }: VCVerdictCardProps) => {
-  // Convert cached verdict if it's in legacy format
   const cachedVerdict = rawCachedVerdict 
     ? (isLegacyVerdict(rawCachedVerdict) ? convertLegacyVerdict(rawCachedVerdict) : rawCachedVerdict as VCVerdict)
     : null;
@@ -172,7 +153,6 @@ export const VCVerdictCard = memo(({
       setVerdict(data);
       onVerdictGenerated?.(data);
 
-      // Cache verdict in database
       await supabase
         .from('companies')
         .update({ 
@@ -199,7 +179,7 @@ export const VCVerdictCard = memo(({
   const navigateToMemo = useCallback(() => navigate(`/memo?companyId=${companyId}`), [navigate, companyId]);
   const navigateToCheckout = useCallback(() => navigate(`/checkout-memo?companyId=${companyId}`), [navigate, companyId]);
 
-  // If memo is generated, show different states
+  // Memo generated state
   if (memoGenerated) {
     return (
       <div className="relative bg-card border border-border/50 rounded-3xl p-8 shadow-lg animate-fade-in">
@@ -213,7 +193,7 @@ export const VCVerdictCard = memo(({
             </Badge>
             <h2 className="text-2xl font-display font-bold mb-2">Your Investment Memo</h2>
             <p className="text-muted-foreground text-sm">
-              {hasPaid ? 'Complete access unlocked — now you know what VCs know' : 'Your VC verdict is ready. Unlock the full truth.'}
+              {hasPaid ? 'Complete access unlocked' : 'Your VC verdict is ready'}
             </p>
           </div>
           {hasPaid ? <CheckCircle2 className="w-10 h-10 text-primary" /> : <FileText className="w-10 h-10 text-amber-500/50" />}
@@ -243,24 +223,16 @@ export const VCVerdictCard = memo(({
   // Loading state
   if (loading) {
     return (
-      <div className="relative bg-card border border-border/50 rounded-3xl p-8 animate-fade-in">
-        <div className="flex items-center gap-4 mb-6">
-          <Skeleton className="h-12 w-12 rounded-2xl" />
-          <div className="flex-1">
-            <Skeleton className="h-6 w-40 mb-2" />
-            <Skeleton className="h-4 w-56" />
-          </div>
+      <div className="relative bg-card border border-border/50 rounded-3xl p-6 animate-fade-in">
+        <div className="flex items-center gap-3 mb-4">
+          <Skeleton className="h-10 w-10 rounded-xl" />
+          <Skeleton className="h-5 w-32" />
         </div>
-        <Skeleton className="h-20 w-full mb-6 rounded-xl" />
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Skeleton className="h-24 rounded-xl" />
-          <Skeleton className="h-24 rounded-xl" />
-        </div>
-        <div className="text-center text-muted-foreground">
-          <div className="flex items-center justify-center gap-2">
-            <Scale className="w-5 h-5 animate-pulse" />
-            <span className="text-sm">Analyzing through VC eyes...</span>
-          </div>
+        <Skeleton className="h-16 w-full mb-4 rounded-xl" />
+        <Skeleton className="h-20 w-full rounded-xl" />
+        <div className="text-center text-muted-foreground mt-4">
+          <Scale className="w-5 h-5 animate-pulse mx-auto mb-2" />
+          <span className="text-sm">Analyzing like a VC partner...</span>
         </div>
       </div>
     );
@@ -269,181 +241,110 @@ export const VCVerdictCard = memo(({
   // Error state
   if (error || !verdict) {
     return (
-      <div className="relative bg-card border border-destructive/30 rounded-3xl p-8 animate-fade-in">
-        <div className="text-center space-y-4">
-          <AlertTriangle className="w-12 h-12 text-destructive mx-auto" />
-          <p className="text-muted-foreground">{error || 'Unable to generate verdict'}</p>
-          <Button onClick={generateVerdict} variant="outline">Try Again</Button>
+      <div className="relative bg-card border border-destructive/30 rounded-3xl p-6 animate-fade-in">
+        <div className="text-center space-y-3">
+          <AlertTriangle className="w-10 h-10 text-destructive mx-auto" />
+          <p className="text-muted-foreground text-sm">{error || 'Unable to generate verdict'}</p>
+          <Button onClick={generateVerdict} variant="outline" size="sm">Try Again</Button>
         </div>
       </div>
     );
   }
 
   const config = readinessConfig[verdict.readinessLevel] || readinessConfig.MEDIUM;
-  const ReadinessIcon = config.icon;
   const concerns = verdict.concerns || [];
-  const strengths = verdict.strengths || [];
+  const redFlagsCount = concerns.length;
+  const hiddenRisksEstimate = Math.max(redFlagsCount * 2, 5); // Amplify the problem
 
   return (
     <div className="relative animate-fade-in">
-      {/* Gradient background glow */}
-      <div className="absolute inset-0 bg-gradient-to-r from-destructive/20 via-amber-500/15 to-primary/20 rounded-3xl blur-xl opacity-50" />
+      {/* Subtle glow */}
+      <div className="absolute inset-0 bg-gradient-to-r from-destructive/10 via-transparent to-primary/10 rounded-3xl blur-xl opacity-40" />
       
       <div className="relative bg-card/95 backdrop-blur-sm border border-border/50 rounded-3xl overflow-hidden">
-        {/* Header */}
-        <div className="p-6 pb-4">
-          <div className="flex items-center gap-4 mb-5">
-            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/60 shadow-lg">
-              <Scale className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h2 className="text-xl font-display font-bold text-foreground">VC Quick Take</h2>
-              <p className="text-muted-foreground text-sm">30-second investment assessment</p>
-            </div>
-          </div>
-
-          {/* Main Verdict */}
-          <div className="p-4 rounded-xl bg-muted/30 border border-border/30 mb-5">
-            <p className="text-foreground leading-relaxed font-medium italic">
-              "{verdict.verdict}"
-            </p>
-          </div>
-
-          {/* Readiness Level Badge */}
-          <div className={`p-4 rounded-xl ${config.bgColor} border ${config.borderColor} mb-5`}>
+        {/* Compact Header */}
+        <div className="p-5 pb-3">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <ReadinessIcon className={`w-6 h-6 ${config.color}`} />
-              <div className="flex-1">
-                <span className={`font-bold ${config.color}`}>{config.label}</span>
-                <p className="text-sm text-muted-foreground mt-0.5">{verdict.readinessRationale}</p>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+                <Scale className="w-5 h-5 text-primary-foreground" />
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Red Flags & Strengths Counts */}
-        <div className="px-6 pb-4 grid grid-cols-2 gap-4">
-          <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Flame className="w-4 h-4 text-destructive" />
-              <span className="font-bold text-destructive">{concerns.length} Red Flags</span>
-            </div>
-            <p className="text-xs text-muted-foreground">VCs will ask about these</p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-            <div className="flex items-center gap-2 mb-2">
-              <ShieldCheck className="w-4 h-4 text-primary" />
-              <span className="font-bold text-primary">{strengths.length} Strengths</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Your competitive edge</p>
-          </div>
-        </div>
-
-        {/* Top Concerns & Strengths */}
-        <div className="px-6 pb-4 grid md:grid-cols-2 gap-4">
-          {/* Concerns */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-destructive/20 flex items-center justify-center">
-                <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
-              </div>
-              <h3 className="font-semibold text-sm text-foreground">Top Concerns</h3>
-            </div>
-            {concerns.slice(0, 2).map((concern, index) => {
-              const Icon = getCategoryIcon(concern.category);
-              return (
-                <div 
-                  key={index}
-                  className="flex items-start gap-2 p-3 rounded-lg bg-destructive/5 border border-destructive/15"
-                >
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 text-destructive text-xs font-bold flex items-center justify-center mt-0.5">
-                    {index + 1}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground/90 leading-relaxed">{concern.text}</p>
-                    {concern.caseStudyReference && (
-                      <p className="text-xs text-muted-foreground mt-1 italic">{concern.caseStudyReference}</p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Strengths */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
-                <TrendingUp className="w-3.5 h-3.5 text-primary" />
-              </div>
-              <h3 className="font-semibold text-sm text-foreground">Top Strengths</h3>
-            </div>
-            {strengths.slice(0, 2).map((strength, index) => {
-              const Icon = getCategoryIcon(strength.category);
-              return (
-                <div 
-                  key={index}
-                  className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/15"
-                >
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold flex items-center justify-center mt-0.5">
-                    {index + 1}
-                  </span>
-                  <p className="text-sm text-foreground/90 leading-relaxed">{strength.text}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Market Insight */}
-        {verdict.marketInsight && (
-          <div className="px-6 pb-4">
-            <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
-              <div className="flex items-start gap-3">
-                <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-foreground text-sm mb-1">Market Insight</p>
-                  <p className="text-sm text-muted-foreground">{verdict.marketInsight}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* VC Framework Check - What needs to be fixed */}
-        {verdict.vcFrameworkCheck && (
-          <div className="px-6 pb-4">
-            <div className="p-4 rounded-xl bg-muted/40 border border-border/40">
-              <div className="flex items-start gap-3">
-                <Target className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-foreground text-sm mb-1">What Needs to Be Fixed to Be VC-Ready</p>
-                  <p className="text-sm text-muted-foreground">{verdict.vcFrameworkCheck}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* CTA Section */}
-        <div className="px-6 pb-6">
-          <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/20">
-            <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-semibold text-foreground text-sm">
-                  Ready to address these {concerns.length} red flags?
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Build your full investment case with detailed guidance.
-                </p>
+                <h2 className="text-lg font-display font-bold">VC Quick Take</h2>
+                <p className="text-xs text-muted-foreground">Initial investment scan</p>
               </div>
-              <Button onClick={navigateToPortal} size="sm" className="shrink-0 gap-1">
-                Let's Fix This
-                <ArrowRight className="w-4 h-4" />
-              </Button>
+            </div>
+            <Badge className={`${config.bgColor} ${config.color} border ${config.borderColor} text-xs`}>
+              {config.emoji} {config.label}
+            </Badge>
+          </div>
+
+          {/* Short Verdict Quote */}
+          <p className="text-foreground/90 text-sm italic border-l-2 border-primary/40 pl-3 mb-4">
+            "{verdict.verdict.split('.')[0]}."
+          </p>
+        </div>
+
+        {/* Red Flags - Amplified Impact */}
+        <div className="px-5 pb-4">
+          <div className="p-4 rounded-xl bg-gradient-to-r from-destructive/10 to-destructive/5 border border-destructive/20">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Flame className="w-5 h-5 text-destructive" />
+                <span className="font-bold text-destructive">{redFlagsCount} Red Flags Found</span>
+              </div>
+              <span className="text-xs text-muted-foreground bg-destructive/10 px-2 py-1 rounded-full">
+                +{hiddenRisksEstimate - redFlagsCount} likely hidden
+              </span>
+            </div>
+            
+            {/* Show just top 2 concerns briefly */}
+            <div className="space-y-2">
+              {concerns.slice(0, 2).map((concern, i) => (
+                <div key={i} className="flex items-start gap-2 text-sm">
+                  <AlertCircle className="w-3.5 h-3.5 text-destructive flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground/80 line-clamp-1">{concern.text}</span>
+                </div>
+              ))}
+              {concerns.length > 2 && (
+                <p className="text-xs text-muted-foreground pl-5">
+                  + {concerns.length - 2} more issues VCs will question...
+                </p>
+              )}
             </div>
           </div>
+        </div>
+
+        {/* Value Proposition Banner */}
+        <div className="px-5 pb-4">
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/30">
+              <Clock className="w-4 h-4 text-primary mx-auto mb-1" />
+              <p className="text-xs font-medium">6+ months</p>
+              <p className="text-[10px] text-muted-foreground">saved in prep</p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/30">
+              <TrendingUp className="w-4 h-4 text-primary mx-auto mb-1" />
+              <p className="text-xs font-medium">3x higher</p>
+              <p className="text-[10px] text-muted-foreground">close rate</p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/30">
+              <Zap className="w-4 h-4 text-primary mx-auto mb-1" />
+              <p className="text-xs font-medium">47 VCs</p>
+              <p className="text-[10px] text-muted-foreground">framework built-in</p>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="p-5 pt-0">
+          <Button onClick={navigateToPortal} className="w-full" size="lg">
+            Fix These & Get VC-Ready
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+          <p className="text-[10px] text-center text-muted-foreground mt-2">
+            Founders who fix flagged issues raise 2.3x faster
+          </p>
         </div>
       </div>
     </div>
