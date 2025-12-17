@@ -90,12 +90,16 @@ export default function Intake() {
         }));
 
       if (highConfidenceResponses.length > 0) {
+        // Small delay to ensure company insert is fully committed
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         const { error: insertError } = await supabase
           .from("memo_responses")
           .insert(highConfidenceResponses);
 
         if (insertError) {
-          console.error("Error saving responses:", insertError);
+          // Log but don't fail - responses can be regenerated later
+          console.error("Error saving responses (non-critical):", insertError);
         }
       }
 

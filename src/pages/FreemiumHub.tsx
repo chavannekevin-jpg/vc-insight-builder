@@ -135,16 +135,17 @@ export default function FreemiumHub() {
     }
   }, [authLoading, companyLoading, isAuthenticated, companyData, navigate]);
 
-  // Loading timeout recovery - redirect to auth if stuck loading
+  // Loading timeout recovery - only warn, don't reload aggressively
   useEffect(() => {
     if (!authLoading && !companyLoading) return;
     
     const timeout = setTimeout(() => {
       if (authLoading || companyLoading) {
-        console.warn("Dashboard loading timeout - forcing refresh");
-        window.location.reload();
+        console.warn("Dashboard loading taking longer than expected");
+        // Don't force reload - this causes blinking issues
+        // Just let react-query continue its work
       }
-    }, 8000); // 8 second timeout
+    }, 15000); // 15 second warning only
     
     return () => clearTimeout(timeout);
   }, [authLoading, companyLoading]);
