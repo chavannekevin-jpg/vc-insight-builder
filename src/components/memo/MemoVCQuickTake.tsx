@@ -164,10 +164,63 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
   }
 
   // ============================================
-  // DIAGNOSTIC TEASER VIEW - Designed for conversion
-  // Goal: Make founders feel exposed and uncertain, not educated
-  // They should leave thinking "I don't fully understand what killed me"
+  // DIAGNOSTIC TEASER VIEW - High-value proof-of-expertise
+  // Shows 1-2 concerns in FULL VC-style depth to prove value
+  // Keeps remaining analysis locked to drive conversion
   // ============================================
+
+  // Generate VC-style deep dive for the primary concern
+  const primaryConcern = concerns[0] || "Insufficient evidence of product-market fit";
+  const secondaryConcern = concerns[1] || null;
+  
+  // Generate contextual VC analysis for primary concern
+  const getVCAnalysis = (concern: string): { implication: string; vcThinking: string; fundPerspective: string } => {
+    const concernLower = concern.toLowerCase();
+    
+    if (concernLower.includes('traction') || concernLower.includes('revenue') || concernLower.includes('customer')) {
+      return {
+        implication: "Without demonstrable customer validation, this investment carries binary risk. Early-stage traction isn't about revenue—it's about proving the hypothesis that your solution creates enough value that customers will change behavior to adopt it.",
+        vcThinking: "Partners will ask: 'What specifically have you learned from your first users that competitors haven't?' If you can't articulate this clearly, the discussion ends at the associate level.",
+        fundPerspective: "From a portfolio construction standpoint, pre-traction deals require exceptional founder-market fit or technical moats to justify the concentration risk. Neither appears present in the current deck."
+      };
+    }
+    
+    if (concernLower.includes('market') || concernLower.includes('tam') || concernLower.includes('size')) {
+      return {
+        implication: "The market sizing feels manufactured rather than discovered. VCs can immediately tell when TAM numbers come from top-down analyst reports versus bottoms-up customer conversations.",
+        vcThinking: "The question isn't 'how big is the market' but 'what specific wedge gives you the right to win the first $10M ARR?' This deck doesn't answer that.",
+        fundPerspective: "Fund economics require $1B+ outcomes. If your wedge market is unclear, partners can't model the expansion path that gets you there."
+      };
+    }
+    
+    if (concernLower.includes('team') || concernLower.includes('founder') || concernLower.includes('experience')) {
+      return {
+        implication: "At pre-seed, you're asking VCs to bet on the team's ability to figure things out. The deck doesn't tell the story of why THIS team has earned the right to solve THIS problem.",
+        vcThinking: "Missing founder-market fit signals. The IC will ask: 'What unique insight does this team have that others don't?' The current narrative doesn't provide a defensible answer.",
+        fundPerspective: "Teams without relevant domain experience or prior startup success require either exceptional traction or technical differentiation to de-risk. Neither is evident here."
+      };
+    }
+    
+    if (concernLower.includes('competition') || concernLower.includes('moat') || concernLower.includes('defensib')) {
+      return {
+        implication: "The competitive landscape section reads like a checkbox exercise. VCs see hundreds of 'better/faster/cheaper' pitches weekly—none of these represent sustainable competitive advantage.",
+        vcThinking: "The real question is: 'What happens when incumbents copy your features in 6 months?' The deck doesn't address second-mover dynamics.",
+        fundPerspective: "Without structural moats, returns depend entirely on execution speed. That's a bet most funds aren't structured to make at this stage."
+      };
+    }
+    
+    // Default analysis
+    return {
+      implication: "This represents a fundamental gap in the pitch narrative. VCs pattern-match hundreds of deals monthly, and gaps like this immediately signal 'not ready' to experienced partners.",
+      vcThinking: "The IC discussion will likely stall at this point. Partners need to see that founders deeply understand the risks in their own business—this concern suggests that understanding may be incomplete.",
+      fundPerspective: "Deals at this stage require conviction on 2-3 key risk factors. This concern creates uncertainty that makes building investment conviction difficult."
+    };
+  };
+
+  const primaryAnalysis = getVCAnalysis(primaryConcern);
+  const totalConcerns = concerns.length;
+  const lockedConcerns = Math.max(0, totalConcerns - 1);
+
   return (
     <div className="relative animate-fade-in mb-8">
       <div className="absolute inset-0 bg-gradient-to-r from-destructive/25 via-muted/30 to-destructive/20 rounded-3xl blur-xl opacity-60" />
@@ -185,7 +238,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
             </div>
           </div>
 
-          {/* THE RULING - Delivered as a verdict, no explanation */}
+          {/* THE RULING - Delivered as a verdict */}
           <div className="p-5 rounded-xl bg-muted/50 border border-border/40">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">The Ruling</span>
@@ -193,63 +246,148 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
             <p className={`text-lg font-bold ${config.color}`}>
               {rulingStatement}
             </p>
-          </div>
-        </div>
-
-        {/* IC Framework - Mysterious, unexplained metrics */}
-        <div className="px-6 pb-4">
-          <div className="p-4 rounded-xl bg-background/50 border border-border/30">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className={`text-2xl font-bold ${frameworkScore < 50 ? 'text-destructive' : frameworkScore < 70 ? 'text-warning' : 'text-success'}`}>
-                  {criteriaCleared}/8
-                </div>
-                <p className="text-xs text-muted-foreground/60 mt-1">passed</p>
-              </div>
-              <div className="text-center border-x border-border/30">
-                <div className="text-2xl font-bold text-muted-foreground">
-                  {frameworkScore}
-                </div>
-                <p className="text-xs text-muted-foreground/60 mt-1">score</p>
-              </div>
-              <div className="text-center">
-                <div className="text-sm font-semibold text-destructive">
-                  {icStoppingPoint}
-                </div>
-                <p className="text-xs text-muted-foreground/60 mt-1">stopped at</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* The Question That Ended It - No context, no explanation */}
-        <div className="px-6 pb-4">
-          <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
-            <div className="flex items-center gap-2 mb-3">
-              <Flame className="w-4 h-4 text-destructive" />
-              <span className="text-sm font-semibold text-destructive">The Question That Ended It</span>
-            </div>
-            <p className="text-foreground font-medium text-lg">
-              "{killerQuestion}"
+            <p className="text-sm text-muted-foreground mt-2">
+              Based on evaluation across 8 investment criteria. Score: {frameworkScore}/100.
             </p>
           </div>
         </div>
 
-        {/* CTA Section - Proximity illusion, not generic "locked" */}
+        {/* PRIMARY CONCERN - Full VC-style deep dive */}
+        <div className="px-6 pb-4">
+          <div className="p-5 rounded-xl bg-destructive/5 border border-destructive/20">
+            {/* Concern Header with visual hierarchy */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-destructive/20 flex items-center justify-center">
+                  <span className="text-xs font-bold text-destructive">1</span>
+                </div>
+                <span className="text-sm font-semibold text-destructive uppercase tracking-wide">Primary Concern</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Target className="w-3 h-3" />
+                <span>Deal-breaker potential</span>
+              </div>
+            </div>
+            
+            {/* The concern itself */}
+            <p className="text-foreground font-semibold text-lg mb-4 leading-relaxed">
+              {primaryConcern}
+            </p>
+            
+            {/* VC Implication - Why this matters */}
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-background/60 border border-border/30">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Why This Matters</p>
+                <p className="text-sm text-foreground/90 leading-relaxed">
+                  {primaryAnalysis.implication}
+                </p>
+              </div>
+              
+              {/* What VCs are thinking */}
+              <div className="p-4 rounded-lg bg-background/60 border border-border/30">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">What Partners Are Thinking</p>
+                <p className="text-sm text-foreground/90 leading-relaxed italic">
+                  "{primaryAnalysis.vcThinking}"
+                </p>
+              </div>
+              
+              {/* Fund-level perspective */}
+              <div className="p-4 rounded-lg bg-warning/5 border border-warning/20">
+                <p className="text-xs font-semibold text-warning uppercase tracking-wide mb-2">Fund-Level Impact</p>
+                <p className="text-sm text-foreground/90 leading-relaxed">
+                  {primaryAnalysis.fundPerspective}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress indicator showing depth of analysis */}
+        <div className="px-6 pb-4">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/20">
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-muted-foreground">Analysis Depth</span>
+                <span className="text-xs font-medium text-foreground">1 of {totalConcerns} concerns shown</span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.round(100 / totalConcerns)}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Locked remaining concerns preview */}
+        {lockedConcerns > 0 && (
+          <div className="px-6 pb-4">
+            <div className="p-4 rounded-xl bg-muted/20 border border-border/30">
+              <div className="flex items-center gap-2 mb-3">
+                <Lock className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">
+                  {lockedConcerns} More {lockedConcerns === 1 ? 'Concern' : 'Concerns'} Analyzed
+                </span>
+              </div>
+              <div className="space-y-2">
+                {concerns.slice(1, 4).map((concern, index) => (
+                  <div key={index} className="flex items-center gap-2 p-2 rounded-lg bg-background/30">
+                    <div className="w-5 h-5 rounded-full bg-destructive/10 flex items-center justify-center">
+                      <span className="text-xs font-bold text-destructive/50">{index + 2}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground/60 truncate flex-1">
+                      {concern.split(' ').slice(0, 5).join(' ')}...
+                    </p>
+                    <Lock className="w-3 h-3 text-muted-foreground/40" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* The killer question */}
+        <div className="px-6 pb-4">
+          <div className="p-4 rounded-xl bg-destructive/8 border border-destructive/25">
+            <div className="flex items-center gap-2 mb-3">
+              <Flame className="w-4 h-4 text-destructive" />
+              <span className="text-sm font-semibold text-destructive">The Question That Ended It</span>
+            </div>
+            <p className="text-foreground font-medium text-lg mb-2">
+              "{killerQuestion}"
+            </p>
+            <p className="text-xs text-muted-foreground">
+              This is the moment the room went quiet. The full memo shows you exactly how to answer it.
+            </p>
+          </div>
+        </div>
+
+        {/* CTA Section */}
         <div className="px-6 pb-6">
-          <div className="p-5 rounded-xl bg-gradient-to-r from-muted/80 via-muted/60 to-muted/80 border border-border/40">
+          <div className="p-5 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/20">
             <div className="text-center mb-4">
-              <p className="text-sm text-muted-foreground">
-                This is the internal brief partners debated.
+              <p className="text-sm text-foreground font-medium">
+                You've seen how one concern is analyzed.
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                The document your champion failed to defend.
+                The full IC brief contains this level of depth for every section of your pitch.
               </p>
             </div>
             
-            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/70 mb-4">
-              <Lock className="w-3 h-3" />
-              <span>You're one page away from the IC doc that killed this</span>
+            <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground mb-4">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/50">
+                <CheckCircle2 className="w-3 h-3 text-success" />
+                <span>{totalConcerns} concerns analyzed</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/50">
+                <Target className="w-3 h-3 text-primary" />
+                <span>8 investment criteria</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/50">
+                <Scale className="w-3 h-3 text-warning" />
+                <span>IC-level analysis</span>
+              </div>
             </div>
             
             {onUnlock && (
@@ -258,7 +396,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
                 className="w-full gap-2"
                 size="lg"
               >
-                Access the IC Brief
+                Access the Full IC Brief
                 <ChevronRight className="w-4 h-4" />
               </Button>
             )}
