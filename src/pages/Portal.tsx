@@ -597,7 +597,7 @@ export default function Portal() {
                         variant="ghost"
                         className="text-muted-foreground hover:text-primary"
                       >
-                        Skip to Generate
+                        Skip to Build
                       </Button>
                     )}
                     
@@ -615,7 +615,7 @@ export default function Portal() {
                         disabled={progressPercentage < 60 || isAdminViewing}
                         className="bg-gradient-to-r from-neon-pink to-neon-purple hover:opacity-90 transition-opacity disabled:opacity-50"
                       >
-                        Generate Memo
+                        Build Analysis
                         <ChevronRight className="w-4 h-4 ml-2" />
                       </Button>
                     )}

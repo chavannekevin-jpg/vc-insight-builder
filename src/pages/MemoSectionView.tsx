@@ -63,7 +63,7 @@ import { SAMPLE_SECTION_TOOLS } from "@/data/sampleMemoTools";
 export default function MemoSectionView() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const companyId = searchParams.get("companyId");
+  const companyIdFromUrl = searchParams.get("companyId");
   const sectionIndex = parseInt(searchParams.get("section") || "0");
   
   const [loading, setLoading] = useState(true);
@@ -77,10 +77,13 @@ export default function MemoSectionView() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [sectionIndex]);
 
+  // Use companyInfo.id as source of truth for navigation (more reliable than URL params)
+  const companyId = companyInfo?.id || companyIdFromUrl;
+
   useEffect(() => {
     const loadMemo = async () => {
-      if (!companyId || companyId === 'null' || companyId === 'undefined') {
-        console.error('[MemoSectionView] Missing or invalid companyId:', companyId);
+      if (!companyIdFromUrl || companyIdFromUrl === 'null' || companyIdFromUrl === 'undefined') {
+        console.error('[MemoSectionView] Missing or invalid companyId:', companyIdFromUrl);
         navigate("/portal");
         return;
       }
@@ -96,7 +99,7 @@ export default function MemoSectionView() {
         const { data: company } = await supabase
           .from("companies")
           .select("*")
-          .eq("id", companyId)
+          .eq("id", companyIdFromUrl)
           .maybeSingle();
 
         if (!company) {
@@ -110,7 +113,7 @@ export default function MemoSectionView() {
         const { data: memo } = await supabase
           .from("memos")
           .select("structured_content")
-          .eq("company_id", companyId)
+          .eq("company_id", companyIdFromUrl)
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -122,7 +125,7 @@ export default function MemoSectionView() {
           const { data: toolData } = await supabase
             .from("memo_tool_data")
             .select("*")
-            .eq("company_id", companyId);
+            .eq("company_id", companyIdFromUrl);
           
           if (toolData && toolData.length > 0) {
             const toolsMap: Record<string, EnhancedSectionTools> = {};
@@ -147,7 +150,7 @@ export default function MemoSectionView() {
             setSectionTools(toolsMap);
           }
         } else {
-          navigate(`/analysis?companyId=${companyId}&view=full`);
+          navigate(`/analysis?companyId=${companyIdFromUrl}&view=full`);
           return;
         }
       } catch (error) {
@@ -163,7 +166,7 @@ export default function MemoSectionView() {
     };
 
     loadMemo();
-  }, [companyId, navigate]);
+  }, [companyIdFromUrl, navigate]);
 
   if (loading) {
     return <MemoLoadingScreen />;
