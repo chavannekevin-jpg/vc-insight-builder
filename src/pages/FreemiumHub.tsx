@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CompanyBadge } from "@/components/CompanyBadge";
 import { CompanyProfileCard } from "@/components/CompanyProfileCard";
-import { MemoJourneyCard } from "@/components/MemoJourneyCard";
+import { VCVerdictCard } from "@/components/VCVerdictCard";
+import { VCFirstImpression } from "@/components/VCFirstImpression";
+import { StakesReminderBanner } from "@/components/StakesReminderBanner";
 import { CompanySummaryCard } from "@/components/CompanySummaryCard";
 import { ToolsRow } from "@/components/ToolsRow";
 import { CollapsedLibrary } from "@/components/CollapsedLibrary";
@@ -474,6 +476,13 @@ export default function FreemiumHub() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Stakes Reminder Banner - Only show if no memo and not paid */}
+      {!memoGenerated && !hasPaid && (
+        <StakesReminderBanner 
+          onAction={() => navigate("/portal")} 
+          hasMemo={!!memoGenerated}
+        />
+      )}
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-6">
@@ -706,43 +715,55 @@ export default function FreemiumHub() {
                   </Card>
                 </div>
               ) : (
-                <MemoJourneyCard
-                  completedQuestions={completedQuestions}
-                  totalQuestions={totalQuestions}
-                  memoGenerated={!!memoGenerated}
-                  hasPaid={hasPaid}
-                  nextSection={getNextSection()}
-                  companyId={company.id}
-                  onImportDeck={() => setDeckWizardOpen(true)}
-                />
+                <>
+                  {/* VC First Impression - Harsh judgments based on available data */}
+                  <VCFirstImpression 
+                    responses={responses}
+                    companyName={company.name}
+                    stage={company.stage}
+                    category={company.category}
+                  />
+                  
+                  <VCVerdictCard
+                    completedQuestions={completedQuestions}
+                    totalQuestions={totalQuestions}
+                    memoGenerated={!!memoGenerated}
+                    hasPaid={hasPaid}
+                    nextSection={getNextSection()}
+                    companyId={company.id}
+                    onImportDeck={() => setDeckWizardOpen(true)}
+                  />
+                </>
               )}
 
-              {/* Insider Take of the Day */}
-              <Card className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-transparent overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                <CardContent className="p-6 relative">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Flame className="w-4 h-4 text-amber-500" />
-                        <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">Insider Take of the Day</span>
+              {/* Insider Take of the Day - Only show after memo generated */}
+              {memoGenerated && (
+                <Card className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-transparent overflow-hidden relative">
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                  <CardContent className="p-6 relative">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Flame className="w-4 h-4 text-amber-500" />
+                          <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">Insider Take of the Day</span>
+                        </div>
+                        <h3 className="text-lg font-bold text-foreground">{getDailyArticle().label}</h3>
+                        <p className="text-sm text-muted-foreground">{getDailyArticle().teaser}</p>
                       </div>
-                      <h3 className="text-lg font-bold text-foreground">{getDailyArticle().label}</h3>
-                      <p className="text-sm text-muted-foreground">{getDailyArticle().teaser}</p>
+                      <Button 
+                        variant="outline" 
+                        className="shrink-0 border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500"
+                        onClick={() => navigate(getDailyArticle().path)}
+                      >
+                        Read <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      className="shrink-0 border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500"
-                      onClick={() => navigate(getDailyArticle().path)}
-                    >
-                      Read <ArrowRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Tools Section */}
-              <ToolsRow />
+              <ToolsRow memoGenerated={!!memoGenerated} />
             </div>
           </div>
 
