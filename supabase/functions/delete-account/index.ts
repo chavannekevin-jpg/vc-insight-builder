@@ -24,29 +24,37 @@ serve(async (req) => {
 
     // Create Supabase client with user's token
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    // Client with user's auth (to verify identity)
-    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
     // Service role client (to delete data and auth user)
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get user from token
-    const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
+    // Extract user ID from JWT token
+    const token = authHeader.replace('Bearer ', '');
+    let userId: string;
     
-    if (userError || !user) {
-      console.error('[delete-account] User auth error:', userError);
+    try {
+      // Decode the JWT payload (base64)
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        throw new Error('Invalid token format');
+      }
+      const payload = JSON.parse(atob(parts[1]));
+      userId = payload.sub;
+      
+      if (!userId) {
+        throw new Error('No user ID in token');
+      }
+      
+      console.log(`[delete-account] Extracted user ID from token: ${userId}`);
+    } catch (tokenError) {
+      console.error('[delete-account] Token parsing error:', tokenError);
       return new Response(
-        JSON.stringify({ error: 'Invalid session' }),
+        JSON.stringify({ error: 'Invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const userId = user.id;
     console.log(`[delete-account] Starting deletion for user: ${userId}`);
 
     // 1. Get user's companies
