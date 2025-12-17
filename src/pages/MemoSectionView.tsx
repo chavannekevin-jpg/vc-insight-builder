@@ -60,6 +60,8 @@ import {
 // Import sample tools as fallback
 import { SAMPLE_SECTION_TOOLS } from "@/data/sampleMemoTools";
 
+import { isValidCompanyId } from "@/lib/companyIdUtils";
+
 export default function MemoSectionView() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -82,8 +84,27 @@ export default function MemoSectionView() {
 
   useEffect(() => {
     const loadMemo = async () => {
-      if (!companyIdFromUrl || companyIdFromUrl === 'null' || companyIdFromUrl === 'undefined') {
+      if (!isValidCompanyId(companyIdFromUrl)) {
         console.error('[MemoSectionView] Missing or invalid companyId:', companyIdFromUrl);
+        
+        // Try to recover by fetching user's latest company
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: latestCompany } = await supabase
+            .from("companies")
+            .select("id")
+            .eq("founder_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          
+          if (latestCompany?.id) {
+            console.log('[MemoSectionView] Recovered companyId:', latestCompany.id);
+            navigate(`/analysis/section?companyId=${latestCompany.id}&section=${sectionIndex}`, { replace: true });
+            return;
+          }
+        }
+        
         navigate("/portal");
         return;
       }

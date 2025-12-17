@@ -9,12 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, Tag, Sparkles, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
+import { isValidCompanyId } from "@/lib/companyIdUtils";
 
 export default function CheckoutMemo() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
-  const companyId = searchParams.get("companyId");
+  const companyIdFromUrl = searchParams.get("companyId");
+  const [companyId, setCompanyId] = useState<string | null>(null);
   
   const [processing, setProcessing] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -51,23 +53,44 @@ export default function CheckoutMemo() {
     }
     setUser(session.user);
 
-    if (!companyId || companyId === 'null' || companyId === 'undefined') {
-      console.error('[CheckoutMemo] Missing or invalid companyId:', companyId);
-      toast({
-        title: "Invalid request",
-        description: "Company ID is missing. Please go back and try again.",
-        variant: "destructive",
-      });
-      navigate("/portal");
-      return;
+    // Validate companyId with strict UUID check
+    let validCompanyId = companyIdFromUrl;
+    
+    if (!isValidCompanyId(validCompanyId)) {
+      console.warn('[CheckoutMemo] Invalid companyId from URL:', companyIdFromUrl);
+      
+      // Try to recover by fetching user's latest company
+      const { data: latestCompany } = await supabase
+        .from("companies")
+        .select("id")
+        .eq("founder_id", session.user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (latestCompany?.id) {
+        console.log('[CheckoutMemo] Recovered companyId:', latestCompany.id);
+        validCompanyId = latestCompany.id;
+        // Update URL to reflect correct companyId
+        navigate(`/checkout-analysis?companyId=${latestCompany.id}`, { replace: true });
+      } else {
+        console.error('[CheckoutMemo] No company found for user');
+        toast({
+          title: "Invalid request",
+          description: "Company ID is missing. Please go back and try again.",
+          variant: "destructive",
+        });
+        navigate("/portal");
+        return;
+      }
     }
 
     // Verify user owns this company
     const { data: company } = await supabase
       .from("companies")
       .select("founder_id")
-      .eq("id", companyId)
-      .single();
+      .eq("id", validCompanyId)
+      .maybeSingle();
 
     if (!company || company.founder_id !== session.user.id) {
       toast({
@@ -78,6 +101,8 @@ export default function CheckoutMemo() {
       navigate("/portal");
       return;
     }
+    
+    setCompanyId(validCompanyId);
   };
 
   const validateDiscountCode = async () => {
