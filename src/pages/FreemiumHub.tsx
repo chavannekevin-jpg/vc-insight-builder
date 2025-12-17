@@ -418,10 +418,11 @@ export default function FreemiumHub() {
         description: "Starting fresh...",
       });
       
-      // Navigate to intake to restart the flow
+      // Sign out and navigate to auth to fully restart the flow
+      await supabase.auth.signOut();
       setTimeout(() => {
-        navigate("/intake");
-      }, 1000);
+        navigate("/auth");
+      }, 500);
     } catch (error) {
       console.error("Reset error:", error);
       toast({
