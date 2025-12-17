@@ -303,7 +303,7 @@ export default function GeneratedMemo() {
   // Redirect to wizard mode if memo exists and not in full view mode
   useEffect(() => {
     if (shouldRedirectToWizard && companyId && !shouldRegenerate) {
-      navigate(`/memo/section?companyId=${companyId}&section=0`, { replace: true });
+      navigate(`/analysis/section?companyId=${companyId}&section=0`, { replace: true });
     }
   }, [shouldRedirectToWizard, companyId, navigate, shouldRegenerate]);
 

@@ -26,8 +26,8 @@ const Product = () => {
   const features = [
     {
       icon: FileText,
-      title: "Investment Memorandum",
-      description: "Generate a professional, VC-grade investment memorandum that presents your startup through an investor lens."
+      title: "Investment Analysis",
+      description: "Generate a professional, VC-grade investment analysis that presents your startup through an investor lens."
     },
     {
       icon: Target,
@@ -47,7 +47,7 @@ const Product = () => {
     {
       icon: Users,
       title: "Investor Network Access",
-      description: "Optional showcase to 100+ global investors once your memorandum is complete."
+      description: "Optional showcase to 100+ global investors once your analysis is complete."
     },
     {
       icon: BarChart3,
@@ -85,7 +85,7 @@ const Product = () => {
           </div>
           
           <h1 className="text-6xl md:text-7xl font-bold mb-6 animate-fade-in bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent leading-tight">
-            The Investment Memorandum
+            The Investment Analysis
           </h1>
           
           <p className="text-xl md:text-2xl text-foreground/80 max-w-4xl mx-auto mb-10 leading-relaxed animate-fade-in font-medium">
@@ -183,7 +183,7 @@ const Product = () => {
               How It Works
             </h2>
             <p className="text-xl md:text-2xl text-foreground/80 max-w-3xl mx-auto font-medium">
-              Four simple steps to your professional investment memorandum
+              Four simple steps to your professional investment analysis
             </p>
           </div>
 
@@ -191,7 +191,7 @@ const Product = () => {
             {[
               { step: "01", title: "Answer Questions", desc: "Complete our structured questionnaire about your startup" },
               { step: "02", title: "Expert Framework", desc: "Your data is processed through our VC-calibrated framework built from 10+ years of experience" },
-              { step: "03", title: "Review Output", desc: "Receive your memorandum with diagnostic feedback" },
+              { step: "03", title: "Review Output", desc: "Receive your analysis with diagnostic feedback" },
               { step: "04", title: "Refine & Use", desc: "Iterate based on insights and present to investors" }
             ].map((item, index) => (
               <ModernCard key={index} hover>
@@ -322,7 +322,7 @@ const Product = () => {
                 onClick={() => navigate('/')}
                 className="gradient-primary px-8"
               >
-                Create Your Memorandum
+                Create Your Analysis
               </Button>
             </div>
           </ModernCard>

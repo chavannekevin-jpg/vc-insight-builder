@@ -272,7 +272,7 @@ export const Header = () => {
       category: "Resources",
       items: [
         { label: "Outreach Lab", path: "/investor-email-generator", description: "Craft cold email templates" },
-        { label: "Sample Memo", path: "/sample-memo", description: "Preview a full investment memo", public: true }
+        { label: "Sample Analysis", path: "/sample-analysis", description: "Preview a full investment analysis", public: true }
       ]
     }
   ];
@@ -476,12 +476,12 @@ export const Header = () => {
             {/* My Memo link - only show if user has a generated memo */}
             {isAuthenticated && hasMemo && memoCompanyId && (
               <Link
-                to={`/memo?companyId=${memoCompanyId}`}
+                to={`/analysis?companyId=${memoCompanyId}`}
                 className={`text-sm font-medium transition-all duration-300 ${
-                  location.pathname === "/memo" ? "neon-pink" : "text-muted-foreground hover:neon-pink"
+                  location.pathname === "/analysis" ? "neon-pink" : "text-muted-foreground hover:neon-pink"
                 }`}
               >
-                My Memo
+                My Analysis
               </Link>
             )}
             

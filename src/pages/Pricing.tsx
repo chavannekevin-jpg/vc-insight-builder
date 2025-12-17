@@ -30,7 +30,7 @@ const Pricing = () => {
         { text: "Complete educational content library", included: true },
         { text: "Pitch deck frameworks and templates", included: true },
         { text: "Track your fundraising progress", included: true },
-        { text: "Personalized investment memorandum", included: false },
+        { text: "Personalized investment analysis", included: false },
         { text: "Supporting materials and insights", included: false },
         { text: "Network exposure to 400+ investors", included: false }
       ],
@@ -47,14 +47,14 @@ const Pricing = () => {
       icon: Sparkles,
       features: [
         { text: "Everything in Freemium", included: true, bold: true },
-        { text: "The internal memo VCs write about you", included: true },
+        { text: "The internal analysis VCs write about you", included: true },
         { text: "Every weakness exposed before your pitch", included: true },
         { text: "Deal-killing red flags surfaced first", included: true },
         { text: "Specific fixes to strengthen your position", included: true },
-        { text: "1 memo generation included (€8.99/extra)", included: true },
+        { text: "1 analysis generation included (€8.99/extra)", included: true },
         { text: "Network exposure to 400+ investors", included: false }
       ],
-      cta: "Get the Memo",
+      cta: "Get the Analysis",
       popular: true,
       color: "primary",
       waitlistBadge: memoPricing?.early_access_enabled
@@ -66,8 +66,8 @@ const Pricing = () => {
       description: "Your memo delivered to real investors",
       icon: Users,
       features: [
-        { text: "Everything in Memo Builder", included: true, bold: true },
-        { text: "Unlimited memo regenerations", included: true },
+        { text: "Everything in Analysis Builder", included: true, bold: true },
+        { text: "Unlimited analysis regenerations", included: true },
         { text: "Profile shared with 400+ investors", included: true },
         { text: "Direct introductions when there's interest", included: true }
       ],
@@ -84,20 +84,20 @@ const Pricing = () => {
       answer: "Because most founders fail due to lack of knowledge, not lack of capital. We want you to have the frameworks and education you need. We only charge when you're ready to fundraise seriously."
     },
     {
-      question: `What makes the investment memo worth €${memoFinalPrice.toFixed(2)}?`,
-      answer: "It's a personalized memorandum that translates your startup into VC language. Most founders pitch poorly because they don't speak investor. This memo does it for you—and it's cheaper than a single coffee meeting that goes nowhere."
+      question: `What makes the investment analysis worth €${memoFinalPrice.toFixed(2)}?`,
+      answer: "It's a personalized analysis that translates your startup into VC language. Most founders pitch poorly because they don't speak investor. This analysis does it for you—and it's cheaper than a single coffee meeting that goes nowhere."
     },
     {
-      question: "How does Network Access actually work?",
-      answer: "Your company profile and memo get pushed to our network of 400+ active investors. When someone shows interest, we facilitate the introduction. We don't guarantee funding—nobody can—but we guarantee exposure to real decision-makers."
+      question: "How does Network Access work?",
+      answer: "Your company profile and analysis get pushed to our network of 400+ active investors. When someone shows interest, we facilitate the introduction. We don't guarantee funding—nobody can—but we guarantee exposure to real decision-makers."
     },
     {
-      question: "Can I upgrade from one plan to another?",
-      answer: "Absolutely. Start with Freemium, upgrade to Memo Builder when you're ready, and add Network Access when you need exposure. Pay only for what you need, when you need it."
+      question: "Can I upgrade plans?",
+      answer: "Absolutely. Start with Freemium, upgrade to Analysis Builder when you're ready, and add Network Access when you need exposure. Pay only for what you need, when you need it."
     },
     {
-      question: "Is there a refund policy?",
-      answer: "Yes. 14-day money-back guarantee if you're not satisfied with your memo. But you'll be satisfied—this isn't our first rodeo."
+      question: "What's your refund policy?",
+      answer: "Yes. 14-day money-back guarantee if you're not satisfied with your analysis. But you'll be satisfied—this isn't our first rodeo."
     }
   ];
 
@@ -243,7 +243,7 @@ const Pricing = () => {
             <div className="space-y-6 py-8">
               <h2 className="text-3xl font-serif">Know What Kills Your Round—Before VCs Do</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Start with free access to VC frameworks. Get the memo when you're ready to see yourself through their eyes.
+                Start with free access to VC frameworks. Get the analysis when you're ready to see yourself through their eyes.
                 <br />
                 <span className="font-semibold text-foreground">The internal analysis that decides your fate.</span>
               </p>

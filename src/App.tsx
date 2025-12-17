@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PageLoadingSkeleton } from "@/components/LoadingSkeleton";
 import { HooksErrorBoundary } from "@/components/HooksErrorBoundary";
 
@@ -154,7 +154,7 @@ const App = () => (
             <Route path="/accelerator-demo" element={<AcceleratorDemoDashboard />} />
             <Route path="/accelerator-demo/cohort" element={<CohortOverview />} />
             <Route path="/accelerator-demo/startup/:id" element={<StartupDetail />} />
-            <Route path="/accelerator-demo/startup/:id/memo" element={<StartupMemo />} />
+            <Route path="/accelerator-demo/startup/:id/analysis" element={<StartupMemo />} />
             <Route path="/accelerator-demo/analytics" element={<CohortAnalytics />} />
             <Route path="/accelerator-demo/compare" element={<CompareStartups />} />
             <Route path="/hub/:slug" element={<EducationalContent />} />
@@ -249,11 +249,11 @@ const App = () => (
             <Route path="/pre-seed-guide" element={<PreSeedGuide />} />
             <Route path="/problem-slide-guide" element={<ProblemSlideGuide />} />
             <Route path="/solution-slide-guide" element={<SolutionSlideGuide />} />
-            <Route path="/memo" element={<HooksErrorBoundary><GeneratedMemo /></HooksErrorBoundary>} />
-            <Route path="/memo/regenerate" element={<MemoRegenerate />} />
-            <Route path="/memo/overview" element={<MemoOverview />} />
-            <Route path="/memo/section" element={<MemoSectionView />} />
-            <Route path="/memo/complete" element={<MemoCompletionScreen />} />
+            <Route path="/analysis" element={<HooksErrorBoundary><GeneratedMemo /></HooksErrorBoundary>} />
+            <Route path="/analysis/regenerate" element={<MemoRegenerate />} />
+            <Route path="/analysis/overview" element={<MemoOverview />} />
+            <Route path="/analysis/section" element={<MemoSectionView />} />
+            <Route path="/analysis/complete" element={<MemoCompletionScreen />} />
             <Route path="/company" element={<CompanyProfile />} />
             <Route path="/company-profile" element={<CompanyProfile />} />
             <Route path="/company/profile/edit" element={<CompanyProfileEdit />} />
@@ -267,22 +267,31 @@ const App = () => (
             <Route path="/product" element={<Product />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/sample-memo" element={<SampleMemo />} />
-            <Route path="/sample-memo/section" element={<SampleMemoSectionView />} />
-            <Route path="/sample-memo/complete" element={<SampleMemoCompletionScreen />} />
+            <Route path="/sample-analysis" element={<SampleMemo />} />
+            <Route path="/sample-analysis/section" element={<SampleMemoSectionView />} />
+            <Route path="/sample-analysis/complete" element={<SampleMemoCompletionScreen />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/articles" element={<AdminArticles />} />
             <Route path="/admin/prompts" element={<AdminPrompts />} />
-            <Route path="/admin/memo-builder" element={<MemoBuilder />} />
+            <Route path="/admin/analysis-builder" element={<MemoBuilder />} />
             <Route path="/admin/user-access" element={<AdminUserAccess />} />
             <Route path="/admin/discount-codes" element={<AdminDiscountCodes />} />
             <Route path="/admin/pricing" element={<AdminPricing />} />
             <Route path="/admin/emails" element={<AdminEmails />} />
             <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
-            <Route path="/checkout-memo" element={<CheckoutMemo />} />
+            <Route path="/checkout-analysis" element={<CheckoutMemo />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/regeneration-success" element={<RegenerationSuccess />} />
-            <Route path="/memo-regenerate" element={<MemoRegenerate />} />
+            <Route path="/analysis-regenerate" element={<MemoRegenerate />} />
+            {/* Backward compatibility redirects for old memo URLs */}
+            <Route path="/memo" element={<Navigate to="/analysis" replace />} />
+            <Route path="/memo/*" element={<Navigate to="/analysis" replace />} />
+            <Route path="/sample-memo" element={<Navigate to="/sample-analysis" replace />} />
+            <Route path="/sample-memo/*" element={<Navigate to="/sample-analysis" replace />} />
+            <Route path="/checkout-memo" element={<Navigate to="/checkout-analysis" replace />} />
+            <Route path="/memo-regenerate" element={<Navigate to="/analysis-regenerate" replace />} />
+            <Route path="/admin/memo-builder" element={<Navigate to="/admin/analysis-builder" replace />} />
+            <Route path="/accelerator-demo/startup/:id/memo" element={<Navigate to="/accelerator-demo/startup/:id/analysis" replace />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

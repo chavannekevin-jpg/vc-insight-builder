@@ -117,10 +117,10 @@ export default function MemoCompletionScreen() {
             variant="default" 
             size="lg"
             className="w-full gap-2"
-            onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
+            onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
           >
             <BookOpen className="w-5 h-5" />
-            View Full Memo
+            View Full Analysis
           </Button>
           
           <div className="grid grid-cols-2 gap-4">
@@ -136,7 +136,7 @@ export default function MemoCompletionScreen() {
             <Button 
               variant="outline" 
               size="lg"
-              onClick={() => navigate(`/memo/overview?companyId=${companyId}`)}
+              onClick={() => navigate(`/analysis/overview?companyId=${companyId}`)}
               className="gap-2"
             >
               Overview

@@ -114,7 +114,7 @@ export default function MemoOverview() {
           setMemoContent(memo.structured_content as unknown as MemoStructuredContent);
         } else {
           // No memo exists, redirect to generate
-          navigate(`/memo?companyId=${companyId}`);
+          navigate(`/analysis?companyId=${companyId}`);
           return;
         }
       } catch (error) {
@@ -162,17 +162,17 @@ export default function MemoOverview() {
           <div className="flex gap-3">
             <Button 
               variant="default" 
-              onClick={() => navigate(`/memo/section?companyId=${companyId}&section=0`)}
+              onClick={() => navigate(`/analysis/section?companyId=${companyId}&section=0`)}
             >
               <ArrowRight className="w-4 h-4 mr-2" />
               Start Reading
             </Button>
             <Button 
               variant="outline" 
-              onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
+              onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
             >
               <Eye className="w-4 h-4 mr-2" />
-              Full Memo
+              Full Analysis
             </Button>
           </div>
         </div>
@@ -198,7 +198,7 @@ export default function MemoOverview() {
         {/* Section Progress */}
         <div className="bg-card/50 border border-border/50 rounded-xl p-4 mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-muted-foreground">Memo Sections</span>
+            <span className="text-sm font-medium text-muted-foreground">Analysis Sections</span>
             <span className="text-sm font-semibold text-primary">{totalSections} sections</span>
           </div>
           <Progress value={100} className="h-2" />
@@ -208,7 +208,7 @@ export default function MemoOverview() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           {/* VC Quick Take Card - Always First, Always Free */}
           <Link
-            to={`/memo/section?companyId=${companyId}&section=0`}
+            to={`/analysis/section?companyId=${companyId}&section=0`}
             className="group relative bg-gradient-to-br from-primary/20 to-primary/5 border-primary/30 rounded-xl p-5 border transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
           >
             <div className="flex items-start gap-4">
@@ -242,7 +242,7 @@ export default function MemoOverview() {
             return (
               <Link
                 key={section.title}
-                to={isLocked ? `/checkout-memo?companyId=${companyId}` : `/memo/section?companyId=${companyId}&section=${actualSectionIndex}`}
+                to={isLocked ? `/checkout-analysis?companyId=${companyId}` : `/analysis/section?companyId=${companyId}&section=${actualSectionIndex}`}
                 className={`group relative bg-gradient-to-br ${color} rounded-xl p-5 border transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${isLocked ? 'opacity-60' : ''}`}
               >
                 {isLocked && (
@@ -283,7 +283,7 @@ export default function MemoOverview() {
             <Button 
               variant="default" 
               className="h-auto py-4 flex-col gap-2"
-              onClick={() => navigate(`/memo/section?companyId=${companyId}&section=0`)}
+              onClick={() => navigate(`/analysis/section?companyId=${companyId}&section=0`)}
             >
               <ArrowRight className="w-5 h-5" />
               <span>Start Section-by-Section</span>
@@ -291,10 +291,10 @@ export default function MemoOverview() {
             <Button 
               variant="outline" 
               className="h-auto py-4 flex-col gap-2"
-              onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
+              onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
             >
               <BookOpen className="w-5 h-5" />
-              <span>View Full Memo</span>
+              <span>View Full Analysis</span>
             </Button>
             <Button 
               variant="outline" 
@@ -308,7 +308,7 @@ export default function MemoOverview() {
               <Button 
                 variant="default" 
                 className="h-auto py-4 flex-col gap-2"
-                onClick={() => navigate(`/checkout-memo?companyId=${companyId}`)}
+                onClick={() => navigate(`/checkout-analysis?companyId=${companyId}`)}
               >
                 <Rocket className="w-5 h-5" />
                 <span>Unlock Premium</span>
