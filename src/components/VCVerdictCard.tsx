@@ -2,6 +2,13 @@ import { memo, useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   ArrowRight, AlertTriangle, 
   Eye, CheckCircle2, Lock, Sparkles, 
@@ -9,7 +16,7 @@ import {
   ShieldX, MessageSquareX, Zap, Target,
   Shield, TrendingDown, DollarSign, Users, BarChart3, Rocket,
   RefreshCw, Briefcase, Code, GraduationCap, Building,
-  ChevronRight
+  ChevronRight, Pencil
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,14 +90,14 @@ const isLegacyVerdict = (verdict: any): verdict is LegacyVCVerdict => {
   return verdict && 'harsh_observations' in verdict;
 };
 
-// Founder profile display config
-const founderProfileConfig: Record<string, { label: string; icon: React.ReactNode }> = {
-  'serial_founder': { label: 'Serial', icon: <Rocket className="w-3 h-3" /> },
-  'technical_founder': { label: 'Technical', icon: <Code className="w-3 h-3" /> },
-  'business_founder': { label: 'Business', icon: <Briefcase className="w-3 h-3" /> },
-  'domain_expert': { label: 'Domain Expert', icon: <Building className="w-3 h-3" /> },
-  'first_time_founder': { label: 'First-Time', icon: <GraduationCap className="w-3 h-3" /> },
-};
+// Founder profile options
+const founderProfiles = [
+  { value: 'serial_founder', label: 'Serial Founder', icon: Rocket, description: 'Previous exits or startups' },
+  { value: 'technical_founder', label: 'Technical Founder', icon: Code, description: 'Engineering/research background' },
+  { value: 'business_founder', label: 'Business Founder', icon: Briefcase, description: 'MBA/consulting/banking' },
+  { value: 'domain_expert', label: 'Domain Expert', icon: Building, description: 'Industry veteran' },
+  { value: 'first_time_founder', label: 'First-Time Founder', icon: GraduationCap, description: 'New to startups' },
+];
 
 interface VCVerdictCardProps {
   companyId: string;
@@ -126,14 +133,21 @@ export const VCVerdictCard = memo(({
   const [verdict, setVerdict] = useState<VCVerdict | null>(cachedVerdict || null);
   const [loading, setLoading] = useState(!cachedVerdict);
   const [error, setError] = useState<string | null>(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<string>(cachedVerdict?.founderProfile || 'first_time_founder');
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
-  const generateVerdict = useCallback(async () => {
-    if (memoGenerated) {
+  const generateVerdict = useCallback(async (forceProfile?: string) => {
+    if (memoGenerated && !forceProfile) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (forceProfile) {
+      setIsRegenerating(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -144,13 +158,20 @@ export const VCVerdictCard = memo(({
           stage: companyStage,
           category: companyCategory,
           responses,
-          deckParsed
+          deckParsed,
+          forcedFounderProfile: forceProfile
         }
       });
 
       if (fnError) throw fnError;
 
+      // Apply the forced profile if specified
+      if (forceProfile) {
+        data.founderProfile = forceProfile;
+      }
+
       setVerdict(data);
+      setSelectedProfile(data.founderProfile || forceProfile || 'first_time_founder');
       onVerdictGenerated?.(data);
 
       await supabase
@@ -166,6 +187,7 @@ export const VCVerdictCard = memo(({
       setError('Failed to generate verdict');
     } finally {
       setLoading(false);
+      setIsRegenerating(false);
     }
   }, [companyId, companyName, companyDescription, companyStage, companyCategory, responses, deckParsed, memoGenerated, onVerdictGenerated]);
 
@@ -174,6 +196,20 @@ export const VCVerdictCard = memo(({
       generateVerdict();
     }
   }, [cachedVerdict, memoGenerated, generateVerdict]);
+
+  // Update selected profile when verdict changes
+  useEffect(() => {
+    if (verdict?.founderProfile) {
+      setSelectedProfile(verdict.founderProfile);
+    }
+  }, [verdict?.founderProfile]);
+
+  const handleProfileChange = useCallback((newProfile: string) => {
+    setSelectedProfile(newProfile);
+    setIsEditingProfile(false);
+    // Regenerate verdict with new profile
+    generateVerdict(newProfile);
+  }, [generateVerdict]);
 
   const navigateToPortal = useCallback(() => navigate("/portal"), [navigate]);
   const navigateToMemo = useCallback(() => navigate(`/memo?companyId=${companyId}`), [navigate, companyId]);
@@ -257,7 +293,7 @@ export const VCVerdictCard = memo(({
           <div className="text-center space-y-4">
             <AlertTriangle className="w-12 h-12 text-destructive mx-auto" />
             <p className="text-muted-foreground">{error || 'Unable to generate verdict'}</p>
-            <Button onClick={generateVerdict} variant="outline" size="sm">Try Again</Button>
+            <Button onClick={() => generateVerdict()} variant="outline" size="sm">Try Again</Button>
           </div>
         </div>
       </div>
@@ -267,29 +303,42 @@ export const VCVerdictCard = memo(({
   const concerns = verdict.concerns || [];
   const totalHiddenIssues = verdict.hiddenIssuesCount || Math.max(concerns.length * 3, 8);
   const inevitabilityStatement = verdict.inevitabilityStatement || 
-    "This pitch fails because the core logic doesn't survive partner scrutiny.";
+    "This pitch fails because the core logic doesn't survive partner scrutiny. It's not about timing—it's about structure.";
   const narrativeTransformation = verdict.narrativeTransformation || {
     currentNarrative: "Another pitch that doesn't clear the bar.",
     transformedNarrative: "A company that understands what VCs actually fund."
   };
-  const founderProfile = verdict.founderProfile || 'first_time_founder';
-  const profileConfig = founderProfileConfig[founderProfile] || founderProfileConfig['first_time_founder'];
+  
+  const currentProfile = founderProfiles.find(p => p.value === selectedProfile) || founderProfiles[4];
+  const ProfileIcon = currentProfile.icon;
 
   const valueItems = [
     { icon: Flame, text: `+${totalHiddenIssues} hidden deal-breakers`, color: 'text-destructive' },
     { icon: Target, text: 'Section-by-section scores', color: 'text-primary' },
     { icon: Zap, text: '90-day fix playbook', color: 'text-warning' },
     { icon: Shield, text: 'Moat durability analysis', color: 'text-primary' },
-    { icon: TrendingDown, text: 'Competitor moves', color: 'text-destructive' },
-    { icon: DollarSign, text: 'Bottoms-up TAM', color: 'text-success' },
+    { icon: TrendingDown, text: 'Competitor 12-month moves', color: 'text-destructive' },
+    { icon: DollarSign, text: 'Bottoms-up TAM model', color: 'text-success' },
     { icon: Users, text: 'Team credibility gaps', color: 'text-primary' },
     { icon: FileText, text: 'IC objection responses', color: 'text-muted-foreground' },
+    { icon: BarChart3, text: 'Traction depth test', color: 'text-warning' },
+    { icon: Rocket, text: 'Exit narrative & acquirers', color: 'text-primary' },
   ];
 
   return (
     <div className="relative animate-fade-in">
       {/* Glow effect */}
       <div className="absolute -inset-1 bg-gradient-to-r from-destructive/40 via-primary/30 to-destructive/40 rounded-2xl blur-xl opacity-60" />
+      
+      {/* Regenerating overlay */}
+      {isRegenerating && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-2xl z-10 flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto" />
+            <p className="text-sm text-muted-foreground">Regenerating verdict for {currentProfile.label}...</p>
+          </div>
+        </div>
+      )}
       
       <div className="relative bg-card/95 backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
         {/* Header */}
@@ -304,10 +353,34 @@ export const VCVerdictCard = memo(({
                 <p className="text-xs text-muted-foreground">What VCs say when you're not there</p>
               </div>
             </div>
-            <Badge variant="outline" className="text-xs gap-1.5 border-border/50">
-              {profileConfig.icon}
-              {profileConfig.label}
-            </Badge>
+            
+            {/* Editable Founder Profile */}
+            {isEditingProfile ? (
+              <Select value={selectedProfile} onValueChange={handleProfileChange}>
+                <SelectTrigger className="w-[180px] h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {founderProfiles.map((profile) => (
+                    <SelectItem key={profile.value} value={profile.value}>
+                      <div className="flex items-center gap-2">
+                        <profile.icon className="w-3 h-3" />
+                        <span>{profile.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <button
+                onClick={() => setIsEditingProfile(true)}
+                className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/50 border border-border/50 hover:border-primary/50 hover:bg-muted transition-colors"
+              >
+                <ProfileIcon className="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors" />
+                <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{currentProfile.label}</span>
+                <Pencil className="w-2.5 h-2.5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+              </button>
+            )}
           </div>
 
           {/* The Verdict Quote */}
@@ -364,26 +437,51 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* Why This Fails - Inevitability */}
+        {/* Why This Narrative Fails - Inevitability */}
         <div className="px-6 py-4 bg-gradient-to-r from-destructive/5 to-transparent border-b border-border/50">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {inevitabilityStatement}
-            </p>
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-4 h-4 text-warning" />
+            <h4 className="text-sm font-semibold text-foreground">Why This Narrative Fails</h4>
           </div>
+          <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+            {inevitabilityStatement}
+          </p>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li className="flex items-start gap-2">
+              <span className="text-destructive mt-0.5">•</span>
+              <span>This version of your pitch <strong className="text-foreground">structurally fails</strong> in IC—not because of timing, but because the logic doesn't close</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-destructive mt-0.5">•</span>
+              <span>These issues <strong className="text-foreground">wouldn't be debated</strong>—they'd be dismissed</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-destructive mt-0.5">•</span>
+              <span>Every partner sees the same structural gaps. No warm intro changes that.</span>
+            </li>
+          </ul>
         </div>
 
         {/* Value Props Grid */}
         <div className="p-6 border-b border-border/50">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">In the full analysis</p>
-          <div className="grid grid-cols-4 gap-2">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">What you'll uncover in the full analysis</p>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             {valueItems.map((item, i) => (
               <div key={i} className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
                 <item.icon className={`w-4 h-4 ${item.color}`} />
                 <span className="text-[10px] text-center text-muted-foreground leading-tight">{item.text}</span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* The Killer Question */}
+        <div className="px-6 py-4 border-b border-border/50">
+          <div className="p-4 rounded-xl border-2 border-dashed border-muted-foreground/30 text-center">
+            <p className="text-sm text-foreground">
+              Do you want to walk into your next VC meeting with a narrative that <strong className="text-destructive">fails under scrutiny</strong>, 
+              or one that <strong className="text-primary">changes what they say about you</strong>?
+            </p>
           </div>
         </div>
 
@@ -398,7 +496,10 @@ export const VCVerdictCard = memo(({
             Let me Fix this
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
-          <p className="text-[10px] text-center text-muted-foreground mt-3">
+          <p className="text-xs text-center text-muted-foreground mt-3">
+            Change the internal conversation. Transform how VCs talk about you.
+          </p>
+          <p className="text-[10px] text-center text-muted-foreground/60 mt-1">
             This is not advice. This is the room after the meeting.
           </p>
         </div>

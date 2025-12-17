@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { companyName, companyDescription, stage, category, responses, deckParsed } = await req.json();
+    const { companyName, companyDescription, stage, category, responses, deckParsed, forcedFounderProfile } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -32,8 +32,10 @@ serve(async (req) => {
     const distributionStrategy = getResponse('distribution_strategy');
     const whyNow = getResponse('why_now');
 
-    // Detect founder profile from available signals
-    const founderProfileSignals = detectFounderProfile(founderBackground, traction, stage, category);
+    // Use forced profile if provided, otherwise detect from signals
+    const founderProfileSignals = forcedFounderProfile 
+      ? { profile: forcedFounderProfile, toneGuidance: getFounderToneGuidance(forcedFounderProfile) }
+      : detectFounderProfile(founderBackground, traction, stage, category);
 
     // Build rich context
     const contextParts = [];
@@ -211,6 +213,18 @@ The founder should feel exposed and compelled to fix this NOW.`;
     });
   }
 });
+
+// Get tone guidance for a specific founder profile
+function getFounderToneGuidance(profile: string): string {
+  const toneGuidanceMap: Record<string, string> = {
+    'serial_founder': 'This is a serial founder. Be direct and skip the basics—they know the game. Focus on why THIS specific bet doesn\'t clear the bar despite their track record. Challenge them on pattern matching from past success.',
+    'technical_founder': 'This is a technical founder. They likely overvalue product and undervalue distribution. Hit hard on go-to-market, sales motion, and why technical excellence alone doesn\'t win. Challenge the "if we build it, they will come" assumption.',
+    'business_founder': 'This is a business-background founder. They likely have a polished deck but may lack technical depth or product intuition. Challenge them on defensibility, technical moat, and whether they can actually build what they\'re pitching.',
+    'domain_expert': 'This is a domain expert founder. They know their industry but may be blind to startup dynamics. Challenge them on why they\'re building a startup vs. a consultancy, and whether their network translates to scalable distribution.',
+    'first_time_founder': 'This is likely a first-time founder. They may not understand VC math or what "fundable" really means. Be direct about the bar they need to clear. Focus on fundamentals: market size, defensibility, and why this team can win.'
+  };
+  return toneGuidanceMap[profile] || toneGuidanceMap['first_time_founder'];
+}
 
 // Detect founder profile from signals
 function detectFounderProfile(founderBackground: string, traction: string, stage: string, category: string): { profile: string; toneGuidance: string } {
