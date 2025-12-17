@@ -164,7 +164,7 @@ export default function CheckoutMemo() {
           description: "Your memo is being generated now!",
         });
 
-        navigate(`/memo?companyId=${companyId}`);
+        navigate(`/analysis?companyId=${companyId}&view=full`);
         return;
       }
 
@@ -377,7 +377,7 @@ export default function CheckoutMemo() {
             </Button>
 
             <Button 
-              onClick={() => navigate(`/memo?companyId=${companyId}&preview=true`)}
+              onClick={() => navigate(`/analysis/section?companyId=${companyId}&section=0`)}
               variant="ghost"
               size="sm"
               className="w-full gap-2"

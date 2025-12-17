@@ -145,7 +145,7 @@ export default function MemoSectionView() {
             setSectionTools(toolsMap);
           }
         } else {
-          navigate(`/memo?companyId=${companyId}`);
+          navigate(`/analysis?companyId=${companyId}&view=full`);
           return;
         }
       } catch (error) {
@@ -181,7 +181,7 @@ export default function MemoSectionView() {
   
   // Redirect if section doesn't exist (but allow section 0 for VC Quick Take)
   if (!isVCQuickTakePage && !currentSection) {
-    navigate(`/memo/overview?companyId=${companyId}`);
+    navigate(`/analysis/overview?companyId=${companyId}`);
     return null;
   }
 
@@ -198,7 +198,7 @@ export default function MemoSectionView() {
 
   const goToSection = (index: number) => {
     if (index >= 0 && index < totalSections) {
-      navigate(`/memo/section?companyId=${companyId}&section=${index}`);
+      navigate(`/analysis/section?companyId=${companyId}&section=${index}`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -232,7 +232,7 @@ export default function MemoSectionView() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
+                  onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <BookOpen className="w-4 h-4 mr-2" />
@@ -337,7 +337,7 @@ export default function MemoSectionView() {
               <div className="flex items-center justify-between">
                 <Button 
                   variant="outline"
-                  onClick={() => navigate(`/memo/overview?companyId=${companyId}`)}
+                  onClick={() => navigate(`/analysis/overview?companyId=${companyId}`)}
                   className="gap-2"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -376,7 +376,7 @@ export default function MemoSectionView() {
                 <Button 
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate(`/memo/overview?companyId=${companyId}`)}
+                  onClick={() => navigate(`/analysis/overview?companyId=${companyId}`)}
                   className="text-muted-foreground"
                 >
                   <Grid className="w-4 h-4 mr-2" />
@@ -387,7 +387,7 @@ export default function MemoSectionView() {
                   <Button 
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
+                    onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
                     className="text-muted-foreground"
                   >
                     <BookOpen className="w-4 h-4 mr-2" />
@@ -460,7 +460,7 @@ export default function MemoSectionView() {
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
+              onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
               className="text-muted-foreground hover:text-foreground"
             >
               <BookOpen className="w-4 h-4 mr-2" />
@@ -768,7 +768,7 @@ export default function MemoSectionView() {
               <Button 
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate(`/memo/overview?companyId=${companyId}`)}
+                onClick={() => navigate(`/analysis/overview?companyId=${companyId}`)}
                 className="text-muted-foreground"
               >
                 <Grid className="w-4 h-4 mr-2" />
@@ -777,7 +777,7 @@ export default function MemoSectionView() {
               <Button 
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate(`/memo?companyId=${companyId}&view=full`)}
+                onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
                 className="text-muted-foreground"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
