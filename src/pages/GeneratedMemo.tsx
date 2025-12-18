@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { MemoSection } from "@/components/memo/MemoSection";
 import { MemoHeroStatement } from "@/components/memo/MemoHeroStatement";
 import { MemoCollapsibleOverview } from "@/components/memo/MemoCollapsibleOverview";
+import { VCFramingExplainerCard } from "@/components/memo/VCFramingExplainerCard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoCollapsibleVC } from "@/components/memo/MemoCollapsibleVC";
 import { MemoNavigation } from "@/components/memo/MemoNavigation";
@@ -805,6 +806,9 @@ export default function GeneratedMemo() {
                   {heroParagraph && (
                     <MemoHeroStatement text={heroParagraph.text} />
                   )}
+
+                  {/* VC Framing Explanation - Educational context for why we wrote it this way */}
+                  <VCFramingExplainerCard sectionTitle={section.title} />
 
                   {/* Company Overview - collapsible, default open */}
                   <MemoCollapsibleOverview
