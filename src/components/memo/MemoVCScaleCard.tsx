@@ -18,6 +18,8 @@ interface MemoVCScaleCardProps {
   companyName?: string;
   category?: string;
   strategies?: ScaleStrategy[];
+  isB2C?: boolean;
+  isTransactionBased?: boolean;
 }
 
 // Default strategies based on VC thinking patterns
@@ -113,7 +115,9 @@ export const MemoVCScaleCard = ({
   currentMRR: initialCurrentMRR = 0,
   companyName = "This company",
   category,
-  strategies
+  strategies,
+  isB2C = false,
+  isTransactionBased = false
 }: MemoVCScaleCardProps) => {
   const hasInitialData = initialAvgMonthlyRevenue > 0 || initialCurrentMRR > 0;
   
@@ -199,10 +203,12 @@ export const MemoVCScaleCard = ({
               <h4 className="text-sm font-semibold text-foreground mb-4">Enter Your Financial Data</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Avg Revenue Per Customer ($/mo)</label>
+                  <label className="text-xs text-muted-foreground mb-1 block">
+                    {isB2C ? 'Avg Revenue Per User (ARPU) ($/mo)' : 'Avg Contract Value (ACV) ($/mo)'}
+                  </label>
                   <Input
                     type="number"
-                    placeholder="e.g., 300"
+                    placeholder={isB2C ? "e.g., 10" : "e.g., 300"}
                     value={editedValues.avgMonthlyRevenue}
                     onChange={(e) => setEditedValues(prev => ({ ...prev, avgMonthlyRevenue: e.target.value }))}
                     className="bg-background"
@@ -257,9 +263,11 @@ export const MemoVCScaleCard = ({
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-background/60 rounded-xl p-4 border border-border/30 text-center">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Avg Monthly Revenue</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                  {isB2C ? 'Avg Revenue Per User' : 'Avg Monthly Revenue'}
+                </p>
                 <p className="text-2xl font-bold text-primary">${avgMonthlyRevenue.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">per customer</p>
+                <p className="text-xs text-muted-foreground">{isB2C ? 'per user' : 'per customer'}</p>
               </div>
               <div className="bg-background/60 rounded-xl p-4 border border-border/30 text-center">
                 <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Annual Value</p>
@@ -267,7 +275,9 @@ export const MemoVCScaleCard = ({
                 <p className="text-xs text-muted-foreground">per customer/year</p>
               </div>
               <div className="bg-primary/10 rounded-xl p-4 border border-primary/30 text-center">
-                <p className="text-xs text-primary uppercase tracking-wider mb-1 font-semibold">Customers Needed</p>
+                <p className="text-xs text-primary uppercase tracking-wider mb-1 font-semibold">
+                  {isB2C ? 'Users Needed' : 'Customers Needed'}
+                </p>
                 <p className="text-2xl font-bold text-primary">{customersNeeded.toLocaleString()}</p>
                 <p className="text-xs text-muted-foreground">for $100M ARR</p>
               </div>

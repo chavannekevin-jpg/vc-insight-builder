@@ -120,68 +120,84 @@ export function extractTeamMembers(teamStoryText: string): ExtractedTeamMember[]
 
   const members: ExtractedTeamMember[] = [];
   
-  // Extended role keywords
-  const roleKeywords = 'CEO|CTO|COO|CFO|CMO|CPO|VP|Head|Director|Founder|Co-founder|Chief|Lead|Manager|Engineer|President';
+  // Extended role keywords - more comprehensive
+  const roleKeywords = 'CEO|CTO|COO|CFO|CMO|CPO|VP|Head|Director|Founder|Co-Founder|Co-founder|Cofounder|Chief|Lead|Manager|Engineer|President|Partner|Owner';
   
-  // Common role patterns - expanded to catch more formats
+  // Common role patterns - expanded to catch more formats including "Name (Co-Founder & CEO)"
   const rolePatterns = [
+    // Name (Co-Founder & CEO) or Name (CEO) format - PRIORITIZED
+    new RegExp(`([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)\\s*\\(([^)]*(?:${roleKeywords})[^)]*)\\)`, 'gi'),
+    // "led by Name" or "founded by Name" format
+    new RegExp(`(?:led by|founded by|co-founded by)\\s+([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)(?:[,\\s]+(?:and\\s+)?([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*))?`, 'gi'),
     // Name - Role format
-    new RegExp(`(?:^|\\n|,\\s*|\\*\\*|\\*|\\•)\\s*([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s*[-–—:]\\s*(${roleKeywords}[^,\\n]*)`, 'gi'),
-    // Name (Role) format
-    new RegExp(`([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s*\\((${roleKeywords}[^)]+)\\)`, 'gi'),
+    new RegExp(`(?:^|\\n|,\\s*|\\*\\*|\\*|\\•)\\s*([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)\\s*[-–—:]\\s*(${roleKeywords}[^,\\n]*)`, 'gi'),
     // Role: Name format
-    new RegExp(`(${roleKeywords}):\\s*([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)`, 'gi'),
+    new RegExp(`(${roleKeywords}):\\s*([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)`, 'gi'),
     // **Name** as Role format (markdown)
-    new RegExp(`\\*\\*([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\*\\*[^\\n]*(${roleKeywords}[^,\\n]*)`, 'gi'),
+    new RegExp(`\\*\\*([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)\\*\\*[^\\n]*(${roleKeywords}[^,\\n]*)`, 'gi'),
     // Name, Role format (comma separated)
-    new RegExp(`([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?),\\s*(${roleKeywords}[^,\\n]*)`, 'gi'),
+    new RegExp(`([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)?),\\s*((?:${roleKeywords})[^,\\n]*)`, 'gi'),
     // Bullet point format: • Name - Role
-    new RegExp(`[\\•\\-\\*]\\s*([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s*[-–:]\\s*(${roleKeywords}[^\\n]*)`, 'gi'),
-    // "as the CEO" or "serves as CEO" format
-    new RegExp(`([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)(?:\\s+(?:is|as|serves as)\\s+(?:the\\s+)?)(${roleKeywords}[^,\\.\\n]*)`, 'gi')
+    new RegExp(`[\\•\\-\\*]\\s*([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)\\s*[-–:]\\s*(${roleKeywords}[^\\n]*)`, 'gi'),
+    // "as the CEO" or "serves as CEO" or "is the CEO" format
+    new RegExp(`([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)(?:\\s+(?:is|as|serves as|who is)\\s+(?:the\\s+)?)((?:${roleKeywords})[^,\\.\\n]*)`, 'gi'),
+    // Name who serves as Role
+    new RegExp(`([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)\\s+who\\s+(?:serves as|is)\\s+(?:the\\s+)?(${roleKeywords}[^,\\.\\n]*)`, 'gi')
   ];
+
+  // Helper to add member if valid
+  const addMember = (name: string, role: string) => {
+    name = name?.trim();
+    role = role?.trim();
+    
+    // Handle Role: Name format where role comes first
+    if (name && /^(CEO|CTO|COO|CFO|CMO|CPO)$/i.test(name)) {
+      [name, role] = [role, name];
+    }
+    
+    // Clean up role (remove extra punctuation/markdown)
+    if (role) {
+      role = role.replace(/^\*+|\*+$/g, '').replace(/\s+/g, ' ').trim();
+    }
+    
+    // Validate name looks like a real name (allows hyphenated names, non-Western names)
+    const isValidName = name && 
+      name.length >= 2 && 
+      name.length <= 60 && 
+      /^[A-Z][a-zA-Z]+(?:[\s-][A-Z]?[a-zA-Z]+)*$/.test(name) &&
+      !/(CEO|CTO|COO|CFO|CMO|CPO|Founder|Lead|Head|Director)/i.test(name);
+    
+    if (isValidName && role && !members.some(m => safeLower(m.name) === safeLower(name))) {
+      members.push({ name, role });
+    }
+  };
 
   rolePatterns.forEach(pattern => {
     let match;
     while ((match = pattern.exec(teamText)) !== null) {
-      let name = match[1]?.trim();
-      let role = match[2]?.trim();
-      
-      // Handle Role: Name format where role comes first
-      if (name && /^(CEO|CTO|COO|CFO|CMO|CPO)$/i.test(name)) {
-        [name, role] = [role, name];
-      }
-      
-      // Clean up role (remove extra punctuation/markdown)
-      if (role) {
-        role = role.replace(/^\*+|\*+$/g, '').replace(/\s+/g, ' ').trim();
-      }
-      
-      // Validate name looks like a real name (has letters, reasonable length)
-      const isValidName = name && 
-        name.length >= 2 && 
-        name.length <= 50 && 
-        /^[A-Z][a-z]+(\s+[A-Z][a-z]+)*$/.test(name);
-      
-      if (isValidName && role && !members.some(m => safeLower(m.name) === safeLower(name))) {
-        members.push({ name, role });
+      addMember(match[1], match[2] || 'Founder');
+      // Handle "led by Name and Name2" pattern
+      if (match[2] && /^[A-Z]/.test(match[2]) && !/CEO|CTO|COO|CFO/i.test(match[2])) {
+        addMember(match[2], 'Co-Founder');
       }
     }
   });
 
   // If no members found with patterns, try to extract from structured text
   if (members.length === 0) {
-    // Look for common team section patterns
     const lines = teamText.split('\n');
     for (const line of lines) {
       // Simple "Name is the Role" pattern
-      const simpleMatch = line.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:is|as)\s+(?:the\s+)?(CEO|CTO|COO|CFO|CMO|CPO|Founder|Co-founder)/i);
+      const simpleMatch = line.match(/([A-Z][a-zA-Z]+(?:[\s-][A-Z][a-zA-Z]+)?)\s+(?:is|as)\s+(?:the\s+)?(CEO|CTO|COO|CFO|CMO|CPO|Founder|Co-Founder|Co-founder)/i);
       if (simpleMatch) {
-        const name = simpleMatch[1].trim();
-        const role = simpleMatch[2].trim();
-        if (!members.some(m => safeLower(m.name) === safeLower(name))) {
-          members.push({ name, role });
-        }
+        addMember(simpleMatch[1], simpleMatch[2]);
+      }
+      
+      // "The team, led by Name and Name2" pattern
+      const ledByMatch = line.match(/(?:team|company)[,\s]+led by\s+([A-Z][a-zA-Z]+(?:[\s-][A-Z][a-zA-Z]+)*)\s+and\s+([A-Z][a-zA-Z]+(?:[\s-][A-Z][a-zA-Z]+)*)/i);
+      if (ledByMatch) {
+        addMember(ledByMatch[1], 'Co-Founder');
+        addMember(ledByMatch[2], 'Co-Founder');
       }
     }
   }
@@ -469,14 +485,24 @@ export function extractPricingMetrics(
   tractionText: string,
   memoResponses?: Record<string, string>,
   unitEconomicsJson?: Record<string, any>
-): PricingMetrics {
-  const defaults: PricingMetrics = {
+): PricingMetrics & { isB2C?: boolean; isTransactionBased?: boolean } {
+  const defaults: PricingMetrics & { isB2C?: boolean; isTransactionBased?: boolean } = {
     avgMonthlyRevenue: 0,
     currentCustomers: 0,
-    currentMRR: 0
+    currentMRR: 0,
+    isB2C: false,
+    isTransactionBased: false
   };
 
-  const combinedText = safeLower(`${businessModelText || ''} ${tractionText || ''}`, "extractPricingMetrics.combinedText");
+  const combinedTextRaw = `${businessModelText || ''} ${tractionText || ''}`;
+  const combinedText = safeLower(combinedTextRaw, "extractPricingMetrics.combinedText");
+  
+  // Detect business model type
+  const b2cIndicators = ['consumer', 'b2c', 'users', 'app users', 'subscribers', 'individuals', 'personal', 'retail'];
+  const transactionIndicators = ['transaction fee', 'take rate', 'commission', '% of', 'per transaction', 'marketplace', 'platform fee'];
+  
+  defaults.isB2C = b2cIndicators.some(indicator => combinedText.includes(indicator));
+  defaults.isTransactionBased = transactionIndicators.some(indicator => combinedText.includes(indicator));
   
   // 1. Try structured JSON first (most reliable)
   if (unitEconomicsJson) {
@@ -493,25 +519,26 @@ export function extractPricingMetrics(
 
   // 2. Try memo responses (questionnaire answers)
   if (memoResponses) {
-    // Check for pricing-related questions
     const pricingAnswer = memoResponses['pricing_model'] || memoResponses['pricing'] || '';
     const revenueAnswer = memoResponses['revenue'] || memoResponses['current_revenue'] || '';
     const customersAnswer = memoResponses['customers'] || memoResponses['current_customers'] || memoResponses['traction'] || '';
     
-    // Extract monthly price from pricing answer
+    // Extract monthly price from pricing answer (support €, $, SEK, etc.)
     if (!defaults.avgMonthlyRevenue && pricingAnswer) {
-      const priceMatch = pricingAnswer.match(/\$?([\d,]+)(?:\s*(?:\/|per)\s*month)/i) ||
-                         pricingAnswer.match(/€?([\d,]+)(?:\s*(?:\/|per)\s*month)/i) ||
-                         pricingAnswer.match(/monthly[:\s]+\$?([\d,]+)/i);
+      const priceMatch = pricingAnswer.match(/[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:sek|usd|eur|gbp)?\s*(?:\/|per)\s*(?:month|mo)/i) ||
+                         pricingAnswer.match(/monthly[:\s]+[\$€£]?([\d,]+)/i) ||
+                         pricingAnswer.match(/arpu[:\s]+[\$€£]?([\d,]+)/i);
       if (priceMatch) {
         defaults.avgMonthlyRevenue = parseFloat(priceMatch[1].replace(/,/g, ''));
       }
     }
 
-    // Extract customer count
+    // Extract customer/user count
     if (!defaults.currentCustomers && customersAnswer) {
-      const customerMatch = customersAnswer.match(/(\d+)\s*(?:paying\s*)?(?:customers?|clients?|users?)/i) ||
-                           customersAnswer.match(/(\d+)\s*companies/i);
+      const customerMatch = customersAnswer.match(/(\d+)\s*(?:paying\s*)?(?:customers?|clients?|users?|members?|subscribers?)/i) ||
+                           customersAnswer.match(/(\d+)\s*companies/i) ||
+                           customersAnswer.match(/waitlist[^\d]*(\d+)/i) ||
+                           customersAnswer.match(/(\d+)\s*(?:on|in)\s*(?:the\s*)?waitlist/i);
       if (customerMatch) {
         defaults.currentCustomers = parseInt(customerMatch[1]);
       }
@@ -519,9 +546,8 @@ export function extractPricingMetrics(
 
     // Extract MRR from revenue answer
     if (!defaults.currentMRR && revenueAnswer) {
-      const mrrMatch = revenueAnswer.match(/\$?([\d,]+)\s*mrr/i) ||
-                      revenueAnswer.match(/mrr[:\s]+\$?([\d,]+)/i) ||
-                      revenueAnswer.match(/€?([\d,]+)\s*mrr/i);
+      const mrrMatch = revenueAnswer.match(/[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:sek|usd|eur)?\s*mrr/i) ||
+                      revenueAnswer.match(/mrr[:\s]+[\$€£]?([\d,]+)/i);
       if (mrrMatch) {
         defaults.currentMRR = parseFloat(mrrMatch[1].replace(/,/g, ''));
       }
@@ -530,49 +556,93 @@ export function extractPricingMetrics(
 
   // 3. Extract from narrative text as fallback
   
+  // For transaction-based models, try to calculate effective ARPU
+  if (defaults.isTransactionBased && !defaults.avgMonthlyRevenue) {
+    // Look for transaction fee percentage
+    const feeMatch = combinedText.match(/(\d+(?:\.\d+)?)\s*%\s*(?:transaction|platform|take|commission)/i) ||
+                    combinedText.match(/(?:fee|commission|take rate)[:\s]+(\d+(?:\.\d+)?)\s*%/i);
+    
+    // Look for average transaction value
+    const avgTxMatch = combinedText.match(/(?:average|avg)\s*(?:transaction|order)[:\s]*[\$€£]?([\d,]+)/i) ||
+                       combinedText.match(/[\$€£]?([\d,]+)\s*(?:average|avg)\s*(?:transaction|order)/i);
+    
+    // Look for transactions per user
+    const txPerUserMatch = combinedText.match(/(\d+)\s*(?:transactions?|orders?)\s*(?:per|\/)\s*(?:user|month)/i);
+    
+    if (feeMatch && avgTxMatch) {
+      const feePercent = parseFloat(feeMatch[1]) / 100;
+      const avgTxValue = parseFloat(avgTxMatch[1].replace(/,/g, ''));
+      const txPerMonth = txPerUserMatch ? parseFloat(txPerUserMatch[1]) : 2; // Default 2 tx/month
+      defaults.avgMonthlyRevenue = Math.round(feePercent * avgTxValue * txPerMonth);
+    }
+  }
+  
   // Extract ACV/monthly price
   if (!defaults.avgMonthlyRevenue) {
     // ACV patterns (annual contract value - divide by 12 for monthly)
-    const acvMatch = combinedText.match(/\$?([\d,]+)[k]?\s*acv/i) ||
-                    combinedText.match(/€([\d,]+)[k]?\s*acv/i) ||
-                    combinedText.match(/acv[:\s]+\$?([\d,]+)/i);
+    const acvMatch = combinedText.match(/[\$€£]?([\d,]+)[k]?\s*acv/i) ||
+                    combinedText.match(/acv[:\s]+[\$€£]?([\d,]+)/i);
     if (acvMatch) {
       let acv = parseFloat(acvMatch[1].replace(/,/g, ''));
       if (combinedText.includes('k acv') || acvMatch[0].includes('k')) acv *= 1000;
       defaults.avgMonthlyRevenue = Math.round(acv / 12);
     }
     
-    // Direct monthly price patterns
+    // Direct monthly price patterns (support multiple currencies)
     if (!defaults.avgMonthlyRevenue) {
-      const monthlyMatch = combinedText.match(/\$?([\d,]+)(?:\s*(?:\/|per)\s*month)/i) ||
-                          combinedText.match(/€([\d,]+)(?:\s*(?:\/|per)\s*month)/i) ||
-                          combinedText.match(/monthly[:\s]+[\$€]?([\d,]+)/i);
+      const monthlyMatch = combinedText.match(/[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:sek|usd|eur|gbp)?\s*(?:\/|per)\s*(?:month|mo)/i) ||
+                          combinedText.match(/monthly[:\s]+[\$€£]?([\d,]+)/i) ||
+                          combinedText.match(/arpu[:\s]+[\$€£]?([\d,]+)/i);
       if (monthlyMatch) {
         defaults.avgMonthlyRevenue = parseFloat(monthlyMatch[1].replace(/,/g, ''));
       }
     }
-  }
-  
-  // Extract customer count
-  if (!defaults.currentCustomers) {
-    const customerMatch = combinedText.match(/(\d+)\s*(?:paying\s*)?(?:enterprise\s*)?customers?/i) ||
-                         combinedText.match(/(\d+)\s*(?:paying\s*)?clients?/i) ||
-                         combinedText.match(/(\d+)\s*(?:paying\s*)?companies/i) ||
-                         combinedText.match(/serves?\s*(\d+)/i);
-    if (customerMatch) {
-      defaults.currentCustomers = parseInt(customerMatch[1]);
+    
+    // Look for "effective ACV" or calculated ARPU from text
+    if (!defaults.avgMonthlyRevenue) {
+      const effectiveMatch = combinedText.match(/effective\s*(?:acv|arpu)[^\d]*[\$€£]?([\d,]+)/i) ||
+                            combinedText.match(/[\$€£]?([\d,]+)\s*(?:per active user per year|annual value per user)/i);
+      if (effectiveMatch) {
+        const annualValue = parseFloat(effectiveMatch[1].replace(/,/g, ''));
+        defaults.avgMonthlyRevenue = Math.round(annualValue / 12);
+      }
     }
   }
   
-  // Extract MRR
+  // Extract customer/user count
+  if (!defaults.currentCustomers) {
+    const customerMatch = combinedText.match(/(\d+(?:,\d+)*)\s*(?:paying\s*)?(?:enterprise\s*)?(?:customers?|clients?|users?|active users?|members?)/i) ||
+                         combinedText.match(/(\d+(?:,\d+)*)\s*(?:paying\s*)?companies/i) ||
+                         combinedText.match(/serves?\s*(\d+(?:,\d+)*)/i) ||
+                         combinedText.match(/waitlist[^\d]*(\d+(?:,\d+)*)/i) ||
+                         combinedText.match(/signup[^\d]*(\d+(?:,\d+)*)/i);
+    if (customerMatch) {
+      defaults.currentCustomers = parseInt(customerMatch[1].replace(/,/g, ''));
+    }
+  }
+  
+  // Extract MRR (support multiple currencies including SEK)
   if (!defaults.currentMRR) {
-    const mrrMatch = combinedText.match(/\$?([\d,]+)[k]?\s*mrr/i) ||
-                    combinedText.match(/€([\d,]+)[k]?\s*mrr/i) ||
-                    combinedText.match(/mrr[:\s]+[\$€]?([\d,]+)/i);
+    const mrrMatch = combinedText.match(/[\$€£]?([\d,]+(?:\.\d+)?)[k]?\s*(?:sek|usd|eur)?\s*mrr/i) ||
+                    combinedText.match(/mrr[:\s]+[\$€£]?([\d,]+)/i);
     if (mrrMatch) {
       let mrr = parseFloat(mrrMatch[1].replace(/,/g, ''));
       if (combinedText.includes('k mrr') || mrrMatch[0].includes('k')) mrr *= 1000;
       defaults.currentMRR = mrr;
+    }
+    
+    // Look for transaction volume that can be used to calculate effective MRR
+    if (!defaults.currentMRR && defaults.isTransactionBased) {
+      const volumeMatch = combinedText.match(/(\d+(?:,\d+)*)[k]?\s*(?:sek|usd|eur)?\s*(?:in\s*)?transactions/i) ||
+                         combinedText.match(/facilitated\s*[\$€£]?(\d+(?:,\d+)*)[k]?\s*(?:sek|usd|eur)?/i);
+      if (volumeMatch) {
+        let volume = parseFloat(volumeMatch[1].replace(/,/g, ''));
+        if (volumeMatch[0].includes('k')) volume *= 1000;
+        // Assume 2-3% take rate if not specified
+        const feeMatch = combinedText.match(/(\d+(?:\.\d+)?)\s*%/);
+        const feeRate = feeMatch ? parseFloat(feeMatch[1]) / 100 : 0.025;
+        defaults.currentMRR = Math.round(volume * feeRate / 12); // Monthly from annual volume
+      }
     }
   }
 
