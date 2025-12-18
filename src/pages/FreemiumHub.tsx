@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -84,8 +85,11 @@ const CONFIDENCE_THRESHOLD = 0.6;
 
 export default function FreemiumHub() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const adminView = searchParams.get("admin") === "true";
+  const freshCompany = (location.state as any)?.freshCompany === true;
   
   // Use cached hooks instead of manual data loading
   const { user, isAuthenticated, isAdmin, isLoading: authLoading } = useAuth();
@@ -162,12 +166,29 @@ export default function FreemiumHub() {
     }
   }, [authLoading, isAuthenticated, adminView, navigate]);
 
-  // Redirect to intake if no company
+  // Force refetch company data on mount if coming from intake with fresh company
   useEffect(() => {
-    if (!authLoading && !companyLoading && isAuthenticated && !companyData) {
-      navigate("/intake");
+    if (freshCompany && user?.id) {
+      queryClient.invalidateQueries({ queryKey: ["company", user.id] });
     }
-  }, [authLoading, companyLoading, isAuthenticated, companyData, navigate]);
+  }, [freshCompany, user?.id, queryClient]);
+
+  // Redirect to intake if no company - with delay to prevent race conditions
+  useEffect(() => {
+    // Skip redirect if we just came from intake with a fresh company
+    if (freshCompany) return;
+    
+    if (!authLoading && !companyLoading && isAuthenticated && !companyData) {
+      // Add delay to allow cache to populate after navigation
+      const timer = setTimeout(() => {
+        // Double-check we still don't have company data
+        if (!companyData) {
+          navigate("/intake");
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [authLoading, companyLoading, isAuthenticated, companyData, navigate, freshCompany]);
 
   // Loading timeout recovery - only warn, don't reload aggressively
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ type IntakeMode = "choose" | "deck" | "manual";
 
 export default function Intake() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [mode, setMode] = useState<IntakeMode>("choose");
   const [deckWizardOpen, setDeckWizardOpen] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -103,12 +105,15 @@ export default function Intake() {
         }
       }
 
+      // Invalidate company query cache before navigation
+      await queryClient.invalidateQueries({ queryKey: ["company"] });
+
       toast({
         title: "Deck imported!",
         description: `${extractedName} created. Generating your VC verdict...`
       });
 
-      navigate("/hub");
+      navigate("/hub", { state: { freshCompany: true } });
     } catch (error: any) {
       console.error("Deck import error:", error);
       toast({
@@ -150,12 +155,15 @@ export default function Intake() {
 
       if (companyError) throw companyError;
 
+      // Invalidate company query cache before navigation
+      await queryClient.invalidateQueries({ queryKey: ["company"] });
+
       toast({
         title: "Company created!",
         description: "Generating your VC verdict..."
       });
 
-      navigate("/hub");
+      navigate("/hub", { state: { freshCompany: true } });
     } catch (error: any) {
       console.error("Manual create error:", error);
       toast({
