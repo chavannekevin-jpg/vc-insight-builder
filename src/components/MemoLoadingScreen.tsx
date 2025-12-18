@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sparkles, Brain, FileText, CheckCircle2, TrendingUp, Target, Users, Briefcase, Rocket } from "lucide-react";
+import { Sparkles, Brain, FileText, CheckCircle2, TrendingUp, Target, Users, Briefcase, Rocket, Coffee } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface MemoLoadingScreenProps {
@@ -9,14 +9,14 @@ interface MemoLoadingScreenProps {
 
 const loadingSteps = [
   { icon: Brain, label: "Analyzing your company data", minTime: 0 },
-  { icon: Target, label: "Extracting market context", minTime: 8 },
-  { icon: FileText, label: "Generating Problem section", minTime: 15 },
-  { icon: Sparkles, label: "Generating Solution section", minTime: 25 },
-  { icon: TrendingUp, label: "Analyzing market opportunity", minTime: 35 },
-  { icon: Users, label: "Evaluating team & traction", minTime: 50 },
-  { icon: Briefcase, label: "Assessing business model", minTime: 65 },
-  { icon: Rocket, label: "Synthesizing investment thesis", minTime: 80 },
-  { icon: CheckCircle2, label: "Finalizing your memo", minTime: 90 },
+  { icon: Target, label: "Extracting market context", minTime: 30 },
+  { icon: FileText, label: "Generating Problem section", minTime: 60 },
+  { icon: Sparkles, label: "Generating Solution section", minTime: 100 },
+  { icon: TrendingUp, label: "Analyzing market opportunity", minTime: 150 },
+  { icon: Users, label: "Evaluating team & traction", minTime: 200 },
+  { icon: Briefcase, label: "Assessing business model", minTime: 260 },
+  { icon: Rocket, label: "Synthesizing investment thesis", minTime: 320 },
+  { icon: CheckCircle2, label: "Finalizing your memo", minTime: 370 },
 ];
 
 const funFacts = [
@@ -28,6 +28,8 @@ const funFacts = [
   "The team section is often what separates funded from unfunded startups",
   "Market timing can be just as important as the idea itself",
   "Good memos answer questions before they're asked",
+  "The average seed round takes 3-6 months to close",
+  "Top VCs receive over 1,000 pitches per year but fund less than 1%",
 ];
 
 export function MemoLoadingScreen({ analyzing = false }: MemoLoadingScreenProps) {
@@ -37,8 +39,8 @@ export function MemoLoadingScreen({ analyzing = false }: MemoLoadingScreenProps)
     funFacts[Math.floor(Math.random() * funFacts.length)]
   );
 
-  // Estimate total time (90-100 seconds based on logs)
-  const estimatedTotalTime = 95;
+  // Estimate total time (5-7 minutes based on actual generation times)
+  const estimatedTotalTime = 400;
   const progressPercent = Math.min((elapsedTime / estimatedTotalTime) * 100, 98);
 
   useEffect(() => {
@@ -59,15 +61,22 @@ export function MemoLoadingScreen({ analyzing = false }: MemoLoadingScreenProps)
     if (step >= 0) setCurrentStep(step);
   }, [elapsedTime]);
 
-  // Rotate fun facts every 15 seconds
+  // Rotate fun facts every 20 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setFunFact(funFacts[Math.floor(Math.random() * funFacts.length)]);
-    }, 15000);
+    }, 20000);
     return () => clearInterval(interval);
   }, []);
 
   const CurrentIcon = loadingSteps[currentStep]?.icon || Sparkles;
+
+  // Format time as m:ss
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
@@ -95,16 +104,24 @@ export function MemoLoadingScreen({ analyzing = false }: MemoLoadingScreenProps)
             {analyzing ? "Analyzing Your Data" : "Generating Your Investment Memo"}
           </h2>
           <p className="text-muted-foreground">
-            This typically takes 60-90 seconds
+            This typically takes 5-7 minutes
           </p>
         </div>
+
+        {/* Coffee message - show after 30 seconds */}
+        {elapsedTime >= 30 && elapsedTime < 120 && (
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground animate-fade-in">
+            <Coffee className="w-4 h-4" />
+            <span>Perfect time to grab a coffee. Black, no sugar.</span>
+          </div>
+        )}
 
         {/* Progress Bar */}
         <div className="space-y-3">
           <Progress value={progressPercent} className="h-3" />
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>{Math.round(progressPercent)}% complete</span>
-            <span>{elapsedTime}s elapsed</span>
+            <span>{formatTime(elapsedTime)} elapsed</span>
           </div>
         </div>
 
@@ -175,10 +192,17 @@ export function MemoLoadingScreen({ analyzing = false }: MemoLoadingScreenProps)
           <p className="text-sm text-foreground italic">"{funFact}"</p>
         </div>
 
-        {/* Reassurance message after 60 seconds */}
-        {elapsedTime > 60 && (
+        {/* Reassurance message after 2 minutes */}
+        {elapsedTime > 120 && elapsedTime < 300 && (
           <div className="text-center text-sm text-muted-foreground animate-fade-in">
-            <p>Still working! Complex AI analysis takes time. Almost there...</p>
+            <p>Deep AI analysis in progress. We're generating comprehensive insights...</p>
+          </div>
+        )}
+
+        {/* Extended reassurance after 5 minutes */}
+        {elapsedTime >= 300 && (
+          <div className="text-center text-sm text-muted-foreground animate-fade-in">
+            <p>Almost there! Final synthesis underway...</p>
           </div>
         )}
       </div>

@@ -2216,7 +2216,23 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    if (existingJob && !force) {
+    // Check if existing job is stale (older than 10 minutes)
+    const STALE_JOB_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
+    const isStaleJob = existingJob && 
+      (Date.now() - new Date(existingJob.started_at).getTime() > STALE_JOB_THRESHOLD_MS);
+
+    if (existingJob && isStaleJob) {
+      console.log(`Found stale job ${existingJob.id} (started ${existingJob.started_at}), marking as failed`);
+      // Mark stale job as failed so we can create a new one
+      await supabaseClient
+        .from("memo_generation_jobs")
+        .update({ 
+          status: "failed", 
+          error_message: "Job timed out after 10 minutes",
+          completed_at: new Date().toISOString()
+        })
+        .eq("id", existingJob.id);
+    } else if (existingJob && !force) {
       console.log(`Existing job found: ${existingJob.id} with status ${existingJob.status}`);
       return new Response(
         JSON.stringify({ 

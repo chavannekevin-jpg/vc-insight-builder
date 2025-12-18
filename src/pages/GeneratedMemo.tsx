@@ -435,7 +435,7 @@ export default function GeneratedMemo() {
 
       // Step 2: Poll for completion
       const pollInterval = 5000; // 5 seconds
-      const maxPolls = 60; // 5 minutes max
+      const maxPolls = 100; // ~8.3 minutes max (extended for longer AI generation)
       let pollCount = 0;
 
       while (pollCount < maxPolls) {
@@ -535,7 +535,7 @@ export default function GeneratedMemo() {
 
       // Step 2: Poll for completion
       const pollInterval = 5000;
-      const maxPolls = 60;
+      const maxPolls = 100; // ~8.3 minutes max (extended for longer AI generation)
       let pollCount = 0;
 
       while (pollCount < maxPolls) {

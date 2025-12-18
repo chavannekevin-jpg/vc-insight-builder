@@ -161,14 +161,14 @@ serve(async (req) => {
 });
 
 function getProgressMessage(elapsedSeconds: number): string {
-  if (elapsedSeconds < 10) return "Initializing analysis...";
-  if (elapsedSeconds < 25) return "Extracting market context...";
-  if (elapsedSeconds < 45) return "Researching competitors...";
-  if (elapsedSeconds < 65) return "Generating Problem & Solution sections...";
-  if (elapsedSeconds < 85) return "Generating Market & Competition sections...";
-  if (elapsedSeconds < 105) return "Generating Team & Business Model sections...";
-  if (elapsedSeconds < 125) return "Generating Traction & Vision sections...";
-  if (elapsedSeconds < 145) return "Creating Investment Thesis...";
-  if (elapsedSeconds < 165) return "Generating VC Quick Take...";
-  return "Finalizing your memo...";
+  if (elapsedSeconds < 20) return "Initializing analysis...";
+  if (elapsedSeconds < 50) return "Extracting market context...";
+  if (elapsedSeconds < 90) return "Researching competitors...";
+  if (elapsedSeconds < 140) return "Generating Problem & Solution sections...";
+  if (elapsedSeconds < 190) return "Generating Market & Competition sections...";
+  if (elapsedSeconds < 250) return "Generating Team & Business Model sections...";
+  if (elapsedSeconds < 310) return "Generating Traction & Vision sections...";
+  if (elapsedSeconds < 360) return "Creating Investment Thesis...";
+  if (elapsedSeconds < 400) return "Generating VC Quick Take & Tools...";
+  return "Almost done! Finalizing your memo...";
 }
