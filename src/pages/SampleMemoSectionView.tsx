@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { safeTitle } from "@/lib/stringUtils";
+import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { MemoSection } from "@/components/memo/MemoSection";
@@ -151,7 +151,7 @@ export default function SampleMemoSectionView() {
         if (fetchError) throw fetchError;
 
         if (existingMemo && existingMemo.structured_content) {
-          setMemoContent(existingMemo.structured_content as unknown as MemoStructuredContent);
+          setMemoContent(sanitizeMemoContent(existingMemo.structured_content));
           setCompanyInfo(existingMemo.company);
         } else {
           toast.error('Sample memo not yet generated.');
