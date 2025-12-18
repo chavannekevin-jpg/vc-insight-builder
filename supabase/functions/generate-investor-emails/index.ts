@@ -65,12 +65,19 @@ serve(async (req) => {
     let askInfo = "";
 
     // Helper to safely get string from potentially object title
-    const safeStr = (val: unknown): string => {
+    const safeStr = (val: unknown, context?: string): string => {
       if (typeof val === 'string') return val;
-      if (val && typeof val === 'object' && 'text' in val) {
-        return String((val as { text: unknown }).text || '');
+      if (val === null || val === undefined) return '';
+      if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+      if (typeof val === 'object') {
+        const obj = val as Record<string, unknown>;
+        if ('text' in obj) return safeStr(obj.text, context);
+        if ('value' in obj) return safeStr(obj.value, context);
+        if (context) console.warn(`[safeStr] Expected string in ${context}, got object`, val);
+        return '';
       }
-      return String(val || '');
+      if (context) console.warn(`[safeStr] Expected string in ${context}, got ${typeof val}`, val);
+      return '';
     };
 
     sections.forEach((section: any) => {

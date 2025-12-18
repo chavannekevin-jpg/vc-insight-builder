@@ -23,7 +23,7 @@ function getFounderMarketFitScore(teamMembers: ExtractedTeamMember[]): { score: 
 }
 
 function getRoleIcon(role: string): React.ReactNode {
-  const roleLower = role.toLowerCase();
+  const roleLower = safeLower(role, "MemoTeamGapCard.role");
   if (roleLower.includes('ceo') || roleLower.includes('founder')) {
     return <Briefcase className="w-4 h-4" />;
   }
