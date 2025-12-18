@@ -88,53 +88,58 @@ TONE EXAMPLES:
 
 Return ONLY valid JSON:
 {
-  "verdict": "One brutal sentence - the dismissive thing partners say when you leave. Make it sting.",
+  "verdict": "One brutal sentence - the dismissive thing partners say when you leave. Make it sting. Reference something SPECIFIC from their pitch.",
   "readinessLevel": "LOW" | "MEDIUM" | "HIGH",
-  "readinessRationale": "2 sentences max. Why this narrative structurally fails under partner scrutiny.",
+  "readinessRationale": "2 sentences max. Why this narrative structurally fails under partner scrutiny. Be SPECIFIC to their claims.",
+  "rulingStatement": "A company-specific verdict explaining why this pitch structurally fails. Reference their actual claims. Example: 'This pitch fails at the market definition level—the ICP spans three industries, which means no wedge strategy.' MUST be specific to THIS company.",
+  "killerQuestion": "The one question that would stump this founder in an IC meeting. Make it SPECIFIC to their pitch. Example: 'What happens when [specific competitor] ships the same feature in 6 months?' NOT generic.",
+  "frameworkScore": 35,
+  "criteriaCleared": 2,
+  "icStoppingPoint": "Market" | "Team" | "Traction" | "Business Model" | "Competition",
   "concerns": [
     {
-      "text": "First deal-killer - be specific. Why would a partner say no in the first 30 seconds?",
+      "text": "First deal-killer - be VERY specific to what they claimed. Reference their actual statements.",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "vcQuote": "The exact dismissive phrase a VC might say internally.",
-      "teaserLine": "Full sentence starting with 'Partners' that hints at the issue conceptually without revealing specifics. Example: 'Partners raised concerns about the go-to-market—the sales motion doesn't match the target profile.'"
+      "vcQuote": "The exact dismissive phrase a VC might say internally. Be specific to their pitch.",
+      "teaserLine": "MUST be a full sentence starting with 'Partners' that references something SPECIFIC about THIS company. Examples: 'Partners raised questions about the revenue model—the unit economics don't survive basic scenario modeling.' or 'Partners noted a fundamental tension in the go-to-market—the sales motion contradicts the stated ACV targets.' MAKE IT SPECIFIC TO THIS PITCH."
     },
     {
-      "text": "Second deal-killer - different dimension. Focus on structural failure.",
+      "text": "Second deal-killer - different dimension. Focus on structural failure specific to THIS pitch.",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "vcQuote": "Another internal VC quote.",
-      "teaserLine": "Another 'Partners' sentence hinting at this concern. Example: 'Partners questioned whether the market fundamentals support the valuation thesis.'"
+      "vcQuote": "Another internal VC quote specific to their pitch.",
+      "teaserLine": "Another 'Partners' sentence SPECIFIC to this company. Reference their claims. Example: 'Partners questioned whether the market fundamentals support the valuation thesis—the bottoms-up math doesn't work.'"
     },
     {
-      "text": "Third concern - hint at deeper systemic issues",
+      "text": "Third concern - hint at deeper systemic issues in THIS pitch",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "teaserLine": "Third 'Partners' sentence. Example: 'Partners noted a gap in competitive positioning—the moat narrative doesn't hold.'"
+      "teaserLine": "Third 'Partners' sentence SPECIFIC to this company. Example: 'Partners flagged a gap in the competitive positioning—the stated differentiation doesn't hold under scrutiny.'"
     },
     {
-      "text": "Fourth concern if applicable",
+      "text": "Fourth concern if applicable - SPECIFIC to their pitch",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "teaserLine": "Fourth 'Partners' sentence hinting at the issue."
+      "teaserLine": "Fourth 'Partners' sentence. MUST reference something specific from their pitch."
     },
     {
-      "text": "Fifth concern if applicable",
+      "text": "Fifth concern if applicable - SPECIFIC to their pitch",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "teaserLine": "Fifth 'Partners' sentence hinting at the issue."
+      "teaserLine": "Fifth 'Partners' sentence. MUST reference something specific from their pitch."
     }
   ],
   "strengths": [
     {
-      "text": "ONE thing that keeps this from being completely hopeless",
+      "text": "ONE thing that keeps this from being completely hopeless - be specific to what they showed",
       "category": "market" | "team" | "business_model" | "traction" | "competition"
     }
   ],
-  "marketInsight": "Market-level structural challenge. Why this category is hard.",
-  "vcFrameworkCheck": "Apply a VC framework showing structural gaps.",
-  "inevitabilityStatement": "Why this pitch STRUCTURALLY fails—not timing, but logic. Example: 'This narrative collapses because there's no answer to why customers won't churn to the cheaper alternative. Every partner sees it. None will bet against it.'",
+  "marketInsight": "Market-level structural challenge SPECIFIC to their category and positioning.",
+  "vcFrameworkCheck": "Apply a VC framework showing structural gaps SPECIFIC to their claims.",
+  "inevitabilityStatement": "Why this pitch STRUCTURALLY fails—not timing, but logic. Reference their actual claims.",
   "narrativeTransformation": {
-    "currentNarrative": "What VCs currently say: One harsh sentence summarizing how they dismiss this pitch today.",
+    "currentNarrative": "What VCs currently say about THIS pitch: One harsh sentence summarizing how they dismiss it. Be specific.",
     "transformedNarrative": "What they'd say if fixed: One sentence showing the conversation shift. Tease, don't reveal."
   },
   "founderProfile": "${founderProfileSignals.profile}",
-  "hiddenIssuesCount": number between 5-12
+  "hiddenIssuesCount": 8
 }`;
 
     const userPrompt = `STARTUP FOR BRUTAL ASSESSMENT:

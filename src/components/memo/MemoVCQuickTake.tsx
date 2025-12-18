@@ -33,12 +33,39 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
     return concern?.text || '';
   };
 
-  // Helper to get teaser line for locked concerns
+  // Helper to get teaser line for locked concerns - generates meaningful text from concern data
   const getTeaserLine = (concern: string | ConcernObject): string => {
-    if (typeof concern === 'string') {
-      return `Partners identified structural concerns in this area.`;
+    // If we have a proper teaserLine, use it
+    if (typeof concern === 'object' && concern?.teaserLine) {
+      return concern.teaserLine;
     }
-    return concern?.teaserLine || `Partners raised questions about ${concern?.category || 'this aspect'} of the business.`;
+    
+    // Extract meaningful text from the concern itself
+    const concernText = typeof concern === 'string' ? concern : concern?.text || '';
+    const category = typeof concern === 'object' ? concern?.category : '';
+    
+    if (concernText) {
+      // Generate a teaser from the concern text - take key phrases
+      const words = concernText.split(' ');
+      if (words.length > 6) {
+        // Extract first meaningful chunk and create intrigue
+        const preview = words.slice(0, 8).join(' ');
+        const categoryLabel = category ? ` in ${category.replace('_', ' ')}` : '';
+        return `Partners raised structural concerns${categoryLabel}—${preview}...`;
+      }
+      return `Partners flagged an issue here—${concernText}`;
+    }
+    
+    // Fallback with category context
+    const categoryLabels: Record<string, string> = {
+      'market': 'Partners questioned the market fundamentals—the sizing narrative doesn\'t survive scrutiny.',
+      'team': 'Partners raised concerns about team-market fit—the background doesn\'t match the problem.',
+      'business_model': 'Partners flagged unit economics issues—the revenue model has structural gaps.',
+      'traction': 'Partners noted traction gaps—the validation evidence doesn\'t support the claims.',
+      'competition': 'Partners identified competitive positioning issues—the moat narrative doesn\'t hold.'
+    };
+    
+    return categoryLabels[category || ''] || 'Partners identified additional structural concerns in this area.';
   };
   
   // Safely extract values with fallbacks
@@ -56,11 +83,20 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
   const killerQuestion = quickTake?.killerQuestion || getKillerQuestionFromConcerns(concerns);
 
   function getRulingFromReadiness(level: string): string {
+    // Get primary concern category for more specific fallback
+    const primaryCategory = concerns[0] && typeof concerns[0] === 'object' 
+      ? (concerns[0] as ConcernObject).category 
+      : null;
+    
+    const categoryContext = primaryCategory 
+      ? ` at the ${primaryCategory.replace('_', ' ')} level`
+      : '';
+    
     switch (level) {
-      case 'LOW': return 'Not ready for partner discussion';
-      case 'MEDIUM': return 'Requires significant de-risking before IC';
-      case 'HIGH': return 'Ready for first partner meeting';
-      default: return 'Evaluation pending';
+      case 'LOW': return `This pitch stalls${categoryContext}—the narrative doesn't survive partner scrutiny`;
+      case 'MEDIUM': return `Partners see potential but require significant de-risking${categoryContext}`;
+      case 'HIGH': return 'Clears the initial bar—ready for first partner meeting with refinements';
+      default: return 'Evaluation pending deeper analysis';
     }
   }
 
