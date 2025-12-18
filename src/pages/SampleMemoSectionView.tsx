@@ -54,7 +54,14 @@ import {
 // Import sample tool data
 import { SAMPLE_SECTION_TOOLS } from "@/data/sampleMemoTools";
 
-const DEMO_COMPANY_ID = '00000000-0000-0000-0000-000000000001';
+// Sample company info for CarbonPrint demo
+const SAMPLE_COMPANY_INFO = {
+  id: 'demo-carbonprint',
+  name: 'CarbonPrint',
+  stage: 'Pre-seed',
+  category: 'Climate Tech',
+  description: 'AI-powered carbon footprint tracking for enterprise supply chains'
+};
 
 // Sample data for CarbonPrint demo
 const SAMPLE_TEAM: TeamMember[] = [
@@ -138,34 +145,26 @@ export default function SampleMemoSectionView() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [sectionIndex]);
 
+  // Load demo data from hardcoded DEMO_MEMOS
   useEffect(() => {
-    const fetchMemo = async () => {
-      try {
-        const { data: existingMemo, error: fetchError } = await supabase
-          .from('memos')
-          .select('structured_content, company:companies(*)')
-          .eq('company_id', DEMO_COMPANY_ID)
-          .maybeSingle();
-
-        if (fetchError) throw fetchError;
-
-        if (existingMemo && existingMemo.structured_content) {
-          setMemoContent(sanitizeMemoContent(existingMemo.structured_content));
-          setCompanyInfo(existingMemo.company);
-        } else {
-          toast.error('Sample memo not yet generated.');
-          navigate('/');
-        }
-      } catch (error: any) {
-        console.error('Error loading sample memo:', error);
-        toast.error('Failed to load sample memo');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMemo();
-  }, [navigate]);
+    const demoData = DEMO_MEMOS["demo-carbonprint"];
+    
+    if (demoData) {
+      const structuredContent: MemoStructuredContent = {
+        vcQuickTake: demoData.vcQuickTake,
+        sections: demoData.sections.map(section => ({
+          title: section.title,
+          paragraphs: [{ text: section.narrative, emphasis: "narrative" as const }],
+          keyPoints: section.keyPoints
+        }))
+      };
+      
+      setMemoContent(structuredContent);
+      setCompanyInfo(SAMPLE_COMPANY_INFO);
+    }
+    
+    setLoading(false);
+  }, []);
 
   if (loading) {
     return (
@@ -191,7 +190,7 @@ export default function SampleMemoSectionView() {
   const currentSection = isVCQuickTakePage ? null : memoContent.sections[actualSectionIndex];
   
   if (!isVCQuickTakePage && !currentSection) {
-    navigate('/sample-memo?view=full');
+    navigate('/sample-analysis?view=full');
     return null;
   }
 
@@ -199,7 +198,7 @@ export default function SampleMemoSectionView() {
 
   const goToSection = (index: number) => {
     if (index >= 0 && index < totalSections) {
-      navigate(`/sample-memo/section?section=${index}`);
+      navigate(`/sample-analysis/section?section=${index}`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -239,8 +238,8 @@ export default function SampleMemoSectionView() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={() => {
-                    const shareUrl = 'https://uglybaby.co/sample-memo/section?section=0';
+                onClick={() => {
+                    const shareUrl = 'https://uglybaby.co/sample-analysis/section?section=0';
                     const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
                     window.open(linkedInUrl, '_blank', 'width=600,height=600');
                   }}
@@ -253,7 +252,7 @@ export default function SampleMemoSectionView() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={() => navigate('/sample-memo?view=full')}
+                  onClick={() => navigate('/sample-analysis?view=full')}
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <BookOpen className="w-4 h-4 mr-2" />
@@ -389,7 +388,7 @@ export default function SampleMemoSectionView() {
                 <Button 
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate('/sample-memo?view=full')}
+                  onClick={() => navigate('/sample-analysis?view=full')}
                   className="text-muted-foreground"
                 >
                   <BookOpen className="w-4 h-4 mr-2" />
@@ -463,7 +462,7 @@ export default function SampleMemoSectionView() {
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => navigate('/sample-memo?view=full')}
+              onClick={() => navigate('/sample-analysis?view=full')}
               className="text-muted-foreground hover:text-foreground"
             >
               <BookOpen className="w-4 h-4 mr-2" />
@@ -728,7 +727,7 @@ export default function SampleMemoSectionView() {
                 variant="default"
                 onClick={() => {
                   if (sectionIndex === totalSections - 1) {
-                    navigate('/sample-memo/complete');
+                    navigate('/sample-analysis/complete');
                   } else {
                     goToSection(sectionIndex + 1);
                   }
@@ -750,7 +749,7 @@ export default function SampleMemoSectionView() {
               <Button 
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/sample-memo?view=full')}
+                onClick={() => navigate('/sample-analysis?view=full')}
                 className="text-muted-foreground"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
