@@ -64,8 +64,17 @@ serve(async (req) => {
     let tractionInfo = "";
     let askInfo = "";
 
+    // Helper to safely get string from potentially object title
+    const safeStr = (val: unknown): string => {
+      if (typeof val === 'string') return val;
+      if (val && typeof val === 'object' && 'text' in val) {
+        return String((val as { text: unknown }).text || '');
+      }
+      return String(val || '');
+    };
+
     sections.forEach((section: any) => {
-      const title = section.title.toLowerCase();
+      const title = safeStr(section.title).toLowerCase();
       const narrative = section.narrative || {};
       const paragraphs = narrative.paragraphs || section.paragraphs || [];
       const highlights = narrative.highlights || section.highlights || [];
