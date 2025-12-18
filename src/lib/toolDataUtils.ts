@@ -47,7 +47,33 @@ export const safeNumber = (val: unknown, defaultVal: number = 0): number => {
 export const isValidEditableTool = <T>(data: unknown): data is { aiGenerated: T; userOverrides?: Partial<T>; dataSource?: string } => {
   if (!data || typeof data !== 'object') return false;
   const d = data as Record<string, unknown>;
-  return 'aiGenerated' in d && d.aiGenerated !== null && typeof d.aiGenerated === 'object';
+  
+  // Check for aiGenerated wrapper
+  if ('aiGenerated' in d && d.aiGenerated !== null && typeof d.aiGenerated === 'object') {
+    return true;
+  }
+  
+  return false;
+};
+
+// Unwrap potentially double-wrapped data
+export const unwrapToolData = <T>(data: unknown): T | null => {
+  if (!data || typeof data !== 'object') return null;
+  const d = data as Record<string, unknown>;
+  
+  // Check for double-wrapping: { aiGenerated: { aiGenerated: {...} } }
+  if ('aiGenerated' in d && d.aiGenerated && typeof d.aiGenerated === 'object') {
+    const inner = d.aiGenerated as Record<string, unknown>;
+    if ('aiGenerated' in inner && inner.aiGenerated && typeof inner.aiGenerated === 'object') {
+      // Double-wrapped - return the inner aiGenerated
+      return inner.aiGenerated as T;
+    }
+    // Single wrapped - return the aiGenerated content
+    return d.aiGenerated as T;
+  }
+  
+  // Not wrapped - return as-is
+  return data as T;
 };
 
 // Safely merge EditableTool data
