@@ -325,21 +325,29 @@ Section Content: ${sectionNarrative.substring(0, 2000)}
 
 Generate these SPECIFIC tools for ${companyName}'s Problem section:
 
-1. sectionScore: Rate this specific problem statement
+1. sectionScore: Rate this specific problem statement (SCORE ON 0-100 SCALE!)
 2. vcInvestmentLogic: VC investment decision for this problem
 3. actionPlan90Day: Specific 90-day actions for problem validation
 4. caseStudy: Find a REAL company case study relevant to ${companyCategory || 'this market'} (NOT climate tech unless that's the category)
 5. evidenceThreshold: Analyze the evidence quality for this specific problem
 6. founderBlindSpot: Identify potential blindspots for founders solving THIS problem
 
+CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10! 
+- 0-25: Weak
+- 26-50: Developing  
+- 51-75: Strong
+- 76-100: Exceptional
+
 Return JSON:
 {
   "sectionScore": {
-    "score": 1-10,
+    "score": 0-100,
     "label": "Weak|Developing|Strong|Exceptional",
-    "vcBenchmark": "How this compares to typical ${companyStage} deals",
+    "vcBenchmark": 60,
     "percentile": "25th|50th|75th|90th",
-    "topInsight": "Key insight specific to ${companyName}"
+    "topInsight": "Key insight specific to ${companyName}",
+    "whatThisTellsVC": "What this score signals to investors",
+    "fundabilityImpact": "Impact on ability to raise"
   },
   "vcInvestmentLogic": {
     "decision": "PASS|CAUTIOUS|INTERESTED|EXCITED",
@@ -382,19 +390,21 @@ Return JSON:
 
 Generate these SPECIFIC tools for ${companyName}'s Solution section:
 
-1. sectionScore, vcInvestmentLogic, actionPlan90Day, caseStudy (same structure as Problem)
-2. technicalDefensibility: Rate the technical moat
+1. sectionScore (SCORE ON 0-100 SCALE!), vcInvestmentLogic, actionPlan90Day, caseStudy
+2. technicalDefensibility: Rate the technical moat (0-100 scale)
 3. commoditizationTeardown: Risk of commoditization
 4. competitorBuildAnalysis: Could competitors copy this?
 
+CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+
 Return JSON:
 {
-  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
   "technicalDefensibility": {
-    "defensibilityScore": 1-10,
+    "defensibilityScore": 0-100,
     "proofPoints": ["Evidence of technical moat"],
     "expectedProofs": ["What a strong solution would have"],
     "gaps": ["Missing defensibility elements"],
@@ -422,9 +432,11 @@ Market Context: ${marketStr}
 
 Generate these SPECIFIC tools for ${companyName}'s Market section:
 
+CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+
 Return JSON:
 {
-  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
@@ -439,11 +451,11 @@ Return JSON:
     "assumptions": ["Key assumptions"]
   },
   "marketReadinessIndex": {
-    "regulatoryPressure": {"score": 1-100, "evidence": "Specific to ${companyCategory}"},
-    "urgency": {"score": 1-100, "evidence": "Why buyers need this now"},
-    "willingnessToPay": {"score": 1-100, "evidence": "Payment evidence"},
-    "switchingFriction": {"score": 1-100, "evidence": "Switching cost analysis"},
-    "overallScore": 1-100
+    "regulatoryPressure": {"score": 0-100, "evidence": "Specific to ${companyCategory}"},
+    "urgency": {"score": 0-100, "evidence": "Why buyers need this now"},
+    "willingnessToPay": {"score": 0-100, "evidence": "Payment evidence"},
+    "switchingFriction": {"score": 0-100, "evidence": "Switching cost analysis"},
+    "overallScore": 0-100
   },
   "vcMarketNarrative": {
     "pitchToIC": "How to pitch this market to investment committee",
@@ -458,9 +470,11 @@ Competitor Research: ${competitorStr}
 
 Generate these SPECIFIC tools for ${companyName}'s Competition section (use ACTUAL competitors from research, not generic examples):
 
+CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+
 Return JSON:
 {
-  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company that won against competitors in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
@@ -476,11 +490,24 @@ Return JSON:
     "defenseStrategy": ["How to defend against attacks"]
   },
   "moatDurability": {
-    "currentMoatStrength": 1-10,
+    "currentMoatStrength": 0-100,
     "erosionFactors": ["What could erode the moat"],
     "estimatedDuration": "How long the moat lasts",
     "reinforcementOpportunities": ["How to strengthen the moat"]
-  }
+  },
+  "moatScores": {
+    "networkEffects": {"score": 0-100, "evidence": "Specific evidence for ${companyName}'s network effects or lack thereof"},
+    "switchingCosts": {"score": 0-100, "evidence": "Analysis of lock-in and switching friction for ${companyName}"},
+    "dataAdvantage": {"score": 0-100, "evidence": "Proprietary data and AI/ML advantages for ${companyName}"},
+    "brandTrust": {"score": 0-100, "evidence": "Brand recognition, certifications, enterprise trust for ${companyName}"},
+    "costAdvantage": {"score": 0-100, "evidence": "Economic moats, scale advantages, patents for ${companyName}"},
+    "overallScore": 0-100
+  },
+  "moatAccelerationOpportunities": [
+    {"title": "Specific opportunity 1 for ${companyName}", "suggestion": "Tailored suggestion based on ${companyCategory} and company specifics", "priority": "high"},
+    {"title": "Specific opportunity 2 for ${companyName}", "suggestion": "Another tailored suggestion for this specific company", "priority": "medium"},
+    {"title": "Specific opportunity 3 for ${companyName}", "suggestion": "Third tailored suggestion", "priority": "medium"}
+  ]
 }`;
 
     case "Team":
@@ -488,23 +515,35 @@ Return JSON:
 
 Generate these SPECIFIC tools for ${companyName}'s Team section:
 
+CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+
+CRITICAL: Extract ALL team members mentioned in the section content. Look for patterns like:
+- "Name (Role)" e.g., "Hatem Ahmed (Co-Founder & CEO)"
+- "Name, Role" e.g., "Amr Salem, CTO"  
+- "Name serves as Role" or "Name is the Role"
+- "led by Name" or "founded by Name"
+
 Return JSON:
 {
-  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company with relevant founder background in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
+  "teamMembers": [
+    {"name": "Full Name", "role": "Title/Role", "background": "Brief background if mentioned"},
+    {"name": "Another Name", "role": "Their Role", "background": "Their background"}
+  ],
   "credibilityGapAnalysis": {
     "expectedSkills": ["Skills needed for ${companyCategory} success"],
     "currentSkills": ["Skills the team has"],
     "gaps": [{"skill": "Missing skill", "severity": "Critical|Important|Minor", "mitigation": "How to address"}],
-    "overallCredibility": 1-10
+    "overallCredibility": 0-100
   },
   "founderMapping": {
     "successfulFounderProfiles": [
       {"company": "Similar successful company", "founderBackground": "Their background", "relevantTo": "Why relevant to ${companyName}"}
     ],
-    "matchScore": 1-10,
+    "matchScore": 0-100,
     "gaps": ["Where this team differs from successful founders"]
   }
 }`;
@@ -515,12 +554,25 @@ Financial Metrics: ${financialStr}
 
 Generate these SPECIFIC tools for ${companyName}'s Business Model section:
 
+CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+
+Detect the business model type (B2B SaaS, B2C consumer, marketplace, transaction-fee, etc.) and tailor metrics accordingly.
+
 Return JSON:
 {
-  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company with similar business model in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
+  "businessModelType": "B2B SaaS|B2C Consumer|Marketplace|Transaction Fee|Usage-Based|Freemium|Hardware|Hybrid",
+  "pricingMetrics": {
+    "avgMonthlyRevenue": number (in USD, ARPU for B2C or ACV/12 for B2B),
+    "currentCustomers": number,
+    "currentMRR": number,
+    "isTransactionBased": true/false,
+    "transactionFeePercent": number or null,
+    "avgTransactionValue": number or null
+  },
   "modelStressTest": {
     "scenarios": [
       {"scenario": "Stress scenario 1", "impact": "Financial impact", "survivalProbability": 0-100, "mitigations": ["How to mitigate"]}
@@ -549,15 +601,17 @@ Financial Metrics: ${financialStr}
 
 Generate these SPECIFIC tools for ${companyName}'s Traction section:
 
+CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+
 Return JSON:
 {
-  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company with relevant traction story in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
   "tractionDepthTest": {
     "tractionType": "Founder-led|Discount-driven|Repeatable|Viral",
-    "sustainabilityScore": 1-10,
+    "sustainabilityScore": 0-100,
     "redFlags": ["Warning signs"],
     "positiveSignals": ["Good indicators"]
   },
@@ -580,9 +634,11 @@ Return JSON:
 
 Generate these SPECIFIC tools for ${companyName}'s Vision section:
 
+CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+
 Return JSON:
 {
-  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company with inspiring vision in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
