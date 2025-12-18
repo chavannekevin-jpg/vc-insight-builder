@@ -14,7 +14,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent } from "@/types/memo";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
-import { safeTitle } from "@/lib/stringUtils";
+import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
 
 const sectionIcons: Record<string, React.ReactNode> = {
   'problem': <AlertTriangle className="w-5 h-5" />,
@@ -113,7 +113,7 @@ export default function MemoOverview() {
           .maybeSingle();
 
         if (memo?.structured_content) {
-          setMemoContent(memo.structured_content as unknown as MemoStructuredContent);
+          setMemoContent(sanitizeMemoContent(memo.structured_content));
         } else {
           // No memo exists, redirect to generate
           navigate(`/analysis?companyId=${companyId}`);
@@ -243,7 +243,7 @@ export default function MemoOverview() {
             
             return (
               <Link
-                key={section.title}
+                key={safeTitle(section.title)}
                 to={isLocked ? `/checkout-analysis?companyId=${companyId}` : `/analysis/section?companyId=${companyId}&section=${actualSectionIndex}`}
                 className={`group relative bg-gradient-to-br ${color} rounded-xl p-5 border transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${isLocked ? 'opacity-60' : ''}`}
               >

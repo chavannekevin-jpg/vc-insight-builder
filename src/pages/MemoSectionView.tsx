@@ -31,7 +31,7 @@ import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Grid, BookOpen, Zap, 
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
 
-import { safeTitle } from "@/lib/stringUtils";
+import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
 
 // Import new VC tools
 import {
@@ -142,7 +142,7 @@ export default function MemoSectionView() {
           .maybeSingle();
 
         if (memo?.structured_content) {
-          setMemoContent(memo.structured_content as unknown as MemoStructuredContent);
+          setMemoContent(sanitizeMemoContent(memo.structured_content));
           
           // Fetch tool data for this company
           const { data: toolData } = await supabase
@@ -417,7 +417,8 @@ export default function MemoSectionView() {
                      problemSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
 
   // Get section-specific tools data - use sample data as fallback
-  const currentSectionTools = sectionTools[currentSection!.title] || SAMPLE_SECTION_TOOLS[currentSection!.title] || {};
+  const currentSectionTitle = safeTitle(currentSection!.title);
+  const currentSectionTools = sectionTools[currentSectionTitle] || SAMPLE_SECTION_TOOLS[currentSectionTitle] || {};
   return (
     <div className="min-h-screen bg-background">
       <Header />

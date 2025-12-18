@@ -28,7 +28,7 @@ import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCa
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 import { extractMoatScores, extractTeamMembers, extractUnitEconomics } from "@/lib/memoDataExtractor";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
-import { safeTitle } from "@/lib/stringUtils";
+import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
 import { ArrowLeft, RefreshCw, Printer, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
@@ -255,7 +255,7 @@ export default function GeneratedMemo() {
 
           if (companyError) throw companyError;
 
-          setMemoContent(memo.structured_content as unknown as MemoStructuredContent);
+          setMemoContent(sanitizeMemoContent(memo.structured_content));
           setCompanyInfo(companyData);
           
           // Fetch tool data for this company
@@ -382,7 +382,7 @@ export default function GeneratedMemo() {
       console.log("Tool data fetched:", Object.keys(toolsMap));
     }
 
-    setMemoContent(memo.structured_content as unknown as MemoStructuredContent);
+    setMemoContent(sanitizeMemoContent(memo.structured_content));
     setCompanyInfo(companyData);
     console.log("Memo loaded from database successfully");
     
@@ -759,7 +759,7 @@ export default function GeneratedMemo() {
                     key={idx}
                     className="px-3 py-1.5 rounded-full bg-muted/50 text-muted-foreground text-sm border border-border/30"
                   >
-                    🔒 {section.title}
+                    🔒 {safeTitle(section.title)}
                   </span>
                 ))}
               </div>
@@ -1033,7 +1033,7 @@ export default function GeneratedMemo() {
                   {/* VC Investment Logic Card - Premium Only */}
                   {hasPremium && currentSectionTools?.vcInvestmentLogic && (
                     <VCInvestmentLogicCard
-                      sectionName={section.title}
+                      sectionName={safeTitle(section.title)}
                       logic={currentSectionTools.vcInvestmentLogic}
                     />
                   )}
@@ -1041,7 +1041,7 @@ export default function GeneratedMemo() {
                   {/* 90-Day Action Plan - Premium Only */}
                   {hasPremium && currentSectionTools?.actionPlan90Day && (
                     <Section90DayPlan
-                      sectionName={section.title}
+                      sectionName={safeTitle(section.title)}
                       plan={currentSectionTools.actionPlan90Day}
                     />
                   )}
@@ -1049,7 +1049,7 @@ export default function GeneratedMemo() {
                   {/* Lead Investor Requirements - Premium Only */}
                   {hasPremium && currentSectionTools?.leadInvestorRequirements && (
                     <LeadInvestorCard
-                      sectionName={section.title}
+                      sectionName={safeTitle(section.title)}
                       requirements={currentSectionTools.leadInvestorRequirements}
                     />
                   )}

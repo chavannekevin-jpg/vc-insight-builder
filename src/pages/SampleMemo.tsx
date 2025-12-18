@@ -22,7 +22,7 @@ import { MemoUnitEconomicsCard } from "@/components/memo/MemoUnitEconomicsCard";
 import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
-import { safeTitle } from "@/lib/stringUtils";
+import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
 import type { MemoStructuredContent, MemoVCQuickTake as MemoVCQuickTakeType, MemoParagraph as MemoParagraphType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
 
@@ -171,7 +171,7 @@ const SampleMemo = () => {
           setLoading(false);
           return;
         }
-        setMemoContent(existingMemo.structured_content as unknown as MemoStructuredContent);
+        setMemoContent(sanitizeMemoContent(existingMemo.structured_content));
         setCompanyInfo(existingMemo.company);
       } else {
         toast.error('Sample memo not yet generated. Please contact support.');
