@@ -29,7 +29,7 @@ import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 import { extractMoatScores, extractTeamMembers, extractUnitEconomics } from "@/lib/memoDataExtractor";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
-import { ArrowLeft, RefreshCw, Printer, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Printer, AlertTriangle, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
 import { Button } from "@/components/ui/button";
@@ -609,18 +609,10 @@ export default function GeneratedMemo() {
     return <MemoLoadingScreen analyzing={analyzing} />;
   }
 
-  // Handlers for VC Rejection Preview
-  const handlePreviewMemo = () => {
-    setShowRejectionPreview(false);
-    // Redirect non-premium users to wizard view instead of full memo
-    if (!hasPremium && companyId) {
-      navigate(`/analysis/section?companyId=${companyId}&section=0`, { replace: true });
-    }
-  };
-
+  // Handler for VC Rejection Preview - close and scroll to memo
   const handleGetFullMemo = () => {
     setShowRejectionPreview(false);
-    navigate(`/checkout-analysis?companyId=${companyId}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (!memoContent || !companyInfo) {
@@ -660,7 +652,6 @@ export default function GeneratedMemo() {
           onOpenChange={setShowRejectionPreview}
           companyName={companyInfo.name}
           vcQuickTake={memoContent.vcQuickTake}
-          onPreviewMemo={handlePreviewMemo}
           onGetFullMemo={handleGetFullMemo}
           founderName={companyInfo.founderName}
           industry={companyInfo.category}
@@ -694,18 +685,6 @@ export default function GeneratedMemo() {
                 <Printer className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Print / Save as PDF</span>
                 <span className="sm:hidden">Print</span>
-              </Button>
-              
-              <Button
-                variant="outline"
-                onClick={handleRegenerate}
-                disabled={regenerating}
-                size="sm"
-                className="md:min-w-[200px]"
-              >
-                <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">{regenerating ? 'Regenerating...' : 'Regenerate'}</span>
-                <span className="sm:hidden">{regenerating ? '...' : 'Regen'}</span>
               </Button>
             </div>
           </div>

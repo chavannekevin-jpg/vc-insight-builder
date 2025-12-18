@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Eye, Sparkles, Mail, AlertCircle } from "lucide-react";
+import { ArrowRight, Mail, AlertCircle } from "lucide-react";
 import { useMemo } from "react";
 
 interface VCQuickTake {
@@ -15,7 +15,6 @@ interface VCRejectionPreviewProps {
   onOpenChange: (open: boolean) => void;
   companyName: string;
   vcQuickTake: VCQuickTake;
-  onPreviewMemo: () => void;
   onGetFullMemo: () => void;
   founderName?: string;
   industry?: string;
@@ -121,7 +120,6 @@ export function VCRejectionPreview({
   onOpenChange,
   companyName,
   vcQuickTake,
-  onPreviewMemo,
   onGetFullMemo,
   founderName,
   industry,
@@ -215,31 +213,17 @@ export function VCRejectionPreview({
             <AlertCircle className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
             <p className="text-xs text-muted-foreground leading-relaxed">
               Based on what you've shared, this reflects how most VCs would respond. 
-              Your full memo reveals exactly why — and how to change it.
+              Let's break down exactly why — and what you can do about it.
             </p>
           </div>
         </div>
         
         {/* CTA Section */}
         <div className="border-t border-border bg-card px-6 py-5">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={onPreviewMemo}
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              Preview your memo
-            </Button>
-            
-            <Button
-              className="flex-1 gap-2"
-              onClick={onGetFullMemo}
-            >
-              <Sparkles className="w-4 h-4" />
-              Get the full memo
-            </Button>
-          </div>
+          <Button className="w-full gap-2" onClick={onGetFullMemo}>
+            <ArrowRight className="w-4 h-4" />
+            OK, let's deep dive on this rejection
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
