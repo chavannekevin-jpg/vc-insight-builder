@@ -170,16 +170,7 @@ export default function MemoRegenerate() {
   };
 
   const handleSaveAndRegenerate = async () => {
-    // Check if user has generation credits
-    if (generationsAvailable <= 0) {
-      toast({ 
-        title: "No Generation Credits", 
-        description: "Purchase additional generation credits to regenerate your memo.",
-        variant: "destructive" 
-      });
-      return;
-    }
-
+    // TEMPORARY: Paywall removed - free regeneration for all users
     setSaving(true);
     try {
       const changedSections = getChangedSections();
@@ -505,43 +496,23 @@ export default function MemoRegenerate() {
               <Button variant="outline" onClick={() => navigate("/hub")}>
                 Cancel
               </Button>
-              {generationsAvailable > 0 ? (
-                <Button
-                  onClick={handleSaveAndRegenerate}
-                  disabled={saving}
-                  className="gap-2"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <RotateCcw className="w-4 h-4" />
-                      {hasChanges() ? "Save & Regenerate" : "Regenerate Memo"}
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handlePurchaseCredit}
-                  disabled={purchasing}
-                  className="gap-2"
-                >
-                  {purchasing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-4 h-4" />
-                      Buy Credit to Regenerate - €8.99
-                    </>
-                  )}
-                </Button>
-              )}
+              <Button
+                onClick={handleSaveAndRegenerate}
+                disabled={saving}
+                className="gap-2"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-4 h-4" />
+                    {hasChanges() ? "Save & Regenerate" : "Regenerate Memo"}
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>

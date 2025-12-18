@@ -709,11 +709,11 @@ export default function FreemiumHub() {
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => navigate(`/regeneration-checkout?companyId=${company.id}`)}
+                        onClick={() => navigate(`/memo-regenerate?companyId=${company.id}`)}
                         className="border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500"
                       >
                         <RotateCcw className="w-4 h-4 mr-2" />
-                        Regenerate (€8.99)
+                        Regenerate
                       </Button>
                       <Button
                         onClick={() => navigate(`/analysis/overview?companyId=${company.id}`)}
