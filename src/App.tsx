@@ -111,6 +111,7 @@ const SampleMemoSectionView = lazy(() => import("./pages/SampleMemoSectionView")
 const SampleMemoCompletionScreen = lazy(() => import("./pages/SampleMemoCompletionScreen"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const RegenerationSuccess = lazy(() => import("./pages/RegenerationSuccess"));
+const RegenerationCheckout = lazy(() => import("./pages/RegenerationCheckout"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const RoastYourBaby = lazy(() => import("./pages/RoastYourBaby"));
 const DilutionLab = lazy(() => import("./pages/DilutionLab"));
@@ -288,6 +289,7 @@ const App = () => (
             <Route path="/checkout-analysis" element={<CheckoutMemo />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/regeneration-success" element={<RegenerationSuccess />} />
+            <Route path="/regeneration-checkout" element={<RegenerationCheckout />} />
             <Route path="/analysis-regenerate" element={<MemoRegenerate />} />
             {/* Backward compatibility redirects for old memo URLs */}
             <Route path="/memo/section" element={<RedirectPreserveSearch to="/analysis/section" />} />

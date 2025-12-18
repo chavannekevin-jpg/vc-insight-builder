@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ModernCard } from "@/components/ModernCard";
-import { Check, Loader2, RotateCcw, AlertCircle } from "lucide-react";
+import { Check, Loader2, Sparkles, AlertCircle } from "lucide-react";
 
 export default function RegenerationSuccess() {
   const navigate = useNavigate();
@@ -13,7 +13,6 @@ export default function RegenerationSuccess() {
   
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [generationsAvailable, setGenerationsAvailable] = useState<number | null>(null);
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -31,7 +30,6 @@ export default function RegenerationSuccess() {
 
         if (data?.success) {
           setVerified(true);
-          setGenerationsAvailable(data.generationsAvailable);
         } else {
           setError(data?.error || "Payment verification failed");
         }
@@ -54,7 +52,7 @@ export default function RegenerationSuccess() {
           <h1 className="text-2xl font-bold">Payment Error</h1>
           <p className="text-muted-foreground">{error}</p>
           <Button onClick={() => navigate("/portal")} className="w-full">
-            Back to Portal
+            Back to Dashboard
           </Button>
         </ModernCard>
       </div>
@@ -80,19 +78,19 @@ export default function RegenerationSuccess() {
         </div>
         
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold">Generation Credit Added!</h1>
+          <h1 className="text-2xl font-bold">Payment Confirmed!</h1>
           <p className="text-muted-foreground">
-            You now have {generationsAvailable} generation credit{generationsAvailable !== 1 ? 's' : ''} available.
+            Your regeneration has been unlocked. Let's review your answers with Kev, your AI wizard.
           </p>
         </div>
 
         <div className="space-y-3">
           <Button 
-            onClick={() => navigate(`/memo-regenerate?companyId=${companyId}`)}
-            className="w-full gap-2"
+            onClick={() => navigate(`/portal?regenerate=true&companyId=${companyId}`)}
+            className="w-full gap-2 gradient-primary shadow-glow"
           >
-            <RotateCcw className="w-4 h-4" />
-            Regenerate Memo Now
+            <Sparkles className="w-4 h-4" />
+            Start Questionnaire
           </Button>
           
           <Button 
@@ -100,7 +98,7 @@ export default function RegenerationSuccess() {
             variant="outline"
             className="w-full"
           >
-            Back to Portal
+            Back to Dashboard
           </Button>
         </div>
       </ModernCard>
