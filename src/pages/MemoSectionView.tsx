@@ -27,7 +27,7 @@ import { extractMoatScores, extractTeamMembers, extractUnitEconomics } from "@/l
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Grid, BookOpen, Zap, AlertTriangle } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Grid, BookOpen, Zap, AlertTriangle, Eye, Lock, FileText, Target, Users, TrendingUp, Swords, DollarSign, Rocket, Lightbulb, Trophy, BarChart } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
 
@@ -259,12 +259,13 @@ export default function MemoSectionView() {
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full whitespace-nowrap">
-                    {sectionIndex + 1} of {totalSections}
+                  <span className="text-xs font-medium text-amber-600 bg-amber-500/10 px-2 py-1 rounded-full whitespace-nowrap flex items-center gap-1.5">
+                    <Eye className="w-3 h-3" />
+                    Preview
                   </span>
                 </div>
                 <div className="flex-1 max-w-xs">
-                  <Progress value={progressPercent} className="h-1.5" />
+                  <Progress value={0} className="h-1.5" />
                 </div>
               </div>
               
@@ -295,28 +296,98 @@ export default function MemoSectionView() {
         </div>
         
         <div className="container mx-auto px-4 py-8 max-w-5xl">
-          {/* Free Preview Context Card */}
-          <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-bold text-primary px-2 py-1 bg-primary/20 rounded-full">
-                FREE PREVIEW
+          {/* Lobby Welcome Card */}
+          <div className="mb-8 p-6 rounded-xl bg-gradient-to-br from-muted/50 via-background to-muted/30 border border-border">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xs font-bold text-amber-600 px-2.5 py-1 bg-amber-500/10 rounded-full flex items-center gap-1.5">
+                <Eye className="w-3 h-3" />
+                LOBBY
               </span>
-              <span className="text-xs text-muted-foreground">Page 1 of {totalSections}</span>
             </div>
-            <h3 className="text-lg font-bold mb-2 text-foreground">
-              This Is What VCs Think About {companyInfo?.name}
+            <h3 className="text-xl font-bold mb-2 text-foreground">
+              The partners just finished discussing {companyInfo?.name}.
             </h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              The VC Quick Take summarizes the investment verdict, top concerns, and critical action items. 
-              The full memo contains {totalSections - 1} more deep-dive sections with VC questions, competitive analysis, 
-              and specific fixes for each weakness.
+            <p className="text-sm text-muted-foreground">
+              You're not in the room yet — but we caught what they said on the way out.
             </p>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-              <span>📄 {totalSections} detailed sections</span>
-              <span>❓ VC questions with prep guides</span>
-              <span>🎯 Actionable fixes for every issue</span>
-            </div>
           </div>
+
+          {/* What's Inside Preview Grid */}
+          {!hasPremium && memoContent.sections && memoContent.sections.length > 0 && (
+            <div className="mb-8 p-5 rounded-xl bg-muted/30 border border-border/50">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-4">
+                What's Inside the Full IC Brief
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {memoContent.sections.slice(0, 6).map((section, idx) => {
+                  const sectionTitle = section.title.toLowerCase();
+                  const sectionConfig = {
+                    problem: { icon: Target, snippet: "Evidence threshold • Founder blind spots • Pain validation" },
+                    solution: { icon: Lightbulb, snippet: "Technical defensibility • Commoditization risk • Build analysis" },
+                    market: { icon: TrendingUp, snippet: "TAM reality check • Timing signals • VC narrative fit" },
+                    team: { icon: Users, snippet: "Credibility gaps • Key hire priorities • Founder-market fit" },
+                    competition: { icon: Swords, snippet: "Moat durability • Competitive positioning • Chessboard analysis" },
+                    business: { icon: DollarSign, snippet: "Unit economics • Stress test • Revenue model viability" },
+                    traction: { icon: BarChart, snippet: "Growth depth test • Milestone validation • Signal strength" },
+                    thesis: { icon: Trophy, snippet: "Investment logic • Lead investor lens • Deal conviction" },
+                    vision: { icon: Rocket, snippet: "Exit narrative • Scenario planning • Milestone roadmap" },
+                  };
+                  
+                  const matchedKey = Object.keys(sectionConfig).find(key => sectionTitle.includes(key)) || 'problem';
+                  const config = sectionConfig[matchedKey as keyof typeof sectionConfig];
+                  const IconComponent = config.icon;
+                  
+                  return (
+                    <div 
+                      key={idx} 
+                      className="p-3 rounded-lg bg-background border border-border/50 hover:border-primary/30 transition-colors group cursor-pointer"
+                      onClick={handleUnlock}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <IconComponent className="w-3.5 h-3.5 text-primary/70" />
+                          <span className="text-xs text-primary/70 font-medium">Section {idx + 1}</span>
+                        </div>
+                        <Lock className="w-3 h-3 text-muted-foreground/40 group-hover:text-primary/50 transition-colors" />
+                      </div>
+                      <p className="text-sm font-semibold text-foreground line-clamp-1 mb-1">{section.title}</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">
+                        {config.snippet}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+              {memoContent.sections.length > 6 && (
+                <p className="text-xs text-muted-foreground text-center mt-3">
+                  + {memoContent.sections.length - 6} more deep-dive sections
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Sample Memo CTA */}
+          {!hasPremium && (
+            <div className="mb-8 p-4 rounded-xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Want to see what a full analysis looks like?</p>
+                  <p className="text-xs text-muted-foreground">Explore our sample memo with all sections unlocked</p>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/sample-memo?view=full')}
+                className="whitespace-nowrap"
+              >
+                View Sample Memo
+              </Button>
+            </div>
+          )}
 
           {/* VC Quick Take Header */}
           <div className="mb-8">
@@ -406,15 +477,27 @@ export default function MemoSectionView() {
                   ))}
                 </div>
                 
-                <Button 
-                  variant="default"
-                  onClick={() => goToSection(1)}
-                  className="gap-2"
-                >
-                  <span className="hidden sm:inline">Next: Problem</span>
-                  <span className="sm:hidden">Next</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
+                {hasPremium ? (
+                  <Button 
+                    variant="default"
+                    onClick={() => goToSection(1)}
+                    className="gap-2"
+                  >
+                    <span className="hidden sm:inline">Next: {memoContent.sections[0]?.title || 'Problem'}</span>
+                    <span className="sm:hidden">Next</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="default"
+                    onClick={handleUnlock}
+                    className="gap-2"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Unlock Section 1</span>
+                    <span className="sm:hidden">Unlock</span>
+                  </Button>
+                )}
               </div>
               
               <div className="flex items-center justify-center gap-4 pt-2">
