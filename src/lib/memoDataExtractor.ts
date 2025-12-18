@@ -452,3 +452,134 @@ export function getCriticalRoles(stage: string, existingRoles: string[]): { crit
 
   return { critical: criticalRoles.slice(0, 2), suggested: suggestedRoles.slice(0, 3) };
 }
+
+// Pricing metrics for VC Scale Card
+export interface PricingMetrics {
+  avgMonthlyRevenue: number;
+  currentCustomers: number;
+  currentMRR: number;
+}
+
+/**
+ * Extract pricing metrics from business model, traction sections, and memo responses.
+ * Used to populate the VC Scale Card with dynamic data.
+ */
+export function extractPricingMetrics(
+  businessModelText: string,
+  tractionText: string,
+  memoResponses?: Record<string, string>,
+  unitEconomicsJson?: Record<string, any>
+): PricingMetrics {
+  const defaults: PricingMetrics = {
+    avgMonthlyRevenue: 0,
+    currentCustomers: 0,
+    currentMRR: 0
+  };
+
+  const combinedText = safeLower(`${businessModelText || ''} ${tractionText || ''}`, "extractPricingMetrics.combinedText");
+  
+  // 1. Try structured JSON first (most reliable)
+  if (unitEconomicsJson) {
+    if (unitEconomicsJson.avg_monthly_revenue) {
+      defaults.avgMonthlyRevenue = parseFloat(unitEconomicsJson.avg_monthly_revenue);
+    }
+    if (unitEconomicsJson.current_customers) {
+      defaults.currentCustomers = parseInt(unitEconomicsJson.current_customers);
+    }
+    if (unitEconomicsJson.current_mrr) {
+      defaults.currentMRR = parseFloat(unitEconomicsJson.current_mrr);
+    }
+  }
+
+  // 2. Try memo responses (questionnaire answers)
+  if (memoResponses) {
+    // Check for pricing-related questions
+    const pricingAnswer = memoResponses['pricing_model'] || memoResponses['pricing'] || '';
+    const revenueAnswer = memoResponses['revenue'] || memoResponses['current_revenue'] || '';
+    const customersAnswer = memoResponses['customers'] || memoResponses['current_customers'] || memoResponses['traction'] || '';
+    
+    // Extract monthly price from pricing answer
+    if (!defaults.avgMonthlyRevenue && pricingAnswer) {
+      const priceMatch = pricingAnswer.match(/\$?([\d,]+)(?:\s*(?:\/|per)\s*month)/i) ||
+                         pricingAnswer.match(/€?([\d,]+)(?:\s*(?:\/|per)\s*month)/i) ||
+                         pricingAnswer.match(/monthly[:\s]+\$?([\d,]+)/i);
+      if (priceMatch) {
+        defaults.avgMonthlyRevenue = parseFloat(priceMatch[1].replace(/,/g, ''));
+      }
+    }
+
+    // Extract customer count
+    if (!defaults.currentCustomers && customersAnswer) {
+      const customerMatch = customersAnswer.match(/(\d+)\s*(?:paying\s*)?(?:customers?|clients?|users?)/i) ||
+                           customersAnswer.match(/(\d+)\s*companies/i);
+      if (customerMatch) {
+        defaults.currentCustomers = parseInt(customerMatch[1]);
+      }
+    }
+
+    // Extract MRR from revenue answer
+    if (!defaults.currentMRR && revenueAnswer) {
+      const mrrMatch = revenueAnswer.match(/\$?([\d,]+)\s*mrr/i) ||
+                      revenueAnswer.match(/mrr[:\s]+\$?([\d,]+)/i) ||
+                      revenueAnswer.match(/€?([\d,]+)\s*mrr/i);
+      if (mrrMatch) {
+        defaults.currentMRR = parseFloat(mrrMatch[1].replace(/,/g, ''));
+      }
+    }
+  }
+
+  // 3. Extract from narrative text as fallback
+  
+  // Extract ACV/monthly price
+  if (!defaults.avgMonthlyRevenue) {
+    // ACV patterns (annual contract value - divide by 12 for monthly)
+    const acvMatch = combinedText.match(/\$?([\d,]+)[k]?\s*acv/i) ||
+                    combinedText.match(/€([\d,]+)[k]?\s*acv/i) ||
+                    combinedText.match(/acv[:\s]+\$?([\d,]+)/i);
+    if (acvMatch) {
+      let acv = parseFloat(acvMatch[1].replace(/,/g, ''));
+      if (combinedText.includes('k acv') || acvMatch[0].includes('k')) acv *= 1000;
+      defaults.avgMonthlyRevenue = Math.round(acv / 12);
+    }
+    
+    // Direct monthly price patterns
+    if (!defaults.avgMonthlyRevenue) {
+      const monthlyMatch = combinedText.match(/\$?([\d,]+)(?:\s*(?:\/|per)\s*month)/i) ||
+                          combinedText.match(/€([\d,]+)(?:\s*(?:\/|per)\s*month)/i) ||
+                          combinedText.match(/monthly[:\s]+[\$€]?([\d,]+)/i);
+      if (monthlyMatch) {
+        defaults.avgMonthlyRevenue = parseFloat(monthlyMatch[1].replace(/,/g, ''));
+      }
+    }
+  }
+  
+  // Extract customer count
+  if (!defaults.currentCustomers) {
+    const customerMatch = combinedText.match(/(\d+)\s*(?:paying\s*)?(?:enterprise\s*)?customers?/i) ||
+                         combinedText.match(/(\d+)\s*(?:paying\s*)?clients?/i) ||
+                         combinedText.match(/(\d+)\s*(?:paying\s*)?companies/i) ||
+                         combinedText.match(/serves?\s*(\d+)/i);
+    if (customerMatch) {
+      defaults.currentCustomers = parseInt(customerMatch[1]);
+    }
+  }
+  
+  // Extract MRR
+  if (!defaults.currentMRR) {
+    const mrrMatch = combinedText.match(/\$?([\d,]+)[k]?\s*mrr/i) ||
+                    combinedText.match(/€([\d,]+)[k]?\s*mrr/i) ||
+                    combinedText.match(/mrr[:\s]+[\$€]?([\d,]+)/i);
+    if (mrrMatch) {
+      let mrr = parseFloat(mrrMatch[1].replace(/,/g, ''));
+      if (combinedText.includes('k mrr') || mrrMatch[0].includes('k')) mrr *= 1000;
+      defaults.currentMRR = mrr;
+    }
+  }
+
+  // 4. Calculate MRR from customers × monthly price if we have both but no MRR
+  if (!defaults.currentMRR && defaults.avgMonthlyRevenue > 0 && defaults.currentCustomers > 0) {
+    defaults.currentMRR = defaults.avgMonthlyRevenue * defaults.currentCustomers;
+  }
+
+  return defaults;
+}
