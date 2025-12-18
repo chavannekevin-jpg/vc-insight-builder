@@ -349,9 +349,9 @@ const SampleMemo = () => {
               // Section type detection
               const titleLower = safeTitle(section.title).toLowerCase();
               const isProblemSection = titleLower.includes('problem');
-              const isCompetitionSection = section.title === 'Competition' || titleLower.includes('competition');
-              const isTeamSection = section.title === 'Team' || titleLower.includes('team');
-              const isMarketSection = section.title === 'Market' || titleLower.includes('market');
+              const isCompetitionSection = safeTitle(section.title) === 'Competition' || titleLower.includes('competition');
+              const isTeamSection = safeTitle(section.title) === 'Team' || titleLower.includes('team');
+              const isMarketSection = safeTitle(section.title) === 'Market' || titleLower.includes('market');
               const isBusinessSection = titleLower.includes('business');
               const isThesisSection = titleLower.includes('thesis');
               const isVisionSection = titleLower.includes('vision');

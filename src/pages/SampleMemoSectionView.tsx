@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { safeTitle } from "@/lib/stringUtils";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { MemoSection } from "@/components/memo/MemoSection";
@@ -405,7 +406,7 @@ export default function SampleMemoSectionView() {
 
   // Regular section rendering (Section 1+)
   // Section type detection
-  const titleLower = currentSection!.title.toLowerCase();
+  const titleLower = safeTitle(currentSection!.title).toLowerCase();
   const isProblemSection = titleLower.includes('problem');
   const isTeamSection = titleLower.includes('team');
   const isMarketSection = titleLower.includes('market');

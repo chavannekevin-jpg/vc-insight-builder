@@ -10,10 +10,19 @@ export const safeText = (val: unknown): string => {
   if (typeof val === 'number') return String(val);
   if (typeof val === 'boolean') return String(val);
   if (typeof val === 'object') {
+    // Handle objects with 'text' property (AI sometimes returns { text: "..." })
+    if ('text' in val && typeof (val as { text: unknown }).text === 'string') {
+      return (val as { text: string }).text;
+    }
     console.warn('safeText received object instead of string:', val);
     return '';
   }
-  return String(val);
+  // Fallback for any other type
+  try {
+    return String(val);
+  } catch {
+    return '';
+  }
 };
 
 // Safely get an array, returning empty array if invalid
