@@ -158,30 +158,28 @@ export default function MemoSectionView() {
               if (!toolsMap[sectionName]) {
                 toolsMap[sectionName] = {};
               }
-              const aiData = tool.ai_generated_data as Record<string, any> || {};
+              let aiData = tool.ai_generated_data as Record<string, any> || {};
               const userOverrides = tool.user_overrides as Record<string, any> || {};
               
-              // Check if data is already wrapped with aiGenerated (old format from DB)
-              const isAlreadyWrapped = aiData.aiGenerated !== undefined;
+              // CRITICAL: Unwrap double-wrapped data from AI hallucination
+              // AI sometimes wraps response in { aiGenerated: {...}, dataSource: "..." } despite instructions
+              if (aiData.aiGenerated !== undefined && typeof aiData.aiGenerated === 'object') {
+                console.log(`Unwrapping double-wrapped data for ${tool.tool_name}`);
+                aiData = aiData.aiGenerated;
+              }
               
-              // Tools that use direct merged data format
+              // Tools that use direct merged data format (not EditableTool pattern)
               const directMergeTools = ["sectionScore", "benchmarks", "caseStudy", "vcInvestmentLogic", "actionPlan90Day", "leadInvestorRequirements"];
               
               if (directMergeTools.includes(tool.tool_name)) {
-                // Direct merge format
+                // Direct merge format - data used as-is
                 (toolsMap[sectionName] as any)[tool.tool_name] = {
                   ...aiData,
                   ...userOverrides,
                   dataSource: tool.data_source || "ai-complete"
                 };
-              } else if (isAlreadyWrapped) {
-                // Already wrapped - just add userOverrides at top level
-                (toolsMap[sectionName] as any)[tool.tool_name] = {
-                  ...aiData,
-                  userOverrides: userOverrides
-                };
               } else {
-                // Raw data - wrap with aiGenerated
+                // EditableTool pattern - wrap raw data with aiGenerated
                 (toolsMap[sectionName] as any)[tool.tool_name] = {
                   aiGenerated: aiData,
                   userOverrides: userOverrides,

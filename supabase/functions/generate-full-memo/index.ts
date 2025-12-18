@@ -223,7 +223,14 @@ async function generateSectionToolData(
             content: `You are a VC analyst generating structured analysis tools for the ${sectionName} section of an investment memo. 
 Generate SPECIFIC, TAILORED data for ${companyName}, a ${companyStage} ${companyCategory || 'startup'}. 
 DO NOT use generic examples or templates. All content must be specifically relevant to this company.
-Return valid JSON only. No markdown formatting.`,
+
+CRITICAL OUTPUT RULES:
+1. Return valid JSON only. No markdown formatting.
+2. DO NOT wrap the response in "aiGenerated" or "data" or any wrapper object.
+3. DO NOT add "dataSource" or any metadata fields - just return the raw data structure.
+4. For actionPlan90Day.actions, use EXACT timeline values: "Week 1-2", "Week 3-4", "Month 2", "Month 3"
+5. For actionPlan90Day.actions, use EXACT priority values (lowercase): "critical", "important", "nice-to-have"
+6. For actionPlan90Day.actions, use "metric" field (not "outcome") for success metrics`,
           },
           {
             role: "user",
@@ -341,9 +348,10 @@ Return JSON:
   },
   "actionPlan90Day": {
     "actions": [
-      {"action": "Specific action for ${companyName}", "timeline": "Week 1-2", "priority": "Critical|High|Medium", "outcome": "Expected result"},
-      {"action": "Another specific action", "timeline": "Week 3-4", "priority": "High", "outcome": "Expected result"},
-      {"action": "Third action", "timeline": "Month 2", "priority": "Medium", "outcome": "Expected result"}
+      {"action": "Specific action for ${companyName}", "timeline": "Week 1-2", "priority": "critical", "metric": "Expected success metric"},
+      {"action": "Another specific action", "timeline": "Week 3-4", "priority": "important", "metric": "Expected success metric"},
+      {"action": "Third action", "timeline": "Month 2", "priority": "nice-to-have", "metric": "Expected success metric"},
+      {"action": "Fourth action", "timeline": "Month 3", "priority": "important", "metric": "Expected success metric"}
     ]
   },
   "caseStudy": {
@@ -383,7 +391,7 @@ Return JSON:
 {
   "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
-  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
   "technicalDefensibility": {
     "defensibilityScore": 1-10,
@@ -418,7 +426,7 @@ Return JSON:
 {
   "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
-  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
   "bottomsUpTAM": {
     "targetSegments": [
@@ -454,7 +462,7 @@ Return JSON:
 {
   "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
-  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company that won against competitors in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
   "competitorChessboard": {
     "competitors": [
@@ -484,7 +492,7 @@ Return JSON:
 {
   "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
-  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company with relevant founder background in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
   "credibilityGapAnalysis": {
     "expectedSkills": ["Skills needed for ${companyCategory} success"],
@@ -511,7 +519,7 @@ Return JSON:
 {
   "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
-  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company with similar business model in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
   "modelStressTest": {
     "scenarios": [
@@ -545,7 +553,7 @@ Return JSON:
 {
   "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
-  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company with relevant traction story in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
   "tractionDepthTest": {
     "tractionType": "Founder-led|Discount-driven|Repeatable|Viral",
@@ -576,7 +584,7 @@ Return JSON:
 {
   "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
-  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company with inspiring vision in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
   "vcMilestoneMap": {
     "milestones": [

@@ -8,6 +8,73 @@ interface Section90DayPlanProps {
   sectionName: string;
 }
 
+// Normalize various timeline formats to expected values
+const normalizeTimeline = (timeline: unknown): string => {
+  const t = safeText(timeline).toLowerCase().trim();
+  
+  // Direct matches (case-insensitive)
+  if (t === "week 1-2" || t === "weeks 1-2" || t === "week 1" || t === "week 2") return "Week 1-2";
+  if (t === "week 3-4" || t === "weeks 3-4" || t === "week 3" || t === "week 4") return "Week 3-4";
+  if (t === "month 2" || t === "month2") return "Month 2";
+  if (t === "month 3" || t === "month3") return "Month 3";
+  
+  // Handle "Days X-Y" formats
+  if (t.includes("day")) {
+    const nums = t.match(/\d+/g)?.map(Number) || [];
+    if (nums.length >= 1) {
+      const maxDay = Math.max(...nums);
+      if (maxDay <= 14) return "Week 1-2";
+      if (maxDay <= 30) return "Week 3-4";
+      if (maxDay <= 60) return "Month 2";
+      return "Month 3";
+    }
+  }
+  
+  // Handle "X weeks" or "X-Y weeks" formats
+  if (t.includes("week")) {
+    const nums = t.match(/\d+/g)?.map(Number) || [];
+    if (nums.length >= 1) {
+      const maxWeek = Math.max(...nums);
+      if (maxWeek <= 2) return "Week 1-2";
+      if (maxWeek <= 4) return "Week 3-4";
+      if (maxWeek <= 8) return "Month 2";
+      return "Month 3";
+    }
+  }
+  
+  // Handle "X months" format
+  if (t.includes("month")) {
+    const nums = t.match(/\d+/g)?.map(Number) || [];
+    if (nums.length >= 1) {
+      const month = nums[0];
+      if (month <= 1) return "Week 3-4";
+      if (month <= 2) return "Month 2";
+      return "Month 3";
+    }
+  }
+  
+  // Default to Month 2 for unclear formats
+  return "Month 2";
+};
+
+// Normalize priority values to expected lowercase format
+const normalizePriority = (priority: unknown): string => {
+  const p = safeText(priority).toLowerCase().trim();
+  
+  if (p === "critical" || p === "high" || p === "urgent") return "critical";
+  if (p === "important" || p === "medium" || p === "moderate") return "important";
+  if (p === "nice-to-have" || p === "low" || p === "optional") return "nice-to-have";
+  
+  return "important"; // Default
+};
+
+// Get metric from action, falling back to outcome field
+const getMetric = (action: SectionActionItem): string => {
+  if (action?.metric) return safeText(action.metric);
+  if ((action as any)?.outcome) return safeText((action as any).outcome);
+  return "Track progress";
+};
+
 export const Section90DayPlan = ({ plan, sectionName }: Section90DayPlanProps) => {
   // Early return if data is invalid
   if (!plan || typeof plan !== 'object') {
@@ -20,7 +87,7 @@ export const Section90DayPlan = ({ plan, sectionName }: Section90DayPlanProps) =
   }
 
   const getPriorityStyle = (priority: unknown) => {
-    const p = safeText(priority);
+    const p = normalizePriority(priority);
     switch (p) {
       case "critical":
         return {
@@ -48,8 +115,9 @@ export const Section90DayPlan = ({ plan, sectionName }: Section90DayPlanProps) =
 
   const timelineOrder = ["Week 1-2", "Week 3-4", "Month 2", "Month 3"];
   
+  // Group actions by normalized timeline
   const groupedActions = timelineOrder.reduce((acc, timeline) => {
-    acc[timeline] = safeActions.filter(a => safeText(a?.timeline) === timeline);
+    acc[timeline] = safeActions.filter(a => normalizeTimeline(a?.timeline) === timeline);
     return acc;
   }, {} as Record<string, SectionActionItem[]>);
 
@@ -106,7 +174,7 @@ export const Section90DayPlan = ({ plan, sectionName }: Section90DayPlanProps) =
                           <div className="flex items-center gap-2 mt-1">
                             <Target className="w-3 h-3 text-muted-foreground" />
                             <span className="text-xs text-muted-foreground">
-                              Success metric: {safeText(action?.metric)}
+                              Success metric: {getMetric(action)}
                             </span>
                           </div>
                         </div>
@@ -115,7 +183,7 @@ export const Section90DayPlan = ({ plan, sectionName }: Section90DayPlanProps) =
                           style.bg,
                           style.text
                         )}>
-                          {safeText(action?.priority)}
+                          {normalizePriority(action?.priority)}
                         </span>
                       </div>
                     </div>
