@@ -49,8 +49,8 @@ serve(async (req) => {
       logStep("Found existing customer", { customerId });
     }
 
-    // Base price ID for Investment Memo (€29.99)
-    const priceId = "price_1SdrXTBWC1HPYGJSDL5DUYDu";
+    // Base price ID for Investment Memo (€59.99 full price)
+    const priceId = "price_1SfVPOBWC1HPYGJSlJ0MZpL9";
     
     // Build line items
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
