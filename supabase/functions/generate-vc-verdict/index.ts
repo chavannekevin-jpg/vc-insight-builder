@@ -98,31 +98,31 @@ Return ONLY valid JSON:
   "icStoppingPoint": "Market" | "Team" | "Traction" | "Business Model" | "Competition",
   "concerns": [
     {
-      "text": "First deal-killer - be VERY specific to what they claimed. Reference their actual statements.",
+      "text": "First deal-killer - be VERY specific to what they claimed.",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "vcQuote": "The exact dismissive phrase a VC might say internally. Be specific to their pitch.",
-      "teaserLine": "MUST be a full sentence starting with 'Partners' that references something SPECIFIC about THIS company. Examples: 'Partners raised questions about the revenue model—the unit economics don't survive basic scenario modeling.' or 'Partners noted a fundamental tension in the go-to-market—the sales motion contradicts the stated ACV targets.' MAKE IT SPECIFIC TO THIS PITCH."
+      "vcQuote": "The exact dismissive phrase a VC might say internally.",
+      "teaserLine": "COMPLETE sentence starting with 'Partners' (NOT 'Partner A/B/C'—use 'Partners' as a collective). Must be specific to THIS company. Good examples: 'Partners raised concerns about the sales cycle length—enterprise deals take 9 months but runway only supports 6.' or 'Partners questioned the market sizing—the bottoms-up calculation suggests a $50M TAM, not $2B.'"
     },
     {
-      "text": "Second deal-killer - different dimension. Focus on structural failure specific to THIS pitch.",
+      "text": "Second deal-killer - different dimension.",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "vcQuote": "Another internal VC quote specific to their pitch.",
-      "teaserLine": "Another 'Partners' sentence SPECIFIC to this company. Reference their claims. Example: 'Partners questioned whether the market fundamentals support the valuation thesis—the bottoms-up math doesn't work.'"
+      "vcQuote": "Internal VC quote.",
+      "teaserLine": "COMPLETE sentence starting with 'Partners'. NEVER use 'Partner A/B/C/D'. Example: 'Partners noted the competitive moat relies entirely on execution speed—that is not defensible.'"
     },
     {
-      "text": "Third concern - hint at deeper systemic issues in THIS pitch",
+      "text": "Third concern",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "teaserLine": "Third 'Partners' sentence SPECIFIC to this company. Example: 'Partners flagged a gap in the competitive positioning—the stated differentiation doesn't hold under scrutiny.'"
+      "teaserLine": "COMPLETE sentence starting with 'Partners'. Example: 'Partners flagged that the unit economics require 3x current ACV to work.'"
     },
     {
-      "text": "Fourth concern if applicable - SPECIFIC to their pitch",
+      "text": "Fourth concern if applicable",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "teaserLine": "Fourth 'Partners' sentence. MUST reference something specific from their pitch."
+      "teaserLine": "COMPLETE sentence starting with 'Partners'. Be specific to their pitch."
     },
     {
-      "text": "Fifth concern if applicable - SPECIFIC to their pitch",
+      "text": "Fifth concern if applicable",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "teaserLine": "Fifth 'Partners' sentence. MUST reference something specific from their pitch."
+      "teaserLine": "COMPLETE sentence starting with 'Partners'. Be specific to their pitch."
     }
   ],
   "strengths": [

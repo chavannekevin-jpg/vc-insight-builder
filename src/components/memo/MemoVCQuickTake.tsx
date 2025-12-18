@@ -33,39 +33,58 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
     return concern?.text || '';
   };
 
-  // Helper to get teaser line for locked concerns - generates meaningful text from concern data
+  // Helper to get teaser line for locked concerns - generates complete sentences
   const getTeaserLine = (concern: string | ConcernObject): string => {
-    // If we have a proper teaserLine, use it
-    if (typeof concern === 'object' && concern?.teaserLine) {
-      return concern.teaserLine;
-    }
-    
-    // Extract meaningful text from the concern itself
-    const concernText = typeof concern === 'string' ? concern : concern?.text || '';
     const category = typeof concern === 'object' ? concern?.category : '';
     
-    if (concernText) {
-      // Generate a teaser from the concern text - take key phrases
-      const words = concernText.split(' ');
-      if (words.length > 6) {
-        // Extract first meaningful chunk and create intrigue
-        const preview = words.slice(0, 8).join(' ');
-        const categoryLabel = category ? ` in ${category.replace('_', ' ')}` : '';
-        return `Partners raised structural concerns${categoryLabel}—${preview}...`;
-      }
-      return `Partners flagged an issue here—${concernText}`;
+    // If we have a proper teaserLine, clean it up and use it
+    if (typeof concern === 'object' && concern?.teaserLine) {
+      let teaser = concern.teaserLine;
+      // Clean up any "Partner A/B/C/D" patterns - replace with "Partners"
+      teaser = teaser.replace(/Partner [A-Z] (raised|noted|observed|asserted|questioned|flagged|identified|explained|pointed out)[:\s]*/gi, 'Partners $1 that ');
+      teaser = teaser.replace(/Partner [A-Z][:\s]*/gi, 'Partners noted that ');
+      return teaser;
     }
     
-    // Fallback with category context
-    const categoryLabels: Record<string, string> = {
-      'market': 'Partners questioned the market fundamentals—the sizing narrative doesn\'t survive scrutiny.',
-      'team': 'Partners raised concerns about team-market fit—the background doesn\'t match the problem.',
-      'business_model': 'Partners flagged unit economics issues—the revenue model has structural gaps.',
-      'traction': 'Partners noted traction gaps—the validation evidence doesn\'t support the claims.',
-      'competition': 'Partners identified competitive positioning issues—the moat narrative doesn\'t hold.'
+    // Category-based complete sentences for fallback
+    const categoryTeasers: Record<string, string[]> = {
+      'market': [
+        'Partners questioned whether the market sizing survives bottoms-up analysis.',
+        'Partners raised concerns about the TAM calculation methodology.',
+        'Partners noted the addressable market may be smaller than presented.'
+      ],
+      'team': [
+        'Partners questioned the founder-market fit for this specific problem.',
+        'Partners raised concerns about the team composition for this stage.',
+        'Partners noted gaps in relevant domain experience.'
+      ],
+      'business_model': [
+        'Partners flagged structural issues with the unit economics.',
+        'Partners questioned whether the revenue model scales efficiently.',
+        'Partners noted the margin structure may not support growth.'
+      ],
+      'traction': [
+        'Partners questioned whether current traction validates the core hypothesis.',
+        'Partners noted the customer evidence does not yet support the narrative.',
+        'Partners raised concerns about the velocity of customer acquisition.'
+      ],
+      'competition': [
+        'Partners questioned the sustainability of the competitive positioning.',
+        'Partners noted the differentiation may not hold against incumbents.',
+        'Partners raised concerns about defensibility of the moat.'
+      ]
     };
     
-    return categoryLabels[category || ''] || 'Partners identified additional structural concerns in this area.';
+    const options = categoryTeasers[category || ''] || [
+      'Partners identified structural concerns that require deeper analysis.',
+      'Partners raised questions about fundamental assumptions in the pitch.',
+      'Partners noted areas that need clarification before proceeding.'
+    ];
+    
+    // Use a deterministic selection based on concern text to avoid randomness
+    const concernText = typeof concern === 'string' ? concern : concern?.text || '';
+    const index = concernText.length % options.length;
+    return options[index];
   };
   
   // Safely extract values with fallbacks
