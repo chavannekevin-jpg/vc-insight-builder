@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.84.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { companyName, companyDescription, stage, category, responses, deckParsed, forcedFounderProfile } = await req.json();
+    const { companyId, companyName, companyDescription, stage, category, responses, deckParsed, forcedFounderProfile } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -31,6 +32,48 @@ serve(async (req) => {
     const solutionDescription = getResponse('solution_description');
     const distributionStrategy = getResponse('distribution_strategy');
     const whyNow = getResponse('why_now');
+
+    // Fetch memo content if available (for tailor-made concerns)
+    let memoSections: Record<string, any> = {};
+    let hasMemoContent = false;
+    
+    if (companyId) {
+      const supabaseClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      );
+      
+      const { data: memo } = await supabaseClient
+        .from("memos")
+        .select("structured_content")
+        .eq("company_id", companyId)
+        .eq("status", "completed")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (memo?.structured_content) {
+        hasMemoContent = true;
+        const content = memo.structured_content as any;
+        
+        // Extract key insights from each section
+        const sectionNames = ['Problem', 'Solution', 'Market', 'Competition', 'Team', 'Business Model', 'Traction', 'Vision'];
+        sectionNames.forEach(name => {
+          const section = content[name];
+          if (section) {
+            memoSections[name] = {
+              score: section.score,
+              headline: section.headline,
+              vcSummary: section.vcReflection?.summary || section.vcSummary,
+              concerns: section.vcReflection?.concerns || [],
+              questions: section.vcReflection?.questions || []
+            };
+          }
+        });
+        
+        console.log('Loaded memo content for', companyName, '- sections:', Object.keys(memoSections));
+      }
+    }
 
     // Use forced profile if provided, otherwise detect from signals
     const founderProfileSignals = forcedFounderProfile 
@@ -142,6 +185,30 @@ Return ONLY valid JSON:
   "hiddenIssuesCount": 8
 }`;
 
+    // Build memo analysis context if available
+    let memoAnalysisContext = '';
+    if (hasMemoContent && Object.keys(memoSections).length > 0) {
+      memoAnalysisContext = `\n\n=== DEEP ANALYSIS FROM INVESTMENT MEMO ===
+Use these specific insights to craft TAILOR-MADE concerns with concrete details:
+
+`;
+      Object.entries(memoSections).forEach(([sectionName, data]: [string, any]) => {
+        memoAnalysisContext += `\n### ${sectionName} Section (Score: ${data.score || 'N/A'}/100)`;
+        if (data.headline) memoAnalysisContext += `\nHeadline: ${data.headline}`;
+        if (data.vcSummary) memoAnalysisContext += `\nVC Assessment: ${data.vcSummary}`;
+        if (data.concerns && data.concerns.length > 0) {
+          memoAnalysisContext += `\nConcerns identified: ${data.concerns.slice(0, 3).join('; ')}`;
+        }
+        memoAnalysisContext += '\n';
+      });
+      
+      memoAnalysisContext += `
+CRITICAL: Use the SPECIFIC concerns and scores above to craft your verdict and teaserLines.
+Each teaserLine must reference ACTUAL issues found in the analysis above.
+Example: If Market section shows concern about "ICP spans multiple industries", your teaserLine should be:
+"Partners flagged the ICP definition—spanning fintech, retail, and healthcare means no focused wedge strategy."`;
+    }
+
     const userPrompt = `STARTUP FOR BRUTAL ASSESSMENT:
 
 Company: ${companyName || 'Unnamed Startup'}
@@ -149,10 +216,12 @@ Stage: ${stage || 'Early'}
 Category: ${category || 'Technology'}
 
 ${contextParts.length > 0 ? `WHAT THEY CLAIM:\n${contextParts.join('\n\n')}` : `LIMITED INFO: They haven't even prepared proper materials. That alone is a red flag.`}
+${memoAnalysisContext}
 
 REMEMBER:
 - Be brutal. Focus on structural inevitability.
 - Make criticisms feel anchored to what they actually said
+- ${hasMemoContent ? 'USE THE SPECIFIC CONCERNS FROM THE MEMO ANALYSIS ABOVE for teaserLines' : 'Derive concerns from what they claimed'}
 - Show the gap between current narrative and what would work
 - Include the narrative transformation (before/after)
 - Detect and respond to founder profile: ${founderProfileSignals.profile}

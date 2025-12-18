@@ -10,6 +10,7 @@ interface Company {
   has_premium?: boolean;
   deck_url?: string;
   founder_id: string;
+  memo_content_generated?: boolean;
 }
 
 interface CompanyData {
@@ -19,6 +20,7 @@ interface CompanyData {
   hasPaid: boolean;
   completedQuestions: number;
   totalQuestions: number;
+  memoContentGenerated: boolean;
   isLoading: boolean;
 }
 
@@ -130,6 +132,7 @@ export const useCompany = (userId: string | undefined): CompanyData => {
     hasPaid: paymentData ?? false,
     completedQuestions: questionData?.completed ?? 0,
     totalQuestions: questionData?.total ?? 0,
+    memoContentGenerated: company?.memo_content_generated ?? false,
     isLoading: companyLoading || memoLoading || paymentLoading || questionsLoading,
   };
 };

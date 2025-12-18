@@ -61,6 +61,7 @@ export type Database = {
           generations_used: number
           has_premium: boolean | null
           id: string
+          memo_content_generated: boolean | null
           name: string
           stage: string
           updated_at: string
@@ -80,6 +81,7 @@ export type Database = {
           generations_used?: number
           has_premium?: boolean | null
           id?: string
+          memo_content_generated?: boolean | null
           name: string
           stage: string
           updated_at?: string
@@ -99,6 +101,7 @@ export type Database = {
           generations_used?: number
           has_premium?: boolean | null
           id?: string
+          memo_content_generated?: boolean | null
           name?: string
           stage?: string
           updated_at?: string
