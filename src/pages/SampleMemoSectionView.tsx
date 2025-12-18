@@ -555,7 +555,7 @@ export default function SampleMemoSectionView() {
           {isMarketSection && (
             <div className="space-y-6">
               <MemoVCScaleCard 
-                avgMonthlyRevenue={350}
+                avgMonthlyRevenue={1000}
                 currentCustomers={23}
                 currentMRR={8050}
                 companyName={companyInfo?.name || 'CarbonPrint'}
