@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { safeLower } from "@/lib/stringUtils";
 
 interface Company {
   id: string;
@@ -109,7 +110,7 @@ export const useCompany = (userId: string | undefined): CompanyData => {
         const answer = r.answer?.trim() ?? '';
         if (answer.length < 50) return false;
         // Filter out placeholder answers
-        if (answer.toLowerCase().startsWith('not specified yet')) return false;
+        if (safeLower(answer, "useCompany.answer").startsWith('not specified yet')) return false;
         return true;
       });
       

@@ -5,6 +5,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Safe string helper for edge function
+const safeLower = (val: unknown): string => {
+  if (typeof val === 'string') return val.toLowerCase();
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'object') {
+    const obj = val as Record<string, unknown>;
+    if ('text' in obj) return safeLower(obj.text);
+    if ('value' in obj) return safeLower(obj.value);
+    return '';
+  }
+  return String(val).toLowerCase();
+};
+
 // Social media crawler User-Agent patterns
 const CRAWLER_PATTERNS = [
   'LinkedInBot',
@@ -22,8 +35,9 @@ const CRAWLER_PATTERNS = [
 
 function isCrawler(userAgent: string | null): boolean {
   if (!userAgent) return false;
+  const uaLower = safeLower(userAgent);
   return CRAWLER_PATTERNS.some(pattern => 
-    userAgent.toLowerCase().includes(pattern.toLowerCase())
+    uaLower.includes(safeLower(pattern))
   );
 }
 

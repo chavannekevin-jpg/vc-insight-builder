@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
+import { safeLower } from "@/lib/stringUtils";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -243,8 +244,9 @@ const Admin = () => {
   };
 
   const filteredCompanies = companies.filter((company) => {
-    const matchesSearch = company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.founder_email.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = safeLower(searchTerm, "Admin.search");
+    const matchesSearch = safeLower(company.name, "Admin.name").includes(searchLower) ||
+      safeLower(company.founder_email, "Admin.email").includes(searchLower);
     const matchesStage = stageFilter === "all" || company.stage === stageFilter;
     return matchesSearch && matchesStage;
   });
