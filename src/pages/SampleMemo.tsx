@@ -2,8 +2,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, Sparkles, Share2, Linkedin } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { MemoSection } from "@/components/memo/MemoSection";
 import { MemoParagraph } from "@/components/memo/MemoParagraph";
 import { MemoHighlight } from "@/components/memo/MemoHighlight";
@@ -25,6 +23,7 @@ import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
 import type { MemoStructuredContent, MemoVCQuickTake as MemoVCQuickTakeType, MemoParagraph as MemoParagraphType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
+import { DEMO_MEMOS } from "@/data/acceleratorDemo/demoMemos";
 
 // Import new VC tools
 import {
@@ -128,7 +127,14 @@ const SAMPLE_TEAM_EXTRACTED: ExtractedTeamMember[] = [
   { name: "Jennifer Liu", role: "COO" }
 ];
 
-const DEMO_COMPANY_ID = '00000000-0000-0000-0000-000000000001';
+// Sample company info for CarbonPrint demo
+const SAMPLE_COMPANY_INFO = {
+  id: 'demo-carbonprint',
+  name: 'CarbonPrint',
+  stage: 'Pre-seed',
+  category: 'Climate Tech',
+  description: 'AI-powered carbon footprint tracking for enterprise supply chains'
+};
 
 const SampleMemo = () => {
   const navigate = useNavigate();
@@ -141,7 +147,7 @@ const SampleMemo = () => {
   const [shouldRedirectToWizard, setShouldRedirectToWizard] = useState(false);
 
   useEffect(() => {
-    fetchMemo();
+    loadMemo();
   }, [viewMode]);
   
   // Redirect to wizard mode if not in full view mode
@@ -151,37 +157,35 @@ const SampleMemo = () => {
     }
   }, [shouldRedirectToWizard, navigate]);
 
-  const fetchMemo = async () => {
-    try {
-      setLoading(true);
-
-      // Fetch the pre-generated demo memo
-      const { data: existingMemo, error: fetchError } = await supabase
-        .from('memos')
-        .select('structured_content, company:companies(*)')
-        .eq('company_id', DEMO_COMPANY_ID)
-        .maybeSingle();
-
-      if (fetchError) throw fetchError;
-
-      if (existingMemo && existingMemo.structured_content) {
-        // Check if we should redirect to wizard mode
-        if (viewMode !== 'full') {
-          setShouldRedirectToWizard(true);
-          setLoading(false);
-          return;
-        }
-        setMemoContent(sanitizeMemoContent(existingMemo.structured_content));
-        setCompanyInfo(existingMemo.company);
-      } else {
-        toast.error('Sample memo not yet generated. Please contact support.');
-      }
-    } catch (error: any) {
-      console.error('Error loading sample memo:', error);
-      toast.error('Failed to load sample memo');
-    } finally {
+  const loadMemo = () => {
+    setLoading(true);
+    
+    // Check if we should redirect to wizard mode
+    if (viewMode !== 'full') {
+      setShouldRedirectToWizard(true);
       setLoading(false);
+      return;
     }
+    
+    // Use hardcoded demo data from demoMemos.ts
+    const demoData = DEMO_MEMOS["demo-carbonprint"];
+    
+    if (demoData) {
+      // Convert DemoMemoData format to MemoStructuredContent format
+      const structuredContent: MemoStructuredContent = {
+        vcQuickTake: demoData.vcQuickTake,
+        sections: demoData.sections.map(section => ({
+          title: section.title,
+          paragraphs: [{ text: section.narrative, emphasis: "narrative" as const }],
+          keyPoints: section.keyPoints
+        }))
+      };
+      
+      setMemoContent(structuredContent);
+      setCompanyInfo(SAMPLE_COMPANY_INFO);
+    }
+    
+    setLoading(false);
   };
 
   if (loading) {
