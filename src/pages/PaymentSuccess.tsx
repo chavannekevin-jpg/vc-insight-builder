@@ -33,9 +33,9 @@ export default function PaymentSuccess() {
 
         if (data?.success) {
           setVerified(true);
-          // Auto-redirect to memo after successful verification
+          // Auto-redirect to portal to complete questions after payment
           setTimeout(() => {
-            navigate(`/analysis?companyId=${companyId}&view=full`);
+            navigate(`/portal?companyId=${companyId}`);
           }, 2000);
         } else {
           setError(data?.error || "Payment verification failed");
@@ -110,7 +110,7 @@ export default function PaymentSuccess() {
               Payment Successful!
             </h1>
             <p className="text-muted-foreground">
-              Thank you for your purchase. Redirecting you to your analysis...
+              Thank you for your purchase. Let's build your full analysis...
             </p>
           </div>
 
@@ -121,11 +121,11 @@ export default function PaymentSuccess() {
 
           <div className="pt-4 space-y-3">
             <Button 
-              onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
+              onClick={() => navigate(`/portal?companyId=${companyId}`)}
               size="lg"
               className="w-full gradient-primary shadow-glow hover-neon-pulse font-bold"
             >
-              View Your Analysis
+              Complete Your Profile
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
             
