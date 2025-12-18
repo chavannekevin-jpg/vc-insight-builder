@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
+import { safeTitle } from "@/lib/stringUtils";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { MemoSection } from "@/components/memo/MemoSection";
@@ -22,9 +21,9 @@ import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { ChevronLeft, ChevronRight, Grid, BookOpen, ArrowLeft, Sparkles, Rocket, Zap, AlertTriangle, Share2 } from "lucide-react";
-import { toast } from "sonner";
 import type { MemoStructuredContent, MemoParagraph, MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
+import { DEMO_MEMOS } from "@/data/acceleratorDemo/demoMemos";
 
 // Import new VC tools
 import {
