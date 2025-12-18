@@ -35,56 +35,99 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
 
   // Helper to get teaser line for locked concerns - generates complete sentences
   const getTeaserLine = (concern: string | ConcernObject): string => {
-    const category = typeof concern === 'object' ? concern?.category : '';
-    
     // If we have a proper teaserLine, clean it up and use it
     if (typeof concern === 'object' && concern?.teaserLine) {
       let teaser = concern.teaserLine;
       // Clean up any "Partner A/B/C/D" patterns - replace with "Partners"
       teaser = teaser.replace(/Partner [A-Z] (raised|noted|observed|asserted|questioned|flagged|identified|explained|pointed out)[:\s]*/gi, 'Partners $1 that ');
       teaser = teaser.replace(/Partner [A-Z][:\s]*/gi, 'Partners noted that ');
+      // Ensure it ends with a period
+      if (!teaser.endsWith('.') && !teaser.endsWith('?') && !teaser.endsWith('!')) {
+        teaser = teaser + '.';
+      }
       return teaser;
     }
     
-    // Category-based complete sentences for fallback
-    const categoryTeasers: Record<string, string[]> = {
-      'market': [
-        'Partners questioned whether the market sizing survives bottoms-up analysis.',
-        'Partners raised concerns about the TAM calculation methodology.',
-        'Partners noted the addressable market may be smaller than presented.'
-      ],
-      'team': [
-        'Partners questioned the founder-market fit for this specific problem.',
-        'Partners raised concerns about the team composition for this stage.',
-        'Partners noted gaps in relevant domain experience.'
-      ],
-      'business_model': [
-        'Partners flagged structural issues with the unit economics.',
-        'Partners questioned whether the revenue model scales efficiently.',
-        'Partners noted the margin structure may not support growth.'
-      ],
-      'traction': [
-        'Partners questioned whether current traction validates the core hypothesis.',
-        'Partners noted the customer evidence does not yet support the narrative.',
-        'Partners raised concerns about the velocity of customer acquisition.'
-      ],
-      'competition': [
-        'Partners questioned the sustainability of the competitive positioning.',
-        'Partners noted the differentiation may not hold against incumbents.',
-        'Partners raised concerns about defensibility of the moat.'
-      ]
+    // For string concerns (old data) or objects without teaserLine - extract keywords intelligently
+    const concernText = typeof concern === 'string' ? concern : concern?.text || '';
+    const lowerConcern = concernText.toLowerCase();
+    
+    // Extract specific keywords and generate company-specific teasers
+    if (lowerConcern.includes('unit economics') || lowerConcern.includes('economics')) {
+      return 'Partners flagged structural issues with the unit economics model.';
+    }
+    if (lowerConcern.includes('cac') || lowerConcern.includes('acquisition cost')) {
+      return 'Partners questioned the customer acquisition cost trajectory.';
+    }
+    if (lowerConcern.includes('ltv') || lowerConcern.includes('lifetime value')) {
+      return 'Partners noted concerns about the LTV assumptions.';
+    }
+    if (lowerConcern.includes('acv') || lowerConcern.includes('contract value')) {
+      return 'Partners raised questions on the ACV progression.';
+    }
+    if (lowerConcern.includes('burn') || lowerConcern.includes('runway')) {
+      return 'Partners questioned the burn multiple sustainability.';
+    }
+    if (lowerConcern.includes('concentration') || lowerConcern.includes('single customer')) {
+      return 'Partners flagged the customer concentration risk.';
+    }
+    if (lowerConcern.includes('distribution') || lowerConcern.includes('channel')) {
+      return 'Partners questioned the distribution model dependency.';
+    }
+    if (lowerConcern.includes('pricing') || lowerConcern.includes('price')) {
+      return 'Partners raised concerns about pricing power assumptions.';
+    }
+    if (lowerConcern.includes('margin') || lowerConcern.includes('gross margin')) {
+      return 'Partners noted the margin structure requires validation.';
+    }
+    if (lowerConcern.includes('tam') || lowerConcern.includes('market size') || lowerConcern.includes('addressable')) {
+      return 'Partners questioned the market sizing methodology.';
+    }
+    if (lowerConcern.includes('competition') || lowerConcern.includes('competitor')) {
+      return 'Partners identified gaps in the competitive moat thesis.';
+    }
+    if (lowerConcern.includes('moat') || lowerConcern.includes('defensib')) {
+      return 'Partners questioned the defensibility of the positioning.';
+    }
+    if (lowerConcern.includes('traction') || lowerConcern.includes('growth')) {
+      return 'Partners questioned whether traction validates the hypothesis.';
+    }
+    if (lowerConcern.includes('retention') || lowerConcern.includes('churn')) {
+      return 'Partners flagged the retention metrics as inconclusive.';
+    }
+    if (lowerConcern.includes('team') || lowerConcern.includes('founder')) {
+      return 'Partners noted gaps in team-market alignment.';
+    }
+    if (lowerConcern.includes('experience') || lowerConcern.includes('domain')) {
+      return 'Partners questioned the relevant domain expertise.';
+    }
+    if (lowerConcern.includes('gtm') || lowerConcern.includes('go-to-market')) {
+      return 'Partners identified gaps in the go-to-market thesis.';
+    }
+    if (lowerConcern.includes('sales') || lowerConcern.includes('revenue')) {
+      return 'Partners questioned the revenue model scalability.';
+    }
+    if (lowerConcern.includes('product') || lowerConcern.includes('feature')) {
+      return 'Partners raised concerns about product differentiation.';
+    }
+    
+    // Use category if available
+    const category = typeof concern === 'object' ? concern?.category : '';
+    const categoryTeasers: Record<string, string> = {
+      'market': 'Partners questioned the market thesis fundamentals.',
+      'team': 'Partners noted concerns about team composition.',
+      'business_model': 'Partners flagged issues with the business model structure.',
+      'traction': 'Partners questioned the traction evidence.',
+      'competition': 'Partners identified competitive positioning gaps.',
+      'unit_economics': 'Partners flagged the unit economics assumptions.'
     };
     
-    const options = categoryTeasers[category || ''] || [
-      'Partners identified structural concerns that require deeper analysis.',
-      'Partners raised questions about fundamental assumptions in the pitch.',
-      'Partners noted areas that need clarification before proceeding.'
-    ];
+    if (category && categoryTeasers[category]) {
+      return categoryTeasers[category];
+    }
     
-    // Use a deterministic selection based on concern text to avoid randomness
-    const concernText = typeof concern === 'string' ? concern : concern?.text || '';
-    const index = concernText.length % options.length;
-    return options[index];
+    // Final fallback - still sounds specific
+    return 'Partners identified a structural concern in the investment thesis.';
   };
   
   // Safely extract values with fallbacks
