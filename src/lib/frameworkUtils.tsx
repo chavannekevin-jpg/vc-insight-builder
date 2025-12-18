@@ -5,6 +5,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { safeLower } from "@/lib/stringUtils";
 
 // Framework icons for visual callouts
 export const frameworkIcons: Record<string, React.ElementType> = {
@@ -100,16 +101,16 @@ export const frameworkPatterns = [
   /\b(Unit Economics|Market Pull|Defensibility|Venture Scale|Traction|Runway|Burn Rate|PMF|Product-Market Fit)\b/gi,
 ];
 
-export const getFrameworkIcon = (text: string): React.ElementType | null => {
-  const lowerText = text.toLowerCase();
+export const getFrameworkIcon = (text: unknown): React.ElementType | null => {
+  const lowerText = safeLower(text, "getFrameworkIcon");
   for (const [key, icon] of Object.entries(frameworkIcons)) {
     if (lowerText.includes(key)) return icon;
   }
   return null;
 };
 
-export const getFrameworkDefinition = (text: string): string | null => {
-  const lowerText = text.toLowerCase();
+export const getFrameworkDefinition = (text: unknown): string | null => {
+  const lowerText = safeLower(text, "getFrameworkDefinition");
   for (const [key, definition] of Object.entries(frameworkDefinitions)) {
     if (lowerText === key || lowerText.includes(key)) {
       return definition;

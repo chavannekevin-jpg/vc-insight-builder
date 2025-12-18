@@ -1,3 +1,5 @@
+import { safeLower, safeStr } from "@/lib/stringUtils";
+
 // Utility functions to extract structured data from unstructured questionnaire text
 
 export interface MoatScores {
@@ -62,7 +64,7 @@ export function extractMoatScores(competitiveMoatText: string): MoatScores {
     };
   }
 
-  const text = competitiveMoatText.toLowerCase();
+  const text = safeLower(competitiveMoatText, "extractMoatScores.competitiveMoatText");
   const scores: MoatScores = {
     networkEffects: { score: 0, evidence: 'Not mentioned' },
     switchingCosts: { score: 0, evidence: 'Not mentioned' },
@@ -113,7 +115,8 @@ export function extractMoatScores(competitiveMoatText: string): MoatScores {
 }
 
 export function extractTeamMembers(teamStoryText: string): ExtractedTeamMember[] {
-  if (!teamStoryText) return [];
+  const teamText = safeStr(teamStoryText, "extractTeamMembers.teamStoryText");
+  if (!teamText) return [];
 
   const members: ExtractedTeamMember[] = [];
   
@@ -140,7 +143,7 @@ export function extractTeamMembers(teamStoryText: string): ExtractedTeamMember[]
 
   rolePatterns.forEach(pattern => {
     let match;
-    while ((match = pattern.exec(teamStoryText)) !== null) {
+    while ((match = pattern.exec(teamText)) !== null) {
       let name = match[1]?.trim();
       let role = match[2]?.trim();
       
@@ -160,7 +163,7 @@ export function extractTeamMembers(teamStoryText: string): ExtractedTeamMember[]
         name.length <= 50 && 
         /^[A-Z][a-z]+(\s+[A-Z][a-z]+)*$/.test(name);
       
-      if (isValidName && role && !members.some(m => m.name.toLowerCase() === name.toLowerCase())) {
+      if (isValidName && role && !members.some(m => safeLower(m.name) === safeLower(name))) {
         members.push({ name, role });
       }
     }
@@ -169,14 +172,14 @@ export function extractTeamMembers(teamStoryText: string): ExtractedTeamMember[]
   // If no members found with patterns, try to extract from structured text
   if (members.length === 0) {
     // Look for common team section patterns
-    const lines = teamStoryText.split('\n');
+    const lines = teamText.split('\n');
     for (const line of lines) {
       // Simple "Name is the Role" pattern
       const simpleMatch = line.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:is|as)\s+(?:the\s+)?(CEO|CTO|COO|CFO|CMO|CPO|Founder|Co-founder)/i);
       if (simpleMatch) {
         const name = simpleMatch[1].trim();
         const role = simpleMatch[2].trim();
-        if (!members.some(m => m.name.toLowerCase() === name.toLowerCase())) {
+        if (!members.some(m => safeLower(m.name) === safeLower(name))) {
           members.push({ name, role });
         }
       }
@@ -203,7 +206,7 @@ export function extractUnitEconomics(
   }
 
   // Try to extract from text as fallback
-  const combinedText = `${businessModelText || ''} ${tractionText || ''}`.toLowerCase();
+  const combinedText = safeLower(`${businessModelText || ''} ${tractionText || ''}`, "extractUnitEconomics.combinedText");
 
   // Extract LTV
   if (!data.ltv) {
@@ -239,8 +242,8 @@ export function getExitPathData(
   visionAskText: string,
   category: string
 ): ExitPathData {
-  const combinedText = `${tractionText || ''} ${visionAskText || ''}`;
-  
+  const combinedText = safeStr(`${tractionText || ''} ${visionAskText || ''}`, "getExitPathData.combinedText");
+  const combinedLower = combinedText.toLowerCase();
   // Try to extract ARR from text
   let currentARR: number | undefined;
   let projectedARR: number | undefined;
@@ -248,8 +251,8 @@ export function getExitPathData(
   const arrMatch = combinedText.match(/\$?([\d.]+)\s*[mk]?\s*arr/i);
   if (arrMatch) {
     let value = parseFloat(arrMatch[1]);
-    if (combinedText.toLowerCase().includes('k arr')) value *= 1000;
-    if (combinedText.toLowerCase().includes('m arr')) value *= 1000000;
+    if (combinedLower.includes('k arr')) value *= 1000;
+    if (combinedLower.includes('m arr')) value *= 1000000;
     currentARR = value;
   }
 
@@ -259,7 +262,7 @@ export function getExitPathData(
   }
 
   // Revenue multiples by category
-  const categoryLower = category.toLowerCase();
+  const categoryLower = safeLower(category, "getExitPathData.category");
   let revenueMultiple = { low: 5, mid: 10, high: 15 }; // Default SaaS
   
   if (categoryLower.includes('consumer') || categoryLower.includes('b2c')) {
@@ -288,7 +291,7 @@ export function getExitPathData(
 
 // Database of notable exits by category - based on real M&A data
 export function getSimilarExits(category: string): SimilarExit[] {
-  const categoryLower = category.toLowerCase();
+  const categoryLower = safeLower(category, "getSimilarExits.category");
   
   if (categoryLower.includes('climate') || categoryLower.includes('sustainability') || categoryLower.includes('carbon')) {
     return [
@@ -382,7 +385,7 @@ export function getSimilarExits(category: string): SimilarExit[] {
 
 // Get suggested acquirers based on category
 export function getSuggestedAcquirers(category: string): string[] {
-  const categoryLower = category.toLowerCase();
+  const categoryLower = safeLower(category, "getSuggestedAcquirers.category");
   
   if (categoryLower.includes('climate') || categoryLower.includes('sustainability')) {
     return ['Microsoft', 'Salesforce', 'SAP', 'IBM', 'Autodesk'];
@@ -415,12 +418,12 @@ export function getSuggestedAcquirers(category: string): string[] {
 
 // Critical missing roles by stage
 export function getCriticalRoles(stage: string, existingRoles: string[]): { critical: string[]; suggested: string[] } {
-  const stageLower = stage.toLowerCase();
-  const existingLower = existingRoles.map(r => r.toLowerCase());
-  
+  const stageLower = safeLower(stage, "getCriticalRoles.stage");
+  const existingLower = (existingRoles || []).map((r) => safeLower(r, "getCriticalRoles.existingRole"));
+
   let criticalRoles: string[] = [];
   let suggestedRoles: string[] = [];
-  
+
   if (stageLower.includes('pre-seed') || stageLower.includes('idea')) {
     criticalRoles = ['Technical Co-founder', 'Product Lead'];
     suggestedRoles = ['Advisor (Industry Expert)', 'First Engineer'];
@@ -434,21 +437,18 @@ export function getCriticalRoles(stage: string, existingRoles: string[]): { crit
     criticalRoles = ['VP Engineering', 'Head of Sales'];
     suggestedRoles = ['Customer Success', 'Marketing Lead'];
   }
-  
-  // Filter out already filled roles
-  criticalRoles = criticalRoles.filter(role => 
-    !existingLower.some(er => 
-      er.includes(role.toLowerCase().split(' ')[0]) || 
-      role.toLowerCase().includes(er.split(' ')[0])
-    )
-  );
-  
-  suggestedRoles = suggestedRoles.filter(role =>
-    !existingLower.some(er =>
-      er.includes(role.toLowerCase().split(' ')[0]) ||
-      role.toLowerCase().includes(er.split(' ')[0])
-    )
-  );
-  
+
+  const isAlreadyCovered = (neededRole: string) => {
+    const neededLower = safeLower(neededRole);
+    const neededFirst = neededLower.split(' ')[0] || '';
+    return existingLower.some((er) => {
+      const erFirst = (er.split(' ')[0] || '').trim();
+      return (neededFirst && er.includes(neededFirst)) || (erFirst && neededLower.includes(erFirst));
+    });
+  };
+
+  criticalRoles = criticalRoles.filter((role) => !isAlreadyCovered(role));
+  suggestedRoles = suggestedRoles.filter((role) => !isAlreadyCovered(role));
+
   return { critical: criticalRoles.slice(0, 2), suggested: suggestedRoles.slice(0, 3) };
 }

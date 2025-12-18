@@ -21,14 +21,36 @@ function sanitizeJsonString(str: string): string {
     });
 }
 
+// Safe string helpers (AI output sometimes returns objects)
+function safeStr(val: unknown, context?: string): string {
+  if (typeof val === "string") return val;
+  if (val === null || val === undefined) return "";
+  if (typeof val === "number" || typeof val === "boolean") return String(val);
+
+  if (typeof val === "object") {
+    const obj = val as Record<string, unknown>;
+    if ("text" in obj) return safeStr(obj.text, context);
+    if ("value" in obj) return safeStr(obj.value, context);
+    if (context) console.warn(`[safeStr] Expected string in ${context}, got object`, val);
+    return "";
+  }
+
+  if (context) console.warn(`[safeStr] Expected string in ${context}, got ${typeof val}`, val);
+  return "";
+}
+
+function safeLower(val: unknown, context?: string): string {
+  return safeStr(val, context).toLowerCase();
+}
+
 // Helper function to normalize VC questions to enhanced format with contextual rationale
 function normalizeVCQuestions(questions: any[], sectionName?: string): any[] {
   if (!Array.isArray(questions)) return [];
   
   // Generate context-aware fallback rationale based on section
   const getRationale = (question: string, section?: string): string => {
-    const q = question.toLowerCase();
-    const s = (section || '').toLowerCase();
+    const q = safeLower(question, "getRationale.question");
+    const s = safeLower(section || "", "getRationale.section");
     
     if (q.includes('competitor') || q.includes('differentiat') || s.includes('competition')) {
       return "VCs invest in companies that can defend their position. Understanding competitive dynamics reveals whether you have a sustainable advantage or are in a race to the bottom.";
@@ -52,7 +74,7 @@ function normalizeVCQuestions(questions: any[], sectionName?: string): any[] {
   };
   
   const getPreparation = (question: string): string => {
-    const q = question.toLowerCase();
+    const q = safeLower(question, "getPreparation.question");
     
     if (q.includes('why') || q.includes('how')) {
       return "Prepare a clear, specific answer with concrete examples and data. Generic responses will raise red flags about depth of understanding.";
@@ -71,17 +93,21 @@ function normalizeVCQuestions(questions: any[], sectionName?: string): any[] {
   
   return questions.map((q, index) => {
     // If it's already an object with the required properties and they're substantive, return as-is
-    if (typeof q === 'object' && q !== null && q.question) {
-      const hasSubstantiveRationale = q.vcRationale && q.vcRationale.length > 50;
-      const hasSubstantivePrep = q.whatToPrepare && q.whatToPrepare.length > 50;
+    if (typeof q === 'object' && q !== null && (q as any).question) {
+      const questionText = safeStr((q as any).question, "normalizeVCQuestions.object.question");
+      const vcRationaleText = safeStr((q as any).vcRationale, "normalizeVCQuestions.object.vcRationale");
+      const whatToPrepareText = safeStr((q as any).whatToPrepare, "normalizeVCQuestions.object.whatToPrepare");
+
+      const hasSubstantiveRationale = vcRationaleText.length > 50;
+      const hasSubstantivePrep = whatToPrepareText.length > 50;
       
       return {
-        question: q.question,
-        vcRationale: hasSubstantiveRationale ? q.vcRationale : getRationale(q.question, sectionName),
-        whatToPrepare: hasSubstantivePrep ? q.whatToPrepare : getPreparation(q.question)
+        question: questionText || `Key question ${index + 1}`,
+        vcRationale: hasSubstantiveRationale ? vcRationaleText : getRationale(questionText || "", sectionName),
+        whatToPrepare: hasSubstantivePrep ? whatToPrepareText : getPreparation(questionText || "")
       };
     }
-    
+
     // If it's a string, transform to enhanced format with contextual content
     if (typeof q === 'string') {
       return {

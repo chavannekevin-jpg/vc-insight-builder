@@ -1,5 +1,6 @@
 import { Users, AlertTriangle, CheckCircle, UserPlus, Briefcase } from "lucide-react";
 import { ExtractedTeamMember, getCriticalRoles } from "@/lib/memoDataExtractor";
+import { safeLower } from "@/lib/stringUtils";
 
 interface MemoTeamGapCardProps {
   teamMembers: ExtractedTeamMember[];

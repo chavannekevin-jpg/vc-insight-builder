@@ -1,5 +1,6 @@
 import { memo, useMemo } from "react";
 import { AlertTriangle, Eye, TrendingDown, Users, DollarSign, Target, Zap } from "lucide-react";
+import { safeLower, safeStr } from "@/lib/stringUtils";
 
 interface VCFirstImpressionProps {
   responses: Array<{ question_key: string; answer: string | null }>;
@@ -17,7 +18,8 @@ const generateJudgments = (
 ): Array<{ icon: typeof AlertTriangle; judgment: string; severity: "harsh" | "warning" | "concern" }> => {
   const judgments: Array<{ icon: typeof AlertTriangle; judgment: string; severity: "harsh" | "warning" | "concern" }> = [];
   
-  const getResponse = (key: string) => responses.find(r => r.question_key === key)?.answer?.trim();
+  const getResponse = (key: string) =>
+    safeStr(responses.find((r) => r.question_key === key)?.answer, `VCFirstImpression.${key}`).trim();
   
   const problemValidation = getResponse("problem_validation");
   const targetCustomer = getResponse("target_customer");
@@ -26,7 +28,14 @@ const generateJudgments = (
   const competitiveAdvantage = getResponse("competitive_advantage");
   const revenueModel = getResponse("revenue_model");
   const founderBackground = getResponse("founder_background");
-  
+
+  const problemValidationLower = safeLower(problemValidation, "VCFirstImpression.problem_validation");
+  const targetCustomerLower = safeLower(targetCustomer, "VCFirstImpression.target_customer");
+  const marketSizeLower = safeLower(marketSize, "VCFirstImpression.market_size");
+  const tractionLower = safeLower(traction, "VCFirstImpression.current_traction");
+  const competitiveAdvantageLower = safeLower(competitiveAdvantage, "VCFirstImpression.competitive_advantage");
+  const revenueModelLower = safeLower(revenueModel, "VCFirstImpression.revenue_model");
+
   // Problem-based judgments
   if (problemValidation) {
     if (problemValidation.length < 100) {
@@ -35,7 +44,7 @@ const generateJudgments = (
         judgment: `"${companyName}'s problem statement lacks depth. Either they don't understand the pain, or it's not painful enough."`,
         severity: "harsh"
       });
-    } else if (!problemValidation.toLowerCase().includes("customer") && !problemValidation.toLowerCase().includes("user")) {
+    } else if (!problemValidationLower.includes("customer") && !problemValidationLower.includes("user")) {
       judgments.push({
         icon: Users,
         judgment: `"No customer voice in the problem description. Feels like a solution looking for a problem."`,
@@ -46,7 +55,7 @@ const generateJudgments = (
   
   // Target customer judgments
   if (targetCustomer) {
-    if (targetCustomer.toLowerCase().includes("everyone") || targetCustomer.toLowerCase().includes("anyone")) {
+    if (targetCustomerLower.includes("everyone") || targetCustomerLower.includes("anyone")) {
       judgments.push({
         icon: Target,
         judgment: `"'Everyone' is not a target customer. This founder hasn't done the hard work of narrowing focus."`,
@@ -70,7 +79,7 @@ const generateJudgments = (
         judgment: `"No market sizing data. Either they haven't researched it, or the numbers don't support the story."`,
         severity: "harsh"
       });
-    } else if (marketSize.toLowerCase().includes("trillion")) {
+    } else if (marketSizeLower.includes("trillion")) {
       judgments.push({
         icon: TrendingDown,
         judgment: `"Trillion-dollar TAM claim. Classic red flag for unrealistic market thinking."`,
@@ -88,7 +97,7 @@ const generateJudgments = (
         judgment: `"Traction section with no numbers. If they had real traction, they'd lead with it."`,
         severity: "harsh"
       });
-    } else if (traction.toLowerCase().includes("will") || traction.toLowerCase().includes("plan to")) {
+    } else if (tractionLower.includes("will") || tractionLower.includes("plan to")) {
       judgments.push({
         icon: Zap,
         judgment: `"Future tense in traction. They're selling a plan, not progress."`,
@@ -99,7 +108,7 @@ const generateJudgments = (
   
   // Competitive advantage judgments
   if (competitiveAdvantage) {
-    if (competitiveAdvantage.toLowerCase().includes("first mover") || competitiveAdvantage.toLowerCase().includes("first to market")) {
+    if (competitiveAdvantageLower.includes("first mover") || competitiveAdvantageLower.includes("first to market")) {
       judgments.push({
         icon: AlertTriangle,
         judgment: `"Relying on 'first mover advantage.' That's not a moat, it's a head start that disappears."`,
@@ -117,14 +126,14 @@ const generateJudgments = (
   
   // Revenue model judgments
   if (revenueModel) {
-    if (revenueModel.toLowerCase().includes("freemium") && !revenueModel.toLowerCase().includes("conversion")) {
+    if (revenueModelLower.includes("freemium") && !revenueModelLower.includes("conversion")) {
       judgments.push({
         icon: DollarSign,
         judgment: `"Freemium without conversion strategy. Free users don't pay bills."`,
         severity: "warning"
       });
     }
-    if (revenueModel.toLowerCase().includes("ads") || revenueModel.toLowerCase().includes("advertising")) {
+    if (revenueModelLower.includes("ads") || revenueModelLower.includes("advertising")) {
       judgments.push({
         icon: DollarSign,
         judgment: `"Ad-based model at ${stage}. Need massive scale before this works."`,
@@ -178,7 +187,7 @@ export const VCFirstImpression = memo(({ responses, companyName, stage, category
   );
   
   // Only show if we have at least one response to analyze
-  const hasResponses = responses.some(r => r.answer && r.answer.trim());
+  const hasResponses = responses.some(r => safeStr(r.answer).trim());
   
   if (!hasResponses || judgments.length === 0) {
     return null;
