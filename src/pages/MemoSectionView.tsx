@@ -24,7 +24,7 @@ import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCa
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 
-import { extractMoatScores, extractTeamMembers, extractUnitEconomics } from "@/lib/memoDataExtractor";
+import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics } from "@/lib/memoDataExtractor";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -409,6 +409,15 @@ export default function MemoSectionView() {
   const extractedMoatScores = isCompetitionSection ? extractMoatScores(sectionText) : null;
   const extractedUnitEconomics = isBusinessSection ? extractUnitEconomics(sectionText, '') : null;
 
+  // Extract business model and traction text for pricing metrics
+  const businessModelSection = memoContent.sections.find(s => safeTitle(s.title).toLowerCase().includes('business'));
+  const tractionSection = memoContent.sections.find(s => safeTitle(s.title).toLowerCase().includes('traction'));
+  const businessModelText = businessModelSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
+                           businessModelSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
+  const tractionText = tractionSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
+                      tractionSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
+  const extractedPricing = extractPricingMetrics(businessModelText, tractionText);
+
   const heroParagraph = narrative.paragraphs?.find((p: MemoParagraph) => p.emphasis === "high");
   const otherParagraphs = narrative.paragraphs?.filter((p: MemoParagraph) => p.emphasis !== "high") || [];
 
@@ -518,9 +527,9 @@ export default function MemoSectionView() {
             {isMarketSection && hasPremium && (
               <div className="space-y-6">
                 <MemoVCScaleCard 
-                  avgMonthlyRevenue={100}
-                  currentCustomers={0}
-                  currentMRR={0}
+                  avgMonthlyRevenue={extractedPricing.avgMonthlyRevenue || 100}
+                  currentCustomers={extractedPricing.currentCustomers || 0}
+                  currentMRR={extractedPricing.currentMRR || 0}
                   companyName={companyInfo?.name || 'Company'}
                   category={companyInfo?.category || 'Technology'}
                 />

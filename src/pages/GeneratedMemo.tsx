@@ -27,7 +27,7 @@ import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
 import { MemoMomentumCard } from "@/components/memo/MemoMomentumCard";
 import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCard";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
-import { extractMoatScores, extractTeamMembers, extractUnitEconomics } from "@/lib/memoDataExtractor";
+import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics } from "@/lib/memoDataExtractor";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
 import { ArrowLeft, Printer, AlertTriangle, RefreshCw } from "lucide-react";
@@ -756,6 +756,15 @@ export default function GeneratedMemo() {
           {(() => {
             let exitPathShown = false;
             
+            // Extract business model and traction text once for pricing metrics
+            const businessModelSection = memoContent.sections.find(s => safeTitle(s.title).toLowerCase().includes('business'));
+            const tractionSection = memoContent.sections.find(s => safeTitle(s.title).toLowerCase().includes('traction'));
+            const businessModelText = businessModelSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
+                                     businessModelSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
+            const tractionTextGlobal = tractionSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
+                                       tractionSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
+            const extractedPricing = extractPricingMetrics(businessModelText, tractionTextGlobal);
+            
             return memoContent.sections.map((section, index) => {
               const narrative = section.narrative || {
                 paragraphs: section.paragraphs,
@@ -857,9 +866,9 @@ export default function GeneratedMemo() {
                   {isMarketSection && hasPremium && (
                     <div className="space-y-6">
                       <MemoVCScaleCard 
-                        avgMonthlyRevenue={100}
-                        currentCustomers={0}
-                        currentMRR={0}
+                        avgMonthlyRevenue={extractedPricing.avgMonthlyRevenue || 100}
+                        currentCustomers={extractedPricing.currentCustomers || 0}
+                        currentMRR={extractedPricing.currentMRR || 0}
                         companyName={companyInfo?.name || 'Company'}
                         category={companyInfo?.category || 'Technology'}
                       />
