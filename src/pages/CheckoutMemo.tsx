@@ -404,22 +404,13 @@ export default function CheckoutMemo() {
             </Button>
 
             <Button 
-              onClick={() => companyId ? navigate(`/analysis/section?companyId=${companyId}&section=0`) : navigate('/portal')}
-              variant="ghost"
-              size="sm"
+              onClick={() => navigate("/hub")}
+              variant="outline"
+              size="lg"
               className="w-full gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to VC Quick Take
-            </Button>
-
-            <Button 
-              onClick={() => navigate("/portal")}
-              variant="outline"
-              size="lg"
-              className="w-full"
-            >
-              Back to Questionnaire
+              Return to Dashboard
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">
