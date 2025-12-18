@@ -21,6 +21,7 @@ import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
+import { VCFramingExplainerCard } from "@/components/memo/VCFramingExplainerCard";
 import type { MemoStructuredContent, MemoVCQuickTake as MemoVCQuickTakeType, MemoParagraph as MemoParagraphType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
 import { DEMO_MEMOS } from "@/data/acceleratorDemo/demoMemos";
@@ -368,6 +369,9 @@ const SampleMemo = () => {
                         score={sectionTools.sectionScore}
                       />
                     )}
+
+                    {/* VC Framing Explanation */}
+                    <VCFramingExplainerCard sectionTitle={section.title} />
 
                     {/* Narrative Content */}
                     {(section.narrative || section.paragraphs || section.highlights || section.keyPoints) && (
