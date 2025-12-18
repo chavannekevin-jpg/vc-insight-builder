@@ -1251,7 +1251,7 @@ This is NOT an advocacy document. Your job is to assess whether this is truly a 
 Based on these memo sections, provide a DIAGNOSTIC assessment - not explanatory feedback:
 
 ${Object.entries(enhancedSections).map(([title, content]) => 
-  `### ${title} ###\n${JSON.stringify(content).substring(0, 800)}`
+  `### ${title} ###\n${JSON.stringify(content).substring(0, 1200)}`
 ).join("\n\n")}
 
 Company: ${company.name} (${company.stage} stage, ${company.category || "startup"})
@@ -1268,9 +1268,18 @@ Return ONLY valid JSON with this exact structure:
 {
   "verdict": "A one-sentence ruling that sounds like a verdict, not advice. Examples: 'The unit economics don't survive IC scrutiny at current scale.' or 'Interesting opportunity that fails the repeatability test.' Frame as what was DECIDED, not what they should DO.",
   "concerns": [
-    "Frame as IC objections, not feedback. E.g., 'Partner A raised: Customer concentration creates single-point-of-failure risk'",
-    "E.g., 'The traction narrative collapsed under the repeatability criterion'",
-    "E.g., 'Pricing power assumptions failed the competitive moat test'"
+    {
+      "text": "Full IC concern - the complete objection. E.g., 'Customer concentration creates single-point-of-failure risk that makes portfolio construction difficult'",
+      "category": "market|team|business_model|traction|competition|unit_economics",
+      "teaserLine": "A SHORT company-specific teaser using VC terminology that reveals WHAT was questioned but not the full analysis. MUST start with 'Partners'. Examples:
+        - 'Partners questioned the distribution model dependency.'
+        - 'Partners flagged the customer concentration risk.'
+        - 'Partners raised questions on the ACV trajectory.'
+        - 'Partners noted concerns about the CAC payback period.'
+        - 'Partners identified gaps in the go-to-market thesis.'
+        - 'Partners questioned the burn multiple sustainability.'
+        The teaser should reference ACTUAL issues from the memo sections above. Be SPECIFIC to THIS company."
+    }
   ],
   "strengths": [
     "Frame as what CLEARED the bar. E.g., 'Founder-market fit exceeded the domain expertise threshold'",
