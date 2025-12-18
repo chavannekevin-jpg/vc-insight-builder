@@ -1246,15 +1246,16 @@ This is NOT an advocacy document. Your job is to assess whether this is truly a 
     let vcQuickTake = null;
     
     try {
-      const quickTakePrompt = `You are a senior VC partner on an Investment Committee. Your job is NOT to give advice - it's to render a VERDICT. Think of yourself as a judge in a courtroom, not a consultant.
+    const quickTakePrompt = `You are a senior VC partner on an Investment Committee. Your job is NOT to give advice - it's to render a VERDICT. Think of yourself as a judge in a courtroom, not a consultant.
 
 Based on these memo sections, provide a DIAGNOSTIC assessment - not explanatory feedback:
 
 ${Object.entries(enhancedSections).map(([title, content]) => 
-  `### ${title} ###\n${JSON.stringify(content).substring(0, 1200)}`
+  `### ${title} ###\n${JSON.stringify(content).substring(0, 1500)}`
 ).join("\n\n")}
 
 Company: ${company.name} (${company.stage} stage, ${company.category || "startup"})
+${financialContextStr}
 
 CRITICAL TONE REQUIREMENTS:
 - You are DIAGNOSING, not ADVISING
@@ -1263,6 +1264,13 @@ CRITICAL TONE REQUIREMENTS:
 - The founder should feel like a ruling was reached elsewhere using rules they haven't seen
 - Make them feel intellectually outmatched but not dismissed
 - This is a sentence handed down, not a lesson taught
+
+CRITICAL FOR primaryConcernAnalysis:
+- MUST reference ACTUAL numbers, metrics, claims, or specifics from the company data above
+- Each field should feel like eavesdropping on a real IC discussion about THIS company
+- Create "How did they know that?" moments by being specific
+- DO NOT give solutions or advice - only diagnose what was found
+- Use VC terminology: CAC, LTV, ACV, burn multiple, TAM, PMF, unit economics, etc.
 
 Return ONLY valid JSON with this exact structure:
 {
@@ -1281,6 +1289,12 @@ Return ONLY valid JSON with this exact structure:
         The teaser should reference ACTUAL issues from the memo sections above. Be SPECIFIC to THIS company."
     }
   ],
+  "primaryConcernAnalysis": {
+    "whyThisMatters": "Company-specific implication using ACTUAL data from the memo. Reference specific numbers, metrics, or claims from THIS company's pitch. E.g., 'Your stated CAC of €1,200 with 24-month payback exceeds the SaaS benchmark by 3x. At current burn, this creates runway pressure before unit economics flip positive.' Must be 2-3 sentences with specific data points.",
+    "vcThinking": "What partners specifically discussed about THIS company - NOT generic VC wisdom. Reference actual claims from the pitch. E.g., 'The team claims 15% month-over-month growth but with only 3 months of data. Partners need 6+ months to rule out seasonality and noise. The question is whether this trajectory is repeatable.' Must feel like quoted internal discussion.",
+    "fundPerspective": "Fund-level analysis specific to THIS deal with specific references. E.g., 'Customer concentration at 70% creates single-point-of-failure risk. If the primary customer churns, runway drops below our minimum threshold for Series A positioning. This affects our ability to syndicate.' Must reference actual risks from the memo.",
+    "sectionSource": "Which memo section this concern primarily came from (e.g., 'Unit Economics', 'Traction', 'Market')"
+  },
   "strengths": [
     "Frame as what CLEARED the bar. E.g., 'Founder-market fit exceeded the domain expertise threshold'",
     "E.g., 'Capital efficiency passed the burn multiple criterion'",

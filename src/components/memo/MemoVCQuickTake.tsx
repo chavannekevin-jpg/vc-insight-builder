@@ -143,6 +143,9 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
   const icStoppingPoint = quickTake?.icStoppingPoint || 'Traction';
   const rulingStatement = quickTake?.rulingStatement || getRulingFromReadiness(readinessLevel);
   const killerQuestion = quickTake?.killerQuestion || getKillerQuestionFromConcerns(concerns);
+  
+  // Extract real primary concern analysis from backend (new field)
+  const primaryConcernAnalysis = (quickTake as any)?.primaryConcernAnalysis || null;
 
   function getRulingFromReadiness(level: string): string {
     // Get primary concern category for more specific fallback
@@ -293,8 +296,8 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
   const primaryConcernText = getConcernText(concerns[0]) || "Insufficient evidence of product-market fit";
   const secondaryConcern = concerns[1] || null;
   
-  // Generate contextual VC analysis for primary concern
-  const getVCAnalysis = (concern: string): { implication: string; vcThinking: string; fundPerspective: string } => {
+  // Fallback VC analysis for old memos without primaryConcernAnalysis
+  const getFallbackVCAnalysis = (concern: string): { implication: string; vcThinking: string; fundPerspective: string } => {
     const concernLower = concern.toLowerCase();
     
     if (concernLower.includes('traction') || concernLower.includes('revenue') || concernLower.includes('customer')) {
@@ -337,7 +340,14 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
     };
   };
 
-  const primaryAnalysis = getVCAnalysis(primaryConcernText);
+  // Use real analysis from backend if available, otherwise fall back to keyword-based
+  const fallbackAnalysis = getFallbackVCAnalysis(primaryConcernText);
+  const primaryAnalysis = {
+    implication: primaryConcernAnalysis?.whyThisMatters || fallbackAnalysis.implication,
+    vcThinking: primaryConcernAnalysis?.vcThinking || fallbackAnalysis.vcThinking,
+    fundPerspective: primaryConcernAnalysis?.fundPerspective || fallbackAnalysis.fundPerspective,
+    sectionSource: primaryConcernAnalysis?.sectionSource || null
+  };
   const totalConcerns = concerns.length;
   const lockedConcerns = Math.max(0, totalConcerns - 1);
 
@@ -418,6 +428,16 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
                   {primaryAnalysis.fundPerspective}
                 </p>
               </div>
+              
+              {/* Section source indicator - shows where this came from */}
+              {primaryAnalysis.sectionSource && (
+                <div className="flex items-center gap-2 pt-2">
+                  <span className="text-xs text-muted-foreground">Sourced from:</span>
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-foreground">
+                    {primaryAnalysis.sectionSource}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
