@@ -14,6 +14,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent } from "@/types/memo";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
+import { safeTitle } from "@/lib/stringUtils";
 
 const sectionIcons: Record<string, React.ReactNode> = {
   'problem': <AlertTriangle className="w-5 h-5" />,
@@ -39,8 +40,8 @@ const sectionColors: Record<string, string> = {
   'thesis': 'from-emerald-500/20 to-green-500/10 border-emerald-500/30',
 };
 
-function getSectionMeta(title: string): { icon: React.ReactNode; color: string } {
-  const titleLower = title.toLowerCase();
+function getSectionMeta(title: unknown): { icon: React.ReactNode; color: string } {
+  const titleLower = safeTitle(title).toLowerCase();
   
   for (const [key, icon] of Object.entries(sectionIcons)) {
     if (titleLower.includes(key)) {

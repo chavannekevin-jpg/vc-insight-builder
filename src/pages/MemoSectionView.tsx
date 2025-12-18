@@ -31,14 +31,7 @@ import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Grid, BookOpen, Zap, 
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
 
-// Helper to safely get section title as string
-const safeTitle = (title: unknown): string => {
-  if (typeof title === 'string') return title;
-  if (title && typeof title === 'object' && 'text' in title) {
-    return String((title as { text: unknown }).text || '');
-  }
-  return String(title || '');
-};
+import { safeTitle } from "@/lib/stringUtils";
 
 // Import new VC tools
 import {

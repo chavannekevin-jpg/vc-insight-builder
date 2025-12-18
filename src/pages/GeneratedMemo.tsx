@@ -28,6 +28,7 @@ import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCa
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 import { extractMoatScores, extractTeamMembers, extractUnitEconomics } from "@/lib/memoDataExtractor";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
+import { safeTitle } from "@/lib/stringUtils";
 import { ArrowLeft, RefreshCw, Printer, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
@@ -783,7 +784,7 @@ export default function GeneratedMemo() {
               };
 
               // Section type detection
-              const titleLower = section.title.toLowerCase();
+              const titleLower = safeTitle(section.title).toLowerCase();
               const isProblemSection = titleLower.includes('problem');
               const isSolutionSection = titleLower.includes('solution');
               const isTeamSection = titleLower.includes('team');
