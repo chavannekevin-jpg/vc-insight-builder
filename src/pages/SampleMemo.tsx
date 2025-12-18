@@ -144,34 +144,18 @@ const SampleMemo = () => {
   const [loading, setLoading] = useState(true);
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
-  const [shouldRedirectToWizard, setShouldRedirectToWizard] = useState(false);
 
   useEffect(() => {
-    loadMemo();
-  }, [viewMode]);
-  
-  // Redirect to wizard mode if not in full view mode
-  useEffect(() => {
-    if (shouldRedirectToWizard) {
-      navigate('/sample-memo/section?section=0', { replace: true });
-    }
-  }, [shouldRedirectToWizard, navigate]);
-
-  const loadMemo = () => {
-    setLoading(true);
-    
-    // Check if we should redirect to wizard mode
+    // If not in full view mode, redirect once to wizard
     if (viewMode !== 'full') {
-      setShouldRedirectToWizard(true);
-      setLoading(false);
+      navigate('/sample-analysis/section?section=0', { replace: true });
       return;
     }
     
-    // Use hardcoded demo data from demoMemos.ts
+    // Load the demo data
     const demoData = DEMO_MEMOS["demo-carbonprint"];
     
     if (demoData) {
-      // Convert DemoMemoData format to MemoStructuredContent format
       const structuredContent: MemoStructuredContent = {
         vcQuickTake: demoData.vcQuickTake,
         sections: demoData.sections.map(section => ({
@@ -186,7 +170,7 @@ const SampleMemo = () => {
     }
     
     setLoading(false);
-  };
+  }, [viewMode, navigate]);
 
   if (loading) {
     return (
