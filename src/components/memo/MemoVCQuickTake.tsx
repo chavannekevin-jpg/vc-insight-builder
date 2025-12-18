@@ -507,11 +507,11 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
         <div className="px-6 pb-6">
           <div className="p-5 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/20">
             <div className="text-center mb-4">
-              <p className="text-sm text-foreground font-medium">
-                You've seen how one concern is analyzed.
+              <p className="text-lg font-semibold text-foreground">
+                They've already made their call.
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                The full IC brief contains this level of depth for every section of your pitch.
+                Every weakness they found. Every question they'll ask. Every reason they hesitated.
               </p>
             </div>
             
