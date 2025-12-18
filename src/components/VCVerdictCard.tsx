@@ -110,6 +110,7 @@ interface VCVerdictCardProps {
   hasPaid: boolean;
   deckParsed?: boolean;
   cachedVerdict?: VCVerdict | LegacyVCVerdict | null;
+  memoContentGenerated?: boolean; // New: indicates memo analysis is ready
   onVerdictGenerated?: (verdict: VCVerdict) => void;
 }
 
@@ -124,6 +125,7 @@ export const VCVerdictCard = memo(({
   hasPaid,
   deckParsed = false,
   cachedVerdict: rawCachedVerdict,
+  memoContentGenerated = false,
   onVerdictGenerated
 }: VCVerdictCardProps) => {
   const cachedVerdict = rawCachedVerdict 
@@ -136,6 +138,7 @@ export const VCVerdictCard = memo(({
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<string>(cachedVerdict?.founderProfile || 'first_time_founder');
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [waitingForMemo, setWaitingForMemo] = useState(false);
 
   const generateVerdict = useCallback(async (forceProfile?: string) => {
     if (memoGenerated && !forceProfile) {
@@ -153,6 +156,7 @@ export const VCVerdictCard = memo(({
     try {
       const { data, error: fnError } = await supabase.functions.invoke('generate-vc-verdict', {
         body: {
+          companyId, // Pass companyId so edge function can fetch memo content
           companyName,
           companyDescription,
           stage: companyStage,
@@ -188,14 +192,60 @@ export const VCVerdictCard = memo(({
     } finally {
       setLoading(false);
       setIsRegenerating(false);
+      setWaitingForMemo(false);
     }
   }, [companyId, companyName, companyDescription, companyStage, companyCategory, responses, deckParsed, memoGenerated, onVerdictGenerated]);
 
+  // Wait for memo content if not ready, then generate verdict
   useEffect(() => {
-    if (!cachedVerdict && !memoGenerated) {
-      generateVerdict();
+    if (cachedVerdict || memoGenerated) {
+      setLoading(false);
+      return;
     }
-  }, [cachedVerdict, memoGenerated, generateVerdict]);
+    
+    // If memo content is ready, generate verdict immediately
+    if (memoContentGenerated) {
+      generateVerdict();
+      return;
+    }
+    
+    // If memo content isn't ready yet, wait for it (up to 60 seconds)
+    setWaitingForMemo(true);
+    let attempts = 0;
+    const maxAttempts = 12; // 12 * 5s = 60s max wait
+    
+    const pollForMemoContent = async () => {
+      attempts++;
+      
+      const { data: company } = await supabase
+        .from('companies')
+        .select('memo_content_generated')
+        .eq('id', companyId)
+        .single();
+      
+      if (company?.memo_content_generated) {
+        // Memo is ready, generate verdict with full context
+        generateVerdict();
+        return;
+      }
+      
+      if (attempts >= maxAttempts) {
+        // Timeout - generate verdict without memo content (fallback)
+        console.log('Memo content not ready after 60s, generating verdict with available data');
+        generateVerdict();
+        return;
+      }
+      
+      // Poll again in 5 seconds
+      setTimeout(pollForMemoContent, 5000);
+    };
+    
+    // Start polling after a short delay (give memo generation a head start)
+    const timer = setTimeout(pollForMemoContent, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [cachedVerdict, memoGenerated, memoContentGenerated, companyId, generateVerdict]);
+  
 
   // Update selected profile when verdict changes
   useEffect(() => {
@@ -276,9 +326,16 @@ export const VCVerdictCard = memo(({
             <Skeleton className="h-16 w-full rounded-xl" />
             <Skeleton className="h-16 w-full rounded-xl" />
           </div>
-          <div className="flex items-center justify-center gap-3 mt-8 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center gap-2 mt-8 text-muted-foreground">
             <Scale className="w-5 h-5 animate-pulse" />
-            <span className="text-sm">Simulating the room after you leave...</span>
+            <span className="text-sm font-medium">
+              {waitingForMemo ? "Our VC partners are deeply analyzing your pitch..." : "Simulating the room after you leave..."}
+            </span>
+            {waitingForMemo && (
+              <span className="text-xs text-muted-foreground/70">
+                Building tailor-made insights from your company data
+              </span>
+            )}
           </div>
         </div>
       </div>
