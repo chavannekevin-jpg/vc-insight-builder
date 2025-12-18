@@ -6,6 +6,7 @@ import { MemoLoadingScreen } from "@/components/MemoLoadingScreen";
 import { MemoSection } from "@/components/memo/MemoSection";
 import { MemoHeroStatement } from "@/components/memo/MemoHeroStatement";
 import { MemoCollapsibleOverview } from "@/components/memo/MemoCollapsibleOverview";
+import { VCFramingExplainerCard } from "@/components/memo/VCFramingExplainerCard";
 import { MemoCollapsibleVC } from "@/components/memo/MemoCollapsibleVC";
 import { MemoVCReflection } from "@/components/memo/MemoVCReflection";
 import { MemoVCQuestions } from "@/components/memo/MemoVCQuestions";
@@ -465,6 +466,9 @@ export default function MemoSectionView() {
 
             {/* Hero Statement */}
             {heroParagraph && <MemoHeroStatement text={heroParagraph.text} />}
+
+            {/* VC Framing Explanation - Educational context for why we wrote it this way */}
+            <VCFramingExplainerCard sectionTitle={currentSection!.title} />
 
             {/* Company Overview */}
             <MemoCollapsibleOverview

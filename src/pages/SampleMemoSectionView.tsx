@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { MemoSection } from "@/components/memo/MemoSection";
 import { MemoHeroStatement } from "@/components/memo/MemoHeroStatement";
 import { MemoCollapsibleOverview } from "@/components/memo/MemoCollapsibleOverview";
+import { VCFramingExplainerCard } from "@/components/memo/VCFramingExplainerCard";
 import { MemoVCReflection } from "@/components/memo/MemoVCReflection";
 import { MemoVCQuestions } from "@/components/memo/MemoVCQuestions";
 import { MemoBenchmarking } from "@/components/memo/MemoBenchmarking";
@@ -492,6 +493,9 @@ export default function SampleMemoSectionView() {
 
           {/* Hero Statement */}
           {heroParagraph && <MemoHeroStatement text={heroParagraph.text} />}
+
+          {/* VC Framing Explanation - Educational context for why we wrote it this way */}
+          <VCFramingExplainerCard sectionTitle={currentSection!.title} />
 
           {/* Content Overview */}
           <MemoCollapsibleOverview
