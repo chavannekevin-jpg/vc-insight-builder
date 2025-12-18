@@ -220,9 +220,56 @@ async function generateSectionToolData(
         messages: [
           {
             role: "system",
-            content: `You are a VC analyst generating structured analysis tools for the ${sectionName} section of an investment memo. 
+            content: `You are a SKEPTICAL VC analyst generating structured analysis tools for the ${sectionName} section of an investment memo. 
 Generate SPECIFIC, TAILORED data for ${companyName}, a ${companyStage} ${companyCategory || 'startup'}. 
 DO NOT use generic examples or templates. All content must be specifically relevant to this company.
+
+=== CRITICAL SCORING CALIBRATION — SCORE HARSHLY! ===
+95% of companies that pitch VCs get rejected. Your scores MUST reflect this reality.
+Most early-stage companies should score between 25-55. Scores above 70 are RARE.
+
+STAGE-ADJUSTED SCORING CAPS (maximum realistic scores):
+${companyStage === 'Pre-Seed' || companyStage === 'Idea' ? `
+PRE-SEED/IDEA STAGE CAPS:
+- Traction: MAX 30 (no revenue = max 20, waitlist only = max 30)
+- Business Model: MAX 40 (unvalidated pricing = max 35)
+- Solution: MAX 50 (no shipped product = max 40)
+- Team: MAX 70 (unless prior successful exits)
+- Problem/Market/Competition/Vision: MAX 65
+` : companyStage === 'Seed' ? `
+SEED STAGE CAPS:
+- Traction: MAX 50 (unless $100K+ ARR or 1000+ paying customers)
+- Business Model: MAX 60 (unless 6+ months revenue data with positive unit economics)
+- Solution: MAX 65 (unless shipped product with retention data)
+- Team: MAX 75 (unless prior exits or exceptional domain expertise)
+- Problem/Market/Competition/Vision: MAX 70
+` : `
+SERIES A+ STAGE:
+- Standard 0-100 scale applies, but remain skeptical
+- Scores above 80 require exceptional, verified metrics
+`}
+
+PENALTY RULES (subtract from base score):
+- Missing revenue data: -20 points
+- Missing retention/churn data: -15 points
+- Missing CAC data: -15 points
+- No paying customers: -25 points
+- Waitlist only (no transactions/revenue): -20 points
+- Claims without evidence/data: -15 points each
+- Founder-claimed data without verification: Apply 0.7 multiplier to score
+- AI-estimated/inferred data: Apply 0.6 multiplier to score
+
+SCORING REALITY CHECK (what scores actually mean):
+- 0-25: Significant fundability concerns (60% of startups)
+- 26-45: Average early-stage company (25% of startups)
+- 46-65: Above average, some differentiation (10% of startups)
+- 66-80: Strong company with solid evidence (4% of startups)
+- 81-100: Top 1% — reserve for exceptional companies with verified strong data
+
+BE SKEPTICAL. Default to LOWER scores. If unsure, score DOWN, not up.
+A "good" early-stage score is 45-55. A score of 70+ should be RARE and justified.
+
+=== END SCORING CALIBRATION ===
 
 CRITICAL OUTPUT RULES:
 1. Return valid JSON only. No markdown formatting.
@@ -332,18 +379,28 @@ Generate these SPECIFIC tools for ${companyName}'s Problem section:
 5. evidenceThreshold: Analyze the evidence quality for this specific problem
 6. founderBlindSpot: Identify potential blindspots for founders solving THIS problem
 
-CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10! 
-- 0-25: Weak
-- 26-50: Developing  
-- 51-75: Strong
-- 76-100: Exceptional
+PROBLEM SECTION SCORING CALIBRATION:
+- Problem clearly defined with specific customer segment: +10-15 points
+- Quantified pain ($ lost, hours wasted, etc.): +10-15 points
+- Customer interviews/research cited: +10-15 points
+- Existing workarounds documented: +5-10 points
+- Vague problem statement: MAX 35
+- No customer research evidence: MAX 40
+- Generic/obvious problem: MAX 45
+- Most ${companyStage} companies score 35-55 for Problem
+
+SCORING LABELS (use these thresholds):
+- 0-30: Weak (problem unclear or not validated)
+- 31-50: Developing (problem exists but needs more evidence)
+- 51-70: Strong (well-defined with some validation)
+- 71-100: Exceptional (deeply researched, quantified, urgent)
 
 Return JSON:
 {
   "sectionScore": {
     "score": 0-100,
     "label": "Weak|Developing|Strong|Exceptional",
-    "vcBenchmark": 60,
+    "vcBenchmark": 50,
     "percentile": "25th|50th|75th|90th",
     "topInsight": "Key insight specific to ${companyName}",
     "whatThisTellsVC": "What this score signals to investors",
@@ -395,11 +452,25 @@ Generate these SPECIFIC tools for ${companyName}'s Solution section:
 3. commoditizationTeardown: Risk of commoditization
 4. competitorBuildAnalysis: Could competitors copy this?
 
-CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+SOLUTION SECTION SCORING CALIBRATION:
+- No shipped product: MAX 40
+- MVP without users: MAX 45
+- Product shipped but no retention data: MAX 55
+- Product with engagement/retention proof: +15-20 points
+- Proprietary tech/patents: +10-15 points
+- Easily replicable solution: MAX 40
+- "AI wrapper" or commodity tech: MAX 35
+- Most ${companyStage} companies score 30-50 for Solution
+
+SCORING LABELS:
+- 0-30: Weak (concept only, easily copied)
+- 31-50: Developing (built but unproven)
+- 51-70: Strong (working product with some moat)
+- 71-100: Exceptional (defensible, validated, loved by users)
 
 Return JSON:
 {
-  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 50, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
@@ -432,11 +503,25 @@ Market Context: ${marketStr}
 
 Generate these SPECIFIC tools for ${companyName}'s Market section:
 
-CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+MARKET SECTION SCORING CALIBRATION:
+- Top-down TAM only (no bottoms-up): MAX 40
+- Small market (<$1B TAM): MAX 45
+- Crowded market without clear differentiation: MAX 50
+- Strong bottoms-up analysis with ICP: +15-20 points
+- Clear "why now" timing evidence: +10-15 points
+- Validated willingness to pay: +10-15 points
+- Unproven market timing: -15 points
+- Most ${companyStage} companies score 35-55 for Market
+
+SCORING LABELS:
+- 0-30: Weak (small, timing unclear, or saturated)
+- 31-50: Developing (decent size but unvalidated timing)
+- 51-70: Strong (large market with clear timing)
+- 71-100: Exceptional (massive, urgent, tailwinds obvious)
 
 Return JSON:
 {
-  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 50, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
@@ -470,11 +555,32 @@ Competitor Research: ${competitorStr}
 
 Generate these SPECIFIC tools for ${companyName}'s Competition section (use ACTUAL competitors from research, not generic examples):
 
-CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+COMPETITION SECTION SCORING CALIBRATION:
+- No clear differentiation from competitors: MAX 35
+- "We have no competitors": MAX 30 (red flag - naive or lying)
+- Well-funded competitor with similar product: MAX 45
+- Clear competitive advantage articulated: +10-15 points
+- Defensible moat with evidence: +15-20 points
+- First-mover in new category: +10 points
+- Moat scores should also be skeptical - most early companies have WEAK moats
+- Most ${companyStage} companies score 30-50 for Competition
+
+MOAT SCORING REALITY:
+- Network effects: Most startups have NONE (score 10-20)
+- Switching costs: Early-stage = low (score 15-30)
+- Data advantage: Needs significant data volume (most early = 10-25)
+- Brand trust: Takes years to build (early-stage = 10-25)
+- Most overall moat scores should be 20-40 for ${companyStage} companies
+
+SCORING LABELS:
+- 0-30: Weak (commodity, easily outcompeted)
+- 31-50: Developing (some differentiation but vulnerable)
+- 51-70: Strong (clear moat, defensible position)
+- 71-100: Exceptional (dominant position, multiple moats)
 
 Return JSON:
 {
-  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 50, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company that won against competitors in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
@@ -515,7 +621,27 @@ Return JSON:
 
 Generate these SPECIFIC tools for ${companyName}'s Team section:
 
-CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+TEAM SECTION SCORING CALIBRATION:
+- Solo founder without technical skills for product: MAX 35
+- First-time founders without domain expertise: MAX 50
+- Team missing critical roles (no CTO for tech company): MAX 45
+- Prior startup experience (even failed): +10-15 points
+- Prior exit: +20-25 points
+- Deep domain expertise (10+ years in space): +15-20 points
+- Working together before: +5-10 points
+- Incomplete founding team: -15 points
+- Most ${companyStage} companies score 35-55 for Team
+
+CREDIBILITY GAP SCORING:
+- Expected vs actual skills gap should be HONEST
+- Most first-time founders have significant gaps (overall credibility 30-50)
+- Exceptional teams (70+) need verifiable track records
+
+SCORING LABELS:
+- 0-30: Weak (missing critical skills, no relevant experience)
+- 31-50: Developing (some gaps but potential)
+- 51-70: Strong (experienced team with minor gaps)
+- 71-100: Exceptional (all-star team with exits/deep expertise)
 
 CRITICAL: Extract ALL team members mentioned in the section content. Look for patterns like:
 - "Name (Role)" e.g., "Hatem Ahmed (Co-Founder & CEO)"
@@ -525,7 +651,7 @@ CRITICAL: Extract ALL team members mentioned in the section content. Look for pa
 
 Return JSON:
 {
-  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 50, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company with relevant founder background in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
@@ -554,13 +680,36 @@ Financial Metrics: ${financialStr}
 
 Generate these SPECIFIC tools for ${companyName}'s Business Model section:
 
-CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+BUSINESS MODEL SCORING CALIBRATION:
+- No pricing validation (no paying customers): MAX 30
+- Pricing tested but no sustainable revenue: MAX 40
+- <6 months revenue data: MAX 50
+- Unit economics unknown: MAX 40
+- Unit economics negative: MAX 35
+- LTV:CAC < 1: MAX 30
+- LTV:CAC 1-2: MAX 45
+- LTV:CAC 2-3: MAX 60
+- LTV:CAC > 3 with data: 60-80
+- Gross margin < 50%: -10 points
+- Gross margin > 70%: +10 points
+- Most ${companyStage} companies score 25-45 for Business Model
+
+IMPORTANT: Transaction-based models (like ${companyName} if applicable) need:
+- Actual transaction volume data
+- Take rate/fee structure validated
+- Path to profitability clear
+
+SCORING LABELS:
+- 0-30: Weak (unproven model, no revenue validation)
+- 31-50: Developing (some revenue but unit economics unclear)
+- 51-70: Strong (validated pricing, positive unit economics)
+- 71-100: Exceptional (proven, scalable, efficient)
 
 Detect the business model type (B2B SaaS, B2C consumer, marketplace, transaction-fee, etc.) and tailor metrics accordingly.
 
 Return JSON:
 {
-  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 45, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company with similar business model in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
@@ -601,11 +750,41 @@ Financial Metrics: ${financialStr}
 
 Generate these SPECIFIC tools for ${companyName}'s Traction section:
 
-CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+TRACTION SECTION SCORING CALIBRATION — BE EXTREMELY STRICT:
+- No revenue at all: MAX 20
+- Waitlist only (no actual usage/transactions): MAX 25
+- Free users only (no payment): MAX 30
+- <$5K MRR: MAX 35
+- $5K-$10K MRR: MAX 45
+- $10K-$50K MRR: MAX 55
+- $50K-$100K MRR: MAX 70
+- $100K+ MRR with growth: 65-85
+- $500K+ MRR with strong retention: 85-100
+
+ADDITIONAL PENALTIES:
+- No retention data: -15 points
+- Declining MoM growth: -20 points
+- Founder-led sales only: -10 points
+- Heavy discounting to acquire: -15 points
+- Pilot customers not converted: -10 points
+
+REALITY CHECK for ${companyStage}:
+- Pre-Seed: Most should score 15-30
+- Seed: Most should score 25-45
+- Series A: Most should score 45-65
+
+IMPORTANT: Waitlist users are NOT traction. Early pilots without payment are NOT traction.
+A waitlist of 500 people is worth MAX 25 points. Actual paying customers = real traction.
+
+SCORING LABELS:
+- 0-25: Weak (no revenue or minimal validation)
+- 26-45: Developing (early revenue, growth unclear)
+- 46-65: Strong (meaningful revenue with growth)
+- 66-100: Exceptional (strong revenue, retention, growth)
 
 Return JSON:
 {
-  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 40, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company with relevant traction story in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
@@ -634,11 +813,30 @@ Return JSON:
 
 Generate these SPECIFIC tools for ${companyName}'s Vision section:
 
-CRITICAL SCORING RULE: All scores must be on a 0-100 scale, NOT 1-10!
+VISION SECTION SCORING CALIBRATION:
+- Vague vision without milestones: MAX 35
+- Vision disconnected from current traction: MAX 40
+- No clear path to next funding round: MAX 45
+- Clear 12-month milestones with metrics: +10-15 points
+- Realistic exit path articulated: +10 points
+- Vision backed by current execution: +15 points
+- Unrealistic projections: -15 points
+- Most ${companyStage} companies score 35-55 for Vision
+
+SCENARIO PLANNING REALITY:
+- Best case probability should rarely exceed 20-25%
+- Base case should be most likely (50-60%)
+- Be honest about downside risks
+
+SCORING LABELS:
+- 0-30: Weak (unclear or unrealistic vision)
+- 31-50: Developing (vision exists but execution unclear)
+- 51-70: Strong (clear vision with achievable milestones)
+- 71-100: Exceptional (compelling, realistic, backed by execution)
 
 Return JSON:
 {
-  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 60, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
+  "sectionScore": {"score": 0-100, "label": "Weak|Developing|Strong|Exceptional", "vcBenchmark": 50, "percentile": "25th|50th|75th|90th", "topInsight": "...", "whatThisTellsVC": "...", "fundabilityImpact": "..."},
   "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
   "actionPlan90Day": {"actions": [{"action": "...", "timeline": "Week 1-2|Week 3-4|Month 2|Month 3", "priority": "critical|important|nice-to-have", "metric": "..."}]},
   "caseStudy": {"company": "Real company with inspiring vision in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
