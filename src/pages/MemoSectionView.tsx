@@ -31,6 +31,15 @@ import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Grid, BookOpen, Zap, 
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
 
+// Helper to safely get section title as string
+const safeTitle = (title: unknown): string => {
+  if (typeof title === 'string') return title;
+  if (title && typeof title === 'object' && 'text' in title) {
+    return String((title as { text: unknown }).text || '');
+  }
+  return String(title || '');
+};
+
 // Import new VC tools
 import {
   SectionScoreCard,
@@ -320,7 +329,7 @@ export default function MemoSectionView() {
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {memoContent.sections.map((section, idx) => {
-                  const sectionTitle = section.title.toLowerCase();
+                   const sectionTitle = safeTitle(section.title).toLowerCase();
                   const sectionConfig = {
                     problem: { icon: Target, snippet: "Evidence threshold • Founder blind spots • Pain validation" },
                     solution: { icon: Lightbulb, snippet: "Technical defensibility • Commoditization risk • Build analysis" },
@@ -350,7 +359,7 @@ export default function MemoSectionView() {
                         </div>
                         <Lock className="w-3 h-3 text-muted-foreground/40 group-hover:text-primary/50 transition-colors" />
                       </div>
-                      <p className="text-sm font-semibold text-foreground line-clamp-1 mb-1">{section.title}</p>
+                      <p className="text-sm font-semibold text-foreground line-clamp-1 mb-1">{safeTitle(section.title)}</p>
                       <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">
                         {config.snippet}
                       </p>
@@ -527,7 +536,7 @@ export default function MemoSectionView() {
 
   // Regular section rendering (Section 1+)
   // Section type detection
-  const titleLower = currentSection!.title.toLowerCase();
+  const titleLower = safeTitle(currentSection!.title).toLowerCase();
   const isProblemSection = titleLower.includes('problem');
   const isSolutionSection = titleLower.includes('solution');
   const isTeamSection = titleLower.includes('team');
@@ -553,7 +562,7 @@ export default function MemoSectionView() {
   const otherParagraphs = narrative.paragraphs?.filter((p: MemoParagraph) => p.emphasis !== "high") || [];
 
   // Get problem text for differentiation card
-  const problemSection = memoContent.sections.find(s => s.title.toLowerCase().includes('problem'));
+  const problemSection = memoContent.sections.find(s => safeTitle(s.title).toLowerCase().includes('problem'));
   const problemText = problemSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
                      problemSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
 
