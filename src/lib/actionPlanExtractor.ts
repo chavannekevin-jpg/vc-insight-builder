@@ -1,6 +1,7 @@
 // Extract prioritized action items from memo content
 
 import { MemoStructuredContent, MemoVCReflection } from "@/types/memo";
+import { safeTitle } from "@/lib/stringUtils";
 
 export interface ActionItem {
   id: string;
@@ -289,8 +290,8 @@ function extractRelevantSentence(text: string, keywords: string[]): string {
   return sentences[0]?.trim() || text.slice(0, 100);
 }
 
-function categorizeSectionTitle(title: string): ActionItem["category"] {
-  const titleLower = title.toLowerCase();
+function categorizeSectionTitle(title: unknown): ActionItem["category"] {
+  const titleLower = safeTitle(title).toLowerCase();
   
   if (titleLower.includes("problem") || titleLower.includes("solution")) return "narrative";
   if (titleLower.includes("traction")) return "traction";

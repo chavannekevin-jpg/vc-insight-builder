@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Lock, AlertCircle, Users, TrendingUp, Target, DollarSign, Lightbulb, Shield, Rocket } from "lucide-react";
+import { safeTitle } from "@/lib/stringUtils";
 
 interface LockedSectionOverlayProps {
   children: ReactNode;
@@ -14,8 +15,8 @@ interface TeaserInsight {
 }
 
 // Generate section-specific teaser insights to create curiosity and urgency
-const getTeaserInsight = (sectionTitle: string): TeaserInsight => {
-  const title = sectionTitle.toLowerCase();
+const getTeaserInsight = (sectionTitle: unknown): TeaserInsight => {
+  const title = safeTitle(sectionTitle).toLowerCase();
 
   if (title.includes('solution') || title.includes('product')) {
     return {

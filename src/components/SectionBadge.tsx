@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { safeTitle } from "@/lib/stringUtils";
 
 interface SectionBadgeProps {
   icon: LucideIcon | React.ComponentType<any>;
@@ -10,7 +11,7 @@ interface SectionBadgeProps {
 
 export const SectionBadge = ({ icon: Icon, title, isComplete, className }: SectionBadgeProps) => {
   const getGradient = () => {
-    const lower = title.toLowerCase();
+    const lower = safeTitle(title).toLowerCase();
     if (lower.includes("problem")) return "from-red-500 via-orange-500 to-pink-500";
     if (lower.includes("solution")) return "from-yellow-400 via-amber-500 to-orange-500";
     if (lower.includes("market")) return "from-blue-500 via-cyan-500 to-teal-500";

@@ -22,6 +22,7 @@ import { MemoUnitEconomicsCard } from "@/components/memo/MemoUnitEconomicsCard";
 import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
+import { safeTitle } from "@/lib/stringUtils";
 import type { MemoStructuredContent, MemoVCQuickTake as MemoVCQuickTakeType, MemoParagraph as MemoParagraphType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
 
@@ -346,13 +347,14 @@ const SampleMemo = () => {
             
             return memoContent.sections.map((section, index) => {
               // Section type detection
-              const isProblemSection = section.title.toLowerCase().includes('problem');
-              const isCompetitionSection = section.title === 'Competition' || section.title.toLowerCase().includes('competition');
-              const isTeamSection = section.title === 'Team' || section.title.toLowerCase().includes('team');
-              const isMarketSection = section.title === 'Market' || section.title.toLowerCase().includes('market');
-              const isBusinessSection = section.title.toLowerCase().includes('business');
-              const isThesisSection = section.title.toLowerCase().includes('thesis');
-              const isVisionSection = section.title.toLowerCase().includes('vision');
+              const titleLower = safeTitle(section.title).toLowerCase();
+              const isProblemSection = titleLower.includes('problem');
+              const isCompetitionSection = section.title === 'Competition' || titleLower.includes('competition');
+              const isTeamSection = section.title === 'Team' || titleLower.includes('team');
+              const isMarketSection = section.title === 'Market' || titleLower.includes('market');
+              const isBusinessSection = titleLower.includes('business');
+              const isThesisSection = titleLower.includes('thesis');
+              const isVisionSection = titleLower.includes('vision');
               
               // Get section text for Pain Validator
               const sectionParagraphs = section.narrative?.paragraphs || section.paragraphs || [];
@@ -363,10 +365,10 @@ const SampleMemo = () => {
               if (showExitPath) exitPathShown = true;
               
               // Get section-specific tools data
-              const sectionToolsKey = section.title;
+              const sectionToolsKey = safeTitle(section.title);
               const sectionTools = SAMPLE_SECTION_TOOLS[sectionToolsKey];
-              const isTractionSection = section.title.toLowerCase().includes('traction');
-              const isSolutionSection = section.title.toLowerCase().includes('solution');
+              const isTractionSection = titleLower.includes('traction');
+              const isSolutionSection = titleLower.includes('solution');
               
               return (
                 <MemoSection key={index} title={section.title} index={index}>
