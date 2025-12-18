@@ -174,14 +174,7 @@ export const MemoAIConclusion = ({ text }: MemoAIConclusionProps) => {
           </div>
         )}
 
-        {/* Fallback for unstructured content */}
-        {!hasStructuredContent && parsed.thesis && (
-          <div className="pt-4 border-t border-primary/10">
-            <p className="text-muted-foreground text-sm italic text-center">
-              Full structured analysis available in premium version
-            </p>
-          </div>
-        )}
+        {/* Removed premium version fallback message - users seeing this are already premium */}
       </div>
     </div>
   );

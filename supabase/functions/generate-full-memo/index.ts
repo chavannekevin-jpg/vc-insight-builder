@@ -174,6 +174,489 @@ async function fetchWithRetry(
   throw lastError || new Error('All retry attempts failed');
 }
 
+// ============================================
+// SECTION TOOL DATA GENERATION FUNCTION
+// ============================================
+
+interface ToolGenerationContext {
+  sectionName: string;
+  sectionContent: any;
+  companyName: string;
+  companyCategory: string;
+  companyStage: string;
+  companyDescription: string;
+  financialMetrics: any;
+  responses: any[];
+  competitorResearch: any;
+  marketContext: any;
+}
+
+async function generateSectionToolData(
+  ctx: ToolGenerationContext,
+  apiKey: string,
+  supabaseClient: any,
+  companyId: string
+): Promise<void> {
+  const { sectionName, sectionContent, companyName, companyCategory, companyStage, companyDescription, financialMetrics, responses, competitorResearch, marketContext } = ctx;
+  
+  console.log(`Generating tool data for section: ${sectionName}`);
+  
+  // Get section-specific tool requirements
+  const sectionToolPrompts = getSectionToolPrompt(sectionName, ctx);
+  if (!sectionToolPrompts) {
+    console.log(`No tools required for section: ${sectionName}`);
+    return;
+  }
+  
+  try {
+    const response = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content: `You are a VC analyst generating structured analysis tools for the ${sectionName} section of an investment memo. 
+Generate SPECIFIC, TAILORED data for ${companyName}, a ${companyStage} ${companyCategory || 'startup'}. 
+DO NOT use generic examples or templates. All content must be specifically relevant to this company.
+Return valid JSON only. No markdown formatting.`,
+          },
+          {
+            role: "user",
+            content: sectionToolPrompts,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 4000,
+      }),
+    }, 2, 1500);
+
+    if (!response.ok) {
+      console.error(`Tool generation failed for ${sectionName}: HTTP ${response.status}`);
+      return;
+    }
+
+    const data = await response.json();
+    let toolContent = data.choices?.[0]?.message?.content?.trim();
+    
+    if (!toolContent) {
+      console.error(`No tool content returned for ${sectionName}`);
+      return;
+    }
+
+    // Clean up markdown if present
+    toolContent = toolContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    
+    let toolData;
+    try {
+      toolData = JSON.parse(toolContent);
+    } catch (parseError) {
+      console.error(`Failed to parse tool JSON for ${sectionName}:`, parseError);
+      try {
+        toolData = JSON.parse(sanitizeJsonString(toolContent));
+      } catch (retryError) {
+        console.error(`Retry parsing also failed for ${sectionName}`);
+        return;
+      }
+    }
+
+    // Save each tool to the memo_tool_data table
+    const toolsToSave = extractToolsFromResponse(sectionName, toolData);
+    
+    for (const tool of toolsToSave) {
+      const { error: insertError } = await supabaseClient
+        .from("memo_tool_data")
+        .upsert({
+          company_id: companyId,
+          section_name: sectionName,
+          tool_name: tool.name,
+          ai_generated_data: tool.data,
+          data_source: "ai-complete",
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'company_id,section_name,tool_name'
+        });
+      
+      if (insertError) {
+        console.error(`Failed to save tool ${tool.name} for ${sectionName}:`, insertError);
+      } else {
+        console.log(`✓ Saved tool: ${sectionName}/${tool.name}`);
+      }
+    }
+    
+    console.log(`✓ Generated and saved ${toolsToSave.length} tools for ${sectionName}`);
+    
+  } catch (error) {
+    console.error(`Error generating tools for ${sectionName}:`, error);
+  }
+}
+
+function getSectionToolPrompt(sectionName: string, ctx: ToolGenerationContext): string | null {
+  const { companyName, companyCategory, companyStage, companyDescription, sectionContent, financialMetrics, responses, competitorResearch, marketContext } = ctx;
+  
+  const sectionNarrative = JSON.stringify(sectionContent?.narrative || sectionContent || {});
+  const financialStr = financialMetrics ? JSON.stringify(financialMetrics) : "Not provided";
+  const competitorStr = competitorResearch ? JSON.stringify(competitorResearch) : "Not provided";
+  const marketStr = marketContext ? JSON.stringify(marketContext) : "Not provided";
+  
+  const baseContext = `
+Company: ${companyName}
+Stage: ${companyStage}
+Category: ${companyCategory || 'Startup'}
+Description: ${companyDescription || 'N/A'}
+Financial Metrics: ${financialStr}
+Section Content: ${sectionNarrative.substring(0, 2000)}
+`;
+
+  switch (sectionName) {
+    case "Problem":
+      return `${baseContext}
+
+Generate these SPECIFIC tools for ${companyName}'s Problem section:
+
+1. sectionScore: Rate this specific problem statement
+2. vcInvestmentLogic: VC investment decision for this problem
+3. actionPlan90Day: Specific 90-day actions for problem validation
+4. caseStudy: Find a REAL company case study relevant to ${companyCategory || 'this market'} (NOT climate tech unless that's the category)
+5. evidenceThreshold: Analyze the evidence quality for this specific problem
+6. founderBlindSpot: Identify potential blindspots for founders solving THIS problem
+
+Return JSON:
+{
+  "sectionScore": {
+    "score": 1-10,
+    "label": "Weak|Developing|Strong|Exceptional",
+    "vcBenchmark": "How this compares to typical ${companyStage} deals",
+    "percentile": "25th|50th|75th|90th",
+    "topInsight": "Key insight specific to ${companyName}"
+  },
+  "vcInvestmentLogic": {
+    "decision": "PASS|CAUTIOUS|INTERESTED|EXCITED",
+    "reasoning": "VC reasoning specific to this problem",
+    "keyCondition": "What would change the decision"
+  },
+  "actionPlan90Day": {
+    "actions": [
+      {"action": "Specific action for ${companyName}", "timeline": "Week 1-2", "priority": "Critical|High|Medium", "outcome": "Expected result"},
+      {"action": "Another specific action", "timeline": "Week 3-4", "priority": "High", "outcome": "Expected result"},
+      {"action": "Third action", "timeline": "Month 2", "priority": "Medium", "outcome": "Expected result"}
+    ]
+  },
+  "caseStudy": {
+    "company": "Real company name in ${companyCategory || 'similar market'}",
+    "problem": "What problem they faced",
+    "fix": "How they fixed it",
+    "outcome": "Results achieved",
+    "timeframe": "How long it took",
+    "sector": "${companyCategory || 'Technology'}"
+  },
+  "evidenceThreshold": {
+    "verifiedPain": ["Evidence points that are verified"],
+    "unverifiedPain": ["Claims that need validation"],
+    "evidenceGrade": "A|B|C|D|F",
+    "missingEvidence": ["What's needed to prove the problem"],
+    "whatVCsConsiderVerified": ["What would satisfy a VC"]
+  },
+  "founderBlindSpot": {
+    "potentialExaggerations": ["Possible overstatements"],
+    "misdiagnoses": ["Alternative interpretations of the problem"],
+    "assumptions": ["Assumptions that might not hold"],
+    "commonMistakes": ["Typical founder mistakes in this space"]
+  }
+}`;
+
+    case "Solution":
+      return `${baseContext}
+
+Generate these SPECIFIC tools for ${companyName}'s Solution section:
+
+1. sectionScore, vcInvestmentLogic, actionPlan90Day, caseStudy (same structure as Problem)
+2. technicalDefensibility: Rate the technical moat
+3. commoditizationTeardown: Risk of commoditization
+4. competitorBuildAnalysis: Could competitors copy this?
+
+Return JSON:
+{
+  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "caseStudy": {"company": "Real company in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
+  "technicalDefensibility": {
+    "defensibilityScore": 1-10,
+    "proofPoints": ["Evidence of technical moat"],
+    "expectedProofs": ["What a strong solution would have"],
+    "gaps": ["Missing defensibility elements"],
+    "vcEvaluation": "VC assessment of defensibility"
+  },
+  "commoditizationTeardown": {
+    "features": [
+      {"feature": "Core feature 1", "commoditizationRisk": "Low|Medium|High", "timeToClone": "X months", "defensibility": "Why hard/easy to copy"},
+      {"feature": "Core feature 2", "commoditizationRisk": "...", "timeToClone": "...", "defensibility": "..."}
+    ],
+    "overallRisk": "Low|Medium|High"
+  },
+  "competitorBuildAnalysis": {
+    "couldBeBuilt": true/false,
+    "estimatedTime": "X months",
+    "requiredResources": "What it would take",
+    "barriers": ["Barriers to copying"],
+    "verdict": "VC verdict on competitive moat"
+  }
+}`;
+
+    case "Market":
+      return `${baseContext}
+Market Context: ${marketStr}
+
+Generate these SPECIFIC tools for ${companyName}'s Market section:
+
+Return JSON:
+{
+  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "caseStudy": {"company": "Real company in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
+  "bottomsUpTAM": {
+    "targetSegments": [
+      {"segment": "Primary ICP", "count": number of companies, "acv": average deal size, "tam": segment TAM}
+    ],
+    "totalTAM": total addressable market,
+    "sam": serviceable addressable market,
+    "som": serviceable obtainable market,
+    "methodology": "How this was calculated",
+    "assumptions": ["Key assumptions"]
+  },
+  "marketReadinessIndex": {
+    "regulatoryPressure": {"score": 1-100, "evidence": "Specific to ${companyCategory}"},
+    "urgency": {"score": 1-100, "evidence": "Why buyers need this now"},
+    "willingnessToPay": {"score": 1-100, "evidence": "Payment evidence"},
+    "switchingFriction": {"score": 1-100, "evidence": "Switching cost analysis"},
+    "overallScore": 1-100
+  },
+  "vcMarketNarrative": {
+    "pitchToIC": "How to pitch this market to investment committee",
+    "marketTiming": "Why now is the right time",
+    "whyNow": "Specific market forces"
+  }
+}`;
+
+    case "Competition":
+      return `${baseContext}
+Competitor Research: ${competitorStr}
+
+Generate these SPECIFIC tools for ${companyName}'s Competition section (use ACTUAL competitors from research, not generic examples):
+
+Return JSON:
+{
+  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "caseStudy": {"company": "Real company that won against competitors in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
+  "competitorChessboard": {
+    "competitors": [
+      {"name": "Real competitor name", "currentPosition": "Their market position", "likely12MonthMoves": ["Expected moves"], "threat24Months": "Low|Medium|High"}
+    ],
+    "marketDynamics": "Overall competitive dynamics for ${companyName}"
+  },
+  "reverseDiligence": {
+    "weaknesses": ["${companyName}'s weaknesses competitors could exploit"],
+    "howCompetitorWouldExploit": ["How competitors might attack"],
+    "defenseStrategy": ["How to defend against attacks"]
+  },
+  "moatDurability": {
+    "currentMoatStrength": 1-10,
+    "erosionFactors": ["What could erode the moat"],
+    "estimatedDuration": "How long the moat lasts",
+    "reinforcementOpportunities": ["How to strengthen the moat"]
+  }
+}`;
+
+    case "Team":
+      return `${baseContext}
+
+Generate these SPECIFIC tools for ${companyName}'s Team section:
+
+Return JSON:
+{
+  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "caseStudy": {"company": "Real company with relevant founder background in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
+  "credibilityGapAnalysis": {
+    "expectedSkills": ["Skills needed for ${companyCategory} success"],
+    "currentSkills": ["Skills the team has"],
+    "gaps": [{"skill": "Missing skill", "severity": "Critical|Important|Minor", "mitigation": "How to address"}],
+    "overallCredibility": 1-10
+  },
+  "founderMapping": {
+    "successfulFounderProfiles": [
+      {"company": "Similar successful company", "founderBackground": "Their background", "relevantTo": "Why relevant to ${companyName}"}
+    ],
+    "matchScore": 1-10,
+    "gaps": ["Where this team differs from successful founders"]
+  }
+}`;
+
+    case "Business Model":
+      return `${baseContext}
+Financial Metrics: ${financialStr}
+
+Generate these SPECIFIC tools for ${companyName}'s Business Model section:
+
+Return JSON:
+{
+  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "caseStudy": {"company": "Real company with similar business model in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
+  "modelStressTest": {
+    "scenarios": [
+      {"scenario": "Stress scenario 1", "impact": "Financial impact", "survivalProbability": 0-100, "mitigations": ["How to mitigate"]}
+    ],
+    "overallResilience": "Low|Medium|High"
+  },
+  "cashEfficiencyBenchmark": {
+    "burnMultiple": number,
+    "industryAverage": number,
+    "percentile": "Xth percentile",
+    "efficiency": "Excellent|Good|Average|Poor",
+    "recommendation": "What to improve"
+  },
+  "profitabilityPath": {
+    "currentGrossMargin": percentage,
+    "targetGrossMargin": percentage,
+    "timeToTarget": "X months/years",
+    "keyLevers": ["How to improve margins"],
+    "milestones": ["Key milestones to hit"]
+  }
+}`;
+
+    case "Traction":
+      return `${baseContext}
+Financial Metrics: ${financialStr}
+
+Generate these SPECIFIC tools for ${companyName}'s Traction section:
+
+Return JSON:
+{
+  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "caseStudy": {"company": "Real company with relevant traction story in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
+  "tractionDepthTest": {
+    "tractionType": "Founder-led|Discount-driven|Repeatable|Viral",
+    "sustainabilityScore": 1-10,
+    "redFlags": ["Warning signs"],
+    "positiveSignals": ["Good indicators"]
+  },
+  "cohortStabilityProjection": {
+    "currentRetention": percentage,
+    "industryBenchmark": percentage,
+    "projectedLTVImpact": "How retention affects LTV",
+    "churnScenarios": [{"churnRate": percentage, "impact": "Financial impact"}]
+  },
+  "pipelineQuality": {
+    "opportunities": [{"stage": "Stage name", "count": number, "avgValue": amount, "conversionRate": percentage, "quality": "Strong|Medium|Weak"}],
+    "overallQuality": "Strong|Medium|Weak",
+    "redFlags": ["Pipeline concerns"],
+    "positiveSignals": ["Pipeline strengths"]
+  }
+}`;
+
+    case "Vision":
+      return `${baseContext}
+
+Generate these SPECIFIC tools for ${companyName}'s Vision section:
+
+Return JSON:
+{
+  "sectionScore": {"score": 1-10, "label": "...", "vcBenchmark": "...", "percentile": "...", "topInsight": "..."},
+  "vcInvestmentLogic": {"decision": "PASS|CAUTIOUS|INTERESTED|EXCITED", "reasoning": "...", "keyCondition": "..."},
+  "actionPlan90Day": {"actions": [{"action": "...", "timeline": "...", "priority": "...", "outcome": "..."}]},
+  "caseStudy": {"company": "Real company with inspiring vision in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
+  "vcMilestoneMap": {
+    "milestones": [
+      {"month": 3, "milestone": "Q1 milestone", "metric": "Key metric", "targetValue": "Target", "currentValue": "Current if known"},
+      {"month": 6, "milestone": "Q2 milestone", "metric": "Key metric", "targetValue": "Target"},
+      {"month": 12, "milestone": "Year 1 milestone", "metric": "Key metric", "targetValue": "Target"}
+    ],
+    "criticalPath": ["Critical dependencies"]
+  },
+  "scenarioPlanning": {
+    "bestCase": {"description": "Best case scenario for ${companyName}", "fundraisingImplication": "Impact on next raise", "probability": 0-100},
+    "baseCase": {"description": "Base case scenario", "fundraisingImplication": "Impact on next raise", "probability": 0-100},
+    "downside": {"description": "Downside scenario", "fundraisingImplication": "Impact on next raise", "probability": 0-100}
+  },
+  "exitNarrative": {
+    "potentialAcquirers": ["Specific companies that might acquire ${companyName}"],
+    "strategicValue": "Why acquirers would want this",
+    "comparableExits": [{"company": "Similar exit", "acquirer": "Who bought", "value": "Exit value", "multiple": "Revenue multiple"}],
+    "pathToExit": "How this company gets to an exit"
+  }
+}`;
+
+    default:
+      return null;
+  }
+}
+
+function extractToolsFromResponse(sectionName: string, toolData: any): Array<{name: string, data: any}> {
+  const tools: Array<{name: string, data: any}> = [];
+  
+  // Common tools
+  if (toolData.sectionScore) tools.push({ name: 'sectionScore', data: toolData.sectionScore });
+  if (toolData.vcInvestmentLogic) tools.push({ name: 'vcInvestmentLogic', data: toolData.vcInvestmentLogic });
+  if (toolData.actionPlan90Day) tools.push({ name: 'actionPlan90Day', data: toolData.actionPlan90Day });
+  if (toolData.caseStudy) tools.push({ name: 'caseStudy', data: toolData.caseStudy });
+  if (toolData.benchmarks) tools.push({ name: 'benchmarks', data: toolData.benchmarks });
+  if (toolData.leadInvestorRequirements) tools.push({ name: 'leadInvestorRequirements', data: toolData.leadInvestorRequirements });
+  
+  // Problem section tools
+  if (toolData.evidenceThreshold) tools.push({ name: 'evidenceThreshold', data: { aiGenerated: toolData.evidenceThreshold, dataSource: 'ai-complete' } });
+  if (toolData.founderBlindSpot) tools.push({ name: 'founderBlindSpot', data: { aiGenerated: toolData.founderBlindSpot, dataSource: 'ai-complete' } });
+  
+  // Solution section tools
+  if (toolData.technicalDefensibility) tools.push({ name: 'technicalDefensibility', data: { aiGenerated: toolData.technicalDefensibility, dataSource: 'ai-complete' } });
+  if (toolData.commoditizationTeardown) tools.push({ name: 'commoditizationTeardown', data: { aiGenerated: toolData.commoditizationTeardown, dataSource: 'ai-complete' } });
+  if (toolData.competitorBuildAnalysis) tools.push({ name: 'competitorBuildAnalysis', data: { aiGenerated: toolData.competitorBuildAnalysis, dataSource: 'ai-complete' } });
+  
+  // Market section tools
+  if (toolData.bottomsUpTAM) tools.push({ name: 'bottomsUpTAM', data: { aiGenerated: toolData.bottomsUpTAM, dataSource: 'ai-complete' } });
+  if (toolData.marketReadinessIndex) tools.push({ name: 'marketReadinessIndex', data: { aiGenerated: toolData.marketReadinessIndex, dataSource: 'ai-complete' } });
+  if (toolData.vcMarketNarrative) tools.push({ name: 'vcMarketNarrative', data: { aiGenerated: toolData.vcMarketNarrative, dataSource: 'ai-complete' } });
+  
+  // Competition section tools
+  if (toolData.competitorChessboard) tools.push({ name: 'competitorChessboard', data: { aiGenerated: toolData.competitorChessboard, dataSource: 'ai-complete' } });
+  if (toolData.reverseDiligence) tools.push({ name: 'reverseDiligence', data: { aiGenerated: toolData.reverseDiligence, dataSource: 'ai-complete' } });
+  if (toolData.moatDurability) tools.push({ name: 'moatDurability', data: { aiGenerated: toolData.moatDurability, dataSource: 'ai-complete' } });
+  
+  // Team section tools
+  if (toolData.credibilityGapAnalysis) tools.push({ name: 'credibilityGapAnalysis', data: { aiGenerated: toolData.credibilityGapAnalysis, dataSource: 'ai-complete' } });
+  if (toolData.founderMapping) tools.push({ name: 'founderMapping', data: { aiGenerated: toolData.founderMapping, dataSource: 'ai-complete' } });
+  
+  // Business Model section tools
+  if (toolData.modelStressTest) tools.push({ name: 'modelStressTest', data: { aiGenerated: toolData.modelStressTest, dataSource: 'ai-complete' } });
+  if (toolData.cashEfficiencyBenchmark) tools.push({ name: 'cashEfficiencyBenchmark', data: { aiGenerated: toolData.cashEfficiencyBenchmark, dataSource: 'ai-complete' } });
+  if (toolData.profitabilityPath) tools.push({ name: 'profitabilityPath', data: { aiGenerated: toolData.profitabilityPath, dataSource: 'ai-complete' } });
+  
+  // Traction section tools
+  if (toolData.tractionDepthTest) tools.push({ name: 'tractionDepthTest', data: { aiGenerated: toolData.tractionDepthTest, dataSource: 'ai-complete' } });
+  if (toolData.cohortStabilityProjection) tools.push({ name: 'cohortStabilityProjection', data: { aiGenerated: toolData.cohortStabilityProjection, dataSource: 'ai-complete' } });
+  if (toolData.pipelineQuality) tools.push({ name: 'pipelineQuality', data: { aiGenerated: toolData.pipelineQuality, dataSource: 'ai-complete' } });
+  
+  // Vision section tools
+  if (toolData.vcMilestoneMap) tools.push({ name: 'vcMilestoneMap', data: { aiGenerated: toolData.vcMilestoneMap, dataSource: 'ai-complete' } });
+  if (toolData.scenarioPlanning) tools.push({ name: 'scenarioPlanning', data: { aiGenerated: toolData.scenarioPlanning, dataSource: 'ai-complete' } });
+  if (toolData.exitNarrative) tools.push({ name: 'exitNarrative', data: { aiGenerated: toolData.exitNarrative, dataSource: 'ai-complete' } });
+  
+  return tools;
+}
+
+
 // Main background generation function
 async function generateMemoInBackground(
   companyId: string,
@@ -1098,6 +1581,35 @@ Return EXACTLY this JSON structure with your content filled in:
         console.error(`No content returned for section: ${sectionName}`);
       }
     }
+
+    // ============================================
+    // Generate tool data for each section
+    // ============================================
+    console.log("=== Generating section tool data ===");
+    
+    for (const [sectionName, sectionContent] of Object.entries(enhancedSections)) {
+      if (sectionName === "Investment Thesis") continue; // Skip thesis for now
+      
+      await generateSectionToolData(
+        {
+          sectionName,
+          sectionContent,
+          companyName: company.name,
+          companyCategory: company.category || "",
+          companyStage: company.stage,
+          companyDescription: company.description || "",
+          financialMetrics,
+          responses: responses || [],
+          competitorResearch,
+          marketContext
+        },
+        LOVABLE_API_KEY,
+        supabaseClient,
+        companyId
+      );
+    }
+    
+    console.log("=== Finished generating section tool data ===");
 
     // ============================================
     // Generate Investment Thesis section (synthesizes ALL sections)
