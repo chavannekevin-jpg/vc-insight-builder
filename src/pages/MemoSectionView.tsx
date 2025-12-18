@@ -158,18 +158,36 @@ export default function MemoSectionView() {
               if (!toolsMap[sectionName]) {
                 toolsMap[sectionName] = {};
               }
-              const toolKey = tool.tool_name as keyof EnhancedSectionTools;
               const aiData = tool.ai_generated_data as Record<string, any> || {};
               const userOverrides = tool.user_overrides as Record<string, any> || {};
-              const mergedData = {
-                ...aiData,
-                ...userOverrides,
-                dataSource: tool.data_source || "ai-complete"
-              };
-              (toolsMap[sectionName] as any)[toolKey] = 
-                ["sectionScore", "benchmarks", "caseStudy", "vcInvestmentLogic", "actionPlan90Day", "leadInvestorRequirements"].includes(tool.tool_name)
-                  ? mergedData
-                  : { aiGenerated: aiData, userOverrides: userOverrides, dataSource: tool.data_source || "ai-complete" };
+              
+              // Check if data is already wrapped with aiGenerated (old format from DB)
+              const isAlreadyWrapped = aiData.aiGenerated !== undefined;
+              
+              // Tools that use direct merged data format
+              const directMergeTools = ["sectionScore", "benchmarks", "caseStudy", "vcInvestmentLogic", "actionPlan90Day", "leadInvestorRequirements"];
+              
+              if (directMergeTools.includes(tool.tool_name)) {
+                // Direct merge format
+                (toolsMap[sectionName] as any)[tool.tool_name] = {
+                  ...aiData,
+                  ...userOverrides,
+                  dataSource: tool.data_source || "ai-complete"
+                };
+              } else if (isAlreadyWrapped) {
+                // Already wrapped - just add userOverrides at top level
+                (toolsMap[sectionName] as any)[tool.tool_name] = {
+                  ...aiData,
+                  userOverrides: userOverrides
+                };
+              } else {
+                // Raw data - wrap with aiGenerated
+                (toolsMap[sectionName] as any)[tool.tool_name] = {
+                  aiGenerated: aiData,
+                  userOverrides: userOverrides,
+                  dataSource: tool.data_source || "ai-complete"
+                };
+              }
             });
             setSectionTools(toolsMap);
           }

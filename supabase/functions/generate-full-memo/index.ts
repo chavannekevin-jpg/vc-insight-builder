@@ -607,6 +607,7 @@ Return JSON:
 function extractToolsFromResponse(sectionName: string, toolData: any): Array<{name: string, data: any}> {
   const tools: Array<{name: string, data: any}> = [];
   
+  // All tools are saved as raw data - the frontend handles wrapping consistently
   // Common tools
   if (toolData.sectionScore) tools.push({ name: 'sectionScore', data: toolData.sectionScore });
   if (toolData.vcInvestmentLogic) tools.push({ name: 'vcInvestmentLogic', data: toolData.vcInvestmentLogic });
@@ -615,43 +616,43 @@ function extractToolsFromResponse(sectionName: string, toolData: any): Array<{na
   if (toolData.benchmarks) tools.push({ name: 'benchmarks', data: toolData.benchmarks });
   if (toolData.leadInvestorRequirements) tools.push({ name: 'leadInvestorRequirements', data: toolData.leadInvestorRequirements });
   
-  // Problem section tools
-  if (toolData.evidenceThreshold) tools.push({ name: 'evidenceThreshold', data: { aiGenerated: toolData.evidenceThreshold, dataSource: 'ai-complete' } });
-  if (toolData.founderBlindSpot) tools.push({ name: 'founderBlindSpot', data: { aiGenerated: toolData.founderBlindSpot, dataSource: 'ai-complete' } });
+  // Problem section tools - saved as raw data
+  if (toolData.evidenceThreshold) tools.push({ name: 'evidenceThreshold', data: toolData.evidenceThreshold });
+  if (toolData.founderBlindSpot) tools.push({ name: 'founderBlindSpot', data: toolData.founderBlindSpot });
   
-  // Solution section tools
-  if (toolData.technicalDefensibility) tools.push({ name: 'technicalDefensibility', data: { aiGenerated: toolData.technicalDefensibility, dataSource: 'ai-complete' } });
-  if (toolData.commoditizationTeardown) tools.push({ name: 'commoditizationTeardown', data: { aiGenerated: toolData.commoditizationTeardown, dataSource: 'ai-complete' } });
-  if (toolData.competitorBuildAnalysis) tools.push({ name: 'competitorBuildAnalysis', data: { aiGenerated: toolData.competitorBuildAnalysis, dataSource: 'ai-complete' } });
+  // Solution section tools - saved as raw data
+  if (toolData.technicalDefensibility) tools.push({ name: 'technicalDefensibility', data: toolData.technicalDefensibility });
+  if (toolData.commoditizationTeardown) tools.push({ name: 'commoditizationTeardown', data: toolData.commoditizationTeardown });
+  if (toolData.competitorBuildAnalysis) tools.push({ name: 'competitorBuildAnalysis', data: toolData.competitorBuildAnalysis });
   
-  // Market section tools
-  if (toolData.bottomsUpTAM) tools.push({ name: 'bottomsUpTAM', data: { aiGenerated: toolData.bottomsUpTAM, dataSource: 'ai-complete' } });
-  if (toolData.marketReadinessIndex) tools.push({ name: 'marketReadinessIndex', data: { aiGenerated: toolData.marketReadinessIndex, dataSource: 'ai-complete' } });
-  if (toolData.vcMarketNarrative) tools.push({ name: 'vcMarketNarrative', data: { aiGenerated: toolData.vcMarketNarrative, dataSource: 'ai-complete' } });
+  // Market section tools - saved as raw data
+  if (toolData.bottomsUpTAM) tools.push({ name: 'bottomsUpTAM', data: toolData.bottomsUpTAM });
+  if (toolData.marketReadinessIndex) tools.push({ name: 'marketReadinessIndex', data: toolData.marketReadinessIndex });
+  if (toolData.vcMarketNarrative) tools.push({ name: 'vcMarketNarrative', data: toolData.vcMarketNarrative });
   
-  // Competition section tools
-  if (toolData.competitorChessboard) tools.push({ name: 'competitorChessboard', data: { aiGenerated: toolData.competitorChessboard, dataSource: 'ai-complete' } });
-  if (toolData.reverseDiligence) tools.push({ name: 'reverseDiligence', data: { aiGenerated: toolData.reverseDiligence, dataSource: 'ai-complete' } });
-  if (toolData.moatDurability) tools.push({ name: 'moatDurability', data: { aiGenerated: toolData.moatDurability, dataSource: 'ai-complete' } });
+  // Competition section tools - saved as raw data
+  if (toolData.competitorChessboard) tools.push({ name: 'competitorChessboard', data: toolData.competitorChessboard });
+  if (toolData.reverseDiligence) tools.push({ name: 'reverseDiligence', data: toolData.reverseDiligence });
+  if (toolData.moatDurability) tools.push({ name: 'moatDurability', data: toolData.moatDurability });
   
-  // Team section tools
-  if (toolData.credibilityGapAnalysis) tools.push({ name: 'credibilityGapAnalysis', data: { aiGenerated: toolData.credibilityGapAnalysis, dataSource: 'ai-complete' } });
-  if (toolData.founderMapping) tools.push({ name: 'founderMapping', data: { aiGenerated: toolData.founderMapping, dataSource: 'ai-complete' } });
+  // Team section tools - saved as raw data
+  if (toolData.credibilityGapAnalysis) tools.push({ name: 'credibilityGapAnalysis', data: toolData.credibilityGapAnalysis });
+  if (toolData.founderMapping) tools.push({ name: 'founderMapping', data: toolData.founderMapping });
   
-  // Business Model section tools
-  if (toolData.modelStressTest) tools.push({ name: 'modelStressTest', data: { aiGenerated: toolData.modelStressTest, dataSource: 'ai-complete' } });
-  if (toolData.cashEfficiencyBenchmark) tools.push({ name: 'cashEfficiencyBenchmark', data: { aiGenerated: toolData.cashEfficiencyBenchmark, dataSource: 'ai-complete' } });
-  if (toolData.profitabilityPath) tools.push({ name: 'profitabilityPath', data: { aiGenerated: toolData.profitabilityPath, dataSource: 'ai-complete' } });
+  // Business Model section tools - saved as raw data
+  if (toolData.modelStressTest) tools.push({ name: 'modelStressTest', data: toolData.modelStressTest });
+  if (toolData.cashEfficiencyBenchmark) tools.push({ name: 'cashEfficiencyBenchmark', data: toolData.cashEfficiencyBenchmark });
+  if (toolData.profitabilityPath) tools.push({ name: 'profitabilityPath', data: toolData.profitabilityPath });
   
-  // Traction section tools
-  if (toolData.tractionDepthTest) tools.push({ name: 'tractionDepthTest', data: { aiGenerated: toolData.tractionDepthTest, dataSource: 'ai-complete' } });
-  if (toolData.cohortStabilityProjection) tools.push({ name: 'cohortStabilityProjection', data: { aiGenerated: toolData.cohortStabilityProjection, dataSource: 'ai-complete' } });
-  if (toolData.pipelineQuality) tools.push({ name: 'pipelineQuality', data: { aiGenerated: toolData.pipelineQuality, dataSource: 'ai-complete' } });
+  // Traction section tools - saved as raw data
+  if (toolData.tractionDepthTest) tools.push({ name: 'tractionDepthTest', data: toolData.tractionDepthTest });
+  if (toolData.cohortStabilityProjection) tools.push({ name: 'cohortStabilityProjection', data: toolData.cohortStabilityProjection });
+  if (toolData.pipelineQuality) tools.push({ name: 'pipelineQuality', data: toolData.pipelineQuality });
   
-  // Vision section tools
-  if (toolData.vcMilestoneMap) tools.push({ name: 'vcMilestoneMap', data: { aiGenerated: toolData.vcMilestoneMap, dataSource: 'ai-complete' } });
-  if (toolData.scenarioPlanning) tools.push({ name: 'scenarioPlanning', data: { aiGenerated: toolData.scenarioPlanning, dataSource: 'ai-complete' } });
-  if (toolData.exitNarrative) tools.push({ name: 'exitNarrative', data: { aiGenerated: toolData.exitNarrative, dataSource: 'ai-complete' } });
+  // Vision section tools - saved as raw data
+  if (toolData.vcMilestoneMap) tools.push({ name: 'vcMilestoneMap', data: toolData.vcMilestoneMap });
+  if (toolData.scenarioPlanning) tools.push({ name: 'scenarioPlanning', data: toolData.scenarioPlanning });
+  if (toolData.exitNarrative) tools.push({ name: 'exitNarrative', data: toolData.exitNarrative });
   
   return tools;
 }
