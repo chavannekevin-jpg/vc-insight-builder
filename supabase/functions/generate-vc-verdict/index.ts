@@ -95,16 +95,29 @@ Return ONLY valid JSON:
     {
       "text": "First deal-killer - be specific. Why would a partner say no in the first 30 seconds?",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "vcQuote": "The exact dismissive phrase a VC might say internally."
+      "vcQuote": "The exact dismissive phrase a VC might say internally.",
+      "teaserLine": "Full sentence starting with 'Partners' that hints at the issue conceptually without revealing specifics. Example: 'Partners raised concerns about the go-to-market—the sales motion doesn't match the target profile.'"
     },
     {
       "text": "Second deal-killer - different dimension. Focus on structural failure.",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "vcQuote": "Another internal VC quote."
+      "vcQuote": "Another internal VC quote.",
+      "teaserLine": "Another 'Partners' sentence hinting at this concern. Example: 'Partners questioned whether the market fundamentals support the valuation thesis.'"
     },
     {
       "text": "Third concern - hint at deeper systemic issues",
-      "category": "market" | "team" | "business_model" | "traction" | "competition"
+      "category": "market" | "team" | "business_model" | "traction" | "competition",
+      "teaserLine": "Third 'Partners' sentence. Example: 'Partners noted a gap in competitive positioning—the moat narrative doesn't hold.'"
+    },
+    {
+      "text": "Fourth concern if applicable",
+      "category": "market" | "team" | "business_model" | "traction" | "competition",
+      "teaserLine": "Fourth 'Partners' sentence hinting at the issue."
+    },
+    {
+      "text": "Fifth concern if applicable",
+      "category": "market" | "team" | "business_model" | "traction" | "competition",
+      "teaserLine": "Fifth 'Partners' sentence hinting at the issue."
     }
   ],
   "strengths": [

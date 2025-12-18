@@ -12,11 +12,33 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
   // Helper to safely render text
   const safeText = (text: unknown) => typeof text === 'string' ? text : String(text || '');
   
-  // Helper to safely get arrays
-  const safeArray = (arr: unknown): string[] => {
+  // Type for concern objects
+  interface ConcernObject {
+    text?: string;
+    category?: string;
+    vcQuote?: string;
+    teaserLine?: string;
+  }
+
+  // Helper to safely get arrays - handles both string[] and object[]
+  const safeArray = (arr: unknown): (string | ConcernObject)[] => {
     if (Array.isArray(arr)) return arr;
     if (arr === null || arr === undefined) return [];
     return [];
+  };
+
+  // Helper to get concern text from either string or object
+  const getConcernText = (concern: string | ConcernObject): string => {
+    if (typeof concern === 'string') return concern;
+    return concern?.text || '';
+  };
+
+  // Helper to get teaser line for locked concerns
+  const getTeaserLine = (concern: string | ConcernObject): string => {
+    if (typeof concern === 'string') {
+      return `Partners identified structural concerns in this area.`;
+    }
+    return concern?.teaserLine || `Partners raised questions about ${concern?.category || 'this aspect'} of the business.`;
   };
   
   // Safely extract values with fallbacks
@@ -42,9 +64,9 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
     }
   }
 
-  function getKillerQuestionFromConcerns(concernsList: string[]): string {
+  function getKillerQuestionFromConcerns(concernsList: (string | ConcernObject)[]): string {
     if (concernsList.length === 0) return "Where's the evidence?";
-    const firstConcern = concernsList[0];
+    const firstConcern = getConcernText(concernsList[0]);
     // Extract first 8 words
     const words = firstConcern.split(' ').slice(0, 8).join(' ');
     return words + '...';
@@ -130,7 +152,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
                     <span className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 text-destructive text-xs font-bold flex items-center justify-center mt-0.5">
                       {index + 1}
                     </span>
-                    <p className="text-sm text-foreground leading-relaxed">{safeText(concern)}</p>
+                    <p className="text-sm text-foreground leading-relaxed">{getConcernText(concern)}</p>
                   </div>
                 ))}
               </div>
@@ -170,7 +192,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
   // ============================================
 
   // Generate VC-style deep dive for the primary concern
-  const primaryConcern = concerns[0] || "Insufficient evidence of product-market fit";
+  const primaryConcernText = getConcernText(concerns[0]) || "Insufficient evidence of product-market fit";
   const secondaryConcern = concerns[1] || null;
   
   // Generate contextual VC analysis for primary concern
@@ -217,7 +239,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
     };
   };
 
-  const primaryAnalysis = getVCAnalysis(primaryConcern);
+  const primaryAnalysis = getVCAnalysis(primaryConcernText);
   const totalConcerns = concerns.length;
   const lockedConcerns = Math.max(0, totalConcerns - 1);
 
@@ -271,7 +293,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
             
             {/* The concern itself */}
             <p className="text-foreground font-semibold text-lg mb-4 leading-relaxed">
-              {primaryConcern}
+              {primaryConcernText}
             </p>
             
             {/* VC Implication - Why this matters */}
@@ -336,8 +358,8 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
                     <div className="w-5 h-5 rounded-full bg-destructive/10 flex items-center justify-center">
                       <span className="text-xs font-bold text-destructive/50">{index + 2}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground/60 truncate flex-1">
-                      {concern.split(' ').slice(0, 5).join(' ')}...
+                    <p className="text-sm text-muted-foreground/70 flex-1">
+                      {getTeaserLine(concern)}
                     </p>
                     <Lock className="w-3 h-3 text-muted-foreground/40" />
                   </div>
