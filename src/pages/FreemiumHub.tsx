@@ -96,7 +96,6 @@ export default function FreemiumHub() {
     hasPaid: hasPaidData,
     completedQuestions: cachedCompletedQuestions,
     totalQuestions: cachedTotalQuestions,
-    memoContentGenerated,
     isLoading: companyLoading 
   } = useCompany(user?.id);
 
@@ -191,16 +190,6 @@ export default function FreemiumHub() {
       loadMemoAndResponses(companyData.id);
     }
   }, [companyData?.id, responsesLoaded]);
-
-  // Trigger memo generation in background if not already done
-  useEffect(() => {
-    if (companyData?.id && !memoContentGenerated && cachedCompletedQuestions >= 3) {
-      // Start background memo generation silently
-      supabase.functions.invoke('generate-full-memo', {
-        body: { companyId: companyData.id }
-      }).catch(err => console.log('Background memo generation:', err));
-    }
-  }, [companyData?.id, memoContentGenerated, cachedCompletedQuestions]);
 
   // Generate tagline when company loads - only attempt once
   useEffect(() => {
@@ -747,7 +736,6 @@ export default function FreemiumHub() {
                 hasPaid={hasPaid}
                 deckParsed={deckParsed}
                 cachedVerdict={cachedVerdict}
-                memoContentGenerated={memoContentGenerated}
                 onVerdictGenerated={handleVerdictGenerated}
               />
             </>

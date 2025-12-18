@@ -1462,14 +1462,6 @@ Return ONLY valid JSON with this exact structure:
     const totalDuration = ((Date.now() - startTime) / 1000).toFixed(1);
     console.log(`=== Background memo generation completed successfully in ${totalDuration}s ===`);
     
-    // Mark company as having memo content generated (for VC verdict to use)
-    await supabaseClient
-      .from("companies")
-      .update({ memo_content_generated: true })
-      .eq("id", companyId);
-    
-    console.log(`Company ${companyId} marked as memo_content_generated = true`);
-    
     // Update job status to completed
     await supabaseClient
       .from("memo_generation_jobs")
