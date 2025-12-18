@@ -319,7 +319,7 @@ export default function MemoSectionView() {
                 What's Inside the Full IC Brief
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {memoContent.sections.slice(0, 6).map((section, idx) => {
+                {memoContent.sections.map((section, idx) => {
                   const sectionTitle = section.title.toLowerCase();
                   const sectionConfig = {
                     problem: { icon: Target, snippet: "Evidence threshold • Founder blind spots • Pain validation" },
@@ -358,11 +358,6 @@ export default function MemoSectionView() {
                   );
                 })}
               </div>
-              {memoContent.sections.length > 6 && (
-                <p className="text-xs text-muted-foreground text-center mt-3">
-                  + {memoContent.sections.length - 6} more deep-dive sections
-                </p>
-              )}
             </div>
           )}
 
