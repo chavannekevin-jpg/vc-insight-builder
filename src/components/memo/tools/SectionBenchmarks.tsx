@@ -1,6 +1,7 @@
 import { BarChart3, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { SectionBenchmark } from "@/types/memo";
 import { cn } from "@/lib/utils";
+import { safeLower } from "@/lib/stringUtils";
 import { safeText, safeArray } from "@/lib/toolDataUtils";
 
 interface SectionBenchmarksProps {
@@ -16,7 +17,7 @@ export const SectionBenchmarks = ({ benchmarks, sectionName }: SectionBenchmarks
   }
 
   const getPercentileStyle = (percentile: unknown) => {
-    const p = safeText(percentile).toLowerCase();
+    const p = safeLower(percentile, "SectionBenchmarks.percentile");
     if (p.includes("top") || p.includes("above")) {
       return { icon: <TrendingUp className="w-4 h-4" />, color: "text-emerald-500" };
     }

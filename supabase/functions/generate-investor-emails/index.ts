@@ -74,7 +74,7 @@ serve(async (req) => {
     };
 
     sections.forEach((section: any) => {
-      const title = safeStr(section.title).toLowerCase();
+      const title = safeStr(section.title, "generate-investor-emails.section.title").toLowerCase();
       const narrative = section.narrative || {};
       const paragraphs = narrative.paragraphs || section.paragraphs || [];
       const highlights = narrative.highlights || section.highlights || [];

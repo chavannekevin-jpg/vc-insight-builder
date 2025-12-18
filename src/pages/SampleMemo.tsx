@@ -639,7 +639,7 @@ const SampleMemo = () => {
 
             {/* Placeholder Locked Sections */}
             {/* Investment Thesis section - shown if present in data, or add a teaser */}
-            {!memoContent.sections.some(s => s.title.toLowerCase().includes('thesis') || s.title.toLowerCase().includes('investment')) && (
+            {!memoContent.sections.some(s => safeTitle(s.title).toLowerCase().includes('thesis') || safeTitle(s.title).toLowerCase().includes('investment')) && (
               <MemoSection key="investment-thesis" title="Investment Thesis" index={memoContent.sections.length}>
                 <div className="space-y-8">
                   <MemoParagraph 
