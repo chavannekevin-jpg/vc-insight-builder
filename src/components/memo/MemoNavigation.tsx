@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { MemoStructuredSection } from "@/types/memo";
 
 interface MemoNavigationProps {
@@ -9,19 +9,25 @@ interface MemoNavigationProps {
 export const MemoNavigation = ({ sections, hasQuickTake }: MemoNavigationProps) => {
   const [activeSection, setActiveSection] = useState<string>("quick-take");
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Reset idle timer on any interaction
+  const resetIdleTimer = useCallback(() => {
+    setIsVisible(true);
+    
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+    }
+    
+    idleTimerRef.current = setTimeout(() => {
+      setIsVisible(false);
+    }, 3000); // Hide after 3 seconds of no interaction
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      // Hide when scrolling down rapidly, show when scrolling up
-      if (currentScrollY > lastScrollY && currentScrollY > 200) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
-      }
-      setLastScrollY(currentScrollY);
+      // Reset idle timer on scroll
+      resetIdleTimer();
 
       // Determine active section based on scroll position
       const sectionElements = document.querySelectorAll("[data-section]");
@@ -37,11 +43,33 @@ export const MemoNavigation = ({ sections, hasQuickTake }: MemoNavigationProps) 
       setActiveSection(currentSection);
     };
 
+    const handleMouseMove = () => {
+      resetIdleTimer();
+    };
+
+    const handleTouchStart = () => {
+      resetIdleTimer();
+    };
+
+    // Initial timer
+    resetIdleTimer();
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY, sections, hasQuickTake]);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchstart", handleTouchStart);
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+      }
+    };
+  }, [sections, hasQuickTake, resetIdleTimer]);
 
   const scrollToSection = (sectionId: string) => {
+    resetIdleTimer();
     const element = document.querySelector(`[data-section="${sectionId}"]`);
     if (element) {
       const offset = 100;
