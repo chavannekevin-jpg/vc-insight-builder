@@ -8,6 +8,7 @@ import { DEMO_STARTUPS, DemoStartup } from "@/data/acceleratorDemo/demoStartups"
 import { Search, ArrowUpDown, Grid3X3, List, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { safeLower } from "@/lib/stringUtils";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -32,12 +33,12 @@ const CohortOverview = () => {
 
     // Filter by search
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+      const query = safeLower(searchQuery, "CohortOverview.search");
       result = result.filter(
         (s) =>
-          s.name.toLowerCase().includes(query) ||
-          s.tagline.toLowerCase().includes(query) ||
-          s.category.toLowerCase().includes(query)
+          safeLower(s.name, "CohortOverview.name").includes(query) ||
+          safeLower(s.tagline, "CohortOverview.tagline").includes(query) ||
+          safeLower(s.category, "CohortOverview.category").includes(query)
       );
     }
 

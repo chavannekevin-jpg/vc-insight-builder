@@ -1,4 +1,5 @@
 import { Crosshair, Check, X, Minus, Sparkles, AlertCircle, Target } from "lucide-react";
+import { safeLower } from "@/lib/stringUtils";
 
 interface DifferentiationFactor {
   factor: string;
@@ -14,7 +15,7 @@ interface MemoDifferentiationCardProps {
 }
 
 function extractDifferentiators(solutionText: string, problemText?: string): DifferentiationFactor[] {
-  const textLower = (solutionText + ' ' + (problemText || '')).toLowerCase();
+  const textLower = safeLower(solutionText, "MemoDifferentiationCard") + ' ' + safeLower(problemText || '', "MemoDifferentiationCard.problem");
   
   const factors: DifferentiationFactor[] = [];
   

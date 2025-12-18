@@ -1,4 +1,5 @@
 import { Flame, AlertTriangle, DollarSign, Clock, TrendingUp, Lightbulb } from "lucide-react";
+import { safeLower } from "@/lib/stringUtils";
 
 interface PainScore {
   score: number;
@@ -20,7 +21,7 @@ interface MemoPainValidatorCardProps {
 }
 
 function analyzePainPoints(text: string): PainAnalysis {
-  const textLower = text.toLowerCase();
+  const textLower = safeLower(text, "MemoPainValidatorCard.analyzePainPoints");
   
   // Urgency indicators
   const urgencyKeywords = ['critical', 'urgent', 'immediate', 'now', 'can\'t wait', 'emergency', 'crisis', 'broken', 'failing', 'losing'];

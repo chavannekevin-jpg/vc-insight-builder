@@ -5,6 +5,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Safe string helpers for edge function
+const safeLower = (val: unknown, context?: string): string => {
+  if (typeof val === 'string') return val.toLowerCase();
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val).toLowerCase();
+  if (typeof val === 'object') {
+    const obj = val as Record<string, unknown>;
+    if ('text' in obj) return safeLower(obj.text, context);
+    if ('value' in obj) return safeLower(obj.value, context);
+    if (context) console.warn(`[safeLower] Expected string in ${context}, got object`, val);
+    return '';
+  }
+  if (context) console.warn(`[safeLower] Expected string in ${context}, got ${typeof val}`, val);
+  return '';
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -195,7 +211,7 @@ The founder should feel exposed and compelled to fix this NOW.`;
       }
     } catch (parseError) {
       console.error('Parse error:', parseError, 'Content:', content);
-      const categoryLower = (category || 'technology').toLowerCase();
+      const categoryLower = safeLower(category || 'technology', "generate-vc-verdict.fallback");
       verdict = generateFallbackVerdict(companyName, stage, categoryLower, founderProfileSignals.profile);
     }
 
@@ -246,8 +262,8 @@ function getFounderToneGuidance(profile: string): string {
 
 // Detect founder profile from signals
 function detectFounderProfile(founderBackground: string, traction: string, stage: string, category: string): { profile: string; toneGuidance: string } {
-  const bgLower = (founderBackground || '').toLowerCase();
-  const tractionLower = (traction || '').toLowerCase();
+  const bgLower = safeLower(founderBackground || '', "detectFounderProfile.bg");
+  const tractionLower = safeLower(traction || '', "detectFounderProfile.traction");
   
   // Serial founder indicators
   if (bgLower.includes('exited') || bgLower.includes('sold') || bgLower.includes('previous startup') || 

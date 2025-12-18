@@ -1,5 +1,6 @@
 import { Shield, Sparkles, Network, Database, Award, DollarSign, Lock, Lightbulb } from "lucide-react";
 import { MoatScores } from "@/lib/memoDataExtractor";
+import { safeLower } from "@/lib/stringUtils";
 
 interface MemoMoatScoreCardProps {
   moatScores: MoatScores;
@@ -48,8 +49,8 @@ function getSmartMoatSuggestions(
   stage?: string
 ): SmartSuggestion[] {
   const suggestions: SmartSuggestion[] = [];
-  const categoryLower = (category || '').toLowerCase();
-  const stageLower = (stage || '').toLowerCase();
+  const categoryLower = safeLower(category || '', "MemoMoatScoreCard.category");
+  const stageLower = safeLower(stage || '', "MemoMoatScoreCard.stage");
   
   // Only suggest for weak areas (score < 5)
   const weakAreas = {

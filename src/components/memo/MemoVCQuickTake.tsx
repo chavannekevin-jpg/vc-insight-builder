@@ -1,6 +1,7 @@
 import { AlertCircle, CheckCircle2, AlertTriangle, Lock, ChevronRight, Scale, Target, Flame, Gavel } from "lucide-react";
 import { MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
 import { Button } from "@/components/ui/button";
+import { safeLower } from "@/lib/stringUtils";
 
 interface MemoVCQuickTakeProps {
   quickTake: MemoVCQuickTakeType;
@@ -50,7 +51,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
     
     // For string concerns (old data) or objects without teaserLine - extract keywords intelligently
     const concernText = typeof concern === 'string' ? concern : concern?.text || '';
-    const lowerConcern = concernText.toLowerCase();
+    const lowerConcern = safeLower(concernText, "MemoVCQuickTake.getTeaserLine");
     
     // Extract specific keywords and generate company-specific teasers
     if (lowerConcern.includes('unit economics') || lowerConcern.includes('economics')) {
@@ -298,7 +299,7 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
   
   // Fallback VC analysis for old memos without primaryConcernAnalysis
   const getFallbackVCAnalysis = (concern: string): { implication: string; vcThinking: string; fundPerspective: string } => {
-    const concernLower = concern.toLowerCase();
+    const concernLower = safeLower(concern, "MemoVCQuickTake.getFallbackVCAnalysis");
     
     if (concernLower.includes('traction') || concernLower.includes('revenue') || concernLower.includes('customer')) {
       return {

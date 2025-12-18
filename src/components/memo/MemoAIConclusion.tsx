@@ -1,5 +1,6 @@
 import { Sparkles, TrendingUp, AlertTriangle, Target, CheckCircle2 } from "lucide-react";
 import { renderMarkdownText } from "@/lib/markdownParser";
+import { safeLower } from "@/lib/stringUtils";
 
 interface MemoAIConclusionProps {
   text: string;
@@ -20,7 +21,7 @@ const parseConclusion = (text: string) => {
   let buffer: string[] = [];
 
   for (const line of lines) {
-    const lowerLine = line.toLowerCase();
+    const lowerLine = safeLower(line, "MemoAIConclusion.parseConclusion");
     
     if (lowerLine.includes('merit') || lowerLine.includes('strength') || lowerLine.includes('positive')) {
       if (buffer.length > 0 && currentSection === 'thesis') {
