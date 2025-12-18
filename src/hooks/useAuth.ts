@@ -16,8 +16,19 @@ export const useAuth = (): AuthState => {
   // Listen for auth state changes and update cache directly
   useEffect(() => {
     // First, get the initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      queryClient.setQueryData(["auth-session"], session);
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      // Handle invalid refresh token by signing out
+      if (error && error.message?.includes('Refresh Token')) {
+        console.warn('Invalid refresh token, signing out...');
+        supabase.auth.signOut();
+        queryClient.setQueryData(["auth-session"], null);
+      } else {
+        queryClient.setQueryData(["auth-session"], session);
+      }
+      setInitializing(false);
+    }).catch((err) => {
+      console.error('Auth error:', err);
+      queryClient.setQueryData(["auth-session"], null);
       setInitializing(false);
     });
 
@@ -35,7 +46,11 @@ export const useAuth = (): AuthState => {
   const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ["auth-session"],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error && error.message?.includes('Refresh Token')) {
+        await supabase.auth.signOut();
+        return null;
+      }
       return session;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
