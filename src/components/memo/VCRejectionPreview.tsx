@@ -2,6 +2,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Mail, AlertCircle } from "lucide-react";
 import { useMemo } from "react";
+import { safeLower } from "@/lib/stringUtils";
 
 interface VCQuickTake {
   verdict: string;
@@ -33,7 +34,7 @@ const vcPersonas = [
 
 // Map concern keywords to subtle VC language hints
 const getConcernHint = (concern: string): string | null => {
-  const lowerConcern = concern.toLowerCase();
+  const lowerConcern = safeLower(concern, "VCRejectionPreview.getConcernHint");
   
   if (lowerConcern.includes("market") || lowerConcern.includes("tam") || lowerConcern.includes("size")) {
     return "questions around the size of the addressable opportunity";
@@ -88,7 +89,7 @@ const generateEmailBody = (
   
   // Industry-aware language
   const industryPhrase = industry 
-    ? `the ${industry.toLowerCase()} space` 
+    ? `the ${safeLower(industry, "VCRejectionPreview.industryPhrase")} space` 
     : "this space";
   
   if (readinessLevel === "LOW") {

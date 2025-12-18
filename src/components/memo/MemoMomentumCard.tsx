@@ -2,6 +2,7 @@ import { useState } from "react";
 import { TrendingUp, Rocket, Users, BarChart3, Zap, Target, Edit2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { safeLower } from "@/lib/stringUtils";
 
 interface MomentumMetrics {
   growthRate: number | null;
@@ -19,7 +20,7 @@ interface MemoMomentumCardProps {
 }
 
 function extractMomentumMetrics(text: string): MomentumMetrics {
-  const textLower = text.toLowerCase();
+  const textLower = safeLower(text, "MemoMomentumCard.extractMomentumMetrics");
   
   // Extract growth rate patterns
   const growthPatterns = [
@@ -108,7 +109,7 @@ function getMomentumScore(metrics: MomentumMetrics, stage: string): number {
       'seed': 1000,
       'series a': 10000
     };
-    const threshold = stageThresholds[stage.toLowerCase()] || 500;
+    const threshold = stageThresholds[safeLower(stage, "MemoMomentumCard.getMomentumScore")] || 500;
     if (metrics.userCount >= threshold) score += 20;
     else if (metrics.userCount >= threshold / 2) score += 10;
   }
@@ -154,7 +155,7 @@ function getStageBenchmarks(stage: string): { metric: string; benchmark: string;
     ],
   };
   
-  return benchmarks[stage.toLowerCase()] || benchmarks['seed'];
+  return benchmarks[safeLower(stage, "MemoMomentumCard.getStageBenchmarks")] || benchmarks['seed'];
 }
 
 export function MemoMomentumCard({ tractionText, companyName, stage }: MemoMomentumCardProps) {

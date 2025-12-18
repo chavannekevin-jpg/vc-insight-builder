@@ -1,7 +1,7 @@
 // Extract prioritized action items from memo content
 
 import { MemoStructuredContent, MemoVCReflection } from "@/types/memo";
-import { safeTitle } from "@/lib/stringUtils";
+import { safeTitle, safeLower } from "@/lib/stringUtils";
 
 export interface ActionItem {
   id: string;
@@ -177,7 +177,7 @@ export function extractActionPlan(
 }
 
 function categorizeIssue(text: string): ActionItem["category"] {
-  const textLower = text.toLowerCase();
+  const textLower = safeLower(text, "categorizeIssue");
   
   for (const [category, patterns] of Object.entries(ISSUE_PATTERNS)) {
     if (patterns.keywords.some(keyword => textLower.includes(keyword))) {
@@ -246,7 +246,7 @@ function extractIssuesFromReflection(
   
   // Check analysis text for negative signals
   if (reflection.analysis) {
-    const analysisLower = reflection.analysis.toLowerCase();
+    const analysisLower = safeLower(reflection.analysis, "extractIssuesFromReflection");
     
     for (const [category, patterns] of Object.entries(ISSUE_PATTERNS)) {
       if (patterns.keywords.some(keyword => analysisLower.includes(keyword))) {
@@ -281,7 +281,7 @@ function extractRelevantSentence(text: string, keywords: string[]): string {
   const sentences = text.split(/[.!?]+/);
   
   for (const sentence of sentences) {
-    const sentenceLower = sentence.toLowerCase();
+    const sentenceLower = safeLower(sentence, "extractRelevantSentence");
     if (keywords.some(keyword => sentenceLower.includes(keyword))) {
       return sentence.trim();
     }
