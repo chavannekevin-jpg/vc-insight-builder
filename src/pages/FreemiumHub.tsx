@@ -687,6 +687,14 @@ export default function FreemiumHub() {
                         Tools
                       </Button>
                       <Button
+                        variant="outline"
+                        onClick={() => navigate(`/regeneration-checkout?companyId=${company.id}`)}
+                        className="border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500"
+                      >
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Regenerate (€8.99)
+                      </Button>
+                      <Button
                         onClick={() => navigate(`/analysis/overview?companyId=${company.id}`)}
                         className="gradient-primary shadow-glow"
                       >

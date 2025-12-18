@@ -74,35 +74,10 @@ serve(async (req) => {
       });
     }
 
-    // Add generation credit to the company
-    const { data: company, error: fetchError } = await supabaseClient
-      .from("companies")
-      .select("generations_available")
-      .eq("id", companyId)
-      .single();
-
-    if (fetchError) {
-      logStep("Error fetching company", { error: fetchError });
-      throw new Error("Failed to fetch company");
-    }
-
-    const newGenerationsAvailable = (company?.generations_available || 0) + 1;
-
-    const { error: updateError } = await supabaseClient
-      .from("companies")
-      .update({ generations_available: newGenerationsAvailable })
-      .eq("id", companyId);
-
-    if (updateError) {
-      logStep("Error updating generations", { error: updateError });
-      throw new Error("Failed to update generation credits");
-    }
-
-    logStep("Generation credit added", { companyId, newGenerationsAvailable });
+    logStep("Payment verified successfully", { companyId });
 
     return new Response(JSON.stringify({ 
-      success: true, 
-      generationsAvailable: newGenerationsAvailable 
+      success: true
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
