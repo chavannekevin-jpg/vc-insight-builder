@@ -489,7 +489,7 @@ export const VCVerdictCard = memo(({
         {/* CTA Section */}
         <div className="p-6 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
           <Button 
-            onClick={navigateToPortal} 
+            onClick={navigateToCheckout} 
             className="w-full h-12 text-sm font-semibold shadow-glow hover-neon-pulse" 
             size="lg"
           >

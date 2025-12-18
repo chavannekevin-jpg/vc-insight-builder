@@ -253,7 +253,7 @@ export default function MemoSectionView() {
     navigate(`/checkout-analysis?companyId=${companyId}`);
   };
 
-  // Render VC Quick Take page (Section 0)
+  // Render VC Quick Take page (Section 0) - Full access since user has paid
   if (isVCQuickTakePage) {
     const vcQuickTake = memoContent.vcQuickTake;
     const actionPlan = vcQuickTake ? extractActionPlan(memoContent, vcQuickTake) : null;
@@ -267,131 +267,28 @@ export default function MemoSectionView() {
           <div className="container mx-auto px-4 py-3 max-w-5xl">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-amber-600 bg-amber-500/10 px-2 py-1 rounded-full whitespace-nowrap flex items-center gap-1.5">
-                    <Eye className="w-3 h-3" />
-                    Preview
-                  </span>
-                </div>
+                <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full whitespace-nowrap">
+                  Section 0 of {totalSections - 1}
+                </span>
                 <div className="flex-1 max-w-xs">
-                  <Progress value={0} className="h-1.5" />
+                  <Progress value={progressPercent} className="h-1.5" />
                 </div>
               </div>
               
-              {/* Full Memo button - redirect to checkout for freemium, show for premium */}
-              {hasPremium ? (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Full Memo</span>
-                </Button>
-              ) : (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleUnlock}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Unlock Full</span>
-                </Button>
-              )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Full Memo</span>
+              </Button>
             </div>
           </div>
         </div>
         
         <div className="container mx-auto px-4 py-8 max-w-5xl">
-          {/* Lobby Welcome Card */}
-          <div className="mb-8 p-6 rounded-xl bg-gradient-to-br from-muted/50 via-background to-muted/30 border border-border">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-xs font-bold text-amber-600 px-2.5 py-1 bg-amber-500/10 rounded-full flex items-center gap-1.5">
-                <Eye className="w-3 h-3" />
-                LOBBY
-              </span>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-foreground">
-              The partners just finished discussing {companyInfo?.name}.
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              You're not in the room yet — but we caught what they said on the way out.
-            </p>
-          </div>
-
-          {/* What's Inside Preview Grid */}
-          {!hasPremium && memoContent.sections && memoContent.sections.length > 0 && (
-            <div className="mb-8 p-5 rounded-xl bg-muted/30 border border-border/50">
-              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-4">
-                What's Inside the Full IC Brief
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {memoContent.sections.map((section, idx) => {
-                   const sectionTitle = safeTitle(section.title).toLowerCase();
-                  const sectionConfig = {
-                    problem: { icon: Target, snippet: "Evidence threshold • Founder blind spots • Pain validation" },
-                    solution: { icon: Lightbulb, snippet: "Technical defensibility • Commoditization risk • Build analysis" },
-                    market: { icon: TrendingUp, snippet: "TAM reality check • Timing signals • VC narrative fit" },
-                    team: { icon: Users, snippet: "Credibility gaps • Key hire priorities • Founder-market fit" },
-                    competition: { icon: Swords, snippet: "Moat durability • Competitive positioning • Chessboard analysis" },
-                    business: { icon: DollarSign, snippet: "Unit economics • Stress test • Revenue model viability" },
-                    traction: { icon: BarChart, snippet: "Growth depth test • Milestone validation • Signal strength" },
-                    thesis: { icon: Trophy, snippet: "Investment logic • Lead investor lens • Deal conviction" },
-                    vision: { icon: Rocket, snippet: "Exit narrative • Scenario planning • Milestone roadmap" },
-                  };
-                  
-                  const matchedKey = Object.keys(sectionConfig).find(key => sectionTitle.includes(key)) || 'problem';
-                  const config = sectionConfig[matchedKey as keyof typeof sectionConfig];
-                  const IconComponent = config.icon;
-                  
-                  return (
-                    <div 
-                      key={idx} 
-                      className="p-3 rounded-lg bg-background border border-border/50 hover:border-primary/30 transition-colors group cursor-pointer"
-                      onClick={handleUnlock}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div className="flex items-center gap-2">
-                          <IconComponent className="w-3.5 h-3.5 text-primary/70" />
-                          <span className="text-xs text-primary/70 font-medium">Section {idx + 1}</span>
-                        </div>
-                        <Lock className="w-3 h-3 text-muted-foreground/40 group-hover:text-primary/50 transition-colors" />
-                      </div>
-                      <p className="text-sm font-semibold text-foreground line-clamp-1 mb-1">{safeTitle(section.title)}</p>
-                      <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">
-                        {config.snippet}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Sample Memo CTA */}
-          {!hasPremium && (
-            <div className="mb-8 p-4 rounded-xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Want to see what a full analysis looks like?</p>
-                  <p className="text-xs text-muted-foreground">Explore our sample memo with all sections unlocked</p>
-                </div>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate('/sample-memo?view=full')}
-                className="whitespace-nowrap"
-              >
-                View Sample Memo
-              </Button>
-            </div>
-          )}
 
           {/* VC Quick Take Header */}
           <div className="mb-8">
@@ -410,44 +307,19 @@ export default function MemoSectionView() {
             </div>
           </div>
 
-          {/* VC Quick Take Content */}
+          {/* VC Quick Take Content - Always show full version since user has paid */}
           {vcQuickTake && (
             <MemoVCQuickTake 
               quickTake={vcQuickTake} 
-              showTeaser={!hasPremium} 
+              showTeaser={false} 
               onUnlock={handleUnlock} 
             />
           )}
 
-          {/* Action Plan - Only shown to premium users */}
-          {hasPremium && actionPlan && actionPlan.items.length > 0 && (
+          {/* Action Plan */}
+          {actionPlan && actionPlan.items.length > 0 && (
             <div className="mt-8">
               <MemoActionPlan actionPlan={actionPlan} companyName={companyInfo?.name} />
-            </div>
-          )}
-
-          {/* Urgency CTA for non-premium users */}
-          {!hasPremium && (
-            <div className="mt-8 p-6 rounded-xl bg-destructive/5 border border-destructive/20">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
-                  <AlertTriangle className="w-5 h-5 text-destructive" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-foreground mb-1">
-                    73% of startups get rejected based on problems like these
-                  </p>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    The remaining {totalSections - 1} sections show exactly how VCs analyze each area and what you can do to fix every concern before your pitch.
-                  </p>
-                  <Button 
-                    onClick={handleUnlock}
-                    className="w-full sm:w-auto"
-                  >
-                    Unlock Full Memo →
-                  </Button>
-                </div>
-              </div>
             </div>
           )}
 
@@ -481,27 +353,15 @@ export default function MemoSectionView() {
                   ))}
                 </div>
                 
-                {hasPremium ? (
-                  <Button 
-                    variant="default"
-                    onClick={() => goToSection(1)}
-                    className="gap-2"
-                  >
-                    <span className="hidden sm:inline">Next: {memoContent.sections[0]?.title || 'Problem'}</span>
-                    <span className="sm:hidden">Next</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                ) : (
-                  <Button 
-                    variant="default"
-                    onClick={handleUnlock}
-                    className="gap-2"
-                  >
-                    <Lock className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Unlock Section 1</span>
-                    <span className="sm:hidden">Unlock</span>
-                  </Button>
-                )}
+                <Button 
+                  variant="default"
+                  onClick={() => goToSection(1)}
+                  className="gap-2"
+                >
+                  <span className="hidden sm:inline">Next: {safeTitle(memoContent.sections[0]?.title) || 'Problem'}</span>
+                  <span className="sm:hidden">Next</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
               </div>
               
               <div className="flex items-center justify-center gap-4 pt-2">
@@ -514,18 +374,15 @@ export default function MemoSectionView() {
                   <Grid className="w-4 h-4 mr-2" />
                   All Sections
                 </Button>
-                {/* Full Memo button - only for premium users */}
-                {hasPremium && (
-                  <Button 
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
-                    className="text-muted-foreground"
-                  >
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    View Full Memo
-                  </Button>
-                )}
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/analysis?companyId=${companyId}&view=full`)}
+                  className="text-muted-foreground"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  View Full Memo
+                </Button>
               </div>
             </div>
           </div>
