@@ -1275,14 +1275,22 @@ Return JSON:
   "caseStudy": {"company": "Real company in ${companyCategory}", "problem": "...", "fix": "...", "outcome": "...", "timeframe": "...", "sector": "${companyCategory || 'Technology'}"},
   "bottomsUpTAM": {
     "targetSegments": [
-      {"segment": "Primary ICP", "count": number of companies, "acv": average deal size, "tam": segment TAM}
+      {"segment": "Name of segment (e.g. 'Enterprise SaaS in DACH')", "count": 5000, "acv": 25000, "tam": 125000000}
     ],
-    "totalTAM": total addressable market,
-    "sam": serviceable addressable market,
-    "som": serviceable obtainable market,
-    "methodology": "How this was calculated",
-    "assumptions": ["Key assumptions"]
+    "totalTAM": 500000000,
+    "sam": 125000000,
+    "som": 3000000,
+    "methodology": "How this was calculated - be specific about data sources",
+    "assumptions": ["Key assumption 1", "Key assumption 2"]
   },
+  CRITICAL FOR bottomsUpTAM:
+  - ALL values for count, acv, tam, totalTAM, sam, som MUST be plain NUMBERS (not strings!)
+  - If exact data is not available, ESTIMATE based on industry research and comparable companies
+  - Use publicly available market research, industry reports, or comparable company data to derive estimates
+  - NEVER return "Unknown" - always provide your best estimate with methodology explaining the basis
+  - Example: If targeting Nordic manufacturing, research number of manufacturers with >€100M revenue in region
+  - For ACV, use founder pricing data OR comparable B2B SaaS pricing in the vertical
+  - Break market into 2-3 distinct segments for bottoms-up validation
   "marketReadinessIndex": {
     "regulatoryPressure": {"score": 0-100, "evidence": "Specific to ${companyCategory}"},
     "urgency": {"score": 0-100, "evidence": "Why buyers need this now"},

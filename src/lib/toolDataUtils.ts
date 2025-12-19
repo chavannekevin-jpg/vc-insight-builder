@@ -34,11 +34,38 @@ export const safeArray = <T>(arr: unknown): T[] => {
 };
 
 // Safely get a number, with default fallback
+// Handles currency strings like "€25,000", "€250M", "$1.5B", "10,000 companies", "Unknown"
 export const safeNumber = (val: unknown, defaultVal: number = 0): number => {
   if (typeof val === 'number' && !isNaN(val)) return val;
   if (typeof val === 'string') {
-    const parsed = parseFloat(val);
-    if (!isNaN(parsed)) return parsed;
+    // Return default for "Unknown" or empty-like values
+    const lowerVal = val.toLowerCase().trim();
+    if (!lowerVal || lowerVal === 'unknown' || lowerVal.includes('not ') || lowerVal.includes('n/a')) {
+      return defaultVal;
+    }
+    
+    // Strip currency symbols and extract numeric part
+    let cleanedVal = val
+      .replace(/[€$£¥₹kr]/gi, '') // Remove currency symbols
+      .replace(/,/g, '')          // Remove comma separators
+      .replace(/\s+/g, '')        // Remove spaces
+      .trim();
+    
+    // Handle multiplier suffixes (K, M, B)
+    let multiplier = 1;
+    if (/k$/i.test(cleanedVal)) {
+      multiplier = 1000;
+      cleanedVal = cleanedVal.slice(0, -1);
+    } else if (/m$/i.test(cleanedVal)) {
+      multiplier = 1000000;
+      cleanedVal = cleanedVal.slice(0, -1);
+    } else if (/b$/i.test(cleanedVal)) {
+      multiplier = 1000000000;
+      cleanedVal = cleanedVal.slice(0, -1);
+    }
+    
+    const parsed = parseFloat(cleanedVal);
+    if (!isNaN(parsed)) return parsed * multiplier;
   }
   return defaultVal;
 };
