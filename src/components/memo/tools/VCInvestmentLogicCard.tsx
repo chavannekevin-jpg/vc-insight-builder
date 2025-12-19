@@ -1,7 +1,8 @@
 import { ThumbsUp, ThumbsDown, AlertCircle, Sparkles } from "lucide-react";
 import { VCInvestmentLogic } from "@/types/memo";
 import { cn } from "@/lib/utils";
-import { safeText } from "@/lib/toolDataUtils";
+import { safeText, isValidAssessment } from "@/lib/toolDataUtils";
+import { ConditionalAssessmentBadge } from "@/components/memo/ConditionalAssessmentBadge";
 
 interface VCInvestmentLogicCardProps {
   logic: VCInvestmentLogic;
@@ -17,6 +18,7 @@ export const VCInvestmentLogicCard = ({ logic, sectionName }: VCInvestmentLogicC
   const decision = safeText(logic?.decision);
   const reasoning = safeText(logic?.reasoning);
   const keyCondition = safeText(logic?.keyCondition);
+  const hasAssessment = isValidAssessment(logic?.assessment);
 
   const getDecisionStyle = () => {
     switch (decision) {
@@ -83,12 +85,17 @@ export const VCInvestmentLogicCard = ({ logic, sectionName }: VCInvestmentLogicC
           <h4 className="font-semibold text-foreground">VC Investment Logic</h4>
           <p className="text-xs text-muted-foreground">Based on {safeText(sectionName)} alone</p>
         </div>
-        <div className={cn(
-          "ml-auto px-3 py-1 rounded-full text-sm font-medium",
-          style.bg,
-          style.text
-        )}>
-          {style.label}
+        <div className="ml-auto flex items-center gap-2">
+          {hasAssessment && (
+            <ConditionalAssessmentBadge assessment={logic.assessment!} compact />
+          )}
+          <div className={cn(
+            "px-3 py-1 rounded-full text-sm font-medium",
+            style.bg,
+            style.text
+          )}>
+            {style.label}
+          </div>
         </div>
       </div>
 
@@ -108,6 +115,13 @@ export const VCInvestmentLogicCard = ({ logic, sectionName }: VCInvestmentLogicC
           </div>
         )}
       </div>
+
+      {/* Assessment Details */}
+      {hasAssessment && (
+        <div className="mt-4 pt-4 border-t border-border/50">
+          <ConditionalAssessmentBadge assessment={logic.assessment!} showDetails={false} />
+        </div>
+      )}
     </div>
   );
 };

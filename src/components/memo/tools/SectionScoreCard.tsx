@@ -1,7 +1,8 @@
 import { TrendingUp, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { SectionScore } from "@/types/memo";
 import { cn } from "@/lib/utils";
-import { safeText, safeNumber } from "@/lib/toolDataUtils";
+import { safeText, safeNumber, isValidAssessment } from "@/lib/toolDataUtils";
+import { ConditionalAssessmentBadge } from "@/components/memo/ConditionalAssessmentBadge";
 
 interface SectionScoreCardProps {
   score: SectionScore;
@@ -16,6 +17,7 @@ export const SectionScoreCard = ({ score, sectionName }: SectionScoreCardProps) 
 
   const scoreValue = safeNumber(score?.score, 0);
   const vcBenchmark = safeNumber(score?.vcBenchmark, 60);
+  const hasAssessment = isValidAssessment(score?.assessment);
 
   const getScoreColor = (s: number) => {
     if (s >= 80) return "text-emerald-500";
@@ -70,11 +72,16 @@ export const SectionScoreCard = ({ score, sectionName }: SectionScoreCardProps) 
           </div>
         </div>
 
-        {/* VC Benchmark */}
-        <div className="text-right">
-          <p className="text-xs text-muted-foreground">VC Benchmark</p>
-          <p className="text-lg font-semibold text-foreground">{vcBenchmark}+</p>
-          <p className="text-xs text-muted-foreground">expected at Seed</p>
+        {/* VC Benchmark + Assessment Badge */}
+        <div className="text-right space-y-2">
+          <div>
+            <p className="text-xs text-muted-foreground">VC Benchmark</p>
+            <p className="text-lg font-semibold text-foreground">{vcBenchmark}+</p>
+            <p className="text-xs text-muted-foreground">expected at Seed</p>
+          </div>
+          {hasAssessment && (
+            <ConditionalAssessmentBadge assessment={score.assessment!} compact />
+          )}
         </div>
       </div>
 
@@ -101,6 +108,13 @@ export const SectionScoreCard = ({ score, sectionName }: SectionScoreCardProps) 
           <p className="text-sm text-foreground">{safeText(score?.fundabilityImpact)}</p>
         </div>
       </div>
+
+      {/* Assessment Details */}
+      {hasAssessment && (
+        <div className="mt-4 pt-4 border-t border-border/50">
+          <ConditionalAssessmentBadge assessment={score.assessment!} showDetails={false} />
+        </div>
+      )}
     </div>
   );
 };
