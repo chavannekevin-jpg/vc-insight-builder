@@ -471,24 +471,25 @@ export default function AdminMemoView() {
                 {/* Team Section Tools */}
                 {isTeamSection && (
                   <div className="space-y-6">
+                    {/* Show MemoTeamList if we have extracted members */}
                     {extractedTeamMembers.length > 0 && (
-                      <>
-                        <MemoTeamList 
-                          members={extractedTeamMembers.map(tm => ({
-                            name: tm.name,
-                            role: tm.role,
-                            equity: tm.equity,
-                            description: ''
-                          }))} 
-                          showEquity={extractedTeamMembers.some(tm => tm.equity)} 
-                        />
-                        <MemoTeamGapCard 
-                          teamMembers={extractedTeamMembers}
-                          stage={companyInfo?.stage || 'Pre-seed'}
-                          companyName={companyInfo?.name || 'Company'}
-                        />
-                      </>
+                      <MemoTeamList 
+                        members={extractedTeamMembers.map(tm => ({
+                          name: tm.name,
+                          role: tm.role,
+                          equity: tm.equity,
+                          description: ''
+                        }))} 
+                        showEquity={extractedTeamMembers.some(tm => tm.equity)} 
+                      />
                     )}
+                    {/* MemoTeamGapCard - uses tool data as priority, falls back to extracted */}
+                    <MemoTeamGapCard 
+                      teamMembers={extractedTeamMembers}
+                      stage={companyInfo?.stage || 'Pre-seed'}
+                      companyName={companyInfo?.name || 'Company'}
+                      credibilityToolData={currentSectionTools?.credibilityGapAnalysis}
+                    />
                     {currentSectionTools?.credibilityGapAnalysis && (
                       <TeamCredibilityGapCard data={currentSectionTools.credibilityGapAnalysis} />
                     )}

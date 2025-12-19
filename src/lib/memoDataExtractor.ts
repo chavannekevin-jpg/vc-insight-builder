@@ -123,26 +123,30 @@ export function extractTeamMembers(teamStoryText: string): ExtractedTeamMember[]
   // Extended role keywords - more comprehensive
   const roleKeywords = 'CEO|CTO|COO|CFO|CMO|CPO|VP|Head|Director|Founder|Co-Founder|Co-founder|Cofounder|Chief|Lead|Manager|Engineer|President|Partner|Owner';
   
+  // Name pattern that supports 1-4 word names (e.g., "Mohamad Khalil Yossif", "Jean-Pierre Le Blanc")
+  // Supports hyphenated names, apostrophes (O'Brien), and multi-word names
+  const namePattern = `[A-Z][a-zA-Z']+(?:[\\s-][A-Z]?[a-zA-Z']+){0,3}`;
+  
   // Common role patterns - expanded to catch more formats including "Name (Co-Founder & CEO)"
   const rolePatterns = [
     // Name (Co-Founder & CEO) or Name (CEO) format - PRIORITIZED
-    new RegExp(`([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)\\s*\\(([^)]*(?:${roleKeywords})[^)]*)\\)`, 'gi'),
+    new RegExp(`(${namePattern})\\s*\\(([^)]*(?:${roleKeywords})[^)]*)\\)`, 'gi'),
     // "led by Name" or "founded by Name" format
-    new RegExp(`(?:led by|founded by|co-founded by)\\s+([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)(?:[,\\s]+(?:and\\s+)?([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*))?`, 'gi'),
-    // Name - Role format
-    new RegExp(`(?:^|\\n|,\\s*|\\*\\*|\\*|\\•)\\s*([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)\\s*[-–—:]\\s*(${roleKeywords}[^,\\n]*)`, 'gi'),
+    new RegExp(`(?:led by|founded by|co-founded by)\\s+(${namePattern})(?:[,\\s]+(?:and\\s+)?(${namePattern}))?`, 'gi'),
+    // Name — Role format (supports em-dash, en-dash, hyphen, colon)
+    new RegExp(`(?:^|\\n|,\\s*|\\*\\*|\\*|\\•)\\s*(${namePattern})\\s*[—–\\-:]\\s*(${roleKeywords}[^,\\n]*)`, 'gi'),
     // Role: Name format
-    new RegExp(`(${roleKeywords}):\\s*([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)`, 'gi'),
+    new RegExp(`(${roleKeywords}):\\s*(${namePattern})`, 'gi'),
     // **Name** as Role format (markdown)
-    new RegExp(`\\*\\*([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)\\*\\*[^\\n]*(${roleKeywords}[^,\\n]*)`, 'gi'),
+    new RegExp(`\\*\\*(${namePattern})\\*\\*[^\\n]*(${roleKeywords}[^,\\n]*)`, 'gi'),
     // Name, Role format (comma separated)
-    new RegExp(`([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)?),\\s*((?:${roleKeywords})[^,\\n]*)`, 'gi'),
+    new RegExp(`(${namePattern}),\\s*((?:${roleKeywords})[^,\\n]*)`, 'gi'),
     // Bullet point format: • Name - Role
-    new RegExp(`[\\•\\-\\*]\\s*([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)\\s*[-–:]\\s*(${roleKeywords}[^\\n]*)`, 'gi'),
+    new RegExp(`[\\•\\-\\*]\\s*(${namePattern})\\s*[—–\\-:]\\s*(${roleKeywords}[^\\n]*)`, 'gi'),
     // "as the CEO" or "serves as CEO" or "is the CEO" format
-    new RegExp(`([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)(?:\\s+(?:is|as|serves as|who is)\\s+(?:the\\s+)?)((?:${roleKeywords})[^,\\.\\n]*)`, 'gi'),
+    new RegExp(`(${namePattern})(?:\\s+(?:is|as|serves as|who is)\\s+(?:the\\s+)?)((?:${roleKeywords})[^,\\.\\n]*)`, 'gi'),
     // Name who serves as Role
-    new RegExp(`([A-Z][a-zA-Z]+(?:[\\s-][A-Z][a-zA-Z]+)*)\\s+who\\s+(?:serves as|is)\\s+(?:the\\s+)?(${roleKeywords}[^,\\.\\n]*)`, 'gi')
+    new RegExp(`(${namePattern})\\s+who\\s+(?:serves as|is)\\s+(?:the\\s+)?(${roleKeywords}[^,\\.\\n]*)`, 'gi')
   ];
 
   // Helper to add member if valid
@@ -160,11 +164,11 @@ export function extractTeamMembers(teamStoryText: string): ExtractedTeamMember[]
       role = role.replace(/^\*+|\*+$/g, '').replace(/\s+/g, ' ').trim();
     }
     
-    // Validate name looks like a real name (allows hyphenated names, non-Western names)
+    // Validate name looks like a real name (allows hyphenated names, multi-word names, apostrophes)
     const isValidName = name && 
       name.length >= 2 && 
       name.length <= 60 && 
-      /^[A-Z][a-zA-Z]+(?:[\s-][A-Z]?[a-zA-Z]+)*$/.test(name) &&
+      /^[A-Z][a-zA-Z']+(?:[\s-][A-Z]?[a-zA-Z']+)*$/.test(name) &&
       !/(CEO|CTO|COO|CFO|CMO|CPO|Founder|Lead|Head|Director)/i.test(name);
     
     if (isValidName && role && !members.some(m => safeLower(m.name) === safeLower(name))) {
