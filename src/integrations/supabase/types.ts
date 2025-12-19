@@ -118,6 +118,47 @@ export type Database = {
           },
         ]
       }
+      company_models: {
+        Row: {
+          coherence_score: number | null
+          company_id: string
+          created_at: string
+          discrepancy_count: number | null
+          id: string
+          model_data: Json
+          updated_at: string
+          version: number | null
+        }
+        Insert: {
+          coherence_score?: number | null
+          company_id: string
+          created_at?: string
+          discrepancy_count?: number | null
+          id?: string
+          model_data: Json
+          updated_at?: string
+          version?: number | null
+        }
+        Update: {
+          coherence_score?: number | null
+          company_id?: string
+          created_at?: string
+          discrepancy_count?: number | null
+          id?: string
+          model_data?: Json
+          updated_at?: string
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_models_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discount_codes: {
         Row: {
           code: string
