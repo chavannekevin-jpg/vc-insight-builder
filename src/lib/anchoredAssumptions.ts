@@ -51,7 +51,7 @@ export interface AnchoredAssumptions {
   periodicity: 'monthly' | 'annual' | 'per_transaction';
   
   // Source tracking
-  source: 'founder_input' | 'company_model' | 'ai_extracted' | 'ai_estimated' | 'default';
+  source: 'founder_input' | 'company_model' | 'ai_extracted' | 'ai_estimated' | 'default' | 'calculated';
   sourceDescription: string;
   sourceConfidence: 'high' | 'medium' | 'low';
   
@@ -272,6 +272,53 @@ function extractPrimaryMetricValue(
         confidence: 'high',
       };
     }
+  }
+
+  // CRITICAL: Calculate ACV from ARR ÷ Customers when both are available
+  // This handles cases like Groundley: "€126k ARR with 5 customers" → €25.2k ACV
+  const arrMatch = combinedText.match(/[€$£]([\d,.]+)\s*k?\s*(?:carr|arr|annual\s*(?:recurring\s*)?revenue)/i);
+  const customerMatch = combinedText.match(/(\d+)\s*(?:paying\s*)?(?:customer|client|icp|account|enterprise)/i);
+  
+  if (arrMatch && customerMatch) {
+    let arr = parseNumericValue(arrMatch[1]);
+    // Handle 'k' suffix in the original match
+    if (combinedText.includes(arrMatch[0].toLowerCase()) && /k\s*(?:carr|arr)/i.test(arrMatch[0])) {
+      arr = arr * 1000;
+    }
+    const customers = parseInt(customerMatch[1]);
+    
+    if (customers > 0 && arr > 0) {
+      const calculatedACV = Math.round(arr / customers);
+      const value = framework.primaryMetric.periodicity === 'monthly' 
+        ? Math.round(calculatedACV / 12)
+        : calculatedACV;
+        
+      return {
+        value,
+        source: 'calculated' as const,
+        description: `Calculated: ${formatCurrencyValue(arr, currency)} ARR ÷ ${customers} customers = ${formatCurrencyValue(calculatedACV, currency)} ACV`,
+        confidence: 'high',
+      };
+    }
+  }
+
+  // Also try to extract from separate pricing tiers (e.g., "€18k/year" ... "€37k/year")
+  const tierMatches = [...combinedText.matchAll(/[€$£]([\d,.]+)\s*k?\s*(?:\/year|\/yr|per\s*year|annual|arr)/gi)];
+  if (tierMatches.length >= 2) {
+    const tiers = tierMatches.map(m => parseNumericValue(m[1]));
+    const low = Math.min(...tiers);
+    const high = Math.max(...tiers);
+    const midpoint = Math.round(Math.sqrt(low * high)); // Geometric mean
+    const value = framework.primaryMetric.periodicity === 'monthly' 
+      ? Math.round(midpoint / 12)
+      : midpoint;
+      
+    return {
+      value,
+      source: 'founder_input',
+      description: `From founder pricing tiers: ${formatCurrencyValue(low, currency)}-${formatCurrencyValue(high, currency)} (using ${formatCurrencyValue(midpoint, currency)} midpoint)`,
+      confidence: 'high',
+    };
   }
 
   // No explicit value found - return null to trigger AI estimation

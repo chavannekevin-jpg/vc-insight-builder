@@ -42,6 +42,7 @@ const businessModelLabels: Record<BusinessModelType, { label: string; icon: type
 const sourceConfig: Record<AnchoredAssumptions['source'], { label: string; color: string; icon: typeof Info }> = {
   founder_input: { label: 'Founder Input', color: 'bg-success/20 text-success border-success/30', icon: Target },
   company_model: { label: 'Company Data', color: 'bg-success/20 text-success border-success/30', icon: Target },
+  calculated: { label: 'Calculated', color: 'bg-success/20 text-success border-success/30', icon: Calculator },
   ai_extracted: { label: 'AI Extracted', color: 'bg-warning/20 text-warning border-warning/30', icon: Sparkles },
   ai_estimated: { label: 'AI Estimated', color: 'bg-primary/20 text-primary border-primary/30', icon: Sparkles },
   default: { label: 'Default', color: 'bg-destructive/20 text-destructive border-destructive/30', icon: AlertCircle },
