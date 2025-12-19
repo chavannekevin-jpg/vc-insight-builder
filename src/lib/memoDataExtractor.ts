@@ -478,7 +478,7 @@ export type BusinessModelType = 'b2c' | 'saas' | 'enterprise' | 'marketplace' | 
 export type Currency = 'USD' | 'EUR' | 'GBP' | 'SEK' | 'NOK' | 'DKK';
 
 // Data source tracking for transparency
-export type DataSourceType = 'questionnaire' | 'narrative' | 'calculated' | 'default';
+export type DataSourceType = 'questionnaire' | 'narrative' | 'calculated' | 'default' | 'anchored';
 
 export interface PricingDataSource {
   avgMonthlyRevenue: DataSourceType;
@@ -491,6 +491,16 @@ export interface PricingDataSource {
     pricing?: string;
     mrr?: string;
   };
+}
+
+// Anchored assumptions - single source of truth for key metrics
+export interface AnchoredAssumptions {
+  acv?: number; // Annual Contract Value in base currency
+  acvMonthly?: number; // Monthly equivalent (ACV/12)
+  currency?: Currency;
+  businessModelType?: BusinessModelType;
+  source?: 'founder_input' | 'company_model' | 'ai_extracted' | 'default';
+  sourceDescription?: string; // e.g., "From founder questionnaire: $50K-$500K enterprise contracts"
 }
 
 // Enhanced pricing metrics for VC Scale Card
@@ -512,6 +522,8 @@ export interface EnhancedPricingMetrics {
   setupFee?: number;
   // Data source tracking
   dataSource: PricingDataSource;
+  // Anchored assumptions reference
+  anchoredAssumptions?: AnchoredAssumptions;
 }
 
 // Legacy interface for backwards compatibility
@@ -546,6 +558,19 @@ function detectCurrency(text: string): Currency {
   // Return the most frequent, defaulting to USD
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   return sorted[0][1] > 0 ? sorted[0][0] as Currency : 'USD';
+}
+
+/**
+ * Format a currency value for display in anchored assumption descriptions
+ */
+function formatAnchoredValue(value: number, currency: Currency): string {
+  const symbols: Record<Currency, string> = {
+    USD: '$', EUR: '€', GBP: '£', SEK: 'kr', NOK: 'kr', DKK: 'kr'
+  };
+  const symbol = symbols[currency] || '$';
+  if (value >= 1000000) return `${symbol}${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `${symbol}${(value / 1000).toFixed(0)}k`;
+  return `${symbol}${value.toLocaleString()}`;
 }
 
 /**
@@ -619,7 +644,8 @@ export function extractPricingMetrics(
   tractionText: string,
   memoResponses?: Record<string, string>,
   unitEconomicsJson?: Record<string, any>,
-  marketText?: string
+  marketText?: string,
+  anchoredAssumptions?: AnchoredAssumptions
 ): EnhancedPricingMetrics {
   // Include market text in combined search
   const combinedTextRaw = `${businessModelText || ''} ${tractionText || ''} ${marketText || ''}`;
@@ -629,9 +655,9 @@ export function extractPricingMetrics(
   const memoResponseText = memoResponses ? Object.values(memoResponses).filter(v => typeof v === 'string').join(' ') : '';
   const allText = `${combinedText} ${memoResponseText.toLowerCase()}`;
   
-  // Detect currency and business model
-  const currency = detectCurrency(allText);
-  const businessModelType = detectBusinessModelType(allText);
+  // Detect currency and business model - use anchored if available
+  const currency = anchoredAssumptions?.currency || detectCurrency(allText);
+  const businessModelType = anchoredAssumptions?.businessModelType || detectBusinessModelType(allText);
   
   // Initialize defaults with data source tracking
   const defaults: EnhancedPricingMetrics = {
@@ -642,6 +668,7 @@ export function extractPricingMetrics(
     businessModelType,
     isB2C: businessModelType === 'b2c',
     isTransactionBased: businessModelType === 'marketplace',
+    anchoredAssumptions,
     dataSource: {
       avgMonthlyRevenue: 'default',
       currentCustomers: 'default',
@@ -650,7 +677,20 @@ export function extractPricingMetrics(
     },
   };
 
-  // === AUM-BASED MODEL EXTRACTION ===
+  // === ANCHORED ASSUMPTIONS OVERRIDE (highest priority) ===
+  // If anchored ACV is provided, use it as the single source of truth
+  if (anchoredAssumptions?.acvMonthly && anchoredAssumptions.acvMonthly > 0) {
+    defaults.avgMonthlyRevenue = anchoredAssumptions.acvMonthly;
+    defaults.dataSource.avgMonthlyRevenue = 'anchored';
+    defaults.dataSource.calculation = anchoredAssumptions.sourceDescription || 
+      `Anchored ACV: ${formatAnchoredValue(anchoredAssumptions.acv || anchoredAssumptions.acvMonthly * 12, currency)}/year`;
+  } else if (anchoredAssumptions?.acv && anchoredAssumptions.acv > 0) {
+    defaults.avgMonthlyRevenue = Math.round(anchoredAssumptions.acv / 12);
+    defaults.dataSource.avgMonthlyRevenue = 'anchored';
+    defaults.dataSource.calculation = anchoredAssumptions.sourceDescription || 
+      `Anchored ACV: ${formatAnchoredValue(anchoredAssumptions.acv, currency)}/year`;
+  }
+
   if (businessModelType === 'aum') {
     // Extract AUM fee percentage (e.g., "0.5% Annual AUM Fee", "1% management fee")
     const feeMatch = allText.match(/(\d+(?:\.\d+)?)\s*%\s*(?:annual\s*)?(?:aum|management|fund)\s*fee/i) ||

@@ -24,7 +24,8 @@ import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCa
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 
-import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics } from "@/lib/memoDataExtractor";
+import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics, type AnchoredAssumptions } from "@/lib/memoDataExtractor";
+import { extractAnchoredAssumptions, detectCurrencyFromResponses } from "@/lib/anchoredAssumptions";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -450,7 +451,10 @@ export default function MemoSectionView() {
                       tractionSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
   const marketTextGlobal = marketSectionGlobal?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
                            marketSectionGlobal?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
-  const extractedPricing = extractPricingMetrics(businessModelText, tractionText, memoResponses, undefined, marketTextGlobal);
+  // Extract anchored assumptions for ACV consistency
+  const currency = detectCurrencyFromResponses(memoResponses);
+  const anchoredAssumptions = extractAnchoredAssumptions(null, memoResponses, currency);
+  const extractedPricing = extractPricingMetrics(businessModelText, tractionText, memoResponses, undefined, marketTextGlobal, anchoredAssumptions);
 
   const heroParagraph = narrative.paragraphs?.find((p: MemoParagraph) => p.emphasis === "high");
   const otherParagraphs = narrative.paragraphs?.filter((p: MemoParagraph) => p.emphasis !== "high") || [];

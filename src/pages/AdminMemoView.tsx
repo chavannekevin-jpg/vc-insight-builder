@@ -30,7 +30,8 @@ import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
 import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
-import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics } from "@/lib/memoDataExtractor";
+import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics, type AnchoredAssumptions } from "@/lib/memoDataExtractor";
+import { extractAnchoredAssumptions, detectCurrencyFromResponses } from "@/lib/anchoredAssumptions";
 
 // Import VC tools
 import {
@@ -240,7 +241,10 @@ export default function AdminMemoView() {
                              tractionSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
   const marketTextGlobal = marketSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
                            marketSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
-  const extractedPricing = extractPricingMetrics(businessModelText, tractionTextGlobal, memoResponses, undefined, marketTextGlobal);
+  // Extract anchored assumptions for ACV consistency
+  const currency = detectCurrencyFromResponses(memoResponses);
+  const anchoredAssumptions = extractAnchoredAssumptions(null, memoResponses, currency);
+  const extractedPricing = extractPricingMetrics(businessModelText, tractionTextGlobal, memoResponses, undefined, marketTextGlobal, anchoredAssumptions);
 
   let exitPathShown = false;
 
