@@ -114,3 +114,73 @@ export const isValidLeadInvestorRequirements = (req: unknown): boolean => {
   const r = req as Record<string, unknown>;
   return Array.isArray(r.requirements) && Array.isArray(r.dealbreakers) && Array.isArray(r.wouldWantToSee);
 };
+
+// ============================================
+// CONDITIONAL ASSESSMENT UTILITIES (Week 4)
+// ============================================
+
+import type { ConditionalAssessment, ConfidenceLevel } from '@/types/memo';
+
+// Create a default conditional assessment
+export const createDefaultAssessment = (
+  confidenceScore: number = 50,
+  dataCompleteness: number = 50
+): ConditionalAssessment => ({
+  confidence: getConfidenceLevel(confidenceScore),
+  confidenceScore,
+  dataCompleteness,
+  whatWouldChangeThisAssessment: [],
+  assumptions: [],
+  caveats: [],
+});
+
+// Get confidence level from score
+export const getConfidenceLevel = (score: number): ConfidenceLevel => {
+  if (score >= 80) return 'high';
+  if (score >= 50) return 'medium';
+  if (score >= 20) return 'low';
+  return 'insufficient_data';
+};
+
+// Validate ConditionalAssessment structure
+export const isValidAssessment = (assessment: unknown): assessment is ConditionalAssessment => {
+  if (!assessment || typeof assessment !== 'object') return false;
+  const a = assessment as Record<string, unknown>;
+  return (
+    typeof a.confidence === 'string' &&
+    typeof a.confidenceScore === 'number' &&
+    typeof a.dataCompleteness === 'number' &&
+    Array.isArray(a.whatWouldChangeThisAssessment) &&
+    Array.isArray(a.assumptions)
+  );
+};
+
+// Get assessment color based on confidence
+export const getAssessmentColor = (confidence: ConfidenceLevel): string => {
+  switch (confidence) {
+    case 'high': return 'text-green-600';
+    case 'medium': return 'text-amber-600';
+    case 'low': return 'text-orange-600';
+    case 'insufficient_data': return 'text-red-600';
+  }
+};
+
+// Get assessment background color
+export const getAssessmentBgColor = (confidence: ConfidenceLevel): string => {
+  switch (confidence) {
+    case 'high': return 'bg-green-50 border-green-200';
+    case 'medium': return 'bg-amber-50 border-amber-200';
+    case 'low': return 'bg-orange-50 border-orange-200';
+    case 'insufficient_data': return 'bg-red-50 border-red-200';
+  }
+};
+
+// Format confidence label for display
+export const getConfidenceLabel = (confidence: ConfidenceLevel): string => {
+  switch (confidence) {
+    case 'high': return 'High Confidence';
+    case 'medium': return 'Medium Confidence';
+    case 'low': return 'Low Confidence';
+    case 'insufficient_data': return 'Insufficient Data';
+  }
+};
