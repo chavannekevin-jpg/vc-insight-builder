@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,6 +45,7 @@ export default function MemoRegenerate() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const companyId = searchParams.get("companyId");
+  const { isAdmin } = useAuth();
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -197,14 +199,16 @@ export default function MemoRegenerate() {
         }
       }
 
-      // Decrement generation credit
-      await supabase
-        .from("companies")
-        .update({ 
-          generations_available: generationsAvailable - 1,
-          generations_used: generationsUsed + 1
-        })
-        .eq("id", companyId);
+      // Decrement generation credit (skip for admins)
+      if (!isAdmin) {
+        await supabase
+          .from("companies")
+          .update({ 
+            generations_available: generationsAvailable - 1,
+            generations_used: generationsUsed + 1
+          })
+          .eq("id", companyId);
+      }
 
       toast({
         title: "Changes Saved",
@@ -315,42 +319,61 @@ export default function MemoRegenerate() {
           </Card>
 
           {/* Generation Credits Card */}
-          <Card className={`border-2 ${generationsAvailable > 0 ? 'border-success/30 bg-success/5' : 'border-warning/30 bg-warning/5'}`}>
+          <Card className={`border-2 ${isAdmin || generationsAvailable > 0 ? 'border-success/30 bg-success/5' : 'border-warning/30 bg-warning/5'}`}>
             <CardContent className="py-4 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${generationsAvailable > 0 ? 'bg-success/20' : 'bg-warning/20'}`}>
-                  <RotateCcw className={`w-5 h-5 ${generationsAvailable > 0 ? 'text-success' : 'text-warning'}`} />
+              {isAdmin ? (
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-primary/20">
+                    <RotateCcw className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium flex items-center gap-2">
+                      ∞ Unlimited Credits
+                      <Badge variant="outline" className="text-xs">Admin</Badge>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Admin accounts have unlimited regenerations
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">
-                    {generationsAvailable > 0 
-                      ? `${generationsAvailable} Generation Credit${generationsAvailable !== 1 ? 's' : ''} Available`
-                      : 'No Generation Credits'
-                    }
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {generationsUsed > 0 ? `${generationsUsed} used so far` : 'First generation included with purchase'}
-                  </p>
-                </div>
-              </div>
-              {generationsAvailable === 0 && (
-                <Button 
-                  onClick={handlePurchaseCredit}
-                  disabled={purchasing}
-                  className="gap-2"
-                >
-                  {purchasing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-4 h-4" />
-                      Buy Credit - €8.99
-                    </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${generationsAvailable > 0 ? 'bg-success/20' : 'bg-warning/20'}`}>
+                      <RotateCcw className={`w-5 h-5 ${generationsAvailable > 0 ? 'text-success' : 'text-warning'}`} />
+                    </div>
+                    <div>
+                      <p className="font-medium">
+                        {generationsAvailable > 0 
+                          ? `${generationsAvailable} Generation Credit${generationsAvailable !== 1 ? 's' : ''} Available`
+                          : 'No Generation Credits'
+                        }
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {generationsUsed > 0 ? `${generationsUsed} used so far` : 'First generation included with purchase'}
+                      </p>
+                    </div>
+                  </div>
+                  {generationsAvailable === 0 && (
+                    <Button 
+                      onClick={handlePurchaseCredit}
+                      disabled={purchasing}
+                      className="gap-2"
+                    >
+                      {purchasing ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="w-4 h-4" />
+                          Buy Credit - €8.99
+                        </>
+                      )}
+                    </Button>
                   )}
-                </Button>
+                </>
               )}
             </CardContent>
           </Card>
