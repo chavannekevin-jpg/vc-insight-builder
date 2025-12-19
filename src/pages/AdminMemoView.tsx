@@ -23,6 +23,7 @@ import { MemoTeamList } from "@/components/memo/MemoTeamList";
 import { MemoTeamGapCard } from "@/components/memo/MemoTeamGapCard";
 import { MemoVCScaleCard } from "@/components/memo/MemoVCScaleCard";
 import { MemoExitPathCard } from "@/components/memo/MemoExitPathCard";
+import { DataQualitySummary } from "@/components/memo/DataQualitySummary";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Eye, Shield } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -296,6 +297,23 @@ export default function AdminMemoView() {
         {actionPlan && actionPlan.items.length > 0 && (
           <div className="mt-8">
             <MemoActionPlan actionPlan={actionPlan} companyName={companyInfo.name} />
+          </div>
+        )}
+
+        {/* Data Quality Summary - Admin Only */}
+        {memoContent.overallAssessment && (
+          <div className="mt-8">
+            <DataQualitySummary 
+              overallAssessment={memoContent.overallAssessment}
+              sectionAssessments={
+                memoContent.sections?.reduce((acc, section) => {
+                  if (section.sectionAssessment) {
+                    acc[section.title] = section.sectionAssessment;
+                  }
+                  return acc;
+                }, {} as Record<string, any>)
+              }
+            />
           </div>
         )}
 
