@@ -3224,7 +3224,181 @@ Return ONLY valid JSON with this exact structure:
       console.log("No tool data found for assessment aggregation");
     }
 
-    // Save memo to database with structured content including overallAssessment
+    // =============================================================================
+    // CROSS-SECTION COHERENCE VALIDATION
+    // Flag inconsistent ACV/ARPU/GMV values across different tools
+    // =============================================================================
+    console.log("Running cross-section coherence validation...");
+    
+    interface MetricMention {
+      sectionName: string;
+      toolName: string;
+      metricType: 'ACV' | 'ARPU' | 'GMV' | 'MRR' | 'ARR';
+      value: number;
+      currency?: string;
+      context: string;
+    }
+    
+    interface CoherenceFlag {
+      type: 'metric_inconsistency' | 'terminology_mismatch' | 'calculation_error';
+      severity: 'high' | 'medium' | 'low';
+      description: string;
+      affectedSections: string[];
+      values: { section: string; tool: string; value: string }[];
+      suggestion: string;
+    }
+    
+    const coherenceFlags: CoherenceFlag[] = [];
+    const metricMentions: MetricMention[] = [];
+    
+    // Scan all tool data for metric values
+    if (toolDataRecords && toolDataRecords.length > 0) {
+      // Regex patterns for extracting metric values
+      const acvPattern = /(?:ACV|annual contract value)[:\s]*[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:k|K|thousand)?/gi;
+      const arpuPattern = /(?:ARPU|average revenue per user)[:\s]*[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:\/(?:month|mo|year|yr))?/gi;
+      const gmvPattern = /(?:GMV|gross merchandise value)[:\s]*[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:k|K|M|million)?/gi;
+      const mrrPattern = /(?:MRR|monthly recurring revenue)[:\s]*[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:k|K)?/gi;
+      const arrPattern = /(?:ARR|annual recurring revenue)[:\s]*[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:k|K|M|million)?/gi;
+      
+      const parseValue = (match: string, multiplier?: string): number => {
+        const cleanNum = match.replace(/,/g, '');
+        let value = parseFloat(cleanNum);
+        if (multiplier?.toLowerCase() === 'k' || multiplier?.toLowerCase() === 'thousand') {
+          value *= 1000;
+        } else if (multiplier?.toLowerCase() === 'm' || multiplier?.toLowerCase() === 'million') {
+          value *= 1000000;
+        }
+        return value;
+      };
+      
+      for (const record of toolDataRecords) {
+        const aiData = record.ai_generated_data as any;
+        if (!aiData) continue;
+        
+        // Convert entire tool data to string for pattern matching
+        const toolDataStr = JSON.stringify(aiData);
+        
+        // Extract ACV mentions
+        let acvMatch;
+        while ((acvMatch = acvPattern.exec(toolDataStr)) !== null) {
+          const value = parseValue(acvMatch[1]);
+          if (value > 0 && value < 10000000) { // Sanity check
+            metricMentions.push({
+              sectionName: record.section_name,
+              toolName: record.tool_name,
+              metricType: 'ACV',
+              value,
+              context: toolDataStr.substring(Math.max(0, acvMatch.index - 50), acvMatch.index + 100)
+            });
+          }
+        }
+        
+        // Extract ARPU mentions
+        let arpuMatch;
+        while ((arpuMatch = arpuPattern.exec(toolDataStr)) !== null) {
+          const value = parseValue(arpuMatch[1]);
+          if (value > 0 && value < 100000) { // ARPU typically lower
+            metricMentions.push({
+              sectionName: record.section_name,
+              toolName: record.tool_name,
+              metricType: 'ARPU',
+              value,
+              context: toolDataStr.substring(Math.max(0, arpuMatch.index - 50), arpuMatch.index + 100)
+            });
+          }
+        }
+        
+        // Also check structured fields in tool data
+        if (aiData.primaryMetric?.value) {
+          metricMentions.push({
+            sectionName: record.section_name,
+            toolName: record.tool_name,
+            metricType: aiData.primaryMetric?.label?.includes('ARPU') ? 'ARPU' : 'ACV',
+            value: parseFloat(aiData.primaryMetric.value),
+            context: 'structured field: primaryMetric'
+          });
+        }
+        
+        // Check scale calculations
+        if (aiData.scaleRequirements?.revenuePerCustomer) {
+          metricMentions.push({
+            sectionName: record.section_name,
+            toolName: record.tool_name,
+            metricType: 'ACV',
+            value: parseFloat(aiData.scaleRequirements.revenuePerCustomer),
+            context: 'structured field: scaleRequirements.revenuePerCustomer'
+          });
+        }
+      }
+      
+      // Group mentions by metric type and check for inconsistencies
+      const groupedByType: Record<string, MetricMention[]> = {};
+      for (const mention of metricMentions) {
+        if (!groupedByType[mention.metricType]) {
+          groupedByType[mention.metricType] = [];
+        }
+        groupedByType[mention.metricType].push(mention);
+      }
+      
+      // Check each metric type for inconsistencies
+      for (const [metricType, mentions] of Object.entries(groupedByType)) {
+        if (mentions.length < 2) continue;
+        
+        const values = mentions.map(m => m.value);
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+        
+        // Flag if variance is > 30%
+        const variance = maxValue > 0 ? ((maxValue - minValue) / maxValue) * 100 : 0;
+        
+        if (variance > 30) {
+          const affectedSections = [...new Set(mentions.map(m => m.sectionName))];
+          
+          coherenceFlags.push({
+            type: 'metric_inconsistency',
+            severity: variance > 50 ? 'high' : 'medium',
+            description: `Inconsistent ${metricType} values detected across sections. Values range from ${minValue.toLocaleString()} to ${maxValue.toLocaleString()} (${variance.toFixed(0)}% variance).`,
+            affectedSections,
+            values: mentions.map(m => ({
+              section: m.sectionName,
+              tool: m.toolName,
+              value: `${m.value.toLocaleString()} (${metricType})`
+            })),
+            suggestion: `Review the ${metricType} assumption in the company profile. All tools should use the same anchored value for consistent analysis.`
+          });
+        }
+      }
+      
+      // Check for terminology mismatches (using ACV in a B2C context, etc.)
+      const hasArpuMentions = (groupedByType['ARPU']?.length || 0) > 0;
+      const hasAcvMentions = (groupedByType['ACV']?.length || 0) > 0;
+      
+      if (hasArpuMentions && hasAcvMentions) {
+        coherenceFlags.push({
+          type: 'terminology_mismatch',
+          severity: 'low',
+          description: 'Mixed usage of ARPU and ACV terminology detected. For consistency, choose one primary metric based on business model.',
+          affectedSections: [...new Set([
+            ...(groupedByType['ARPU']?.map(m => m.sectionName) || []),
+            ...(groupedByType['ACV']?.map(m => m.sectionName) || [])
+          ])],
+          values: [
+            ...((groupedByType['ARPU'] || []).map(m => ({ section: m.sectionName, tool: m.toolName, value: `ARPU: ${m.value.toLocaleString()}` }))),
+            ...((groupedByType['ACV'] || []).map(m => ({ section: m.sectionName, tool: m.toolName, value: `ACV: ${m.value.toLocaleString()}` })))
+          ],
+          suggestion: 'B2C and PLG models should use ARPU. B2B enterprise models should use ACV. Ensure consistent terminology throughout.'
+        });
+      }
+      
+      console.log(`✓ Coherence validation complete: ${coherenceFlags.length} flag(s) found`);
+      if (coherenceFlags.length > 0) {
+        for (const flag of coherenceFlags) {
+          console.log(`  - [${flag.severity.toUpperCase()}] ${flag.type}: ${flag.description}`);
+        }
+      }
+    }
+
+    // Save memo to database with structured content including overallAssessment and coherenceFlags
     const structuredContent = {
       sections: Object.entries(enhancedSections).map(([title, content]) => ({
         title,
@@ -3232,6 +3406,7 @@ Return ONLY valid JSON with this exact structure:
       })),
       vcQuickTake: vcQuickTake,
       overallAssessment: overallAssessment,
+      coherenceFlags: coherenceFlags.length > 0 ? coherenceFlags : undefined,
       generatedAt: new Date().toISOString()
     };
 
