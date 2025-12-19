@@ -6,6 +6,195 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// =============================================================================
+// COMPANY MODEL TYPE IMPORTS (inline for edge function)
+// =============================================================================
+interface CompanyModel {
+  id: string;
+  companyId: string;
+  companyName: string;
+  stage: string;
+  category: string | null;
+  description: string | null;
+  builtAt: string;
+  version: number;
+  financial: any;
+  customer: any;
+  market: any;
+  traction: any;
+  team: any;
+  defensibility: any;
+  gtm: any;
+  temporal: any;
+  coherence: {
+    overallCoherence: string;
+    score: number;
+    checks: Record<string, { passed: boolean; explanation: string; severity: string }>;
+    conditionalHypotheses: { hypothesis: string; dependsOn: string[]; probability: string }[];
+    resolutionQuestions: string[];
+  };
+  discrepancies: { field: string; statedValue: any; computedValue: any; discrepancyType: string; severity: string; explanation: string }[];
+  sourceResponses: Record<string, string>;
+}
+
+// Helper function to format Company Model as context for prompts
+function formatCompanyModelContext(model: CompanyModel): string {
+  const sections: string[] = [];
+  
+  sections.push(`
+=== COMPANY MODEL: RELATIONAL CONTEXT ===
+This is a structured model of ${model.companyName} built from all available data.
+Use this to reason RELATIONALLY - every data point only has meaning in relation to others.
+
+**COHERENCE ASSESSMENT: ${model.coherence.overallCoherence.toUpperCase()} (Score: ${model.coherence.score}/100)**
+`);
+
+  // Financial Model Summary
+  if (model.financial) {
+    const fin = model.financial;
+    sections.push(`
+--- FINANCIAL MODEL ---
+Revenue (Stated): MRR ${fin.revenue?.stated?.mrr ?? 'N/A'} | ARR ${fin.revenue?.stated?.arr ?? 'N/A'}
+Revenue (Computed): Implied MRR ${fin.revenue?.computed?.mrr ?? 'N/A'} | Implied from Customers ${fin.revenue?.computed?.impliedFromCustomers ?? 'N/A'}
+Pricing Model: ${fin.pricing?.model ?? 'Unknown'} | ACV: ${fin.pricing?.acv ?? 'N/A'} | ACV Band: ${fin.pricing?.acvBand ?? 'N/A'}
+Unit Economics: CAC ${fin.unitEconomics?.cac ?? 'N/A'} | LTV ${fin.unitEconomics?.ltv ?? 'N/A'} | LTV:CAC ${fin.unitEconomics?.ltvCacRatio ?? 'N/A'}
+Burn: ${fin.burn?.monthlyBurn ?? 'N/A'}/mo | Runway: ${fin.burn?.runway ?? 'N/A'} months | Total Raised: ${fin.burn?.totalRaised ?? 'N/A'}
+`);
+  }
+
+  // Customer Model Summary
+  if (model.customer) {
+    const cust = model.customer;
+    sections.push(`
+--- CUSTOMER MODEL ---
+ICP: ${cust.icp?.segment ?? 'Unknown'} | Vertical: ${cust.icp?.vertical ?? 'N/A'} | Persona: ${cust.icp?.persona ?? 'N/A'}
+Customers: Total ${cust.metrics?.totalCustomers ?? 'N/A'} | Paid ${cust.metrics?.paidCustomers ?? 'N/A'} | Free ${cust.metrics?.freeUsers ?? 'N/A'}
+Computed: Revenue/Customer ${cust.metrics?.computed?.revenuePerCustomer ?? 'N/A'} | Conversion ${cust.metrics?.computed?.conversionRate ?? 'N/A'}%
+Retention: Churn ${cust.retention?.churnRate ?? 'N/A'}% | NRR ${cust.retention?.nrr ?? 'N/A'}% | NPS ${cust.retention?.nps ?? 'N/A'}
+Acquisition: Primary Channel ${cust.acquisition?.primaryChannel ?? 'N/A'} | Sales Motion: ${cust.acquisition?.salesMotion ?? 'N/A'} | Cycle: ${cust.acquisition?.salesCycleWeeks ?? 'N/A'} weeks
+`);
+  }
+
+  // Market Model Summary
+  if (model.market) {
+    const mkt = model.market;
+    sections.push(`
+--- MARKET MODEL ---
+TAM (Stated): ${mkt.sizing?.stated?.tam ?? 'N/A'} | SAM: ${mkt.sizing?.stated?.sam ?? 'N/A'} | SOM: ${mkt.sizing?.stated?.som ?? 'N/A'}
+TAM (Bottom-Up Computed): ${mkt.sizing?.computed?.bottomUpTAM ?? 'N/A'} | ICP Count: ${mkt.sizing?.computed?.icpCount ?? 'N/A'}
+TAM Plausibility: ${mkt.sizing?.tamPlausibility ?? 'Unknown'}
+Market Dynamics: Growth ${mkt.dynamics?.growthRate ?? 'N/A'}% | Maturity: ${mkt.dynamics?.maturity ?? 'N/A'} | Timing: ${mkt.dynamics?.timing ?? 'N/A'}
+Tailwinds: ${(mkt.dynamics?.tailwinds || []).join(', ') || 'None identified'}
+Headwinds: ${(mkt.dynamics?.headwinds || []).join(', ') || 'None identified'}
+Competition: ${(mkt.competition?.directCompetitors || []).length} direct | ${(mkt.competition?.indirectCompetitors || []).length} indirect | Concentration: ${mkt.competition?.marketConcentration ?? 'N/A'}
+`);
+  }
+
+  // Traction Model Summary
+  if (model.traction) {
+    const trac = model.traction;
+    sections.push(`
+--- TRACTION MODEL ---
+Stage: ${trac.current?.stage ?? 'N/A'} | Months in Market: ${trac.current?.monthsInMarket ?? 'N/A'}
+Growth (Stated): Monthly ${trac.growth?.stated?.monthlyGrowthRate ?? 'N/A'}% | Quarterly ${trac.growth?.stated?.quarterlyGrowthRate ?? 'N/A'}%
+Growth (Computed): Implied Monthly ${trac.growth?.computed?.impliedMonthlyGrowth ?? 'N/A'}% | Consistency: ${trac.growth?.computed?.growthConsistency ?? 'N/A'}
+Quality Signals: Logo Quality ${trac.qualitySignals?.logoQuality ?? 'N/A'} | Case Studies: ${trac.qualitySignals?.caseStudies ? 'Yes' : 'No'}
+PMF Signals: ${(trac.qualitySignals?.productMarketFitSignals || []).join(', ') || 'None identified'}
+`);
+  }
+
+  // Team Model Summary
+  if (model.team) {
+    const team = model.team;
+    sections.push(`
+--- TEAM MODEL ---
+Founders: ${team.founders?.count ?? 'N/A'} | Founder-Market Fit: ${team.founders?.founderMarketFit ?? 'Unknown'}
+Team Size: ${team.team?.totalSize ?? 'N/A'} | Eng: ${team.team?.breakdown?.engineering ?? 'N/A'} | Sales: ${team.team?.breakdown?.sales ?? 'N/A'}
+Critical Gaps: ${(team.team?.criticalGaps || []).join(', ') || 'None identified'}
+Credibility: Previous Exits: ${team.credibility?.previousExits ? 'Yes' : 'No'} | Domain Expertise: ${team.credibility?.domainExpertise ? 'Yes' : 'No'}
+`);
+  }
+
+  // Defensibility Model Summary
+  if (model.defensibility) {
+    const def = model.defensibility;
+    sections.push(`
+--- DEFENSIBILITY MODEL ---
+Current Moats: ${(def.currentMoats?.type || []).join(', ') || 'None'} | Strength: ${def.currentMoats?.strength ?? 'N/A'}
+Future Path: ${(def.futurePath?.potentialMoats || []).join(', ') || 'N/A'} | Time to Moat: ${def.futurePath?.timeToMoat ?? 'N/A'}
+Risks: Competitor ${def.risks?.competitorRisk ?? 'N/A'} | Tech Obsolescence ${def.risks?.techObsolescenceRisk ?? 'N/A'} | Regulatory ${def.risks?.regulatoryRisk ?? 'N/A'}
+`);
+  }
+
+  // GTM Model Summary
+  if (model.gtm) {
+    const gtm = model.gtm;
+    sections.push(`
+--- GTM MODEL ---
+Motion: ${gtm.motion?.primary ?? 'N/A'} | Sales Cycle: ${gtm.motion?.salesCycle?.weeks ?? 'N/A'} weeks (${gtm.motion?.salesCycle?.complexity ?? 'N/A'})
+Primary Channel: ${gtm.channels?.primary ?? 'N/A'}
+GTM-Traction Alignment: ${gtm.alignment?.isAligned ? 'ALIGNED' : 'MISALIGNED'} - ${gtm.alignment?.explanation ?? 'N/A'}
+`);
+  }
+
+  // Coherence Issues (CRITICAL for relational reasoning)
+  if (model.coherence?.checks) {
+    const failedChecks = Object.entries(model.coherence.checks)
+      .filter(([_, check]) => !check.passed)
+      .map(([name, check]) => `- ${name}: ${check.explanation} [${check.severity}]`);
+    
+    if (failedChecks.length > 0) {
+      sections.push(`
+--- COHERENCE ISSUES (ADDRESS THESE IN YOUR ANALYSIS) ---
+${failedChecks.join('\n')}
+`);
+    }
+  }
+
+  // Discrepancies (stated vs computed)
+  if (model.discrepancies && model.discrepancies.length > 0) {
+    const discrepancyStr = model.discrepancies
+      .map(d => `- ${d.field}: Stated "${d.statedValue}" vs Computed "${d.computedValue}" (${d.severity}) - ${d.explanation}`)
+      .join('\n');
+    sections.push(`
+--- DISCREPANCIES DETECTED ---
+${discrepancyStr}
+`);
+  }
+
+  // Conditional Hypotheses
+  if (model.coherence?.conditionalHypotheses && model.coherence.conditionalHypotheses.length > 0) {
+    const hypothesesStr = model.coherence.conditionalHypotheses
+      .map(h => `- ${h.hypothesis} (${h.probability}) - Depends on: ${h.dependsOn.join(', ')}`)
+      .join('\n');
+    sections.push(`
+--- CONDITIONAL HYPOTHESES (USE THESE FOR "X IF Y" FRAMING) ---
+${hypothesesStr}
+`);
+  }
+
+  // Resolution Questions
+  if (model.coherence?.resolutionQuestions && model.coherence.resolutionQuestions.length > 0) {
+    sections.push(`
+--- KEY QUESTIONS THAT WOULD CHANGE ASSESSMENT ---
+${model.coherence.resolutionQuestions.map(q => `- ${q}`).join('\n')}
+`);
+  }
+
+  sections.push(`
+=== END COMPANY MODEL ===
+
+CRITICAL INSTRUCTIONS FOR RELATIONAL REASONING:
+1. Do NOT evaluate this section in isolation - interpret all data in relation to the full Company Model above
+2. If there are coherence issues or discrepancies that affect this section, ADDRESS THEM EXPLICITLY
+3. Use conditional framing: "This is acceptable IF [condition]" or "This becomes concerning UNLESS [condition]"
+4. Reference cross-sectional implications: How does data in this section relate to other dimensions?
+5. Distinguish between "incomplete" (normal for stage) and "directionally confused" (red flag)
+`);
+
+  return sections.join('\n');
+}
+
 // Helper function to sanitize problematic unicode escapes in JSON strings
 function sanitizeJsonString(str: string): string {
   return str
@@ -189,6 +378,7 @@ interface ToolGenerationContext {
   responses: any[];
   competitorResearch: any;
   marketContext: any;
+  companyModel?: CompanyModel | null;  // Full Company Model for relational reasoning
 }
 
 async function generateSectionToolData(
@@ -197,7 +387,7 @@ async function generateSectionToolData(
   supabaseClient: any,
   companyId: string
 ): Promise<void> {
-  const { sectionName, sectionContent, companyName, companyCategory, companyStage, companyDescription, financialMetrics, responses, competitorResearch, marketContext } = ctx;
+  const { sectionName, sectionContent, companyName, companyCategory, companyStage, companyDescription, financialMetrics, responses, competitorResearch, marketContext, companyModel } = ctx;
   
   console.log(`Generating tool data for section: ${sectionName}`);
   
@@ -223,6 +413,26 @@ async function generateSectionToolData(
             content: `You are a SKEPTICAL VC analyst generating structured analysis tools for the ${sectionName} section of an investment memo. 
 Generate SPECIFIC, TAILORED data for ${companyName}, a ${companyStage} ${companyCategory || 'startup'}. 
 DO NOT use generic examples or templates. All content must be specifically relevant to this company.
+
+=== RELATIONAL REASONING REQUIREMENTS ===
+You have access to a COMPLETE COMPANY MODEL. Use it to:
+1. Interpret data RELATIONALLY - a weakness may be acceptable if coherently explained by strength elsewhere
+2. Use CONDITIONAL framing: "This is acceptable IF [condition]" or "This is concerning UNLESS [condition]"
+3. Address any coherence issues or discrepancies that affect your assessments
+4. Distinguish between "incomplete" (normal for stage) and "directionally confused" (red flag)
+
+${companyModel ? `
+=== COMPANY MODEL SUMMARY ===
+Coherence: ${companyModel.coherence?.overallCoherence || 'unknown'} (Score: ${companyModel.coherence?.score || 'N/A'}/100)
+Discrepancies: ${companyModel.discrepancies?.length || 0} detected
+Financial: MRR ${companyModel.financial?.revenue?.stated?.mrr ?? 'N/A'} | ACV ${companyModel.financial?.pricing?.acv ?? 'N/A'} | LTV:CAC ${companyModel.financial?.unitEconomics?.ltvCacRatio ?? 'N/A'}
+Customers: ${companyModel.customer?.metrics?.paidCustomers ?? 'N/A'} paid | Churn ${companyModel.customer?.retention?.churnRate ?? 'N/A'}%
+Market: TAM ${companyModel.market?.sizing?.stated?.tam ?? 'N/A'} | Bottom-Up TAM ${companyModel.market?.sizing?.computed?.bottomUpTAM ?? 'N/A'} | Plausibility: ${companyModel.market?.sizing?.tamPlausibility ?? 'unknown'}
+GTM-Traction Aligned: ${companyModel.gtm?.alignment?.isAligned ? 'YES' : 'NO - ' + (companyModel.gtm?.alignment?.explanation || 'N/A')}
+Coherence Issues: ${Object.entries(companyModel.coherence?.checks || {}).filter(([_, c]) => !c.passed).map(([k, c]) => `${k}: ${c.explanation}`).join('; ') || 'None'}
+Conditional Hypotheses: ${(companyModel.coherence?.conditionalHypotheses || []).map(h => h.hypothesis).join('; ') || 'None'}
+=== END COMPANY MODEL ===
+` : ''}
 
 === CRITICAL SCORING CALIBRATION — SCORE HARSHLY! ===
 95% of companies that pitch VCs get rejected. Your scores MUST reflect this reality.
@@ -258,6 +468,7 @@ PENALTY RULES (subtract from base score):
 - Claims without evidence/data: -15 points each
 - Founder-claimed data without verification: Apply 0.7 multiplier to score
 - AI-estimated/inferred data: Apply 0.6 multiplier to score
+- Company Model coherence issues affecting this section: -10 points per issue
 
 SCORING REALITY CHECK (what scores actually mean):
 - 0-25: Significant fundability concerns (60% of startups)
@@ -277,7 +488,8 @@ CRITICAL OUTPUT RULES:
 3. DO NOT add "dataSource" or any metadata fields - just return the raw data structure.
 4. For actionPlan90Day.actions, use EXACT timeline values: "Week 1-2", "Week 3-4", "Month 2", "Month 3"
 5. For actionPlan90Day.actions, use EXACT priority values (lowercase): "critical", "important", "nice-to-have"
-6. For actionPlan90Day.actions, use "metric" field (not "outcome") for success metrics`,
+6. For actionPlan90Day.actions, use "metric" field (not "outcome") for success metrics
+7. Use CONDITIONAL framing in assessments when relevant to Company Model insights`,
           },
           {
             role: "user",
@@ -1225,6 +1437,46 @@ async function generateMemoInBackground(
       console.warn("Error extracting market context:", contextError);
     }
 
+    // ============================================
+    // BUILD COMPANY MODEL (Relational Reasoning Foundation)
+    // ============================================
+    console.log("Building Company Model for relational reasoning...");
+    let companyModel: CompanyModel | null = null;
+    let companyModelContext = "";
+    
+    try {
+      const modelResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/build-company-model`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          companyId: companyId,
+          forceRebuild: force
+        }),
+      });
+
+      if (modelResponse.ok) {
+        const modelData = await modelResponse.json();
+        if (modelData.success && modelData.model) {
+          companyModel = modelData.model as CompanyModel;
+          companyModelContext = formatCompanyModelContext(companyModel);
+          console.log(`✓ Company Model built successfully (Coherence: ${companyModel.coherence.overallCoherence}, Score: ${companyModel.coherence.score}/100)`);
+          console.log(`  - Discrepancies found: ${companyModel.discrepancies?.length || 0}`);
+          console.log(`  - Coherence issues: ${Object.values(companyModel.coherence.checks).filter(c => !c.passed).length}`);
+          console.log(`  - Conditional hypotheses: ${companyModel.coherence.conditionalHypotheses?.length || 0}`);
+        } else {
+          console.warn("Company Model build returned unsuccessful:", modelData.errors);
+        }
+      } else {
+        const errorText = await modelResponse.text();
+        console.warn("Failed to build Company Model:", errorText);
+      }
+    } catch (modelError) {
+      console.warn("Error building Company Model:", modelError);
+    }
+
     // Check if memo already exists - get the most recent one
     const { data: existingMemo } = await supabaseClient
       .from("memos")
@@ -1625,6 +1877,21 @@ Rate founder-market fit: Strong (clear industry expertise + network) / Moderate 
 ` : ""}
 === END SECTION REQUIREMENTS ===
 
+=== RELATIONAL REASONING REQUIREMENTS ===
+CRITICAL: You are NOT evaluating this section in isolation. You have access to a COMPLETE COMPANY MODEL below.
+Every data point only has meaning in relation to the others. A weakness in one area may be acceptable if coherently explained by strength elsewhere.
+
+YOUR JOB IS TO:
+1. Interpret this section's data THROUGH THE LENS of the full Company Model
+2. Address any coherence issues or discrepancies that affect this section
+3. Use CONDITIONAL framing: "This is acceptable IF [condition]" or "This concerns me UNLESS [condition]"
+4. Reference cross-sectional implications: How does this section relate to other dimensions?
+5. Distinguish between "incomplete" (normal for ${company.stage} stage) and "directionally confused" (red flag)
+
+${companyModelContext}
+
+=== END RELATIONAL CONTEXT ===
+
 WRITING STYLE:
 Write 4-6 flowing paragraphs that demonstrate how a top VC would present this section in an investment memo. This is NOT a summary — it's a COMPREHENSIVE ANALYSIS that teaches founders how VCs think. The writing should be:
 - Detailed and thorough (cover all required aspects above)
@@ -1632,9 +1899,10 @@ Write 4-6 flowing paragraphs that demonstrate how a top VC would present this se
 - Story-driven with narrative arc
 - Professional and polished
 - Explicitly reference and apply VC frameworks
+- Use CONDITIONAL reasoning based on Company Model insights
 
 Structure:
-1. **Hero Statement** (emphasis: "high"): Hook with the single most important insight
+1. **Hero Statement** (emphasis: "high"): Hook with the single most important insight, informed by the full Company Model
 2. **Narrative Paragraphs** (emphasis: "narrative"): 4-5 flowing paragraphs systematically covering ALL the required aspects above
 3. **Pull Quote** (emphasis: "quote") [optional]: A standout insight worth highlighting
 
@@ -1643,6 +1911,8 @@ CRITICAL ANALYSIS REQUIREMENTS:
 - Explicitly flag what is MISSING or UNVERIFIED
 - Challenge founder assumptions
 - If you would hesitate to invest, say so clearly
+- Reference Company Model discrepancies and coherence issues if relevant to this section
+- Use "X if Y" conditional framing for assessments
 ${criteriaContextStr}
 
 Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${competitorContextStr}
@@ -1650,7 +1920,7 @@ Context: ${company.name} is a ${company.stage} stage ${company.category || "star
 Raw information:
 ${combinedContent}
 
-${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above to enrich your analysis.\n\n' : ''}${sectionName === "Competition" && competitorResearch ? 'CRITICAL: You MUST use the AI-researched competitor names and data above. Be honest about competitive positioning — if the company faces strong, well-funded competitors, acknowledge the challenges.\n\n' : ''}Return ONLY valid JSON with this exact structure:
+${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above to enrich your analysis.\n\n' : ''}${sectionName === "Competition" && competitorResearch ? 'CRITICAL: You MUST use the AI-researched competitor names and data above. Be honest about competitive positioning — if the company faces strong, well-funded competitors, acknowledge the challenges.\n\n' : ''}${companyModel ? 'CRITICAL: Use the Company Model context above to inform your relational reasoning. Address any coherence issues that affect this section.\n\n' : ''}Return ONLY valid JSON with this exact structure:
 {
   "narrative": {
     "paragraphs": [
@@ -1718,6 +1988,13 @@ CRITICAL VOICE REQUIREMENTS:
 - Synthesize and present YOUR assessment directly as if briefing partners after a meeting
 - Be direct and opinionated: "This is compelling because..." or "I'm skeptical about..."
 - Use phrases like "If we invest, we're betting that...", "The key risk I see is...", "What gets me excited here is..."
+
+RELATIONAL REASONING REQUIREMENTS:
+- You have access to a COMPLETE COMPANY MODEL with cross-validated data
+- Do NOT evaluate sections in isolation - interpret all data in relation to the full context
+- Use CONDITIONAL framing: "This is acceptable IF [condition]" or "This becomes concerning UNLESS [condition]"
+- Address any coherence issues or discrepancies explicitly
+- Distinguish between "incomplete" (normal for early stage) and "directionally confused" (red flag)
 
 You must be objective and critical — highlight weaknesses, risks, and gaps alongside strengths. If data is missing or claims are unsubstantiated, flag it explicitly. Return valid JSON only, no markdown formatting.`,
               },
@@ -1864,7 +2141,8 @@ Return EXACTLY this JSON structure with your content filled in:
           financialMetrics,
           responses: responses || [],
           competitorResearch,
-          marketContext
+          marketContext,
+          companyModel: companyModel  // Pass Company Model to tool generation
         },
         LOVABLE_API_KEY,
         supabaseClient,
@@ -1913,6 +2191,38 @@ Confidence Level: ${marketContext.confidence || "N/A"}
 
 **Company Description:** ${company.description || "N/A"}
 
+${companyModel ? `
+=== COMPANY MODEL (RELATIONAL REASONING CONTEXT) ===
+This is the structured Company Model with cross-validated data. Use it for holistic synthesis.
+
+**Coherence Assessment:** ${companyModel.coherence?.overallCoherence || 'unknown'} (Score: ${companyModel.coherence?.score || 'N/A'}/100)
+
+**Key Financial Metrics:**
+- Revenue: MRR ${companyModel.financial?.revenue?.stated?.mrr ?? 'N/A'} | ARR ${companyModel.financial?.revenue?.stated?.arr ?? 'N/A'}
+- Pricing: ACV ${companyModel.financial?.pricing?.acv ?? 'N/A'} | Model: ${companyModel.financial?.pricing?.model ?? 'N/A'}
+- Unit Economics: LTV:CAC ${companyModel.financial?.unitEconomics?.ltvCacRatio ?? 'N/A'} | Payback ${companyModel.financial?.unitEconomics?.paybackMonths ?? 'N/A'} months
+
+**Market Model:**
+- TAM (Stated): ${companyModel.market?.sizing?.stated?.tam ?? 'N/A'}
+- TAM (Bottom-Up): ${companyModel.market?.sizing?.computed?.bottomUpTAM ?? 'N/A'}
+- Plausibility: ${companyModel.market?.sizing?.tamPlausibility ?? 'unknown'}
+
+**Traction Model:**
+- Stage: ${companyModel.traction?.current?.stage ?? 'N/A'}
+- Growth Consistency: ${companyModel.traction?.growth?.computed?.growthConsistency ?? 'N/A'}
+
+**GTM-Traction Alignment:** ${companyModel.gtm?.alignment?.isAligned ? 'ALIGNED' : 'MISALIGNED - ' + (companyModel.gtm?.alignment?.explanation || 'N/A')}
+
+**Coherence Issues:** ${Object.entries(companyModel.coherence?.checks || {}).filter(([_, c]) => !c.passed).map(([k, c]) => `${k}: ${c.explanation}`).join('; ') || 'None'}
+
+**Discrepancies:** ${companyModel.discrepancies?.map(d => `${d.field}: ${d.explanation}`).join('; ') || 'None'}
+
+**Conditional Hypotheses:** ${(companyModel.coherence?.conditionalHypotheses || []).map(h => `${h.hypothesis} (${h.probability})`).join('; ') || 'None'}
+
+**Resolution Questions:** ${(companyModel.coherence?.resolutionQuestions || []).join('; ') || 'None'}
+=== END COMPANY MODEL ===
+` : ''}
+
 **All Questionnaire Responses:**
 ${allResponsesText}
 
@@ -1922,6 +2232,7 @@ ${allSectionsContext}
 ---
 
 IMPORTANT: Synthesize ALL the information above into a comprehensive Investment Thesis. This is the final assessment section that pulls together everything.
+${companyModel ? 'CRITICAL: Use the Company Model to inform your holistic synthesis. Address coherence issues and use conditional framing where appropriate.' : ''}
 
 Return ONLY valid JSON with this structure (no markdown, no code blocks):
 {
