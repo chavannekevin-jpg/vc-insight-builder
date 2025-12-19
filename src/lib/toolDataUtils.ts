@@ -158,20 +158,20 @@ export const isValidAssessment = (assessment: unknown): assessment is Conditiona
 // Get assessment color based on confidence
 export const getAssessmentColor = (confidence: ConfidenceLevel): string => {
   switch (confidence) {
-    case 'high': return 'text-green-600';
-    case 'medium': return 'text-amber-600';
-    case 'low': return 'text-orange-600';
-    case 'insufficient_data': return 'text-red-600';
+    case 'high': return 'text-emerald-400';
+    case 'medium': return 'text-amber-400';
+    case 'low': return 'text-orange-400';
+    case 'insufficient_data': return 'text-red-400';
   }
 };
 
 // Get assessment background color
 export const getAssessmentBgColor = (confidence: ConfidenceLevel): string => {
   switch (confidence) {
-    case 'high': return 'bg-green-50 border-green-200';
-    case 'medium': return 'bg-amber-50 border-amber-200';
-    case 'low': return 'bg-orange-50 border-orange-200';
-    case 'insufficient_data': return 'bg-red-50 border-red-200';
+    case 'high': return 'bg-emerald-950/80 border-emerald-500/30';
+    case 'medium': return 'bg-amber-950/80 border-amber-500/30';
+    case 'low': return 'bg-orange-950/80 border-orange-500/30';
+    case 'insufficient_data': return 'bg-red-950/80 border-red-500/30';
   }
 };
 

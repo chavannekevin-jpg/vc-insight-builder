@@ -36,10 +36,10 @@ export const DataQualitySummary = ({
 
   const getOverallIcon = (conf: ConfidenceLevel) => {
     switch (conf) {
-      case 'high': return <CheckCircle2 className="w-5 h-5 text-emerald-500" />;
-      case 'medium': return <TrendingUp className="w-5 h-5 text-blue-500" />;
-      case 'low': return <AlertTriangle className="w-5 h-5 text-amber-500" />;
-      case 'insufficient_data': return <Database className="w-5 h-5 text-red-500" />;
+      case 'high': return <CheckCircle2 className="w-5 h-5 text-emerald-400" />;
+      case 'medium': return <TrendingUp className="w-5 h-5 text-amber-400" />;
+      case 'low': return <AlertTriangle className="w-5 h-5 text-orange-400" />;
+      case 'insufficient_data': return <Database className="w-5 h-5 text-red-400" />;
     }
   };
 
@@ -69,7 +69,7 @@ export const DataQualitySummary = ({
   const sectionsByConfidence = getSectionsByConfidence();
 
   return (
-    <Card className={`border-2 ${getAssessmentBgColor(confidence)}`}>
+    <Card className={`border-2 ${getAssessmentBgColor(confidence)} text-white`}>
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <CardHeader className="pb-3">
           <CollapsibleTrigger className="w-full">
@@ -77,18 +77,18 @@ export const DataQualitySummary = ({
               <div className="flex items-center gap-3">
                 {getOverallIcon(confidence)}
                 <div className="text-left">
-                  <CardTitle className="text-lg flex items-center gap-2">
+                  <CardTitle className="text-lg flex items-center gap-2 text-white">
                     Data Quality Assessment
-                    <Badge variant="outline" className={`${getAssessmentColor(confidence)} border-current/30`}>
+                    <Badge variant="outline" className={`${getAssessmentColor(confidence)} border-current/50 bg-black/20`}>
                       {confidenceScore}% confidence
                     </Badge>
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-white/70 mt-1">
                     {dataCompleteness}% of requested data provided
                   </p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
                 {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             </div>
@@ -101,21 +101,21 @@ export const DataQualitySummary = ({
           </p>
 
           <CollapsibleContent>
-            <div className="space-y-4 pt-4 border-t border-border/50">
+            <div className="space-y-4 pt-4 border-t border-white/20">
               {/* Section Breakdown */}
               {sectionAssessments && Object.keys(sectionAssessments).length > 0 && (
                 <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                  <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
                     <Database className="w-4 h-4" />
                     Section Confidence Levels
                   </h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     {(sectionsByConfidence.insufficient_data?.length > 0 || sectionsByConfidence.low?.length > 0) && (
-                      <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20">
-                        <p className="text-xs font-medium text-red-600 mb-1">Needs Data</p>
+                      <div className="p-2 rounded-lg bg-red-500/20 border border-red-400/30">
+                        <p className="text-xs font-medium text-red-300 mb-1">Needs Data</p>
                         <div className="flex flex-wrap gap-1">
                           {[...sectionsByConfidence.insufficient_data, ...sectionsByConfidence.low].map(s => (
-                            <Badge key={s} variant="outline" className="text-xs text-red-600 border-red-500/30">
+                            <Badge key={s} variant="outline" className="text-xs text-red-300 border-red-400/40 bg-red-500/10">
                               {s}
                             </Badge>
                           ))}
@@ -123,11 +123,11 @@ export const DataQualitySummary = ({
                       </div>
                     )}
                     {sectionsByConfidence.medium?.length > 0 && (
-                      <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                        <p className="text-xs font-medium text-amber-600 mb-1">Partial Data</p>
+                      <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-400/30">
+                        <p className="text-xs font-medium text-amber-300 mb-1">Partial Data</p>
                         <div className="flex flex-wrap gap-1">
                           {sectionsByConfidence.medium.map(s => (
-                            <Badge key={s} variant="outline" className="text-xs text-amber-600 border-amber-500/30">
+                            <Badge key={s} variant="outline" className="text-xs text-amber-300 border-amber-400/40 bg-amber-500/10">
                               {s}
                             </Badge>
                           ))}
@@ -135,11 +135,11 @@ export const DataQualitySummary = ({
                       </div>
                     )}
                     {sectionsByConfidence.high?.length > 0 && (
-                      <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                        <p className="text-xs font-medium text-emerald-600 mb-1">Good Data</p>
+                      <div className="p-2 rounded-lg bg-emerald-500/20 border border-emerald-400/30">
+                        <p className="text-xs font-medium text-emerald-300 mb-1">Good Data</p>
                         <div className="flex flex-wrap gap-1">
                           {sectionsByConfidence.high.map(s => (
-                            <Badge key={s} variant="outline" className="text-xs text-emerald-600 border-emerald-500/30">
+                            <Badge key={s} variant="outline" className="text-xs text-emerald-300 border-emerald-400/40 bg-emerald-500/10">
                               {s}
                             </Badge>
                           ))}
@@ -153,20 +153,20 @@ export const DataQualitySummary = ({
               {/* Improvement Suggestions */}
               {allSuggestions.size > 0 && (
                 <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-                    <Lightbulb className="w-4 h-4 text-amber-500" />
+                  <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                    <Lightbulb className="w-4 h-4 text-amber-400" />
                     How to Improve Confidence
                   </h4>
                   <ul className="space-y-2">
                     {Array.from(allSuggestions).slice(0, 5).map((suggestion, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm">
-                        <span className="text-primary mt-0.5">→</span>
-                        <span className="text-muted-foreground">{suggestion}</span>
+                        <span className="text-amber-400 mt-0.5">→</span>
+                        <span className="text-white/80">{suggestion}</span>
                       </li>
                     ))}
                   </ul>
                   {allSuggestions.size > 5 && (
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="text-xs text-white/60 mt-2">
                       +{allSuggestions.size - 5} more suggestions
                     </p>
                   )}
@@ -175,14 +175,14 @@ export const DataQualitySummary = ({
 
               {/* Assumptions Made */}
               {overallAssessment.assumptions && overallAssessment.assumptions.length > 0 && (
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                <div className="p-3 rounded-lg bg-black/20">
+                  <h4 className="text-xs font-semibold text-white/70 uppercase tracking-wide mb-2">
                     Key Assumptions Made
                   </h4>
                   <ul className="space-y-1">
                     {overallAssessment.assumptions.slice(0, 3).map((assumption, i) => (
-                      <li key={i} className="text-sm text-foreground flex items-start gap-2">
-                        <span className="text-muted-foreground">•</span>
+                      <li key={i} className="text-sm text-white/90 flex items-start gap-2">
+                        <span className="text-white/50">•</span>
                         {assumption}
                       </li>
                     ))}
