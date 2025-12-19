@@ -473,9 +473,34 @@ export function getCriticalRoles(stage: string, existingRoles: string[]): { crit
   return { critical: criticalRoles.slice(0, 2), suggested: suggestedRoles.slice(0, 3) };
 }
 
-// Business model types for VC Scale Card
-export type BusinessModelType = 'b2c' | 'saas' | 'enterprise' | 'marketplace' | 'aum' | 'project';
+// Business model types - use expanded types from businessModelFramework
+export { type BusinessModelType } from './businessModelFramework';
 export type Currency = 'USD' | 'EUR' | 'GBP' | 'SEK' | 'NOK' | 'DKK';
+
+// Re-export AnchoredAssumptions from anchoredAssumptions.ts
+export { type AnchoredAssumptions } from './anchoredAssumptions';
+
+// Legacy business model type for backward compatibility with existing code
+export type LegacyBusinessModelType = 'b2c' | 'saas' | 'enterprise' | 'marketplace' | 'aum' | 'project';
+
+// Convert new business model types to legacy types for backward compatibility
+import { type BusinessModelType as NewBusinessModelType } from './businessModelFramework';
+
+export function toLegacyBusinessModelType(type: NewBusinessModelType): LegacyBusinessModelType {
+  const mapping: Record<NewBusinessModelType, LegacyBusinessModelType> = {
+    'b2c_subscription': 'b2c',
+    'b2c_transactional': 'b2c',
+    'b2b_smb_saas': 'saas',
+    'b2b_mid_market': 'saas',
+    'b2b_enterprise': 'enterprise',
+    'marketplace': 'marketplace',
+    'fintech_aum': 'aum',
+    'agency_services': 'project',
+    'hardware': 'saas',
+    'unknown': 'saas',
+  };
+  return mapping[type] || 'saas';
+}
 
 // Data source tracking for transparency
 export type DataSourceType = 'questionnaire' | 'narrative' | 'calculated' | 'default' | 'anchored';
@@ -493,23 +518,13 @@ export interface PricingDataSource {
   };
 }
 
-// Anchored assumptions - single source of truth for key metrics
-export interface AnchoredAssumptions {
-  acv?: number; // Annual Contract Value in base currency
-  acvMonthly?: number; // Monthly equivalent (ACV/12)
-  currency?: Currency;
-  businessModelType?: BusinessModelType;
-  source?: 'founder_input' | 'company_model' | 'ai_extracted' | 'default';
-  sourceDescription?: string; // e.g., "From founder questionnaire: $50K-$500K enterprise contracts"
-}
-
 // Enhanced pricing metrics for VC Scale Card
 export interface EnhancedPricingMetrics {
   avgMonthlyRevenue: number;
   currentCustomers: number;
   currentMRR: number;
   currency: Currency;
-  businessModelType: BusinessModelType;
+  businessModelType: LegacyBusinessModelType;
   isB2C: boolean;
   isTransactionBased: boolean;
   // Additional metrics for specific business models
@@ -523,7 +538,7 @@ export interface EnhancedPricingMetrics {
   // Data source tracking
   dataSource: PricingDataSource;
   // Anchored assumptions reference
-  anchoredAssumptions?: AnchoredAssumptions;
+  anchoredAssumptions?: import('./anchoredAssumptions').AnchoredAssumptions;
 }
 
 // Legacy interface for backwards compatibility
@@ -577,7 +592,7 @@ function formatAnchoredValue(value: number, currency: Currency): string {
  * Detect business model type from text
  * IMPORTANT: Explicit SaaS indicators take priority to prevent misclassification
  */
-function detectBusinessModelType(text: string): BusinessModelType {
+function detectBusinessModelType(text: string): LegacyBusinessModelType {
   const lowerText = text.toLowerCase();
   
   // CHECK FOR EXPLICIT SAAS INDICATORS FIRST (highest priority)
@@ -645,7 +660,7 @@ export function extractPricingMetrics(
   memoResponses?: Record<string, string>,
   unitEconomicsJson?: Record<string, any>,
   marketText?: string,
-  anchoredAssumptions?: AnchoredAssumptions
+  anchoredAssumptions?: import('./anchoredAssumptions').AnchoredAssumptions
 ): EnhancedPricingMetrics {
   // Include market text in combined search
   const combinedTextRaw = `${businessModelText || ''} ${tractionText || ''} ${marketText || ''}`;
@@ -655,9 +670,11 @@ export function extractPricingMetrics(
   const memoResponseText = memoResponses ? Object.values(memoResponses).filter(v => typeof v === 'string').join(' ') : '';
   const allText = `${combinedText} ${memoResponseText.toLowerCase()}`;
   
-  // Detect currency and business model - use anchored if available
+  // Detect currency and business model - use anchored if available, convert to legacy type
   const currency = anchoredAssumptions?.currency || detectCurrency(allText);
-  const businessModelType = anchoredAssumptions?.businessModelType || detectBusinessModelType(allText);
+  const businessModelType: LegacyBusinessModelType = anchoredAssumptions?.businessModelType 
+    ? toLegacyBusinessModelType(anchoredAssumptions.businessModelType) 
+    : detectBusinessModelType(allText);
   
   // Initialize defaults with data source tracking
   const defaults: EnhancedPricingMetrics = {

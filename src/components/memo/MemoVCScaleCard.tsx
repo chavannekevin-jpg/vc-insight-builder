@@ -3,7 +3,7 @@ import { Calculator, TrendingUp, Target, AlertTriangle, Info, Lightbulb, DollarS
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { BusinessModelType, Currency, PricingDataSource } from "@/lib/memoDataExtractor";
+import type { LegacyBusinessModelType as BusinessModelType, Currency, PricingDataSource } from "@/lib/memoDataExtractor";
 
 export interface ScaleStrategy {
   title: string;

@@ -92,3 +92,6 @@ verify_jwt = false
 
 [functions.build-company-model]
 verify_jwt = false
+
+[functions.estimate-primary-metric]
+verify_jwt = false
