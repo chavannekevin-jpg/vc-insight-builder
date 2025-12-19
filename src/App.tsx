@@ -105,6 +105,8 @@ const AdminDiscountCodes = lazy(() => import("./pages/AdminDiscountCodes"));
 const AdminUserAccess = lazy(() => import("./pages/AdminUserAccess"));
 const AdminPricing = lazy(() => import("./pages/AdminPricing"));
 const AdminEmails = lazy(() => import("./pages/AdminEmails"));
+const AdminMemos = lazy(() => import("./pages/AdminMemos"));
+const AdminMemoView = lazy(() => import("./pages/AdminMemoView"));
 const CheckoutMemo = lazy(() => import("./pages/CheckoutMemo"));
 const SampleMemo = lazy(() => import("./pages/SampleMemo"));
 const SampleMemoSectionView = lazy(() => import("./pages/SampleMemoSectionView"));
@@ -285,6 +287,8 @@ const App = () => (
             <Route path="/admin/discount-codes" element={<AdminDiscountCodes />} />
             <Route path="/admin/pricing" element={<AdminPricing />} />
             <Route path="/admin/emails" element={<AdminEmails />} />
+            <Route path="/admin/memos" element={<AdminMemos />} />
+            <Route path="/admin/memos/:companyId" element={<AdminMemoView />} />
             <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
             <Route path="/checkout-analysis" element={<CheckoutMemo />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
