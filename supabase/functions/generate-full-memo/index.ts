@@ -3069,13 +3069,125 @@ Return ONLY valid JSON with this exact structure:
       enhancedSections[sectionName] = normalizeSectionQuestions(enhancedSections[sectionName], sectionName);
     }
 
-    // Save memo to database with structured content
+    // =============================================================================
+    // COMPUTE OVERALL ASSESSMENT BY AGGREGATING TOOL DATA
+    // =============================================================================
+    console.log("Computing overall assessment from tool data...");
+    
+    // Fetch all tool data for this company to compute aggregated assessment
+    const { data: toolDataRecords } = await supabaseClient
+      .from("memo_tool_data")
+      .select("section_name, tool_name, ai_generated_data")
+      .eq("company_id", companyId);
+
+    let overallAssessment: {
+      dataCompleteness: number;
+      confidenceLevel: 'high' | 'medium' | 'low' | 'insufficient_data';
+      confidenceScore: number;
+      sectionsAnalyzed: number;
+      sectionBreakdown: { sectionName: string; dataCompleteness: number; confidenceScore: number; confidenceLevel: string }[];
+      topImprovements: string[];
+      assumptions: string[];
+    } | null = null;
+
+    if (toolDataRecords && toolDataRecords.length > 0) {
+      const sectionAssessments: Map<string, { dataCompleteness: number[]; confidenceScores: number[]; improvements: string[]; assumptions: string[] }> = new Map();
+      
+      for (const record of toolDataRecords) {
+        const aiData = record.ai_generated_data as any;
+        if (!aiData?.assessment) continue;
+        
+        const assessment = aiData.assessment;
+        const sectionName = record.section_name;
+        
+        if (!sectionAssessments.has(sectionName)) {
+          sectionAssessments.set(sectionName, { dataCompleteness: [], confidenceScores: [], improvements: [], assumptions: [] });
+        }
+        
+        const sectionData = sectionAssessments.get(sectionName)!;
+        
+        if (typeof assessment.dataCompleteness === 'number') {
+          sectionData.dataCompleteness.push(assessment.dataCompleteness);
+        }
+        if (typeof assessment.confidenceScore === 'number') {
+          sectionData.confidenceScores.push(assessment.confidenceScore);
+        }
+        if (Array.isArray(assessment.whatWouldChangeThisAssessment)) {
+          sectionData.improvements.push(...assessment.whatWouldChangeThisAssessment.slice(0, 2));
+        }
+        if (Array.isArray(assessment.assumptions)) {
+          sectionData.assumptions.push(...assessment.assumptions.slice(0, 2));
+        }
+      }
+      
+      // Compute section breakdown and aggregates
+      const sectionBreakdown: { sectionName: string; dataCompleteness: number; confidenceScore: number; confidenceLevel: string }[] = [];
+      let totalDataCompleteness = 0;
+      let totalConfidenceScore = 0;
+      let sectionCount = 0;
+      const allImprovements: string[] = [];
+      const allAssumptions: string[] = [];
+      
+      for (const [sectionName, data] of sectionAssessments.entries()) {
+        if (data.dataCompleteness.length === 0 && data.confidenceScores.length === 0) continue;
+        
+        const avgDataCompleteness = data.dataCompleteness.length > 0 
+          ? Math.round(data.dataCompleteness.reduce((a, b) => a + b, 0) / data.dataCompleteness.length)
+          : 50;
+        const avgConfidenceScore = data.confidenceScores.length > 0
+          ? Math.round(data.confidenceScores.reduce((a, b) => a + b, 0) / data.confidenceScores.length)
+          : 50;
+        
+        const confidenceLevel = avgConfidenceScore >= 75 ? 'high' : avgConfidenceScore >= 50 ? 'medium' : avgConfidenceScore >= 25 ? 'low' : 'insufficient_data';
+        
+        sectionBreakdown.push({
+          sectionName,
+          dataCompleteness: avgDataCompleteness,
+          confidenceScore: avgConfidenceScore,
+          confidenceLevel
+        });
+        
+        totalDataCompleteness += avgDataCompleteness;
+        totalConfidenceScore += avgConfidenceScore;
+        sectionCount++;
+        
+        allImprovements.push(...data.improvements);
+        allAssumptions.push(...data.assumptions);
+      }
+      
+      if (sectionCount > 0) {
+        const overallDataCompleteness = Math.round(totalDataCompleteness / sectionCount);
+        const overallConfidenceScore = Math.round(totalConfidenceScore / sectionCount);
+        const overallConfidenceLevel = overallConfidenceScore >= 75 ? 'high' : overallConfidenceScore >= 50 ? 'medium' : overallConfidenceScore >= 25 ? 'low' : 'insufficient_data';
+        
+        // Deduplicate and limit improvements
+        const uniqueImprovements = [...new Set(allImprovements)].slice(0, 5);
+        const uniqueAssumptions = [...new Set(allAssumptions)].slice(0, 5);
+        
+        overallAssessment = {
+          dataCompleteness: overallDataCompleteness,
+          confidenceLevel: overallConfidenceLevel,
+          confidenceScore: overallConfidenceScore,
+          sectionsAnalyzed: sectionCount,
+          sectionBreakdown,
+          topImprovements: uniqueImprovements,
+          assumptions: uniqueAssumptions
+        };
+        
+        console.log(`✓ Computed overall assessment: ${overallDataCompleteness}% complete, ${overallConfidenceLevel} confidence (${sectionCount} sections)`);
+      }
+    } else {
+      console.log("No tool data found for assessment aggregation");
+    }
+
+    // Save memo to database with structured content including overallAssessment
     const structuredContent = {
       sections: Object.entries(enhancedSections).map(([title, content]) => ({
         title,
         ...(typeof content === 'string' ? { paragraphs: [{ text: content, emphasis: "normal" }] } : content)
       })),
       vcQuickTake: vcQuickTake,
+      overallAssessment: overallAssessment,
       generatedAt: new Date().toISOString()
     };
 
