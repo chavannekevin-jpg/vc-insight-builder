@@ -1,11 +1,15 @@
-import { Users, AlertTriangle, CheckCircle, UserPlus, Briefcase } from "lucide-react";
+import { Users, AlertTriangle, CheckCircle, UserPlus, Briefcase, Database } from "lucide-react";
 import { ExtractedTeamMember, getCriticalRoles } from "@/lib/memoDataExtractor";
 import { safeLower } from "@/lib/stringUtils";
+import { CredibilityGapAnalysis, EditableTool } from "@/types/memo";
+import { safeArray, safeText, mergeToolData } from "@/lib/toolDataUtils";
 
 interface MemoTeamGapCardProps {
   teamMembers: ExtractedTeamMember[];
   stage: string;
   companyName: string;
+  // Optional: Use structured tool data as primary source
+  credibilityToolData?: EditableTool<CredibilityGapAnalysis>;
 }
 
 function getFounderMarketFitScore(teamMembers: ExtractedTeamMember[]): { score: number; label: string; color: string } {
@@ -42,12 +46,45 @@ function getRoleIcon(role: string): React.ReactNode {
   return <Users className="w-4 h-4" />;
 }
 
-export function MemoTeamGapCard({ teamMembers, stage, companyName }: MemoTeamGapCardProps) {
-  const existingRoles = teamMembers.map(m => m.role);
-  const { critical, suggested } = getCriticalRoles(stage, existingRoles);
-  const founderFit = getFounderMarketFitScore(teamMembers);
+// Extract team members from credibilityGapAnalysis tool data
+function extractTeamFromToolData(toolData?: EditableTool<CredibilityGapAnalysis>): ExtractedTeamMember[] {
+  if (!toolData?.aiGenerated) return [];
   
-  const hasTeamData = teamMembers.length > 0;
+  const merged = mergeToolData(toolData.aiGenerated, toolData.userOverrides);
+  const currentSkills = safeArray<string>(merged.currentSkills);
+  
+  // Try to extract team members from currentSkills which often contains "Name - Role" format
+  const members: ExtractedTeamMember[] = [];
+  
+  for (const skill of currentSkills) {
+    // Parse "Name - Role" or "Name (Role)" or just role descriptions
+    const dashMatch = skill.match(/^([A-Z][a-zA-Z']+(?:\s+[A-Z]?[a-zA-Z']+){0,3})\s*[—–\-:]\s*(.+)$/i);
+    if (dashMatch) {
+      members.push({ name: dashMatch[1].trim(), role: dashMatch[2].trim() });
+      continue;
+    }
+    
+    const parenMatch = skill.match(/^([A-Z][a-zA-Z']+(?:\s+[A-Z]?[a-zA-Z']+){0,3})\s*\((.+)\)$/i);
+    if (parenMatch) {
+      members.push({ name: parenMatch[1].trim(), role: parenMatch[2].trim() });
+    }
+  }
+  
+  return members;
+}
+
+export function MemoTeamGapCard({ teamMembers, stage, companyName, credibilityToolData }: MemoTeamGapCardProps) {
+  // Priority 1: Use structured tool data if available (most reliable)
+  // Priority 2: Fall back to extracted team members from narrative text
+  const toolTeamMembers = extractTeamFromToolData(credibilityToolData);
+  const effectiveTeamMembers = toolTeamMembers.length > 0 ? toolTeamMembers : teamMembers;
+  const dataSource = toolTeamMembers.length > 0 ? 'structured' : 'extracted';
+  
+  const existingRoles = effectiveTeamMembers.map(m => m.role);
+  const { critical, suggested } = getCriticalRoles(stage, existingRoles);
+  const founderFit = getFounderMarketFitScore(effectiveTeamMembers);
+  
+  const hasTeamData = effectiveTeamMembers.length > 0;
   
   return (
     <div className="my-10 bg-gradient-to-br from-card via-card to-purple-500/5 border border-border/50 rounded-2xl p-6 md:p-8 shadow-lg">
@@ -83,10 +120,15 @@ export function MemoTeamGapCard({ teamMembers, stage, companyName }: MemoTeamGap
         <div className="mb-6">
           <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-500" />
-            Current Team ({teamMembers.length} {teamMembers.length === 1 ? 'founder' : 'founders'})
+            Current Team ({effectiveTeamMembers.length} {effectiveTeamMembers.length === 1 ? 'founder' : 'founders'})
+            {dataSource === 'structured' && (
+              <span className="ml-auto text-xs text-muted-foreground flex items-center gap-1">
+                <Database className="w-3 h-3" /> from tool data
+              </span>
+            )}
           </h4>
           <div className="space-y-2">
-            {teamMembers.map((member, idx) => (
+            {effectiveTeamMembers.map((member, idx) => (
               <div 
                 key={idx}
                 className="flex items-center gap-3 bg-background/50 border border-border/30 rounded-lg px-4 py-2.5"
