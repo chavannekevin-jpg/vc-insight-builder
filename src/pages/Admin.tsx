@@ -386,6 +386,17 @@ const Admin = () => {
             </ModernCard>
           </div>
 
+          <div onClick={() => navigate("/admin/memos")} className="cursor-pointer">
+            <ModernCard className="hover:border-primary/50 transition-colors h-full border-amber-500/30 bg-amber-500/5">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                View User Memos
+              </h2>
+              <p className="text-muted-foreground">
+                Read memos from paid users (stealth mode)
+              </p>
+            </ModernCard>
+          </div>
+
           {orphanedCount > 0 && (
             <ModernCard className="border-destructive/50 bg-destructive/5">
               <div className="flex items-center justify-between">
