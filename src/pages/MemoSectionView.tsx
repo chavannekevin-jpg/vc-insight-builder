@@ -24,8 +24,9 @@ import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCa
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 
-import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics, type AnchoredAssumptions } from "@/lib/memoDataExtractor";
-import { extractAnchoredAssumptions, detectCurrencyFromResponses } from "@/lib/anchoredAssumptions";
+import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics } from "@/lib/memoDataExtractor";
+import { extractAnchoredAssumptions, detectCurrencyFromResponses, getAIMetricEstimate, applyAIEstimate, getFallbackMetricValue, type AnchoredAssumptions } from "@/lib/anchoredAssumptions";
+import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptions";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -78,6 +79,7 @@ export default function MemoSectionView() {
   const [hasPremium, setHasPremium] = useState(false);
   const [sectionTools, setSectionTools] = useState<Record<string, EnhancedSectionTools>>({});
   const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
+  const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | null>(null);
 
   // Scroll to top when section changes
   useEffect(() => {
@@ -165,6 +167,29 @@ export default function MemoSectionView() {
               if (r.answer) responsesMap[r.question_key] = r.answer;
             });
             setMemoResponses(responsesMap);
+            
+            // Extract anchored assumptions with AI estimation
+            const currency = detectCurrencyFromResponses(responsesMap);
+            let assumptions = extractAnchoredAssumptions(null, responsesMap, currency);
+            
+            // AI estimation if no primary metric value
+            if (assumptions.primaryMetricValue === null) {
+              try {
+                const estimate = await getAIMetricEstimate(assumptions, {
+                  name: company.name,
+                  category: company.category,
+                  stage: company.stage
+                }, responsesMap);
+                if (estimate) {
+                  assumptions = applyAIEstimate(assumptions, estimate);
+                }
+              } catch (e) {
+                console.error('AI estimation failed, using fallback:', e);
+                const fallback = getFallbackMetricValue(assumptions, company.stage);
+                assumptions = { ...assumptions, primaryMetricValue: fallback, source: 'ai_estimated' };
+              }
+            }
+            setAnchoredAssumptions(assumptions);
           }
           
           if (toolData && toolData.length > 0) {
@@ -333,6 +358,16 @@ export default function MemoSectionView() {
             </div>
           </div>
 
+          {/* Anchored Assumptions - Key Metrics Transparency */}
+          {anchoredAssumptions && (
+            <div className="mb-8">
+              <MemoAnchoredAssumptions 
+                assumptions={anchoredAssumptions}
+                companyName={companyInfo?.name}
+              />
+            </div>
+          )}
+
           {/* VC Quick Take Content - Always show full version since user has paid */}
           {vcQuickTake && (
             <MemoVCQuickTake 
@@ -451,10 +486,8 @@ export default function MemoSectionView() {
                       tractionSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
   const marketTextGlobal = marketSectionGlobal?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
                            marketSectionGlobal?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
-  // Extract anchored assumptions for ACV consistency
-  const currency = detectCurrencyFromResponses(memoResponses);
-  const anchoredAssumptions = extractAnchoredAssumptions(null, memoResponses, currency);
-  const extractedPricing = extractPricingMetrics(businessModelText, tractionText, memoResponses, undefined, marketTextGlobal, anchoredAssumptions);
+  // Extract pricing using anchoredAssumptions from state
+  const extractedPricing = extractPricingMetrics(businessModelText, tractionText, memoResponses, undefined, marketTextGlobal, anchoredAssumptions || undefined);
 
   const heroParagraph = narrative.paragraphs?.find((p: MemoParagraph) => p.emphasis === "high");
   const otherParagraphs = narrative.paragraphs?.filter((p: MemoParagraph) => p.emphasis !== "high") || [];
@@ -582,6 +615,7 @@ export default function MemoSectionView() {
                   isB2C={extractedPricing.isB2C}
                   isTransactionBased={extractedPricing.isTransactionBased}
                   dataSource={extractedPricing.dataSource}
+                  anchoredAssumptions={anchoredAssumptions || undefined}
                 />
                 {currentSectionTools?.bottomsUpTAM && (
                   <MarketTAMCalculator data={currentSectionTools.bottomsUpTAM} />

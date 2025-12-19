@@ -30,8 +30,9 @@ import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
 import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
-import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics, type AnchoredAssumptions } from "@/lib/memoDataExtractor";
-import { extractAnchoredAssumptions, detectCurrencyFromResponses } from "@/lib/anchoredAssumptions";
+import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics } from "@/lib/memoDataExtractor";
+import { extractAnchoredAssumptions, detectCurrencyFromResponses, getAIMetricEstimate, applyAIEstimate, getFallbackMetricValue, type AnchoredAssumptions } from "@/lib/anchoredAssumptions";
+import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptions";
 
 // Import VC tools
 import {
@@ -69,6 +70,7 @@ export default function AdminMemoView() {
   const [companyInfo, setCompanyInfo] = useState<any>(null);
   const [sectionTools, setSectionTools] = useState<Record<string, EnhancedSectionTools>>({});
   const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
+  const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | null>(null);
 
   const actionPlan = useMemo(() => {
     if (!memoContent?.vcQuickTake) return null;
@@ -171,6 +173,29 @@ export default function AdminMemoView() {
             if (r.answer) responsesMap[r.question_key] = r.answer;
           });
           setMemoResponses(responsesMap);
+          
+          // Extract anchored assumptions with AI estimation
+          const currency = detectCurrencyFromResponses(responsesMap);
+          let assumptions = extractAnchoredAssumptions(null, responsesMap, currency);
+          
+          // AI estimation if no primary metric value
+          if (assumptions.primaryMetricValue === null) {
+            try {
+              const estimate = await getAIMetricEstimate(assumptions, {
+                name: company.name,
+                category: company.category,
+                stage: company.stage
+              }, responsesMap);
+              if (estimate) {
+                assumptions = applyAIEstimate(assumptions, estimate);
+              }
+            } catch (e) {
+              console.error('AI estimation failed, using fallback:', e);
+              const fallback = getFallbackMetricValue(assumptions, company.stage);
+              assumptions = { ...assumptions, primaryMetricValue: fallback, source: 'ai_estimated' };
+            }
+          }
+          setAnchoredAssumptions(assumptions);
         }
         
         if (toolData && toolData.length > 0) {
@@ -241,10 +266,8 @@ export default function AdminMemoView() {
                              tractionSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
   const marketTextGlobal = marketSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
                            marketSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
-  // Extract anchored assumptions for ACV consistency
-  const currency = detectCurrencyFromResponses(memoResponses);
-  const anchoredAssumptions = extractAnchoredAssumptions(null, memoResponses, currency);
-  const extractedPricing = extractPricingMetrics(businessModelText, tractionTextGlobal, memoResponses, undefined, marketTextGlobal, anchoredAssumptions);
+  // Extract pricing using anchoredAssumptions from state
+  const extractedPricing = extractPricingMetrics(businessModelText, tractionTextGlobal, memoResponses, undefined, marketTextGlobal, anchoredAssumptions || undefined);
 
   let exitPathShown = false;
 
@@ -287,6 +310,16 @@ export default function AdminMemoView() {
 
       {/* Memo Content */}
       <div className="container mx-auto px-4 py-8 max-w-5xl">
+        {/* Anchored Assumptions - Key Metrics Transparency */}
+        {anchoredAssumptions && (
+          <div className="mb-8">
+            <MemoAnchoredAssumptions 
+              assumptions={anchoredAssumptions}
+              companyName={companyInfo.name}
+            />
+          </div>
+        )}
+
         {/* VC Quick Take */}
         {memoContent.vcQuickTake && (
           <div className="mb-8">
@@ -441,6 +474,7 @@ export default function AdminMemoView() {
                       isB2C={extractedPricing.isB2C}
                       isTransactionBased={extractedPricing.isTransactionBased}
                       dataSource={extractedPricing.dataSource}
+                      anchoredAssumptions={anchoredAssumptions || undefined}
                     />
                     {currentSectionTools?.bottomsUpTAM && (
                       <MarketTAMCalculator data={currentSectionTools.bottomsUpTAM} />
