@@ -66,6 +66,7 @@ export default function AdminMemoView() {
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
   const [sectionTools, setSectionTools] = useState<Record<string, EnhancedSectionTools>>({});
+  const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
 
   const actionPlan = useMemo(() => {
     if (!memoContent?.vcQuickTake) return null;
@@ -156,6 +157,20 @@ export default function AdminMemoView() {
           .select("*")
           .eq("company_id", companyId);
         
+        // Fetch memo responses for pricing extraction
+        const { data: responsesData } = await supabase
+          .from("memo_responses")
+          .select("question_key, answer")
+          .eq("company_id", companyId);
+        
+        if (responsesData) {
+          const responsesMap: Record<string, string> = {};
+          responsesData.forEach(r => {
+            if (r.answer) responsesMap[r.question_key] = r.answer;
+          });
+          setMemoResponses(responsesMap);
+        }
+        
         if (toolData && toolData.length > 0) {
           const toolsMap: Record<string, EnhancedSectionTools> = {};
           toolData.forEach((tool) => {
@@ -217,11 +232,14 @@ export default function AdminMemoView() {
   // Extract pricing metrics for scale card
   const businessModelSection = memoContent.sections.find(s => safeTitle(s.title).toLowerCase().includes('business'));
   const tractionSection = memoContent.sections.find(s => safeTitle(s.title).toLowerCase().includes('traction'));
+  const marketSection = memoContent.sections.find(s => safeTitle(s.title).toLowerCase().includes('market'));
   const businessModelText = businessModelSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
                            businessModelSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
   const tractionTextGlobal = tractionSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
                              tractionSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
-  const extractedPricing = extractPricingMetrics(businessModelText, tractionTextGlobal);
+  const marketTextGlobal = marketSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
+                           marketSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
+  const extractedPricing = extractPricingMetrics(businessModelText, tractionTextGlobal, memoResponses, undefined, marketTextGlobal);
 
   let exitPathShown = false;
 
