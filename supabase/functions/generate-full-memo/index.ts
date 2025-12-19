@@ -3103,6 +3103,156 @@ Return ONLY valid JSON with this exact structure:
       console.warn("VC Quick Take generation failed:", quickTakeError);
     }
 
+    // ============================================
+    // Generate AI Action Plan (tailored action items based on vcQuickTake)
+    // ============================================
+    console.log("Generating AI Action Plan...");
+    
+    let aiActionPlan = null;
+    
+    if (vcQuickTake && Array.isArray(vcQuickTake.concerns) && vcQuickTake.concerns.length > 0) {
+      try {
+        const concernsForPrompt = vcQuickTake.concerns.map((c: any) => 
+          typeof c === 'string' ? c : c?.text || String(c)
+        ).filter(Boolean).slice(0, 5);
+        
+        const financialSummary = companyModel?.financial ? JSON.stringify({
+          revenue: companyModel.financial.revenue,
+          pricing: companyModel.financial.pricing,
+          metrics: companyModel.financial.metrics
+        }).substring(0, 800) : 'No financial data available';
+        
+        const tractionSummary = companyModel?.traction ? JSON.stringify({
+          users: companyModel.traction.users,
+          customers: companyModel.traction.customers,
+          engagement: companyModel.traction.engagement
+        }).substring(0, 600) : 'No traction data available';
+        
+        const teamSummary = companyModel?.team ? JSON.stringify({
+          founders: companyModel.team.founders,
+          gaps: companyModel.team.gaps
+        }).substring(0, 400) : 'No team data available';
+
+        const actionPlanPrompt = `You are a senior VC analyst creating a prioritized action plan for ${company.name} (${company.stage} stage, ${company.category || 'startup'}).
+
+Based on the Investment Committee's concerns below, create 3-5 HIGHLY SPECIFIC action items that the founders should prioritize before their next pitch.
+
+=== IC CONCERNS ===
+${concernsForPrompt.map((c: string, i: number) => `${i + 1}. ${c}`).join('\n')}
+
+=== COMPANY DATA (use this to make recommendations SPECIFIC) ===
+${financialSummary}
+
+${tractionSummary}
+
+${teamSummary}
+
+=== INSTRUCTIONS ===
+For each action item, you MUST:
+1. Reference ACTUAL numbers, metrics, or specific claims from the company data above
+2. Provide impact statements that explain why THIS specific issue hurts THIS company's fundability (not generic VC advice)
+3. Give actionable fixes that are SPECIFIC to this company's situation and stage
+4. Include a "good example" that shows what success looks like for THIS company specifically
+
+CRITICAL: Do NOT use generic templates. Every field must reference specific data points from ${company.name}.
+
+Return ONLY valid JSON:
+{
+  "items": [
+    {
+      "category": "narrative|traction|team|market|business|competition",
+      "problem": "Specific issue based on THIS company's data - reference actual numbers/claims",
+      "impact": "Why this specifically hurts THIS company's fundability - be concrete with implications",
+      "howToFix": "Actionable steps tailored to THIS company's situation, stage, and resources",
+      "goodExample": "What 'good' would look like for THIS specific company - concrete targets"
+    }
+  ],
+  "overallUrgency": "critical|high|moderate",
+  "summaryLine": "Company-specific summary of key improvements needed for ${company.name}"
+}`;
+
+        const actionPlanResponse = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              {
+                role: "system",
+                content: "You are a direct VC analyst creating actionable, company-specific recommendations. Every recommendation must reference specific data points from the company. No generic advice. Return only valid JSON.",
+              },
+              {
+                role: "user",
+                content: actionPlanPrompt,
+              },
+            ],
+            temperature: 0.6,
+            max_tokens: 2000,
+          }),
+        }, 2, 1000);
+
+        if (actionPlanResponse.ok) {
+          const actionPlanData = await actionPlanResponse.json();
+          let actionPlanContent = actionPlanData.choices?.[0]?.message?.content?.trim();
+          
+          if (actionPlanContent) {
+            actionPlanContent = actionPlanContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            try {
+              aiActionPlan = JSON.parse(actionPlanContent);
+              
+              // Validate structure
+              if (!Array.isArray(aiActionPlan.items)) {
+                console.warn('aiActionPlan.items is not an array, fixing');
+                aiActionPlan.items = [];
+              }
+              
+              // Ensure each item has required fields and add id/priority
+              aiActionPlan.items = aiActionPlan.items.slice(0, 5).map((item: any, index: number) => ({
+                id: `action-${index + 1}`,
+                priority: index + 1,
+                category: item.category || 'narrative',
+                problem: item.problem || '',
+                impact: item.impact || '',
+                howToFix: item.howToFix || '',
+                goodExample: item.goodExample || '',
+                badExample: item.badExample
+              }));
+              
+              // Validate urgency
+              if (!['critical', 'high', 'moderate'].includes(aiActionPlan.overallUrgency)) {
+                aiActionPlan.overallUrgency = aiActionPlan.items.length >= 4 ? 'critical' : 
+                  aiActionPlan.items.length >= 2 ? 'high' : 'moderate';
+              }
+              
+              // Ensure summaryLine exists
+              if (!aiActionPlan.summaryLine) {
+                aiActionPlan.summaryLine = `Address these ${aiActionPlan.items.length} gaps to improve ${company.name}'s fundability.`;
+              }
+              
+              console.log(`✓ Successfully generated AI Action Plan with ${aiActionPlan.items.length} items`);
+            } catch (parseError) {
+              console.warn("Failed to parse AI Action Plan:", parseError);
+              try {
+                aiActionPlan = JSON.parse(sanitizeJsonString(actionPlanContent));
+                console.log("✓ Generated AI Action Plan after sanitization");
+              } catch (e) {
+                console.error("AI Action Plan parsing failed completely:", e);
+              }
+            }
+          }
+        } else {
+          console.warn("AI Action Plan generation failed, will fall back to client-side extraction");
+        }
+      } catch (actionPlanError) {
+        console.warn("AI Action Plan generation error:", actionPlanError);
+      }
+    } else {
+      console.log("Skipping AI Action Plan - no vcQuickTake concerns available");
+    }
+
     // Validate memo completeness (expect 7-8 sections now: 7 main + Investment Thesis)
     const generatedSectionCount = Object.keys(enhancedSections).length;
     console.log(`\n=== MEMO GENERATION SUMMARY ===`);
@@ -3406,13 +3556,14 @@ Return ONLY valid JSON with this exact structure:
       }
     }
 
-    // Save memo to database with structured content including overallAssessment and coherenceFlags
+    // Save memo to database with structured content including overallAssessment, coherenceFlags, and aiActionPlan
     const structuredContent = {
       sections: Object.entries(enhancedSections).map(([title, content]) => ({
         title,
         ...(typeof content === 'string' ? { paragraphs: [{ text: content, emphasis: "normal" }] } : content)
       })),
       vcQuickTake: vcQuickTake,
+      aiActionPlan: aiActionPlan,
       overallAssessment: overallAssessment,
       coherenceFlags: coherenceFlags.length > 0 ? coherenceFlags : undefined,
       generatedAt: new Date().toISOString()
