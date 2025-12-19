@@ -38,6 +38,26 @@ export interface MemoVCQuickTake {
 }
 
 // ============================================
+// CONDITIONAL ASSESSMENT SYSTEM (Week 4)
+// ============================================
+
+export type ConfidenceLevel = "high" | "medium" | "low" | "insufficient_data";
+
+export interface ConditionalAssessment {
+  confidence: ConfidenceLevel;
+  confidenceScore: number; // 0-100
+  dataCompleteness: number; // 0-100 percentage of required data available
+  whatWouldChangeThisAssessment: string[];
+  assumptions: string[];
+  caveats?: string[];
+}
+
+export interface ConditionalValue<T> {
+  value: T;
+  assessment: ConditionalAssessment;
+}
+
+// ============================================
 // SECTION SCORING SYSTEM
 // ============================================
 
@@ -48,6 +68,8 @@ export interface SectionScore {
   percentile: string;
   whatThisTellsVC: string;
   fundabilityImpact: string;
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -58,6 +80,8 @@ export interface VCInvestmentLogic {
   decision: "PASS" | "CAUTIOUS" | "INTERESTED" | "EXCITED";
   reasoning: string;
   keyCondition: string;
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -84,6 +108,8 @@ export interface LeadInvestorRequirements {
   dealbreakers: string[];
   wouldWantToSee: string[];
   investorParagraph: string;
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -97,6 +123,8 @@ export interface SectionBenchmark {
   seriesABenchmark: string;
   percentile: string;
   insight: string;
+  // Week 4: Conditional assessment for each benchmark
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -122,6 +150,8 @@ export interface EditableTool<T> {
   lastUpdated?: string;
   dataSource: "ai-complete" | "ai-partial" | "user-input";
   inputGuidance?: string[];
+  // Week 4: Overall tool assessment
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -134,6 +164,8 @@ export interface EvidenceThreshold {
   evidenceGrade: "A" | "B" | "C" | "D" | "F";
   missingEvidence: string[];
   whatVCsConsiderVerified: string[];
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface FounderBlindSpot {
@@ -141,6 +173,8 @@ export interface FounderBlindSpot {
   misdiagnoses: string[];
   assumptions: string[];
   commonMistakes: string[];
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -153,6 +187,8 @@ export interface TechnicalDefensibility {
   expectedProofs: string[];
   gaps: string[];
   vcEvaluation: string;
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface FeatureCommoditization {
@@ -165,6 +201,8 @@ export interface FeatureCommoditization {
 export interface CommoditizationTeardown {
   features: FeatureCommoditization[];
   overallRisk: "Low" | "Medium" | "High";
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface CompetitorBuildAnalysis {
@@ -173,6 +211,8 @@ export interface CompetitorBuildAnalysis {
   requiredResources: string;
   barriers: string[];
   verdict: string;
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -193,6 +233,8 @@ export interface BottomsUpTAM {
   som: number;
   methodology: string;
   assumptions: string[];
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface MarketReadinessIndex {
@@ -201,12 +243,16 @@ export interface MarketReadinessIndex {
   willingnessToPay: { score: number; evidence: string };
   switchingFriction: { score: number; evidence: string };
   overallScore: number;
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface VCMarketNarrative {
   pitchToIC: string;
   marketTiming: string;
   whyNow: string;
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -223,12 +269,16 @@ export interface CompetitorMove {
 export interface CompetitorChessboard {
   competitors: CompetitorMove[];
   marketDynamics: string;
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface ReverseDiligence {
   weaknesses: string[];
   howCompetitorWouldExploit: string[];
   defenseStrategy: string[];
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface MoatDurability {
@@ -236,6 +286,8 @@ export interface MoatDurability {
   erosionFactors: string[];
   estimatedDuration: string;
   reinforcementOpportunities: string[];
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -253,6 +305,8 @@ export interface CredibilityGapAnalysis {
   currentSkills: string[];
   gaps: SkillGap[];
   overallCredibility: number;
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface SuccessfulFounderProfile {
@@ -265,6 +319,8 @@ export interface FounderMapping {
   successfulFounderProfiles: SuccessfulFounderProfile[];
   matchScore: number;
   gaps: string[];
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -281,6 +337,8 @@ export interface StressScenario {
 export interface ModelStressTest {
   scenarios: StressScenario[];
   overallResilience: "Low" | "Medium" | "High";
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface CashEfficiencyBenchmark {
@@ -289,6 +347,8 @@ export interface CashEfficiencyBenchmark {
   percentile: string;
   efficiency: "Excellent" | "Good" | "Average" | "Poor";
   recommendation: string;
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface ProfitabilityPath {
@@ -297,6 +357,8 @@ export interface ProfitabilityPath {
   timeToTarget: string;
   keyLevers: string[];
   milestones: string[];
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -308,6 +370,8 @@ export interface TractionDepthTest {
   sustainabilityScore: number;
   redFlags: string[];
   positiveSignals: string[];
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface ChurnScenario {
@@ -320,6 +384,8 @@ export interface CohortStabilityProjection {
   industryBenchmark: number;
   projectedLTVImpact: string;
   churnScenarios: ChurnScenario[];
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface PipelineOpportunity {
@@ -335,6 +401,8 @@ export interface PipelineQuality {
   overallQuality: "Strong" | "Medium" | "Weak";
   redFlags: string[];
   positiveSignals: string[];
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -352,6 +420,8 @@ export interface VCMilestone {
 export interface VCMilestoneMap {
   milestones: VCMilestone[];
   criticalPath: string[];
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface ScenarioCase {
@@ -364,6 +434,8 @@ export interface ScenarioPlanning {
   bestCase: ScenarioCase;
   baseCase: ScenarioCase;
   downside: ScenarioCase;
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 export interface ComparableExit {
@@ -378,6 +450,8 @@ export interface ExitNarrative {
   strategicValue: string;
   comparableExits: ComparableExit[];
   pathToExit: string;
+  // Week 4: Conditional assessment
+  assessment?: ConditionalAssessment;
 }
 
 // ============================================
@@ -446,12 +520,16 @@ export interface MemoStructuredSection {
   vcReflection?: MemoVCReflection;
   // Enhanced tools
   tools?: EnhancedSectionTools;
+  // Week 4: Section-level assessment
+  sectionAssessment?: ConditionalAssessment;
 }
 
 export interface MemoStructuredContent {
   sections: MemoStructuredSection[];
   vcQuickTake?: MemoVCQuickTake;
   generatedAt?: string;
+  // Week 4: Overall memo assessment
+  overallAssessment?: ConditionalAssessment;
 }
 
 // ============================================
