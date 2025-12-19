@@ -477,14 +477,15 @@ export interface PricingMetrics {
 }
 
 /**
- * Extract pricing metrics from business model, traction sections, and memo responses.
+ * Extract pricing metrics from business model, traction, market sections, and memo responses.
  * Used to populate the VC Scale Card with dynamic data.
  */
 export function extractPricingMetrics(
   businessModelText: string,
   tractionText: string,
   memoResponses?: Record<string, string>,
-  unitEconomicsJson?: Record<string, any>
+  unitEconomicsJson?: Record<string, any>,
+  marketText?: string
 ): PricingMetrics & { isB2C?: boolean; isTransactionBased?: boolean } {
   const defaults: PricingMetrics & { isB2C?: boolean; isTransactionBased?: boolean } = {
     avgMonthlyRevenue: 0,
@@ -494,7 +495,8 @@ export function extractPricingMetrics(
     isTransactionBased: false
   };
 
-  const combinedTextRaw = `${businessModelText || ''} ${tractionText || ''}`;
+  // Include market text in combined search
+  const combinedTextRaw = `${businessModelText || ''} ${tractionText || ''} ${marketText || ''}`;
   const combinedText = safeLower(combinedTextRaw, "extractPricingMetrics.combinedText");
   
   // Detect business model type
@@ -517,19 +519,46 @@ export function extractPricingMetrics(
     }
   }
 
-  // 2. Try memo responses (questionnaire answers)
+  // 2. Try memo responses (questionnaire answers) - check business_model too
   if (memoResponses) {
     const pricingAnswer = memoResponses['pricing_model'] || memoResponses['pricing'] || '';
+    const businessAnswer = memoResponses['business_model'] || '';
     const revenueAnswer = memoResponses['revenue'] || memoResponses['current_revenue'] || '';
     const customersAnswer = memoResponses['customers'] || memoResponses['current_customers'] || memoResponses['traction'] || '';
+    const allPricingText = `${pricingAnswer} ${businessAnswer}`.toLowerCase();
     
-    // Extract monthly price from pricing answer (support €, $, SEK, etc.)
-    if (!defaults.avgMonthlyRevenue && pricingAnswer) {
-      const priceMatch = pricingAnswer.match(/[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:sek|usd|eur|gbp)?\s*(?:\/|per)\s*(?:month|mo)/i) ||
-                         pricingAnswer.match(/monthly[:\s]+[\$€£]?([\d,]+)/i) ||
-                         pricingAnswer.match(/arpu[:\s]+[\$€£]?([\d,]+)/i);
-      if (priceMatch) {
-        defaults.avgMonthlyRevenue = parseFloat(priceMatch[1].replace(/,/g, ''));
+    // Extract ARPU from business_model or pricing answers
+    // Supports formats like: "ARPU is £120-150", "ARPU of £150", "(ARPU) of £150", "average revenue per user (ARPU) is £120-150"
+    if (!defaults.avgMonthlyRevenue) {
+      // Match "ARPU is £120-150" or "ARPU £120-150" (take average of range)
+      const arpuRangeMatch = allPricingText.match(/arpu[^£$€\d]*[\$€£]?([\d,]+(?:\.\d+)?)\s*[-–—to]+\s*[\$€£]?([\d,]+(?:\.\d+)?)/i);
+      if (arpuRangeMatch) {
+        const low = parseFloat(arpuRangeMatch[1].replace(/,/g, ''));
+        const high = parseFloat(arpuRangeMatch[2].replace(/,/g, ''));
+        // Check if this is annual (look for /year or per year nearby)
+        const isAnnual = allPricingText.includes('/year') || allPricingText.includes('per year') || allPricingText.includes('annual');
+        defaults.avgMonthlyRevenue = isAnnual ? Math.round((low + high) / 2 / 12) : Math.round((low + high) / 2);
+      }
+      
+      // Match single ARPU value: "ARPU is £150", "(ARPU) of £150", "arpu: £150"
+      if (!defaults.avgMonthlyRevenue) {
+        const arpuMatch = allPricingText.match(/\(arpu\)\s*(?:of|is|:)?\s*[\$€£]?([\d,]+(?:\.\d+)?)/i) ||
+                         allPricingText.match(/arpu\s*(?:is|of|:)\s*[\$€£]?([\d,]+(?:\.\d+)?)/i) ||
+                         allPricingText.match(/average\s*revenue\s*per\s*user[^£$€\d]*[\$€£]?([\d,]+(?:\.\d+)?)/i);
+        if (arpuMatch) {
+          const value = parseFloat(arpuMatch[1].replace(/,/g, ''));
+          const isAnnual = allPricingText.includes('/year') || allPricingText.includes('per year') || allPricingText.includes('annual');
+          defaults.avgMonthlyRevenue = isAnnual ? Math.round(value / 12) : value;
+        }
+      }
+      
+      // Match monthly price patterns
+      if (!defaults.avgMonthlyRevenue) {
+        const priceMatch = allPricingText.match(/[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:sek|usd|eur|gbp)?\s*(?:\/|per)\s*(?:month|mo)/i) ||
+                           allPricingText.match(/monthly[:\s]+[\$€£]?([\d,]+)/i);
+        if (priceMatch) {
+          defaults.avgMonthlyRevenue = parseFloat(priceMatch[1].replace(/,/g, ''));
+        }
       }
     }
 
@@ -591,10 +620,30 @@ export function extractPricingMetrics(
     // Direct monthly price patterns (support multiple currencies)
     if (!defaults.avgMonthlyRevenue) {
       const monthlyMatch = combinedText.match(/[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:sek|usd|eur|gbp)?\s*(?:\/|per)\s*(?:month|mo)/i) ||
-                          combinedText.match(/monthly[:\s]+[\$€£]?([\d,]+)/i) ||
-                          combinedText.match(/arpu[:\s]+[\$€£]?([\d,]+)/i);
+                          combinedText.match(/monthly[:\s]+[\$€£]?([\d,]+)/i);
       if (monthlyMatch) {
         defaults.avgMonthlyRevenue = parseFloat(monthlyMatch[1].replace(/,/g, ''));
+      }
+    }
+    
+    // ARPU extraction from narrative text - supports "(ARPU) of £150", "ARPU is £120-150"
+    if (!defaults.avgMonthlyRevenue) {
+      // Range format: "ARPU is £120-150" or "ARPU £120-150"
+      const arpuRangeMatch = combinedText.match(/arpu[^£$€\d]*[\$€£]?([\d,]+(?:\.\d+)?)\s*[-–—to]+\s*[\$€£]?([\d,]+(?:\.\d+)?)/i);
+      if (arpuRangeMatch) {
+        const low = parseFloat(arpuRangeMatch[1].replace(/,/g, ''));
+        const high = parseFloat(arpuRangeMatch[2].replace(/,/g, ''));
+        defaults.avgMonthlyRevenue = Math.round((low + high) / 2);
+      }
+      
+      // Single value: "(ARPU) of £150" or "ARPU is £150" or "arpu: £150"
+      if (!defaults.avgMonthlyRevenue) {
+        const arpuMatch = combinedText.match(/\(arpu\)\s*(?:of|is|:)?\s*[\$€£]?([\d,]+(?:\.\d+)?)/i) ||
+                         combinedText.match(/arpu\s*(?:is|of|:)\s*[\$€£]?([\d,]+(?:\.\d+)?)/i) ||
+                         combinedText.match(/average\s*revenue\s*per\s*user[^£$€\d]*[\$€£]?([\d,]+(?:\.\d+)?)/i);
+        if (arpuMatch) {
+          defaults.avgMonthlyRevenue = parseFloat(arpuMatch[1].replace(/,/g, ''));
+        }
       }
     }
     

@@ -76,6 +76,7 @@ export default function MemoSectionView() {
   const [companyInfo, setCompanyInfo] = useState<any>(null);
   const [hasPremium, setHasPremium] = useState(false);
   const [sectionTools, setSectionTools] = useState<Record<string, EnhancedSectionTools>>({});
+  const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
 
   // Scroll to top when section changes
   useEffect(() => {
@@ -150,6 +151,20 @@ export default function MemoSectionView() {
             .from("memo_tool_data")
             .select("*")
             .eq("company_id", companyIdFromUrl);
+          
+          // Fetch memo responses for pricing extraction
+          const { data: responsesData } = await supabase
+            .from("memo_responses")
+            .select("question_key, answer")
+            .eq("company_id", companyIdFromUrl);
+          
+          if (responsesData) {
+            const responsesMap: Record<string, string> = {};
+            responsesData.forEach(r => {
+              if (r.answer) responsesMap[r.question_key] = r.answer;
+            });
+            setMemoResponses(responsesMap);
+          }
           
           if (toolData && toolData.length > 0) {
             const toolsMap: Record<string, EnhancedSectionTools> = {};
@@ -425,14 +440,17 @@ export default function MemoSectionView() {
   const extractedMoatScores = isCompetitionSection ? extractMoatScores(sectionText) : null;
   const extractedUnitEconomics = isBusinessSection ? extractUnitEconomics(sectionText, '') : null;
 
-  // Extract business model and traction text for pricing metrics
+  // Extract business model, traction, and market text for pricing metrics
   const businessModelSection = memoContent.sections.find(s => safeTitle(s.title).toLowerCase().includes('business'));
   const tractionSection = memoContent.sections.find(s => safeTitle(s.title).toLowerCase().includes('traction'));
+  const marketSectionGlobal = memoContent.sections.find(s => safeTitle(s.title).toLowerCase().includes('market'));
   const businessModelText = businessModelSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
                            businessModelSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
   const tractionText = tractionSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
                       tractionSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
-  const extractedPricing = extractPricingMetrics(businessModelText, tractionText);
+  const marketTextGlobal = marketSectionGlobal?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
+                           marketSectionGlobal?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
+  const extractedPricing = extractPricingMetrics(businessModelText, tractionText, memoResponses, undefined, marketTextGlobal);
 
   const heroParagraph = narrative.paragraphs?.find((p: MemoParagraph) => p.emphasis === "high");
   const otherParagraphs = narrative.paragraphs?.filter((p: MemoParagraph) => p.emphasis !== "high") || [];
