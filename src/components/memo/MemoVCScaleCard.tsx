@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Calculator, TrendingUp, Target, AlertTriangle, Info, Lightbulb, DollarSign, Users, Layers, Zap, ArrowUpRight, Edit2, Save, Building, Landmark, ShoppingCart, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { BusinessModelType, Currency } from "@/lib/memoDataExtractor";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import type { BusinessModelType, Currency, PricingDataSource } from "@/lib/memoDataExtractor";
 
 export interface ScaleStrategy {
   title: string;
@@ -31,6 +32,8 @@ interface MemoVCScaleCardProps {
   avgTransactionValue?: number;
   isB2C?: boolean;
   isTransactionBased?: boolean;
+  // Data source tracking for transparency
+  dataSource?: PricingDataSource;
 }
 
 // Currency symbols and formatters
@@ -325,7 +328,8 @@ export const MemoVCScaleCard = ({
   transactionFeePercent,
   avgTransactionValue,
   isB2C = false,
-  isTransactionBased = false
+  isTransactionBased = false,
+  dataSource
 }: MemoVCScaleCardProps) => {
   // Determine effective business model type from legacy props if not provided
   const effectiveModelType: BusinessModelType = businessModelType !== 'saas' 
@@ -386,6 +390,27 @@ export const MemoVCScaleCard = ({
     setIsEditing(false);
   };
 
+  // Helper to get source label
+  const getSourceLabel = (source?: string) => {
+    switch (source) {
+      case 'questionnaire': return '📝 From questionnaire';
+      case 'narrative': return '📄 From memo text';
+      case 'calculated': return '🧮 Calculated';
+      case 'default': return '⚠️ Using default';
+      default: return 'Unknown';
+    }
+  };
+  
+  const getSourceColor = (source?: string) => {
+    switch (source) {
+      case 'questionnaire': return 'text-success';
+      case 'calculated': return 'text-success';
+      case 'narrative': return 'text-warning';
+      case 'default': return 'text-destructive';
+      default: return 'text-muted-foreground';
+    }
+  };
+
   return (
     <div className="relative animate-fade-in my-10">
       {/* Glow effect */}
@@ -411,25 +436,95 @@ export const MemoVCScaleCard = ({
               </div>
             </div>
             
-            {/* Edit Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              {isEditing ? (
-                <>
-                  <Save className="w-4 h-4 mr-1" />
-                  Save
-                </>
-              ) : (
-                <>
-                  <Edit2 className="w-4 h-4 mr-1" />
-                  Edit
-                </>
+            <div className="flex items-center gap-2">
+              {/* Data Source Lightbulb */}
+              {dataSource && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className={`p-2 rounded-lg hover:bg-muted/50 transition-colors ${
+                        dataSource.avgMonthlyRevenue === 'default' ? 'text-destructive' : 'text-warning'
+                      }`}>
+                        <Lightbulb className="w-5 h-5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-sm p-4 space-y-3">
+                      <p className="font-semibold text-foreground flex items-center gap-2">
+                        <Lightbulb className="w-4 h-4 text-warning" />
+                        How we calculated this
+                      </p>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between items-start gap-4">
+                          <span className="text-muted-foreground">Avg Revenue:</span>
+                          <span className={`text-right ${getSourceColor(dataSource.avgMonthlyRevenue)}`}>
+                            {getSourceLabel(dataSource.avgMonthlyRevenue)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-start gap-4">
+                          <span className="text-muted-foreground">Customers:</span>
+                          <span className={`text-right ${getSourceColor(dataSource.currentCustomers)}`}>
+                            {getSourceLabel(dataSource.currentCustomers)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-start gap-4">
+                          <span className="text-muted-foreground">MRR:</span>
+                          <span className={`text-right ${getSourceColor(dataSource.currentMRR)}`}>
+                            {getSourceLabel(dataSource.currentMRR)}
+                          </span>
+                        </div>
+                        
+                        {dataSource.calculation && (
+                          <div className="pt-2 border-t border-border/50">
+                            <p className="text-xs text-muted-foreground">Calculation:</p>
+                            <p className="text-xs font-mono text-foreground mt-1">{dataSource.calculation}</p>
+                          </div>
+                        )}
+                        
+                        {dataSource.rawMatches && Object.keys(dataSource.rawMatches).length > 0 && (
+                          <div className="pt-2 border-t border-border/50">
+                            <p className="text-xs text-muted-foreground mb-1">Raw matches found:</p>
+                            <div className="space-y-1">
+                              {dataSource.rawMatches.arr && (
+                                <p className="text-xs font-mono text-primary">"{dataSource.rawMatches.arr}"</p>
+                              )}
+                              {dataSource.rawMatches.mrr && (
+                                <p className="text-xs font-mono text-primary">"{dataSource.rawMatches.mrr}"</p>
+                              )}
+                              {dataSource.rawMatches.customers && (
+                                <p className="text-xs font-mono text-primary">"{dataSource.rawMatches.customers}"</p>
+                              )}
+                              {dataSource.rawMatches.pricing && (
+                                <p className="text-xs font-mono text-primary">"{dataSource.rawMatches.pricing}"</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
-            </Button>
+              
+              {/* Edit Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {isEditing ? (
+                  <>
+                    <Save className="w-4 h-4 mr-1" />
+                    Save
+                  </>
+                ) : (
+                  <>
+                    <Edit2 className="w-4 h-4 mr-1" />
+                    Edit
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
 
