@@ -827,6 +827,18 @@ async function fetchWithRetry(
 // SECTION TOOL DATA GENERATION FUNCTION
 // ============================================
 
+interface MetricFrameworkContext {
+  businessModelType: string;
+  primaryMetricLabel: string;
+  primaryMetricFullLabel: string;
+  periodicity: string;
+  customerTermPlural: string;
+  customerTermSingular: string;
+  anchoredValue?: number;
+  anchoredValueSource?: string;
+  currency?: string;
+}
+
 interface ToolGenerationContext {
   sectionName: string;
   sectionContent: any;
@@ -839,6 +851,7 @@ interface ToolGenerationContext {
   competitorResearch: any;
   marketContext: any;
   companyModel?: CompanyModel | null;  // Full Company Model for relational reasoning
+  metricFramework?: MetricFrameworkContext | null;  // Unified metric terminology
 }
 
 async function generateSectionToolData(
@@ -847,7 +860,7 @@ async function generateSectionToolData(
   supabaseClient: any,
   companyId: string
 ): Promise<void> {
-  const { sectionName, sectionContent, companyName, companyCategory, companyStage, companyDescription, financialMetrics, responses, competitorResearch, marketContext, companyModel } = ctx;
+  const { sectionName, sectionContent, companyName, companyCategory, companyStage, companyDescription, financialMetrics, responses, competitorResearch, marketContext, companyModel, metricFramework } = ctx;
   
   console.log(`Generating tool data for section: ${sectionName}`);
   
@@ -897,6 +910,23 @@ GTM-Traction Aligned: ${companyModel.gtm?.alignment?.isAligned ? 'YES' : 'NO - '
 Coherence Issues: ${Object.entries(companyModel.coherence?.checks || {}).filter(([_, c]) => !c.passed).map(([k, c]) => `${k}: ${c.explanation}`).join('; ') || 'None'}
 Conditional Hypotheses: ${(companyModel.coherence?.conditionalHypotheses || []).map(h => h.hypothesis).join('; ') || 'None'}
 === END COMPANY MODEL ===
+` : ''}
+
+${metricFramework ? `
+=== METRIC FRAMEWORK (USE THIS TERMINOLOGY THROUGHOUT) ===
+Business Model Type: ${metricFramework.businessModelType}
+Primary Revenue Metric: ${metricFramework.primaryMetricLabel} (${metricFramework.primaryMetricFullLabel})
+Periodicity: ${metricFramework.periodicity}
+Customer Terminology: Use "${metricFramework.customerTermPlural}" (not "customers" or "users" unless that matches)
+${metricFramework.anchoredValue ? `Anchored Value: ${metricFramework.anchoredValue} ${metricFramework.currency || 'USD'} (Source: ${metricFramework.anchoredValueSource || 'unknown'})` : ''}
+
+CRITICAL TERMINOLOGY RULES:
+- ALWAYS use "${metricFramework.primaryMetricLabel}" instead of "ACV" in all calculations and text
+- ALWAYS use "${metricFramework.customerTermPlural}" instead of generic "customers"
+- When calculating scale requirements, use the correct formula for this business model
+- If this is B2C, use monthly metrics (ARPU × users × 12 = ARR)
+- If this is Enterprise, use annual metrics (ACV × accounts = ARR)
+=== END METRIC FRAMEWORK ===
 ` : ''}
 
 ${dataCompletenessContext}
@@ -2645,6 +2675,19 @@ Return EXACTLY this JSON structure with your content filled in:
     for (const [sectionName, sectionContent] of Object.entries(enhancedSections)) {
       if (sectionName === "Investment Thesis") continue; // Skip thesis for now
       
+      // Build metric framework context from company model
+      const metricFramework: MetricFrameworkContext | null = companyModel ? {
+        businessModelType: companyModel.financial?.pricing?.model || 'saas',
+        primaryMetricLabel: companyModel.financial?.pricing?.acvBand === 'micro' ? 'ARPU' : 'ACV',
+        primaryMetricFullLabel: companyModel.financial?.pricing?.acvBand === 'micro' ? 'Average Revenue Per User' : 'Annual Contract Value',
+        periodicity: companyModel.financial?.pricing?.acvBand === 'micro' ? 'monthly' : 'annual',
+        customerTermPlural: companyModel.customer?.icp?.segment === 'consumer' ? 'users' : 'customers',
+        customerTermSingular: companyModel.customer?.icp?.segment === 'consumer' ? 'user' : 'customer',
+        anchoredValue: companyModel.financial?.pricing?.acv || undefined,
+        anchoredValueSource: companyModel.financial?.pricing?.acv ? 'company_model' : undefined,
+        currency: 'USD'
+      } : null;
+      
       await generateSectionToolData(
         {
           sectionName,
@@ -2657,7 +2700,8 @@ Return EXACTLY this JSON structure with your content filled in:
           responses: responses || [],
           competitorResearch,
           marketContext,
-          companyModel: companyModel  // Pass Company Model to tool generation
+          companyModel: companyModel,
+          metricFramework: metricFramework
         },
         LOVABLE_API_KEY,
         supabaseClient,

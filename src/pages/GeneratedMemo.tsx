@@ -29,8 +29,9 @@ import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCa
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 
 import { LowConfidenceWarning } from "@/components/memo/LowConfidenceWarning";
+import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptions";
 import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics, type AnchoredAssumptions } from "@/lib/memoDataExtractor";
-import { extractAnchoredAssumptions, detectCurrencyFromResponses } from "@/lib/anchoredAssumptions";
+import { extractAnchoredAssumptions, detectCurrencyFromResponses, getAIMetricEstimate, applyAIEstimate, getFallbackMetricValue } from "@/lib/anchoredAssumptions";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
 import { ArrowLeft, Printer, AlertTriangle, RefreshCw } from "lucide-react";
@@ -295,9 +296,48 @@ export default function GeneratedMemo() {
             const anchored = extractAnchoredAssumptions(
               companyModelData?.model_data as any || null,
               responsesMap,
-              currency
+              currency,
+              { category: companyData?.category, stage: companyData?.stage, name: companyData?.name }
             );
-            setAnchoredAssumptions(anchored);
+            
+            // If no primary metric value found, try AI estimation
+            if (!anchored.primaryMetricValue && companyData) {
+              console.log('No primary metric found, attempting AI estimation...');
+              try {
+                const aiEstimate = await getAIMetricEstimate(
+                  anchored,
+                  { 
+                    name: companyData.name || 'Company', 
+                    category: companyData.category || 'Technology', 
+                    stage: companyData.stage || 'seed' 
+                  },
+                  responsesMap
+                );
+                
+                if (aiEstimate) {
+                  const enrichedAssumptions = applyAIEstimate(anchored, aiEstimate);
+                  setAnchoredAssumptions(enrichedAssumptions);
+                  console.log('AI estimation applied:', enrichedAssumptions.primaryMetricValue);
+                } else {
+                  // Use fallback from benchmarks
+                  const fallbackValue = getFallbackMetricValue(anchored, companyData.stage || 'seed');
+                  anchored.primaryMetricValue = fallbackValue;
+                  anchored.source = 'default';
+                  anchored.sourceDescription = `Default estimate for ${anchored.metricFramework.typeLabel} at ${companyData.stage || 'seed'} stage`;
+                  setAnchoredAssumptions(anchored);
+                  console.log('Fallback value applied:', fallbackValue);
+                }
+              } catch (estimateError) {
+                console.error('AI estimation failed:', estimateError);
+                // Use fallback
+                const fallbackValue = getFallbackMetricValue(anchored, companyData.stage || 'seed');
+                anchored.primaryMetricValue = fallbackValue;
+                anchored.source = 'default';
+                setAnchoredAssumptions(anchored);
+              }
+            } else {
+              setAnchoredAssumptions(anchored);
+            }
           }
           
           if (toolData && toolData.length > 0) {
@@ -774,6 +814,15 @@ export default function GeneratedMemo() {
           </div>
         )}
 
+        {/* Anchored Assumptions - Premium transparency card */}
+        {hasPremium && anchoredAssumptions && (
+          <MemoAnchoredAssumptions 
+            assumptions={anchoredAssumptions}
+            companyName={companyInfo.name}
+            onEdit={() => navigate(`/company-profile-edit?companyId=${companyId}`)}
+          />
+        )}
+
         {/* VC Quick Take - Always visible for all users, with teaser for free users */}
         {memoContent.vcQuickTake && (
           <div data-section="quick-take">
@@ -950,6 +999,7 @@ export default function GeneratedMemo() {
                         isB2C={extractedPricing.isB2C}
                         isTransactionBased={extractedPricing.isTransactionBased}
                         dataSource={extractedPricing.dataSource}
+                        anchoredAssumptions={anchoredAssumptions}
                       />
                       {currentSectionTools?.bottomsUpTAM && (
                         <MarketTAMCalculator data={currentSectionTools.bottomsUpTAM} />
