@@ -709,7 +709,7 @@ export default function FreemiumHub() {
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => navigate(`/memo-regenerate?companyId=${company.id}`)}
+                        onClick={() => navigate(`/analysis/regenerate?companyId=${company.id}`)}
                         className="border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500"
                       >
                         <RotateCcw className="w-4 h-4 mr-2" />
