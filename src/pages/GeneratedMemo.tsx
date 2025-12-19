@@ -698,8 +698,8 @@ export default function GeneratedMemo() {
     );
   }
 
-  if (loading || analyzing) {
-    return <MemoLoadingScreen analyzing={analyzing} />;
+  if (loading || analyzing || regenerating) {
+    return <MemoLoadingScreen analyzing={analyzing} progressMessage={regenerating ? "Regenerating your memo with updated data..." : undefined} />;
   }
 
   // Handler for VC Rejection Preview - close and scroll to memo
