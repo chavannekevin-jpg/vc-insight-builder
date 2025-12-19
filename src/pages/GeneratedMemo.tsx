@@ -917,6 +917,7 @@ export default function GeneratedMemo() {
                         avgTransactionValue={extractedPricing.avgTransactionValue}
                         isB2C={extractedPricing.isB2C}
                         isTransactionBased={extractedPricing.isTransactionBased}
+                        dataSource={extractedPricing.dataSource}
                       />
                       {currentSectionTools?.bottomsUpTAM && (
                         <MarketTAMCalculator data={currentSectionTools.bottomsUpTAM} />

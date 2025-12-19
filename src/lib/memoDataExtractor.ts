@@ -473,6 +473,22 @@ export function getCriticalRoles(stage: string, existingRoles: string[]): { crit
 export type BusinessModelType = 'b2c' | 'saas' | 'enterprise' | 'marketplace' | 'aum' | 'project';
 export type Currency = 'USD' | 'EUR' | 'GBP' | 'SEK' | 'NOK' | 'DKK';
 
+// Data source tracking for transparency
+export type DataSourceType = 'questionnaire' | 'narrative' | 'calculated' | 'default';
+
+export interface PricingDataSource {
+  avgMonthlyRevenue: DataSourceType;
+  currentCustomers: DataSourceType;
+  currentMRR: DataSourceType;
+  calculation?: string; // Human-readable explanation
+  rawMatches?: {
+    arr?: string;
+    customers?: string;
+    pricing?: string;
+    mrr?: string;
+  };
+}
+
 // Enhanced pricing metrics for VC Scale Card
 export interface EnhancedPricingMetrics {
   avgMonthlyRevenue: number;
@@ -490,6 +506,8 @@ export interface EnhancedPricingMetrics {
   transactionFeePercent?: number;
   avgTransactionValue?: number;
   setupFee?: number;
+  // Data source tracking
+  dataSource: PricingDataSource;
 }
 
 // Legacy interface for backwards compatibility
@@ -528,25 +546,34 @@ function detectCurrency(text: string): Currency {
 
 /**
  * Detect business model type from text
+ * IMPORTANT: Explicit SaaS indicators take priority to prevent misclassification
  */
 function detectBusinessModelType(text: string): BusinessModelType {
   const lowerText = text.toLowerCase();
+  
+  // CHECK FOR EXPLICIT SAAS INDICATORS FIRST (highest priority)
+  // This prevents "one-time fee" from triggering project model when it's clearly SaaS with setup fees
+  const explicitSaasIndicators = ['subscription', 'arr', 'mrr', 'saas', 'annual recurring', 'monthly recurring', 'carr', 'arpu', 'per seat', 'per user/month', '/month', '/year pricing'];
+  const hasExplicitSaas = explicitSaasIndicators.some(ind => lowerText.includes(ind));
   
   // AUM-based (asset management, fund management)
   const aumIndicators = ['aum fee', 'assets under management', '% of aum', 'management fee', 'annual aum', 'aum-based'];
   if (aumIndicators.some(ind => lowerText.includes(ind))) return 'aum';
   
-  // Project/deal-based
-  const projectIndicators = ['per deal', 'per project', 'structuring fee', 'setup fee', 'listing fee', 'per engagement', 'per transaction fee', 'one-time fee'];
+  // Enterprise SaaS (check before project to catch enterprise SaaS with setup fees)
+  const enterpriseIndicators = ['enterprise', 'acv', 'annual contract', 'enterprise client', 'b2b saas'];
+  if (enterpriseIndicators.some(ind => lowerText.includes(ind))) return 'enterprise';
+  
+  // If explicit SaaS indicators found, don't fall into project model
+  if (hasExplicitSaas) return 'saas';
+  
+  // Project/deal-based (only if no SaaS indicators)
+  const projectIndicators = ['per deal', 'per project', 'structuring fee', 'listing fee', 'per engagement', 'per transaction fee', 'consulting', 'advisory fee'];
   if (projectIndicators.some(ind => lowerText.includes(ind))) return 'project';
   
   // Marketplace
   const marketplaceIndicators = ['take rate', 'transaction fee', 'marketplace', 'platform fee', 'gmv', 'gross merchandise'];
   if (marketplaceIndicators.some(ind => lowerText.includes(ind))) return 'marketplace';
-  
-  // Enterprise SaaS
-  const enterpriseIndicators = ['enterprise', 'acv', 'annual contract', 'enterprise client', 'b2b saas'];
-  if (enterpriseIndicators.some(ind => lowerText.includes(ind))) return 'enterprise';
   
   // B2C
   const b2cIndicators = ['consumer', 'b2c', 'app users', 'subscribers', 'individuals', 'personal', 'retail customer', 'end user'];
@@ -602,7 +629,7 @@ export function extractPricingMetrics(
   const currency = detectCurrency(allText);
   const businessModelType = detectBusinessModelType(allText);
   
-  // Initialize defaults
+  // Initialize defaults with data source tracking
   const defaults: EnhancedPricingMetrics = {
     avgMonthlyRevenue: 0,
     currentCustomers: 0,
@@ -611,6 +638,12 @@ export function extractPricingMetrics(
     businessModelType,
     isB2C: businessModelType === 'b2c',
     isTransactionBased: businessModelType === 'marketplace',
+    dataSource: {
+      avgMonthlyRevenue: 'default',
+      currentCustomers: 'default',
+      currentMRR: 'default',
+      rawMatches: {},
+    },
   };
 
   // === AUM-BASED MODEL EXTRACTION ===
@@ -755,18 +788,34 @@ export function extractPricingMetrics(
 
     // Extract customer count
     if (!defaults.currentCustomers && customersAnswer) {
-      const customerMatch = customersAnswer.match(/(\d+)\s*(?:paying\s*)?(?:customers?|clients?|users?|issuers?|members?)/i) ||
-                           customersAnswer.match(/(\d+)\s*companies/i);
+      // Include ICPs (Ideal Customer Profiles) as customers
+      const customerMatch = customersAnswer.match(/(\d+)\s*(?:paying\s*)?(?:icps?|customers?|clients?|users?|issuers?|members?)/i) ||
+                           customersAnswer.match(/(\d+)\s*companies/i) ||
+                           customersAnswer.match(/(\d+)\s*active\s*icps?/i);
       if (customerMatch) {
         defaults.currentCustomers = parseInt(customerMatch[1]);
+        defaults.dataSource.currentCustomers = 'questionnaire';
+        defaults.dataSource.rawMatches!.customers = customerMatch[0].trim();
       }
     }
 
-    // Extract MRR
+    // Extract MRR or ARR/CARR
     if (!defaults.currentMRR && revenueAnswer) {
       const mrrMatch = revenueAnswer.match(/[€£$]?([\d,]+(?:\.\d+)?)\s*(?:k)?\s*mrr/i);
       if (mrrMatch) {
         defaults.currentMRR = parseCurrencyValue(mrrMatch[0]);
+        defaults.dataSource.currentMRR = 'questionnaire';
+        defaults.dataSource.rawMatches!.mrr = mrrMatch[0].trim();
+      }
+      
+      // Try ARR/CARR if no MRR found
+      if (!defaults.currentMRR) {
+        const arrMatch = revenueAnswer.match(/[€£$]?([\d,]+(?:\.\d+)?)\s*[kmb]?\s*c?arr/i);
+        if (arrMatch) {
+          defaults.currentMRR = Math.round(parseCurrencyValue(arrMatch[0]) / 12);
+          defaults.dataSource.currentMRR = 'questionnaire';
+          defaults.dataSource.rawMatches!.arr = arrMatch[0].trim();
+        }
       }
     }
   }
@@ -798,12 +847,15 @@ export function extractPricingMetrics(
     }
   }
   
-  // Extract customer count from narrative
+  // Extract customer count from narrative (including ICPs)
   if (!defaults.currentCustomers) {
-    const customerMatch = combinedText.match(/(\d+(?:,\d+)*)\s*(?:paying\s*)?(?:customers?|clients?|issuers?|users?)/i) ||
-                         combinedText.match(/serves?\s*(\d+(?:,\d+)*)/i);
+    const customerMatch = combinedText.match(/(\d+(?:,\d+)*)\s*(?:paying\s*)?(?:icps?|customers?|clients?|issuers?|users?)/i) ||
+                         combinedText.match(/serves?\s*(\d+(?:,\d+)*)/i) ||
+                         combinedText.match(/(\d+)\s*active\s*(?:icps?|customers?|clients?)/i);
     if (customerMatch) {
       defaults.currentCustomers = parseInt(customerMatch[1].replace(/,/g, ''));
+      defaults.dataSource.currentCustomers = 'narrative';
+      defaults.dataSource.rawMatches!.customers = customerMatch[0].trim();
     }
   }
   
@@ -812,13 +864,18 @@ export function extractPricingMetrics(
     const mrrMatch = combinedText.match(/[€£$]?([\d,]+(?:\.\d+)?)[k]?\s*mrr/i);
     if (mrrMatch) {
       defaults.currentMRR = parseCurrencyValue(mrrMatch[0]);
+      defaults.dataSource.currentMRR = 'narrative';
+      defaults.dataSource.rawMatches!.mrr = mrrMatch[0].trim();
     }
     
-    // Extract ARR and divide by 12
+    // Extract ARR or CARR and divide by 12
     if (!defaults.currentMRR) {
-      const arrMatch = combinedText.match(/[€£$]?([\d,]+(?:\.\d+)?)\s*[kmb]?\s*arr/i);
+      // Match both ARR and CARR (Contracted ARR)
+      const arrMatch = combinedText.match(/[€£$]?([\d,]+(?:\.\d+)?)\s*[kmb]?\s*c?arr/i);
       if (arrMatch) {
         defaults.currentMRR = Math.round(parseCurrencyValue(arrMatch[0]) / 12);
+        defaults.dataSource.currentMRR = 'narrative';
+        defaults.dataSource.rawMatches!.arr = arrMatch[0].trim();
       }
     }
   }
@@ -826,9 +883,20 @@ export function extractPricingMetrics(
   // 4. Calculate MRR from customers × monthly price if we have both but no MRR
   if (!defaults.currentMRR && defaults.avgMonthlyRevenue > 0 && defaults.currentCustomers > 0) {
     defaults.currentMRR = defaults.avgMonthlyRevenue * defaults.currentCustomers;
+    defaults.dataSource.currentMRR = 'calculated';
+    defaults.dataSource.calculation = `${defaults.avgMonthlyRevenue} × ${defaults.currentCustomers} = ${defaults.currentMRR}`;
   }
 
-  // 5. Set smart defaults based on business model if still no revenue data
+  // 5. CRITICAL: Calculate avgMonthlyRevenue from MRR/customers if we have both but no avg revenue
+  // This fixes the Groundley issue where ARR and customers were known but avgMonthlyRevenue was defaulting
+  if (!defaults.avgMonthlyRevenue && defaults.currentMRR > 0 && defaults.currentCustomers > 0) {
+    defaults.avgMonthlyRevenue = Math.round(defaults.currentMRR / defaults.currentCustomers);
+    defaults.dataSource.avgMonthlyRevenue = 'calculated';
+    const formatVal = (v: number) => v >= 1000 ? `${(v/1000).toFixed(1)}k` : v.toString();
+    defaults.dataSource.calculation = `${formatVal(defaults.currentMRR)}/mo ÷ ${defaults.currentCustomers} customers = ${formatVal(defaults.avgMonthlyRevenue)}/customer/mo`;
+  }
+
+  // 6. Set smart defaults based on business model if still no revenue data
   if (!defaults.avgMonthlyRevenue) {
     switch (businessModelType) {
       case 'b2c':
@@ -849,6 +917,8 @@ export function extractPricingMetrics(
       default:
         defaults.avgMonthlyRevenue = 300; // $300/month typical SaaS
     }
+    // Mark as default if we had to use defaults
+    defaults.dataSource.avgMonthlyRevenue = 'default';
   }
 
   return defaults;
