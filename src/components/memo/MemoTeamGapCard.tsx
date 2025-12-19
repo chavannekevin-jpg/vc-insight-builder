@@ -10,6 +10,8 @@ interface MemoTeamGapCardProps {
   companyName: string;
   // Optional: Use structured tool data as primary source
   credibilityToolData?: EditableTool<CredibilityGapAnalysis>;
+  // Optional: Raw team_story from memo_responses for direct parsing
+  teamStoryRaw?: string;
 }
 
 function getFounderMarketFitScore(teamMembers: ExtractedTeamMember[]): { score: number; label: string; color: string } {
@@ -47,38 +49,111 @@ function getRoleIcon(role: string): React.ReactNode {
 }
 
 // Extract team members from credibilityGapAnalysis tool data
+// Handles both "Name — Role" and inverted "Skill description (Name)" formats
 function extractTeamFromToolData(toolData?: EditableTool<CredibilityGapAnalysis>): ExtractedTeamMember[] {
   if (!toolData?.aiGenerated) return [];
   
   const merged = mergeToolData(toolData.aiGenerated, toolData.userOverrides);
   const currentSkills = safeArray<string>(merged.currentSkills);
   
-  // Try to extract team members from currentSkills which often contains "Name - Role" format
   const members: ExtractedTeamMember[] = [];
+  const seenNames = new Set<string>();
   
   for (const skill of currentSkills) {
-    // Parse "Name - Role" or "Name (Role)" or just role descriptions
+    // Pattern 1: "Name — Role" or "Name - Role" format
     const dashMatch = skill.match(/^([A-Z][a-zA-Z']+(?:\s+[A-Z]?[a-zA-Z']+){0,3})\s*[—–\-:]\s*(.+)$/i);
     if (dashMatch) {
-      members.push({ name: dashMatch[1].trim(), role: dashMatch[2].trim() });
+      const name = dashMatch[1].trim();
+      if (!seenNames.has(name.toLowerCase())) {
+        seenNames.add(name.toLowerCase());
+        members.push({ name, role: dashMatch[2].trim() });
+      }
       continue;
     }
     
+    // Pattern 2: "Name (Role)" format
     const parenMatch = skill.match(/^([A-Z][a-zA-Z']+(?:\s+[A-Z]?[a-zA-Z']+){0,3})\s*\((.+)\)$/i);
     if (parenMatch) {
-      members.push({ name: parenMatch[1].trim(), role: parenMatch[2].trim() });
+      const name = parenMatch[1].trim();
+      if (!seenNames.has(name.toLowerCase())) {
+        seenNames.add(name.toLowerCase());
+        members.push({ name, role: parenMatch[2].trim() });
+      }
+      continue;
+    }
+    
+    // Pattern 3: Inverted "Skill description (Name)" or "Skill (Name, context)" format
+    const invertedMatch = skill.match(/\(([A-Z][a-zA-Z']+(?:\s+[A-Z]?[a-zA-Z']+){0,3})(?:,|\)|$)/i);
+    if (invertedMatch) {
+      const name = invertedMatch[1].trim();
+      if (!seenNames.has(name.toLowerCase())) {
+        seenNames.add(name.toLowerCase());
+        // Infer role from skill description
+        const skillLower = skill.toLowerCase();
+        let role = 'Team Member';
+        if (skillLower.includes('architecture') || skillLower.includes('sdk') || skillLower.includes('technical') || skillLower.includes('engineering') || skillLower.includes('development')) {
+          role = 'Technical Lead / CTO';
+        } else if (skillLower.includes('financial') || skillLower.includes('funding') || skillLower.includes('business')) {
+          role = 'Business Lead';
+        } else if (skillLower.includes('sales') || skillLower.includes('growth') || skillLower.includes('market')) {
+          role = 'Growth Lead';
+        } else if (skillLower.includes('product') || skillLower.includes('design')) {
+          role = 'Product Lead';
+        }
+        members.push({ name, role });
+      }
     }
   }
   
   return members;
 }
 
-export function MemoTeamGapCard({ teamMembers, stage, companyName, credibilityToolData }: MemoTeamGapCardProps) {
-  // Priority 1: Use structured tool data if available (most reliable)
-  // Priority 2: Fall back to extracted team members from narrative text
+// Parse team members directly from team_story memo response
+// Format: "Name — Role (Equity%)" per line
+function parseTeamStoryRaw(teamStory?: string): ExtractedTeamMember[] {
+  if (!teamStory) return [];
+  
+  const members: ExtractedTeamMember[] = [];
+  const lines = teamStory.split(/[\n,;]+/);
+  
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    
+    // Pattern: "Name — Role (Equity%)" or "Name - Role (Equity)"
+    const fullMatch = trimmed.match(/^([A-Z][a-zA-Z']+(?:\s+[A-Z]?[a-zA-Z']+){0,3})\s*[—–\-:]\s*([^(]+)(?:\(([^)]+)\))?/i);
+    if (fullMatch) {
+      members.push({
+        name: fullMatch[1].trim(),
+        role: fullMatch[2].trim(),
+        equity: fullMatch[3]?.trim()
+      });
+    }
+  }
+  
+  return members;
+}
+
+export function MemoTeamGapCard({ teamMembers, stage, companyName, credibilityToolData, teamStoryRaw }: MemoTeamGapCardProps) {
+  // Priority 1: Direct team_story from memo_responses (most reliable - founder input)
+  // Priority 2: Structured tool data from credibilityGapAnalysis
+  // Priority 3: Fall back to extracted team members from narrative text
+  const teamStoryMembers = parseTeamStoryRaw(teamStoryRaw);
   const toolTeamMembers = extractTeamFromToolData(credibilityToolData);
-  const effectiveTeamMembers = toolTeamMembers.length > 0 ? toolTeamMembers : teamMembers;
-  const dataSource = toolTeamMembers.length > 0 ? 'structured' : 'extracted';
+  
+  let effectiveTeamMembers: ExtractedTeamMember[];
+  let dataSource: 'founder_input' | 'structured' | 'extracted';
+  
+  if (teamStoryMembers.length > 0) {
+    effectiveTeamMembers = teamStoryMembers;
+    dataSource = 'founder_input';
+  } else if (toolTeamMembers.length > 0) {
+    effectiveTeamMembers = toolTeamMembers;
+    dataSource = 'structured';
+  } else {
+    effectiveTeamMembers = teamMembers;
+    dataSource = 'extracted';
+  }
   
   const existingRoles = effectiveTeamMembers.map(m => m.role);
   const { critical, suggested } = getCriticalRoles(stage, existingRoles);
@@ -121,9 +196,10 @@ export function MemoTeamGapCard({ teamMembers, stage, companyName, credibilityTo
           <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-500" />
             Current Team ({effectiveTeamMembers.length} {effectiveTeamMembers.length === 1 ? 'founder' : 'founders'})
-            {dataSource === 'structured' && (
+            {dataSource !== 'extracted' && (
               <span className="ml-auto text-xs text-muted-foreground flex items-center gap-1">
-                <Database className="w-3 h-3" /> from tool data
+                <Database className="w-3 h-3" /> 
+                {dataSource === 'founder_input' ? 'from your input' : 'from tool data'}
               </span>
             )}
           </h4>
