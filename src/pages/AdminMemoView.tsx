@@ -489,6 +489,7 @@ export default function AdminMemoView() {
                       stage={companyInfo?.stage || 'Pre-seed'}
                       companyName={companyInfo?.name || 'Company'}
                       credibilityToolData={currentSectionTools?.credibilityGapAnalysis}
+                      teamStoryRaw={memoResponses['team_story']}
                     />
                     {currentSectionTools?.credibilityGapAnalysis && (
                       <TeamCredibilityGapCard data={currentSectionTools.credibilityGapAnalysis} />
