@@ -29,7 +29,8 @@ import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCa
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 
 import { LowConfidenceWarning } from "@/components/memo/LowConfidenceWarning";
-import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics } from "@/lib/memoDataExtractor";
+import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics, type AnchoredAssumptions } from "@/lib/memoDataExtractor";
+import { extractAnchoredAssumptions, detectCurrencyFromResponses } from "@/lib/anchoredAssumptions";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
 import { ArrowLeft, Printer, AlertTriangle, RefreshCw } from "lucide-react";
@@ -107,6 +108,7 @@ export default function GeneratedMemo() {
   const [shouldRedirectToWizard, setShouldRedirectToWizard] = useState(false);
   const [sectionTools, setSectionTools] = useState<Record<string, EnhancedSectionTools>>({});
   const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
+  const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | undefined>(undefined);
   
   // Smart fill state
   const [showSmartFill, setShowSmartFill] = useState(false);
@@ -280,6 +282,22 @@ export default function GeneratedMemo() {
               if (r.answer) responsesMap[r.question_key] = r.answer;
             });
             setMemoResponses(responsesMap);
+            
+            // Fetch company model for anchored ACV
+            const { data: companyModelData } = await supabase
+              .from("company_models")
+              .select("model_data")
+              .eq("company_id", companyId)
+              .maybeSingle();
+            
+            // Extract anchored assumptions (single source of truth for ACV)
+            const currency = detectCurrencyFromResponses(responsesMap);
+            const anchored = extractAnchoredAssumptions(
+              companyModelData?.model_data as any || null,
+              responsesMap,
+              currency
+            );
+            setAnchoredAssumptions(anchored);
           }
           
           if (toolData && toolData.length > 0) {
@@ -812,7 +830,7 @@ export default function GeneratedMemo() {
                                        tractionSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
             const marketTextGlobal = marketSection?.narrative?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || 
                                      marketSection?.paragraphs?.map((p: MemoParagraph) => p.text).join(' ') || '';
-            const extractedPricing = extractPricingMetrics(businessModelText, tractionTextGlobal, memoResponses, undefined, marketTextGlobal);
+            const extractedPricing = extractPricingMetrics(businessModelText, tractionTextGlobal, memoResponses, undefined, marketTextGlobal, anchoredAssumptions);
             
             return memoContent.sections.map((section, index) => {
               const narrative = section.narrative || {
