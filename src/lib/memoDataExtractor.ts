@@ -469,11 +469,114 @@ export function getCriticalRoles(stage: string, existingRoles: string[]): { crit
   return { critical: criticalRoles.slice(0, 2), suggested: suggestedRoles.slice(0, 3) };
 }
 
-// Pricing metrics for VC Scale Card
+// Business model types for VC Scale Card
+export type BusinessModelType = 'b2c' | 'saas' | 'enterprise' | 'marketplace' | 'aum' | 'project';
+export type Currency = 'USD' | 'EUR' | 'GBP' | 'SEK' | 'NOK' | 'DKK';
+
+// Enhanced pricing metrics for VC Scale Card
+export interface EnhancedPricingMetrics {
+  avgMonthlyRevenue: number;
+  currentCustomers: number;
+  currentMRR: number;
+  currency: Currency;
+  businessModelType: BusinessModelType;
+  isB2C: boolean;
+  isTransactionBased: boolean;
+  // Additional metrics for specific business models
+  ltv?: number;
+  avgDealSize?: number;
+  aumFeePercent?: number;
+  aumTotal?: number;
+  transactionFeePercent?: number;
+  avgTransactionValue?: number;
+  setupFee?: number;
+}
+
+// Legacy interface for backwards compatibility
 export interface PricingMetrics {
   avgMonthlyRevenue: number;
   currentCustomers: number;
   currentMRR: number;
+}
+
+/**
+ * Detect currency from text - returns the most frequently mentioned currency
+ */
+function detectCurrency(text: string): Currency {
+  const currencyPatterns: { currency: Currency; patterns: RegExp[] }[] = [
+    { currency: 'EUR', patterns: [/€/, /eur\b/i] },
+    { currency: 'GBP', patterns: [/£/, /gbp\b/i] },
+    { currency: 'SEK', patterns: [/\bsek\b/i, /\bkr\b/i, /\bkronor\b/i] },
+    { currency: 'NOK', patterns: [/\bnok\b/i] },
+    { currency: 'DKK', patterns: [/\bdkk\b/i] },
+    { currency: 'USD', patterns: [/\$/, /usd\b/i] },
+  ];
+
+  const counts: Record<Currency, number> = { USD: 0, EUR: 0, GBP: 0, SEK: 0, NOK: 0, DKK: 0 };
+  
+  for (const { currency, patterns } of currencyPatterns) {
+    for (const pattern of patterns) {
+      const matches = text.match(new RegExp(pattern, 'gi'));
+      if (matches) counts[currency] += matches.length;
+    }
+  }
+
+  // Return the most frequent, defaulting to USD
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  return sorted[0][1] > 0 ? sorted[0][0] as Currency : 'USD';
+}
+
+/**
+ * Detect business model type from text
+ */
+function detectBusinessModelType(text: string): BusinessModelType {
+  const lowerText = text.toLowerCase();
+  
+  // AUM-based (asset management, fund management)
+  const aumIndicators = ['aum fee', 'assets under management', '% of aum', 'management fee', 'annual aum', 'aum-based'];
+  if (aumIndicators.some(ind => lowerText.includes(ind))) return 'aum';
+  
+  // Project/deal-based
+  const projectIndicators = ['per deal', 'per project', 'structuring fee', 'setup fee', 'listing fee', 'per engagement', 'per transaction fee', 'one-time fee'];
+  if (projectIndicators.some(ind => lowerText.includes(ind))) return 'project';
+  
+  // Marketplace
+  const marketplaceIndicators = ['take rate', 'transaction fee', 'marketplace', 'platform fee', 'gmv', 'gross merchandise'];
+  if (marketplaceIndicators.some(ind => lowerText.includes(ind))) return 'marketplace';
+  
+  // Enterprise SaaS
+  const enterpriseIndicators = ['enterprise', 'acv', 'annual contract', 'enterprise client', 'b2b saas'];
+  if (enterpriseIndicators.some(ind => lowerText.includes(ind))) return 'enterprise';
+  
+  // B2C
+  const b2cIndicators = ['consumer', 'b2c', 'app users', 'subscribers', 'individuals', 'personal', 'retail customer', 'end user'];
+  if (b2cIndicators.some(ind => lowerText.includes(ind))) return 'b2c';
+  
+  // Default to SaaS
+  return 'saas';
+}
+
+/**
+ * Parse a currency value from text, handling k/M suffixes
+ */
+function parseCurrencyValue(match: string): number {
+  // Remove currency symbols and normalize
+  let cleaned = match.replace(/[€£$,\s]/g, '').toLowerCase();
+  let multiplier = 1;
+  
+  if (cleaned.endsWith('k')) {
+    multiplier = 1000;
+    cleaned = cleaned.slice(0, -1);
+  } else if (cleaned.endsWith('m')) {
+    multiplier = 1000000;
+    cleaned = cleaned.slice(0, -1);
+  } else if (cleaned.endsWith('b')) {
+    multiplier = 1000000000;
+    cleaned = cleaned.slice(0, -1);
+  }
+  
+  const value = parseFloat(cleaned);
+  return isNaN(value) ? 0 : value * multiplier;
 }
 
 /**
@@ -486,29 +589,128 @@ export function extractPricingMetrics(
   memoResponses?: Record<string, string>,
   unitEconomicsJson?: Record<string, any>,
   marketText?: string
-): PricingMetrics & { isB2C?: boolean; isTransactionBased?: boolean } {
-  const defaults: PricingMetrics & { isB2C?: boolean; isTransactionBased?: boolean } = {
-    avgMonthlyRevenue: 0,
-    currentCustomers: 0,
-    currentMRR: 0,
-    isB2C: false,
-    isTransactionBased: false
-  };
-
+): EnhancedPricingMetrics {
   // Include market text in combined search
   const combinedTextRaw = `${businessModelText || ''} ${tractionText || ''} ${marketText || ''}`;
   const combinedText = safeLower(combinedTextRaw, "extractPricingMetrics.combinedText");
   
-  // Detect business model type
-  const b2cIndicators = ['consumer', 'b2c', 'users', 'app users', 'subscribers', 'individuals', 'personal', 'retail'];
-  const transactionIndicators = ['transaction fee', 'take rate', 'commission', '% of', 'per transaction', 'marketplace', 'platform fee'];
+  // Add memo responses to the search text
+  const memoResponseText = memoResponses ? Object.values(memoResponses).filter(v => typeof v === 'string').join(' ') : '';
+  const allText = `${combinedText} ${memoResponseText.toLowerCase()}`;
   
-  defaults.isB2C = b2cIndicators.some(indicator => combinedText.includes(indicator));
-  defaults.isTransactionBased = transactionIndicators.some(indicator => combinedText.includes(indicator));
+  // Detect currency and business model
+  const currency = detectCurrency(allText);
+  const businessModelType = detectBusinessModelType(allText);
   
+  // Initialize defaults
+  const defaults: EnhancedPricingMetrics = {
+    avgMonthlyRevenue: 0,
+    currentCustomers: 0,
+    currentMRR: 0,
+    currency,
+    businessModelType,
+    isB2C: businessModelType === 'b2c',
+    isTransactionBased: businessModelType === 'marketplace',
+  };
+
+  // === AUM-BASED MODEL EXTRACTION ===
+  if (businessModelType === 'aum') {
+    // Extract AUM fee percentage (e.g., "0.5% Annual AUM Fee", "1% management fee")
+    const feeMatch = allText.match(/(\d+(?:\.\d+)?)\s*%\s*(?:annual\s*)?(?:aum|management|fund)\s*fee/i) ||
+                     allText.match(/(?:aum|management)\s*fee[:\s]+(\d+(?:\.\d+)?)\s*%/i);
+    if (feeMatch) {
+      defaults.aumFeePercent = parseFloat(feeMatch[1]);
+    }
+    
+    // Extract total AUM (e.g., "€200M AUM", "200 million in AUM")
+    const aumMatch = allText.match(/[€£$]?([\d,]+(?:\.\d+)?)\s*[kmb]?\s*(?:in\s*)?aum/i) ||
+                     allText.match(/aum[:\s]*[€£$]?([\d,]+(?:\.\d+)?)\s*[kmb]?/i);
+    if (aumMatch) {
+      defaults.aumTotal = parseCurrencyValue(aumMatch[0]);
+    }
+    
+    // Extract setup/structuring fee (e.g., "€35k Structuring Fee")
+    const setupMatch = allText.match(/[€£$]([\d,]+(?:\.\d+)?)\s*k?\s*(?:structuring|setup|listing|origination)\s*fee/i);
+    if (setupMatch) {
+      defaults.setupFee = parseCurrencyValue(setupMatch[0]);
+    }
+    
+    // Calculate effective monthly revenue for AUM model
+    if (defaults.aumFeePercent && defaults.aumTotal) {
+      // Annual fee revenue / 12
+      defaults.avgMonthlyRevenue = Math.round((defaults.aumFeePercent / 100) * defaults.aumTotal / 12);
+    } else if (defaults.aumFeePercent) {
+      // Use typical AUM per client assumption
+      const avgAumPerClient = 50000000; // €50M default
+      defaults.avgMonthlyRevenue = Math.round((defaults.aumFeePercent / 100) * avgAumPerClient / 12);
+    }
+    
+    // Add setup fee if exists (amortize over typical client lifetime of 5 years)
+    if (defaults.setupFee && defaults.avgMonthlyRevenue) {
+      defaults.avgMonthlyRevenue += Math.round(defaults.setupFee / 60);
+    }
+  }
+  
+  // === PROJECT/DEAL-BASED MODEL EXTRACTION ===
+  if (businessModelType === 'project') {
+    // Extract per-deal/project fee
+    const dealMatch = allText.match(/[€£$]([\d,]+(?:\.\d+)?)\s*k?\s*(?:per\s*)?(?:deal|project|engagement|structuring|listing)/i) ||
+                      allText.match(/(?:deal|project)\s*(?:size|value|fee)[:\s]*[€£$]?([\d,]+(?:\.\d+)?)\s*k?/i);
+    if (dealMatch) {
+      defaults.avgDealSize = parseCurrencyValue(dealMatch[0]);
+      // Assume 1 deal per month per customer as baseline
+      defaults.avgMonthlyRevenue = defaults.avgDealSize;
+    }
+    
+    // Extract setup fee if separate
+    const setupMatch = allText.match(/[€£$]([\d,]+(?:\.\d+)?)\s*k?\s*(?:setup|structuring|listing)\s*fee/i);
+    if (setupMatch) {
+      defaults.setupFee = parseCurrencyValue(setupMatch[0]);
+      if (!defaults.avgDealSize) {
+        defaults.avgDealSize = defaults.setupFee;
+        defaults.avgMonthlyRevenue = defaults.setupFee;
+      }
+    }
+  }
+  
+  // === MARKETPLACE MODEL EXTRACTION ===
+  if (businessModelType === 'marketplace') {
+    // Extract take rate / transaction fee percentage
+    const rateMatch = allText.match(/(\d+(?:\.\d+)?)\s*%\s*(?:take\s*rate|transaction\s*fee|platform\s*fee|commission)/i) ||
+                      allText.match(/(?:take\s*rate|commission)[:\s]+(\d+(?:\.\d+)?)\s*%/i);
+    if (rateMatch) {
+      defaults.transactionFeePercent = parseFloat(rateMatch[1]);
+    }
+    
+    // Extract average transaction value
+    const txMatch = allText.match(/(?:average|avg)\s*(?:transaction|order)[:\s]*[€£$]?([\d,]+)/i);
+    if (txMatch) {
+      defaults.avgTransactionValue = parseCurrencyValue(txMatch[0]);
+    }
+    
+    // Calculate effective revenue
+    if (defaults.transactionFeePercent && defaults.avgTransactionValue) {
+      const txPerMonth = 2; // Assume 2 transactions per user per month
+      defaults.avgMonthlyRevenue = Math.round((defaults.transactionFeePercent / 100) * defaults.avgTransactionValue * txPerMonth);
+    }
+  }
+  
+  // === LTV EXTRACTION (works for all models) ===
+  const ltvMatch = allText.match(/ltv[:\s]*[€£$]?([\d,]+(?:\.\d+)?)\s*[kmb]?/i) ||
+                   allText.match(/lifetime\s*value[:\s]*[€£$]?([\d,]+(?:\.\d+)?)\s*[kmb]?/i) ||
+                   allText.match(/[€£$]([\d,]+(?:\.\d+)?)\s*[kmb]?\s*ltv/i);
+  if (ltvMatch) {
+    defaults.ltv = parseCurrencyValue(ltvMatch[0]);
+    // If we have LTV but no monthly revenue, estimate (assume 3-year lifetime)
+    if (!defaults.avgMonthlyRevenue && defaults.ltv) {
+      defaults.avgMonthlyRevenue = Math.round(defaults.ltv / 36);
+    }
+  }
+
+  // === STANDARD EXTRACTION (SaaS, Enterprise, B2C) ===
   // 1. Try structured JSON first (most reliable)
   if (unitEconomicsJson) {
-    if (unitEconomicsJson.avg_monthly_revenue) {
+    if (unitEconomicsJson.avg_monthly_revenue && !defaults.avgMonthlyRevenue) {
       defaults.avgMonthlyRevenue = parseFloat(unitEconomicsJson.avg_monthly_revenue);
     }
     if (unitEconomicsJson.current_customers) {
@@ -519,178 +721,104 @@ export function extractPricingMetrics(
     }
   }
 
-  // 2. Try memo responses (questionnaire answers) - check business_model too
-  if (memoResponses) {
+  // 2. Try memo responses (questionnaire answers)
+  if (memoResponses && !defaults.avgMonthlyRevenue) {
     const pricingAnswer = memoResponses['pricing_model'] || memoResponses['pricing'] || '';
     const businessAnswer = memoResponses['business_model'] || '';
     const revenueAnswer = memoResponses['revenue'] || memoResponses['current_revenue'] || '';
     const customersAnswer = memoResponses['customers'] || memoResponses['current_customers'] || memoResponses['traction'] || '';
     const allPricingText = `${pricingAnswer} ${businessAnswer}`.toLowerCase();
     
-    // Extract ARPU from business_model or pricing answers
-    // Supports formats like: "ARPU is £120-150", "ARPU of £150", "(ARPU) of £150", "average revenue per user (ARPU) is £120-150"
+    // Extract ARPU/ACV from answers
     if (!defaults.avgMonthlyRevenue) {
-      // Match "ARPU is £120-150" or "ARPU £120-150" (take average of range)
-      const arpuRangeMatch = allPricingText.match(/arpu[^£$€\d]*[\$€£]?([\d,]+(?:\.\d+)?)\s*[-–—to]+\s*[\$€£]?([\d,]+(?:\.\d+)?)/i);
+      // Range format: "ARPU is £120-150"
+      const arpuRangeMatch = allPricingText.match(/(?:arpu|acv)[^£$€\d]*[€£$]?([\d,]+(?:\.\d+)?)\s*[-–—to]+\s*[€£$]?([\d,]+(?:\.\d+)?)/i);
       if (arpuRangeMatch) {
         const low = parseFloat(arpuRangeMatch[1].replace(/,/g, ''));
         const high = parseFloat(arpuRangeMatch[2].replace(/,/g, ''));
-        // Check if this is annual (look for /year or per year nearby)
         const isAnnual = allPricingText.includes('/year') || allPricingText.includes('per year') || allPricingText.includes('annual');
         defaults.avgMonthlyRevenue = isAnnual ? Math.round((low + high) / 2 / 12) : Math.round((low + high) / 2);
       }
       
-      // Match single ARPU value: "ARPU is £150", "(ARPU) of £150", "arpu: £150"
+      // Single value: "(ARPU) of £150", "ACV: $50k"
       if (!defaults.avgMonthlyRevenue) {
-        const arpuMatch = allPricingText.match(/\(arpu\)\s*(?:of|is|:)?\s*[\$€£]?([\d,]+(?:\.\d+)?)/i) ||
-                         allPricingText.match(/arpu\s*(?:is|of|:)\s*[\$€£]?([\d,]+(?:\.\d+)?)/i) ||
-                         allPricingText.match(/average\s*revenue\s*per\s*user[^£$€\d]*[\$€£]?([\d,]+(?:\.\d+)?)/i);
-        if (arpuMatch) {
-          const value = parseFloat(arpuMatch[1].replace(/,/g, ''));
-          const isAnnual = allPricingText.includes('/year') || allPricingText.includes('per year') || allPricingText.includes('annual');
+        const acvMatch = allPricingText.match(/acv[:\s]*[€£$]?([\d,]+(?:\.\d+)?)\s*k?/i) ||
+                         allPricingText.match(/\(arpu\)\s*(?:of|is|:)?\s*[€£$]?([\d,]+(?:\.\d+)?)/i) ||
+                         allPricingText.match(/arpu\s*(?:is|of|:)\s*[€£$]?([\d,]+(?:\.\d+)?)/i);
+        if (acvMatch) {
+          let value = parseCurrencyValue(acvMatch[0]);
+          const isAnnual = allPricingText.includes('/year') || allPricingText.includes('per year') || allPricingText.includes('annual') || allPricingText.includes('acv');
           defaults.avgMonthlyRevenue = isAnnual ? Math.round(value / 12) : value;
-        }
-      }
-      
-      // Match monthly price patterns
-      if (!defaults.avgMonthlyRevenue) {
-        const priceMatch = allPricingText.match(/[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:sek|usd|eur|gbp)?\s*(?:\/|per)\s*(?:month|mo)/i) ||
-                           allPricingText.match(/monthly[:\s]+[\$€£]?([\d,]+)/i);
-        if (priceMatch) {
-          defaults.avgMonthlyRevenue = parseFloat(priceMatch[1].replace(/,/g, ''));
         }
       }
     }
 
-    // Extract customer/user count
+    // Extract customer count
     if (!defaults.currentCustomers && customersAnswer) {
-      const customerMatch = customersAnswer.match(/(\d+)\s*(?:paying\s*)?(?:customers?|clients?|users?|members?|subscribers?)/i) ||
-                           customersAnswer.match(/(\d+)\s*companies/i) ||
-                           customersAnswer.match(/waitlist[^\d]*(\d+)/i) ||
-                           customersAnswer.match(/(\d+)\s*(?:on|in)\s*(?:the\s*)?waitlist/i);
+      const customerMatch = customersAnswer.match(/(\d+)\s*(?:paying\s*)?(?:customers?|clients?|users?|issuers?|members?)/i) ||
+                           customersAnswer.match(/(\d+)\s*companies/i);
       if (customerMatch) {
         defaults.currentCustomers = parseInt(customerMatch[1]);
       }
     }
 
-    // Extract MRR from revenue answer
+    // Extract MRR
     if (!defaults.currentMRR && revenueAnswer) {
-      const mrrMatch = revenueAnswer.match(/[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:sek|usd|eur)?\s*mrr/i) ||
-                      revenueAnswer.match(/mrr[:\s]+[\$€£]?([\d,]+)/i);
+      const mrrMatch = revenueAnswer.match(/[€£$]?([\d,]+(?:\.\d+)?)\s*(?:k)?\s*mrr/i);
       if (mrrMatch) {
-        defaults.currentMRR = parseFloat(mrrMatch[1].replace(/,/g, ''));
+        defaults.currentMRR = parseCurrencyValue(mrrMatch[0]);
       }
     }
   }
 
   // 3. Extract from narrative text as fallback
-  
-  // For transaction-based models, try to calculate effective ARPU
-  if (defaults.isTransactionBased && !defaults.avgMonthlyRevenue) {
-    // Look for transaction fee percentage
-    const feeMatch = combinedText.match(/(\d+(?:\.\d+)?)\s*%\s*(?:transaction|platform|take|commission)/i) ||
-                    combinedText.match(/(?:fee|commission|take rate)[:\s]+(\d+(?:\.\d+)?)\s*%/i);
-    
-    // Look for average transaction value
-    const avgTxMatch = combinedText.match(/(?:average|avg)\s*(?:transaction|order)[:\s]*[\$€£]?([\d,]+)/i) ||
-                       combinedText.match(/[\$€£]?([\d,]+)\s*(?:average|avg)\s*(?:transaction|order)/i);
-    
-    // Look for transactions per user
-    const txPerUserMatch = combinedText.match(/(\d+)\s*(?:transactions?|orders?)\s*(?:per|\/)\s*(?:user|month)/i);
-    
-    if (feeMatch && avgTxMatch) {
-      const feePercent = parseFloat(feeMatch[1]) / 100;
-      const avgTxValue = parseFloat(avgTxMatch[1].replace(/,/g, ''));
-      const txPerMonth = txPerUserMatch ? parseFloat(txPerUserMatch[1]) : 2; // Default 2 tx/month
-      defaults.avgMonthlyRevenue = Math.round(feePercent * avgTxValue * txPerMonth);
-    }
-  }
-  
-  // Extract ACV/monthly price
   if (!defaults.avgMonthlyRevenue) {
-    // ACV patterns (annual contract value - divide by 12 for monthly)
-    const acvMatch = combinedText.match(/[\$€£]?([\d,]+)[k]?\s*acv/i) ||
-                    combinedText.match(/acv[:\s]+[\$€£]?([\d,]+)/i);
+    // ACV patterns
+    const acvMatch = combinedText.match(/[€£$]?([\d,]+)[k]?\s*acv/i) ||
+                    combinedText.match(/acv[:\s]+[€£$]?([\d,]+)/i);
     if (acvMatch) {
-      let acv = parseFloat(acvMatch[1].replace(/,/g, ''));
-      if (combinedText.includes('k acv') || acvMatch[0].includes('k')) acv *= 1000;
-      defaults.avgMonthlyRevenue = Math.round(acv / 12);
+      defaults.avgMonthlyRevenue = Math.round(parseCurrencyValue(acvMatch[0]) / 12);
     }
     
-    // Direct monthly price patterns (support multiple currencies)
+    // Monthly price patterns
     if (!defaults.avgMonthlyRevenue) {
-      const monthlyMatch = combinedText.match(/[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:sek|usd|eur|gbp)?\s*(?:\/|per)\s*(?:month|mo)/i) ||
-                          combinedText.match(/monthly[:\s]+[\$€£]?([\d,]+)/i);
+      const monthlyMatch = combinedText.match(/[€£$]?([\d,]+(?:\.\d+)?)\s*(?:\/|per)\s*(?:month|mo)/i);
       if (monthlyMatch) {
-        defaults.avgMonthlyRevenue = parseFloat(monthlyMatch[1].replace(/,/g, ''));
+        defaults.avgMonthlyRevenue = parseCurrencyValue(monthlyMatch[0]);
       }
     }
     
-    // ARPU extraction from narrative text - supports "(ARPU) of £150", "ARPU is £120-150"
+    // ARPU from narrative
     if (!defaults.avgMonthlyRevenue) {
-      // Range format: "ARPU is £120-150" or "ARPU £120-150"
-      const arpuRangeMatch = combinedText.match(/arpu[^£$€\d]*[\$€£]?([\d,]+(?:\.\d+)?)\s*[-–—to]+\s*[\$€£]?([\d,]+(?:\.\d+)?)/i);
-      if (arpuRangeMatch) {
-        const low = parseFloat(arpuRangeMatch[1].replace(/,/g, ''));
-        const high = parseFloat(arpuRangeMatch[2].replace(/,/g, ''));
-        defaults.avgMonthlyRevenue = Math.round((low + high) / 2);
-      }
-      
-      // Single value: "(ARPU) of £150" or "ARPU is £150" or "arpu: £150"
-      if (!defaults.avgMonthlyRevenue) {
-        const arpuMatch = combinedText.match(/\(arpu\)\s*(?:of|is|:)?\s*[\$€£]?([\d,]+(?:\.\d+)?)/i) ||
-                         combinedText.match(/arpu\s*(?:is|of|:)\s*[\$€£]?([\d,]+(?:\.\d+)?)/i) ||
-                         combinedText.match(/average\s*revenue\s*per\s*user[^£$€\d]*[\$€£]?([\d,]+(?:\.\d+)?)/i);
-        if (arpuMatch) {
-          defaults.avgMonthlyRevenue = parseFloat(arpuMatch[1].replace(/,/g, ''));
-        }
-      }
-    }
-    
-    // Look for "effective ACV" or calculated ARPU from text
-    if (!defaults.avgMonthlyRevenue) {
-      const effectiveMatch = combinedText.match(/effective\s*(?:acv|arpu)[^\d]*[\$€£]?([\d,]+)/i) ||
-                            combinedText.match(/[\$€£]?([\d,]+)\s*(?:per active user per year|annual value per user)/i);
-      if (effectiveMatch) {
-        const annualValue = parseFloat(effectiveMatch[1].replace(/,/g, ''));
-        defaults.avgMonthlyRevenue = Math.round(annualValue / 12);
+      const arpuMatch = combinedText.match(/\(arpu\)\s*(?:of|is|:)?\s*[€£$]?([\d,]+(?:\.\d+)?)/i) ||
+                       combinedText.match(/arpu\s*(?:is|of|:)\s*[€£$]?([\d,]+(?:\.\d+)?)/i);
+      if (arpuMatch) {
+        defaults.avgMonthlyRevenue = parseCurrencyValue(arpuMatch[0]);
       }
     }
   }
   
-  // Extract customer/user count
+  // Extract customer count from narrative
   if (!defaults.currentCustomers) {
-    const customerMatch = combinedText.match(/(\d+(?:,\d+)*)\s*(?:paying\s*)?(?:enterprise\s*)?(?:customers?|clients?|users?|active users?|members?)/i) ||
-                         combinedText.match(/(\d+(?:,\d+)*)\s*(?:paying\s*)?companies/i) ||
-                         combinedText.match(/serves?\s*(\d+(?:,\d+)*)/i) ||
-                         combinedText.match(/waitlist[^\d]*(\d+(?:,\d+)*)/i) ||
-                         combinedText.match(/signup[^\d]*(\d+(?:,\d+)*)/i);
+    const customerMatch = combinedText.match(/(\d+(?:,\d+)*)\s*(?:paying\s*)?(?:customers?|clients?|issuers?|users?)/i) ||
+                         combinedText.match(/serves?\s*(\d+(?:,\d+)*)/i);
     if (customerMatch) {
       defaults.currentCustomers = parseInt(customerMatch[1].replace(/,/g, ''));
     }
   }
   
-  // Extract MRR (support multiple currencies including SEK)
+  // Extract MRR from narrative
   if (!defaults.currentMRR) {
-    const mrrMatch = combinedText.match(/[\$€£]?([\d,]+(?:\.\d+)?)[k]?\s*(?:sek|usd|eur)?\s*mrr/i) ||
-                    combinedText.match(/mrr[:\s]+[\$€£]?([\d,]+)/i);
+    const mrrMatch = combinedText.match(/[€£$]?([\d,]+(?:\.\d+)?)[k]?\s*mrr/i);
     if (mrrMatch) {
-      let mrr = parseFloat(mrrMatch[1].replace(/,/g, ''));
-      if (combinedText.includes('k mrr') || mrrMatch[0].includes('k')) mrr *= 1000;
-      defaults.currentMRR = mrr;
+      defaults.currentMRR = parseCurrencyValue(mrrMatch[0]);
     }
     
-    // Look for transaction volume that can be used to calculate effective MRR
-    if (!defaults.currentMRR && defaults.isTransactionBased) {
-      const volumeMatch = combinedText.match(/(\d+(?:,\d+)*)[k]?\s*(?:sek|usd|eur)?\s*(?:in\s*)?transactions/i) ||
-                         combinedText.match(/facilitated\s*[\$€£]?(\d+(?:,\d+)*)[k]?\s*(?:sek|usd|eur)?/i);
-      if (volumeMatch) {
-        let volume = parseFloat(volumeMatch[1].replace(/,/g, ''));
-        if (volumeMatch[0].includes('k')) volume *= 1000;
-        // Assume 2-3% take rate if not specified
-        const feeMatch = combinedText.match(/(\d+(?:\.\d+)?)\s*%/);
-        const feeRate = feeMatch ? parseFloat(feeMatch[1]) / 100 : 0.025;
-        defaults.currentMRR = Math.round(volume * feeRate / 12); // Monthly from annual volume
+    // Extract ARR and divide by 12
+    if (!defaults.currentMRR) {
+      const arrMatch = combinedText.match(/[€£$]?([\d,]+(?:\.\d+)?)\s*[kmb]?\s*arr/i);
+      if (arrMatch) {
+        defaults.currentMRR = Math.round(parseCurrencyValue(arrMatch[0]) / 12);
       }
     }
   }
@@ -698,6 +826,29 @@ export function extractPricingMetrics(
   // 4. Calculate MRR from customers × monthly price if we have both but no MRR
   if (!defaults.currentMRR && defaults.avgMonthlyRevenue > 0 && defaults.currentCustomers > 0) {
     defaults.currentMRR = defaults.avgMonthlyRevenue * defaults.currentCustomers;
+  }
+
+  // 5. Set smart defaults based on business model if still no revenue data
+  if (!defaults.avgMonthlyRevenue) {
+    switch (businessModelType) {
+      case 'b2c':
+        defaults.avgMonthlyRevenue = 10; // $10/month typical B2C
+        break;
+      case 'enterprise':
+        defaults.avgMonthlyRevenue = 5000; // $60k ACV typical
+        break;
+      case 'aum':
+        defaults.avgMonthlyRevenue = 20000; // ~$240k/year from 0.5% on $50M
+        break;
+      case 'project':
+        defaults.avgMonthlyRevenue = 35000; // ~$35k per project
+        break;
+      case 'marketplace':
+        defaults.avgMonthlyRevenue = 50; // 2.5% of $100 * 20 tx/month
+        break;
+      default:
+        defaults.avgMonthlyRevenue = 300; // $300/month typical SaaS
+    }
   }
 
   return defaults;

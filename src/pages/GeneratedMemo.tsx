@@ -901,11 +901,22 @@ export default function GeneratedMemo() {
                   {isMarketSection && hasPremium && (
                     <div className="space-y-6">
                       <MemoVCScaleCard 
-                        avgMonthlyRevenue={extractedPricing.avgMonthlyRevenue || 100}
-                        currentCustomers={extractedPricing.currentCustomers || 0}
-                        currentMRR={extractedPricing.currentMRR || 0}
+                        avgMonthlyRevenue={extractedPricing.avgMonthlyRevenue}
+                        currentCustomers={extractedPricing.currentCustomers}
+                        currentMRR={extractedPricing.currentMRR}
                         companyName={companyInfo?.name || 'Company'}
                         category={companyInfo?.category || 'Technology'}
+                        currency={extractedPricing.currency}
+                        businessModelType={extractedPricing.businessModelType}
+                        ltv={extractedPricing.ltv}
+                        avgDealSize={extractedPricing.avgDealSize}
+                        aumFeePercent={extractedPricing.aumFeePercent}
+                        aumTotal={extractedPricing.aumTotal}
+                        setupFee={extractedPricing.setupFee}
+                        transactionFeePercent={extractedPricing.transactionFeePercent}
+                        avgTransactionValue={extractedPricing.avgTransactionValue}
+                        isB2C={extractedPricing.isB2C}
+                        isTransactionBased={extractedPricing.isTransactionBased}
                       />
                       {currentSectionTools?.bottomsUpTAM && (
                         <MarketTAMCalculator data={currentSectionTools.bottomsUpTAM} />
