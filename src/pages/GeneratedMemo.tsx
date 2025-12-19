@@ -27,7 +27,7 @@ import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
 import { MemoMomentumCard } from "@/components/memo/MemoMomentumCard";
 import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCard";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
-import { DataQualitySummary } from "@/components/memo/DataQualitySummary";
+
 import { LowConfidenceWarning } from "@/components/memo/LowConfidenceWarning";
 import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics } from "@/lib/memoDataExtractor";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
@@ -744,22 +744,6 @@ export default function GeneratedMemo() {
           </div>
         </div>
 
-        {/* Data Quality Summary - Premium only */}
-        {hasPremium && memoContent.overallAssessment && (
-          <div className="mb-8">
-            <DataQualitySummary 
-              overallAssessment={memoContent.overallAssessment}
-              sectionAssessments={
-                memoContent.sections?.reduce((acc, section) => {
-                  if (section.sectionAssessment) {
-                    acc[section.title] = section.sectionAssessment;
-                  }
-                  return acc;
-                }, {} as Record<string, ConditionalAssessment>)
-              }
-            />
-          </div>
-        )}
 
         {/* Low Confidence Warning for important data gaps */}
         {hasPremium && memoContent.overallAssessment && (
