@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Calculator, TrendingUp, Target, AlertTriangle, Info, Lightbulb, DollarSign, Users, Layers, Zap, ArrowUpRight, Edit2, Save, Building, Landmark, ShoppingCart, Briefcase } from "lucide-react";
+import { Calculator, TrendingUp, Target, AlertTriangle, Info, Lightbulb, DollarSign, Users, Layers, Zap, ArrowUpRight, Edit2, Save, Building, Landmark, ShoppingCart, Briefcase, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 import type { LegacyBusinessModelType as BusinessModelType, Currency, PricingDataSource } from "@/lib/memoDataExtractor";
+import type { AnchoredAssumptions } from "@/lib/anchoredAssumptions";
 
 export interface ScaleStrategy {
   title: string;
@@ -34,6 +36,8 @@ interface MemoVCScaleCardProps {
   isTransactionBased?: boolean;
   // Data source tracking for transparency
   dataSource?: PricingDataSource;
+  // New: Full anchored assumptions for dynamic framework
+  anchoredAssumptions?: AnchoredAssumptions;
 }
 
 // Currency symbols and formatters
@@ -329,9 +333,13 @@ export const MemoVCScaleCard = ({
   avgTransactionValue,
   isB2C = false,
   isTransactionBased = false,
-  dataSource
+  dataSource,
+  anchoredAssumptions
 }: MemoVCScaleCardProps) => {
-  // Determine effective business model type from legacy props if not provided
+  // Use anchored assumptions if provided, fall back to legacy props
+  const useFramework = !!anchoredAssumptions?.metricFramework;
+  
+  // Determine effective business model type from anchored assumptions or legacy props
   const effectiveModelType: BusinessModelType = businessModelType !== 'saas' 
     ? businessModelType 
     : (isB2C ? 'b2c' : (isTransactionBased ? 'marketplace' : 'saas'));
@@ -339,17 +347,44 @@ export const MemoVCScaleCard = ({
   const modelConfig = businessModelLabels[effectiveModelType];
   const ModelIcon = modelConfig.icon;
   
-  const hasInitialData = initialAvgMonthlyRevenue > 0 || initialCurrentMRR > 0;
+  // Get metric labels from framework or defaults
+  const primaryMetricLabel = useFramework 
+    ? anchoredAssumptions.metricFramework.primaryMetric.label 
+    : modelConfig.revenueLabel;
+  const customerLabel = useFramework 
+    ? anchoredAssumptions.metricFramework.customerMetric.plural 
+    : modelConfig.customerLabel;
+  const customerSingular = useFramework 
+    ? anchoredAssumptions.metricFramework.customerMetric.singular 
+    : modelConfig.customerLabel.replace(/s$/, '');
+  
+  // Get primary metric value from anchored assumptions or fall back to props
+  const getAnchoredMetricValue = (): number => {
+    if (anchoredAssumptions?.primaryMetricValue) {
+      // Convert to monthly if needed
+      if (anchoredAssumptions.periodicity === 'annual') {
+        return Math.round(anchoredAssumptions.primaryMetricValue / 12);
+      }
+      return anchoredAssumptions.primaryMetricValue;
+    }
+    return initialAvgMonthlyRevenue;
+  };
+  
+  const hasInitialData = getAnchoredMetricValue() > 0 || initialCurrentMRR > 0;
   
   const [isEditing, setIsEditing] = useState(!hasInitialData);
   const [editedValues, setEditedValues] = useState({
-    avgMonthlyRevenue: initialAvgMonthlyRevenue > 0 ? initialAvgMonthlyRevenue.toString() : '',
+    avgMonthlyRevenue: getAnchoredMetricValue() > 0 ? getAnchoredMetricValue().toString() : '',
     currentCustomers: initialCurrentCustomers > 0 ? initialCurrentCustomers.toString() : '',
     currentMRR: initialCurrentMRR > 0 ? initialCurrentMRR.toString() : ''
   });
 
-  // Calculate values - use edited or initial, with smart defaults based on business model
+  // Calculate values - use edited or anchored, with smart defaults based on business model
   const getDefaultRevenue = () => {
+    // Use framework benchmarks if available
+    if (useFramework && anchoredAssumptions.metricFramework.benchmarks) {
+      return anchoredAssumptions.metricFramework.benchmarks.byStage['seed']?.mid || 300;
+    }
     switch (effectiveModelType) {
       case 'b2c': return 10;
       case 'enterprise': return 5000;
@@ -360,14 +395,17 @@ export const MemoVCScaleCard = ({
     }
   };
 
-  const avgMonthlyRevenue = parseFloat(editedValues.avgMonthlyRevenue) || initialAvgMonthlyRevenue || getDefaultRevenue();
+  const avgMonthlyRevenue = parseFloat(editedValues.avgMonthlyRevenue) || getAnchoredMetricValue() || getDefaultRevenue();
   const currentCustomers = parseFloat(editedValues.currentCustomers) || initialCurrentCustomers || 0;
   const currentMRR = parseFloat(editedValues.currentMRR) || initialCurrentMRR || 0;
 
-  // Target ARR in the user's currency (equivalent to $100M USD benchmark)
+  // Use pre-calculated scale requirements from anchored assumptions if available
   const targetARR = 100_000_000;
-  const annualValue = avgMonthlyRevenue * 12;
-  const customersNeeded = Math.ceil(targetARR / annualValue);
+  const annualValue = anchoredAssumptions?.periodicity === 'annual' 
+    ? (anchoredAssumptions?.primaryMetricValue || avgMonthlyRevenue * 12)
+    : avgMonthlyRevenue * 12;
+  const customersNeeded = anchoredAssumptions?.scaleRequirements?.unitsNeeded 
+    || Math.ceil(targetARR / annualValue);
   const progressPercent = currentCustomers > 0 
     ? Math.min((currentCustomers / customersNeeded) * 100, 100) 
     : 0;
@@ -432,6 +470,12 @@ export const MemoVCScaleCard = ({
                     <ModelIcon className="w-3 h-3" />
                     {modelConfig.label}
                   </span>
+                  {anchoredAssumptions?.source === 'ai_estimated' && (
+                    <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      AI Estimated
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
