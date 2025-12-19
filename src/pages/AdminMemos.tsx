@@ -78,7 +78,7 @@ const AdminMemos = () => {
 
   const fetchPaidCompanies = async () => {
     try {
-      // Fetch all paid companies with their memos
+      // Fetch all paid companies
       const { data: companiesData, error } = await supabase
         .from("companies")
         .select(`
@@ -87,29 +87,36 @@ const AdminMemos = () => {
           stage,
           created_at,
           has_premium,
-          profiles!companies_founder_id_fkey(email),
-          memos(id, status, created_at)
+          profiles!companies_founder_id_fkey(email)
         `)
         .eq("has_premium", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      const formattedCompanies: PaidCompanyData[] = (companiesData || []).map((company) => {
-        const memos = company.memos as any[];
-        const latestMemo = memos && memos.length > 0 ? memos[0] : null;
-        
-        return {
-          id: company.id,
-          name: company.name,
-          stage: company.stage,
-          founder_email: (company.profiles as any)?.email || "N/A",
-          created_at: company.created_at,
-          has_memo: memos && memos.length > 0,
-          memo_status: latestMemo?.status || null,
-          memo_created_at: latestMemo?.created_at || null,
-        };
-      });
+      // Fetch memos separately for each company
+      const formattedCompanies: PaidCompanyData[] = await Promise.all(
+        (companiesData || []).map(async (company) => {
+          const { data: memoData } = await supabase
+            .from("memos")
+            .select("id, status, created_at")
+            .eq("company_id", company.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          return {
+            id: company.id,
+            name: company.name,
+            stage: company.stage,
+            founder_email: (company.profiles as any)?.email || "N/A",
+            created_at: company.created_at,
+            has_memo: !!memoData,
+            memo_status: memoData?.status || null,
+            memo_created_at: memoData?.created_at || null,
+          };
+        })
+      );
 
       setCompanies(formattedCompanies);
     } catch (error) {
