@@ -37,6 +37,262 @@ interface CompanyModel {
   sourceResponses: Record<string, string>;
 }
 
+// =============================================================================
+// ADAPTIVE BENCHMARK COHORT SYSTEM (inline for edge function)
+// =============================================================================
+interface BenchmarkCohort {
+  id: string;
+  name: string;
+  benchmarks: {
+    growth: { exceptional: number; good: number; average: number; concerning: number; description: string };
+    ltvCacRatio: { exceptional: number; good: number; minimum: number; description: string };
+    paybackMonths: { exceptional: number; good: number; acceptable: number; description: string };
+    netRevenueRetention: { exceptional: number; good: number; acceptable: number; description: string };
+    grossChurn: { exceptional: number; good: number; concerning: number; description: string };
+    magicNumber: { efficient: number; acceptable: number; inefficient: number; description: string };
+    grossMargin: { exceptional: number; good: number; minimum: number; description: string };
+    salesCycleWeeks: { fast: number; typical: number; long: number; description: string };
+    cac: { low: number; typical: number; high: number; description: string };
+    tractionExpectations: { month3: string; month6: string; month12: string; month18: string; description: string };
+  };
+  scoringAdjustments: { maxTractionScore: number; maxBusinessModelScore: number; maxSolutionScore: number; maxTeamScore: number; maxMarketScore: number };
+  comparables: string[];
+}
+
+interface CohortMatch {
+  cohort: BenchmarkCohort;
+  matchScore: number;
+  matchedCriteria: string[];
+}
+
+// Benchmark cohort definitions (simplified for edge function)
+const BENCHMARK_COHORTS: Record<string, BenchmarkCohort> = {
+  'plg-micro-preseed': {
+    id: 'plg-micro-preseed', name: 'PLG Micro-ACV Pre-Seed',
+    benchmarks: {
+      growth: { exceptional: 25, good: 15, average: 10, concerning: 5, description: 'Monthly growth for PLG pre-seed' },
+      ltvCacRatio: { exceptional: 5, good: 3, minimum: 2, description: 'PLG should have low CAC' },
+      paybackMonths: { exceptional: 3, good: 6, acceptable: 12, description: 'Fast payback for low-ACV' },
+      netRevenueRetention: { exceptional: 120, good: 105, acceptable: 95, description: 'NRR harder at micro-ACV' },
+      grossChurn: { exceptional: 2, good: 4, concerning: 7, description: 'Monthly churn' },
+      magicNumber: { efficient: 1.0, acceptable: 0.7, inefficient: 0.5, description: 'PLG should be efficient' },
+      grossMargin: { exceptional: 85, good: 75, minimum: 65, description: 'Software margins' },
+      salesCycleWeeks: { fast: 0.5, typical: 1, long: 2, description: 'Self-serve converts in days' },
+      cac: { low: 50, typical: 150, high: 300, description: 'CAC for micro-ACV PLG' },
+      tractionExpectations: { month3: '100+ signups, 10+ paying', month6: '500+ signups, $1-5K MRR', month12: '2K+ signups, $10-25K MRR', month18: '5K+ signups, $25-50K MRR', description: 'PLG micro-ACV milestones' }
+    },
+    scoringAdjustments: { maxTractionScore: 35, maxBusinessModelScore: 45, maxSolutionScore: 55, maxTeamScore: 70, maxMarketScore: 65 },
+    comparables: ['Notion (early)', 'Calendly (early)', 'Loom (early)']
+  },
+  'plg-smb-seed': {
+    id: 'plg-smb-seed', name: 'PLG SMB Seed',
+    benchmarks: {
+      growth: { exceptional: 20, good: 15, average: 10, concerning: 5, description: 'Monthly growth for PLG SMB seed' },
+      ltvCacRatio: { exceptional: 5, good: 3, minimum: 2.5, description: 'Higher ACV allows some sales touch' },
+      paybackMonths: { exceptional: 6, good: 12, acceptable: 18, description: 'SMB ACV allows slightly longer payback' },
+      netRevenueRetention: { exceptional: 130, good: 115, acceptable: 100, description: 'SMB expansion via seats/usage' },
+      grossChurn: { exceptional: 2, good: 3, concerning: 5, description: 'Monthly churn' },
+      magicNumber: { efficient: 1.0, acceptable: 0.75, inefficient: 0.5, description: 'Efficiency with sales-assist' },
+      grossMargin: { exceptional: 85, good: 75, minimum: 65, description: 'Software margins' },
+      salesCycleWeeks: { fast: 1, typical: 2, long: 4, description: 'Quick cycles with sales assist' },
+      cac: { low: 500, typical: 1500, high: 3000, description: 'Blended CAC for PLG with sales' },
+      tractionExpectations: { month3: '50+ active, initial paying', month6: '100+ paying, $5-15K MRR', month12: '300+ paying, $25-75K MRR', month18: '500+ paying, $75-150K MRR', description: 'Seed PLG SMB milestones' }
+    },
+    scoringAdjustments: { maxTractionScore: 55, maxBusinessModelScore: 65, maxSolutionScore: 70, maxTeamScore: 75, maxMarketScore: 70 },
+    comparables: ['Airtable (seed)', 'Linear (seed)', 'Zapier (early)']
+  },
+  'inside-sales-midmarket-seed': {
+    id: 'inside-sales-midmarket-seed', name: 'Inside Sales Mid-Market Seed',
+    benchmarks: {
+      growth: { exceptional: 15, good: 10, average: 7, concerning: 3, description: 'Monthly growth for inside sales' },
+      ltvCacRatio: { exceptional: 5, good: 3, minimum: 2, description: 'Higher CAC acceptable with higher ACV' },
+      paybackMonths: { exceptional: 12, good: 18, acceptable: 24, description: 'Longer payback with higher ACV' },
+      netRevenueRetention: { exceptional: 140, good: 120, acceptable: 105, description: 'Strong expansion potential' },
+      grossChurn: { exceptional: 0.5, good: 1, concerning: 2, description: 'Monthly churn' },
+      magicNumber: { efficient: 0.8, acceptable: 0.6, inefficient: 0.4, description: 'Higher tolerance for CAC' },
+      grossMargin: { exceptional: 80, good: 70, minimum: 60, description: 'May include implementation' },
+      salesCycleWeeks: { fast: 4, typical: 8, long: 12, description: 'Multi-stakeholder deals' },
+      cac: { low: 5000, typical: 15000, high: 30000, description: 'CAC for inside sales mid-market' },
+      tractionExpectations: { month3: '5-10 qualified opps', month6: '3-5 closed, $50-100K ARR', month12: '10-20 customers, $200-500K ARR', month18: '20-40 customers, $500K-1M ARR', description: 'Mid-market seed milestones' }
+    },
+    scoringAdjustments: { maxTractionScore: 50, maxBusinessModelScore: 60, maxSolutionScore: 65, maxTeamScore: 75, maxMarketScore: 70 },
+    comparables: ['Gong (early)', 'Lattice (early)', 'Rippling (seed)']
+  },
+  'enterprise-sales-seed': {
+    id: 'enterprise-sales-seed', name: 'Enterprise Sales Seed',
+    benchmarks: {
+      growth: { exceptional: 10, good: 7, average: 5, concerning: 2, description: 'Monthly growth for enterprise' },
+      ltvCacRatio: { exceptional: 5, good: 3, minimum: 2, description: 'High CAC offset by high ACV' },
+      paybackMonths: { exceptional: 18, good: 24, acceptable: 36, description: 'Multi-year contracts allow longer payback' },
+      netRevenueRetention: { exceptional: 150, good: 130, acceptable: 115, description: 'Substantial enterprise expansion' },
+      grossChurn: { exceptional: 0.3, good: 0.5, concerning: 1, description: 'Monthly churn - enterprise sticky' },
+      magicNumber: { efficient: 0.7, acceptable: 0.5, inefficient: 0.3, description: 'Enterprise sales is expensive' },
+      grossMargin: { exceptional: 75, good: 65, minimum: 55, description: 'Often includes pro services' },
+      salesCycleWeeks: { fast: 12, typical: 24, long: 52, description: 'Enterprise deals take 3-12 months' },
+      cac: { low: 30000, typical: 75000, high: 150000, description: 'Enterprise CAC' },
+      tractionExpectations: { month3: '3-5 enterprise pilots', month6: '1-2 contracts, $100-300K ARR', month12: '3-5 customers, $300-700K ARR', month18: '5-10 customers, $700K-1.5M ARR', description: 'Enterprise seed milestones' }
+    },
+    scoringAdjustments: { maxTractionScore: 45, maxBusinessModelScore: 55, maxSolutionScore: 60, maxTeamScore: 80, maxMarketScore: 70 },
+    comparables: ['Snowflake (early)', 'Databricks (early)']
+  },
+  'marketplace-seed': {
+    id: 'marketplace-seed', name: 'Marketplace Seed',
+    benchmarks: {
+      growth: { exceptional: 30, good: 20, average: 12, concerning: 5, description: 'GMV growth - must show network effects' },
+      ltvCacRatio: { exceptional: 4, good: 2.5, minimum: 1.5, description: 'Supply-side CAC often high' },
+      paybackMonths: { exceptional: 6, good: 12, acceptable: 18, description: 'Recover CAC quickly' },
+      netRevenueRetention: { exceptional: 130, good: 110, acceptable: 95, description: 'Repeat purchase rate' },
+      grossChurn: { exceptional: 3, good: 5, concerning: 10, description: 'Monthly churn - low switching costs' },
+      magicNumber: { efficient: 0.8, acceptable: 0.5, inefficient: 0.3, description: 'Marketing efficiency' },
+      grossMargin: { exceptional: 70, good: 50, minimum: 30, description: 'Take rate minus fulfillment' },
+      salesCycleWeeks: { fast: 0.5, typical: 1, long: 2, description: 'Transaction velocity matters' },
+      cac: { low: 30, typical: 100, high: 300, description: 'Demand-side CAC' },
+      tractionExpectations: { month3: 'Liquidity in one geo/vertical', month6: '$50-200K GMV/mo, 15-25% take', month12: '$200-500K GMV/mo, repeat behavior', month18: '$500K-1M GMV/mo, network effects', description: 'Marketplace milestones' }
+    },
+    scoringAdjustments: { maxTractionScore: 50, maxBusinessModelScore: 55, maxSolutionScore: 60, maxTeamScore: 75, maxMarketScore: 70 },
+    comparables: ['Airbnb (early)', 'DoorDash (early)', 'Faire (early)']
+  },
+  'preseed-general': {
+    id: 'preseed-general', name: 'Pre-Seed General',
+    benchmarks: {
+      growth: { exceptional: 20, good: 10, average: 5, concerning: 0, description: 'Any traction is signal at pre-seed' },
+      ltvCacRatio: { exceptional: 4, good: 2, minimum: 1, description: 'Unit economics often unknown' },
+      paybackMonths: { exceptional: 6, good: 12, acceptable: 24, description: 'Payback is hypothesis' },
+      netRevenueRetention: { exceptional: 120, good: 100, acceptable: 80, description: 'NRR often unknown' },
+      grossChurn: { exceptional: 3, good: 5, concerning: 10, description: 'Early churn acceptable' },
+      magicNumber: { efficient: 0.7, acceptable: 0.4, inefficient: 0.2, description: 'Often not relevant' },
+      grossMargin: { exceptional: 80, good: 60, minimum: 40, description: 'Model dependent' },
+      salesCycleWeeks: { fast: 1, typical: 4, long: 12, description: 'Shorter is better' },
+      cac: { low: 100, typical: 500, high: 2000, description: 'CAC varies widely' },
+      tractionExpectations: { month3: 'Waitlist, LOIs, beta users', month6: 'First paying customers', month12: '$5-25K MRR', month18: '$25-75K MRR, PMF signals', description: 'General pre-seed' }
+    },
+    scoringAdjustments: { maxTractionScore: 30, maxBusinessModelScore: 40, maxSolutionScore: 50, maxTeamScore: 70, maxMarketScore: 65 },
+    comparables: ['Stage-appropriate comparisons']
+  },
+  'seed-general': {
+    id: 'seed-general', name: 'Seed General',
+    benchmarks: {
+      growth: { exceptional: 15, good: 10, average: 7, concerning: 3, description: 'Monthly growth at seed' },
+      ltvCacRatio: { exceptional: 4, good: 3, minimum: 2, description: 'Early unit economics data expected' },
+      paybackMonths: { exceptional: 12, good: 18, acceptable: 24, description: 'Payback trackable' },
+      netRevenueRetention: { exceptional: 130, good: 110, acceptable: 95, description: 'NRR becoming important' },
+      grossChurn: { exceptional: 2, good: 4, concerning: 7, description: 'Churn stabilizing with PMF' },
+      magicNumber: { efficient: 0.8, acceptable: 0.6, inefficient: 0.4, description: 'Sales efficiency expected' },
+      grossMargin: { exceptional: 80, good: 70, minimum: 55, description: 'Heading toward target' },
+      salesCycleWeeks: { fast: 2, typical: 6, long: 16, description: 'Sales cycle understood' },
+      cac: { low: 500, typical: 2000, high: 10000, description: 'Must justify with LTV' },
+      tractionExpectations: { month3: 'Consistent growth, refining ICP', month6: '$50-150K ARR, PMF signals', month12: '$150-500K ARR, repeatable sales', month18: '$500K-1M ARR, Series A ready', description: 'General seed' }
+    },
+    scoringAdjustments: { maxTractionScore: 55, maxBusinessModelScore: 65, maxSolutionScore: 70, maxTeamScore: 75, maxMarketScore: 70 },
+    comparables: ['Stage-appropriate comparisons']
+  }
+};
+
+// Select appropriate benchmark cohort based on company characteristics
+function selectBenchmarkCohort(model: CompanyModel | null, stage: string): CohortMatch {
+  // Extract characteristics from Company Model
+  const businessModel = model?.financial?.pricing?.model || null;
+  const acvBand = model?.financial?.pricing?.acvBand || null;
+  const salesMotion = model?.gtm?.motion?.primary || model?.customer?.acquisition?.salesMotion || null;
+  const customerSegment = model?.customer?.icp?.segment || null;
+
+  // Score each cohort
+  let bestMatch: CohortMatch | null = null;
+  let highestScore = -1;
+
+  for (const [id, cohort] of Object.entries(BENCHMARK_COHORTS)) {
+    let score = 0;
+    const matched: string[] = [];
+
+    // Stage matching (basic)
+    const isPreSeed = stage === 'Pre-Seed' || stage === 'Idea';
+    const isSeed = stage === 'Seed';
+    
+    if (id.includes('preseed') && isPreSeed) { score += 3; matched.push('stage'); }
+    else if (id.includes('seed') && !id.includes('preseed') && isSeed) { score += 3; matched.push('stage'); }
+    else if (id === 'preseed-general' && isPreSeed) { score += 1; matched.push('stage-fallback'); }
+    else if (id === 'seed-general' && isSeed) { score += 1; matched.push('stage-fallback'); }
+    else continue; // Skip non-matching stages
+
+    // Business model matching
+    if (businessModel === 'marketplace' && id.includes('marketplace')) { score += 3; matched.push('marketplace'); }
+    if (businessModel === 'subscription' || businessModel === 'freemium') {
+      if (salesMotion === 'self-serve' || salesMotion === 'plg') {
+        if (id.includes('plg')) { score += 2; matched.push('plg'); }
+      } else if (salesMotion === 'inside-sales' || salesMotion === 'hybrid') {
+        if (id.includes('inside-sales')) { score += 2; matched.push('inside-sales'); }
+      } else if (salesMotion === 'field-sales') {
+        if (id.includes('enterprise')) { score += 2; matched.push('enterprise'); }
+      }
+    }
+
+    // ACV band matching
+    if (acvBand === 'micro' && id.includes('micro')) { score += 2; matched.push('micro-acv'); }
+    if (acvBand === 'smb' && id.includes('smb')) { score += 2; matched.push('smb-acv'); }
+    if (acvBand === 'mid-market' && id.includes('midmarket')) { score += 2; matched.push('mid-market-acv'); }
+    if (acvBand === 'enterprise' && id.includes('enterprise')) { score += 2; matched.push('enterprise-acv'); }
+
+    // Customer segment matching
+    if (customerSegment === 'enterprise' && id.includes('enterprise')) { score += 1; matched.push('enterprise-segment'); }
+    if (customerSegment === 'mid-market' && id.includes('midmarket')) { score += 1; matched.push('mid-market-segment'); }
+
+    if (score > highestScore) {
+      highestScore = score;
+      bestMatch = { cohort, matchScore: score, matchedCriteria: matched };
+    }
+  }
+
+  // Fallback
+  if (!bestMatch || highestScore < 2) {
+    const fallback = stage === 'Seed' ? BENCHMARK_COHORTS['seed-general'] : BENCHMARK_COHORTS['preseed-general'];
+    return { cohort: fallback, matchScore: 1, matchedCriteria: ['stage-fallback'] };
+  }
+
+  return bestMatch;
+}
+
+// Format benchmark context for prompts
+function formatBenchmarkContext(cohortMatch: CohortMatch): string {
+  const { cohort, matchScore, matchedCriteria } = cohortMatch;
+  const b = cohort.benchmarks;
+  const s = cohort.scoringAdjustments;
+
+  return `
+=== ADAPTIVE BENCHMARK COHORT: ${cohort.name} ===
+Match Quality: ${matchScore >= 6 ? 'Excellent' : matchScore >= 4 ? 'Good' : matchScore >= 2 ? 'Partial' : 'Fallback'}
+Matched On: ${matchedCriteria.join(', ')}
+Comparable Companies: ${cohort.comparables.join(', ')}
+
+--- GROWTH BENCHMARKS ---
+Exceptional (Top 10%): ${b.growth.exceptional}% MoM | Good: ${b.growth.good}% | Average: ${b.growth.average}% | Concerning: <${b.growth.concerning}%
+
+--- UNIT ECONOMICS ---
+LTV:CAC: Exceptional >${b.ltvCacRatio.exceptional}x | Good >${b.ltvCacRatio.good}x | Min ${b.ltvCacRatio.minimum}x
+Payback: Exceptional <${b.paybackMonths.exceptional}mo | Good <${b.paybackMonths.good}mo | Acceptable <${b.paybackMonths.acceptable}mo
+CAC: Low <$${b.cac.low} | Typical $${b.cac.typical} | High >$${b.cac.high}
+
+--- RETENTION ---
+NRR: Exceptional >${b.netRevenueRetention.exceptional}% | Good >${b.netRevenueRetention.good}% | Acceptable >${b.netRevenueRetention.acceptable}%
+Gross Churn: Exceptional <${b.grossChurn.exceptional}% | Good <${b.grossChurn.good}% | Concerning >${b.grossChurn.concerning}%
+
+--- EFFICIENCY ---
+Magic Number: Efficient >${b.magicNumber.efficient} | Acceptable >${b.magicNumber.acceptable} | Inefficient <${b.magicNumber.inefficient}
+Gross Margin: Exceptional >${b.grossMargin.exceptional}% | Good >${b.grossMargin.good}% | Min >${b.grossMargin.minimum}%
+Sales Cycle: Fast <${b.salesCycleWeeks.fast}wk | Typical ${b.salesCycleWeeks.typical}wk | Long >${b.salesCycleWeeks.long}wk
+
+--- TRACTION EXPECTATIONS ---
+Month 3: ${b.tractionExpectations.month3}
+Month 6: ${b.tractionExpectations.month6}
+Month 12: ${b.tractionExpectations.month12}
+Month 18: ${b.tractionExpectations.month18}
+
+--- SCORING CAPS FOR THIS COHORT ---
+Max Traction: ${s.maxTractionScore} | Max Business Model: ${s.maxBusinessModelScore} | Max Solution: ${s.maxSolutionScore}
+Max Team: ${s.maxTeamScore} | Max Market: ${s.maxMarketScore}
+
+=== END BENCHMARK COHORT ===`;
+}
+
 // Helper function to format Company Model as context for prompts
 function formatCompanyModelContext(model: CompanyModel): string {
   const sections: string[] = [];
@@ -1477,6 +1733,13 @@ async function generateMemoInBackground(
       console.warn("Error building Company Model:", modelError);
     }
 
+    // ============================================
+    // SELECT ADAPTIVE BENCHMARK COHORT
+    // ============================================
+    const benchmarkCohortMatch = selectBenchmarkCohort(companyModel, company.stage);
+    const benchmarkContext = formatBenchmarkContext(benchmarkCohortMatch);
+    console.log(`✓ Selected benchmark cohort: ${benchmarkCohortMatch.cohort.name} (Match: ${benchmarkCohortMatch.matchScore}, Criteria: ${benchmarkCohortMatch.matchedCriteria.join(', ')})`);
+
     // Check if memo already exists - get the most recent one
     const { data: existingMemo } = await supabaseClient
       .from("memos")
@@ -1889,6 +2152,8 @@ YOUR JOB IS TO:
 5. Distinguish between "incomplete" (normal for ${company.stage} stage) and "directionally confused" (red flag)
 
 ${companyModelContext}
+
+${benchmarkContext}
 
 === END RELATIONAL CONTEXT ===
 
