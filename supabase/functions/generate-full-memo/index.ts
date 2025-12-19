@@ -293,7 +293,211 @@ Max Team: ${s.maxTeamScore} | Max Market: ${s.maxMarketScore}
 === END BENCHMARK COHORT ===`;
 }
 
-// Helper function to format Company Model as context for prompts
+// =============================================================================
+// CONDITIONAL ASSESSMENT SYSTEM (Week 5)
+// =============================================================================
+
+interface DataCompletenessResult {
+  overall: number;
+  bySectionArea: Record<string, number>;
+  missingCritical: string[];
+  missingOptional: string[];
+  assumptions: string[];
+  whatWouldChangeAssessment: string[];
+}
+
+// Calculate data completeness for each section based on CompanyModel
+function calculateDataCompleteness(model: CompanyModel | null, sectionName: string): DataCompletenessResult {
+  if (!model) {
+    return {
+      overall: 10,
+      bySectionArea: {},
+      missingCritical: ['Company model not available'],
+      missingOptional: [],
+      assumptions: ['All assessments are estimated without structured data'],
+      whatWouldChangeAssessment: ['Provide complete company data to get accurate assessments']
+    };
+  }
+
+  const result: DataCompletenessResult = {
+    overall: 0,
+    bySectionArea: {},
+    missingCritical: [],
+    missingOptional: [],
+    assumptions: [],
+    whatWouldChangeAssessment: []
+  };
+
+  switch (sectionName) {
+    case 'Problem':
+      const problemAreas = {
+        customerValidation: model.customer?.metrics?.totalCustomers ? 70 : 20,
+        marketEvidence: model.market?.dynamics?.tailwinds?.length ? 60 : 30,
+        painQuantification: model.customer?.icp?.persona ? 50 : 20
+      };
+      result.bySectionArea = problemAreas;
+      result.overall = Math.round(Object.values(problemAreas).reduce((a, b) => a + b, 0) / 3);
+      if (!model.customer?.metrics?.totalCustomers) {
+        result.missingCritical.push('Customer interview/validation data');
+        result.whatWouldChangeAssessment.push('Add 10+ customer interviews with quantified pain points');
+      }
+      if (!model.customer?.icp?.persona) {
+        result.missingOptional.push('Detailed ICP persona');
+        result.whatWouldChangeAssessment.push('Define specific ICP with job titles, company size, pain triggers');
+      }
+      break;
+
+    case 'Solution':
+      const solutionAreas = {
+        productMaturity: model.traction?.current?.stage ? (model.traction.current.stage === 'revenue' ? 80 : 50) : 20,
+        retentionProof: model.customer?.retention?.churnRate ? 70 : 15,
+        technicalMoat: model.defensibility?.currentMoats?.strength ? 60 : 25
+      };
+      result.bySectionArea = solutionAreas;
+      result.overall = Math.round(Object.values(solutionAreas).reduce((a, b) => a + b, 0) / 3);
+      if (!model.customer?.retention?.churnRate) {
+        result.missingCritical.push('Retention/churn data');
+        result.whatWouldChangeAssessment.push('Provide 3+ months of cohort retention data');
+      }
+      if (!model.defensibility?.currentMoats?.type?.length) {
+        result.missingOptional.push('Defensibility evidence');
+        result.whatWouldChangeAssessment.push('Document proprietary tech, data assets, or network effects');
+      }
+      break;
+
+    case 'Market':
+      const marketAreas = {
+        tamMethodology: model.market?.sizing?.computed?.bottomUpTAM ? 80 : (model.market?.sizing?.stated?.tam ? 40 : 10),
+        timing: model.market?.dynamics?.timing ? 60 : 20,
+        competition: model.market?.competition?.directCompetitors?.length ? 70 : 30
+      };
+      result.bySectionArea = marketAreas;
+      result.overall = Math.round(Object.values(marketAreas).reduce((a, b) => a + b, 0) / 3);
+      if (!model.market?.sizing?.computed?.bottomUpTAM) {
+        result.missingCritical.push('Bottom-up TAM calculation');
+        result.whatWouldChangeAssessment.push('Provide ICP count x ACV calculation with sources');
+        result.assumptions.push('TAM estimated from top-down industry reports');
+      }
+      if (model.market?.sizing?.tamPlausibility === 'implausible') {
+        result.whatWouldChangeAssessment.push('Reconcile stated TAM with bottom-up calculation');
+      }
+      break;
+
+    case 'Competition':
+      const compAreas = {
+        competitorDetail: model.market?.competition?.directCompetitors?.length ? 70 : 20,
+        moatEvidence: model.defensibility?.currentMoats?.strength ? 60 : 25,
+        positioning: model.defensibility?.currentMoats?.type?.length ? 55 : 30
+      };
+      result.bySectionArea = compAreas;
+      result.overall = Math.round(Object.values(compAreas).reduce((a, b) => a + b, 0) / 3);
+      if (!model.market?.competition?.directCompetitors?.length) {
+        result.missingCritical.push('Competitor analysis');
+        result.whatWouldChangeAssessment.push('Map 3-5 direct competitors with funding, pricing, positioning');
+      }
+      break;
+
+    case 'Team':
+      const teamAreas = {
+        founderBackground: model.team?.founders?.founderMarketFit ? 70 : 30,
+        teamComposition: model.team?.team?.totalSize ? 60 : 20,
+        credibility: model.team?.credibility?.domainExpertise ? 65 : 25
+      };
+      result.bySectionArea = teamAreas;
+      result.overall = Math.round(Object.values(teamAreas).reduce((a, b) => a + b, 0) / 3);
+      if (!model.team?.founders?.founderMarketFit) {
+        result.missingOptional.push('Founder-market fit narrative');
+        result.whatWouldChangeAssessment.push('Explain why this team is uniquely qualified');
+      }
+      if (model.team?.team?.criticalGaps?.length) {
+        result.whatWouldChangeAssessment.push(`Fill critical gaps: ${model.team.team.criticalGaps.join(', ')}`);
+      }
+      break;
+
+    case 'Business Model':
+      const bizAreas = {
+        unitEconomics: model.financial?.unitEconomics?.ltvCacRatio ? 80 : (model.financial?.pricing?.acv ? 40 : 15),
+        revenueProof: model.financial?.revenue?.stated?.mrr ? 70 : 20,
+        marginData: model.financial?.unitEconomics?.grossMargin ? 65 : 30
+      };
+      result.bySectionArea = bizAreas;
+      result.overall = Math.round(Object.values(bizAreas).reduce((a, b) => a + b, 0) / 3);
+      if (!model.financial?.unitEconomics?.ltvCacRatio) {
+        result.missingCritical.push('Unit economics (LTV:CAC)');
+        result.whatWouldChangeAssessment.push('Calculate LTV:CAC with actual CAC and retention data');
+        result.assumptions.push('Unit economics estimated from pricing and industry benchmarks');
+      }
+      if (!model.financial?.revenue?.stated?.mrr) {
+        result.missingCritical.push('Revenue data');
+        result.whatWouldChangeAssessment.push('Provide current MRR/ARR with growth trend');
+      }
+      break;
+
+    case 'Traction':
+      const tractionAreas = {
+        revenueGrowth: model.traction?.growth?.stated?.monthlyGrowthRate ? 75 : 20,
+        customerMetrics: model.customer?.metrics?.paidCustomers ? 70 : 25,
+        retentionCohorts: model.customer?.retention?.nrr ? 80 : 30
+      };
+      result.bySectionArea = tractionAreas;
+      result.overall = Math.round(Object.values(tractionAreas).reduce((a, b) => a + b, 0) / 3);
+      if (!model.traction?.growth?.stated?.monthlyGrowthRate) {
+        result.missingCritical.push('Growth rate data');
+        result.whatWouldChangeAssessment.push('Provide month-over-month growth for last 6 months');
+      }
+      if (!model.customer?.retention?.nrr) {
+        result.missingOptional.push('Net revenue retention');
+        result.whatWouldChangeAssessment.push('Calculate NRR from cohort expansion/contraction');
+      }
+      break;
+
+    case 'Vision':
+      const visionAreas = {
+        milestones: model.temporal?.projections?.length ? 60 : 30,
+        exitPath: model.market?.sizing?.stated?.tam ? 50 : 20,
+        runway: model.financial?.burn?.runway ? 70 : 25
+      };
+      result.bySectionArea = visionAreas;
+      result.overall = Math.round(Object.values(visionAreas).reduce((a, b) => a + b, 0) / 3);
+      if (!model.financial?.burn?.runway) {
+        result.missingOptional.push('Runway calculation');
+        result.whatWouldChangeAssessment.push('Provide burn rate and cash position');
+      }
+      break;
+
+    default:
+      result.overall = 40;
+      result.assumptions.push('Section completeness estimated from available data');
+  }
+
+  // Add coherence-based adjustments
+  if (model.coherence?.score < 50) {
+    result.overall = Math.max(20, result.overall - 20);
+    result.assumptions.push(`Low coherence score (${model.coherence.score}/100) - data may be inconsistent`);
+  }
+
+  // Add discrepancy-based adjustments
+  if (model.discrepancies?.length > 2) {
+    result.overall = Math.max(20, result.overall - 10);
+    result.whatWouldChangeAssessment.push('Resolve data discrepancies between stated and computed values');
+  }
+
+  return result;
+}
+
+// Format data completeness context for prompts
+function formatDataCompletenessContext(completeness: DataCompletenessResult, sectionName: string): string {
+  return `
+=== DATA COMPLETENESS FOR ${sectionName.toUpperCase()} ===
+Overall Data Completeness: ${completeness.overall}%
+${Object.entries(completeness.bySectionArea).map(([area, score]) => `- ${area}: ${score}%`).join('\n')}
+
+Missing Critical Data: ${completeness.missingCritical.length > 0 ? completeness.missingCritical.join(', ') : 'None'}
+Missing Optional Data: ${completeness.missingOptional.length > 0 ? completeness.missingOptional.join(', ') : 'None'}
+Assumptions Made: ${completeness.assumptions.length > 0 ? completeness.assumptions.join('; ') : 'None'}
+What Would Change This Assessment: ${completeness.whatWouldChangeAssessment.join('; ')}
+=== END DATA COMPLETENESS ===`;
+}
 function formatCompanyModelContext(model: CompanyModel): string {
   const sections: string[] = [];
   
@@ -647,8 +851,13 @@ async function generateSectionToolData(
   
   console.log(`Generating tool data for section: ${sectionName}`);
   
+  // Calculate data completeness for this section
+  const dataCompleteness = calculateDataCompleteness(companyModel ?? null, sectionName);
+  const dataCompletenessContext = formatDataCompletenessContext(dataCompleteness, sectionName);
+  console.log(`Data completeness for ${sectionName}: ${dataCompleteness.overall}%`);
+  
   // Get section-specific tool requirements
-  const sectionToolPrompts = getSectionToolPrompt(sectionName, ctx);
+  const sectionToolPrompts = getSectionToolPrompt(sectionName, ctx, dataCompleteness);
   if (!sectionToolPrompts) {
     console.log(`No tools required for section: ${sectionName}`);
     return;
@@ -689,6 +898,31 @@ Coherence Issues: ${Object.entries(companyModel.coherence?.checks || {}).filter(
 Conditional Hypotheses: ${(companyModel.coherence?.conditionalHypotheses || []).map(h => h.hypothesis).join('; ') || 'None'}
 === END COMPANY MODEL ===
 ` : ''}
+
+${dataCompletenessContext}
+
+=== CONDITIONAL ASSESSMENT REQUIREMENTS (CRITICAL!) ===
+EVERY tool output MUST include an "assessment" object with:
+- confidence: "high" | "medium" | "low" | "insufficient_data" (based on data completeness)
+- confidenceScore: 0-100 (derived from data completeness: ${dataCompleteness.overall}%)
+- dataCompleteness: ${dataCompleteness.overall} (percentage of required data available)
+- whatWouldChangeThisAssessment: ["specific data/evidence that would change this score/assessment"]
+- assumptions: ["assumptions made due to missing data"]
+- caveats: ["important caveats or conditions"] (optional)
+
+CONFIDENCE SCORING RULES:
+- High (80-100%): All critical data present, verified, coherent
+- Medium (50-79%): Some critical data missing or unverified
+- Low (20-49%): Most critical data missing, heavy assumptions
+- Insufficient Data (<20%): Cannot make meaningful assessment
+
+For THIS section, data completeness is ${dataCompleteness.overall}%, so:
+${dataCompleteness.overall >= 80 ? '- Use "high" confidence for most assessments' : 
+  dataCompleteness.overall >= 50 ? '- Use "medium" confidence, be explicit about assumptions' : 
+  dataCompleteness.overall >= 20 ? '- Use "low" confidence, heavily caveat assessments' : 
+  '- Use "insufficient_data", assessments are best-guesses'}
+
+=== END CONDITIONAL ASSESSMENT REQUIREMENTS ===
 
 === CRITICAL SCORING CALIBRATION — SCORE HARSHLY! ===
 95% of companies that pitch VCs get rejected. Your scores MUST reflect this reality.
@@ -745,7 +979,8 @@ CRITICAL OUTPUT RULES:
 4. For actionPlan90Day.actions, use EXACT timeline values: "Week 1-2", "Week 3-4", "Month 2", "Month 3"
 5. For actionPlan90Day.actions, use EXACT priority values (lowercase): "critical", "important", "nice-to-have"
 6. For actionPlan90Day.actions, use "metric" field (not "outcome") for success metrics
-7. Use CONDITIONAL framing in assessments when relevant to Company Model insights`,
+7. Use CONDITIONAL framing in assessments when relevant to Company Model insights
+8. ALWAYS include the "assessment" object in sectionScore, vcInvestmentLogic, and section-specific tools`,
           },
           {
             role: "user",
@@ -753,7 +988,7 @@ CRITICAL OUTPUT RULES:
           },
         ],
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: 4500,
       }),
     }, 2, 1500);
 
@@ -817,13 +1052,24 @@ CRITICAL OUTPUT RULES:
   }
 }
 
-function getSectionToolPrompt(sectionName: string, ctx: ToolGenerationContext): string | null {
+function getSectionToolPrompt(sectionName: string, ctx: ToolGenerationContext, dataCompleteness?: DataCompletenessResult): string | null {
   const { companyName, companyCategory, companyStage, companyDescription, sectionContent, financialMetrics, responses, competitorResearch, marketContext } = ctx;
   
   const sectionNarrative = JSON.stringify(sectionContent?.narrative || sectionContent || {});
   const financialStr = financialMetrics ? JSON.stringify(financialMetrics) : "Not provided";
   const competitorStr = competitorResearch ? JSON.stringify(competitorResearch) : "Not provided";
   const marketStr = marketContext ? JSON.stringify(marketContext) : "Not provided";
+  
+  // Build assessment schema string for conditional assessments
+  const assessmentSchema = dataCompleteness ? `
+    "assessment": {
+      "confidence": "${dataCompleteness.overall >= 80 ? 'high' : dataCompleteness.overall >= 50 ? 'medium' : dataCompleteness.overall >= 20 ? 'low' : 'insufficient_data'}",
+      "confidenceScore": ${dataCompleteness.overall},
+      "dataCompleteness": ${dataCompleteness.overall},
+      "whatWouldChangeThisAssessment": ${JSON.stringify(dataCompleteness.whatWouldChangeAssessment.slice(0, 3))},
+      "assumptions": ${JSON.stringify(dataCompleteness.assumptions.slice(0, 3))},
+      "caveats": ["Any important caveats"]
+    }` : '';
   
   const baseContext = `
 Company: ${companyName}
@@ -872,12 +1118,14 @@ Return JSON:
     "percentile": "25th|50th|75th|90th",
     "topInsight": "Key insight specific to ${companyName}",
     "whatThisTellsVC": "What this score signals to investors",
-    "fundabilityImpact": "Impact on ability to raise"
+    "fundabilityImpact": "Impact on ability to raise",
+    ${assessmentSchema}
   },
   "vcInvestmentLogic": {
     "decision": "PASS|CAUTIOUS|INTERESTED|EXCITED",
     "reasoning": "VC reasoning specific to this problem",
-    "keyCondition": "What would change the decision"
+    "keyCondition": "What would change the decision",
+    ${assessmentSchema}
   },
   "actionPlan90Day": {
     "actions": [
@@ -900,13 +1148,15 @@ Return JSON:
     "unverifiedPain": ["Claims that need validation"],
     "evidenceGrade": "A|B|C|D|F",
     "missingEvidence": ["What's needed to prove the problem"],
-    "whatVCsConsiderVerified": ["What would satisfy a VC"]
+    "whatVCsConsiderVerified": ["What would satisfy a VC"],
+    ${assessmentSchema}
   },
   "founderBlindSpot": {
     "potentialExaggerations": ["Possible overstatements"],
     "misdiagnoses": ["Alternative interpretations of the problem"],
     "assumptions": ["Assumptions that might not hold"],
-    "commonMistakes": ["Typical founder mistakes in this space"]
+    "commonMistakes": ["Typical founder mistakes in this space"],
+    ${assessmentSchema}
   }
 }`;
 
