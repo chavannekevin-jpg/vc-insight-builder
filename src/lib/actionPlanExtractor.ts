@@ -82,6 +82,24 @@ const EXAMPLE_LIBRARY = {
   }
 };
 
+// Helper to validate category from AI response
+function validateCategory(category: unknown): ActionItem["category"] {
+  const validCategories = ["narrative", "traction", "team", "market", "business", "competition"];
+  const cat = String(category || '').toLowerCase();
+  return validCategories.includes(cat) ? cat as ActionItem["category"] : "narrative";
+}
+
+// Helper to validate urgency from AI response
+function validateUrgency(urgency: unknown, itemCount: number): ActionPlanData["overallUrgency"] {
+  const validUrgencies = ["critical", "high", "moderate"];
+  const urg = String(urgency || '').toLowerCase();
+  if (validUrgencies.includes(urg)) {
+    return urg as ActionPlanData["overallUrgency"];
+  }
+  // Default based on item count
+  return itemCount >= 4 ? "critical" : itemCount >= 2 ? "high" : "moderate";
+}
+
 export function extractActionPlan(
   memoContent: MemoStructuredContent | null | undefined,
   vcQuickTake?: { concerns?: string[] | unknown; strengths?: string[] | unknown } | null
@@ -95,6 +113,33 @@ export function extractActionPlan(
       summaryLine: "Complete your memo sections to generate an action plan."
     };
   }
+
+  // PRIORITY 1: Check for AI-generated action plan (fully tailored)
+  const aiPlan = (memoContent as any).aiActionPlan;
+  if (aiPlan && Array.isArray(aiPlan.items) && aiPlan.items.length > 0) {
+    console.log('extractActionPlan: Using AI-generated action plan');
+    
+    // Map AI items to our ActionItem format with validation
+    const mappedItems: ActionItem[] = aiPlan.items.slice(0, 5).map((item: any, index: number) => ({
+      id: item.id || `action-${index + 1}`,
+      priority: (item.priority || index + 1) as 1 | 2 | 3 | 4 | 5,
+      category: validateCategory(item.category),
+      problem: String(item.problem || ''),
+      impact: String(item.impact || ''),
+      howToFix: String(item.howToFix || ''),
+      badExample: item.badExample ? String(item.badExample) : EXAMPLE_LIBRARY[validateCategory(item.category)]?.bad,
+      goodExample: item.goodExample ? String(item.goodExample) : EXAMPLE_LIBRARY[validateCategory(item.category)]?.good
+    }));
+    
+    return {
+      items: mappedItems,
+      overallUrgency: validateUrgency(aiPlan.overallUrgency, mappedItems.length),
+      summaryLine: String(aiPlan.summaryLine || generateSummaryLine(mappedItems, validateUrgency(aiPlan.overallUrgency, mappedItems.length)))
+    };
+  }
+
+  // PRIORITY 2: Fall back to keyword-based extraction for legacy memos
+  console.log('extractActionPlan: Falling back to keyword-based extraction');
 
   const items: ActionItem[] = [];
   let idCounter = 1;
