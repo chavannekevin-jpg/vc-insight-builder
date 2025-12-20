@@ -103,6 +103,7 @@ const ProblemSlideGuide = lazy(() => import("./pages/ProblemSlideGuide"));
 const SolutionSlideGuide = lazy(() => import("./pages/SolutionSlideGuide"));
 const AdminDiscountCodes = lazy(() => import("./pages/AdminDiscountCodes"));
 const AdminUserAccess = lazy(() => import("./pages/AdminUserAccess"));
+const AdminUsers = lazy(() => import("./pages/AdminUsers"));
 const AdminPricing = lazy(() => import("./pages/AdminPricing"));
 const AdminEmails = lazy(() => import("./pages/AdminEmails"));
 const AdminMemos = lazy(() => import("./pages/AdminMemos"));
@@ -284,6 +285,7 @@ const App = () => (
             <Route path="/admin/prompts" element={<AdminPrompts />} />
             <Route path="/admin/analysis-builder" element={<MemoBuilder />} />
             <Route path="/admin/user-access" element={<AdminUserAccess />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/discount-codes" element={<AdminDiscountCodes />} />
             <Route path="/admin/pricing" element={<AdminPricing />} />
             <Route path="/admin/emails" element={<AdminEmails />} />

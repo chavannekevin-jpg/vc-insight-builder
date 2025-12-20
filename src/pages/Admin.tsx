@@ -24,6 +24,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { LogOut, Search, Eye, Trash2, Home } from "lucide-react";
 import { AdminStatsCard } from "@/components/admin/AdminStatsCard";
+import { AdminRevenueCard } from "@/components/admin/AdminRevenueCard";
+import { AdminFunnelCard } from "@/components/admin/AdminFunnelCard";
 import { AdminAnalyticsChat } from "@/components/admin/AdminAnalyticsChat";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -284,8 +286,10 @@ const Admin = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* Statistics Card */}
+        {/* Statistics Cards */}
         <AdminStatsCard />
+        <AdminRevenueCard />
+        <AdminFunnelCard />
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div onClick={() => navigate("/admin/sections")} className="cursor-pointer">
             <ModernCard className="hover:border-primary/50 transition-colors h-full">
@@ -342,10 +346,21 @@ const Admin = () => {
             </ModernCard>
           </div>
 
+          <div onClick={() => navigate("/admin/users")} className="cursor-pointer">
+            <ModernCard className="hover:border-amber-500/50 transition-colors h-full border-amber-500/30 bg-amber-500/5">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Users & Roles
+              </h2>
+              <p className="text-muted-foreground">
+                Manage admin access and view user details
+              </p>
+            </ModernCard>
+          </div>
+
           <div onClick={() => navigate("/admin/user-access")} className="cursor-pointer">
             <ModernCard className="hover:border-primary/50 transition-colors h-full">
               <h2 className="text-2xl font-bold text-foreground mb-2">
-                User Access
+                Premium Access
               </h2>
               <p className="text-muted-foreground">
                 Manage premium access for memo generation
