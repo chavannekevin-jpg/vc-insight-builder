@@ -139,18 +139,18 @@ export const SAMPLE_SECTION_TOOLS: Record<string, EnhancedSectionTools> = {
     bottomsUpTAM: {
       aiGenerated: {
         targetSegments: [
-          { segment: "US SMBs with ESG requirements (50-500 employees)", count: 180000, acv: 2400, tam: 432000000 },
-          { segment: "EU SMBs under CSRD scope", count: 50000, acv: 3600, tam: 180000000 },
-          { segment: "Supply chain reporters (any size)", count: 100000, acv: 1800, tam: 180000000 }
+          { segment: "EU mid-market with CSRD scope (500-5000 employees)", count: 50000, acv: 12000, tam: 600000000 },
+          { segment: "US mid-market with supply chain requirements", count: 30000, acv: 12000, tam: 360000000 },
+          { segment: "SMB tier (compliance-driven smaller companies)", count: 100000, acv: 2400, tam: 240000000 }
         ],
-        totalTAM: 792000000,
-        sam: 158000000,
-        som: 3200000,
-        methodology: "Bottom-up based on government SMB registries filtered by employee count and industry sectors with ESG exposure",
-        assumptions: ["20% of SMBs in target segments will adopt carbon software by 2027", "ACV based on current pricing tier analysis", "SAM assumes US + EU only"]
+        totalTAM: 1200000000,
+        sam: 240000000,
+        som: 12000000,
+        methodology: "Bottom-up based on EU CSRD scope registries + US mid-market with enterprise supply chain exposure, validated against CarbonPrint's €12K ACV enterprise tier",
+        assumptions: ["25% of mid-market in target segments will adopt by 2027", "ACV based on CarbonPrint's €12K enterprise tier pricing", "SAM assumes EU + US primary markets"]
       },
       dataSource: "ai-partial",
-      inputGuidance: ["Add your actual pricing to refine ACV", "Include any customer research on willingness-to-pay"]
+      inputGuidance: ["Your €12K ACV is validated against 3 LOIs", "Consider tiered penetration rates by segment"]
     },
     marketReadinessIndex: {
       aiGenerated: {

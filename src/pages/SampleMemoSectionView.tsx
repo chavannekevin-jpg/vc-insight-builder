@@ -20,10 +20,12 @@ import { MemoVCScaleCard } from "@/components/memo/MemoVCScaleCard";
 import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
+import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptions";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { ChevronLeft, ChevronRight, Grid, BookOpen, ArrowLeft, Sparkles, Rocket, Zap, AlertTriangle, Share2 } from "lucide-react";
 import type { MemoStructuredContent, MemoParagraph, MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
+import type { AnchoredAssumptions } from "@/lib/anchoredAssumptions";
 import { DEMO_MEMOS } from "@/data/acceleratorDemo/demoMemos";
 
 // Import new VC tools
@@ -114,6 +116,28 @@ const SAMPLE_EXIT_DATA: ExitPathData = {
   currentARR: 96600,
   category: "Climate Tech",
   revenueMultiple: { low: 6, mid: 10, high: 15 }
+};
+
+// Sample Anchored Assumptions - €12K ACV aligned with narrative
+const SAMPLE_ANCHORED_ASSUMPTIONS: AnchoredAssumptions = {
+  businessModelType: 'b2b_mid_market',
+  metricFramework: {
+    type: 'b2b_mid_market',
+    typeLabel: 'B2B Mid-Market SaaS',
+    primaryMetric: { key: 'acv', label: 'ACV', fullLabel: 'Annual Contract Value', periodicity: 'annual', scaleFactor: 1 },
+    customerMetric: { singular: 'customer', plural: 'customers', countLabel: 'Enterprise Customers', acquisitionVerb: 'close' },
+    scaleTest: { targetARR: 100000000, calculationMethod: 'units_x_metric', formulaDisplay: 'Customers × ACV', feasibilityFactors: [] },
+    benchmarks: { typicalRange: { low: 15000, mid: 40000, high: 100000 }, byStage: { 'pre-seed': { low: 10000, mid: 20000, high: 50000 }, 'seed': { low: 15000, mid: 35000, high: 75000 }, 'series-a': { low: 25000, mid: 50000, high: 100000 } }, comparables: [] }
+  },
+  primaryMetricValue: 12000,
+  primaryMetricLabel: 'ACV',
+  primaryMetricFullLabel: 'Annual Contract Value',
+  periodicity: 'annual',
+  currency: 'EUR',
+  source: 'founder_input',
+  sourceDescription: 'From CarbonPrint pricing: €12K enterprise tier',
+  sourceConfidence: 'high',
+  scaleRequirements: { unitsNeeded: 8333, unitLabel: 'customers', formula: '€100M ÷ €12K ACV = 8,333 customers', feasibilityAssessment: 'challenging', context: 'Requires ~5% of EU mid-market companies under CSRD scope' }
 };
 
 const SAMPLE_VC_QUICK_TAKE: MemoVCQuickTakeType = {
