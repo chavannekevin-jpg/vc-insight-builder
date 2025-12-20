@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ModernCard } from "@/components/ModernCard";
-import { Check, Loader2, Sparkles, AlertCircle } from "lucide-react";
+import { Check, Loader2, Sparkles, AlertCircle, RefreshCw } from "lucide-react";
+import { PaymentErrorBoundary } from "@/components/PaymentErrorBoundary";
 
-export default function RegenerationSuccess() {
+function RegenerationSuccessContent() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
@@ -13,34 +14,57 @@ export default function RegenerationSuccess() {
   
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
+  
+  // Refs to prevent race conditions
+  const isMountedRef = useRef(true);
+
+  const verifyPayment = useCallback(async () => {
+    if (!sessionId || !companyId) {
+      setError("Missing payment information");
+      return;
+    }
+
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('verify-regeneration-payment', {
+        body: { sessionId, companyId }
+      });
+
+      if (!isMountedRef.current) return;
+
+      if (invokeError) throw invokeError;
+
+      if (data?.success) {
+        setVerified(true);
+        setError(null);
+      } else {
+        setError(data?.error || "Payment verification failed");
+      }
+    } catch (err) {
+      if (!isMountedRef.current) return;
+      console.error("Verification error:", err);
+      setError("Failed to verify payment. Please try again or contact support.");
+    } finally {
+      if (isMountedRef.current) {
+        setRetrying(false);
+      }
+    }
+  }, [sessionId, companyId]);
 
   useEffect(() => {
-    const verifyPayment = async () => {
-      if (!sessionId || !companyId) {
-        setError("Missing payment information");
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase.functions.invoke('verify-regeneration-payment', {
-          body: { sessionId, companyId }
-        });
-
-        if (error) throw error;
-
-        if (data?.success) {
-          setVerified(true);
-        } else {
-          setError(data?.error || "Payment verification failed");
-        }
-      } catch (err) {
-        console.error("Verification error:", err);
-        setError("Failed to verify payment. Please contact support.");
-      }
-    };
-
+    isMountedRef.current = true;
     verifyPayment();
-  }, [sessionId, companyId]);
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [verifyPayment]);
+
+  const handleRetry = async () => {
+    setRetrying(true);
+    setError(null);
+    await verifyPayment();
+  };
 
   if (error) {
     return (
@@ -51,9 +75,29 @@ export default function RegenerationSuccess() {
           </div>
           <h1 className="text-2xl font-bold">Payment Error</h1>
           <p className="text-muted-foreground">{error}</p>
-          <Button onClick={() => navigate("/portal")} className="w-full">
-            Back to Dashboard
-          </Button>
+          <p className="text-sm text-muted-foreground">
+            If you completed payment, your access may still be granted.
+          </p>
+          
+          {sessionId && (
+            <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground">
+              Session: {sessionId.slice(0, 30)}...
+            </div>
+          )}
+          
+          <div className="space-y-3">
+            <Button 
+              onClick={handleRetry} 
+              className="w-full gap-2"
+              disabled={retrying}
+            >
+              <RefreshCw className={`w-4 h-4 ${retrying ? 'animate-spin' : ''}`} />
+              Retry Verification
+            </Button>
+            <Button onClick={() => navigate("/portal")} variant="outline" className="w-full">
+              Back to Dashboard
+            </Button>
+          </div>
         </ModernCard>
       </div>
     );
@@ -103,5 +147,17 @@ export default function RegenerationSuccess() {
         </div>
       </ModernCard>
     </div>
+  );
+}
+
+export default function RegenerationSuccess() {
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("session_id");
+  const companyId = searchParams.get("companyId");
+
+  return (
+    <PaymentErrorBoundary sessionId={sessionId} companyId={companyId}>
+      <RegenerationSuccessContent />
+    </PaymentErrorBoundary>
   );
 }
