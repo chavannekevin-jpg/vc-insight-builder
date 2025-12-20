@@ -56,6 +56,9 @@ export class ErrorBoundary extends Component<Props, State> {
               <Button onClick={this.handleReset} className="w-full">
                 Return to Home
               </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                Need help? Contact kev@vc-brain.com
+              </p>
             </CardContent>
           </Card>
         </div>

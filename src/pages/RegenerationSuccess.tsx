@@ -97,6 +97,10 @@ function RegenerationSuccessContent() {
             <Button onClick={() => navigate("/portal")} variant="outline" className="w-full">
               Back to Dashboard
             </Button>
+            
+            <p className="text-xs text-muted-foreground text-center">
+              Still having issues? Contact kev@vc-brain.com
+            </p>
           </div>
         </ModernCard>
       </div>

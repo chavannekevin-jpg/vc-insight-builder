@@ -71,7 +71,7 @@ export class PaymentErrorBoundary extends Component<Props, State> {
 
               <p className="text-xs text-muted-foreground">
                 <Mail className="w-3 h-3 inline mr-1" />
-                Need help? Contact support with your reference ID
+                Need help? Contact kev@vc-brain.com with your reference ID
               </p>
             </div>
           </ModernCard>
