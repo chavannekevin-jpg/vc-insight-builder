@@ -231,6 +231,21 @@ export default function SampleMemoSectionView() {
     }
   };
 
+  // Handler to navigate to a section by name (for scorecard clicks)
+  const handleSectionClick = (sectionName: string) => {
+    if (!memoContent) return;
+    
+    // Find the index of the section by name
+    const sectionIdx = memoContent.sections.findIndex(
+      s => s.title.toLowerCase() === sectionName.toLowerCase()
+    );
+    
+    if (sectionIdx !== -1) {
+      // Add 1 because section 0 is VC Quick Take
+      goToSection(sectionIdx + 1);
+    }
+  };
+
   // Render VC Quick Take page (Section 0)
   if (isVCQuickTakePage) {
     const vcQuickTake = memoContent.vcQuickTake || SAMPLE_VC_QUICK_TAKE;
@@ -348,6 +363,7 @@ export default function SampleMemoSectionView() {
               companyName={companyInfo?.name || 'CarbonPrint'}
               stage={companyInfo?.stage || 'Pre-Seed'}
               category={companyInfo?.category || 'Climate Tech'}
+              onSectionClick={handleSectionClick}
             />
           </div>
 
