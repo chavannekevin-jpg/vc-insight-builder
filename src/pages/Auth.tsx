@@ -126,12 +126,24 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
+
+      // Track sign-in in profiles table
+      if (data.user) {
+        supabase
+          .from('profiles')
+          .update({ 
+            last_sign_in_at: new Date().toISOString(),
+            sign_in_count: (await supabase.from('profiles').select('sign_in_count').eq('id', data.user.id).single()).data?.sign_in_count + 1 || 1
+          })
+          .eq('id', data.user.id)
+          .then(() => {});
+      }
 
       toast({
         title: "Welcome back!",
