@@ -2,10 +2,12 @@
 // This provides structured content for the full memo view using VC framing methodology
 
 import type { MemoVCQuickTake } from "@/types/memo";
+import type { ActionPlanData } from "@/lib/actionPlanExtractor";
 
 export interface DemoMemoData {
   vcQuickTake: MemoVCQuickTake;
   heroStatement: string;
+  aiActionPlan?: ActionPlanData;
   sections: {
     title: string;
     narrative: string;
@@ -32,6 +34,62 @@ export const DEMO_MEMOS: Record<string, DemoMemoData> = {
       ]
     },
     heroStatement: "CarbonPrint is building the infrastructure layer for corporate carbon accountability, riding regulatory tailwinds that are making carbon tracking mandatory rather than optional.",
+    aiActionPlan: {
+      items: [
+        {
+          id: "action-1",
+          priority: 1,
+          category: "traction",
+          problem: "Very early traction with only €45K ACV from LOIs — no repeatable sales process yet",
+          impact: "VCs see founder-led sales as momentum, not product-market fit. Without evidence of non-founder-led closes, you're asking investors to bet on your hustle, not your business. This caps valuation and makes Series A conditional.",
+          howToFix: "Close your 2 pending LOIs in the next 60 days, then document the exact sales process. Hire a junior sales rep to run 10 deals using your playbook — prove at least 3 can close without founder involvement before your Series A pitch.",
+          badExample: "We have strong pipeline and great conversations with prospects.",
+          goodExample: "Our founder closed 3 deals. We then hired a junior rep who closed 2 more using our playbook with zero founder involvement — proving the sales motion is transferable."
+        },
+        {
+          id: "action-2",
+          priority: 2,
+          category: "business",
+          problem: "€12K ACV is mid-market pricing but sales cycle suggests enterprise complexity",
+          impact: "A 6-12 month sales cycle for a €12K contract creates unsustainable unit economics. Your CAC will eat your LTV before you hit scale. VCs will model this and see a company that can't grow profitably.",
+          howToFix: "Either compress sales cycles to 3 months through self-serve + PLG motion (which works for €12K deals), OR raise ACV to €50K+ to justify enterprise sales complexity. Pick one — you can't do both.",
+          badExample: "Our pricing is flexible based on customer needs.",
+          goodExample: "We're implementing a 14-day self-serve trial that feeds into a sales-assisted close. Early data shows 40% of trials convert with minimal touch, compressing our cycle from 6 months to 6 weeks for the €12K tier."
+        },
+        {
+          id: "action-3",
+          priority: 3,
+          category: "competition",
+          problem: "Watershed and Persefoni have $200M+ in funding and are eyeing mid-market",
+          impact: "Well-funded enterprise players can subsidize a mid-market push. If Watershed launches a €99/month SMB tier (as rumored), your differentiation on 'affordability' evaporates. VCs need to know why you win when the gorillas enter your market.",
+          howToFix: "Build integration moats they can't replicate quickly. Sign exclusive partnerships with 3-5 mid-market ERP vendors (Sage, Xero, Zoho). Create a proprietary SMB emissions benchmark dataset from your 23 customers that enterprise players can't access.",
+          badExample: "Enterprise players are focused on Fortune 500, they won't come down-market.",
+          goodExample: "We've signed exclusive carbon module partnerships with Xero and Sage — 400K SMBs use these platforms. Even if Watershed launches an SMB tier, they'd need 2+ years to build these integrations."
+        },
+        {
+          id: "action-4",
+          priority: 4,
+          category: "team",
+          problem: "No climate industry domain expert on the founding team",
+          impact: "VCs investing in climate tech expect founders who've lived the problem. McKinsey sustainability consulting is adjacent, not direct. This creates credibility questions in IC discussions: 'Do they really understand the space, or are they smart generalists?'",
+          howToFix: "Add a climate tech advisor with operator experience (ex-Watershed, ex-Persefoni, or sustainability officer from a target enterprise). Get them to commit 4+ hours/month and include them in investor calls. Alternatively, your first VP hire should bring this credibility.",
+          badExample: "We've done extensive market research and customer interviews.",
+          goodExample: "Our advisor Sarah was Chief Sustainability Officer at Unilever and now joins our investor calls. She's helped us understand that procurement teams are the real buyers, not sustainability officers — insight that doubled our close rate."
+        },
+        {
+          id: "action-5",
+          priority: 5,
+          category: "narrative",
+          problem: "Positioning as 'carbon tracking for SMBs' is too broad and undifferentiated",
+          impact: "VCs hear 'carbon tracking' pitches weekly. Without a sharp wedge, you blend into the noise. 'SMB-focused' isn't a moat — it's a temporary positioning that any competitor can claim.",
+          howToFix: "Reframe around the supply chain compliance use case: 'We're how mid-market suppliers prove carbon credentials to enterprise buyers.' This is specific, urgent (enterprise mandates are real), and defensible (you understand the mid-market supplier pain).",
+          badExample: "We help SMBs track their carbon footprint affordably.",
+          goodExample: "We're the carbon compliance layer for mid-market suppliers. When Walmart requires carbon data from their 5,000 suppliers, those suppliers use CarbonPrint to generate compliant reports in hours, not months."
+        }
+      ],
+      overallUrgency: "high",
+      summaryLine: "CarbonPrint has strong regulatory tailwinds but needs to prove sales velocity, build competitive moats, and sharpen positioning before Series A."
+    },
     sections: [
       { 
         title: "Problem", 

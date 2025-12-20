@@ -19,11 +19,13 @@ import { MemoExitPathCard } from "@/components/memo/MemoExitPathCard";
 import { MemoUnitEconomicsCard } from "@/components/memo/MemoUnitEconomicsCard";
 import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
+import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptions";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
 import { VCFramingExplainerCard } from "@/components/memo/VCFramingExplainerCard";
 import type { MemoStructuredContent, MemoVCQuickTake as MemoVCQuickTakeType, MemoParagraph as MemoParagraphType } from "@/types/memo";
 import type { MoatScores, UnitEconomicsData, ExitPathData, ExtractedTeamMember } from "@/lib/memoDataExtractor";
+import type { AnchoredAssumptions } from "@/lib/anchoredAssumptions";
 import { DEMO_MEMOS } from "@/data/acceleratorDemo/demoMemos";
 
 // Import new VC tools
@@ -116,7 +118,7 @@ const SAMPLE_UNIT_ECONOMICS: UnitEconomicsData = {
 
 // Sample Exit Path Data for CarbonPrint demo
 const SAMPLE_EXIT_DATA: ExitPathData = {
-  currentARR: 96600, // $8,050 MRR * 12
+  currentARR: 96600, // €8,050 MRR * 12 (based on 23 customers at €350/mo average)
   category: "Climate Tech",
   revenueMultiple: { low: 6, mid: 10, high: 15 }
 };
@@ -127,6 +129,61 @@ const SAMPLE_TEAM_EXTRACTED: ExtractedTeamMember[] = [
   { name: "Marcus Rodriguez", role: "CTO" },
   { name: "Jennifer Liu", role: "COO" }
 ];
+
+// Sample Anchored Assumptions - €12K ACV aligned with narrative
+const SAMPLE_ANCHORED_ASSUMPTIONS: AnchoredAssumptions = {
+  businessModelType: 'b2b_mid_market',
+  metricFramework: {
+    type: 'b2b_mid_market',
+    typeLabel: 'B2B Mid-Market SaaS',
+    primaryMetric: { 
+      key: 'acv', 
+      label: 'ACV', 
+      fullLabel: 'Annual Contract Value', 
+      periodicity: 'annual',
+      scaleFactor: 1
+    },
+    customerMetric: {
+      singular: 'customer',
+      plural: 'customers',
+      countLabel: 'Enterprise Customers',
+      acquisitionVerb: 'close'
+    },
+    scaleTest: {
+      targetARR: 100000000,
+      calculationMethod: 'units_x_metric',
+      formulaDisplay: 'Customers × ACV',
+      feasibilityFactors: ['sales cycle length', 'market size', 'competitive intensity']
+    },
+    benchmarks: {
+      typicalRange: { low: 15000, mid: 40000, high: 100000 },
+      byStage: {
+        'pre-seed': { low: 10000, mid: 20000, high: 50000 },
+        'seed': { low: 15000, mid: 35000, high: 75000 },
+        'series-a': { low: 25000, mid: 50000, high: 100000 }
+      },
+      comparables: [
+        { name: 'Watershed', value: 75000, stage: 'series-b' },
+        { name: 'Persefoni', value: 50000, stage: 'series-a' }
+      ]
+    }
+  },
+  primaryMetricValue: 12000,
+  primaryMetricLabel: 'ACV',
+  primaryMetricFullLabel: 'Annual Contract Value',
+  periodicity: 'annual',
+  currency: 'EUR',
+  source: 'founder_input',
+  sourceDescription: 'From CarbonPrint pricing: €2.4K-€12K tiers. Using €12K enterprise tier for venture math.',
+  sourceConfidence: 'high',
+  scaleRequirements: {
+    unitsNeeded: 8333,
+    unitLabel: 'customers',
+    formula: '€100M ÷ €12K ACV = 8,333 customers',
+    feasibilityAssessment: 'challenging',
+    context: 'Requires capturing ~5% of 180K EU mid-market companies under CSRD scope'
+  }
+};
 
 // Sample company info for CarbonPrint demo
 const SAMPLE_COMPANY_INFO = {
@@ -320,9 +377,22 @@ const SampleMemo = () => {
         {/* VC Quick Take - Green/Red flags summary */}
         <MemoVCQuickTake quickTake={memoContent.vcQuickTake || SAMPLE_VC_QUICK_TAKE} showTeaser={false} />
 
-        {/* Action Plan - extracted from memo content */}
+        {/* Anchored Assumptions - Key metrics transparency */}
+        <MemoAnchoredAssumptions 
+          assumptions={SAMPLE_ANCHORED_ASSUMPTIONS}
+          companyName={companyInfo?.name || 'CarbonPrint'}
+          onEdit={() => navigate('/memo-builder')}
+        />
+
+        {/* Action Plan - extracted from memo content or from AI-generated data */}
         {(() => {
           const quickTake = memoContent.vcQuickTake || SAMPLE_VC_QUICK_TAKE;
+          const demoData = DEMO_MEMOS["demo-carbonprint"];
+          // Use AI-generated action plan if available
+          if (demoData?.aiActionPlan) {
+            return <MemoActionPlan actionPlan={demoData.aiActionPlan} companyName={companyInfo?.name} />;
+          }
+          // Fallback to extracted action plan
           const actionPlan = extractActionPlan(memoContent, quickTake);
           return actionPlan && actionPlan.items.length > 0 && (
             <MemoActionPlan actionPlan={actionPlan} companyName={companyInfo?.name} />
@@ -452,9 +522,7 @@ const SampleMemo = () => {
                     {isMarketSection && sectionTools && (
                       <div className="space-y-6">
                         <MemoVCScaleCard 
-                          avgMonthlyRevenue={1000}
-                          currentCustomers={23}
-                          currentMRR={8050}
+                          anchoredAssumptions={SAMPLE_ANCHORED_ASSUMPTIONS}
                           companyName="CarbonPrint"
                           category="Climate Tech"
                         />
