@@ -83,14 +83,23 @@ export class HooksErrorBoundary extends Component<Props, State> {
         );
       }
       
-      // Max retries exceeded, show fallback or trigger full reload
+      // Max retries exceeded, show fallback or contact info before reload
       if (this.props.fallback) {
         return this.props.fallback;
       }
       
-      // Auto-reload as last resort
-      window.location.reload();
-      return null;
+      // Show contact info before auto-reload
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center space-y-4 p-6">
+            <Sparkles className="w-12 h-12 text-muted-foreground mx-auto" />
+            <p className="text-muted-foreground">Something went wrong. Reloading...</p>
+            <p className="text-xs text-muted-foreground">
+              If this persists, contact kev@vc-brain.com
+            </p>
+          </div>
+        </div>
+      );
     }
 
     return this.props.children;

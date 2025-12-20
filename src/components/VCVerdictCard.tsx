@@ -295,6 +295,9 @@ export const VCVerdictCard = memo(({
             <AlertTriangle className="w-12 h-12 text-destructive mx-auto" />
             <p className="text-muted-foreground">{error || 'Unable to generate verdict'}</p>
             <Button onClick={() => generateVerdict()} variant="outline" size="sm">Try Again</Button>
+            <p className="text-xs text-muted-foreground">
+              Persistent issues? Contact kev@vc-brain.com
+            </p>
           </div>
         </div>
       </div>

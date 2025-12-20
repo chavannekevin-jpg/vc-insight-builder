@@ -157,6 +157,10 @@ function PaymentSuccessContent() {
               >
                 Go to Portal
               </Button>
+              
+              <p className="text-xs text-muted-foreground text-center">
+                Still having issues? Contact kev@vc-brain.com
+              </p>
             </div>
           </ModernCard>
         </div>
