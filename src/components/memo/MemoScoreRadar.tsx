@@ -29,6 +29,7 @@ interface MemoScoreRadarProps {
   companyName: string;
   stage: string;
   category?: string;
+  onSectionClick?: (sectionName: string) => void;
 }
 
 const STATUS_CONFIG = {
@@ -84,17 +85,23 @@ const READINESS_CONFIG = {
 };
 
 // Section card component
-const SectionScoreCard = ({ section }: { section: SectionVerdict }) => {
+const SectionScoreCard = ({ section, onClick }: { section: SectionVerdict; onClick?: () => void }) => {
   const config = STATUS_CONFIG[section.status];
+  const isClickable = !!onClick;
   const Icon = config.icon;
   
   return (
-    <div className={cn(
-      "relative p-4 rounded-xl border transition-all duration-300",
-      "bg-card/50 backdrop-blur-sm hover:bg-card/80",
-      config.border,
-      "group hover:scale-[1.02]"
-    )}>
+    <button
+      onClick={onClick}
+      disabled={!isClickable}
+      className={cn(
+        "relative p-4 rounded-xl border transition-all duration-300 text-left w-full",
+        "bg-card/50 backdrop-blur-sm hover:bg-card/80",
+        config.border,
+        "group hover:scale-[1.02]",
+        isClickable && "cursor-pointer hover:shadow-glow"
+      )}
+    >
       {/* Glow effect on hover */}
       <div className={cn(
         "absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity",
@@ -138,8 +145,14 @@ const SectionScoreCard = ({ section }: { section: SectionVerdict }) => {
         <p className="text-sm text-muted-foreground leading-relaxed">
           "{section.holisticVerdict}"
         </p>
+        {/* Click hint for clickable cards */}
+        {isClickable && (
+          <div className="absolute bottom-2 right-2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+            Click to view →
+          </div>
+        )}
       </div>
-    </div>
+    </button>
   );
 };
 
@@ -168,9 +181,10 @@ export const MemoScoreRadar = ({
   sectionTools, 
   companyName, 
   stage, 
-  category 
+  category,
+  onSectionClick
 }: MemoScoreRadarProps) => {
-  const scorecard = useMemo(() => 
+  const scorecard = useMemo(() =>
     buildHolisticScorecard(sectionTools, companyName, stage, category),
     [sectionTools, companyName, stage, category]
   );
@@ -395,7 +409,11 @@ export const MemoScoreRadar = ({
             </h3>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {scorecard.sections.slice(0, 8).map((section) => (
-                <SectionScoreCard key={section.section} section={section} />
+                <SectionScoreCard 
+                  key={section.section} 
+                  section={section} 
+                  onClick={onSectionClick ? () => onSectionClick(section.section) : undefined}
+                />
               ))}
             </div>
           </div>
