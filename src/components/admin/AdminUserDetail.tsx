@@ -8,8 +8,11 @@ import {
   DollarSign, 
   Calendar,
   Tag,
-  Clock
+  Clock,
+  LogIn,
+  Activity
 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 interface Company {
   id: string;
@@ -36,6 +39,8 @@ export const AdminUserDetail = ({ userId }: UserDetailProps) => {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState("");
   const [userCreatedAt, setUserCreatedAt] = useState<string | null>(null);
+  const [lastSignInAt, setLastSignInAt] = useState<string | null>(null);
+  const [signInCount, setSignInCount] = useState(0);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
 
@@ -48,16 +53,18 @@ export const AdminUserDetail = ({ userId }: UserDetailProps) => {
   const fetchUserDetails = async () => {
     setLoading(true);
     try {
-      // Fetch user profile
+      // Fetch user profile with sign-in data
       const { data: profile } = await supabase
         .from("profiles")
-        .select("email, created_at")
+        .select("email, created_at, last_sign_in_at, sign_in_count")
         .eq("id", userId)
         .single();
 
       if (profile) {
         setUserEmail(profile.email);
         setUserCreatedAt(profile.created_at);
+        setLastSignInAt(profile.last_sign_in_at);
+        setSignInCount(profile.sign_in_count || 0);
       }
 
       // Fetch user's companies with memo status
@@ -143,12 +150,24 @@ export const AdminUserDetail = ({ userId }: UserDetailProps) => {
       {/* User Info Header */}
       <div className="p-4 rounded-lg bg-muted/30 border border-border">
         <p className="text-lg font-semibold text-foreground">{userEmail}</p>
-        {userCreatedAt && (
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Joined {format(new Date(userCreatedAt), "MMMM d, yyyy")}</span>
+        <div className="flex flex-wrap items-center gap-4 mt-2">
+          {userCreatedAt && (
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Joined {format(new Date(userCreatedAt), "MMMM d, yyyy")}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <LogIn className="w-3.5 h-3.5" />
+            <span>{signInCount} sign-ins</span>
           </div>
-        )}
+          {lastSignInAt && (
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Activity className="w-3.5 h-3.5" />
+              <span>Last seen {formatDistanceToNow(new Date(lastSignInAt), { addSuffix: true })}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Summary Stats */}

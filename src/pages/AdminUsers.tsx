@@ -22,8 +22,11 @@ import {
   Users, 
   Building2, 
   FileText,
-  Eye
+  Eye,
+  Activity,
+  Clock
 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import {
@@ -53,6 +56,8 @@ interface UserData {
   companies_count: number;
   memos_count: number;
   total_paid: number;
+  last_sign_in_at: string | null;
+  sign_in_count: number;
 }
 
 const AdminUsers = () => {
@@ -110,10 +115,10 @@ const AdminUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      // Fetch all profiles
+      // Fetch all profiles with sign-in data
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, email, created_at")
+        .select("id, email, created_at, last_sign_in_at, sign_in_count")
         .order("created_at", { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -177,6 +182,8 @@ const AdminUsers = () => {
         companies_count: companiesCountMap[profile.id] || 0,
         memos_count: memosCountMap[profile.id] || 0,
         total_paid: purchasesMap[profile.id] || 0,
+        last_sign_in_at: profile.last_sign_in_at,
+        sign_in_count: profile.sign_in_count || 0,
       }));
 
       setUsers(usersData);
@@ -262,6 +269,13 @@ const AdminUsers = () => {
   const adminCount = users.filter(u => u.is_admin).length;
   const totalRevenue = users.reduce((sum, u) => sum + u.total_paid, 0);
   const paidUsersCount = users.filter(u => u.total_paid > 0).length;
+  
+  // Calculate active users in last 7 days
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const activeUsers = users.filter(u => 
+    u.last_sign_in_at && new Date(u.last_sign_in_at) > sevenDaysAgo
+  ).length;
 
   if (loading) {
     return (
@@ -288,13 +302,21 @@ const AdminUsers = () => {
 
       <main className="container mx-auto px-4 py-8 space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <ModernCard className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <Users className="w-4 h-4 text-primary" />
               <span className="text-xs text-muted-foreground">Total Users</span>
             </div>
             <p className="text-2xl font-bold text-foreground">{users.length}</p>
+          </ModernCard>
+
+          <ModernCard className="p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Activity className="w-4 h-4 text-green-500" />
+              <span className="text-xs text-muted-foreground">Active (7d)</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground">{activeUsers}</p>
           </ModernCard>
 
           <ModernCard className="p-4">
@@ -307,7 +329,7 @@ const AdminUsers = () => {
 
           <ModernCard className="p-4">
             <div className="flex items-center gap-2 mb-1">
-              <FileText className="w-4 h-4 text-green-500" />
+              <FileText className="w-4 h-4 text-blue-500" />
               <span className="text-xs text-muted-foreground">Paid Users</span>
             </div>
             <p className="text-2xl font-bold text-foreground">{paidUsersCount}</p>
@@ -348,6 +370,8 @@ const AdminUsers = () => {
                   <TableRow>
                     <TableHead>Email</TableHead>
                     <TableHead>Joined</TableHead>
+                    <TableHead>Last Seen</TableHead>
+                    <TableHead>Sign-ins</TableHead>
                     <TableHead>Companies</TableHead>
                     <TableHead>Memos</TableHead>
                     <TableHead>Revenue</TableHead>
@@ -371,6 +395,23 @@ const AdminUsers = () => {
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {format(new Date(user.created_at), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        {user.last_sign_in_at ? (
+                          <div className="flex items-center gap-1 text-sm">
+                            <Clock className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-muted-foreground">
+                              {formatDistanceToNow(new Date(user.last_sign_in_at), { addSuffix: true })}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">Never</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={user.sign_in_count > 5 ? "default" : "secondary"}>
+                          {user.sign_in_count}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{user.companies_count}</Badge>
