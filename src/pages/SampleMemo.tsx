@@ -54,6 +54,9 @@ import {
   VisionExitNarrativeCard
 } from "@/components/memo/tools";
 
+// Import score radar component
+import { MemoScoreRadar } from "@/components/memo/MemoScoreRadar";
+
 // Import sample tool data
 import { SAMPLE_SECTION_TOOLS } from "@/data/sampleMemoTools";
 
@@ -376,6 +379,14 @@ const SampleMemo = () => {
 
         {/* VC Quick Take - Green/Red flags summary */}
         <MemoVCQuickTake quickTake={memoContent.vcQuickTake || SAMPLE_VC_QUICK_TAKE} showTeaser={false} />
+
+        {/* Investment Readiness Scorecard - Holistic view with radar chart */}
+        <MemoScoreRadar 
+          sectionTools={SAMPLE_SECTION_TOOLS}
+          companyName={companyInfo?.name || 'CarbonPrint'}
+          stage={companyInfo?.stage || 'Pre-Seed'}
+          category={companyInfo?.category || 'Climate Tech'}
+        />
 
         {/* Anchored Assumptions - Key metrics transparency */}
         <MemoAnchoredAssumptions 
