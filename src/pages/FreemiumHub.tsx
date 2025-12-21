@@ -708,12 +708,7 @@ export default function FreemiumHub() {
           {/* Main Content based on paid/unpaid status */}
           {hasPaid && memoGenerated ? (
             <div className="space-y-6">
-              {/* VC Quick Take for paid users */}
-              {vcQuickTake && (
-                <MemoVCQuickTake quickTake={vcQuickTake} showTeaser={false} />
-              )}
-              
-              {/* Investment Readiness Scorecard - with spider graph */}
+              {/* Investment Readiness Scorecard - with spider graph (always first) */}
               {sectionTools && Object.keys(sectionTools).length > 0 ? (
                 <MiniScorecard
                   sectionTools={sectionTools}
@@ -770,6 +765,11 @@ export default function FreemiumHub() {
                     </div>
                   </CardContent>
                 </Card>
+              )}
+
+              {/* VC Quick Take (IC Room) - below the scorecard */}
+              {vcQuickTake && (
+                <MemoVCQuickTake quickTake={vcQuickTake} showTeaser={false} />
               )}
 
               {/* Insider Take of the Day */}
