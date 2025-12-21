@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -13,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Search, Eye, Home, ArrowLeft, FileText } from "lucide-react";
+import { LogOut, Search, Eye, Home, ArrowLeft, FileText, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { safeLower } from "@/lib/stringUtils";
 
@@ -35,6 +36,7 @@ const AdminMemos = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [companies, setCompanies] = useState<PaidCompanyData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [generatingFor, setGeneratingFor] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -78,7 +80,6 @@ const AdminMemos = () => {
 
   const fetchPaidCompanies = async () => {
     try {
-      // Fetch all paid companies
       const { data: companiesData, error } = await supabase
         .from("companies")
         .select(`
@@ -94,7 +95,6 @@ const AdminMemos = () => {
 
       if (error) throw error;
 
-      // Fetch memos separately for each company
       const formattedCompanies: PaidCompanyData[] = await Promise.all(
         (companiesData || []).map(async (company) => {
           const { data: memoData } = await supabase
@@ -124,6 +124,86 @@ const AdminMemos = () => {
       toast({
         title: "Error",
         description: "Failed to load paid companies",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleMemo = async (companyId: string, companyName: string) => {
+    setGeneratingFor(companyId);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Error",
+          description: "You must be logged in",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Starting memo generation",
+        description: `Generating memo for ${companyName}...`,
+      });
+
+      const { data, error } = await supabase.functions.invoke("admin-generate-memo", {
+        body: { companyId },
+      });
+
+      if (error) throw error;
+
+      const jobId = data?.jobId;
+      if (!jobId) throw new Error("No job ID returned");
+
+      // Poll for job completion
+      const pollInterval = setInterval(async () => {
+        const { data: jobData } = await supabase
+          .from("memo_generation_jobs")
+          .select("status, error_message")
+          .eq("id", jobId)
+          .single();
+
+        if (jobData?.status === "completed") {
+          clearInterval(pollInterval);
+          setGeneratingFor(null);
+          toast({
+            title: "Memo generated!",
+            description: `${companyName}'s memo is ready`,
+          });
+          fetchPaidCompanies(); // Refresh the list
+        } else if (jobData?.status === "failed") {
+          clearInterval(pollInterval);
+          setGeneratingFor(null);
+          toast({
+            title: "Generation failed",
+            description: jobData.error_message || "Unknown error",
+            variant: "destructive",
+          });
+        }
+      }, 3000);
+
+      // Stop polling after 5 minutes max
+      setTimeout(() => {
+        clearInterval(pollInterval);
+        if (generatingFor === companyId) {
+          setGeneratingFor(null);
+          toast({
+            title: "Generation timeout",
+            description: "Check the job status later",
+            variant: "destructive",
+          });
+        }
+      }, 300000);
+
+    } catch (error: any) {
+      console.error("Error triggering memo generation:", error);
+      setGeneratingFor(null);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to start memo generation",
         variant: "destructive",
       });
     }
@@ -230,57 +310,67 @@ const AdminMemos = () => {
                     <TableHead>Company</TableHead>
                     <TableHead>Founder Email</TableHead>
                     <TableHead>Stage</TableHead>
-                    <TableHead>Memo Status</TableHead>
+                    <TableHead>Has Memo</TableHead>
                     <TableHead>Memo Created</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredCompanies.map((company) => (
-                    <TableRow key={company.id}>
-                      <TableCell className="font-medium">{company.name}</TableCell>
-                      <TableCell>{company.founder_email}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="capitalize">
-                          {company.stage}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {company.has_memo ? (
-                          <Badge 
-                            variant={company.memo_status === "completed" ? "default" : "secondary"}
-                            className={company.memo_status === "completed" ? "bg-green-500/20 text-green-500" : ""}
-                          >
-                            {company.memo_status || "draft"}
+                  {filteredCompanies.map((company) => {
+                    const isGenerating = generatingFor === company.id;
+                    
+                    return (
+                      <TableRow key={company.id}>
+                        <TableCell className="font-medium">{company.name}</TableCell>
+                        <TableCell>{company.founder_email}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="capitalize">
+                            {company.stage}
                           </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-muted-foreground">
-                            No memo
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {company.memo_created_at 
-                          ? formatDate(company.memo_created_at) 
-                          : "—"
-                        }
-                      </TableCell>
-                      <TableCell>
-                        {company.has_memo ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate(`/admin/memos/${company.id}`)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Memo
-                          </Button>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {isGenerating ? (
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span className="text-sm">Generating...</span>
+                              </div>
+                            ) : (
+                              <Switch
+                                checked={company.has_memo}
+                                onCheckedChange={() => {
+                                  if (!company.has_memo) {
+                                    handleToggleMemo(company.id, company.name);
+                                  }
+                                }}
+                                disabled={company.has_memo || isGenerating}
+                              />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {company.memo_created_at 
+                            ? formatDate(company.memo_created_at) 
+                            : "—"
+                          }
+                        </TableCell>
+                        <TableCell>
+                          {company.has_memo ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate(`/admin/memos/${company.id}`)}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Memo
+                            </Button>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">—</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
