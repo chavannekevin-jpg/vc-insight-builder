@@ -111,6 +111,7 @@ interface VCVerdictCardProps {
   deckParsed?: boolean;
   cachedVerdict?: VCVerdict | LegacyVCVerdict | null;
   onVerdictGenerated?: (verdict: VCVerdict) => void;
+  generationsAvailable?: number;
 }
 
 export const VCVerdictCard = memo(({
@@ -124,7 +125,8 @@ export const VCVerdictCard = memo(({
   hasPaid,
   deckParsed = false,
   cachedVerdict: rawCachedVerdict,
-  onVerdictGenerated
+  onVerdictGenerated,
+  generationsAvailable = 0
 }: VCVerdictCardProps) => {
   const cachedVerdict = rawCachedVerdict 
     ? (isLegacyVerdict(rawCachedVerdict) ? convertLegacyVerdict(rawCachedVerdict) : rawCachedVerdict as VCVerdict)
@@ -214,6 +216,16 @@ export const VCVerdictCard = memo(({
   const navigateToPortal = useCallback(() => navigate("/portal"), [navigate]);
   const navigateToMemo = useCallback(() => navigate(`/analysis?companyId=${companyId}&view=full`), [navigate, companyId]);
   const navigateToCheckout = useCallback(() => navigate(`/checkout-analysis?companyId=${companyId}`), [navigate, companyId]);
+  const navigateToRegenerate = useCallback(() => navigate(`/analysis/regenerate?companyId=${companyId}`), [navigate, companyId]);
+  
+  // Premium users with credits go to regenerate page, others go to checkout
+  const handleFixAction = useCallback(() => {
+    if (hasPaid && generationsAvailable > 0) {
+      navigateToRegenerate();
+    } else {
+      navigateToCheckout();
+    }
+  }, [hasPaid, generationsAvailable, navigateToRegenerate, navigateToCheckout]);
 
   // Show simplified card only for PAID users with memo
   // Unpaid users should see the full verdict even if memo is generated
@@ -492,16 +504,18 @@ export const VCVerdictCard = memo(({
         {/* CTA Section */}
         <div className="p-6 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
           <Button 
-            onClick={navigateToCheckout} 
+            onClick={handleFixAction} 
             className="w-full h-12 text-sm font-semibold shadow-glow hover-neon-pulse" 
             size="lg"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
-            Let me Fix this
+            {hasPaid && generationsAvailable > 0 ? "Edit & Regenerate" : "Let me Fix this"}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
           <p className="text-xs text-center text-muted-foreground mt-3">
-            Change the internal conversation. Transform how VCs talk about you.
+            {hasPaid && generationsAvailable > 0 
+              ? `You have ${generationsAvailable} generation credit${generationsAvailable !== 1 ? 's' : ''} available.`
+              : "Change the internal conversation. Transform how VCs talk about you."}
           </p>
           <p className="text-[10px] text-center text-muted-foreground/60 mt-1">
             This is not advice. This is the room after the meeting.
