@@ -95,3 +95,6 @@ verify_jwt = false
 
 [functions.estimate-primary-metric]
 verify_jwt = false
+
+[functions.admin-generate-memo]
+verify_jwt = false
