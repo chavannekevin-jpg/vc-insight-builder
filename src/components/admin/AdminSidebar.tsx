@@ -13,6 +13,7 @@ import {
   Wrench,
   ChevronDown,
   ChevronRight,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -21,6 +22,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -126,7 +128,22 @@ export function AdminSidebar() {
   );
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar">
+      {/* Admin Header/Logo */}
+      <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+            <Shield className="w-4 h-4 text-primary" />
+          </div>
+          {!collapsed && (
+            <div>
+              <h2 className="font-bold text-sidebar-foreground text-sm">UglyBaby</h2>
+              <p className="text-xs text-sidebar-foreground/60">Admin Panel</p>
+            </div>
+          )}
+        </div>
+      </SidebarHeader>
+      
       <SidebarContent className="pt-4">
         {/* Main Navigation */}
         <SidebarGroup>
