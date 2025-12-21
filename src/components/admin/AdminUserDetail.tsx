@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 import { 
   Building2, 
   FileText, 
@@ -10,7 +13,9 @@ import {
   Tag,
   Clock,
   LogIn,
-  Activity
+  Activity,
+  Plus,
+  RefreshCw
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -20,7 +25,10 @@ interface Company {
   stage: string;
   created_at: string;
   has_memo: boolean;
+  has_premium: boolean;
   responses_count: number;
+  generations_available: number;
+  generations_used: number;
 }
 
 interface Purchase {
@@ -43,6 +51,62 @@ export const AdminUserDetail = ({ userId }: UserDetailProps) => {
   const [signInCount, setSignInCount] = useState(0);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [creditsToAdd, setCreditsToAdd] = useState<Record<string, number>>({});
+  const [addingCredits, setAddingCredits] = useState<Record<string, boolean>>({});
+
+  const handleAddCredits = async (companyId: string, companyName: string) => {
+    const credits = creditsToAdd[companyId] || 1;
+    if (credits < 1) {
+      toast({ title: "Invalid amount", description: "Credits must be at least 1", variant: "destructive" });
+      return;
+    }
+
+    setAddingCredits(prev => ({ ...prev, [companyId]: true }));
+    
+    try {
+      // Get current generations_available
+      const { data: company, error: fetchError } = await supabase
+        .from("companies")
+        .select("generations_available")
+        .eq("id", companyId)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      const newCredits = (company?.generations_available || 0) + credits;
+      
+      const { error } = await supabase
+        .from("companies")
+        .update({ generations_available: newCredits })
+        .eq("id", companyId);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setCompanies(prev => prev.map(c => 
+        c.id === companyId 
+          ? { ...c, generations_available: newCredits }
+          : c
+      ));
+      
+      // Reset input
+      setCreditsToAdd(prev => ({ ...prev, [companyId]: 1 }));
+      
+      toast({
+        title: "Credits added",
+        description: `Added ${credits} regeneration credit${credits > 1 ? 's' : ''} to ${companyName}`,
+      });
+    } catch (error) {
+      console.error("Error adding credits:", error);
+      toast({
+        title: "Failed to add credits",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingCredits(prev => ({ ...prev, [companyId]: false }));
+    }
+  };
 
   useEffect(() => {
     if (userId) {
@@ -75,6 +139,9 @@ export const AdminUserDetail = ({ userId }: UserDetailProps) => {
           name,
           stage,
           created_at,
+          has_premium,
+          generations_available,
+          generations_used,
           memos(id, status)
         `)
         .eq("founder_id", userId)
@@ -97,7 +164,10 @@ export const AdminUserDetail = ({ userId }: UserDetailProps) => {
             stage: company.stage,
             created_at: company.created_at,
             has_memo: hasMemo,
+            has_premium: company.has_premium || false,
             responses_count: count || 0,
+            generations_available: company.generations_available || 0,
+            generations_used: company.generations_used || 0,
           };
         })
       );
@@ -198,27 +268,76 @@ export const AdminUserDetail = ({ userId }: UserDetailProps) => {
         {companies.length === 0 ? (
           <p className="text-sm text-muted-foreground italic">No companies created</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {companies.map((company) => (
               <div 
                 key={company.id} 
-                className="p-3 rounded-lg border border-border bg-card/50 flex items-center justify-between"
+                className="p-4 rounded-lg border border-border bg-card/50"
               >
-                <div>
-                  <p className="font-medium text-foreground">{company.name}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="outline" className="text-xs">{company.stage}</Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {company.responses_count} answers
-                    </span>
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="font-medium text-foreground">{company.name}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="outline" className="text-xs">{company.stage}</Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {company.responses_count} answers
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {company.has_premium && (
+                      <Badge variant="default" className="bg-primary">Premium</Badge>
+                    )}
+                    {company.has_memo ? (
+                      <Badge variant="default" className="bg-green-500">Memo Generated</Badge>
+                    ) : (
+                      <Badge variant="secondary">No Memo</Badge>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {company.has_memo ? (
-                    <Badge variant="default" className="bg-green-500">Memo Generated</Badge>
-                  ) : (
-                    <Badge variant="secondary">No Memo</Badge>
-                  )}
+                
+                {/* Credits Management */}
+                <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                  <div className="flex items-center gap-2">
+                    <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      Regeneration Credits: 
+                      <span className="font-semibold text-foreground ml-1">
+                        {company.generations_available}
+                      </span>
+                      <span className="text-xs text-muted-foreground ml-1">
+                        ({company.generations_used} used)
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={creditsToAdd[company.id] ?? 1}
+                      onChange={(e) => setCreditsToAdd(prev => ({ 
+                        ...prev, 
+                        [company.id]: parseInt(e.target.value) || 1 
+                      }))}
+                      className="w-16 h-8 text-center"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => handleAddCredits(company.id, company.name)}
+                      disabled={addingCredits[company.id]}
+                      className="h-8"
+                    >
+                      {addingCredits[company.id] ? (
+                        <RefreshCw className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <>
+                          <Plus className="w-3 h-3 mr-1" />
+                          Add
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
