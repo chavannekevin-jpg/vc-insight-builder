@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Search, Eye, Home, ArrowLeft, FileText, Loader2 } from "lucide-react";
+import { LogOut, Search, Eye, Home, ArrowLeft, FileText, Loader2, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { safeLower } from "@/lib/stringUtils";
 
@@ -37,6 +37,7 @@ const AdminMemos = () => {
   const [companies, setCompanies] = useState<PaidCompanyData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [generatingFor, setGeneratingFor] = useState<string | null>(null);
+  const [impersonating, setImpersonating] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -209,6 +210,58 @@ const AdminMemos = () => {
     }
   };
 
+  const handleImpersonate = async (userEmail: string, companyName: string) => {
+    setImpersonating(userEmail);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Error",
+          description: "You must be logged in",
+          variant: "destructive",
+        });
+        setImpersonating(null);
+        return;
+      }
+
+      toast({
+        title: "Generating login link",
+        description: `Creating access for ${companyName}...`,
+      });
+
+      const { data, error } = await supabase.functions.invoke("admin-impersonate-user", {
+        body: { 
+          userEmail,
+          redirectTo: `${window.location.origin}/portal`
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.magicLink) {
+        // Open the magic link in a new tab
+        window.open(data.magicLink, "_blank");
+        toast({
+          title: "Success",
+          description: `Opened ${companyName}'s account in a new tab`,
+        });
+      } else {
+        throw new Error("No login link returned");
+      }
+    } catch (error: any) {
+      console.error("Error impersonating user:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to generate login link",
+        variant: "destructive",
+      });
+    } finally {
+      setImpersonating(null);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
@@ -313,11 +366,13 @@ const AdminMemos = () => {
                     <TableHead>Has Memo</TableHead>
                     <TableHead>Memo Created</TableHead>
                     <TableHead>Actions</TableHead>
+                    <TableHead>Sneak In</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredCompanies.map((company) => {
                     const isGenerating = generatingFor === company.id;
+                    const isImpersonating = impersonating === company.founder_email;
                     
                     return (
                       <TableRow key={company.id}>
@@ -367,6 +422,21 @@ const AdminMemos = () => {
                           ) : (
                             <span className="text-muted-foreground text-sm">—</span>
                           )}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleImpersonate(company.founder_email, company.name)}
+                            disabled={isImpersonating || company.founder_email === "N/A"}
+                            className="text-primary hover:text-primary/80"
+                          >
+                            {isImpersonating ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <UserCheck className="w-4 h-4" />
+                            )}
+                          </Button>
                         </TableCell>
                       </TableRow>
                     );
