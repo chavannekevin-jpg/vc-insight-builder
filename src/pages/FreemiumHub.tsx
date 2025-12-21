@@ -13,6 +13,7 @@ import { ToolsRow } from "@/components/ToolsRow";
 import { CollapsedLibrary } from "@/components/CollapsedLibrary";
 import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
+import { MiniScorecard } from "@/components/memo/MiniScorecard";
 import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench, Trash2, Settings } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -117,6 +118,7 @@ export default function FreemiumHub() {
   const [responsesLoaded, setResponsesLoaded] = useState(false);
   const [cachedVerdict, setCachedVerdict] = useState<any>(null);
   const [vcQuickTake, setVcQuickTake] = useState<any>(null);
+  const [sectionTools, setSectionTools] = useState<Record<string, any> | null>(null);
 
   // Map companyData to Company type for compatibility
   const company: Company | null = companyData ? {
@@ -159,6 +161,36 @@ export default function FreemiumHub() {
     };
     loadQuickTake();
   }, [company?.id, hasPaidData]);
+
+  // Load sectionTools for paid users with generated memo
+  useEffect(() => {
+    const loadSectionTools = async () => {
+      if (!company?.id || !hasPaidData || !memoHasContent) return;
+      
+      const { data: toolData } = await supabase
+        .from("memo_tool_data")
+        .select("section_name, tool_name, ai_generated_data, user_overrides")
+        .eq("company_id", company.id);
+      
+      if (toolData && toolData.length > 0) {
+        // Transform to sectionTools format
+        const tools: Record<string, any> = {};
+        toolData.forEach((row: any) => {
+          if (!tools[row.section_name]) {
+            tools[row.section_name] = {};
+          }
+          const data = row.user_overrides || row.ai_generated_data;
+          if (row.tool_name === 'sectionScore') {
+            tools[row.section_name].sectionScore = data;
+          } else {
+            tools[row.section_name][row.tool_name] = data;
+          }
+        });
+        setSectionTools(tools);
+      }
+    };
+    loadSectionTools();
+  }, [company?.id, hasPaidData, memoHasContent]);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -681,52 +713,64 @@ export default function FreemiumHub() {
                 <MemoVCQuickTake quickTake={vcQuickTake} showTeaser={false} />
               )}
               
-              {/* Premium Actions Card */}
-              <Card className="border-2 border-primary/30 shadow-glow">
-                <CardContent className="p-6">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-serif font-bold">Your Full Analysis</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Access your complete investment memo and analysis tools
-                      </p>
+              {/* Investment Readiness Scorecard - with spider graph */}
+              {sectionTools && Object.keys(sectionTools).length > 0 ? (
+                <MiniScorecard
+                  sectionTools={sectionTools}
+                  companyName={company.name}
+                  stage={company.stage}
+                  category={company.category || undefined}
+                  companyId={company.id}
+                  onNavigate={navigate}
+                />
+              ) : (
+                // Fallback card when sectionTools not available
+                <Card className="border-2 border-primary/30 shadow-glow">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-serif font-bold">Your Full Analysis</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Access your complete investment memo and analysis tools
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => navigate(`/analysis/section?companyId=${company.id}&section=0`)}
+                          className="border-primary/50 hover:bg-primary/10"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Full Memo
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => navigate(`/tools`)}
+                          className="border-primary/50 hover:bg-primary/10"
+                        >
+                          <Wrench className="w-4 h-4 mr-2" />
+                          Tools
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => navigate(`/analysis/regenerate?companyId=${company.id}`)}
+                          className="border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500"
+                        >
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Regenerate
+                        </Button>
+                        <Button
+                          onClick={() => navigate(`/analysis/overview?companyId=${company.id}`)}
+                          className="gradient-primary shadow-glow"
+                        >
+                          <LayoutGrid className="w-4 h-4 mr-2" />
+                          Overview
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => navigate(`/analysis/section?companyId=${company.id}&section=0`)}
-                        className="border-primary/50 hover:bg-primary/10"
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Full Memo
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => navigate(`/tools`)}
-                        className="border-primary/50 hover:bg-primary/10"
-                      >
-                        <Wrench className="w-4 h-4 mr-2" />
-                        Tools
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => navigate(`/analysis/regenerate?companyId=${company.id}`)}
-                        className="border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500"
-                      >
-                        <RotateCcw className="w-4 h-4 mr-2" />
-                        Regenerate
-                      </Button>
-                      <Button
-                        onClick={() => navigate(`/analysis/overview?companyId=${company.id}`)}
-                        className="gradient-primary shadow-glow"
-                      >
-                        <LayoutGrid className="w-4 h-4 mr-2" />
-                        Overview
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Insider Take of the Day */}
               <Card className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-transparent overflow-hidden relative">
