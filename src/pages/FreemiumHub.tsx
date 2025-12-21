@@ -100,6 +100,7 @@ export default function FreemiumHub() {
     hasPaid: hasPaidData,
     completedQuestions: cachedCompletedQuestions,
     totalQuestions: cachedTotalQuestions,
+    generationsAvailable,
     isLoading: companyLoading 
   } = useCompany(user?.id);
 
@@ -766,6 +767,7 @@ export default function FreemiumHub() {
                 deckParsed={deckParsed}
                 cachedVerdict={cachedVerdict}
                 onVerdictGenerated={handleVerdictGenerated}
+                generationsAvailable={generationsAvailable}
               />
             </>
           )}

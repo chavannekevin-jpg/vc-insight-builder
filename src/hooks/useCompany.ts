@@ -11,6 +11,8 @@ interface Company {
   has_premium?: boolean;
   deck_url?: string;
   founder_id: string;
+  generations_available?: number;
+  generations_used?: number;
 }
 
 interface CompanyData {
@@ -20,6 +22,8 @@ interface CompanyData {
   hasPaid: boolean;
   completedQuestions: number;
   totalQuestions: number;
+  generationsAvailable: number;
+  generationsUsed: number;
   isLoading: boolean;
 }
 
@@ -131,6 +135,8 @@ export const useCompany = (userId: string | undefined): CompanyData => {
     hasPaid: paymentData ?? false,
     completedQuestions: questionData?.completed ?? 0,
     totalQuestions: questionData?.total ?? 0,
+    generationsAvailable: company?.generations_available ?? 0,
+    generationsUsed: company?.generations_used ?? 0,
     isLoading: companyLoading || memoLoading || paymentLoading || questionsLoading,
   };
 };
