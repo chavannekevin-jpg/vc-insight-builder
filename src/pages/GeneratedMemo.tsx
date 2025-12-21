@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { MemoScoreRadar } from "@/components/memo/MemoScoreRadar";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
@@ -988,6 +989,24 @@ export default function GeneratedMemo() {
         {memoContent.vcQuickTake && (
           <div data-section="quick-take">
             <MemoVCQuickTake quickTake={memoContent.vcQuickTake} showTeaser={!hasPremium} />
+          </div>
+        )}
+
+        {/* Investment Readiness Scorecard (Spider Graph) - Premium only */}
+        {hasPremium && sectionTools && Object.keys(sectionTools).length > 0 && (
+          <div className="my-8">
+            <MemoScoreRadar
+              sectionTools={sectionTools}
+              companyName={companyInfo.name}
+              stage={companyInfo.stage}
+              category={companyInfo.category}
+              onSectionClick={(sectionName) => {
+                const sectionElement = document.querySelector(`[data-section="${sectionName.toLowerCase()}"]`);
+                if (sectionElement) {
+                  sectionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }}
+            />
           </div>
         )}
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { MemoScoreRadar } from "@/components/memo/MemoScoreRadar";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
@@ -375,6 +376,26 @@ export default function MemoSectionView() {
               showTeaser={false} 
               onUnlock={handleUnlock} 
             />
+          )}
+
+          {/* Investment Readiness Scorecard (Spider Graph) */}
+          {sectionTools && Object.keys(sectionTools).length > 0 && (
+            <div className="my-8">
+              <MemoScoreRadar
+                sectionTools={sectionTools}
+                companyName={companyInfo?.name || 'Company'}
+                stage={companyInfo?.stage || 'seed'}
+                category={companyInfo?.category}
+                onSectionClick={(sectionName) => {
+                  const sectionIdx = memoContent.sections.findIndex(s => 
+                    safeTitle(s.title).toLowerCase().includes(sectionName.toLowerCase())
+                  );
+                  if (sectionIdx >= 0) {
+                    goToSection(sectionIdx + 1);
+                  }
+                }}
+              />
+            </div>
           )}
 
           {/* Action Plan */}
