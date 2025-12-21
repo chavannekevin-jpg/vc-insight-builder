@@ -98,3 +98,6 @@ verify_jwt = false
 
 [functions.admin-generate-memo]
 verify_jwt = false
+
+[functions.admin-impersonate-user]
+verify_jwt = false
