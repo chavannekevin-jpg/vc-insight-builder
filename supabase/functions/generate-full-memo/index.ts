@@ -3645,8 +3645,8 @@ serve(async (req) => {
   const DEMO_COMPANY_ID = "00000000-0000-0000-0000-000000000001";
 
   try {
-    const { companyId, force = false } = await req.json();
-    console.log(`Request received: companyId=${companyId}, force=${force}`);
+    const { companyId, force = false, isAdminTriggered = false } = await req.json();
+    console.log(`Request received: companyId=${companyId}, force=${force}, isAdminTriggered=${isAdminTriggered}`);
 
     if (!companyId) {
       return new Response(
@@ -3665,56 +3665,74 @@ serve(async (req) => {
     let userId: string | null = null;
 
     if (!isDemoCompany) {
-      // Authentication check for non-demo companies
       const authHeader = req.headers.get("Authorization");
-      if (!authHeader) {
-        console.error("No authorization header provided");
-        return new Response(
-          JSON.stringify({ error: "Authentication required" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      const anonClient = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-      );
-
-      const token = authHeader.replace("Bearer ", "");
-      const { data: userData, error: authError } = await anonClient.auth.getUser(token);
       
-      if (authError || !userData.user) {
-        console.error("Authentication failed:", authError);
-        return new Response(
-          JSON.stringify({ error: "Invalid authentication token" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      // Check if this is an admin-triggered request using service role key
+      if (isAdminTriggered) {
+        const token = authHeader?.replace("Bearer ", "");
+        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        
+        if (token === serviceRoleKey) {
+          console.log("Admin-triggered memo generation - bypassing user authentication");
+          // Admin bypass - no need to verify user or company ownership
+        } else {
+          console.error("Admin trigger claimed but invalid service role key");
+          return new Response(
+            JSON.stringify({ error: "Invalid admin authentication" }),
+            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      } else {
+        // Normal user flow - authenticate user and verify ownership
+        if (!authHeader) {
+          console.error("No authorization header provided");
+          return new Response(
+            JSON.stringify({ error: "Authentication required" }),
+            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        const anonClient = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_ANON_KEY") ?? ""
         );
-      }
 
-      userId = userData.user.id;
-      console.log(`Authenticated user: ${userId}`);
+        const token = authHeader.replace("Bearer ", "");
+        const { data: userData, error: authError } = await anonClient.auth.getUser(token);
+        
+        if (authError || !userData.user) {
+          console.error("Authentication failed:", authError);
+          return new Response(
+            JSON.stringify({ error: "Invalid authentication token" }),
+            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
 
-      // Verify company ownership for non-demo companies
-      const { data: company, error: companyError } = await supabaseClient
-        .from("companies")
-        .select("founder_id, name")
-        .eq("id", companyId)
-        .single();
+        userId = userData.user.id;
+        console.log(`Authenticated user: ${userId}`);
 
-      if (companyError || !company) {
-        console.error("Error fetching company:", companyError);
-        return new Response(
-          JSON.stringify({ error: "Company not found" }),
-          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+        // Verify company ownership for non-demo, non-admin companies
+        const { data: company, error: companyError } = await supabaseClient
+          .from("companies")
+          .select("founder_id, name")
+          .eq("id", companyId)
+          .single();
 
-      if (company.founder_id !== userId) {
-        console.error(`Access denied: User ${userId} does not own company ${companyId}`);
-        return new Response(
-          JSON.stringify({ error: "Access denied" }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        if (companyError || !company) {
+          console.error("Error fetching company:", companyError);
+          return new Response(
+            JSON.stringify({ error: "Company not found" }),
+            { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        if (company.founder_id !== userId) {
+          console.error(`Access denied: User ${userId} does not own company ${companyId}`);
+          return new Response(
+            JSON.stringify({ error: "Access denied" }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
     } else {
       console.log("Demo company detected - bypassing auth check");
