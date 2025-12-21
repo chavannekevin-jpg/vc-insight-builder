@@ -306,6 +306,10 @@ const App = () => (
             <Route path="/checkout-memo" element={<RedirectPreserveSearch to="/checkout-analysis" />} />
             <Route path="/memo-regenerate" element={<Navigate to="/analysis-regenerate" replace />} />
             <Route path="/admin/memo-builder" element={<Navigate to="/admin/analysis-builder" replace />} />
+            <Route path="/admin/user-access" element={<Navigate to="/admin/users?tab=access" replace />} />
+            <Route path="/admin/memos" element={<Navigate to="/admin/users?tab=memos" replace />} />
+            <Route path="/admin/discount-codes" element={<Navigate to="/admin/commerce?tab=discounts" replace />} />
+            <Route path="/admin/pricing" element={<Navigate to="/admin/commerce?tab=pricing" replace />} />
             <Route path="/accelerator-demo/startup/:id/memo" element={<Navigate to="/accelerator-demo/startup/:id/analysis" replace />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

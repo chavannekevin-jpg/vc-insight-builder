@@ -66,14 +66,14 @@ All colors MUST be HSL.
     --shadow-neon-pink: 0 0 40px rgba(255, 51, 153, 0.7), 0 10px 20px rgba(255, 51, 153, 0.4);
     --shadow-neon-purple: 0 0 40px rgba(191, 51, 255, 0.7), 0 10px 20px rgba(191, 51, 255, 0.4);
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 262 83% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 96%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-background: 330 20% 8%;
+    --sidebar-foreground: 330 15% 95%;
+    --sidebar-primary: 330 100% 65%;
+    --sidebar-primary-foreground: 0 0% 6%;
+    --sidebar-accent: 330 40% 15%;
+    --sidebar-accent-foreground: 330 15% 95%;
+    --sidebar-border: 330 40% 20%;
+    --sidebar-ring: 330 100% 65%;
 
     --chart-1: 262 83% 58%;
     --chart-2: 252 95% 65%;
@@ -118,14 +118,14 @@ All colors MUST be HSL.
     --input: 330 40% 25%;
     --ring: 330 100% 65%;
 
-    --sidebar-background: 217 32% 15%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 262 83% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 19% 25%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 215 19% 25%;
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-background: 330 20% 8%;
+    --sidebar-foreground: 330 15% 95%;
+    --sidebar-primary: 330 100% 65%;
+    --sidebar-primary-foreground: 0 0% 6%;
+    --sidebar-accent: 330 40% 15%;
+    --sidebar-accent-foreground: 330 15% 95%;
+    --sidebar-border: 330 40% 20%;
+    --sidebar-ring: 330 100% 65%;
 
     --chart-1: 262 83% 58%;
     --chart-2: 252 95% 65%;

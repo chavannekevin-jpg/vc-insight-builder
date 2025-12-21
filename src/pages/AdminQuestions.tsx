@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2 } from "lucide-react";
 import { resolveIcon, getAvailableIcons } from "@/lib/iconResolver";
 import {
   Select,
@@ -48,7 +48,6 @@ interface Question {
 }
 
 const AdminQuestions = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [sections, setSections] = useState<Section[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -68,29 +67,8 @@ const AdminQuestions = () => {
   });
 
   useEffect(() => {
-    checkAuthAndFetch();
+    fetchData();
   }, []);
-
-  const checkAuthAndFetch = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id);
-
-    if (!roles?.some(r => r.role === "admin")) {
-      navigate("/");
-      return;
-    }
-
-    await fetchData();
-  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -205,23 +183,19 @@ const AdminQuestions = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      <AdminLayout title="Manage Questions">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <AdminLayout title="Manage Questions">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/admin")}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Admin
-            </Button>
-            <h1 className="text-3xl font-bold">Manage Questions</h1>
-          </div>
+          <p className="text-muted-foreground">Configure questionnaire questions</p>
           <Button onClick={() => handleOpenDialog()}>
             <Plus className="w-4 h-4 mr-2" />
             Add Question
@@ -413,7 +387,7 @@ const AdminQuestions = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 
