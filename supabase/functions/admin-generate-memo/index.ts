@@ -1,6 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Declare EdgeRuntime for Supabase Edge Functions
+declare const EdgeRuntime: {
+  waitUntil: (promise: Promise<unknown>) => void;
+};
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -119,53 +124,60 @@ serve(async (req) => {
 
     console.log(`[admin-generate-memo] Created job: ${job.id}`);
 
-    // Trigger generate-full-memo directly (it handles its own processing)
-    // We don't wait for completion - just kick it off
-    const triggerGeneration = fetch(`${SUPABASE_URL}/functions/v1/generate-full-memo`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-      },
-      body: JSON.stringify({
-        companyId,
-        jobId: job.id,
-        isAdminTriggered: true,
-      }),
-    }).then(async (response) => {
-      const result = await response.json();
-      
-      if (!response.ok) {
-        console.error(`[admin-generate-memo] generate-full-memo failed:`, result);
-        
-        // Update job status to failed
-        await supabaseAdmin
-          .from("memo_generation_jobs")
-          .update({
-            status: "failed",
-            error_message: result.error || "Unknown error",
-            completed_at: new Date().toISOString(),
-          })
-          .eq("id", job.id);
-      } else {
-        console.log(`[admin-generate-memo] generate-full-memo triggered for job ${job.id}`);
-      }
-    }).catch(async (error) => {
-      console.error(`[admin-generate-memo] Generation trigger error:`, error);
-      
-      // Update job status to failed
-      await supabaseAdmin
-        .from("memo_generation_jobs")
-        .update({
-          status: "failed",
-          error_message: error instanceof Error ? error.message : "Unknown error",
-          completed_at: new Date().toISOString(),
-        })
-        .eq("id", job.id);
-    });
-
-    // Don't await - let it run in background
-    // The generate-full-memo function will update the job status when done
+    // Use EdgeRuntime.waitUntil to properly run the background task
+    // This ensures the function instance stays alive until the task completes
+    console.log(`[admin-generate-memo] Starting background task for job ${job.id}`);
+    
+    EdgeRuntime.waitUntil(
+      (async () => {
+        try {
+          console.log(`[admin-generate-memo] Calling generate-full-memo for company ${companyId}`);
+          
+          const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-full-memo`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+            body: JSON.stringify({
+              companyId,
+              jobId: job.id,
+              isAdminTriggered: true,
+            }),
+          });
+          
+          const result = await response.json();
+          
+          if (!response.ok) {
+            console.error(`[admin-generate-memo] generate-full-memo failed:`, result);
+            
+            // Update job status to failed
+            await supabaseAdmin
+              .from("memo_generation_jobs")
+              .update({
+                status: "failed",
+                error_message: result.error || "Unknown error",
+                completed_at: new Date().toISOString(),
+              })
+              .eq("id", job.id);
+          } else {
+            console.log(`[admin-generate-memo] generate-full-memo completed for job ${job.id}:`, result);
+          }
+        } catch (error) {
+          console.error(`[admin-generate-memo] Generation trigger error:`, error);
+          
+          // Update job status to failed
+          await supabaseAdmin
+            .from("memo_generation_jobs")
+            .update({
+              status: "failed",
+              error_message: error instanceof Error ? error.message : "Unknown error",
+              completed_at: new Date().toISOString(),
+            })
+            .eq("id", job.id);
+        }
+      })()
+    );
 
     return new Response(
       JSON.stringify({
