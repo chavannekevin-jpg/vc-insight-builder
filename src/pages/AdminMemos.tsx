@@ -214,18 +214,6 @@ const AdminMemos = () => {
     setImpersonating(userEmail);
     
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast({
-          title: "Error",
-          description: "You must be logged in",
-          variant: "destructive",
-        });
-        setImpersonating(null);
-        return;
-      }
-
       toast({
         title: "Generating login link",
         description: `Creating access for ${companyName}...`,
@@ -248,7 +236,7 @@ const AdminMemos = () => {
           description: `Opened ${companyName}'s account in a new tab`,
         });
       } else {
-        throw new Error("No login link returned");
+        throw new Error(data?.error || "No login link returned");
       }
     } catch (error: any) {
       console.error("Error impersonating user:", error);
