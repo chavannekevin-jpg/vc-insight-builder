@@ -132,7 +132,7 @@ export const useCompany = (userId: string | undefined): CompanyData => {
     company,
     hasMemo: memoData?.hasMemo ?? false,
     memoHasContent: memoData?.memoHasContent ?? false,
-    hasPaid: paymentData ?? false,
+    hasPaid: (paymentData ?? false) || (company?.has_premium ?? false),
     completedQuestions: questionData?.completed ?? 0,
     totalQuestions: questionData?.total ?? 0,
     generationsAvailable: company?.generations_available ?? 0,
