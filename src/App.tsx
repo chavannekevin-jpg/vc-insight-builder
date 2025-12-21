@@ -85,10 +85,12 @@ const ValuationCalculator = lazy(() => import("./pages/ValuationCalculator"));
 const VentureScaleDiagnostic = lazy(() => import("./pages/VentureScaleDiagnostic"));
 const InvestorEmailGenerator = lazy(() => import("./pages/InvestorEmailGenerator"));
 const ToolsHub = lazy(() => import("./pages/ToolsHub"));
-const Admin = lazy(() => import("./pages/Admin"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminArticles = lazy(() => import("./pages/AdminArticles"));
 const AdminCompanyDetail = lazy(() => import("./pages/AdminCompanyDetail"));
 const AdminPrompts = lazy(() => import("./pages/AdminPrompts"));
+const AdminSections = lazy(() => import("./pages/AdminSections"));
+const AdminQuestions = lazy(() => import("./pages/AdminQuestions"));
 const MemoBuilder = lazy(() => import("./pages/MemoBuilder"));
 const MemoRegenerate = lazy(() => import("./pages/MemoRegenerate"));
 const Intake = lazy(() => import("./pages/Intake"));
@@ -101,12 +103,9 @@ const MemoCompletionScreen = lazy(() => import("./pages/MemoCompletionScreen"));
 const PreSeedGuide = lazy(() => import("./pages/PreSeedGuide"));
 const ProblemSlideGuide = lazy(() => import("./pages/ProblemSlideGuide"));
 const SolutionSlideGuide = lazy(() => import("./pages/SolutionSlideGuide"));
-const AdminDiscountCodes = lazy(() => import("./pages/AdminDiscountCodes"));
-const AdminUserAccess = lazy(() => import("./pages/AdminUserAccess"));
-const AdminUsers = lazy(() => import("./pages/AdminUsers"));
-const AdminPricing = lazy(() => import("./pages/AdminPricing"));
+const AdminUsersHub = lazy(() => import("./pages/AdminUsersHub"));
+const AdminCommerce = lazy(() => import("./pages/AdminCommerce"));
 const AdminEmails = lazy(() => import("./pages/AdminEmails"));
-const AdminMemos = lazy(() => import("./pages/AdminMemos"));
 const AdminMemoView = lazy(() => import("./pages/AdminMemoView"));
 const CheckoutMemo = lazy(() => import("./pages/CheckoutMemo"));
 const SampleMemo = lazy(() => import("./pages/SampleMemo"));
@@ -280,16 +279,16 @@ const App = () => (
             <Route path="/sample-analysis" element={<SampleMemo />} />
             <Route path="/sample-analysis/section" element={<SampleMemoSectionView />} />
             <Route path="/sample-analysis/complete" element={<SampleMemoCompletionScreen />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/admin/articles" element={<AdminArticles />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsersHub />} />
+            <Route path="/admin/sections" element={<AdminSections />} />
+            <Route path="/admin/questions" element={<AdminQuestions />} />
             <Route path="/admin/prompts" element={<AdminPrompts />} />
-            <Route path="/admin/analysis-builder" element={<MemoBuilder />} />
-            <Route path="/admin/user-access" element={<AdminUserAccess />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/discount-codes" element={<AdminDiscountCodes />} />
-            <Route path="/admin/pricing" element={<AdminPricing />} />
+            <Route path="/admin/articles" element={<AdminArticles />} />
+            <Route path="/admin/commerce" element={<AdminCommerce />} />
+            <Route path="/admin/commerce/discounts" element={<AdminCommerce />} />
             <Route path="/admin/emails" element={<AdminEmails />} />
-            <Route path="/admin/memos" element={<AdminMemos />} />
+            <Route path="/admin/analysis-builder" element={<MemoBuilder />} />
             <Route path="/admin/memos/:companyId" element={<AdminMemoView />} />
             <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
             <Route path="/checkout-analysis" element={<CheckoutMemo />} />
