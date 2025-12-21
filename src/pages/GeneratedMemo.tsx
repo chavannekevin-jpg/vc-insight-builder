@@ -508,10 +508,11 @@ export default function GeneratedMemo() {
       const jobId = startData.jobId;
       console.log(`Memo generation job started: ${jobId}`);
 
-      // Step 2: Poll for completion
+      // Step 2: Poll for completion with improved error handling
       const pollInterval = 5000; // 5 seconds
       const maxPolls = 100; // ~8.3 minutes max (extended for longer AI generation)
       let pollCount = 0;
+      let consecutiveErrors = 0;
 
       while (pollCount < maxPolls) {
         await new Promise(resolve => setTimeout(resolve, pollInterval));
@@ -525,8 +526,40 @@ export default function GeneratedMemo() {
 
         if (statusError) {
           console.error("Error checking job status:", statusError);
+          consecutiveErrors++;
+          
+          // After 3 consecutive errors, try direct database check
+          if (consecutiveErrors >= 3) {
+            console.log("Multiple polling errors, checking database directly...");
+            try {
+              const { data: memo } = await supabase
+                .from("memos")
+                .select("structured_content, updated_at")
+                .eq("company_id", companyIdToGenerate)
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              if (memo?.structured_content) {
+                const sections = (memo.structured_content as any).sections;
+                if (sections && Array.isArray(sections) && sections.length > 0) {
+                  console.log("Found completed memo via direct database check!");
+                  await fetchMemoFromDatabase(companyIdToGenerate);
+                  if (!hasPremium && (memo.structured_content as any)?.vcQuickTake) {
+                    setShowRejectionPreview(true);
+                  }
+                  return;
+                }
+              }
+            } catch (dbError) {
+              console.error("Direct database check failed:", dbError);
+            }
+            consecutiveErrors = 0; // Reset after attempting recovery
+          }
           continue;
         }
+
+        consecutiveErrors = 0; // Reset on successful poll
 
         if (statusData.status === "completed") {
           console.log("Memo generation completed! Fetching from database...");
@@ -549,7 +582,30 @@ export default function GeneratedMemo() {
         console.log(`Job status: ${statusData.status}, elapsed: ${statusData.elapsedSeconds}s - ${statusData.message}`);
       }
 
-      throw new Error("Memo generation timed out. Please refresh and check if your memo is ready.");
+      // Before throwing timeout, do one final database check
+      console.log("Polling reached max attempts, doing final database check...");
+      try {
+        const { data: memo } = await supabase
+          .from("memos")
+          .select("structured_content")
+          .eq("company_id", companyIdToGenerate)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (memo?.structured_content) {
+          const sections = (memo.structured_content as any).sections;
+          if (sections && Array.isArray(sections) && sections.length > 0) {
+            console.log("Found completed memo on final check!");
+            await fetchMemoFromDatabase(companyIdToGenerate);
+            return;
+          }
+        }
+      } catch (finalCheckError) {
+        console.error("Final database check failed:", finalCheckError);
+      }
+
+      throw new Error("Memo generation timed out. Please refresh the page - your memo may already be ready.");
 
     } catch (error: any) {
       console.error("Error generating memo:", error);
@@ -608,10 +664,11 @@ export default function GeneratedMemo() {
       const jobId = startData.jobId;
       console.log(`Regeneration job started: ${jobId}`);
 
-      // Step 2: Poll for completion
+      // Step 2: Poll for completion with improved error handling
       const pollInterval = 5000;
       const maxPolls = 100; // ~8.3 minutes max (extended for longer AI generation)
       let pollCount = 0;
+      let consecutiveErrors = 0;
 
       while (pollCount < maxPolls) {
         await new Promise(resolve => setTimeout(resolve, pollInterval));
@@ -623,8 +680,46 @@ export default function GeneratedMemo() {
 
         if (statusError) {
           console.error("Error checking job status:", statusError);
+          consecutiveErrors++;
+          
+          // After 3 consecutive errors, try direct database check
+          if (consecutiveErrors >= 3) {
+            console.log("Multiple polling errors during regeneration, checking database directly...");
+            try {
+              const { data: memo } = await supabase
+                .from("memos")
+                .select("structured_content, updated_at")
+                .eq("company_id", companyId)
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              if (memo?.structured_content) {
+                const sections = (memo.structured_content as any).sections;
+                const updatedAt = new Date(memo.updated_at || 0);
+                const startTimeDate = new Date(startTime);
+                
+                // Check if memo was updated after we started regeneration
+                if (sections && Array.isArray(sections) && sections.length > 0 && updatedAt > startTimeDate) {
+                  const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+                  console.log(`Found regenerated memo via direct database check in ${duration}s!`);
+                  await fetchMemoFromDatabase(companyId);
+                  toast({
+                    title: "Success",
+                    description: `Memo regenerated with critical VC analysis in ${duration}s`
+                  });
+                  return;
+                }
+              }
+            } catch (dbError) {
+              console.error("Direct database check failed:", dbError);
+            }
+            consecutiveErrors = 0;
+          }
           continue;
         }
+
+        consecutiveErrors = 0;
 
         if (statusData.status === "completed") {
           const duration = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -645,7 +740,38 @@ export default function GeneratedMemo() {
         }
       }
 
-      throw new Error("Memo regeneration timed out. Please refresh and check if your memo is ready.");
+      // Before throwing timeout, do one final database check
+      console.log("Regeneration polling reached max attempts, doing final database check...");
+      try {
+        const { data: memo } = await supabase
+          .from("memos")
+          .select("structured_content, updated_at")
+          .eq("company_id", companyId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (memo?.structured_content) {
+          const sections = (memo.structured_content as any).sections;
+          const updatedAt = new Date(memo.updated_at || 0);
+          const startTimeDate = new Date(startTime);
+          
+          if (sections && Array.isArray(sections) && sections.length > 0 && updatedAt > startTimeDate) {
+            const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+            console.log(`Found regenerated memo on final check in ${duration}s!`);
+            await fetchMemoFromDatabase(companyId);
+            toast({
+              title: "Success",
+              description: `Memo regenerated in ${duration}s`
+            });
+            return;
+          }
+        }
+      } catch (finalCheckError) {
+        console.error("Final database check failed:", finalCheckError);
+      }
+
+      throw new Error("Memo regeneration timed out. Please refresh the page - your memo may already be ready.");
 
     } catch (error: any) {
       console.error("Error regenerating memo:", error);
@@ -698,8 +824,43 @@ export default function GeneratedMemo() {
     );
   }
 
+  const handleMemoReady = () => {
+    // Memo was found via fallback check, reload the page to show it
+    window.location.reload();
+  };
+
+  const handleCheckStatus = async () => {
+    // Manual status check - try to fetch memo directly
+    if (!companyId) return;
+    try {
+      const content = await fetchMemoFromDatabase(companyId);
+      if (content) {
+        setLoading(false);
+        setRegenerating(false);
+        toast({
+          title: "Memo Ready",
+          description: "Your memo has been loaded successfully."
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Memo Not Ready",
+        description: "Your memo is still being generated. Please wait a moment longer.",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (loading || analyzing || regenerating) {
-    return <MemoLoadingScreen analyzing={analyzing} progressMessage={regenerating ? "Regenerating your memo with updated data..." : undefined} />;
+    return (
+      <MemoLoadingScreen 
+        analyzing={analyzing} 
+        progressMessage={regenerating ? "Regenerating your memo with updated data..." : undefined}
+        companyId={companyId || undefined}
+        onMemoReady={handleMemoReady}
+        onCheckStatus={handleCheckStatus}
+      />
+    );
   }
 
   // Handler for VC Rejection Preview - close and scroll to memo

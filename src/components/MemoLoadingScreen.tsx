@@ -1,10 +1,15 @@
-import { useState, useEffect } from "react";
-import { Sparkles, Brain, FileText, CheckCircle2, TrendingUp, Target, Users, Briefcase, Rocket, Coffee } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Sparkles, Brain, FileText, CheckCircle2, TrendingUp, Target, Users, Briefcase, Rocket, Coffee, RefreshCw, AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MemoLoadingScreenProps {
   analyzing?: boolean;
   progressMessage?: string;
+  companyId?: string;
+  onMemoReady?: () => void;
+  onCheckStatus?: () => void;
 }
 
 const loadingSteps = [
@@ -32,16 +37,59 @@ const funFacts = [
   "Top VCs receive over 1,000 pitches per year but fund less than 1%",
 ];
 
-export function MemoLoadingScreen({ analyzing = false }: MemoLoadingScreenProps) {
+export function MemoLoadingScreen({ 
+  analyzing = false, 
+  companyId,
+  onMemoReady,
+  onCheckStatus 
+}: MemoLoadingScreenProps) {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [funFact, setFunFact] = useState(() => 
     funFacts[Math.floor(Math.random() * funFacts.length)]
   );
+  const [isCheckingDatabase, setIsCheckingDatabase] = useState(false);
+  const [memoFound, setMemoFound] = useState(false);
+  const [showManualCheck, setShowManualCheck] = useState(false);
 
   // Estimate total time (5-7 minutes based on actual generation times)
   const estimatedTotalTime = 400;
   const progressPercent = Math.min((elapsedTime / estimatedTotalTime) * 100, 98);
+
+  // Fallback check: periodically check database for completed memo
+  const checkDatabaseForMemo = useCallback(async () => {
+    if (!companyId || memoFound) return;
+    
+    setIsCheckingDatabase(true);
+    try {
+      const { data: memo } = await supabase
+        .from("memos")
+        .select("structured_content, updated_at")
+        .eq("company_id", companyId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (memo?.structured_content) {
+        const sections = (memo.structured_content as any).sections;
+        if (sections && Array.isArray(sections) && sections.length > 0) {
+          // Check if memo was updated recently (within last 10 minutes)
+          const updatedAt = new Date(memo.updated_at || 0);
+          const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+          
+          if (updatedAt > tenMinutesAgo) {
+            console.log("MemoLoadingScreen: Found completed memo in database!");
+            setMemoFound(true);
+            onMemoReady?.();
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error checking database for memo:", error);
+    } finally {
+      setIsCheckingDatabase(false);
+    }
+  }, [companyId, memoFound, onMemoReady]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -68,6 +116,31 @@ export function MemoLoadingScreen({ analyzing = false }: MemoLoadingScreenProps)
     }, 20000);
     return () => clearInterval(interval);
   }, []);
+
+  // Show manual check button after 3 minutes
+  useEffect(() => {
+    if (elapsedTime >= 180 && !showManualCheck) {
+      setShowManualCheck(true);
+    }
+  }, [elapsedTime, showManualCheck]);
+
+  // Fallback database check every 30 seconds after 2 minutes
+  useEffect(() => {
+    if (elapsedTime >= 120 && elapsedTime % 30 === 0 && companyId) {
+      checkDatabaseForMemo();
+    }
+  }, [elapsedTime, companyId, checkDatabaseForMemo]);
+
+  const handleManualCheck = async () => {
+    await checkDatabaseForMemo();
+    if (!memoFound) {
+      onCheckStatus?.();
+    }
+  };
+
+  const handleRefreshPage = () => {
+    window.location.reload();
+  };
 
   const CurrentIcon = loadingSteps[currentStep]?.icon || Sparkles;
 
@@ -200,9 +273,63 @@ export function MemoLoadingScreen({ analyzing = false }: MemoLoadingScreenProps)
         )}
 
         {/* Extended reassurance after 5 minutes */}
-        {elapsedTime >= 300 && (
+        {elapsedTime >= 300 && elapsedTime < 480 && (
           <div className="text-center text-sm text-muted-foreground animate-fade-in">
             <p>Almost there! Final synthesis underway...</p>
+          </div>
+        )}
+
+        {/* Manual check button after 3 minutes */}
+        {showManualCheck && (
+          <div className="space-y-3 animate-fade-in">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <AlertCircle className="w-4 h-4" />
+              <span>Taking longer than expected?</span>
+            </div>
+            <div className="flex gap-2 justify-center">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleManualCheck}
+                disabled={isCheckingDatabase}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isCheckingDatabase ? 'animate-spin' : ''}`} />
+                Check Status
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleRefreshPage}
+              >
+                Refresh Page
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Timeout warning after 8 minutes */}
+        {elapsedTime >= 480 && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 animate-fade-in">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">
+                  Generation is taking longer than usual
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Your memo may already be ready. Try refreshing the page to check.
+                </p>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  onClick={handleRefreshPage}
+                  className="mt-2"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh Page
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>
