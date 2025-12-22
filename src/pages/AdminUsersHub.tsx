@@ -74,7 +74,43 @@ interface CompanyAccess {
   has_memo: boolean;
   memo_status: string | null;
   memo_created_at: string | null;
+  overallScore: number | null;
+  investmentReadiness: 'NOT_READY' | 'CONDITIONAL' | 'READY' | null;
 }
+
+// Section weights for score calculation
+const SECTION_WEIGHTS: Record<string, number> = {
+  'Team': 0.20,
+  'Traction': 0.20,
+  'Market': 0.15,
+  'Problem': 0.12,
+  'Solution': 0.10,
+  'Business Model': 0.10,
+  'Competition': 0.08,
+  'Vision': 0.05
+};
+
+const calculateOverallScore = (scoreData: { section_name: string; ai_generated_data: any }[]): { score: number; readiness: 'NOT_READY' | 'CONDITIONAL' | 'READY' } => {
+  let weightedSum = 0;
+  let totalWeight = 0;
+  let criticalCount = 0;
+
+  scoreData.forEach(row => {
+    const score = row.ai_generated_data?.score || 0;
+    const benchmark = row.ai_generated_data?.vcBenchmark || 50;
+    const weight = SECTION_WEIGHTS[row.section_name] || 0.05;
+    weightedSum += score * weight;
+    totalWeight += weight;
+    if (score < benchmark - 15) criticalCount++;
+  });
+
+  const overall = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
+  const readiness: 'NOT_READY' | 'CONDITIONAL' | 'READY' = 
+    criticalCount >= 2 || overall < 50 ? 'NOT_READY' 
+    : criticalCount === 1 || overall < 60 ? 'CONDITIONAL' : 'READY';
+
+  return { score: overall, readiness };
+};
 
 const AdminUsersHub = () => {
   const navigate = useNavigate();
@@ -183,6 +219,7 @@ const AdminUsersHub = () => {
 
       const formattedCompanies: CompanyAccess[] = await Promise.all(
         (companiesData || []).map(async (company) => {
+          // Fetch memo data
           const { data: memoData } = await supabase
             .from("memos")
             .select("id, status, created_at")
@@ -190,6 +227,22 @@ const AdminUsersHub = () => {
             .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
+
+          // Fetch section scores for investment readiness calculation
+          const { data: scoreData } = await supabase
+            .from("memo_tool_data")
+            .select("section_name, ai_generated_data")
+            .eq("company_id", company.id)
+            .eq("tool_name", "sectionScore");
+
+          let overallScore: number | null = null;
+          let investmentReadiness: 'NOT_READY' | 'CONDITIONAL' | 'READY' | null = null;
+
+          if (scoreData && scoreData.length > 0) {
+            const result = calculateOverallScore(scoreData);
+            overallScore = result.score;
+            investmentReadiness = result.readiness;
+          }
 
           return {
             id: company.id,
@@ -201,6 +254,8 @@ const AdminUsersHub = () => {
             has_memo: !!memoData,
             memo_status: memoData?.status || null,
             memo_created_at: memoData?.created_at || null,
+            overallScore,
+            investmentReadiness,
           };
         })
       );
@@ -564,6 +619,7 @@ const AdminUsersHub = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Company</TableHead>
+                        <TableHead>Score</TableHead>
                         <TableHead>Founder Email</TableHead>
                         <TableHead>Stage</TableHead>
                         <TableHead>Has Analysis</TableHead>
@@ -580,6 +636,21 @@ const AdminUsersHub = () => {
                         return (
                           <TableRow key={company.id}>
                             <TableCell className="font-medium">{company.name}</TableCell>
+                            <TableCell>
+                              {company.overallScore !== null ? (
+                                <Badge 
+                                  variant={
+                                    company.investmentReadiness === 'READY' ? 'default' : 
+                                    company.investmentReadiness === 'CONDITIONAL' ? 'secondary' : 'destructive'
+                                  }
+                                  className="text-xs font-bold"
+                                >
+                                  {company.overallScore}/100
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">—</span>
+                              )}
+                            </TableCell>
                             <TableCell>{company.founder_email}</TableCell>
                             <TableCell>
                               <Badge variant="secondary" className="capitalize">{company.stage}</Badge>
