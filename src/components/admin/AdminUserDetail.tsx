@@ -41,9 +41,10 @@ interface Purchase {
 
 interface UserDetailProps {
   userId: string;
+  onCompanyClick?: (companyId: string) => void;
 }
 
-export const AdminUserDetail = ({ userId }: UserDetailProps) => {
+export const AdminUserDetail = ({ userId, onCompanyClick }: UserDetailProps) => {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState("");
   const [userCreatedAt, setUserCreatedAt] = useState<string | null>(null);
@@ -276,7 +277,12 @@ export const AdminUserDetail = ({ userId }: UserDetailProps) => {
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <p className="font-medium text-foreground">{company.name}</p>
+                    <p 
+                      className={`font-medium text-foreground ${onCompanyClick ? 'cursor-pointer hover:text-primary hover:underline' : ''}`}
+                      onClick={() => onCompanyClick?.(company.id)}
+                    >
+                      {company.name}
+                    </p>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="outline" className="text-xs">{company.stage}</Badge>
                       <span className="text-xs text-muted-foreground">
