@@ -102,6 +102,7 @@ export default function MemoSectionView() {
   const [sectionTools, setSectionTools] = useState<Record<string, EnhancedSectionTools>>({});
   const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
   const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | null>(null);
+  const [holisticVerdicts, setHolisticVerdicts] = useState<Record<string, { verdict: string; stageContext?: string }>>({});
 
   // Scroll to top when section changes
   useEffect(() => {
@@ -216,8 +217,23 @@ export default function MemoSectionView() {
           
           if (toolData && toolData.length > 0) {
             const toolsMap: Record<string, EnhancedSectionTools> = {};
+            const verdictsMap: Record<string, { verdict: string; stageContext?: string }> = {};
+            
             toolData.forEach((tool) => {
               const sectionName = tool.section_name;
+              
+              // Extract holistic verdicts separately
+              if (tool.tool_name === 'holisticVerdict') {
+                const aiData = tool.ai_generated_data as Record<string, any> || {};
+                if (aiData.verdict) {
+                  verdictsMap[sectionName] = {
+                    verdict: aiData.verdict,
+                    stageContext: aiData.stageContext
+                  };
+                }
+                return;
+              }
+              
               if (!toolsMap[sectionName]) {
                 toolsMap[sectionName] = {};
               }
@@ -225,24 +241,20 @@ export default function MemoSectionView() {
               const userOverrides = tool.user_overrides as Record<string, any> || {};
               
               // CRITICAL: Unwrap double-wrapped data from AI hallucination
-              // AI sometimes wraps response in { aiGenerated: {...}, dataSource: "..." } despite instructions
               if (aiData.aiGenerated !== undefined && typeof aiData.aiGenerated === 'object') {
                 console.log(`Unwrapping double-wrapped data for ${tool.tool_name}`);
                 aiData = aiData.aiGenerated;
               }
               
-              // Tools that use direct merged data format (not EditableTool pattern)
               const directMergeTools = ["sectionScore", "benchmarks", "caseStudy", "vcInvestmentLogic", "actionPlan90Day", "leadInvestorRequirements"];
               
               if (directMergeTools.includes(tool.tool_name)) {
-                // Direct merge format - data used as-is
                 (toolsMap[sectionName] as any)[tool.tool_name] = {
                   ...aiData,
                   ...userOverrides,
                   dataSource: tool.data_source || "ai-complete"
                 };
               } else {
-                // EditableTool pattern - wrap raw data with aiGenerated
                 (toolsMap[sectionName] as any)[tool.tool_name] = {
                   aiGenerated: aiData,
                   userOverrides: userOverrides,
@@ -251,6 +263,7 @@ export default function MemoSectionView() {
               }
             });
             setSectionTools(toolsMap);
+            setHolisticVerdicts(verdictsMap);
           }
         } else {
           navigate(`/analysis?companyId=${companyIdFromUrl}&view=full`);
@@ -407,6 +420,7 @@ export default function MemoSectionView() {
                 companyName={companyInfo?.name || 'Company'}
                 stage={companyInfo?.stage || 'seed'}
                 category={companyInfo?.category}
+                holisticVerdicts={holisticVerdicts}
                 onSectionClick={(sectionName) => {
                   const sectionIdx = memoContent.sections.findIndex(s => 
                     safeTitle(s.title).toLowerCase().includes(sectionName.toLowerCase())

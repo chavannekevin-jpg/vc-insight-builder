@@ -21,7 +21,8 @@ import { cn } from "@/lib/utils";
 import { 
   buildHolisticScorecard, 
   type HolisticScorecard,
-  type SectionVerdict 
+  type SectionVerdict,
+  type DynamicHolisticVerdict
 } from "@/lib/holisticVerdictGenerator";
 
 interface MemoScoreRadarProps {
@@ -30,6 +31,8 @@ interface MemoScoreRadarProps {
   stage: string;
   category?: string;
   onSectionClick?: (sectionName: string) => void;
+  // Dynamic holistic verdicts from AI generation
+  holisticVerdicts?: Record<string, DynamicHolisticVerdict>;
 }
 
 const STATUS_CONFIG = {
@@ -182,11 +185,12 @@ export const MemoScoreRadar = ({
   companyName, 
   stage, 
   category,
-  onSectionClick
+  onSectionClick,
+  holisticVerdicts
 }: MemoScoreRadarProps) => {
   const scorecard = useMemo(() =>
-    buildHolisticScorecard(sectionTools, companyName, stage, category),
-    [sectionTools, companyName, stage, category]
+    buildHolisticScorecard(sectionTools, companyName, stage, category, holisticVerdicts),
+    [sectionTools, companyName, stage, category, holisticVerdicts]
   );
   
   // Prepare radar chart data

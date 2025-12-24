@@ -3383,6 +3383,148 @@ Return ONLY valid JSON:
     }
 
     // =============================================================================
+    // GENERATE DYNAMIC HOLISTIC VERDICTS FOR EACH SECTION
+    // These are business-focused VC judgments specific to this company
+    // =============================================================================
+    console.log("Generating dynamic holistic verdicts for sections...");
+    
+    try {
+      // Fetch section scores from tool data
+      const sectionScores: Record<string, { score: number; vcBenchmark: number }> = {};
+      if (toolDataRecords) {
+        for (const record of toolDataRecords) {
+          if (record.tool_name === 'sectionScore') {
+            const aiData = record.ai_generated_data as any;
+            if (aiData?.score && aiData?.vcBenchmark) {
+              sectionScores[record.section_name] = {
+                score: aiData.score,
+                vcBenchmark: aiData.vcBenchmark
+              };
+            }
+          }
+        }
+      }
+      
+      if (Object.keys(sectionScores).length > 0) {
+        // Build context for holistic verdict generation
+        const sectionScoresSummary = Object.entries(sectionScores).map(([section, data]) => 
+          `${section}: ${data.score}/100 (benchmark: ${data.vcBenchmark})`
+        ).join('\n');
+        
+        const holisticVerdictPrompt = `You are a senior VC partner providing holistic business judgments for ${company.name}, a ${company.stage} stage ${company.category || 'startup'}.
+
+Based on the section scores and company context, generate business-focused verdicts for each section. These are NOT about data quality - they are about fundamental business viability and VC concerns.
+
+Company: ${company.name}
+Stage: ${company.stage}
+Category: ${company.category || 'Technology'}
+Description: ${company.description || 'Not provided'}
+
+Section Scores:
+${sectionScoresSummary}
+
+Key Context from VC Quick Take:
+- Verdict: ${vcQuickTake?.verdict || 'Not available'}
+- Killer Question: ${vcQuickTake?.killerQuestion || 'Not available'}
+- Top Concerns: ${Array.isArray(vcQuickTake?.concerns) ? vcQuickTake.concerns.slice(0, 3).map((c: any) => typeof c === 'string' ? c : c?.text).join('; ') : 'Not available'}
+
+For EACH section that has a score, generate:
+1. A holisticVerdict: A sharp, VC-perspective judgment about this aspect of the business (not the data quality). Should be specific to THIS company, not generic. Examples:
+   - "Diaspora mental health is underserved but fragmented — need proof customers will pay vs. rely on community support"
+   - "AI Twin concept is novel but unproven — regulatory risk around AI therapy is significant"
+   - "First-mover in niche but market timing unclear — SMB budget cycles may delay adoption"
+
+2. A stageContext: What this means at their specific stage and what milestones matter. Examples:
+   - "At Seed, need 5+ paying customers to validate willingness to pay"
+   - "Pre-seed can survive on LOIs, but Seed requires closed revenue"
+
+Return ONLY valid JSON:
+{
+  "sectionVerdicts": {
+    "Problem": { "verdict": "...", "stageContext": "..." },
+    "Solution": { "verdict": "...", "stageContext": "..." },
+    "Market": { "verdict": "...", "stageContext": "..." },
+    "Competition": { "verdict": "...", "stageContext": "..." },
+    "Team": { "verdict": "...", "stageContext": "..." },
+    "Business Model": { "verdict": "...", "stageContext": "..." },
+    "Traction": { "verdict": "...", "stageContext": "..." },
+    "Vision": { "verdict": "...", "stageContext": "..." }
+  }
+}
+
+CRITICAL: Each verdict must be SPECIFIC to ${company.name} and reference actual aspects of their business. Do not use generic VC clichés.`;
+
+        const holisticResponse = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              {
+                role: "system",
+                content: "You are a senior VC partner providing business-focused verdicts. Be specific, critical, and reference the actual company context. Return only valid JSON.",
+              },
+              {
+                role: "user",
+                content: holisticVerdictPrompt,
+              },
+            ],
+            temperature: 0.7,
+            max_tokens: 2000,
+          }),
+        }, 2, 1000);
+
+        if (holisticResponse.ok) {
+          const holisticData = await holisticResponse.json();
+          let holisticContent = holisticData.choices?.[0]?.message?.content?.trim();
+          
+          if (holisticContent) {
+            holisticContent = holisticContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            try {
+              const parsedVerdicts = JSON.parse(holisticContent);
+              const sectionVerdicts = parsedVerdicts.sectionVerdicts || parsedVerdicts;
+              
+              // Save each verdict to memo_tool_data
+              for (const [sectionName, verdictData] of Object.entries(sectionVerdicts)) {
+                if (verdictData && typeof verdictData === 'object') {
+                  const { error: verdictError } = await supabaseClient
+                    .from("memo_tool_data")
+                    .upsert({
+                      company_id: companyId,
+                      section_name: sectionName,
+                      tool_name: "holisticVerdict",
+                      ai_generated_data: verdictData,
+                      data_source: "ai-complete",
+                      updated_at: new Date().toISOString()
+                    }, {
+                      onConflict: 'company_id,section_name,tool_name'
+                    });
+                  
+                  if (verdictError) {
+                    console.warn(`Failed to save holistic verdict for ${sectionName}:`, verdictError);
+                  }
+                }
+              }
+              
+              console.log(`✓ Generated and saved holistic verdicts for ${Object.keys(sectionVerdicts).length} sections`);
+            } catch (parseError) {
+              console.warn("Failed to parse holistic verdicts:", parseError);
+            }
+          }
+        } else {
+          console.warn("Holistic verdict generation failed:", holisticResponse.status);
+        }
+      } else {
+        console.log("No section scores found, skipping holistic verdict generation");
+      }
+    } catch (holisticError) {
+      console.warn("Error generating holistic verdicts:", holisticError);
+    }
+
+    // =============================================================================
     // CROSS-SECTION COHERENCE VALIDATION
     // Flag inconsistent ACV/ARPU/GMV values across different tools
     // =============================================================================

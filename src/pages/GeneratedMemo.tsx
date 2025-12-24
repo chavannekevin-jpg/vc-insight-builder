@@ -134,6 +134,7 @@ export default function GeneratedMemo() {
   const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
   const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | undefined>(undefined);
   const [holisticStage, setHolisticStage] = useState<any>(null);
+  const [holisticVerdicts, setHolisticVerdicts] = useState<Record<string, { verdict: string; stageContext?: string }>>({});
   // Smart fill state
   const [showSmartFill, setShowSmartFill] = useState(false);
   const [smartQuestions, setSmartQuestions] = useState<SmartQuestion[]>([]);
@@ -373,8 +374,23 @@ export default function GeneratedMemo() {
           
           if (toolData && toolData.length > 0) {
             const toolsMap: Record<string, EnhancedSectionTools> = {};
+            const verdictsMap: Record<string, { verdict: string; stageContext?: string }> = {};
+            
             toolData.forEach((tool) => {
               const sectionName = tool.section_name;
+              
+              // Extract holistic verdicts separately
+              if (tool.tool_name === 'holisticVerdict') {
+                const aiData = tool.ai_generated_data as Record<string, any> || {};
+                if (aiData.verdict) {
+                  verdictsMap[sectionName] = {
+                    verdict: aiData.verdict,
+                    stageContext: aiData.stageContext
+                  };
+                }
+                return; // Don't add to toolsMap
+              }
+              
               if (!toolsMap[sectionName]) {
                 toolsMap[sectionName] = {};
               }
@@ -391,6 +407,7 @@ export default function GeneratedMemo() {
                   : { aiGenerated: aiData, userOverrides: userOverrides, dataSource: tool.data_source || "ai-complete" };
             });
             setSectionTools(toolsMap);
+            setHolisticVerdicts(verdictsMap);
           }
           
           setLoading(false);
@@ -1043,6 +1060,7 @@ export default function GeneratedMemo() {
               companyName={companyInfo.name}
               stage={companyInfo.stage}
               category={companyInfo.category}
+              holisticVerdicts={holisticVerdicts}
               onSectionClick={(sectionName) => {
                 const sectionElement = document.querySelector(`[data-section="${sectionName.toLowerCase()}"]`);
                 if (sectionElement) {
