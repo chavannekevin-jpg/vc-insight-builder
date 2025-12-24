@@ -24,6 +24,7 @@ import { MemoMomentumCard } from "@/components/memo/MemoMomentumCard";
 import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
+import { StageMismatchWarning } from "@/components/memo/StageMismatchWarning";
 
 import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics } from "@/lib/memoDataExtractor";
 import { extractAnchoredAssumptions, detectCurrencyFromResponses, getAIMetricEstimate, applyAIEstimate, getFallbackMetricValue, type AnchoredAssumptions } from "@/lib/anchoredAssumptions";
@@ -103,6 +104,7 @@ export default function MemoSectionView() {
   const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
   const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | null>(null);
   const [holisticVerdicts, setHolisticVerdicts] = useState<Record<string, { verdict: string; stageContext?: string }>>({});
+  const [holisticStage, setHolisticStage] = useState<any>(null);
 
   // Scroll to top when section changes
   useEffect(() => {
@@ -191,9 +193,29 @@ export default function MemoSectionView() {
             });
             setMemoResponses(responsesMap);
             
+            // Fetch company model for anchored assumptions AND holistic stage
+            const { data: companyModelData } = await supabase
+              .from("company_models")
+              .select("model_data")
+              .eq("company_id", companyIdFromUrl)
+              .maybeSingle();
+            
+            // Extract holistic stage from company model
+            if (companyModelData?.model_data) {
+              const modelData = companyModelData.model_data as any;
+              if (modelData.holisticStage) {
+                setHolisticStage(modelData.holisticStage);
+              }
+            }
+            
             // Extract anchored assumptions with AI estimation
             const currency = detectCurrencyFromResponses(responsesMap);
-            let assumptions = extractAnchoredAssumptions(null, responsesMap, currency);
+            let assumptions = extractAnchoredAssumptions(
+              companyModelData?.model_data as any || null, 
+              responsesMap, 
+              currency,
+              { category: company.category, stage: company.stage, name: company.name }
+            );
             
             // AI estimation if no primary metric value
             if (assumptions.primaryMetricValue === null) {
@@ -393,6 +415,19 @@ export default function MemoSectionView() {
             </div>
           </div>
 
+          {/* Stage Mismatch Warning - Show on all section pages when mismatch is major */}
+          {holisticStage?.mismatchSeverity === 'major' && (
+            <div className="mb-8">
+              <StageMismatchWarning
+                userStatedStage={companyInfo?.stage || 'seed'}
+                detectedStage={holisticStage.detectedStage}
+                confidence={holisticStage.confidence}
+                signals={holisticStage.signals || []}
+                mismatchExplanation={holisticStage.mismatchExplanation}
+              />
+            </div>
+          )}
+
           {/* Anchored Assumptions - Key Metrics Transparency */}
           {anchoredAssumptions && (
             <div className="mb-8">
@@ -591,6 +626,19 @@ export default function MemoSectionView() {
       </div>
       
       <div className="container mx-auto px-4 py-8 max-w-5xl">
+        {/* Stage Mismatch Warning - Show on all section pages when mismatch is major */}
+        {holisticStage?.mismatchSeverity === 'major' && (
+          <div className="mb-8">
+            <StageMismatchWarning
+              userStatedStage={companyInfo?.stage || 'seed'}
+              detectedStage={holisticStage.detectedStage}
+              confidence={holisticStage.confidence}
+              signals={holisticStage.signals || []}
+              mismatchExplanation={holisticStage.mismatchExplanation}
+            />
+          </div>
+        )}
+
         <MemoSection title={currentSection!.title} index={actualSectionIndex}>
             {/* Section Score Card - Premium Only */}
             {hasPremium && currentSectionTools?.sectionScore && (

@@ -477,6 +477,20 @@ export default function GeneratedMemo() {
       throw new Error("Failed to fetch company data");
     }
 
+    // Fetch company model for holistic stage
+    const { data: companyModelData } = await supabase
+      .from("company_models")
+      .select("model_data")
+      .eq("company_id", companyIdToFetch)
+      .maybeSingle();
+    
+    if (companyModelData?.model_data) {
+      const modelData = companyModelData.model_data as any;
+      if (modelData.holisticStage) {
+        setHolisticStage(modelData.holisticStage);
+      }
+    }
+
     // Fetch tool data
     const { data: toolData } = await supabase
       .from("memo_tool_data")
@@ -485,8 +499,23 @@ export default function GeneratedMemo() {
     
     if (toolData && toolData.length > 0) {
       const toolsMap: Record<string, EnhancedSectionTools> = {};
+      const verdictsMap: Record<string, { verdict: string; stageContext?: string }> = {};
+      
       toolData.forEach((tool) => {
         const sectionName = tool.section_name;
+        
+        // Extract holistic verdicts separately (same as initial load)
+        if (tool.tool_name === 'holisticVerdict') {
+          const aiData = tool.ai_generated_data as Record<string, any> || {};
+          if (aiData.verdict) {
+            verdictsMap[sectionName] = {
+              verdict: aiData.verdict,
+              stageContext: aiData.stageContext
+            };
+          }
+          return; // Don't add to toolsMap
+        }
+        
         if (!toolsMap[sectionName]) {
           toolsMap[sectionName] = {};
         }
@@ -520,7 +549,12 @@ export default function GeneratedMemo() {
         }
       });
       setSectionTools(toolsMap);
+      setHolisticVerdicts(verdictsMap);
       console.log("Tool data fetched:", Object.keys(toolsMap));
+      console.log("Holistic verdicts loaded:", Object.keys(verdictsMap));
+    } else {
+      // Clear verdicts if no tool data
+      setHolisticVerdicts({});
     }
 
     setMemoContent(sanitizeMemoContent(memo.structured_content));
