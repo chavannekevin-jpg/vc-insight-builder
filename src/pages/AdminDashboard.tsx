@@ -22,10 +22,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Search, Eye, Trash2 } from "lucide-react";
 import { AdminStatsCard } from "@/components/admin/AdminStatsCard";
 import { AdminRevenueCard } from "@/components/admin/AdminRevenueCard";
 import { AdminFunnelCard } from "@/components/admin/AdminFunnelCard";
+import { AdminCompanyQuickActions } from "@/components/admin/AdminCompanyQuickActions";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -57,6 +65,7 @@ const AdminDashboard = () => {
   const [stageFilter, setStageFilter] = useState<string>("all");
   const [orphanedCount, setOrphanedCount] = useState(0);
   const [cleaningUp, setCleaningUp] = useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCompanies();
@@ -306,7 +315,12 @@ const AdminDashboard = () => {
                 <TableBody>
                   {filteredCompanies.map((company) => (
                     <TableRow key={company.id}>
-                      <TableCell className="font-medium">{company.name}</TableCell>
+                      <TableCell 
+                        className="font-medium cursor-pointer hover:text-primary hover:underline"
+                        onClick={() => setSelectedCompanyId(company.id)}
+                      >
+                        {company.name}
+                      </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="capitalize">
                           {company.stage}
@@ -338,6 +352,23 @@ const AdminDashboard = () => {
             </div>
           )}
         </ModernCard>
+
+        {/* Company Quick Actions Dialog */}
+        <Dialog open={!!selectedCompanyId} onOpenChange={(open) => !open && setSelectedCompanyId(null)}>
+          <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Company Quick Actions</DialogTitle>
+              <DialogDescription>Manage company settings and actions</DialogDescription>
+            </DialogHeader>
+            {selectedCompanyId && (
+              <AdminCompanyQuickActions
+                companyId={selectedCompanyId}
+                onClose={() => setSelectedCompanyId(null)}
+                onDataChanged={() => fetchCompanies()}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
