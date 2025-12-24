@@ -1092,7 +1092,7 @@ export default function GeneratedMemo() {
             <MemoScoreRadar
               sectionTools={sectionTools}
               companyName={companyInfo.name}
-              stage={companyInfo.stage}
+              stage={holisticStage?.benchmarkingStage || companyInfo.stage}
               category={companyInfo.category}
               holisticVerdicts={holisticVerdicts}
               onSectionClick={(sectionName) => {
