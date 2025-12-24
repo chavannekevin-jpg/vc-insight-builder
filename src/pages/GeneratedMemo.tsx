@@ -67,8 +67,29 @@ import {
   VisionExitNarrativeCard
 } from "@/components/memo/tools";
 
-// Import sample tools as fallback
-import { SAMPLE_SECTION_TOOLS } from "@/data/sampleMemoTools";
+// Helper to find section tools with flexible matching
+const findSectionTools = (
+  sectionTitle: string, 
+  tools: Record<string, EnhancedSectionTools>
+): EnhancedSectionTools => {
+  // Direct match first
+  if (tools[sectionTitle]) return tools[sectionTitle];
+  
+  // Try normalized title
+  const normalized = safeTitle(sectionTitle).toLowerCase();
+  const key = Object.keys(tools).find(k => {
+    const normalizedKey = safeTitle(k).toLowerCase();
+    return normalizedKey === normalized ||
+           k.toLowerCase().includes(normalized) ||
+           normalized.includes(k.toLowerCase());
+  });
+  
+  if (!key && Object.keys(tools).length > 0) {
+    console.warn(`[GeneratedMemo] No tools found for section: "${sectionTitle}". Available: ${Object.keys(tools).join(', ')}`);
+  }
+  
+  return key ? tools[key] : {};
+};
 
 interface SmartQuestion {
   questionKey: string;
@@ -1094,8 +1115,8 @@ export default function GeneratedMemo() {
               const heroParagraph = narrative.paragraphs?.find((p: MemoParagraph) => p.emphasis === "high");
               const otherParagraphs = narrative.paragraphs?.filter((p: MemoParagraph) => p.emphasis !== "high") || [];
 
-              // Get section-specific tools data - use sample data as fallback
-              const currentSectionTools = sectionTools[section.title] || SAMPLE_SECTION_TOOLS[section.title] || {};
+              // Get section-specific tools data
+              const currentSectionTools = findSectionTools(section.title, sectionTools);
 
               const sectionContent = (
                 <MemoSection key={section.title} title={section.title} index={index}>
