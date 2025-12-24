@@ -707,6 +707,8 @@ export default function MemoSectionView() {
                       teamMembers={extractedTeamMembers}
                       stage={companyInfo?.stage || 'Pre-seed'}
                       companyName={companyInfo?.name || 'Company'}
+                      credibilityToolData={currentSectionTools?.credibilityGapAnalysis}
+                      teamStoryRaw={memoResponses['team_story']}
                     />
                   </>
                 )}
