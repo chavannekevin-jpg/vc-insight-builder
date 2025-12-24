@@ -31,6 +31,7 @@ import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 
 import { LowConfidenceWarning } from "@/components/memo/LowConfidenceWarning";
 import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptions";
+import { StageMismatchWarning } from "@/components/memo/StageMismatchWarning";
 import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics, type AnchoredAssumptions } from "@/lib/memoDataExtractor";
 import { extractAnchoredAssumptions, detectCurrencyFromResponses, getAIMetricEstimate, applyAIEstimate, getFallbackMetricValue } from "@/lib/anchoredAssumptions";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
@@ -132,7 +133,7 @@ export default function GeneratedMemo() {
   const [sectionTools, setSectionTools] = useState<Record<string, EnhancedSectionTools>>({});
   const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
   const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | undefined>(undefined);
-  
+  const [holisticStage, setHolisticStage] = useState<any>(null);
   // Smart fill state
   const [showSmartFill, setShowSmartFill] = useState(false);
   const [smartQuestions, setSmartQuestions] = useState<SmartQuestion[]>([]);
@@ -312,6 +313,14 @@ export default function GeneratedMemo() {
               .select("model_data")
               .eq("company_id", companyId)
               .maybeSingle();
+            
+            // Extract holistic stage from company model
+            if (companyModelData?.model_data) {
+              const modelData = companyModelData.model_data as any;
+              if (modelData.holisticStage) {
+                setHolisticStage(modelData.holisticStage);
+              }
+            }
             
             // Extract anchored assumptions (single source of truth for ACV)
             const currency = detectCurrencyFromResponses(responsesMap);
@@ -985,6 +994,19 @@ export default function GeneratedMemo() {
           </div>
         </div>
 
+
+        {/* Stage Mismatch Warning - Show when AI detects different stage */}
+        {holisticStage?.mismatchSeverity === 'major' && (
+          <div className="mb-6">
+            <StageMismatchWarning
+              userStatedStage={holisticStage.userStatedStage}
+              detectedStage={holisticStage.detectedStage}
+              confidence={holisticStage.confidence}
+              signals={holisticStage.signals}
+              mismatchExplanation={holisticStage.mismatchExplanation}
+            />
+          </div>
+        )}
 
         {/* Low Confidence Warning for important data gaps */}
         {hasPremium && memoContent.overallAssessment && (

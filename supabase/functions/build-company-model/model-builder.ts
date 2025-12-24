@@ -15,7 +15,9 @@ import {
   TemporalModel,
   CoherenceAnalysis,
   Discrepancy,
-  CalculationTrace
+  CalculationTrace,
+  StageSignal,
+  HolisticStageAssessment
 } from './types.ts';
 
 import {
@@ -58,6 +60,11 @@ export function buildCompanyModel(
   const gtm = buildGTMModel(responses, customer, traction, discrepancies);
   const temporal = buildTemporalModel(responses, traction, discrepancies);
 
+  // Run holistic stage detection BEFORE coherence (so we can add stage discrepancy)
+  const holisticStage = detectHolisticStage(
+    stage, financial, customer, traction, team, defensibility, discrepancies
+  );
+
   // Run coherence analysis across all sub-models
   const coherence = analyzeCoherence(
     financial, customer, market, traction, team, gtm, temporal, discrepancies
@@ -82,6 +89,7 @@ export function buildCompanyModel(
     temporal,
     coherence,
     discrepancies,
+    holisticStage,
     sourceResponses: responses
   };
 }
@@ -972,4 +980,333 @@ function analyzeCoherence(
     conditionalHypotheses,
     resolutionQuestions,
   };
+}
+
+// -----------------------------------------------------------------------------
+// HOLISTIC STAGE DETECTION
+// Synthesizes signals from ALL sub-models to determine true VC stage
+// -----------------------------------------------------------------------------
+
+function detectHolisticStage(
+  userStage: string,
+  financial: FinancialModel,
+  customer: CustomerModel,
+  traction: TractionModel,
+  team: TeamModel,
+  defensibility: DefensibilityModel,
+  discrepancies: Discrepancy[]
+): HolisticStageAssessment {
+  const signals: StageSignal[] = [];
+  
+  // Normalize user stage for comparison
+  const normalizedUserStage = userStage.toLowerCase().replace(/[-_\s]/g, '');
+  
+  // === TEAM SIGNALS ===
+  const hasCoFounder = team.founders.count >= 2;
+  const hasTechnicalDepth = team.credibility.technicalDepth;
+  const hasSalesCapability = team.credibility.salesCapability;
+  const hasPreviousExits = team.credibility.previousExits;
+  
+  // Solo non-technical founder = strong Pre-Seed signal
+  if (!hasTechnicalDepth && !hasCoFounder) {
+    signals.push({
+      dimension: 'team',
+      signal: 'Pre-Seed',
+      strength: 0.8,
+      evidence: 'Solo non-technical founder (no CTO or technical co-founder)'
+    });
+  } else if (!hasTechnicalDepth && hasCoFounder) {
+    signals.push({
+      dimension: 'team',
+      signal: 'Pre-Seed',
+      strength: 0.6,
+      evidence: 'No technical co-founder on the team'
+    });
+  } else if (hasTechnicalDepth && hasSalesCapability && hasCoFounder) {
+    signals.push({
+      dimension: 'team',
+      signal: 'Seed',
+      strength: 0.7,
+      evidence: 'Balanced founding team with technical and sales capability'
+    });
+  }
+  
+  // Previous exits suggest more maturity
+  if (hasPreviousExits) {
+    signals.push({
+      dimension: 'team',
+      signal: 'Seed',
+      strength: 0.5,
+      evidence: 'Founder(s) with previous exit experience'
+    });
+  }
+  
+  // Critical gaps = Pre-Seed signal
+  if (team.team.criticalGaps.length > 0) {
+    const gapText = team.team.criticalGaps.slice(0, 2).join(', ');
+    signals.push({
+      dimension: 'team',
+      signal: 'Pre-Seed',
+      strength: 0.5,
+      evidence: `Critical hiring gaps identified: ${gapText || 'key roles missing'}`
+    });
+  }
+
+  // === REVENUE SIGNALS ===
+  const mrr = financial.revenue.stated.mrr || financial.revenue.computed.mrr || 0;
+  const arr = mrr * 12;
+  
+  if (mrr === 0) {
+    signals.push({
+      dimension: 'revenue',
+      signal: 'Pre-Seed',
+      strength: 0.9,
+      evidence: 'No recurring revenue yet'
+    });
+  } else if (arr < 50000) {
+    signals.push({
+      dimension: 'revenue',
+      signal: 'Pre-Seed',
+      strength: 0.75,
+      evidence: `ARR of $${arr.toLocaleString()} is below typical Seed threshold ($50K-$100K+)`
+    });
+  } else if (arr >= 50000 && arr < 500000) {
+    signals.push({
+      dimension: 'revenue',
+      signal: 'Seed',
+      strength: 0.8,
+      evidence: `ARR of $${arr.toLocaleString()} is in typical Seed range ($50K-$500K)`
+    });
+  } else if (arr >= 500000 && arr < 2000000) {
+    signals.push({
+      dimension: 'revenue',
+      signal: 'Series A',
+      strength: 0.7,
+      evidence: `ARR of $${arr.toLocaleString()} is approaching Series A territory ($1M+)`
+    });
+  } else if (arr >= 2000000) {
+    signals.push({
+      dimension: 'revenue',
+      signal: 'Series A',
+      strength: 0.9,
+      evidence: `ARR of $${arr.toLocaleString()} exceeds $2M - strong Series A candidate`
+    });
+  }
+
+  // === CUSTOMER/TRACTION SIGNALS ===
+  const paidCustomers = customer.metrics.paidCustomers || 0;
+  const totalCustomers = customer.metrics.totalCustomers || 0;
+  
+  if (paidCustomers === 0 && totalCustomers > 0) {
+    signals.push({
+      dimension: 'traction',
+      signal: 'Pre-Seed',
+      strength: 0.85,
+      evidence: `${totalCustomers.toLocaleString()} users but no paying customers yet`
+    });
+  } else if (paidCustomers === 0 && totalCustomers === 0) {
+    signals.push({
+      dimension: 'traction',
+      signal: 'Pre-Seed',
+      strength: 0.95,
+      evidence: 'No customers or users yet'
+    });
+  } else if (paidCustomers > 0 && paidCustomers < 20) {
+    signals.push({
+      dimension: 'traction',
+      signal: 'Pre-Seed',
+      strength: 0.65,
+      evidence: `Only ${paidCustomers} paying customers - very early traction`
+    });
+  } else if (paidCustomers >= 20 && paidCustomers < 100) {
+    signals.push({
+      dimension: 'traction',
+      signal: 'Seed',
+      strength: 0.6,
+      evidence: `${paidCustomers} paying customers - building traction`
+    });
+  } else if (paidCustomers >= 100) {
+    signals.push({
+      dimension: 'traction',
+      signal: 'Seed',
+      strength: 0.8,
+      evidence: `${paidCustomers} paying customers - solid customer base`
+    });
+  }
+
+  // === PRODUCT STAGE SIGNALS ===
+  const productStage = traction.current.stage;
+  if (productStage === 'idea') {
+    signals.push({
+      dimension: 'product',
+      signal: 'Pre-Seed',
+      strength: 0.95,
+      evidence: 'Product is still at idea/concept stage'
+    });
+  } else if (productStage === 'prototype') {
+    signals.push({
+      dimension: 'product',
+      signal: 'Pre-Seed',
+      strength: 0.85,
+      evidence: 'Product is at prototype/MVP stage'
+    });
+  } else if (productStage === 'beta') {
+    // Beta could be late pre-seed or early seed depending on other signals
+    signals.push({
+      dimension: 'product',
+      signal: 'Pre-Seed',
+      strength: 0.5,  // Lower weight - context dependent
+      evidence: 'Product in beta - could be late Pre-Seed or early Seed'
+    });
+  } else if (productStage === 'launched') {
+    signals.push({
+      dimension: 'product',
+      signal: 'Seed',
+      strength: 0.7,
+      evidence: 'Product is launched in production'
+    });
+  } else if (productStage === 'scaling') {
+    signals.push({
+      dimension: 'product',
+      signal: 'Series A',
+      strength: 0.8,
+      evidence: 'Product is in scaling phase'
+    });
+  }
+
+  // === DEFENSIBILITY SIGNALS ===
+  const hasMoats = !defensibility.currentMoats.type.includes('none');
+  const moatStrength = defensibility.currentMoats.strength;
+  
+  if (!hasMoats || moatStrength === 'nascent' || moatStrength === 'weak') {
+    signals.push({
+      dimension: 'defensibility',
+      signal: 'Pre-Seed',
+      strength: 0.4,
+      evidence: 'No established moats yet - typical for early stage'
+    });
+  } else if (moatStrength === 'moderate') {
+    signals.push({
+      dimension: 'defensibility',
+      signal: 'Seed',
+      strength: 0.5,
+      evidence: 'Building defensibility with emerging moats'
+    });
+  } else if (moatStrength === 'strong') {
+    signals.push({
+      dimension: 'defensibility',
+      signal: 'Series A',
+      strength: 0.6,
+      evidence: 'Strong competitive moats established'
+    });
+  }
+
+  // === CALCULATE WEIGHTED STAGE ===
+  const stageScores = { 'Pre-Seed': 0, 'Seed': 0, 'Series A': 0 };
+  let totalWeight = 0;
+  
+  for (const signal of signals) {
+    stageScores[signal.signal] += signal.strength;
+    totalWeight += signal.strength;
+  }
+  
+  // Determine detected stage based on highest weighted score
+  let detectedStage: 'Pre-Seed' | 'Seed' | 'Series A' = 'Pre-Seed';
+  let maxScore = stageScores['Pre-Seed'];
+  
+  if (stageScores['Seed'] > maxScore) {
+    detectedStage = 'Seed';
+    maxScore = stageScores['Seed'];
+  }
+  if (stageScores['Series A'] > maxScore) {
+    detectedStage = 'Series A';
+    maxScore = stageScores['Series A'];
+  }
+  
+  // Calculate confidence as the dominance of the detected stage
+  const confidence = totalWeight > 0 
+    ? Math.round((maxScore / totalWeight) * 100) 
+    : 50;
+  
+  // === DETECT MISMATCH ===
+  // Map user stage to normalized VC stage
+  const userVCStage = normalizeToVCStage(userStage);
+  const mismatch = userVCStage !== detectedStage;
+  
+  // Determine severity: major if user claims higher stage than detected
+  let mismatchSeverity: 'none' | 'minor' | 'major' = 'none';
+  if (mismatch) {
+    const stageOrder = ['Pre-Seed', 'Seed', 'Series A'];
+    const userIdx = stageOrder.indexOf(userVCStage);
+    const detectedIdx = stageOrder.indexOf(detectedStage);
+    
+    if (userIdx > detectedIdx) {
+      // User claims more advanced stage than detected - major mismatch
+      mismatchSeverity = 'major';
+    } else {
+      // User claims earlier stage than detected - minor (being conservative)
+      mismatchSeverity = 'minor';
+    }
+  }
+  
+  // Generate explanation for major mismatches
+  let mismatchExplanation: string | undefined;
+  if (mismatchSeverity === 'major') {
+    const preSeedSignals = signals.filter(s => s.signal === 'Pre-Seed');
+    const topSignals = preSeedSignals
+      .sort((a, b) => b.strength - a.strength)
+      .slice(0, 3);
+    
+    mismatchExplanation = `You selected "${userStage}", but our analysis across ${signals.length} dimensions suggests you're at "${detectedStage}" stage. Key indicators: ${topSignals.map(s => s.evidence).join('; ')}. This doesn't mean you can't raise - it means VCs will evaluate you against ${detectedStage} benchmarks.`;
+    
+    // Add discrepancy for stage mismatch
+    discrepancies.push(createDiscrepancy(
+      'stage',
+      userStage,
+      detectedStage,
+      'inconsistency',
+      'high',
+      mismatchExplanation,
+      ['team', 'traction', 'revenue', 'product'],
+      [
+        `What milestones would you need to hit to be considered ${userStage} by VCs?`,
+        'Do you have paying customers generating recurring revenue?',
+        'Is your product live in production with real users?'
+      ]
+    ));
+  }
+
+  // Benchmarking stage: use detected stage for major mismatches, user stage otherwise
+  const benchmarkingStage = mismatchSeverity === 'major' ? detectedStage : userVCStage as 'Pre-Seed' | 'Seed' | 'Series A';
+
+  return {
+    userStatedStage: userStage,
+    detectedStage,
+    confidence,
+    signals,
+    mismatch,
+    mismatchSeverity,
+    mismatchExplanation,
+    benchmarkingStage
+  };
+}
+
+/**
+ * Normalize various stage inputs to standard VC stages
+ */
+function normalizeToVCStage(stage: string): 'Pre-Seed' | 'Seed' | 'Series A' {
+  const normalized = stage.toLowerCase().replace(/[-_\s]/g, '');
+  
+  if (normalized.includes('preseed') || normalized.includes('angel') || normalized.includes('idea') || normalized.includes('prototype')) {
+    return 'Pre-Seed';
+  }
+  if (normalized.includes('seriesa') || normalized.includes('a') && normalized.includes('round')) {
+    return 'Series A';
+  }
+  if (normalized.includes('seed')) {
+    return 'Seed';
+  }
+  
+  // Default to Pre-Seed for unknown stages
+  return 'Pre-Seed';
 }

@@ -439,9 +439,32 @@ export interface CompanyModel {
   // Cross-sectional analysis
   coherence: CoherenceAnalysis;
   discrepancies: Discrepancy[];
+  holisticStage: HolisticStageAssessment;  // NEW: Holistic stage detection
   
   // Raw source data for transparency
   sourceResponses: Record<string, string>;
+}
+
+// -----------------------------------------------------------------------------
+// HOLISTIC STAGE DETECTION - Cross-sectional stage assessment
+// -----------------------------------------------------------------------------
+
+export interface StageSignal {
+  dimension: 'team' | 'traction' | 'revenue' | 'product' | 'defensibility' | 'time-in-market';
+  signal: 'Pre-Seed' | 'Seed' | 'Series A';
+  strength: number;  // 0-1 confidence weight
+  evidence: string;
+}
+
+export interface HolisticStageAssessment {
+  userStatedStage: string;
+  detectedStage: 'Pre-Seed' | 'Seed' | 'Series A';
+  confidence: number;  // 0-100
+  signals: StageSignal[];
+  mismatch: boolean;
+  mismatchSeverity: 'none' | 'minor' | 'major';
+  mismatchExplanation?: string;
+  benchmarkingStage: 'Pre-Seed' | 'Seed' | 'Series A';  // Which stage to use for benchmarking
 }
 
 // -----------------------------------------------------------------------------
