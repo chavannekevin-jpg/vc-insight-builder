@@ -453,7 +453,7 @@ export default function MemoSectionView() {
               <MemoScoreRadar
                 sectionTools={sectionTools}
                 companyName={companyInfo?.name || 'Company'}
-                stage={companyInfo?.stage || 'seed'}
+                stage={holisticStage?.benchmarkingStage || companyInfo?.stage || 'seed'}
                 category={companyInfo?.category}
                 holisticVerdicts={holisticVerdicts}
                 onSectionClick={(sectionName) => {
