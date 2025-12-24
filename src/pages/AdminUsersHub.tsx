@@ -50,6 +50,7 @@ import {
 import { formatDistanceToNow, format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { AdminUserDetail } from "@/components/admin/AdminUserDetail";
+import { AdminCompanyQuickActions } from "@/components/admin/AdminCompanyQuickActions";
 import { safeLower } from "@/lib/stringUtils";
 
 interface UserData {
@@ -126,6 +127,7 @@ const AdminUsersHub = () => {
   const [toggling, setToggling] = useState<string | null>(null);
   const [generatingFor, setGeneratingFor] = useState<string | null>(null);
   const [impersonating, setImpersonating] = useState<string | null>(null);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
 
   const activeTab = searchParams.get("tab") || "users";
 
@@ -572,7 +574,12 @@ const AdminUsersHub = () => {
                     <TableBody>
                       {filteredCompanies.map((company) => (
                         <TableRow key={company.id}>
-                          <TableCell className="font-medium">{company.name}</TableCell>
+                          <TableCell 
+                            className="font-medium cursor-pointer hover:text-primary hover:underline"
+                            onClick={() => setSelectedCompanyId(company.id)}
+                          >
+                            {company.name}
+                          </TableCell>
                           <TableCell>{company.founder_email}</TableCell>
                           <TableCell><Badge variant="outline">{company.stage || "N/A"}</Badge></TableCell>
                           <TableCell>{new Date(company.created_at).toLocaleDateString()}</TableCell>
@@ -635,7 +642,12 @@ const AdminUsersHub = () => {
                         
                         return (
                           <TableRow key={company.id}>
-                            <TableCell className="font-medium">{company.name}</TableCell>
+                            <TableCell 
+                              className="font-medium cursor-pointer hover:text-primary hover:underline"
+                              onClick={() => setSelectedCompanyId(company.id)}
+                            >
+                              {company.name}
+                            </TableCell>
                             <TableCell>
                               {company.overallScore !== null ? (
                                 <Badge 
@@ -727,7 +739,32 @@ const AdminUsersHub = () => {
             <DialogTitle>User Details</DialogTitle>
             <DialogDescription>Complete user activity and history</DialogDescription>
           </DialogHeader>
-          {selectedUserId && <AdminUserDetail userId={selectedUserId} />}
+          {selectedUserId && (
+            <AdminUserDetail 
+              userId={selectedUserId} 
+              onCompanyClick={(companyId) => {
+                setSelectedUserId(null);
+                setSelectedCompanyId(companyId);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Company Quick Actions Dialog */}
+      <Dialog open={!!selectedCompanyId} onOpenChange={(open) => !open && setSelectedCompanyId(null)}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Company Quick Actions</DialogTitle>
+            <DialogDescription>Manage company settings and actions</DialogDescription>
+          </DialogHeader>
+          {selectedCompanyId && (
+            <AdminCompanyQuickActions
+              companyId={selectedCompanyId}
+              onClose={() => setSelectedCompanyId(null)}
+              onDataChanged={() => fetchCompanies()}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
