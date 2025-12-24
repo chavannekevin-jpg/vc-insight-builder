@@ -48,6 +48,38 @@ function getRoleIcon(role: string): React.ReactNode {
   return <Users className="w-4 h-4" />;
 }
 
+// Validate that text looks like a person's name (1-3 words, capitalized, no action words)
+function isLikelyPersonName(text: string): boolean {
+  const trimmed = text.trim();
+  const words = trimmed.split(/\s+/);
+  
+  // Names are typically 1-3 words
+  if (words.length < 1 || words.length > 4) return false;
+  
+  // Each word should be capitalized (allow for names like "van" in middle)
+  const firstWordCapitalized = /^[A-Z][a-z]+$/.test(words[0]);
+  if (!firstWordCapitalized) return false;
+  
+  // Exclude common non-name words that appear in skill descriptions
+  const nonNameWords = [
+    'launching', 'demonstrates', 'licensed', 'two-sided', 'onboarding', 
+    'marketplace', 'therapists', 'capability', 'execution', 'strategy',
+    'accelerate', 'defensibility', 'combination', 'global', 'therapy',
+    'platforms', 'local', 'providers', 'cannot', 'scale', 'alongside',
+    'market', 'business', 'growth', 'technical', 'product', 'sales',
+    'long', 'next', 'phase', 'lack', 'team', 'the', 'and', 'for', 'with'
+  ];
+  
+  const lowerText = trimmed.toLowerCase();
+  if (nonNameWords.some(w => lowerText.includes(w))) return false;
+  
+  // Check that all words look like name parts (capitalized or lowercase connectors)
+  return words.every((word, idx) => 
+    /^[A-Z][a-z']+$/.test(word) || 
+    (idx > 0 && /^(van|de|von|la|le|del|di)$/i.test(word))
+  );
+}
+
 // Extract team members from credibilityGapAnalysis tool data
 // Handles both "Name — Role" and inverted "Skill description (Name)" formats
 function extractTeamFromToolData(toolData?: EditableTool<CredibilityGapAnalysis>): ExtractedTeamMember[] {
@@ -64,33 +96,34 @@ function extractTeamFromToolData(toolData?: EditableTool<CredibilityGapAnalysis>
     const dashMatch = skill.match(/^([A-Z][a-zA-Z']+(?:\s+[A-Z]?[a-zA-Z']+){0,3})\s*[—–\-:]\s*(.+)$/i);
     if (dashMatch) {
       const name = dashMatch[1].trim();
-      if (!seenNames.has(name.toLowerCase())) {
+      if (isLikelyPersonName(name) && !seenNames.has(name.toLowerCase())) {
         seenNames.add(name.toLowerCase());
         members.push({ name, role: dashMatch[2].trim() });
       }
       continue;
     }
     
-    // Pattern 2: "Name (Role)" format
-    const parenMatch = skill.match(/^([A-Z][a-zA-Z']+(?:\s+[A-Z]?[a-zA-Z']+){0,3})\s*\((.+)\)$/i);
+    // Pattern 2: "Name (Role)" format - name at start, role in parentheses
+    const parenMatch = skill.match(/^([A-Z][a-zA-Z']+(?:\s+[A-Z]?[a-zA-Z']+){0,3})\s*\(([^)]+)\)$/i);
     if (parenMatch) {
       const name = parenMatch[1].trim();
-      if (!seenNames.has(name.toLowerCase())) {
+      if (isLikelyPersonName(name) && !seenNames.has(name.toLowerCase())) {
         seenNames.add(name.toLowerCase());
         members.push({ name, role: parenMatch[2].trim() });
       }
       continue;
     }
     
-    // Pattern 3: Inverted "Skill description (Name)" or "Skill (Name, context)" format
-    const invertedMatch = skill.match(/\(([A-Z][a-zA-Z']+(?:\s+[A-Z]?[a-zA-Z']+){0,3})(?:,|\)|$)/i);
+    // Pattern 3: Inverted "Skill description (Name)" format - ONLY at END of string
+    // Must be a valid person name (1-3 capitalized words at the very end)
+    const invertedMatch = skill.match(/\(([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\)\s*$/);
     if (invertedMatch) {
-      const name = invertedMatch[1].trim();
-      if (!seenNames.has(name.toLowerCase())) {
-        seenNames.add(name.toLowerCase());
+      const potentialName = invertedMatch[1].trim();
+      if (isLikelyPersonName(potentialName) && !seenNames.has(potentialName.toLowerCase())) {
+        seenNames.add(potentialName.toLowerCase());
         // Infer role from skill description
         const skillLower = skill.toLowerCase();
-        let role = 'Team Member';
+        let role = 'Founder';
         if (skillLower.includes('architecture') || skillLower.includes('sdk') || skillLower.includes('technical') || skillLower.includes('engineering') || skillLower.includes('development')) {
           role = 'Technical Lead / CTO';
         } else if (skillLower.includes('financial') || skillLower.includes('funding') || skillLower.includes('business')) {
@@ -100,7 +133,7 @@ function extractTeamFromToolData(toolData?: EditableTool<CredibilityGapAnalysis>
         } else if (skillLower.includes('product') || skillLower.includes('design')) {
           role = 'Product Lead';
         }
-        members.push({ name, role });
+        members.push({ name: potentialName, role });
       }
     }
   }
@@ -109,11 +142,14 @@ function extractTeamFromToolData(toolData?: EditableTool<CredibilityGapAnalysis>
 }
 
 // Parse team members directly from team_story memo response
-// Format: "Name — Role (Equity%)" per line
+// Handles multiple formats: structured "Name — Role (Equity%)" and narrative text
 function parseTeamStoryRaw(teamStory?: string): ExtractedTeamMember[] {
   if (!teamStory) return [];
   
   const members: ExtractedTeamMember[] = [];
+  const seenNames = new Set<string>();
+  
+  // First try structured parsing (line by line)
   const lines = teamStory.split(/[\n,;]+/);
   
   for (const line of lines) {
@@ -123,11 +159,51 @@ function parseTeamStoryRaw(teamStory?: string): ExtractedTeamMember[] {
     // Pattern: "Name — Role (Equity%)" or "Name - Role (Equity)"
     const fullMatch = trimmed.match(/^([A-Z][a-zA-Z']+(?:\s+[A-Z]?[a-zA-Z']+){0,3})\s*[—–\-:]\s*([^(]+)(?:\(([^)]+)\))?/i);
     if (fullMatch) {
-      members.push({
-        name: fullMatch[1].trim(),
-        role: fullMatch[2].trim(),
-        equity: fullMatch[3]?.trim()
-      });
+      const name = fullMatch[1].trim();
+      if (isLikelyPersonName(name) && !seenNames.has(name.toLowerCase())) {
+        seenNames.add(name.toLowerCase());
+        members.push({
+          name,
+          role: fullMatch[2].trim(),
+          equity: fullMatch[3]?.trim()
+        });
+      }
+    }
+  }
+  
+  // If no structured data found, try narrative extraction
+  if (members.length === 0) {
+    // Pattern: "led by Name" or "founded by Name"
+    const ledByMatch = teamStory.match(/(?:led|founded|created|started)\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})/i);
+    if (ledByMatch) {
+      const name = ledByMatch[1].trim();
+      if (isLikelyPersonName(name) && !seenNames.has(name.toLowerCase())) {
+        seenNames.add(name.toLowerCase());
+        members.push({ name, role: 'Founder & CEO' });
+      }
+    }
+    
+    // Pattern: "Name, a/the [role]" or "Name is the [role]"
+    const namedRoleMatches = teamStory.matchAll(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2}),?\s+(?:a|the|is\s+the)\s+(founder|ceo|cto|coo|cfo|co-founder|chief[^,\.]+)/gi);
+    for (const match of namedRoleMatches) {
+      const name = match[1].trim();
+      if (isLikelyPersonName(name) && !seenNames.has(name.toLowerCase())) {
+        seenNames.add(name.toLowerCase());
+        members.push({ name, role: match[2].trim() });
+      }
+    }
+    
+    // Pattern: "Name (equity%)" - simple name with equity
+    const equityMatches = teamStory.matchAll(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})\s*\((\d+%?[^)]*)\)/g);
+    for (const match of equityMatches) {
+      const name = match[1].trim();
+      const inParens = match[2].trim();
+      // Check if the parenthetical looks like equity (contains % or "equity")
+      if ((inParens.includes('%') || inParens.toLowerCase().includes('equity')) && 
+          isLikelyPersonName(name) && !seenNames.has(name.toLowerCase())) {
+        seenNames.add(name.toLowerCase());
+        members.push({ name, role: 'Founder', equity: inParens });
+      }
     }
   }
   
