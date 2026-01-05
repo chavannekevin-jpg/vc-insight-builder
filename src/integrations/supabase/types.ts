@@ -661,6 +661,27 @@ export type Database = {
           },
         ]
       }
+      sent_emails: {
+        Row: {
+          email_type: string
+          id: string
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          email_type: string
+          id?: string
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          email_type?: string
+          id?: string
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
