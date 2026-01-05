@@ -541,7 +541,7 @@ const AdminEmails = () => {
                 Emails will be sent from:
               </p>
               <p className="text-sm font-mono mt-1">
-                Kev from Ugly Baby &lt;kev@vc-brain.com&gt;
+                Kev from Ugly Baby &lt;kev@updates.vc-brain.com&gt;
               </p>
               <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" />
