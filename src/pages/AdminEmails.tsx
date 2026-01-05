@@ -144,7 +144,7 @@ const AdminEmails = () => {
 
 <p>Think of it as your fundraising cheat sheet — built by someone who's reviewed thousands of pitches.</p>
 
-<p><a href="https://uglybaby.app/hub" style="color: #8b5cf6; text-decoration: underline; font-weight: bold;">Get Your Memo Now →</a></p>
+<p><a href="https://vc-brain.com/" style="color: #8b5cf6; text-decoration: underline; font-weight: bold;">Get Your Memo Now →</a></p>
 
 <p>Let's make 2026 the year you close that round.</p>
 
