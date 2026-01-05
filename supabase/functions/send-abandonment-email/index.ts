@@ -77,6 +77,11 @@ serve(async (req) => {
       try {
         console.log(`Sending abandonment email to: ${user.email}`);
         
+        // Add rate limiting delay (500ms between emails)
+        if (sentCount > 0) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
         // Send email via Resend
         const emailResponse = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -85,7 +90,7 @@ serve(async (req) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "Kev from Ugly Baby <kev@vc-brain.com>",
+            from: "Kev from Ugly Baby <kev@updates.vc-brain.com>",
             to: [user.email],
             subject: "Your VC verdict is waiting (expires soon)",
             html: `
