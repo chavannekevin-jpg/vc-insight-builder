@@ -33,6 +33,7 @@ interface UserWithCompany {
   email: string;
   companyName: string | null;
   createdAt: string;
+  hasPaid: boolean;
 }
 
 const AdminEmails = () => {
@@ -48,7 +49,7 @@ const AdminEmails = () => {
   // Email form state
   const [emailSubject, setEmailSubject] = useState("");
   const [emailContent, setEmailContent] = useState("");
-  const [recipientType, setRecipientType] = useState<"all" | "selected" | "single">("single");
+  const [recipientType, setRecipientType] = useState<"all" | "selected" | "single" | "not_paid">("single");
   const [singleRecipient, setSingleRecipient] = useState("");
 
   // Email templates
@@ -119,6 +120,38 @@ const AdminEmails = () => {
 
 <p>Cheers,<br/>Kev</p>`,
     },
+    {
+      name: "Happy New Year 2026",
+      subject: "🎉 Happy New Year! 20% Off to Crush the VC Game in 2026",
+      content: `<p>Hey there,</p>
+
+<p>Happy New Year! 🥳</p>
+
+<p>2026 is here — and with it, a fresh shot at raising the capital your startup deserves.</p>
+
+<p>Whether you're preparing for your first pitch or refining your story for investors, I want to help you start the year strong.</p>
+
+<p>So here's a little gift: <strong>20% off</strong> your personalized investment memo.</p>
+
+<p>👉 <strong>Use code: HdncXwgd</strong> at checkout</p>
+
+<p>This memo will give you:</p>
+<ul>
+  <li>A VC-style teardown of your startup's strengths and weaknesses</li>
+  <li>Specific blind spots investors will probe</li>
+  <li>Actionable items to fix before you pitch</li>
+</ul>
+
+<p>Think of it as your fundraising cheat sheet — built by someone who's reviewed thousands of pitches.</p>
+
+<p><a href="https://uglybaby.app/hub" style="color: #8b5cf6; text-decoration: underline; font-weight: bold;">Get Your Memo Now →</a></p>
+
+<p>Let's make 2026 the year you close that round.</p>
+
+<p>Cheers to your success,<br/>Kev</p>
+
+<p style="color: #888; font-size: 12px;">P.S. This code won't last forever — use it while it's hot 🔥</p>`,
+    },
   ];
 
   useEffect(() => {
@@ -170,6 +203,13 @@ const AdminEmails = () => {
 
       if (error) throw error;
 
+      // Fetch all purchases to know who paid
+      const { data: purchases } = await supabase
+        .from("memo_purchases")
+        .select("user_id");
+
+      const paidUserIds = new Set(purchases?.map((p) => p.user_id) || []);
+
       // Fetch companies for each user
       const usersWithCompanies = await Promise.all(
         (profiles || []).map(async (profile) => {
@@ -184,6 +224,7 @@ const AdminEmails = () => {
             email: profile.email,
             companyName: company?.name || null,
             createdAt: profile.created_at,
+            hasPaid: paidUserIds.has(profile.id),
           };
         })
       );
@@ -216,6 +257,8 @@ const AdminEmails = () => {
         return users.filter((u) => selectedUsers.includes(u.id)).map((u) => u.email);
       case "single":
         return singleRecipient ? [singleRecipient] : [];
+      case "not_paid":
+        return users.filter((u) => !u.hasPaid).map((u) => u.email);
       default:
         return [];
     }
@@ -444,6 +487,7 @@ const AdminEmails = () => {
                   <SelectContent>
                     <SelectItem value="single">Single Email</SelectItem>
                     <SelectItem value="selected">Selected Users</SelectItem>
+                    <SelectItem value="not_paid">Not Paid Users ({users.filter(u => !u.hasPaid).length})</SelectItem>
                     <SelectItem value="all">All Users ({users.length})</SelectItem>
                   </SelectContent>
                 </Select>
@@ -489,9 +533,17 @@ const AdminEmails = () => {
                           }`}
                           onClick={() => toggleUserSelection(user.id)}
                         >
-                          <p className="text-sm font-medium truncate">
-                            {user.email}
-                          </p>
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-medium truncate">
+                              {user.email}
+                            </p>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs shrink-0 ${user.hasPaid ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}
+                            >
+                              {user.hasPaid ? 'Paid' : 'Not Paid'}
+                            </Badge>
+                          </div>
                           {user.companyName && (
                             <p className="text-xs text-muted-foreground truncate">
                               {user.companyName}
