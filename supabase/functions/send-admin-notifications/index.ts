@@ -54,7 +54,7 @@ function formatDate(dateString: string): string {
   });
 }
 
-const NOTIFICATIONS_DISABLED = true;
+const NOTIFICATIONS_DISABLED = false;
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
