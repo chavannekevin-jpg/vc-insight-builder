@@ -8,6 +8,46 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Default template content as fallback
+const DEFAULT_SUBJECT = "Your VC verdict is waiting (expires soon)";
+const DEFAULT_CONTENT = `
+  <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h2 style="color: #1a1a1a; margin-bottom: 20px;">Hey there 👋</h2>
+    
+    <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
+      I noticed you started building your VC-ready profile on VC Brain but haven't unlocked your full analysis yet.
+    </p>
+    
+    <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
+      Your free verdict showed some areas VCs would flag — but the <strong>full memo</strong> shows you exactly how to fix them before your next pitch.
+    </p>
+    
+    <p style="color: #333; line-height: 1.6; margin-bottom: 12px;">
+      Here's what other founders discovered in their full analysis:
+    </p>
+    
+    <ul style="color: #333; line-height: 1.8; margin-bottom: 24px; padding-left: 20px;">
+      <li>The exact phrases that made VCs tune out</li>
+      <li>Which metrics were missing (and how to add them)</li>
+      <li>A 90-day action plan to become fundable</li>
+    </ul>
+    
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="https://vc-brain.com/" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+        Unlock Your Full Analysis →
+      </a>
+    </div>
+    
+    <p style="color: #666; font-size: 14px; line-height: 1.6; margin-top: 24px;">
+      P.S. Your verdict data expires after 7 days. Don't let that research go to waste!
+    </p>
+    
+    <p style="color: #333; margin-top: 24px;">
+      — Kev
+    </p>
+  </div>
+`;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -20,6 +60,24 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Fetch the email template from the database
+    console.log("Fetching abandonment email template from database...");
+    const { data: template, error: templateError } = await supabase
+      .from("email_templates")
+      .select("subject, content")
+      .eq("automation_key", "abandonment_24h")
+      .eq("is_active", true)
+      .single();
+
+    if (templateError) {
+      console.log("Template not found in DB, using default:", templateError.message);
+    }
+
+    const emailSubject = template?.subject || DEFAULT_SUBJECT;
+    const emailContent = template?.content || DEFAULT_CONTENT;
+    
+    console.log(`Using template - Subject: "${emailSubject}"`);
 
     // Calculate 24 hours ago
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -92,44 +150,8 @@ serve(async (req) => {
           body: JSON.stringify({
             from: "Kev from VC Brain <kev@updates.vc-brain.com>",
             to: [user.email],
-            subject: "Your VC verdict is waiting (expires soon)",
-            html: `
-              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #1a1a1a; margin-bottom: 20px;">Hey there 👋</h2>
-                
-                <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
-                  I noticed you started building your VC-ready profile on VC Brain but haven't unlocked your full analysis yet.
-                </p>
-                
-                <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
-                  Your free verdict showed some areas VCs would flag — but the <strong>full memo</strong> shows you exactly how to fix them before your next pitch.
-                </p>
-                
-                <p style="color: #333; line-height: 1.6; margin-bottom: 12px;">
-                  Here's what other founders discovered in their full analysis:
-                </p>
-                
-                <ul style="color: #333; line-height: 1.8; margin-bottom: 24px; padding-left: 20px;">
-                  <li>The exact phrases that made VCs tune out</li>
-                  <li>Which metrics were missing (and how to add them)</li>
-                  <li>A 90-day action plan to become fundable</li>
-                </ul>
-                
-                <div style="text-align: center; margin: 32px 0;">
-                  <a href="https://vc-brain.com/" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                    Unlock Your Full Analysis →
-                  </a>
-                </div>
-                
-                <p style="color: #666; font-size: 14px; line-height: 1.6; margin-top: 24px;">
-                  P.S. Your verdict data expires after 7 days. Don't let that research go to waste!
-                </p>
-                
-                <p style="color: #333; margin-top: 24px;">
-                  — Kev
-                </p>
-              </div>
-            `,
+            subject: emailSubject,
+            html: emailContent,
             reply_to: "kev@vc-brain.com",
           }),
         });
@@ -165,7 +187,8 @@ serve(async (req) => {
         success: true, 
         sent: sentCount, 
         errors: errorCount,
-        eligible: usersToEmail.length 
+        eligible: usersToEmail.length,
+        templateSource: template ? "database" : "default"
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

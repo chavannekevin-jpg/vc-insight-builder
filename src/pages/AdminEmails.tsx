@@ -16,6 +16,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   ArrowLeft,
   Send,
   Users,
@@ -24,7 +41,11 @@ import {
   Eye,
   Loader2,
   CheckCircle2,
-  XCircle,
+  Plus,
+  Pencil,
+  Trash2,
+  Zap,
+  FileText,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -36,6 +57,18 @@ interface UserWithCompany {
   hasPaid: boolean;
 }
 
+interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  content: string;
+  template_type: string;
+  automation_key: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 const AdminEmails = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -44,115 +77,27 @@ const AdminEmails = () => {
   const [users, setUsers] = useState<UserWithCompany[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
-  const [previewMode, setPreviewMode] = useState(false);
+
+  // Templates state
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(true);
+  const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<EmailTemplate | null>(null);
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
+
+  // Edit form state
+  const [editName, setEditName] = useState("");
+  const [editSubject, setEditSubject] = useState("");
+  const [editContent, setEditContent] = useState("");
 
   // Email form state
   const [emailSubject, setEmailSubject] = useState("");
   const [emailContent, setEmailContent] = useState("");
   const [recipientType, setRecipientType] = useState<"all" | "selected" | "single" | "not_paid">("single");
   const [singleRecipient, setSingleRecipient] = useState("");
-
-  // Email templates
-  const templates = [
-    {
-      name: "Welcome Email",
-      subject: "Welcome to Ugly Baby! 🚀",
-      content: `<h1>Welcome to Ugly Baby!</h1>
-<p>Hi there,</p>
-<p>Thank you for signing up! We're excited to help you prepare your startup for fundraising.</p>
-<p>Here's what you can do:</p>
-<ul>
-  <li>Complete your company profile</li>
-  <li>Answer the questionnaire</li>
-  <li>Generate your VC-ready memo</li>
-</ul>
-<p>If you have any questions, just reply to this email.</p>
-<p>Cheers,<br/>Kev</p>`,
-    },
-    {
-      name: "Discount Announcement",
-      subject: "Special Offer: Save on Your Memo! 💰",
-      content: `<h1>Limited Time Offer!</h1>
-<p>Hi there,</p>
-<p>We're offering a special discount on memo generation.</p>
-<p><strong>Use code: SPECIAL20</strong> to get 20% off!</p>
-<p>This offer expires soon, so don't wait.</p>
-<p>Cheers,<br/>Kev</p>`,
-    },
-    {
-      name: "Memo Ready",
-      subject: "Your Memo is Ready! 📋",
-      content: `<h1>Your Memo is Ready!</h1>
-<p>Hi there,</p>
-<p>Great news! Your investment memo has been generated and is ready to view.</p>
-<p><a href="https://vc-brain.com/sample-memo">View Your Memo →</a></p>
-<p>If you have any questions or feedback, let us know!</p>
-<p>Cheers,<br/>Kev</p>`,
-    },
-    {
-      name: "Reminder",
-      subject: "Don't Forget to Complete Your Profile 📝",
-      content: `<h1>Almost There!</h1>
-<p>Hi there,</p>
-<p>We noticed you haven't completed your company profile yet.</p>
-<p>Completing your profile helps us generate a better, more personalized memo for your startup.</p>
-<p><a href="https://vc-brain.com/portal">Continue Your Profile →</a></p>
-<p>Cheers,<br/>Kev</p>`,
-    },
-    {
-      name: "Incomplete Memo Nudge",
-      subject: "Quick check-in on your memo 👋",
-      content: `<p>Hey there,</p>
-
-<p>Thanks for joining the Ugly Baby platform, great to have you on-board.</p>
-
-<p>I noticed you've already started preparing your investment memorandum, but didn't complete the process yet.</p>
-
-<p>I wanted to quickly reach out in case something wasn't clear or if you paused intentionally.</p>
-
-<p>I've attached a sample memo so you can see exactly what you'll receive once it's completed: a clear, investor-style analysis of your startup, highlighting key risks, blind spots, and concrete action items you can act on immediately.</p>
-
-<p>👉 <a href="https://vc-brain.com/sample-memo" style="color: #8b5cf6; text-decoration: underline;">View Sample Memo</a></p>
-
-<p>To make it easier to move forward, I'm keeping the <strong>50% launch discount active until Christmas</strong>.</p>
-
-<p>If you have any questions, feedback, or blockers — I'm all ears and happy to help.</p>
-
-<p>Cheers,<br/>Kev</p>`,
-    },
-    {
-      name: "Happy New Year 2026",
-      subject: "🎉 Happy New Year! 20% Off to Crush the VC Game in 2026",
-      content: `<p>Hey there,</p>
-
-<p>Happy New Year! 🥳</p>
-
-<p>2026 is here — and with it, a fresh shot at raising the capital your startup deserves.</p>
-
-<p>Whether you're preparing for your first pitch or refining your story for investors, I want to help you start the year strong.</p>
-
-<p>So here's a little gift: <strong>20% off</strong> your personalized investment memo.</p>
-
-<p>👉 <strong>Use code: HdncXwgd</strong> at checkout</p>
-
-<p>This memo will give you:</p>
-<ul>
-  <li>A VC-style teardown of your startup's strengths and weaknesses</li>
-  <li>Specific blind spots investors will probe</li>
-  <li>Actionable items to fix before you pitch</li>
-</ul>
-
-<p>Think of it as your fundraising cheat sheet — built by someone who's reviewed thousands of pitches.</p>
-
-<p><a href="https://vc-brain.com/" style="color: #8b5cf6; text-decoration: underline; font-weight: bold;">Get Your Memo Now →</a></p>
-
-<p>Let's make 2026 the year you close that round.</p>
-
-<p>Cheers to your success,<br/>Kev</p>
-
-<p style="color: #888; font-size: 12px;">P.S. This code won't last forever — use it while it's hot 🔥</p>`,
-    },
-  ];
 
   useEffect(() => {
     checkAuth();
@@ -186,11 +131,35 @@ const AdminEmails = () => {
 
       setIsAdmin(true);
       fetchUsers();
+      fetchTemplates();
     } catch (error) {
       console.error("Auth error:", error);
       navigate("/admin");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      setTemplatesLoading(true);
+      const { data, error } = await supabase
+        .from("email_templates")
+        .select("*")
+        .order("template_type", { ascending: false })
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+      setTemplates(data || []);
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load email templates",
+        variant: "destructive",
+      });
+    } finally {
+      setTemplatesLoading(false);
     }
   };
 
@@ -203,14 +172,12 @@ const AdminEmails = () => {
 
       if (error) throw error;
 
-      // Fetch all purchases to know who paid
       const { data: purchases } = await supabase
         .from("memo_purchases")
         .select("user_id");
 
       const paidUserIds = new Set(purchases?.map((p) => p.user_id) || []);
 
-      // Fetch companies for each user
       const usersWithCompanies = await Promise.all(
         (profiles || []).map(async (profile) => {
           const { data: company } = await supabase
@@ -240,13 +207,133 @@ const AdminEmails = () => {
     }
   };
 
-  const loadTemplate = (template: typeof templates[0]) => {
+  const loadTemplate = (template: EmailTemplate) => {
     setEmailSubject(template.subject);
     setEmailContent(template.content);
     toast({
       title: "Template Loaded",
       description: `"${template.name}" template applied`,
     });
+  };
+
+  const openEditModal = (template: EmailTemplate) => {
+    setEditingTemplate(template);
+    setEditName(template.name);
+    setEditSubject(template.subject);
+    setEditContent(template.content);
+    setIsCreatingNew(false);
+    setIsEditModalOpen(true);
+  };
+
+  const openCreateModal = () => {
+    setEditingTemplate(null);
+    setEditName("");
+    setEditSubject("");
+    setEditContent("");
+    setIsCreatingNew(true);
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingTemplate(null);
+    setEditName("");
+    setEditSubject("");
+    setEditContent("");
+    setIsCreatingNew(false);
+  };
+
+  const saveTemplate = async () => {
+    if (!editName.trim() || !editSubject.trim() || !editContent.trim()) {
+      toast({
+        title: "Missing Fields",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingTemplate(true);
+
+    try {
+      if (isCreatingNew) {
+        const { error } = await supabase.from("email_templates").insert({
+          name: editName.trim(),
+          subject: editSubject.trim(),
+          content: editContent.trim(),
+          template_type: "manual",
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Template Created",
+          description: `"${editName}" has been created`,
+        });
+      } else if (editingTemplate) {
+        const { error } = await supabase
+          .from("email_templates")
+          .update({
+            name: editName.trim(),
+            subject: editSubject.trim(),
+            content: editContent.trim(),
+          })
+          .eq("id", editingTemplate.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Template Updated",
+          description: `"${editName}" has been saved`,
+        });
+      }
+
+      closeEditModal();
+      fetchTemplates();
+    } catch (error: any) {
+      console.error("Error saving template:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save template",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingTemplate(false);
+    }
+  };
+
+  const confirmDeleteTemplate = (template: EmailTemplate) => {
+    setTemplateToDelete(template);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const deleteTemplate = async () => {
+    if (!templateToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from("email_templates")
+        .delete()
+        .eq("id", templateToDelete.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Template Deleted",
+        description: `"${templateToDelete.name}" has been deleted`,
+      });
+
+      setIsDeleteDialogOpen(false);
+      setTemplateToDelete(null);
+      fetchTemplates();
+    } catch (error: any) {
+      console.error("Error deleting template:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete template",
+        variant: "destructive",
+      });
+    }
   };
 
   const getRecipients = (): string[] => {
@@ -304,7 +391,6 @@ const AdminEmails = () => {
     setSending(true);
 
     try {
-      // Send emails one by one (or batch them)
       const results = await Promise.allSettled(
         recipients.map(async (email) => {
           const { data, error } = await supabase.functions.invoke("send-email", {
@@ -336,7 +422,6 @@ const AdminEmails = () => {
         });
       }
 
-      // Reset form
       setEmailSubject("");
       setEmailContent("");
       setSelectedUsers([]);
@@ -366,6 +451,8 @@ const AdminEmails = () => {
   }
 
   const recipients = getRecipients();
+  const automatedTemplates = templates.filter(t => t.template_type === "automated");
+  const manualTemplates = templates.filter(t => t.template_type === "manual");
 
   return (
     <div className="min-h-screen bg-background">
@@ -383,7 +470,7 @@ const AdminEmails = () => {
                 Email Center
               </h1>
               <p className="text-sm text-muted-foreground">
-                Send emails to your users
+                Manage templates and send emails to users
               </p>
             </div>
           </div>
@@ -392,32 +479,136 @@ const AdminEmails = () => {
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left Column - Compose */}
+          {/* Left Column - Templates & Compose */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Automated Templates Section */}
             <ModernCard>
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" />
-                Quick Templates
-              </h2>
-              <div className="grid sm:grid-cols-2 gap-3">
-                {templates.map((template) => (
-                  <Button
-                    key={template.name}
-                    variant="outline"
-                    className="h-auto py-3 px-4 justify-start text-left"
-                    onClick={() => loadTemplate(template)}
-                  >
-                    <div>
-                      <p className="font-medium">{template.name}</p>
-                      <p className="text-xs text-muted-foreground truncate max-w-[200px]">
-                        {template.subject}
-                      </p>
-                    </div>
-                  </Button>
-                ))}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-amber-500" />
+                  Automated Templates
+                </h2>
+                <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
+                  Runs automatically
+                </Badge>
               </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                These templates are used for automated emails. Changes will apply to the next scheduled send.
+              </p>
+              {templatesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : automatedTemplates.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No automated templates</p>
+              ) : (
+                <div className="space-y-3">
+                  {automatedTemplates.map((template) => (
+                    <div
+                      key={template.id}
+                      className="flex items-center justify-between p-4 border rounded-lg bg-amber-50/50 border-amber-200"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium flex items-center gap-2">
+                          {template.name}
+                          <Badge variant="secondary" className="text-xs">
+                            {template.automation_key}
+                          </Badge>
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {template.subject}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 ml-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditModal(template)}
+                        >
+                          <Pencil className="w-4 h-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => loadTemplate(template)}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          Preview
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </ModernCard>
 
+            {/* Manual Templates Section */}
+            <ModernCard>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  Campaign Templates
+                </h2>
+                <Button size="sm" onClick={openCreateModal}>
+                  <Plus className="w-4 h-4 mr-1" />
+                  New Template
+                </Button>
+              </div>
+              {templatesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : manualTemplates.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No campaign templates yet</p>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {manualTemplates.map((template) => (
+                    <div
+                      key={template.id}
+                      className="p-4 border rounded-lg hover:border-primary/30 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{template.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {template.subject}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => loadTemplate(template)}
+                        >
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          Use
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditModal(template)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => confirmDeleteTemplate(template)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ModernCard>
+
+            {/* Compose Section */}
             <ModernCard>
               <Tabs defaultValue="compose">
                 <TabsList className="mb-4">
@@ -593,7 +784,7 @@ const AdminEmails = () => {
                 Emails will be sent from:
               </p>
               <p className="text-sm font-mono mt-1">
-                Kev from Ugly Baby &lt;kev@updates.vc-brain.com&gt;
+                Kev from VC Brain &lt;kev@updates.vc-brain.com&gt;
               </p>
               <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" />
@@ -603,6 +794,105 @@ const AdminEmails = () => {
           </div>
         </div>
       </main>
+
+      {/* Edit Template Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {isCreatingNew ? "Create New Template" : `Edit: ${editingTemplate?.name}`}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Template Name</Label>
+              <Input
+                id="edit-name"
+                placeholder="e.g., Welcome Email"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-subject">Subject Line</Label>
+              <Input
+                id="edit-subject"
+                placeholder="e.g., Welcome to VC Brain! 🚀"
+                value={editSubject}
+                onChange={(e) => setEditSubject(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-content">Email Content (HTML)</Label>
+              <Tabs defaultValue="edit-compose" className="w-full">
+                <TabsList className="mb-2">
+                  <TabsTrigger value="edit-compose">Compose</TabsTrigger>
+                  <TabsTrigger value="edit-preview">Preview</TabsTrigger>
+                </TabsList>
+                <TabsContent value="edit-compose">
+                  <Textarea
+                    id="edit-content"
+                    placeholder="Write your email content here... (HTML supported)"
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="min-h-[300px] font-mono text-sm"
+                  />
+                </TabsContent>
+                <TabsContent value="edit-preview">
+                  <div className="border rounded-lg p-6 bg-white min-h-[300px]">
+                    <div
+                      className="prose prose-sm max-w-none text-gray-900"
+                      dangerouslySetInnerHTML={{
+                        __html: editContent || "<p>No content</p>",
+                      }}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeEditModal}>
+              Cancel
+            </Button>
+            <Button onClick={saveTemplate} disabled={isSavingTemplate}>
+              {isSavingTemplate ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Template?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{templateToDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={deleteTemplate}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
