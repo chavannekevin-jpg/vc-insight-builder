@@ -90,7 +90,7 @@ serve(async (req) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "Kev from Ugly Baby <kev@updates.vc-brain.com>",
+            from: "Kev from VC Brain <kev@updates.vc-brain.com>",
             to: [user.email],
             subject: "Your VC verdict is waiting (expires soon)",
             html: `
@@ -98,7 +98,7 @@ serve(async (req) => {
                 <h2 style="color: #1a1a1a; margin-bottom: 20px;">Hey there 👋</h2>
                 
                 <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
-                  I noticed you started building your VC-ready profile on Ugly Baby but haven't unlocked your full analysis yet.
+                  I noticed you started building your VC-ready profile on VC Brain but haven't unlocked your full analysis yet.
                 </p>
                 
                 <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
@@ -116,7 +116,7 @@ serve(async (req) => {
                 </ul>
                 
                 <div style="text-align: center; margin: 32px 0;">
-                  <a href="https://uglybaby.app/hub" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                  <a href="https://vc-brain.com/" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
                     Unlock Your Full Analysis →
                   </a>
                 </div>
