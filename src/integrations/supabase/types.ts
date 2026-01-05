@@ -366,6 +366,7 @@ export type Database = {
       }
       memo_purchases: {
         Row: {
+          admin_notified: boolean | null
           amount_paid: number
           company_id: string
           created_at: string
@@ -374,6 +375,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_notified?: boolean | null
           amount_paid: number
           company_id: string
           created_at?: string
@@ -382,6 +384,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_notified?: boolean | null
           amount_paid?: number
           company_id?: string
           created_at?: string
@@ -548,6 +551,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin_notified_signup: boolean | null
           created_at: string
           email: string
           id: string
@@ -556,6 +560,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_notified_signup?: boolean | null
           created_at?: string
           email: string
           id: string
@@ -564,6 +569,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_notified_signup?: boolean | null
           created_at?: string
           email?: string
           id?: string
