@@ -59,7 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: from || "Kev from Ugly Baby <kev@updates.vc-brain.com>",
+        from: from || "Kev from VC Brain <kev@updates.vc-brain.com>",
         to: Array.isArray(to) ? to : [to],
         subject,
         html: html || undefined,
