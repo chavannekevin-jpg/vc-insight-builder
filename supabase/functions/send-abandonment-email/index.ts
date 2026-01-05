@@ -9,41 +9,63 @@ const corsHeaders = {
 };
 
 // Default template content as fallback
-const DEFAULT_SUBJECT = "Your VC verdict is waiting (expires soon)";
+const DEFAULT_SUBJECT = "You stopped right before the interesting part...";
 const DEFAULT_CONTENT = `
   <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
     <h2 style="color: #1a1a1a; margin-bottom: 20px;">Hey there 👋</h2>
     
     <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
-      I noticed you started building your VC-ready profile on VC Brain but haven't unlocked your full analysis yet.
+      I noticed you started building your investment memo on VC Brain — then stopped right before the interesting part.
     </p>
     
     <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
-      Your free verdict showed some areas VCs would flag — but the <strong>full memo</strong> shows you exactly how to fix them before your next pitch.
+      That's usually where things get real.
     </p>
     
     <p style="color: #333; line-height: 1.6; margin-bottom: 12px;">
-      Here's what other founders discovered in their full analysis:
+      It's where founders discover:
+    </p>
+    
+    <ul style="color: #333; line-height: 1.8; margin-bottom: 20px; padding-left: 20px;">
+      <li>Why VCs keep saying "interesting, but not for us"</li>
+      <li>Which parts of the story don't quite land</li>
+      <li>And which assumptions quietly kill a round before it starts</li>
+    </ul>
+    
+    <p style="color: #333; line-height: 1.6; margin-bottom: 12px;">
+      By completing your analysis, you unlock a <strong>9-page VC-style report</strong> that helps you:
     </p>
     
     <ul style="color: #333; line-height: 1.8; margin-bottom: 24px; padding-left: 20px;">
-      <li>The exact phrases that made VCs tune out</li>
-      <li>Which metrics were missing (and how to add them)</li>
-      <li>A 90-day action plan to become fundable</li>
+      <li>Sharpen your narrative so investors actually remember you</li>
+      <li>Pressure-test your model against VC-grade scalability benchmarks</li>
+      <li>Build a clear investment thesis you can share with real investors</li>
     </ul>
+    
+    <p style="color: #333; line-height: 1.6; margin-bottom: 8px;">
+      <strong>In short:</strong>
+    </p>
+    <p style="color: #333; line-height: 1.6; margin-bottom: 24px;">
+      👉 Stop pitching like a founder<br>
+      👉 Start explaining your startup like a VC would
+    </p>
     
     <div style="text-align: center; margin: 32px 0;">
       <a href="https://vc-brain.com/" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-        Unlock Your Full Analysis →
+        Continue Your Analysis →
       </a>
     </div>
     
-    <p style="color: #666; font-size: 14px; line-height: 1.6; margin-top: 24px;">
-      P.S. Your verdict data expires after 7 days. Don't let that research go to waste!
+    <p style="color: #333; line-height: 1.6; margin-top: 24px;">
+      If you have feedback or want to chat about something specific — just hit reply. I read everything.
     </p>
     
     <p style="color: #333; margin-top: 24px;">
       — Kev
+    </p>
+    
+    <p style="color: #666; font-size: 14px; line-height: 1.6; margin-top: 20px;">
+      P.S. Your data expires after 7 days. Don't let that research go to waste.
     </p>
   </div>
 `;
