@@ -54,9 +54,19 @@ function formatDate(dateString: string): string {
   });
 }
 
+const NOTIFICATIONS_DISABLED = true;
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (NOTIFICATIONS_DISABLED) {
+    console.log("Admin notifications are disabled; exiting.");
+    return new Response(JSON.stringify({ success: true, disabled: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   }
 
   try {
