@@ -63,6 +63,8 @@ interface UserData {
   total_paid: number;
   last_sign_in_at: string | null;
   sign_in_count: number;
+  admin_notified_signup: boolean;
+  abandonment_24h_sent: boolean;
 }
 
 interface CompanyAccess {
@@ -146,7 +148,7 @@ const AdminUsersHub = () => {
     try {
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, email, created_at, last_sign_in_at, sign_in_count")
+        .select("id, email, created_at, last_sign_in_at, sign_in_count, admin_notified_signup")
         .order("created_at", { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -189,6 +191,14 @@ const AdminUsersHub = () => {
         purchasesMap[p.user_id] = (purchasesMap[p.user_id] || 0) + Number(p.amount_paid);
       });
 
+      // Fetch abandonment emails sent
+      const { data: sentEmails } = await supabase
+        .from("sent_emails")
+        .select("user_id, email_type")
+        .eq("email_type", "abandonment_24h");
+
+      const abandonmentSentSet = new Set((sentEmails || []).map(e => e.user_id));
+
       const usersData: UserData[] = (profiles || []).map(profile => ({
         id: profile.id,
         email: profile.email,
@@ -199,6 +209,8 @@ const AdminUsersHub = () => {
         total_paid: purchasesMap[profile.id] || 0,
         last_sign_in_at: profile.last_sign_in_at,
         sign_in_count: profile.sign_in_count || 0,
+        admin_notified_signup: profile.admin_notified_signup || false,
+        abandonment_24h_sent: abandonmentSentSet.has(profile.id),
       }));
 
       setUsers(usersData);
@@ -474,6 +486,7 @@ const AdminUsersHub = () => {
                         <TableHead>Joined</TableHead>
                         <TableHead>Last Seen</TableHead>
                         <TableHead>Sign-ins</TableHead>
+                        <TableHead>Emails</TableHead>
                         <TableHead>Companies</TableHead>
                         <TableHead>Analyses</TableHead>
                         <TableHead>Revenue</TableHead>
@@ -510,6 +523,25 @@ const AdminUsersHub = () => {
                             <Badge variant={user.sign_in_count > 5 ? "default" : "secondary"}>
                               {user.sign_in_count}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              {/* Admin notification */}
+                              <span 
+                                title={user.admin_notified_signup ? "Admin notified" : "Admin not notified"}
+                                className={user.admin_notified_signup ? "text-green-500" : "text-muted-foreground/40"}
+                              >
+                                🔔
+                              </span>
+                              {/* Abandonment email */}
+                              {user.total_paid > 0 ? (
+                                <span title="Converted (paid)" className="text-green-500">✅</span>
+                              ) : user.abandonment_24h_sent ? (
+                                <span title="Abandonment email sent" className="text-blue-500">📧</span>
+                              ) : (
+                                <span title="Abandonment email pending" className="text-muted-foreground/40">📧</span>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell><Badge variant="secondary">{user.companies_count}</Badge></TableCell>
                           <TableCell>
