@@ -12,35 +12,41 @@ const corsHeaders = {
 const DEFAULT_SUBJECT = "You stopped right before the interesting part...";
 const DEFAULT_CONTENT = `
   <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <h2 style="color: #1a1a1a; margin-bottom: 20px;">Hey there 👋</h2>
-    
     <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
-      I noticed you started building your investment memo on VC Brain — then stopped right before the interesting part.
+      Hey there 👋
     </p>
     
     <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
-      That's usually where things get real.
+      You started building your investment memo on VC Brain — and stopped just before the part where things get real.
+    </p>
+    
+    <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
+      This is usually the moment where VCs quietly decide:
+    </p>
+    
+    <p style="color: #555; font-style: italic; line-height: 1.6; margin-bottom: 16px; padding-left: 16px; border-left: 3px solid #7c3aed;">
+      "Interesting… but not for us."
+    </p>
+    
+    <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
+      Not because the startup is bad —<br>
+      but because something in the story doesn't survive investor scrutiny.
     </p>
     
     <p style="color: #333; line-height: 1.6; margin-bottom: 12px;">
-      It's where founders discover:
+      By finishing your analysis (~10 minutes), you unlock a <strong>9-page VC-style report</strong> that shows:
     </p>
     
     <ul style="color: #333; line-height: 1.8; margin-bottom: 20px; padding-left: 20px;">
-      <li>Why VCs keep saying "interesting, but not for us"</li>
-      <li>Which parts of the story don't quite land</li>
-      <li>And which assumptions quietly kill a round before it starts</li>
+      <li>Where investors lose conviction without telling you</li>
+      <li>Which assumptions weaken your round before it starts</li>
+      <li>How your narrative actually sounds from the other side of the table</li>
     </ul>
     
-    <p style="color: #333; line-height: 1.6; margin-bottom: 12px;">
-      By completing your analysis, you unlock a <strong>9-page VC-style report</strong> that helps you:
+    <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
+      This isn't pitch advice.<br>
+      It's how VCs internally evaluate whether to move forward or pass.
     </p>
-    
-    <ul style="color: #333; line-height: 1.8; margin-bottom: 24px; padding-left: 20px;">
-      <li>Sharpen your narrative so investors actually remember you</li>
-      <li>Pressure-test your model against VC-grade scalability benchmarks</li>
-      <li>Build a clear investment thesis you can share with real investors</li>
-    </ul>
     
     <p style="color: #333; line-height: 1.6; margin-bottom: 8px;">
       <strong>In short:</strong>
@@ -50,23 +56,16 @@ const DEFAULT_CONTENT = `
       👉 Start explaining your startup like a VC would
     </p>
     
+    <p style="color: #333; line-height: 1.6; margin-bottom: 16px;">
+      You're already partway through.<br>
+      Finish the analysis and see what investors really see.
+    </p>
+    
     <div style="text-align: center; margin: 32px 0;">
       <a href="https://vc-brain.com/" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-        Continue Your Analysis →
+        👉 Continue my VC analysis
       </a>
     </div>
-    
-    <p style="color: #333; line-height: 1.6; margin-top: 24px;">
-      If you have feedback or want to chat about something specific — just hit reply. I read everything.
-    </p>
-    
-    <p style="color: #333; margin-top: 24px;">
-      — Kev
-    </p>
-    
-    <p style="color: #666; font-size: 14px; line-height: 1.6; margin-top: 20px;">
-      P.S. Your data expires after 7 days. Don't let that research go to waste.
-    </p>
   </div>
 `;
 
