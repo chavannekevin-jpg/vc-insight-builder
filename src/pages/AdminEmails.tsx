@@ -46,6 +46,10 @@ import {
   Trash2,
   Zap,
   FileText,
+  Clock,
+  Bell,
+  BellOff,
+  Timer,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -55,6 +59,17 @@ interface UserWithCompany {
   companyName: string | null;
   createdAt: string;
   hasPaid: boolean;
+  adminNotifiedSignup: boolean;
+  abandonment24hSent: boolean;
+  abandonment24hSentAt: string | null;
+}
+
+interface AutomationStats {
+  signupNotificationsSent: number;
+  purchaseNotificationsSent: number;
+  abandonment24hSent: number;
+  abandonment24hPending: number;
+  abandonment24hNotEligible: number;
 }
 
 interface EmailTemplate {
@@ -75,6 +90,13 @@ const AdminEmails = () => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [users, setUsers] = useState<UserWithCompany[]>([]);
+  const [automationStats, setAutomationStats] = useState<AutomationStats>({
+    signupNotificationsSent: 0,
+    purchaseNotificationsSent: 0,
+    abandonment24hSent: 0,
+    abandonment24hPending: 0,
+    abandonment24hNotEligible: 0,
+  });
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
 
@@ -165,18 +187,34 @@ const AdminEmails = () => {
 
   const fetchUsers = async () => {
     try {
+      // Get profiles with admin_notified_signup field
       const { data: profiles, error } = await supabase
         .from("profiles")
-        .select("id, email, created_at")
+        .select("id, email, created_at, admin_notified_signup")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
+      // Get purchases with admin_notified field
       const { data: purchases } = await supabase
         .from("memo_purchases")
-        .select("user_id");
+        .select("user_id, admin_notified");
 
       const paidUserIds = new Set(purchases?.map((p) => p.user_id) || []);
+      const purchaseNotifiedCount = purchases?.filter(p => p.admin_notified).length || 0;
+
+      // Get sent abandonment emails
+      const { data: sentEmails } = await supabase
+        .from("sent_emails")
+        .select("user_id, email_type, sent_at");
+
+      const abandonment24hMap = new Map<string, string>(
+        sentEmails?.filter(e => e.email_type === 'abandonment_24h')
+          .map(e => [e.user_id, e.sent_at || ''])
+      );
+
+      const now = new Date();
+      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       const usersWithCompanies = await Promise.all(
         (profiles || []).map(async (profile) => {
@@ -192,9 +230,39 @@ const AdminEmails = () => {
             companyName: company?.name || null,
             createdAt: profile.created_at,
             hasPaid: paidUserIds.has(profile.id),
+            adminNotifiedSignup: profile.admin_notified_signup || false,
+            abandonment24hSent: abandonment24hMap.has(profile.id),
+            abandonment24hSentAt: abandonment24hMap.get(profile.id) || null,
           };
         })
       );
+
+      // Calculate automation stats
+      const signupNotificationsSent = profiles?.filter(p => p.admin_notified_signup).length || 0;
+      
+      let abandonment24hPending = 0;
+      let abandonment24hNotEligible = 0;
+
+      usersWithCompanies.forEach(user => {
+        if (user.hasPaid || user.abandonment24hSent) {
+          abandonment24hNotEligible++;
+        } else {
+          const signupDate = new Date(user.createdAt);
+          if (signupDate <= twentyFourHoursAgo) {
+            abandonment24hPending++;
+          } else {
+            abandonment24hNotEligible++; // Too recent
+          }
+        }
+      });
+
+      setAutomationStats({
+        signupNotificationsSent,
+        purchaseNotificationsSent: purchaseNotifiedCount,
+        abandonment24hSent: abandonment24hMap.size,
+        abandonment24hPending,
+        abandonment24hNotEligible,
+      });
 
       setUsers(usersWithCompanies);
     } catch (error) {
@@ -506,41 +574,80 @@ const AdminEmails = () => {
                   {automatedTemplates.map((template) => (
                     <div
                       key={template.id}
-                      className="flex items-center justify-between p-4 border rounded-lg bg-amber-50/50 border-amber-200"
+                      className="p-4 border rounded-lg bg-amber-50/50 border-amber-200"
                     >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium flex items-center gap-2">
-                          {template.name}
-                          <Badge variant="secondary" className="text-xs">
-                            {template.automation_key}
-                          </Badge>
-                        </p>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {template.subject}
-                        </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium flex items-center gap-2">
+                            {template.name}
+                            <Badge variant="secondary" className="text-xs">
+                              {template.automation_key}
+                            </Badge>
+                          </p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {template.subject}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditModal(template)}
+                          >
+                            <Pencil className="w-4 h-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => loadTemplate(template)}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Preview
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditModal(template)}
-                        >
-                          <Pencil className="w-4 h-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => loadTemplate(template)}
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          Preview
-                        </Button>
-                      </div>
+                      {/* Stats for 24h abandonment email */}
+                      {template.automation_key === 'abandonment_24h' && (
+                        <div className="flex items-center gap-3 mt-3 pt-3 border-t border-amber-200">
+                          <div className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                            <span className="text-xs font-medium text-green-700">{automationStats.abandonment24hSent} sent</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-amber-600" />
+                            <span className="text-xs font-medium text-amber-700">{automationStats.abandonment24hPending} pending</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <BellOff className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">{automationStats.abandonment24hNotEligible} not eligible</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               )}
+
+              {/* Admin Notification Stats */}
+              <div className="mt-6 pt-4 border-t border-border">
+                <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-primary" />
+                  Admin Notification Stats
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-muted/50 rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-1">Signup Notifications</p>
+                    <p className="text-lg font-semibold text-foreground">{automationStats.signupNotificationsSent}</p>
+                    <p className="text-xs text-muted-foreground">sent to admin</p>
+                  </div>
+                  <div className="p-3 bg-muted/50 rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-1">Purchase Notifications</p>
+                    <p className="text-lg font-semibold text-foreground">{automationStats.purchaseNotificationsSent}</p>
+                    <p className="text-xs text-muted-foreground">sent to admin</p>
+                  </div>
+                </div>
+              </div>
             </ModernCard>
 
             {/* Manual Templates Section */}
@@ -713,35 +820,80 @@ const AdminEmails = () => {
                         Deselect All
                       </Button>
                     </div>
-                    <div className="max-h-[300px] overflow-y-auto space-y-2 border rounded-lg p-2">
-                      {users.map((user) => (
-                        <div
-                          key={user.id}
-                          className={`p-2 rounded-lg cursor-pointer transition-colors ${
-                            selectedUsers.includes(user.id)
-                              ? "bg-primary/10 border border-primary/30"
-                              : "hover:bg-muted"
-                          }`}
-                          onClick={() => toggleUserSelection(user.id)}
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm font-medium truncate">
-                              {user.email}
-                            </p>
-                            <Badge 
-                              variant="outline" 
-                              className={`text-xs shrink-0 ${user.hasPaid ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}
-                            >
-                              {user.hasPaid ? 'Paid' : 'Not Paid'}
-                            </Badge>
+                    <div className="max-h-[400px] overflow-y-auto space-y-2 border rounded-lg p-2">
+                      {users.map((user) => {
+                        const now = new Date();
+                        const signupDate = new Date(user.createdAt);
+                        const hoursSinceSignup = (now.getTime() - signupDate.getTime()) / (1000 * 60 * 60);
+                        const isRecent = hoursSinceSignup < 24;
+
+                        return (
+                          <div
+                            key={user.id}
+                            className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                              selectedUsers.includes(user.id)
+                                ? "bg-primary/10 border border-primary/30"
+                                : "hover:bg-muted border border-transparent"
+                            }`}
+                            onClick={() => toggleUserSelection(user.id)}
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <p className="text-sm font-medium truncate">
+                                {user.email}
+                              </p>
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs shrink-0 ${user.hasPaid ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}
+                              >
+                                {user.hasPaid ? 'Paid' : 'Not Paid'}
+                              </Badge>
+                            </div>
+                            {user.companyName && (
+                              <p className="text-xs text-muted-foreground truncate mb-2">
+                                {user.companyName}
+                              </p>
+                            )}
+                            {/* Email status badges */}
+                            <div className="flex flex-wrap gap-1.5 mt-1">
+                              {/* Admin notification status */}
+                              {user.adminNotifiedSignup ? (
+                                <Badge variant="outline" className="text-[10px] py-0.5 bg-green-50 text-green-700 border-green-200">
+                                  <Bell className="w-2.5 h-2.5 mr-1" />
+                                  Admin notified
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-[10px] py-0.5 bg-amber-50 text-amber-600 border-amber-200">
+                                  <Timer className="w-2.5 h-2.5 mr-1" />
+                                  Pending notification
+                                </Badge>
+                              )}
+                              
+                              {/* Abandonment email status */}
+                              {user.hasPaid ? (
+                                <Badge variant="outline" className="text-[10px] py-0.5 bg-green-50 text-green-700 border-green-200">
+                                  <CheckCircle2 className="w-2.5 h-2.5 mr-1" />
+                                  Converted
+                                </Badge>
+                              ) : user.abandonment24hSent ? (
+                                <Badge variant="outline" className="text-[10px] py-0.5 bg-blue-50 text-blue-700 border-blue-200">
+                                  <Mail className="w-2.5 h-2.5 mr-1" />
+                                  Abandonment sent
+                                </Badge>
+                              ) : isRecent ? (
+                                <Badge variant="outline" className="text-[10px] py-0.5 bg-muted text-muted-foreground border-border">
+                                  <Clock className="w-2.5 h-2.5 mr-1" />
+                                  Too recent
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-[10px] py-0.5 bg-amber-50 text-amber-600 border-amber-200">
+                                  <Timer className="w-2.5 h-2.5 mr-1" />
+                                  Abandonment pending
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          {user.companyName && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {user.companyName}
-                            </p>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
