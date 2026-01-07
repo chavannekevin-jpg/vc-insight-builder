@@ -360,15 +360,10 @@ export const VCVerdictCard = memo(({
       
       <div className="relative bg-card/95 backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
         {/* Preview indicator */}
-        <div className="px-6 py-2.5 bg-muted/30 border-b border-border/30 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Eye className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground font-medium">
-              Preview
-            </span>
-          </div>
-          <span className="text-[10px] text-muted-foreground/70">
-            Full analysis: 9 VC-style sections
+        <div className="px-6 py-3 bg-primary/10 border-b border-primary/20 flex items-center justify-center gap-2">
+          <Eye className="w-4 h-4 text-primary" />
+          <span className="text-sm text-primary font-semibold">
+            Preview of the 9 page VC analysis
           </span>
         </div>
 
@@ -542,7 +537,7 @@ export const VCVerdictCard = memo(({
             size="lg"
           >
             <FileText className="w-4 h-4 mr-2" />
-            {hasPaid && generationsAvailable > 0 ? "Edit & Regenerate" : "See All 9 Sections"}
+            {hasPaid && generationsAvailable > 0 ? "Edit & Regenerate" : "Unlock the Full 9 Page Analysis"}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
           <p className="text-xs text-center text-muted-foreground mt-3">
