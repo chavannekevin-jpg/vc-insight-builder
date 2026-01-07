@@ -357,6 +357,19 @@ export const VCVerdictCard = memo(({
       )}
       
       <div className="relative bg-card/95 backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
+        {/* Preview indicator */}
+        <div className="px-6 py-2.5 bg-muted/30 border-b border-border/30 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Eye className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground font-medium">
+              Preview
+            </span>
+          </div>
+          <span className="text-[10px] text-muted-foreground/70">
+            Full analysis: 9 VC-style sections
+          </span>
+        </div>
+
         {/* Header */}
         <div className="p-6 border-b border-border/50">
           <div className="flex items-center justify-between mb-4">
@@ -491,6 +504,24 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
+        {/* Locked sections teaser */}
+        <div className="px-6 py-4 border-b border-border/50 bg-muted/10">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium text-muted-foreground">9 sections in your full analysis:</p>
+            <Lock className="w-3 h-3 text-muted-foreground/50" />
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {['Problem', 'Solution', 'Market', 'Competition', 'Team', 'Traction', 'Business Model', 'Vision & Exit'].map((section) => (
+              <span 
+                key={section} 
+                className="text-[10px] px-2 py-1 rounded-md bg-muted/50 text-muted-foreground/70 border border-border/30"
+              >
+                {section}
+              </span>
+            ))}
+          </div>
+        </div>
+
         {/* The Killer Question */}
         <div className="px-6 py-4 border-b border-border/50">
           <div className="p-4 rounded-xl border-2 border-dashed border-muted-foreground/30 text-center">
@@ -508,14 +539,14 @@ export const VCVerdictCard = memo(({
             className="w-full h-12 text-sm font-semibold shadow-glow hover-neon-pulse" 
             size="lg"
           >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            {hasPaid && generationsAvailable > 0 ? "Edit & Regenerate" : "Let me Fix this"}
+            <FileText className="w-4 h-4 mr-2" />
+            {hasPaid && generationsAvailable > 0 ? "Edit & Regenerate" : "See All 9 Sections"}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
           <p className="text-xs text-center text-muted-foreground mt-3">
             {hasPaid && generationsAvailable > 0 
               ? `You have ${generationsAvailable} generation credit${generationsAvailable !== 1 ? 's' : ''} available.`
-              : "Change the internal conversation. Transform how VCs talk about you."}
+              : "Problem · Solution · Market · Team · Traction · Business Model · Competition · Vision · Exit"}
           </p>
           <p className="text-[10px] text-center text-muted-foreground/60 mt-1">
             This is not advice. This is the room after the meeting.
