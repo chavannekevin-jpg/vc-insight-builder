@@ -16,7 +16,7 @@ import {
   ShieldX, MessageSquareX, Zap, Target,
   Shield, TrendingDown, DollarSign, Users, BarChart3, Rocket,
   RefreshCw, Briefcase, Code, GraduationCap, Building,
-  ChevronRight, Pencil
+  ChevronRight, Pencil, Lightbulb
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,6 +48,8 @@ interface VCVerdict {
   vcFrameworkCheck: string;
   timingWarning?: string;
   inevitabilityStatement?: string;
+  diagnosticSummary?: string;
+  pathForward?: string;
   narrativeTransformation?: NarrativeTransformation;
   founderProfile?: string;
   hiddenIssuesCount?: number;
@@ -426,38 +428,38 @@ export const VCVerdictCard = memo(({
         {/* Narrative Transformation */}
         <div className="px-6 py-4 bg-muted/20 border-b border-border/50">
           <div className="flex items-stretch gap-4">
-            <div className="flex-1 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-              <p className="text-[10px] uppercase tracking-wider text-destructive font-semibold mb-1">Now</p>
+            <div className="flex-1 p-3 rounded-lg bg-muted/40 border border-border/50">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">What VCs hear</p>
               <p className="text-xs text-muted-foreground leading-relaxed">"{narrativeTransformation.currentNarrative}"</p>
             </div>
             <div className="flex items-center">
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </div>
             <div className="flex-1 p-3 rounded-lg bg-primary/10 border border-primary/20">
-              <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">After</p>
+              <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">What they could hear</p>
               <p className="text-xs text-foreground leading-relaxed">"{narrativeTransformation.transformedNarrative}"</p>
             </div>
           </div>
         </div>
 
-        {/* Deal Killers */}
+        {/* Questions VCs Will Ask */}
         <div className="p-6 border-b border-border/50">
           <div className="flex items-center gap-2 mb-4">
-            <ShieldX className="w-4 h-4 text-destructive" />
-            <h3 className="text-sm font-semibold text-destructive">Why VCs Will Pass</h3>
+            <AlertTriangle className="w-4 h-4 text-warning" />
+            <h3 className="text-sm font-semibold text-foreground">Questions VCs Will Ask</h3>
           </div>
           
           <div className="space-y-3">
             {concerns.slice(0, 2).map((concern, i) => (
               <div key={i} className="group relative">
-                <div className="flex gap-3 p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-destructive/30 transition-colors">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 text-destructive text-xs font-bold flex items-center justify-center">
+                <div className="flex gap-3 p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-warning/30 transition-colors">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-warning/20 text-warning text-xs font-bold flex items-center justify-center">
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-foreground leading-relaxed">{concern.text}</p>
                     {concern.vcQuote && (
-                      <p className="text-xs text-destructive/80 mt-2 italic">"{concern.vcQuote}"</p>
+                      <p className="text-xs text-muted-foreground mt-2 italic">"{concern.vcQuote}"</p>
                     )}
                   </div>
                 </div>
@@ -466,27 +468,27 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* Why This Narrative Fails - Inevitability */}
-        <div className="px-6 py-4 bg-gradient-to-r from-destructive/5 to-transparent border-b border-border/50">
+        {/* The Good News - Constructive Path Forward */}
+        <div className="px-6 py-4 bg-gradient-to-r from-primary/5 to-transparent border-b border-border/50">
           <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="w-4 h-4 text-warning" />
-            <h4 className="text-sm font-semibold text-foreground">Why This Narrative Fails</h4>
+            <Lightbulb className="w-4 h-4 text-primary" />
+            <h4 className="text-sm font-semibold text-foreground">The Good News</h4>
           </div>
           <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-            {inevitabilityStatement}
+            {verdict?.pathForward || "Every question above has a proven way to address it—the full analysis shows exactly how."}
           </p>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li className="flex items-start gap-2">
-              <span className="text-destructive mt-0.5">•</span>
-              <span>This version of your pitch <strong className="text-foreground">structurally fails</strong> in IC—not because of timing, but because the logic doesn't close</span>
+              <span className="text-primary mt-0.5">✓</span>
+              <span>Every concern listed above <strong className="text-foreground">can be addressed</strong> with the right framing</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-destructive mt-0.5">•</span>
-              <span>These issues <strong className="text-foreground">wouldn't be debated</strong>—they'd be dismissed</span>
+              <span className="text-primary mt-0.5">✓</span>
+              <span>The full analysis gives you <strong className="text-foreground">word-for-word responses</strong> to these questions</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-destructive mt-0.5">•</span>
-              <span>Every partner sees the same structural gaps. No warm intro changes that.</span>
+              <span className="text-primary mt-0.5">✓</span>
+              <span>Founders who prepare for these questions <strong className="text-foreground">close rounds faster</strong></span>
             </li>
           </ul>
         </div>
@@ -522,12 +524,12 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* The Killer Question */}
+        {/* The Key Question */}
         <div className="px-6 py-4 border-b border-border/50">
-          <div className="p-4 rounded-xl border-2 border-dashed border-muted-foreground/30 text-center">
+          <div className="p-4 rounded-xl border-2 border-dashed border-primary/30 text-center">
             <p className="text-sm text-foreground">
-              Do you want to walk into your next VC meeting with a narrative that <strong className="text-destructive">fails under scrutiny</strong>, 
-              or one that <strong className="text-primary">changes what they say about you</strong>?
+              Would you rather discover these questions in your next VC meeting — 
+              or <strong className="text-primary">walk in with answers already prepared</strong>?
             </p>
           </div>
         </div>
