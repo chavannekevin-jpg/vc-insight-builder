@@ -12,11 +12,12 @@ import {
 import { 
   ArrowRight, AlertTriangle, 
   Eye, CheckCircle2, Lock, Sparkles, 
-  FileText, Flame, Scale, 
-  ShieldX, MessageSquareX, Zap, Target,
-  Shield, TrendingDown, DollarSign, Users, BarChart3, Rocket,
+  FileText, Scale, 
+  MessageSquareX, Target,
+  Rocket,
   RefreshCw, Briefcase, Code, GraduationCap, Building,
-  ChevronRight, Pencil, Lightbulb
+  ChevronRight, Pencil, Lightbulb,
+  BookOpen, BarChart3, MessageSquare, Calendar, Wrench
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -330,17 +331,38 @@ export const VCVerdictCard = memo(({
   const currentProfile = founderProfiles.find(p => p.value === selectedProfile) || founderProfiles[4];
   const ProfileIcon = currentProfile.icon;
 
-  const valueItems = [
-    { icon: Flame, text: `+${totalHiddenIssues} hidden deal-breakers`, color: 'text-destructive' },
-    { icon: Target, text: 'Section-by-section scores', color: 'text-primary' },
-    { icon: Zap, text: '90-day fix playbook', color: 'text-warning' },
-    { icon: Shield, text: 'Moat durability analysis', color: 'text-primary' },
-    { icon: TrendingDown, text: 'Competitor 12-month moves', color: 'text-destructive' },
-    { icon: DollarSign, text: 'Bottoms-up TAM model', color: 'text-success' },
-    { icon: Users, text: 'Team credibility gaps', color: 'text-primary' },
-    { icon: FileText, text: 'IC objection responses', color: 'text-muted-foreground' },
-    { icon: BarChart3, text: 'Traction depth test', color: 'text-warning' },
-    { icon: Rocket, text: 'Exit narrative & acquirers', color: 'text-primary' },
+  // Content explanation items for "What Each Section Contains"
+  const sectionContents = [
+    { 
+      icon: BookOpen, 
+      title: 'Investment Memo Narrative', 
+      description: 'Each section includes a VC-style narrative—like what partners write in their internal deal memos',
+      color: 'text-primary' 
+    },
+    { 
+      icon: BarChart3, 
+      title: 'Scores + Benchmarks', 
+      description: `See how your ${companyCategory || 'company'} scores against VC investment criteria and ${companyStage} stage averages`,
+      color: 'text-warning' 
+    },
+    { 
+      icon: MessageSquare, 
+      title: 'Questions VCs Will Ask', 
+      description: 'Specific questions investors will raise—with suggested responses',
+      color: 'text-destructive' 
+    },
+    { 
+      icon: Calendar, 
+      title: '90-Day Action Plan', 
+      description: 'Week-by-week priorities to strengthen each section before your next investor meeting',
+      color: 'text-success' 
+    },
+    { 
+      icon: Wrench, 
+      title: 'Section-Specific Tools', 
+      description: 'TAM calculator, moat durability analysis, team credibility gaps, exit narrative, and more',
+      color: 'text-primary' 
+    },
   ];
 
   return (
@@ -365,6 +387,15 @@ export const VCVerdictCard = memo(({
           <span className="text-sm text-primary font-semibold">
             Preview of the 9 page VC analysis
           </span>
+        </div>
+
+        {/* What We Analyzed - Company Context */}
+        <div className="px-6 py-3 bg-muted/20 border-b border-border/30">
+          <p className="text-sm text-muted-foreground">
+            Analysis for a <strong className="text-foreground">{companyStage}</strong>
+            {companyCategory && <> <strong className="text-foreground">{companyCategory}</strong></>} company
+            {deckParsed && <span className="text-xs ml-2 text-primary">(+ pitch deck data)</span>}
+          </p>
         </div>
 
         {/* Header */}
@@ -488,34 +519,46 @@ export const VCVerdictCard = memo(({
           </ul>
         </div>
 
-        {/* Value Props Grid */}
+        {/* What Each Section Contains */}
         <div className="p-6 border-b border-border/50">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">What you'll uncover in the full analysis</p>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            {valueItems.map((item, i) => (
-              <div key={i} className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
-                <item.icon className={`w-4 h-4 ${item.color}`} />
-                <span className="text-[10px] text-center text-muted-foreground leading-tight">{item.text}</span>
+          <h4 className="text-sm font-semibold mb-4">What Each Section Contains</h4>
+          
+          <div className="space-y-4">
+            {sectionContents.map((item, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <item.icon className={`w-5 h-5 ${item.color} flex-shrink-0 mt-0.5`} />
+                <div>
+                  <p className="text-sm font-medium text-foreground">{item.title}</p>
+                  <p className="text-xs text-muted-foreground">{item.description}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Locked sections teaser */}
+        {/* How Founders Use This */}
         <div className="px-6 py-4 border-b border-border/50 bg-muted/10">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-medium text-muted-foreground">9 sections in your full analysis:</p>
-            <Lock className="w-3 h-3 text-muted-foreground/50" />
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {['Problem', 'Solution', 'Market', 'Competition', 'Team', 'Traction', 'Business Model', 'Vision & Exit'].map((section) => (
-              <span 
-                key={section} 
-                className="text-[10px] px-2 py-1 rounded-md bg-muted/50 text-muted-foreground/70 border border-border/30"
-              >
-                {section}
-              </span>
-            ))}
+          <h4 className="text-sm font-semibold mb-3">How Founders Use This</h4>
+          
+          <div className="space-y-2">
+            <div className="flex items-start gap-2 text-sm">
+              <span className="text-primary font-bold">1.</span>
+              <p className="text-muted-foreground">
+                <strong className="text-foreground">Before investor meetings</strong> — Know the questions coming and prepare answers
+              </p>
+            </div>
+            <div className="flex items-start gap-2 text-sm">
+              <span className="text-primary font-bold">2.</span>
+              <p className="text-muted-foreground">
+                <strong className="text-foreground">Refining your pitch deck</strong> — Section-by-section gaps to address
+              </p>
+            </div>
+            <div className="flex items-start gap-2 text-sm">
+              <span className="text-primary font-bold">3.</span>
+              <p className="text-muted-foreground">
+                <strong className="text-foreground">Prioritizing your roadmap</strong> — 90-day plan based on VC priorities
+              </p>
+            </div>
           </div>
         </div>
 
