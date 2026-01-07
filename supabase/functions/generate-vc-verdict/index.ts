@@ -69,111 +69,128 @@ serve(async (req) => {
 
     const systemPrompt = `You are simulating what partners say to each other when the founder leaves the room. This is NOT advice—this is observation. You are the room after the meeting.
 
-You've seen 10,000+ pitches. You know exactly why 99% of startups fail to raise. Your job is to deliver the HARSH TRUTH that VCs discuss privately.
+You've seen 10,000+ pitches. You know exactly why 99% of startups fail to raise. Your job is to provide an HONEST DIAGNOSTIC—the real questions VCs would discuss privately.
 
-CRITICAL FRAMING: Focus on STRUCTURAL INEVITABILITY, not time pressure.
-- VCs don't reject companies because of a clock—they reject them because they don't see a credible path to fund-scale outcomes
-- The urgency should come from "this narrative collapses under scrutiny" not "time is running out"
-- Frame issues as structural logic failures, not deadlines
+CRITICAL FRAMING: Be direct but not discouraging.
+- VCs identify gaps and question assumptions—they don't dismiss outright
+- The goal is to PREPARE founders for investor meetings, not to demoralize them
+- Every concern should feel like "here's what you need to address" not "here's why you'll fail"
+- Frame issues as questions to prepare for, not death sentences
 
 FOUNDER PROFILE DETECTED: ${founderProfileSignals.profile}
 ${founderProfileSignals.toneGuidance}
 
 CRITICAL TONE REQUIREMENTS:
-1. Be PRECISE - every criticism should feel anchored to something specific they said or showed
-2. Focus on INEVITABILITY - why this pitch fails structurally, not temporally
-3. WITHHOLD SOLUTIONS - hint at what changes the narrative without revealing how
-4. Use SPECIFIC VC REJECTION LANGUAGE - phrases VCs actually use when passing
-5. Show the TRANSFORMATION POSSIBILITY - tease how the internal conversation could change
+1. Be PRECISE - every observation should feel anchored to something specific they said or showed
+2. BALANCE is essential - identify genuine strengths alongside gaps
+3. Frame concerns as QUESTIONS VCs will ask, not reasons they'll fail
+4. WITHHOLD SOLUTIONS - hint at what changes the narrative without revealing how
+5. Show the TRANSFORMATION POSSIBILITY - tease how the conversation could change
+
+BALANCE IS KEY:
+- Be honest about gaps, but frame them as questions to prepare for
+- Include 2-3 genuine strengths alongside concerns
+- Show that every concern has a path to resolution
+- The founder should feel motivated to dig deeper, not give up
 
 DO NOT:
-- Be empathetic or encouraging
-- Provide solutions or actionable advice
-- Use generic time-pressure language ("you have X weeks")
+- Be cruel or dismissive
+- Suggest the business is hopeless
+- Use language that makes founders feel stupid
 - Comment on data completeness
 
 TONE EXAMPLES:
-❌ "There are some areas that could be improved..."
-✅ "This gets a polite pass email before you leave the parking lot."
+❌ "This gets a polite pass email before you leave the parking lot." (too harsh)
+✅ "VCs will ask about your distribution strategy—that's the gap to address first."
 
-❌ "Market timing is important to consider..."
-✅ "This narrative doesn't survive the 'why won't incumbents crush this?' question. That's structural, not timing."
+❌ "This narrative doesn't survive scrutiny" (dismissive)
+✅ "Partners will probe on competitive positioning—here's what they'll question."
 
-❌ "You have 6 weeks before..."
-✅ "This pitch fails because there's no defensible answer to the questions partners will ask. Every IC meeting ends the same way."
+❌ "Another horizontal SaaS play hoping product quality beats distribution. It won't." (cruel)
+✅ "The distribution question is the key unlock—VCs see this as the primary gap."
 
 Return ONLY valid JSON:
 {
-  "verdict": "One brutal sentence - the dismissive thing partners say when you leave. Make it sting. Reference something SPECIFIC from their pitch.",
+  "verdict": "One honest sentence - what partners would say after the meeting. Be direct but not cruel. Reference something SPECIFIC from their pitch.",
   "readinessLevel": "LOW" | "MEDIUM" | "HIGH",
-  "readinessRationale": "2 sentences max. Why this narrative structurally fails under partner scrutiny. Be SPECIFIC to their claims.",
-  "rulingStatement": "A company-specific verdict explaining why this pitch structurally fails. Reference their actual claims. Example: 'This pitch fails at the market definition level—the ICP spans three industries, which means no wedge strategy.' MUST be specific to THIS company.",
-  "killerQuestion": "The one question that would stump this founder in an IC meeting. Make it SPECIFIC to their pitch. Example: 'What happens when [specific competitor] ships the same feature in 6 months?' NOT generic.",
+  "readinessRationale": "2 sentences max. What questions this pitch raises for partners. Be SPECIFIC to their claims.",
+  "rulingStatement": "A company-specific assessment explaining the key questions VCs will ask. Reference their actual claims. Example: 'The core question is market definition—the ICP spans three industries, which VCs will want narrowed.' MUST be specific to THIS company.",
+  "killerQuestion": "The one question this founder should prepare for before VC meetings. Make it SPECIFIC to their pitch. Example: 'What's your answer when they ask about [specific competitor]'s response?' NOT generic.",
   "frameworkScore": 35,
   "criteriaCleared": 2,
   "icStoppingPoint": "Market" | "Team" | "Traction" | "Business Model" | "Competition",
   "concerns": [
     {
-      "text": "First deal-killer - be VERY specific to what they claimed.",
+      "text": "First question VCs will ask - be VERY specific to what they claimed.",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "vcQuote": "The exact dismissive phrase a VC might say internally.",
-      "teaserLine": "COMPLETE sentence starting with 'Partners' (NOT 'Partner A/B/C'—use 'Partners' as a collective). Must be specific to THIS company. Good examples: 'Partners raised concerns about the sales cycle length—enterprise deals take 9 months but runway only supports 6.' or 'Partners questioned the market sizing—the bottoms-up calculation suggests a $50M TAM, not $2B.'"
+      "vcQuote": "How a VC might phrase this question internally.",
+      "teaserLine": "COMPLETE sentence starting with 'Partners' (NOT 'Partner A/B/C'—use 'Partners' as a collective). Frame as a question they'll probe. Good examples: 'Partners will question the sales cycle length—enterprise deals take 9 months but runway supports 6.' or 'Partners noted the market sizing needs bottoms-up validation.'"
     },
     {
-      "text": "Second deal-killer - different dimension.",
+      "text": "Second question - different dimension.",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "vcQuote": "Internal VC quote.",
-      "teaserLine": "COMPLETE sentence starting with 'Partners'. NEVER use 'Partner A/B/C/D'. Example: 'Partners noted the competitive moat relies entirely on execution speed—that is not defensible.'"
+      "vcQuote": "Internal VC phrasing.",
+      "teaserLine": "COMPLETE sentence starting with 'Partners'. Frame as a question. Example: 'Partners will ask how the competitive moat holds up against well-funded alternatives.'"
     },
     {
-      "text": "Third concern",
+      "text": "Third question",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
-      "teaserLine": "COMPLETE sentence starting with 'Partners'. Example: 'Partners flagged that the unit economics require 3x current ACV to work.'"
+      "teaserLine": "COMPLETE sentence starting with 'Partners'. Example: 'Partners flagged unit economics as an area needing clearer validation.'"
     },
     {
-      "text": "Fourth concern if applicable",
+      "text": "Fourth question if applicable",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
       "teaserLine": "COMPLETE sentence starting with 'Partners'. Be specific to their pitch."
     },
     {
-      "text": "Fifth concern if applicable",
+      "text": "Fifth question if applicable",
       "category": "market" | "team" | "business_model" | "traction" | "competition",
       "teaserLine": "COMPLETE sentence starting with 'Partners'. Be specific to their pitch."
     }
   ],
   "strengths": [
     {
-      "text": "ONE thing that keeps this from being completely hopeless - be specific to what they showed",
+      "text": "First genuine strength VCs would acknowledge - be specific to what they showed",
+      "category": "market" | "team" | "business_model" | "traction" | "competition"
+    },
+    {
+      "text": "Second genuine strength or promising signal",
+      "category": "market" | "team" | "business_model" | "traction" | "competition"
+    },
+    {
+      "text": "Third strength if applicable (can be null)",
       "category": "market" | "team" | "business_model" | "traction" | "competition"
     }
   ],
-  "marketInsight": "Market-level structural challenge SPECIFIC to their category and positioning.",
-  "vcFrameworkCheck": "Apply a VC framework showing structural gaps SPECIFIC to their claims.",
-  "inevitabilityStatement": "Why this pitch STRUCTURALLY fails—not timing, but logic. Reference their actual claims.",
+  "marketInsight": "Market-level observation SPECIFIC to their category and positioning.",
+  "vcFrameworkCheck": "Apply a VC framework showing key questions SPECIFIC to their claims.",
+  "diagnosticSummary": "The core question VCs will focus on—and why addressing it changes the conversation. Frame constructively.",
+  "pathForward": "One sentence showing that every concern above is addressable with the right preparation. Tease the full analysis.",
   "narrativeTransformation": {
-    "currentNarrative": "What VCs currently say about THIS pitch: One harsh sentence summarizing how they dismiss it. Be specific.",
-    "transformedNarrative": "What they'd say if fixed: One sentence showing the conversation shift. Tease, don't reveal."
+    "currentNarrative": "What VCs currently hear when THIS company pitches: One sentence summarizing the perception. Be specific but not cruel.",
+    "transformedNarrative": "What they'd hear with preparation: One sentence showing the conversation shift. Tease, don't reveal."
   },
   "founderProfile": "${founderProfileSignals.profile}",
   "hiddenIssuesCount": 8
 }`;
 
-    const userPrompt = `STARTUP FOR BRUTAL ASSESSMENT:
+    const userPrompt = `STARTUP FOR VC DIAGNOSTIC:
 
 Company: ${companyName || 'Unnamed Startup'}
 Stage: ${stage || 'Early'}
 Category: ${category || 'Technology'}
 
-${contextParts.length > 0 ? `WHAT THEY CLAIM:\n${contextParts.join('\n\n')}` : `LIMITED INFO: They haven't even prepared proper materials. That alone is a red flag.`}
+${contextParts.length > 0 ? `WHAT THEY CLAIM:\n${contextParts.join('\n\n')}` : `LIMITED INFO: They haven't provided detailed materials yet—focus on general stage-appropriate questions.`}
 
 REMEMBER:
-- Be brutal. Focus on structural inevitability.
-- Make criticisms feel anchored to what they actually said
+- Be honest but constructive. Focus on preparing the founder.
+- Make observations feel anchored to what they actually said
+- Include 2-3 genuine strengths alongside the questions
 - Show the gap between current narrative and what would work
 - Include the narrative transformation (before/after)
 - Detect and respond to founder profile: ${founderProfileSignals.profile}
 
-The founder should feel exposed and compelled to fix this NOW.`;
+Help the founder understand what VCs will question—and motivate them to prepare answers.`;
 
     console.log('Generating VC verdict for:', companyName, '| Profile:', founderProfileSignals.profile);
 
@@ -218,16 +235,27 @@ The founder should feel exposed and compelled to fix this NOW.`;
     // Validate and ensure arrays
     if (!Array.isArray(verdict.concerns)) verdict.concerns = [];
     if (!Array.isArray(verdict.strengths)) verdict.strengths = [];
-    if (!verdict.verdict) verdict.verdict = "Another pitch that would get a polite pass email.";
+    if (!verdict.verdict) verdict.verdict = "This pitch raises questions VCs will want to explore further.";
     if (!['LOW', 'MEDIUM', 'HIGH'].includes(verdict.readinessLevel)) verdict.readinessLevel = 'LOW';
     if (!verdict.hiddenIssuesCount) verdict.hiddenIssuesCount = Math.floor(Math.random() * 5) + 6;
-    if (!verdict.inevitabilityStatement) {
-      verdict.inevitabilityStatement = "This pitch fails because the core logic doesn't survive partner scrutiny. It's not about timing—it's about structure.";
+    
+    // Support both old field name and new field name
+    if (!verdict.diagnosticSummary && verdict.inevitabilityStatement) {
+      verdict.diagnosticSummary = verdict.inevitabilityStatement;
+    }
+    if (!verdict.diagnosticSummary) {
+      verdict.diagnosticSummary = "The core question is whether the pitch addresses what VCs need to see for this stage. The full analysis provides the roadmap.";
+    }
+    // Keep inevitabilityStatement for backwards compatibility
+    verdict.inevitabilityStatement = verdict.diagnosticSummary;
+    
+    if (!verdict.pathForward) {
+      verdict.pathForward = "Every question above has a proven way to address it—the full analysis shows exactly how.";
     }
     if (!verdict.narrativeTransformation) {
       verdict.narrativeTransformation = {
-        currentNarrative: "Another pitch that doesn't clear the bar.",
-        transformedNarrative: "A company that understands what VCs actually fund."
+        currentNarrative: "A pitch that raises questions VCs will want answered.",
+        transformedNarrative: "A company that anticipates and addresses investor concerns upfront."
       };
     }
     if (!verdict.founderProfile) verdict.founderProfile = founderProfileSignals.profile;
@@ -251,11 +279,11 @@ The founder should feel exposed and compelled to fix this NOW.`;
 // Get tone guidance for a specific founder profile
 function getFounderToneGuidance(profile: string): string {
   const toneGuidanceMap: Record<string, string> = {
-    'serial_founder': 'This is a serial founder. Be direct and skip the basics—they know the game. Focus on why THIS specific bet doesn\'t clear the bar despite their track record. Challenge them on pattern matching from past success.',
-    'technical_founder': 'This is a technical founder. They likely overvalue product and undervalue distribution. Hit hard on go-to-market, sales motion, and why technical excellence alone doesn\'t win. Challenge the "if we build it, they will come" assumption.',
-    'business_founder': 'This is a business-background founder. They likely have a polished deck but may lack technical depth or product intuition. Challenge them on defensibility, technical moat, and whether they can actually build what they\'re pitching.',
-    'domain_expert': 'This is a domain expert founder. They know their industry but may be blind to startup dynamics. Challenge them on why they\'re building a startup vs. a consultancy, and whether their network translates to scalable distribution.',
-    'first_time_founder': 'This is likely a first-time founder. They may not understand VC math or what "fundable" really means. Be direct about the bar they need to clear. Focus on fundamentals: market size, defensibility, and why this team can win.'
+    'serial_founder': 'This is a serial founder. Be direct and respect their experience—they know the game. Focus on the specific questions THIS bet raises, and acknowledge their track record.',
+    'technical_founder': 'This is a technical founder. They may prioritize product over distribution—help them see what VCs will probe. Frame go-to-market questions constructively.',
+    'business_founder': 'This is a business-background founder. They likely have a polished deck—help them anticipate technical depth and defensibility questions VCs will ask.',
+    'domain_expert': 'This is a domain expert founder. They know their industry—help them prepare for questions about startup dynamics and scalable distribution.',
+    'first_time_founder': 'This is likely a first-time founder. Be direct about what VCs look for, but frame it as preparation rather than criticism. Focus on fundamentals: market size, defensibility, and team.'
   };
   return toneGuidanceMap[profile] || toneGuidanceMap['first_time_founder'];
 }
@@ -270,7 +298,7 @@ function detectFounderProfile(founderBackground: string, traction: string, stage
       bgLower.includes('founded') || bgLower.includes('co-founded') || bgLower.includes('serial')) {
     return {
       profile: 'serial_founder',
-      toneGuidance: 'This is a serial founder. Be direct and skip the basics—they know the game. Focus on why THIS specific bet doesn\'t clear the bar despite their track record. Challenge them on pattern matching from past success.'
+      toneGuidance: 'This is a serial founder. Be direct and respect their experience—they know the game. Focus on the specific questions THIS bet raises, and acknowledge their track record.'
     };
   }
   
@@ -279,7 +307,7 @@ function detectFounderProfile(founderBackground: string, traction: string, stage
       bgLower.includes('research') || bgLower.includes('technical') || bgLower.includes('built')) {
     return {
       profile: 'technical_founder',
-      toneGuidance: 'This is a technical founder. They likely overvalue product and undervalue distribution. Hit hard on go-to-market, sales motion, and why technical excellence alone doesn\'t win. Challenge the "if we build it, they will come" assumption.'
+      toneGuidance: 'This is a technical founder. They may prioritize product over distribution—help them see what VCs will probe. Frame go-to-market questions constructively.'
     };
   }
   
@@ -288,7 +316,7 @@ function detectFounderProfile(founderBackground: string, traction: string, stage
       bgLower.includes('strategy') || bgLower.includes('business development')) {
     return {
       profile: 'business_founder',
-      toneGuidance: 'This is a business-background founder. They likely have a polished deck but may lack technical depth or product intuition. Challenge them on defensibility, technical moat, and whether they can actually build what they\'re pitching.'
+      toneGuidance: 'This is a business-background founder. They likely have a polished deck—help them anticipate technical depth and defensibility questions VCs will ask.'
     };
   }
   
@@ -297,78 +325,84 @@ function detectFounderProfile(founderBackground: string, traction: string, stage
       bgLower.includes('worked at') || bgLower.includes('led') || bgLower.includes('managed')) {
     return {
       profile: 'domain_expert',
-      toneGuidance: 'This is a domain expert founder. They know their industry but may be blind to startup dynamics. Challenge them on why they\'re building a startup vs. a consultancy, and whether their network translates to scalable distribution.'
+      toneGuidance: 'This is a domain expert founder. They know their industry—help them prepare for questions about startup dynamics and scalable distribution.'
     };
   }
   
   // First-time founder (default)
   return {
     profile: 'first_time_founder',
-    toneGuidance: 'This is likely a first-time founder. They may not understand VC math or what "fundable" really means. Be direct about the bar they need to clear. Focus on fundamentals: market size, defensibility, and why this team can win.'
+    toneGuidance: 'This is likely a first-time founder. Be direct about what VCs look for, but frame it as preparation rather than criticism. Focus on fundamentals: market size, defensibility, and team.'
   };
 }
 
-// Fallback verdicts with inevitability framing
+// Fallback verdicts with balanced, diagnostic framing
 function generateFallbackVerdict(companyName: string, stage: string, category: string, founderProfile: string) {
   const categoryInsights: Record<string, any> = {
     'saas': {
-      verdict: "Another horizontal SaaS play hoping product quality beats distribution. It won't.",
-      marketInsight: "The SaaS graveyard is full of great products with no distribution moat.",
-      vcFrameworkCheck: "Fails Sequoia's 'why you, why now' test. No clear wedge, no distribution advantage.",
-      inevitabilityStatement: "This pitch fails because there's no answer to 'why won't the 10 funded competitors with better distribution win?' That question ends every IC discussion.",
+      verdict: "VCs will focus on distribution strategy—the key question for horizontal SaaS plays.",
+      marketInsight: "The SaaS market is competitive. VCs look for clear wedge strategies and distribution advantages.",
+      vcFrameworkCheck: "Partners will apply the 'why you, why now' test—be ready to articulate your unique positioning.",
+      diagnosticSummary: "The core question is distribution: how do you reach customers more efficiently than funded alternatives? The full analysis provides frameworks to address this.",
+      pathForward: "Distribution questions are solvable—the full analysis shows proven approaches for your category.",
       narrativeTransformation: {
-        currentNarrative: "Another SaaS tool in a crowded market hoping to out-product the competition.",
-        transformedNarrative: "A company with a wedge strategy that makes distribution inevitable."
+        currentNarrative: "A SaaS company in a competitive market with product strengths to leverage.",
+        transformedNarrative: "A company with a clear wedge strategy and distribution playbook."
       }
     },
     'fintech': {
-      verdict: "Regulatory complexity + long sales cycles + thin margins = structural death spiral.",
-      marketInsight: "Post-2022 fintech means proving unit economics before scale.",
-      vcFrameworkCheck: "Fails the 'path to profitability' test. Banking relationships take 18 months.",
-      inevitabilityStatement: "This pitch fails because the unit economics don't work at any scale partners can model. It's not about timing—the math just doesn't close.",
+      verdict: "VCs will probe on unit economics and regulatory path—the core questions for fintech.",
+      marketInsight: "Post-2022 fintech means proving unit economics before scale. VCs want to see the path.",
+      vcFrameworkCheck: "Partners will ask about the path to profitability and banking relationships.",
+      diagnosticSummary: "The key questions are economics and regulatory timeline. The full analysis provides frameworks to address both.",
+      pathForward: "Fintech unit economics questions are addressable—the analysis shows how to frame your path.",
       narrativeTransformation: {
-        currentNarrative: "A fintech hoping to figure out unit economics at scale.",
-        transformedNarrative: "A company with proven economics and a clear path through regulatory complexity."
+        currentNarrative: "A fintech with promising technology navigating regulatory complexity.",
+        transformedNarrative: "A company with proven economics and a clear regulatory path."
       }
     },
     'ai': {
-      verdict: "Another AI wrapper betting the foundation model providers won't ship their feature.",
-      marketInsight: "We've seen 400+ AI startups this year. The ones getting funded have proprietary data or distribution lock-in.",
-      vcFrameworkCheck: "Fails the 'why won't OpenAI just do this?' test catastrophically.",
-      inevitabilityStatement: "This pitch fails because there's no defensible moat. The moment foundation models improve, this becomes a feature. That's not timing—it's structural.",
+      verdict: "VCs will ask about defensibility—the central question for AI companies right now.",
+      marketInsight: "The AI space is crowded. VCs look for proprietary data or distribution lock-in.",
+      vcFrameworkCheck: "Partners will apply the 'why won't foundation model providers do this?' test.",
+      diagnosticSummary: "The core question is defensibility: what creates a moat as AI capabilities improve? The full analysis addresses this directly.",
+      pathForward: "Defensibility in AI is achievable—the analysis shows proven moat-building strategies.",
       narrativeTransformation: {
-        currentNarrative: "An AI company hoping to stay ahead of the foundation model providers.",
-        transformedNarrative: "A company with proprietary data and distribution that makes AI capabilities a moat."
+        currentNarrative: "An AI company with strong technology seeking its defensible position.",
+        transformedNarrative: "A company with proprietary advantages that compound over time."
       }
     },
     'marketplace': {
-      verdict: "Marketplace without liquidity is just an expensive website nobody visits.",
-      marketInsight: "Marketplace economics are brutal: you need to win one city completely before expanding.",
-      vcFrameworkCheck: "Fails the 'cold start' test. No evidence of supply/demand density.",
-      inevitabilityStatement: "This pitch fails because you can't solve the chicken-and-egg problem at national scale. Every marketplace that tried this playbook is dead.",
+      verdict: "VCs will focus on liquidity and density—the core questions for marketplaces.",
+      marketInsight: "Marketplace economics require winning one market completely before expanding.",
+      vcFrameworkCheck: "Partners will probe the cold start strategy and supply/demand density.",
+      diagnosticSummary: "The key question is liquidity: how do you solve chicken-and-egg in your first market? The full analysis provides the playbook.",
+      pathForward: "Marketplace cold start is a solved problem—the analysis shows proven approaches.",
       narrativeTransformation: {
-        currentNarrative: "A marketplace trying to solve chicken-and-egg nationally.",
-        transformedNarrative: "A company with density in one market and a playbook to replicate."
+        currentNarrative: "A marketplace building toward liquidity with strong fundamentals.",
+        transformedNarrative: "A company with density in one market and a replication playbook."
       }
     },
     'healthtech': {
-      verdict: "Healthcare sales cycles eat startups for breakfast. Your runway says lunch.",
-      marketInsight: "12-18 month sales cycles + hospital IT budget freezes = the healthtech killing fields.",
-      vcFrameworkCheck: "Fails the 'distribution shortcut' test. No strategic partner, no regulatory forcing function.",
-      inevitabilityStatement: "This pitch fails because you're asking VCs to bet you'll survive 2+ years of sales cycles with current runway. The math makes that impossible.",
+      verdict: "VCs will question sales cycle and runway alignment—the critical healthtech question.",
+      marketInsight: "Healthcare sales cycles are long. VCs look for distribution shortcuts or existing relationships.",
+      vcFrameworkCheck: "Partners will probe distribution strategy and hospital relationship shortcuts.",
+      diagnosticSummary: "The core question is sales cycle vs. runway. The full analysis shows how to address this concern.",
+      pathForward: "Healthcare distribution challenges have proven solutions—the analysis covers them.",
       narrativeTransformation: {
-        currentNarrative: "A healthtech hoping to survive long enough to close hospital deals.",
-        transformedNarrative: "A company with existing health system relationships and revenue."
+        currentNarrative: "A healthtech with strong domain expertise building toward hospital traction.",
+        transformedNarrative: "A company with existing health system relationships and validated demand."
       }
     },
     'default': {
-      verdict: "Interesting technology looking for a problem worth solving. The market doesn't care.",
-      marketInsight: "The 'ZIRP-era' playbook of grow-at-all-costs is dead.",
-      vcFrameworkCheck: "Fails basic VC math. Unclear path to $100M revenue, no obvious moat.",
-      inevitabilityStatement: "This pitch fails because partners can't model a path to fund-returning outcomes. It's not about execution—the opportunity isn't big enough.",
+      verdict: "VCs will probe market opportunity and positioning—the fundamental questions for any startup.",
+      marketInsight: "The investment bar is high. VCs look for clear paths to large outcomes.",
+      vcFrameworkCheck: "Partners will evaluate market size, defensibility, and path to scale.",
+      diagnosticSummary: "The key questions are market size and positioning. The full analysis provides frameworks to strengthen both.",
+      pathForward: "These fundamental questions are addressable—the analysis shows how to frame your opportunity.",
       narrativeTransformation: {
-        currentNarrative: "A company with a product looking for a large enough market.",
-        transformedNarrative: "A company attacking a clear $1B+ opportunity with differentiated positioning."
+        currentNarrative: "A company with promising technology seeking clearer market positioning.",
+        transformedNarrative: "A company attacking a clear large opportunity with differentiated positioning."
       }
     }
   };
@@ -378,32 +412,38 @@ function generateFallbackVerdict(companyName: string, stage: string, category: s
   return {
     verdict: insight.verdict,
     readinessLevel: "LOW",
-    readinessRationale: `This pitch would get passed in the first partner discussion. The fundamentals don't support the story.`,
+    readinessRationale: `This pitch will raise questions partners will want to explore. Preparing answers strengthens your position.`,
     concerns: [
       {
-        text: "Distribution strategy is non-existent. Product-market fit without go-to-market fit creates zombie companies.",
+        text: "Distribution strategy will be probed—VCs want to understand the path to customers.",
         category: "business_model",
-        vcQuote: "Great product, no idea how to sell it. Pass."
+        vcQuote: "How does this reach customers at scale?"
       },
       {
-        text: "Competitive positioning assumes incumbents won't respond. They will, with 10x your resources.",
+        text: "Competitive positioning needs clarity—partners will ask how you defend against alternatives.",
         category: "competition",
-        vcQuote: "What stops the big players from crushing this in 6 months?"
+        vcQuote: "What's the moat here?"
       },
       {
-        text: "Unit economics are theoretical. The transition from founder-led to scalable sales is where companies die.",
+        text: "Unit economics should be validated—the transition to scalable growth is key.",
         category: "traction"
       }
     ],
     strengths: [
       {
-        text: `Market timing in ${category} creates a window—but only for companies with the right structure.`,
+        text: `Market timing in ${category} creates opportunity—VCs are looking for the right companies.`,
+        category: "market"
+      },
+      {
+        text: "The problem being addressed is real—that's the foundation to build on.",
         category: "market"
       }
     ],
     marketInsight: insight.marketInsight,
     vcFrameworkCheck: insight.vcFrameworkCheck,
-    inevitabilityStatement: insight.inevitabilityStatement,
+    diagnosticSummary: insight.diagnosticSummary,
+    inevitabilityStatement: insight.diagnosticSummary,
+    pathForward: insight.pathForward,
     narrativeTransformation: insight.narrativeTransformation,
     founderProfile: founderProfile,
     hiddenIssuesCount: 8
