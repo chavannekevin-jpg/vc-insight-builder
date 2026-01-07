@@ -170,6 +170,7 @@ Return ONLY valid JSON:
     "currentNarrative": "What VCs currently hear when THIS company pitches: One sentence summarizing the perception. Be specific but not cruel.",
     "transformedNarrative": "What they'd hear with preparation: One sentence showing the conversation shift. Tease, don't reveal."
   },
+  "preparationSummary": "3-4 sentence paragraph. Start with 'VCs will ask over 30 questions during your raise—we've identified and prepared responses for each one.' Then name 3-4 SPECIFIC gaps you found in their pitch and what you've prepared: 'Looking at your pitch, we noticed [specific issue from their data], so we've [what we built]. Your [another specific area] needs [specific fix], so we've [prepared solution].' Use their actual claims, stage (${stage}), and category (${category}). Reference specific things like market sizing, competitive positioning, milestones, team credibility, unit economics, etc. End with 'Each section of the full analysis addresses these gaps with specific frameworks and prepared responses.' Be supportive, not critical—frame as partnership.",
   "founderProfile": "${founderProfileSignals.profile}",
   "hiddenIssuesCount": 8
 }`;
@@ -259,6 +260,9 @@ Help the founder understand what VCs will question—and motivate them to prepar
       };
     }
     if (!verdict.founderProfile) verdict.founderProfile = founderProfileSignals.profile;
+    if (!verdict.preparationSummary) {
+      verdict.preparationSummary = `VCs will ask over 30 questions during your raise—we've identified and prepared responses for each one. Looking at your ${category || 'company'} pitch at ${stage} stage, we've mapped the key areas investors will probe: market validation, competitive positioning, team credibility, and milestone planning. Each section of the full analysis addresses these gaps with specific frameworks and prepared responses.`;
+    }
 
     console.log('Generated verdict for:', companyName, 'Level:', verdict.readinessLevel, 'Profile:', verdict.founderProfile);
 
