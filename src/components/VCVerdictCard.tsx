@@ -347,8 +347,8 @@ export const VCVerdictCard = memo(({
     },
     { 
       icon: MessageSquare, 
-      title: 'Questions VCs Will Ask', 
-      description: 'Specific questions investors will raise—with suggested responses',
+      title: 'Complete VC Question Bank', 
+      description: 'Every question investors will raise across all 9 sections—with suggested responses',
       color: 'text-destructive' 
     },
     { 
@@ -468,11 +468,16 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* Questions VCs Will Ask */}
+        {/* Questions VCs Will Ask - Sample */}
         <div className="p-6 border-b border-border/50">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="w-4 h-4 text-warning" />
-            <h3 className="text-sm font-semibold text-foreground">Questions VCs Will Ask</h3>
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-1">
+              <AlertTriangle className="w-4 h-4 text-warning" />
+              <h3 className="text-sm font-semibold text-foreground">VCs Will Have Questions Like These</h3>
+            </div>
+            <p className="text-xs text-muted-foreground pl-6">
+              Here are 2 examples — the full analysis covers all questions with prepared responses
+            </p>
           </div>
           
           <div className="space-y-3">
@@ -492,6 +497,10 @@ export const VCVerdictCard = memo(({
               </div>
             ))}
           </div>
+          
+          <p className="text-xs text-center text-muted-foreground mt-4 py-2 border-t border-border/30">
+            + many more questions covered in the full 9-section analysis
+          </p>
         </div>
 
         {/* The Good News - Constructive Path Forward */}
@@ -510,7 +519,7 @@ export const VCVerdictCard = memo(({
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary mt-0.5">✓</span>
-              <span>The full analysis gives you <strong className="text-foreground">word-for-word responses</strong> to these questions</span>
+              <span>The full analysis covers <strong className="text-foreground">every question VCs will ask</strong>—with word-for-word responses</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary mt-0.5">✓</span>
