@@ -21,8 +21,8 @@ export const ToolsRow = memo(({ memoGenerated = false }: ToolsRowProps) => {
       available: memoGenerated,
       requiresMemo: true,
       path: "/raise-calculator",
-      badge: "After Verdict",
-      lockedReason: "Complete your VC verdict first"
+      badge: "After Purchase",
+      lockedReason: "Unlock your full analysis first"
     },
     {
       id: "valuation-calculator",
@@ -32,8 +32,8 @@ export const ToolsRow = memo(({ memoGenerated = false }: ToolsRowProps) => {
       available: memoGenerated,
       requiresMemo: true,
       path: "/valuation-calculator",
-      badge: "After Verdict",
-      lockedReason: "Complete your VC verdict first"
+      badge: "After Purchase",
+      lockedReason: "Unlock your full analysis first"
     },
     {
       id: "venture-scale-diagnostic",
@@ -43,8 +43,8 @@ export const ToolsRow = memo(({ memoGenerated = false }: ToolsRowProps) => {
       available: memoGenerated,
       requiresMemo: true,
       path: "/venture-scale-diagnostic",
-      badge: "After Verdict",
-      lockedReason: "Complete your VC verdict first"
+      badge: "After Purchase",
+      lockedReason: "Unlock your full analysis first"
     },
     {
       id: "investor-email-generator",
@@ -54,8 +54,8 @@ export const ToolsRow = memo(({ memoGenerated = false }: ToolsRowProps) => {
       available: memoGenerated,
       requiresMemo: true,
       path: "/investor-email-generator",
-      badge: "After Verdict",
-      lockedReason: "Complete your VC verdict first"
+      badge: "After Purchase",
+      lockedReason: "Unlock your full analysis first"
     },
     {
       id: "roast-your-baby",
@@ -65,8 +65,8 @@ export const ToolsRow = memo(({ memoGenerated = false }: ToolsRowProps) => {
       available: memoGenerated,
       requiresMemo: true,
       path: "/roast-your-baby",
-      badge: "After Verdict",
-      lockedReason: "Complete your VC verdict first"
+      badge: "After Purchase",
+      lockedReason: "Unlock your full analysis first"
     },
     {
       id: "dilution-lab",
@@ -76,8 +76,8 @@ export const ToolsRow = memo(({ memoGenerated = false }: ToolsRowProps) => {
       available: memoGenerated,
       requiresMemo: true,
       path: "/dilution-lab",
-      badge: "After Verdict",
-      lockedReason: "Complete your VC verdict first"
+      badge: "After Purchase",
+      lockedReason: "Unlock your full analysis first"
     }
   ], [memoGenerated]);
 
@@ -143,7 +143,7 @@ export const ToolsRow = memo(({ memoGenerated = false }: ToolsRowProps) => {
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-display font-semibold">Founder Tools</h3>
         <p className="text-sm text-muted-foreground">
-          {memoGenerated ? "All tools unlocked" : "Complete your verdict to unlock all tools"}
+          {memoGenerated ? "All tools unlocked" : "Purchase your analysis to unlock all tools"}
         </p>
       </div>
       
