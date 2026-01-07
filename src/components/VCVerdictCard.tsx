@@ -16,7 +16,7 @@ import {
   MessageSquareX, Target,
   Rocket,
   RefreshCw, Briefcase, Code, GraduationCap, Building,
-  ChevronRight, Pencil, Lightbulb,
+  ChevronRight, Pencil, Lightbulb, FileSearch,
   BookOpen, BarChart3, MessageSquare, Calendar, Wrench
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -52,6 +52,7 @@ interface VCVerdict {
   diagnosticSummary?: string;
   pathForward?: string;
   narrativeTransformation?: NarrativeTransformation;
+  preparationSummary?: string;
   founderProfile?: string;
   hiddenIssuesCount?: number;
 }
@@ -468,38 +469,15 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* Questions VCs Will Ask - Sample */}
+        {/* What We've Prepared For You - Narrative Summary */}
         <div className="p-6 border-b border-border/50">
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle className="w-4 h-4 text-warning" />
-              <h3 className="text-sm font-semibold text-foreground">VCs Will Have Questions Like These</h3>
-            </div>
-            <p className="text-xs text-muted-foreground pl-6">
-              Here are 2 examples — the full analysis covers all questions with prepared responses
-            </p>
+          <div className="flex items-center gap-2 mb-4">
+            <FileSearch className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">What We've Prepared For You</h3>
           </div>
           
-          <div className="space-y-3">
-            {concerns.slice(0, 2).map((concern, i) => (
-              <div key={i} className="group relative">
-                <div className="flex gap-3 p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-warning/30 transition-colors">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-warning/20 text-warning text-xs font-bold flex items-center justify-center">
-                    {i + 1}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground leading-relaxed">{concern.text}</p>
-                    {concern.vcQuote && (
-                      <p className="text-xs text-muted-foreground mt-2 italic">"{concern.vcQuote}"</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <p className="text-xs text-center text-muted-foreground mt-4 py-2 border-t border-border/30">
-            + many more questions covered in the full 9-section analysis
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {verdict?.preparationSummary || `VCs will ask over 30 questions during your raise—we've identified and prepared responses for each one. Looking at your ${companyCategory || 'company'} pitch at ${companyStage} stage, we've mapped the key areas investors will probe: market validation, competitive positioning, team credibility, and milestone planning. Each section of the full analysis addresses these gaps with specific frameworks and prepared responses.`}
           </p>
         </div>
 
