@@ -261,7 +261,7 @@ Help the founder understand what VCs will question—and motivate them to prepar
     }
     if (!verdict.founderProfile) verdict.founderProfile = founderProfileSignals.profile;
     if (!verdict.preparationSummary) {
-      verdict.preparationSummary = `VCs will ask over 30 questions during your raise—we've identified and prepared responses for each one. Looking at your ${category || 'company'} pitch at ${stage} stage, we've mapped the key areas investors will probe: market validation, competitive positioning, team credibility, and milestone planning. Each section of the full analysis addresses these gaps with specific frameworks and prepared responses.`;
+      verdict.preparationSummary = `We have listed over 30 questions VCs will ask—and we have answers to all of them. Looking at your ${category || 'company'} pitch at ${stage} stage, we've identified the specific areas where investors will push back: how you've sized the market, what makes your solution defensible, and whether your milestones match what VCs expect for this raise. The full analysis gives you everything you need to walk into investor meetings fully prepared.`;
     }
 
     console.log('Generated verdict for:', companyName, 'Level:', verdict.readinessLevel, 'Profile:', verdict.founderProfile);
@@ -349,6 +349,7 @@ function generateFallbackVerdict(companyName: string, stage: string, category: s
       vcFrameworkCheck: "Partners will apply the 'why you, why now' test—be ready to articulate your unique positioning.",
       diagnosticSummary: "The core question is distribution: how do you reach customers more efficiently than funded alternatives? The full analysis provides frameworks to address this.",
       pathForward: "Distribution questions are solvable—the full analysis shows proven approaches for your category.",
+      preparationSummary: "We have listed over 30 questions VCs will ask—and we have answers to all of them. For SaaS companies, investors will probe your distribution strategy and unit economics closely. We've prepared frameworks for how you'll reach customers efficiently, why your CAC will improve, and what makes your wedge defensible. The full analysis gives you everything you need to walk into investor meetings fully prepared.",
       narrativeTransformation: {
         currentNarrative: "A SaaS company in a competitive market with product strengths to leverage.",
         transformedNarrative: "A company with a clear wedge strategy and distribution playbook."
@@ -360,6 +361,7 @@ function generateFallbackVerdict(companyName: string, stage: string, category: s
       vcFrameworkCheck: "Partners will ask about the path to profitability and banking relationships.",
       diagnosticSummary: "The key questions are economics and regulatory timeline. The full analysis provides frameworks to address both.",
       pathForward: "Fintech unit economics questions are addressable—the analysis shows how to frame your path.",
+      preparationSummary: "We have listed over 30 questions VCs will ask—and we have answers to all of them. For fintech companies, investors will immediately ask about unit economics and regulatory runway. We've prepared the path-to-profitability frameworks, banking relationship strategies, and compliance timeline positioning you need. The full analysis gives you everything you need to walk into investor meetings fully prepared.",
       narrativeTransformation: {
         currentNarrative: "A fintech with promising technology navigating regulatory complexity.",
         transformedNarrative: "A company with proven economics and a clear regulatory path."
@@ -371,6 +373,7 @@ function generateFallbackVerdict(companyName: string, stage: string, category: s
       vcFrameworkCheck: "Partners will apply the 'why won't foundation model providers do this?' test.",
       diagnosticSummary: "The core question is defensibility: what creates a moat as AI capabilities improve? The full analysis addresses this directly.",
       pathForward: "Defensibility in AI is achievable—the analysis shows proven moat-building strategies.",
+      preparationSummary: "We have listed over 30 questions VCs will ask—and we have answers to all of them. For AI companies, investors will immediately ask about defensibility and what stops foundation model providers from doing this. We've prepared the moat analysis, proprietary data positioning, and distribution lock-in frameworks you need. The full analysis gives you everything you need to walk into investor meetings fully prepared.",
       narrativeTransformation: {
         currentNarrative: "An AI company with strong technology seeking its defensible position.",
         transformedNarrative: "A company with proprietary advantages that compound over time."
@@ -382,6 +385,7 @@ function generateFallbackVerdict(companyName: string, stage: string, category: s
       vcFrameworkCheck: "Partners will probe the cold start strategy and supply/demand density.",
       diagnosticSummary: "The key question is liquidity: how do you solve chicken-and-egg in your first market? The full analysis provides the playbook.",
       pathForward: "Marketplace cold start is a solved problem—the analysis shows proven approaches.",
+      preparationSummary: "We have listed over 30 questions VCs will ask—and we have answers to all of them. For marketplace companies, investors will probe your cold start strategy and path to liquidity. We've prepared the density playbook, supply acquisition frameworks, and geographic expansion strategy you need. The full analysis gives you everything you need to walk into investor meetings fully prepared.",
       narrativeTransformation: {
         currentNarrative: "A marketplace building toward liquidity with strong fundamentals.",
         transformedNarrative: "A company with density in one market and a replication playbook."
@@ -393,6 +397,7 @@ function generateFallbackVerdict(companyName: string, stage: string, category: s
       vcFrameworkCheck: "Partners will probe distribution strategy and hospital relationship shortcuts.",
       diagnosticSummary: "The core question is sales cycle vs. runway. The full analysis shows how to address this concern.",
       pathForward: "Healthcare distribution challenges have proven solutions—the analysis covers them.",
+      preparationSummary: "We have listed over 30 questions VCs will ask—and we have answers to all of them. For healthtech companies, investors will ask about sales cycles and hospital relationship shortcuts. We've prepared the distribution strategy, regulatory timeline positioning, and enterprise sales frameworks you need. The full analysis gives you everything you need to walk into investor meetings fully prepared.",
       narrativeTransformation: {
         currentNarrative: "A healthtech with strong domain expertise building toward hospital traction.",
         transformedNarrative: "A company with existing health system relationships and validated demand."
@@ -404,6 +409,7 @@ function generateFallbackVerdict(companyName: string, stage: string, category: s
       vcFrameworkCheck: "Partners will evaluate market size, defensibility, and path to scale.",
       diagnosticSummary: "The key questions are market size and positioning. The full analysis provides frameworks to strengthen both.",
       pathForward: "These fundamental questions are addressable—the analysis shows how to frame your opportunity.",
+      preparationSummary: "We have listed over 30 questions VCs will ask—and we have answers to all of them. We've identified the specific areas where investors will push back: how you've sized the market, what makes your solution defensible, and whether your milestones match what VCs expect for this raise. The full analysis gives you everything you need to walk into investor meetings fully prepared.",
       narrativeTransformation: {
         currentNarrative: "A company with promising technology seeking clearer market positioning.",
         transformedNarrative: "A company attacking a clear large opportunity with differentiated positioning."
@@ -449,6 +455,7 @@ function generateFallbackVerdict(companyName: string, stage: string, category: s
     inevitabilityStatement: insight.diagnosticSummary,
     pathForward: insight.pathForward,
     narrativeTransformation: insight.narrativeTransformation,
+    preparationSummary: insight.preparationSummary,
     founderProfile: founderProfile,
     hiddenIssuesCount: 8
   };
