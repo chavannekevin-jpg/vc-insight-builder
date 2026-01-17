@@ -54,19 +54,20 @@ export const useGlobalNetwork = (userId: string | null, myContactIds: string[]) 
   });
 
   // Fetch all global contacts (blue dots, or pink if user's own)
+  // Include linked_investor_id to deduplicate with active users
   const { data: globalContacts = [], isLoading: isLoadingContacts } = useQuery({
     queryKey: ["global-all-contacts", myContactIds],
     queryFn: async () => {
       const { data, error } = await (supabase
         .from("global_contacts") as any)
-        .select("id, name, organization_name, city, city_lat, city_lng, country");
+        .select("id, name, organization_name, city, city_lat, city_lng, country, linked_investor_id");
 
       if (error) {
         console.error("Error fetching global contacts:", error);
         return [];
       }
 
-      return (data || []).map((contact: any): NetworkMarker => {
+      return (data || []).map((contact: any): NetworkMarker & { linked_investor_id: string | null } => {
         const rawLat = contact.city_lat != null ? Number(contact.city_lat) : null;
         const rawLng = contact.city_lng != null ? Number(contact.city_lng) : null;
         const resolved = (rawLat == null || rawLng == null)
@@ -82,14 +83,31 @@ export const useGlobalNetwork = (userId: string | null, myContactIds: string[]) 
           city_lng: rawLng ?? resolved?.lng ?? null,
           country: contact.country ?? resolved?.country ?? null,
           type: myContactIds.includes(contact.id) ? "my_contact" : "global_contact",
+          linked_investor_id: contact.linked_investor_id,
         };
       });
     },
     enabled: !!userId,
   });
 
-  // Combine and deduplicate by city for map display
-  const allMarkers = [...activeUsers, ...globalContacts];
+  // Build a set of investor IDs that are linked to global contacts
+  const linkedInvestorIds = new Set(
+    globalContacts
+      .filter((c) => c.linked_investor_id)
+      .map((c) => c.linked_investor_id)
+  );
+
+  // Filter out global_contacts that have a linked active user (active user takes priority)
+  const filteredGlobalContacts = globalContacts.filter((contact) => {
+    // If this contact is linked to an active user, don't include it (we'll show the active user instead)
+    if (contact.linked_investor_id && activeUsers.some((u) => u.id === contact.linked_investor_id)) {
+      return false;
+    }
+    return true;
+  });
+
+  // Combine: active users + filtered global contacts (no duplicates)
+  const allMarkers: NetworkMarker[] = [...activeUsers, ...filteredGlobalContacts];
 
   // Group by city
   const cityGroups: Record<string, {
@@ -137,8 +155,8 @@ export const useGlobalNetwork = (userId: string | null, myContactIds: string[]) 
     refetch,
     stats: {
       activeUsers: activeUsers.length,
-      globalContacts: globalContacts.filter(c => c.type === "global_contact").length,
-      myContacts: globalContacts.filter(c => c.type === "my_contact").length,
+      globalContacts: filteredGlobalContacts.filter(c => c.type === "global_contact").length,
+      myContacts: filteredGlobalContacts.filter(c => c.type === "my_contact").length,
     },
   };
 };
