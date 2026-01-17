@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -48,6 +49,7 @@ export interface InvestorContact {
 
 const InvestorDashboard = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [userId, setUserId] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [activeSection, setActiveSection] = useState("map");
@@ -57,6 +59,12 @@ const InvestorDashboard = () => {
 
   const { contacts, isLoading, refetch, cityGroups } = useInvestorContacts(userId);
 
+  // Helper to invalidate all network-related queries
+  const invalidateNetworkQueries = () => {
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ["global-investor-profiles"] });
+    queryClient.invalidateQueries({ queryKey: ["global-all-contacts"] });
+  };
   const fetchProfile = async (uid: string) => {
     const { data: profile } = await (supabase
       .from("investor_profiles") as any)
@@ -89,13 +97,13 @@ const InvestorDashboard = () => {
   }, [navigate]);
 
   const handleContactAdded = () => {
-    refetch();
+    invalidateNetworkQueries();
     setIsAddContactOpen(false);
     toast({ title: "Contact added successfully!" });
   };
 
   const handleBulkImportSuccess = () => {
-    refetch();
+    invalidateNetworkQueries();
     setIsBulkImportOpen(false);
     toast({ title: "Contacts imported successfully!" });
   };
@@ -117,7 +125,7 @@ const InvestorDashboard = () => {
             onContactClick={setSelectedContact}
             onAddContact={() => setIsAddContactOpen(true)}
             userId={userId}
-            onNetworkUpdate={refetch}
+            onNetworkUpdate={invalidateNetworkQueries}
             userProfile={userProfile}
           />
         ) : null;

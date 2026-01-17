@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useCallback } from "react";
 
 export interface NetworkMarker {
   id: string;
@@ -13,6 +14,8 @@ export interface NetworkMarker {
 }
 
 export const useGlobalNetwork = (userId: string | null, myContactIds: string[]) => {
+  const queryClient = useQueryClient();
+
   // Fetch all investor profiles (active users - green dots)
   const { data: activeUsers = [], isLoading: isLoadingUsers } = useQuery({
     queryKey: ["global-investor-profiles"],
@@ -104,10 +107,17 @@ export const useGlobalNetwork = (userId: string | null, myContactIds: string[]) 
     }
   });
 
+  // Function to invalidate and refetch global network data
+  const refetch = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["global-investor-profiles"] });
+    queryClient.invalidateQueries({ queryKey: ["global-all-contacts", myContactIds] });
+  }, [queryClient, myContactIds]);
+
   return {
     allMarkers,
     cityGroups,
     isLoading: isLoadingUsers || isLoadingContacts,
+    refetch,
     stats: {
       activeUsers: activeUsers.length,
       globalContacts: globalContacts.filter(c => c.type === "global_contact").length,

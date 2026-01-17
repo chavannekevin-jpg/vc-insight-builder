@@ -51,10 +51,16 @@ const NetworkMapView = ({
     .filter((c) => c.global_contact_id)
     .map((c) => c.global_contact_id as string);
 
-  const { cityGroups: globalCityGroups, stats, isLoading: isLoadingGlobal } = useGlobalNetwork(
+  const { cityGroups: globalCityGroups, stats, isLoading: isLoadingGlobal, refetch: refetchGlobal } = useGlobalNetwork(
     userId,
     myContactGlobalIds
   );
+
+  // Combine refetch for both local and global network
+  const handleNetworkUpdate = () => {
+    onNetworkUpdate();
+    refetchGlobal();
+  };
 
   const filteredContacts = contacts.filter((contact) => {
     const name = contact.local_name || contact.global_contact?.name || "";
@@ -100,7 +106,7 @@ const NetworkMapView = ({
               existingContactIds={contacts
                 .filter((c) => c.global_contact_id)
                 .map((c) => c.global_contact_id as string)}
-              onContactAdded={onNetworkUpdate}
+              onContactAdded={handleNetworkUpdate}
             />
           )}
 
@@ -219,7 +225,7 @@ const NetworkMapView = ({
           onClose={() => setSelectedGlobalCity(null)}
           userId={userId}
           onContactAdded={() => {
-            onNetworkUpdate();
+            handleNetworkUpdate();
             setSelectedGlobalCity(null);
           }}
         />
