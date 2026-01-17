@@ -275,6 +275,7 @@ export type Database = {
           contributor_count: number | null
           country: string | null
           created_at: string | null
+          email: string | null
           entity_type: Database["public"]["Enums"]["entity_type"]
           fund_size: number | null
           id: string
@@ -282,6 +283,7 @@ export type Database = {
           linkedin_url: string | null
           name: string
           organization_name: string | null
+          phone: string | null
           stages: Json | null
           ticket_size_max: number | null
           ticket_size_min: number | null
@@ -294,6 +296,7 @@ export type Database = {
           contributor_count?: number | null
           country?: string | null
           created_at?: string | null
+          email?: string | null
           entity_type: Database["public"]["Enums"]["entity_type"]
           fund_size?: number | null
           id?: string
@@ -301,6 +304,7 @@ export type Database = {
           linkedin_url?: string | null
           name: string
           organization_name?: string | null
+          phone?: string | null
           stages?: Json | null
           ticket_size_max?: number | null
           ticket_size_min?: number | null
@@ -313,6 +317,7 @@ export type Database = {
           contributor_count?: number | null
           country?: string | null
           created_at?: string | null
+          email?: string | null
           entity_type?: Database["public"]["Enums"]["entity_type"]
           fund_size?: number | null
           id?: string
@@ -320,6 +325,7 @@ export type Database = {
           linkedin_url?: string | null
           name?: string
           organization_name?: string | null
+          phone?: string | null
           stages?: Json | null
           ticket_size_max?: number | null
           ticket_size_min?: number | null
@@ -334,10 +340,12 @@ export type Database = {
           id: string
           investor_id: string
           last_contact_date: string | null
+          local_email: string | null
           local_focus_override: Json | null
           local_name: string | null
           local_notes: string | null
           local_organization: string | null
+          local_phone: string | null
           relationship_status:
             | Database["public"]["Enums"]["relationship_status"]
             | null
@@ -349,10 +357,12 @@ export type Database = {
           id?: string
           investor_id: string
           last_contact_date?: string | null
+          local_email?: string | null
           local_focus_override?: Json | null
           local_name?: string | null
           local_notes?: string | null
           local_organization?: string | null
+          local_phone?: string | null
           relationship_status?:
             | Database["public"]["Enums"]["relationship_status"]
             | null
@@ -364,10 +374,12 @@ export type Database = {
           id?: string
           investor_id?: string
           last_contact_date?: string | null
+          local_email?: string | null
           local_focus_override?: Json | null
           local_name?: string | null
           local_notes?: string | null
           local_organization?: string | null
+          local_phone?: string | null
           relationship_status?:
             | Database["public"]["Enums"]["relationship_status"]
             | null
