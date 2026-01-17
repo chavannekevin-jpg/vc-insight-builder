@@ -408,7 +408,7 @@ Important rules:
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.1,
-        max_tokens: 8000,
+        max_tokens: 32000, // Increased for larger files
         response_format: { type: 'json_object' }
       }),
     });
@@ -450,10 +450,56 @@ Important rules:
         cleanContent = cleanContent.slice(0, -3);
       }
       
-      parsed = JSON.parse(cleanContent.trim());
+      cleanContent = cleanContent.trim();
+      
+      // Try to parse the JSON
+      try {
+        parsed = JSON.parse(cleanContent);
+      } catch (firstAttempt) {
+        // If parsing fails, try to repair truncated JSON
+        console.log('First parse attempt failed, trying to repair JSON...');
+        
+        // Check if the JSON appears truncated (missing closing braces/brackets)
+        let repairedContent = cleanContent;
+        
+        // Count open/close brackets and braces
+        const openBraces = (repairedContent.match(/{/g) || []).length;
+        const closeBraces = (repairedContent.match(/}/g) || []).length;
+        const openBrackets = (repairedContent.match(/\[/g) || []).length;
+        const closeBrackets = (repairedContent.match(/]/g) || []).length;
+        
+        // If we have more opening than closing, the JSON is likely truncated
+        if (openBrackets > closeBrackets || openBraces > closeBraces) {
+          console.log(`Detected truncated JSON: ${openBraces} { vs ${closeBraces} }, ${openBrackets} [ vs ${closeBrackets} ]`);
+          
+          // Try to find the last complete object in the contacts array
+          // Look for the last complete contact object (ends with })
+          const lastCompleteObjectMatch = repairedContent.match(/^([\s\S]*\})\s*,?\s*(\{[^}]*)?$/);
+          if (lastCompleteObjectMatch) {
+            repairedContent = lastCompleteObjectMatch[1];
+          }
+          
+          // Add missing brackets and braces
+          const missingBrackets = openBrackets - closeBrackets;
+          const missingBraces = openBraces - closeBraces;
+          
+          // Close any open arrays first, then objects
+          for (let i = 0; i < missingBrackets; i++) {
+            repairedContent += ']';
+          }
+          for (let i = 0; i < missingBraces; i++) {
+            repairedContent += '}';
+          }
+          
+          console.log('Attempting to parse repaired JSON...');
+        }
+        
+        parsed = JSON.parse(repairedContent);
+        console.log(`Successfully parsed repaired JSON with ${parsed.contacts?.length || 0} contacts`);
+      }
     } catch (parseError) {
-      console.error('Failed to parse AI response:', content);
-      throw new Error('Failed to parse AI response as JSON');
+      console.error('Failed to parse AI response:', content.substring(0, 500) + '...');
+      throw new Error('Failed to parse AI response as JSON. The file may be too large - try splitting it into smaller files.');
     }
 
     // Enrich contacts with location data
