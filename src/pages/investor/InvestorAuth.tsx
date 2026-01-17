@@ -20,36 +20,47 @@ const InvestorAuth = () => {
   const [codeValidation, setCodeValidation] = useState<{ valid: boolean; inviterName?: string } | null>(null);
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        // Check if user has investor role and completed onboarding
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .eq("role", "investor")
-          .maybeSingle();
+    // Set up auth state listener FIRST (per Supabase best practices)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session?.user) {
+          // Defer Supabase calls with setTimeout to prevent deadlock
+          setTimeout(async () => {
+            const { data: roleData } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", session.user.id)
+              .eq("role", "investor")
+              .maybeSingle();
 
-        if (roleData) {
-          // Check if onboarding is completed
-          const { data: profile } = await (supabase
-            .from("investor_profiles") as any)
-            .select("onboarding_completed")
-            .eq("id", session.user.id)
-            .maybeSingle();
+            if (roleData) {
+              const { data: profile } = await (supabase
+                .from("investor_profiles") as any)
+                .select("onboarding_completed")
+                .eq("id", session.user.id)
+                .maybeSingle();
 
-          if (profile?.onboarding_completed) {
-            navigate("/investor/dashboard");
-          } else {
-            navigate("/investor/onboarding");
-          }
+              if (profile?.onboarding_completed) {
+                navigate("/investor/dashboard");
+              } else {
+                navigate("/investor/onboarding");
+              }
+            }
+          }, 0);
         }
+        setCheckingSession(false);
       }
-      setCheckingSession(false);
-    };
+    );
 
-    checkSession();
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        setCheckingSession(false);
+      }
+      // If session exists, onAuthStateChange will handle navigation
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   // Validate invite code when it changes
