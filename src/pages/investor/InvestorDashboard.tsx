@@ -107,6 +107,7 @@ const InvestorDashboard = () => {
             onContactClick={setSelectedContact}
             onAddContact={() => setIsAddContactOpen(true)}
             userId={userId}
+            onNetworkUpdate={refetch}
           />
         ) : null;
       case "crm":
