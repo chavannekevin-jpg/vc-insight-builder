@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -71,13 +70,84 @@ interface BulkImportModalProps {
 
 type ImportStep = "upload" | "processing" | "review" | "importing" | "complete";
 
+type EditableField = "name" | "organization_name" | "email" | "phone" | "city" | "country" | "linkedin_url" | "fund_size" | "notes";
+
+// Inline editable field component
+const EditableField = ({ 
+  label, 
+  value, 
+  fieldKey,
+  editingField,
+  editValue,
+  onStartEdit,
+  onSaveEdit,
+  onCancelEdit,
+  onEditValueChange,
+  placeholder = "Not set"
+}: {
+  label: string;
+  value: string | number | undefined | null;
+  fieldKey: EditableField;
+  editingField: EditableField | null;
+  editValue: string;
+  onStartEdit: (field: EditableField, currentValue: string) => void;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
+  onEditValueChange: (value: string) => void;
+  placeholder?: string;
+}) => {
+  const isEditing = editingField === fieldKey;
+  const displayValue = value !== undefined && value !== null && value !== "" ? String(value) : placeholder;
+  
+  if (isEditing) {
+    return (
+      <div className="space-y-1">
+        <span className="text-xs text-muted-foreground">{label}</span>
+        <div className="flex items-center gap-1">
+          <Input
+            value={editValue}
+            onChange={(e) => onEditValueChange(e.target.value)}
+            className="h-7 text-sm"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === "Enter") onSaveEdit();
+              if (e.key === "Escape") onCancelEdit();
+            }}
+          />
+          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={onSaveEdit}>
+            <Check className="h-3 w-3 text-green-500" />
+          </Button>
+          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={onCancelEdit}>
+            <X className="h-3 w-3 text-red-500" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <div 
+        className="flex items-center gap-1 group cursor-pointer hover:bg-muted/50 rounded px-1 -mx-1"
+        onClick={() => onStartEdit(fieldKey, value !== undefined && value !== null ? String(value) : "")}
+      >
+        <p className={`text-sm truncate flex-1 ${!value ? "text-muted-foreground italic" : ""}`}>
+          {displayValue}
+        </p>
+        <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+      </div>
+    </div>
+  );
+};
+
 const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModalProps) => {
   const [step, setStep] = useState<ImportStep>("upload");
   const [isDragging, setIsDragging] = useState(false);
   const [contacts, setContacts] = useState<ReviewedContact[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState<ExtractedContact | null>(null);
+  const [editingField, setEditingField] = useState<EditableField | null>(null);
+  const [editValue, setEditValue] = useState<string>("");
   const [importProgress, setImportProgress] = useState(0);
   const [importedCount, setImportedCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -187,7 +257,7 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
 
         return {
           ...c,
-          status: duplicate ? "rejected" as const : "pending" as const,
+          status: "pending" as const, // Always start as pending, even duplicates
           isDuplicate: !!duplicate,
           duplicateMatch: duplicate ? duplicate.name : undefined,
         };
@@ -216,7 +286,10 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
       i === currentIndex ? { ...c, status: "accepted" as const } : c
     ));
     
-    moveToNextPending();
+    // Auto advance to next pending or next card
+    if (currentIndex < contacts.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
   };
 
   const handleReject = () => {
@@ -226,37 +299,39 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
       i === currentIndex ? { ...c, status: "rejected" as const } : c
     ));
     
-    moveToNextPending();
+    // Auto advance to next pending or next card
+    if (currentIndex < contacts.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
   };
 
-  const handleEdit = () => {
-    if (!currentContact) return;
-    setEditForm({ ...currentContact });
-    setIsEditing(true);
+  const handleStartEdit = (field: EditableField, currentValue: string) => {
+    setEditingField(field);
+    setEditValue(currentValue);
   };
 
   const handleSaveEdit = () => {
-    if (!editForm) return;
+    if (!editingField || !currentContact) return;
+    
+    const fieldKey = editingField;
+    let newValue: string | number | undefined = editValue;
+    
+    // Handle fund_size as number
+    if (fieldKey === "fund_size") {
+      newValue = editValue ? parseFloat(editValue) : undefined;
+    }
     
     setContacts(prev => prev.map((c, i) => 
-      i === currentIndex ? { ...c, ...editForm, status: "accepted" as const } : c
+      i === currentIndex ? { ...c, [fieldKey]: newValue || undefined } : c
     ));
     
-    setIsEditing(false);
-    setEditForm(null);
-    moveToNextPending();
+    setEditingField(null);
+    setEditValue("");
   };
 
-  const moveToNextPending = () => {
-    const nextPendingIndex = contacts.findIndex((c, i) => i > currentIndex && c.status === "pending");
-    if (nextPendingIndex !== -1) {
-      setCurrentIndex(nextPendingIndex);
-    } else {
-      const firstPendingIndex = contacts.findIndex(c => c.status === "pending");
-      if (firstPendingIndex !== -1 && firstPendingIndex !== currentIndex) {
-        setCurrentIndex(firstPendingIndex);
-      }
-    }
+  const handleCancelEdit = () => {
+    setEditingField(null);
+    setEditValue("");
   };
 
   const navigateCard = (direction: "prev" | "next") => {
@@ -350,12 +425,23 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
     setImportProgress(0);
     setImportedCount(0);
     setErrorMessage(null);
-    setIsEditing(false);
-    setEditForm(null);
+    setEditingField(null);
+    setEditValue("");
     if (step === "complete") {
       onSuccess();
     }
     onClose();
+  };
+
+  const getStatusBadge = (status: "pending" | "accepted" | "rejected") => {
+    switch (status) {
+      case "accepted":
+        return <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-600">Accepted</span>;
+      case "rejected":
+        return <span className="px-2 py-0.5 text-xs rounded-full bg-red-500/20 text-red-600">Rejected</span>;
+      default:
+        return <span className="px-2 py-0.5 text-xs rounded-full bg-muted text-muted-foreground">Pending</span>;
+    }
   };
 
   return (
@@ -424,7 +510,7 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
           )}
 
           {/* Review Step - Card Stack */}
-          {step === "review" && !isEditing && (
+          {step === "review" && currentContact && (
             <div className="space-y-4">
               {/* Stats Bar */}
               <div className="flex items-center justify-between text-sm">
@@ -438,11 +524,6 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
                   <span className="text-red-500">
                     {rejectedContacts.length} rejected
                   </span>
-                  {contacts.filter(c => c.isDuplicate).length > 0 && (
-                    <span className="text-yellow-600">
-                      {contacts.filter(c => c.isDuplicate).length} duplicates
-                    </span>
-                  )}
                 </div>
                 <span className="text-muted-foreground">
                   {currentIndex + 1} / {contacts.length}
@@ -450,145 +531,207 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
               </div>
 
               {/* Card Stack */}
-              {pendingContacts.length > 0 && currentContact?.status === "pending" ? (
-                <div className="relative">
-                  {/* Background cards for stack effect */}
-                  {pendingContacts.length > 2 && (
-                    <div className="absolute inset-x-4 top-2 h-full bg-card border border-border rounded-xl opacity-30" />
+              <div className="relative">
+                {/* Background cards for stack effect */}
+                {contacts.length - currentIndex > 2 && (
+                  <div className="absolute inset-x-4 top-2 h-full bg-card border border-border rounded-xl opacity-30" />
+                )}
+                {contacts.length - currentIndex > 1 && (
+                  <div className="absolute inset-x-2 top-1 h-full bg-card border border-border rounded-xl opacity-60" />
+                )}
+                
+                {/* Current Card */}
+                <div className={`relative bg-card border rounded-xl p-5 shadow-lg ${
+                  currentContact.isDuplicate ? 'border-yellow-500/50' : 
+                  currentContact.status === "accepted" ? 'border-green-500/50' :
+                  currentContact.status === "rejected" ? 'border-red-500/50' : 'border-border'
+                }`}>
+                  {/* Status Badge */}
+                  <div className="absolute top-3 right-3">
+                    {getStatusBadge(currentContact.status)}
+                  </div>
+
+                  {currentContact.isDuplicate && (
+                    <div className="mb-4 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-2 text-yellow-600">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span className="text-xs">Possible duplicate of "{currentContact.duplicateMatch}"</span>
+                    </div>
                   )}
-                  {pendingContacts.length > 1 && (
-                    <div className="absolute inset-x-2 top-1 h-full bg-card border border-border rounded-xl opacity-60" />
-                  )}
-                  
-                  {/* Current Card */}
-                  <div className={`relative bg-card border rounded-xl p-6 shadow-lg ${currentContact.isDuplicate ? 'border-yellow-500/50' : 'border-border'}`}>
-                    {currentContact.isDuplicate && (
-                      <div className="mb-4 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-2 text-yellow-600">
-                        <AlertTriangle className="h-4 w-4" />
-                        <span className="text-sm">Possible duplicate of "{currentContact.duplicateMatch}"</span>
+
+                  <div className="space-y-3">
+                    {/* Name - Always visible */}
+                    <EditableField
+                      label="Name"
+                      value={currentContact.name}
+                      fieldKey="name"
+                      editingField={editingField}
+                      editValue={editValue}
+                      onStartEdit={handleStartEdit}
+                      onSaveEdit={handleSaveEdit}
+                      onCancelEdit={handleCancelEdit}
+                      onEditValueChange={setEditValue}
+                    />
+
+                    {/* Organization */}
+                    <EditableField
+                      label="Organization"
+                      value={currentContact.organization_name}
+                      fieldKey="organization_name"
+                      editingField={editingField}
+                      editValue={editValue}
+                      onStartEdit={handleStartEdit}
+                      onSaveEdit={handleSaveEdit}
+                      onCancelEdit={handleCancelEdit}
+                      onEditValueChange={setEditValue}
+                    />
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <EditableField
+                        label="Email"
+                        value={currentContact.email}
+                        fieldKey="email"
+                        editingField={editingField}
+                        editValue={editValue}
+                        onStartEdit={handleStartEdit}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={handleCancelEdit}
+                        onEditValueChange={setEditValue}
+                      />
+                      <EditableField
+                        label="Phone"
+                        value={currentContact.phone}
+                        fieldKey="phone"
+                        editingField={editingField}
+                        editValue={editValue}
+                        onStartEdit={handleStartEdit}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={handleCancelEdit}
+                        onEditValueChange={setEditValue}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <EditableField
+                        label="City"
+                        value={currentContact.city}
+                        fieldKey="city"
+                        editingField={editingField}
+                        editValue={editValue}
+                        onStartEdit={handleStartEdit}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={handleCancelEdit}
+                        onEditValueChange={setEditValue}
+                      />
+                      <EditableField
+                        label="Country"
+                        value={currentContact.country}
+                        fieldKey="country"
+                        editingField={editingField}
+                        editValue={editValue}
+                        onStartEdit={handleStartEdit}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={handleCancelEdit}
+                        onEditValueChange={setEditValue}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <EditableField
+                        label="Fund Size (M)"
+                        value={currentContact.fund_size}
+                        fieldKey="fund_size"
+                        editingField={editingField}
+                        editValue={editValue}
+                        onStartEdit={handleStartEdit}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={handleCancelEdit}
+                        onEditValueChange={setEditValue}
+                      />
+                      <EditableField
+                        label="LinkedIn"
+                        value={currentContact.linkedin_url}
+                        fieldKey="linkedin_url"
+                        editingField={editingField}
+                        editValue={editValue}
+                        onStartEdit={handleStartEdit}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={handleCancelEdit}
+                        onEditValueChange={setEditValue}
+                      />
+                    </div>
+
+                    {currentContact.stages && currentContact.stages.length > 0 && (
+                      <div>
+                        <span className="text-xs text-muted-foreground">Stages</span>
+                        <p className="text-sm">{currentContact.stages.join(", ")}</p>
                       </div>
                     )}
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="text-xl font-semibold">{currentContact.name}</h3>
-                        {currentContact.organization_name && (
-                          <p className="text-muted-foreground">@ {currentContact.organization_name}</p>
-                        )}
-                      </div>
 
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        {currentContact.email && (
-                          <div>
-                            <span className="text-muted-foreground">Email:</span>
-                            <p className="truncate">{currentContact.email}</p>
-                          </div>
-                        )}
-                        {currentContact.phone && (
-                          <div>
-                            <span className="text-muted-foreground">Phone:</span>
-                            <p>{currentContact.phone}</p>
-                          </div>
-                        )}
-                        {currentContact.city && (
-                          <div>
-                            <span className="text-muted-foreground">Location:</span>
-                            <p>{currentContact.city}{currentContact.country ? `, ${currentContact.country}` : ""}</p>
-                          </div>
-                        )}
-                        {currentContact.stages && currentContact.stages.length > 0 && (
-                          <div>
-                            <span className="text-muted-foreground">Stages:</span>
-                            <p>{currentContact.stages.join(", ")}</p>
-                          </div>
-                        )}
-                        {currentContact.fund_size && (
-                          <div>
-                            <span className="text-muted-foreground">Fund Size:</span>
-                            <p>${currentContact.fund_size}M</p>
-                          </div>
-                        )}
-                        {currentContact.linkedin_url && (
-                          <div>
-                            <span className="text-muted-foreground">LinkedIn:</span>
-                            <p className="truncate text-primary">View Profile</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {currentContact.notes && (
-                        <div className="text-sm">
-                          <span className="text-muted-foreground">Notes:</span>
-                          <p className="mt-1">{currentContact.notes}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex items-center justify-center gap-4 mt-6">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-14 w-14 rounded-full border-red-500/50 text-red-500 hover:bg-red-500/10 hover:text-red-500"
-                      onClick={handleReject}
-                    >
-                      <X className="h-6 w-6" />
-                    </Button>
-                    
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-12 w-12 rounded-full"
-                      onClick={handleEdit}
-                    >
-                      <Pencil className="h-5 w-5" />
-                    </Button>
-                    
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-14 w-14 rounded-full border-green-500/50 text-green-500 hover:bg-green-500/10 hover:text-green-500"
-                      onClick={handleAccept}
-                    >
-                      <Check className="h-6 w-6" />
-                    </Button>
-                  </div>
-
-                  {/* Navigation */}
-                  <div className="flex items-center justify-between mt-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigateCard("prev")}
-                      disabled={currentIndex === 0}
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-1" />
-                      Previous
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigateCard("next")}
-                      disabled={currentIndex === contacts.length - 1}
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
+                    <EditableField
+                      label="Notes"
+                      value={currentContact.notes}
+                      fieldKey="notes"
+                      editingField={editingField}
+                      editValue={editValue}
+                      onStartEdit={handleStartEdit}
+                      onSaveEdit={handleSaveEdit}
+                      onCancelEdit={handleCancelEdit}
+                      onEditValueChange={setEditValue}
+                    />
                   </div>
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-500" />
-                  <h3 className="font-medium mb-2">All contacts reviewed!</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {acceptedContacts.length} contacts ready to import
-                  </p>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-center gap-4 mt-6">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className={`h-14 w-14 rounded-full border-red-500/50 text-red-500 hover:bg-red-500/10 hover:text-red-500 ${
+                      currentContact.status === "rejected" ? "bg-red-500/20" : ""
+                    }`}
+                    onClick={handleReject}
+                  >
+                    <X className="h-6 w-6" />
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className={`h-14 w-14 rounded-full border-green-500/50 text-green-500 hover:bg-green-500/10 hover:text-green-500 ${
+                      currentContact.status === "accepted" ? "bg-green-500/20" : ""
+                    }`}
+                    onClick={handleAccept}
+                  >
+                    <Check className="h-6 w-6" />
+                  </Button>
                 </div>
-              )}
+
+                {/* Navigation */}
+                <div className="flex items-center justify-between mt-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigateCard("prev")}
+                    disabled={currentIndex === 0}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Previous
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigateCard("next")}
+                    disabled={currentIndex === contacts.length - 1}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
 
               {/* Footer Actions */}
               <div className="flex items-center justify-between pt-4 border-t">
-                <Button variant="ghost" size="sm" onClick={acceptAll}>
+                <Button variant="ghost" size="sm" onClick={acceptAll} disabled={pendingContacts.length === 0}>
                   Accept All Remaining
                 </Button>
                 <Button
@@ -601,84 +744,17 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
             </div>
           )}
 
-          {/* Edit Mode */}
-          {step === "review" && isEditing && editForm && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium">Edit Contact</h3>
-                <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
-                  Cancel
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <Label>Name *</Label>
-                  <Input
-                    value={editForm.name}
-                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label>Organization</Label>
-                  <Input
-                    value={editForm.organization_name || ""}
-                    onChange={(e) => setEditForm({ ...editForm, organization_name: e.target.value })}
-                    className="mt-1"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Email</Label>
-                    <Input
-                      value={editForm.email || ""}
-                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label>Phone</Label>
-                    <Input
-                      value={editForm.phone || ""}
-                      onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>City</Label>
-                    <Input
-                      value={editForm.city || ""}
-                      onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label>Country</Label>
-                    <Input
-                      value={editForm.country || ""}
-                      onChange={(e) => setEditForm({ ...editForm, country: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label>LinkedIn URL</Label>
-                  <Input
-                    value={editForm.linkedin_url || ""}
-                    onChange={(e) => setEditForm({ ...editForm, linkedin_url: e.target.value })}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <Button onClick={handleSaveEdit}>
-                  Save & Accept
-                </Button>
-              </div>
+          {/* All reviewed state */}
+          {step === "review" && !currentContact && contacts.length > 0 && (
+            <div className="text-center py-8">
+              <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-500" />
+              <h3 className="font-medium mb-2">All contacts reviewed!</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {acceptedContacts.length} contacts ready to import
+              </p>
+              <Button onClick={importContacts} disabled={acceptedContacts.length === 0}>
+                Import {acceptedContacts.length} Contacts
+              </Button>
             </div>
           )}
 
