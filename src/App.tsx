@@ -119,6 +119,12 @@ const RoastYourBaby = lazy(() => import("./pages/RoastYourBaby"));
 const DilutionLab = lazy(() => import("./pages/DilutionLab"));
 const AcceleratorLanding = lazy(() => import("./pages/AcceleratorLanding"));
 
+// Investor Pages
+const InvestorLanding = lazy(() => import("./pages/investor/InvestorLanding"));
+const InvestorAuth = lazy(() => import("./pages/investor/InvestorAuth"));
+const InvestorOnboarding = lazy(() => import("./pages/investor/InvestorOnboarding"));
+const InvestorDashboard = lazy(() => import("./pages/investor/InvestorDashboard"));
+
 // Accelerator Demo Pages
 const AcceleratorDemoDashboard = lazy(() => import("./pages/acceleratorDemo/AcceleratorDemoDashboard"));
 const CohortOverview = lazy(() => import("./pages/acceleratorDemo/CohortOverview"));
@@ -159,6 +165,11 @@ const App = () => (
             <Route path="/roast-your-baby" element={<RoastYourBaby />} />
             <Route path="/dilution-lab" element={<DilutionLab />} />
             <Route path="/accelerators" element={<AcceleratorLanding />} />
+            {/* Investor Routes */}
+            <Route path="/investor" element={<InvestorLanding />} />
+            <Route path="/investor/auth" element={<InvestorAuth />} />
+            <Route path="/investor/onboarding" element={<InvestorOnboarding />} />
+            <Route path="/investor/dashboard" element={<InvestorDashboard />} />
             {/* Accelerator Demo Routes */}
             <Route path="/accelerator-demo" element={<AcceleratorDemoDashboard />} />
             <Route path="/accelerator-demo/cohort" element={<CohortOverview />} />
