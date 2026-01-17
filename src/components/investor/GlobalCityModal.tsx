@@ -36,6 +36,7 @@ const GlobalCityModal = ({
   onContactAdded,
 }: GlobalCityModalProps) => {
   const [addingIds, setAddingIds] = useState<Set<string>>(new Set());
+  const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
 
   const handleAddToNetwork = async (marker: NetworkMarker) => {
     if (marker.type === "my_contact") return;
@@ -96,6 +97,7 @@ const GlobalCityModal = ({
         if (linkError) throw linkError;
       }
 
+      setAddedIds((prev) => new Set(prev).add(marker.id));
       toast({ title: `${marker.name} added to your network!` });
       onContactAdded();
     } catch (error: any) {
@@ -131,7 +133,8 @@ const GlobalCityModal = ({
         <div className="flex-1 overflow-y-auto space-y-2 mt-4">
           {markers.map((marker) => {
             const isAdding = addingIds.has(marker.id);
-            const isInNetwork = marker.type === "my_contact";
+            const isInNetwork = marker.type === "my_contact" || addedIds.has(marker.id);
+            const displayType = addedIds.has(marker.id) ? "my_contact" : marker.type;
 
             return (
               <div
@@ -143,9 +146,9 @@ const GlobalCityModal = ({
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium">{marker.name}</p>
                       <span
-                        className={`text-xs px-2 py-0.5 rounded-full ${TYPE_COLORS[marker.type]}`}
+                        className={`text-xs px-2 py-0.5 rounded-full transition-colors ${TYPE_COLORS[displayType]}`}
                       >
-                        {TYPE_LABELS[marker.type]}
+                        {TYPE_LABELS[displayType]}
                       </span>
                     </div>
                     {marker.organization_name && (
