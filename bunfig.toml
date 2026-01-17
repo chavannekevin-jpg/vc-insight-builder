@@ -1,0 +1,6 @@
+[install]
+# Force strict lockfile adherence - no reconciliation or updates
+frozenLockfile = true
+
+# Use hardlinks to speed up installs
+globalBinDir = "~/.bun/bin"
