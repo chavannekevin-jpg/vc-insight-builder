@@ -174,7 +174,8 @@ const SuggestedContacts = ({
       if (error) throw error;
 
       setAddedIds((prev) => new Set([...prev, contact.id]));
-      onContactAdded();
+      // Notify parent after a short delay to keep UI fluid
+      setTimeout(() => onContactAdded(), 300);
       toast({
         title: "Contact added!",
         description: `${contact.name} has been added to your network.`,
@@ -216,8 +217,17 @@ const SuggestedContacts = ({
 
   const pendingCount = suggestions.filter((s) => !addedIds.has(s.id)).length;
 
-  if (isLoading || pendingCount === 0) {
-    return null;
+  // Always show the button, even when loading or empty (so users know feature exists)
+  if (isLoading) {
+    return (
+      <button
+        disabled
+        className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-muted bg-muted/30 text-sm opacity-60"
+      >
+        <Sparkles className="w-4 h-4 text-muted-foreground" />
+        <span className="text-muted-foreground font-medium">Suggestions</span>
+      </button>
+    );
   }
 
   return (
@@ -225,16 +235,24 @@ const SuggestedContacts = ({
       {/* Compact notification badge in toolbar */}
       <button
         onClick={() => setIsModalOpen(true)}
-        className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors text-sm"
+        className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-colors text-sm ${
+          pendingCount > 0
+            ? "border-primary/30 bg-primary/5 hover:bg-primary/10"
+            : "border-muted bg-muted/30 hover:bg-muted/50"
+        }`}
       >
-        <Sparkles className="w-4 h-4 text-primary" />
-        <span className="text-primary font-medium">Suggestions</span>
-        <Badge 
-          variant="default" 
-          className="ml-1 h-5 min-w-[20px] px-1.5 text-xs bg-primary text-primary-foreground"
-        >
-          {pendingCount}
-        </Badge>
+        <Sparkles className={`w-4 h-4 ${pendingCount > 0 ? "text-primary" : "text-muted-foreground"}`} />
+        <span className={`font-medium ${pendingCount > 0 ? "text-primary" : "text-muted-foreground"}`}>
+          Suggestions
+        </span>
+        {pendingCount > 0 && (
+          <Badge 
+            variant="default" 
+            className="ml-1 h-5 min-w-[20px] px-1.5 text-xs bg-primary text-primary-foreground"
+          >
+            {pendingCount}
+          </Badge>
+        )}
       </button>
 
       {/* Suggestions Modal */}
@@ -252,88 +270,102 @@ const SuggestedContacts = ({
           </p>
 
           <div className="flex-1 overflow-y-auto space-y-2 pr-2">
-            {suggestions.map((contact) => {
-              const isAdded = addedIds.has(contact.id);
-              const isAdding = addingId === contact.id;
+            {suggestions.length === 0 || pendingCount === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Users className="w-12 h-12 text-muted-foreground/30 mb-3" />
+                <p className="text-muted-foreground">
+                  {suggestions.length === 0
+                    ? "No suggestions available right now"
+                    : "All suggestions reviewed!"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Check back later as more investors join the network
+                </p>
+              </div>
+            ) : (
+              suggestions.map((contact) => {
+                const isAdded = addedIds.has(contact.id);
+                const isAdding = addingId === contact.id;
 
-              return (
-                <div
-                  key={contact.id}
-                  className={`p-3 rounded-lg border transition-all ${
-                    isAdded
-                      ? "bg-primary/5 border-primary/20"
-                      : "bg-card border-border hover:border-primary/30"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium truncate">{contact.name}</p>
-                        {contact.city && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {contact.city}
-                          </span>
+                return (
+                  <div
+                    key={contact.id}
+                    className={`p-3 rounded-lg border transition-all ${
+                      isAdded
+                        ? "bg-primary/5 border-primary/20"
+                        : "bg-card border-border hover:border-primary/30"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium truncate">{contact.name}</p>
+                          {contact.city && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              {contact.city}
+                            </span>
+                          )}
+                        </div>
+                        {contact.organization_name && (
+                          <p className="text-sm text-muted-foreground truncate">
+                            {contact.organization_name}
+                          </p>
                         )}
+                        
+                        {/* Affinity reasons */}
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {contact.affinityReasons.map((reason, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="outline"
+                              className="text-[10px] px-1.5 py-0 flex items-center gap-1"
+                            >
+                              {getAffinityIcon(reason.type)}
+                              <span className="truncate max-w-[100px]">{reason.label}</span>
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                      {contact.organization_name && (
-                        <p className="text-sm text-muted-foreground truncate">
-                          {contact.organization_name}
-                        </p>
-                      )}
-                      
-                      {/* Affinity reasons */}
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {contact.affinityReasons.map((reason, idx) => (
-                          <Badge
-                            key={idx}
-                            variant="outline"
-                            className="text-[10px] px-1.5 py-0 flex items-center gap-1"
+
+                      <div className="flex items-center gap-1">
+                        {!isAdded && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                            onClick={() => dismissSuggestion(contact.id)}
                           >
-                            {getAffinityIcon(reason.type)}
-                            <span className="truncate max-w-[100px]">{reason.label}</span>
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      {!isAdded && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                          onClick={() => dismissSuggestion(contact.id)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant={isAdded ? "secondary" : "default"}
-                        className="h-8"
-                        onClick={() => addContact(contact)}
-                        disabled={isAdded || isAdding}
-                      >
-                        {isAdding ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : isAdded ? (
-                          <>
-                            <Check className="w-4 h-4 mr-1" />
-                            Added
-                          </>
-                        ) : (
-                          <>
-                            <Plus className="w-4 h-4 mr-1" />
-                            Add
-                          </>
+                            <X className="w-4 h-4" />
+                          </Button>
                         )}
-                      </Button>
+                        <Button
+                          size="sm"
+                          variant={isAdded ? "secondary" : "default"}
+                          className="h-8"
+                          onClick={() => addContact(contact)}
+                          disabled={isAdded || isAdding}
+                        >
+                          {isAdding ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : isAdded ? (
+                            <>
+                              <Check className="w-4 h-4 mr-1" />
+                              Added
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-4 h-4 mr-1" />
+                              Add
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </DialogContent>
       </Dialog>

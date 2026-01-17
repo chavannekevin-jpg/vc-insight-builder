@@ -224,10 +224,7 @@ const NetworkMapView = ({
           isOpen={!!selectedGlobalCity}
           onClose={() => setSelectedGlobalCity(null)}
           userId={userId}
-          onContactAdded={() => {
-            handleNetworkUpdate();
-            setSelectedGlobalCity(null);
-          }}
+          onContactAdded={handleNetworkUpdate}
         />
       )}
     </div>
