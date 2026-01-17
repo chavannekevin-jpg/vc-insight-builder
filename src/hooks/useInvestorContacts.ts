@@ -49,6 +49,8 @@ export const useInvestorContacts = (userId: string | null) => {
               ...contact,
               global_contact: globalContact ? {
                 ...globalContact,
+                city_lat: globalContact.city_lat ? Number(globalContact.city_lat) : null,
+                city_lng: globalContact.city_lng ? Number(globalContact.city_lng) : null,
                 investment_focus: (globalContact.investment_focus as string[]) || [],
                 stages: (globalContact.stages as string[]) || [],
               } : undefined,
