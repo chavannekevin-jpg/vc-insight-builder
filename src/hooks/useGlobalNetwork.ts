@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveLocation } from "@/lib/location";
 import { useCallback } from "react";
 
 export interface NetworkMarker {
@@ -30,16 +31,24 @@ export const useGlobalNetwork = (userId: string | null, myContactIds: string[]) 
         return [];
       }
 
-      return (data || []).map((profile: any): NetworkMarker => ({
-        id: profile.id,
-        name: profile.full_name,
-        organization_name: profile.organization_name,
-        city: profile.city,
-        city_lat: profile.city_lat ? Number(profile.city_lat) : null,
-        city_lng: profile.city_lng ? Number(profile.city_lng) : null,
-        country: null,
-        type: "active_user",
-      }));
+      return (data || []).map((profile: any): NetworkMarker => {
+        const rawLat = profile.city_lat != null ? Number(profile.city_lat) : null;
+        const rawLng = profile.city_lng != null ? Number(profile.city_lng) : null;
+        const resolved = (rawLat == null || rawLng == null)
+          ? resolveLocation({ city: profile.city, country: null })
+          : null;
+
+        return {
+          id: profile.id,
+          name: profile.full_name,
+          organization_name: profile.organization_name,
+          city: profile.city,
+          city_lat: rawLat ?? resolved?.lat ?? null,
+          city_lng: rawLng ?? resolved?.lng ?? null,
+          country: resolved?.country ?? null,
+          type: "active_user",
+        };
+      });
     },
     enabled: !!userId,
   });
@@ -57,16 +66,24 @@ export const useGlobalNetwork = (userId: string | null, myContactIds: string[]) 
         return [];
       }
 
-      return (data || []).map((contact: any): NetworkMarker => ({
-        id: contact.id,
-        name: contact.name,
-        organization_name: contact.organization_name,
-        city: contact.city,
-        city_lat: contact.city_lat ? Number(contact.city_lat) : null,
-        city_lng: contact.city_lng ? Number(contact.city_lng) : null,
-        country: contact.country,
-        type: myContactIds.includes(contact.id) ? "my_contact" : "global_contact",
-      }));
+      return (data || []).map((contact: any): NetworkMarker => {
+        const rawLat = contact.city_lat != null ? Number(contact.city_lat) : null;
+        const rawLng = contact.city_lng != null ? Number(contact.city_lng) : null;
+        const resolved = (rawLat == null || rawLng == null)
+          ? resolveLocation({ city: contact.city, country: contact.country })
+          : null;
+
+        return {
+          id: contact.id,
+          name: contact.name,
+          organization_name: contact.organization_name,
+          city: contact.city,
+          city_lat: rawLat ?? resolved?.lat ?? null,
+          city_lng: rawLng ?? resolved?.lng ?? null,
+          country: contact.country ?? resolved?.country ?? null,
+          type: myContactIds.includes(contact.id) ? "my_contact" : "global_contact",
+        };
+      });
     },
     enabled: !!userId,
   });
@@ -85,7 +102,7 @@ export const useGlobalNetwork = (userId: string | null, myContactIds: string[]) 
   }> = {};
 
   allMarkers.forEach((marker) => {
-    if (marker.city && marker.city_lat && marker.city_lng) {
+    if (marker.city && marker.city_lat != null && marker.city_lng != null) {
       if (!cityGroups[marker.city]) {
         cityGroups[marker.city] = {
           city: marker.city,

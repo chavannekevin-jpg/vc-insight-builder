@@ -213,6 +213,30 @@ const MAJOR_CITIES: Record<string, { lat: number; lng: number; country: string }
   "baku": { lat: 40.4093, lng: 49.8671, country: "Azerbaijan" },
 };
 
+const normalizeCityKey = (value: string) => {
+  return value
+    .trim()
+    .toLowerCase()
+    .split(",")[0]
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’'`]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+const normalizeCountryKey = (value: string) => {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 function parseExcelToText(base64Data: string): string {
   try {
     // Decode base64 to binary
@@ -442,7 +466,7 @@ Important rules:
 
         // First try to match city directly
         if (contact.city) {
-          const cityKey = contact.city.toLowerCase().trim();
+          const cityKey = normalizeCityKey(contact.city);
           if (MAJOR_CITIES[cityKey]) {
             cityLat = MAJOR_CITIES[cityKey].lat;
             cityLng = MAJOR_CITIES[cityKey].lng;
@@ -452,7 +476,7 @@ Important rules:
 
         // If no city but has country, use capital
         if (!contact.city && contact.country) {
-          const countryKey = contact.country.toLowerCase().trim();
+          const countryKey = normalizeCountryKey(contact.country);
           if (COUNTRY_CAPITALS[countryKey]) {
             enrichedCity = COUNTRY_CAPITALS[countryKey].city;
             cityLat = COUNTRY_CAPITALS[countryKey].lat;
@@ -462,8 +486,8 @@ Important rules:
         }
 
         // Check if city field is actually a country
-        if (contact.city && !cityLat) {
-          const cityAsCountry = contact.city.toLowerCase().trim();
+        if (contact.city && cityLat == null) {
+          const cityAsCountry = normalizeCountryKey(contact.city);
           if (COUNTRY_CAPITALS[cityAsCountry]) {
             enrichedCity = COUNTRY_CAPITALS[cityAsCountry].city;
             enrichedCountry = contact.city; // The "city" was actually a country
@@ -474,8 +498,8 @@ Important rules:
         }
 
         // Fallback: if city exists and country exists but no coordinates, use country capital
-        if (contact.city && contact.country && !cityLat) {
-          const countryKey = contact.country.toLowerCase().trim();
+        if (contact.city && contact.country && cityLat == null) {
+          const countryKey = normalizeCountryKey(contact.country);
           if (COUNTRY_CAPITALS[countryKey]) {
             // Keep the original city name but use country capital coordinates as approximation
             cityLat = COUNTRY_CAPITALS[countryKey].lat;
