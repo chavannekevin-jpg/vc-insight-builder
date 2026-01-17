@@ -128,11 +128,23 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
     setErrorMessage(null);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      // Read file as base64 and send as JSON (more reliable than FormData)
+      const reader = new FileReader();
+      const fileData = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const base64 = (reader.result as string).split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
 
       const { data, error } = await supabase.functions.invoke('parse-contacts-file', {
-        body: formData,
+        body: {
+          fileBase64: fileData,
+          fileName: file.name,
+          fileType: file.type,
+        },
       });
 
       if (error) throw error;

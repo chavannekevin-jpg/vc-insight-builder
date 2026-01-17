@@ -5,14 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Supported file types
-const SUPPORTED_TYPES = [
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
-  'application/vnd.ms-excel', // xls
-  'text/csv',
-  'application/csv',
-];
-
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -20,28 +12,23 @@ serve(async (req) => {
   }
 
   try {
-    const formData = await req.formData();
-    const file = formData.get('file') as File | null;
+    const { fileBase64, fileName, fileType } = await req.json();
 
-    if (!file) {
+    if (!fileBase64 || !fileName) {
       return new Response(
-        JSON.stringify({ error: 'No file provided' }),
+        JSON.stringify({ error: 'No file data provided' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Processing file: ${file.name}, type: ${file.type}, size: ${file.size}`);
+    console.log(`Processing file: ${fileName}, type: ${fileType}, base64 length: ${fileBase64.length}`);
 
-    // Read file as base64
-    const arrayBuffer = await file.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-    
-    // Determine content type
-    let contentType = file.type;
+    // Determine content type from filename if not provided
+    let contentType = fileType;
     if (!contentType || contentType === 'application/octet-stream') {
-      if (file.name.endsWith('.xlsx')) contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      else if (file.name.endsWith('.xls')) contentType = 'application/vnd.ms-excel';
-      else if (file.name.endsWith('.csv')) contentType = 'text/csv';
+      if (fileName.endsWith('.xlsx')) contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      else if (fileName.endsWith('.xls')) contentType = 'application/vnd.ms-excel';
+      else if (fileName.endsWith('.csv')) contentType = 'text/csv';
     }
 
     console.log(`Detected content type: ${contentType}`);
@@ -93,7 +80,7 @@ Important rules:
 - For stages, normalize to: "Pre-Seed", "Seed", "Series A", "Series B+"
 - Be thorough - extract ALL investor contacts you can find`;
 
-    const userPrompt = `Please analyze this file and extract all investor contact information. The file is named "${file.name}".`;
+    const userPrompt = `Please analyze this file and extract all investor contact information. The file is named "${fileName}".`;
 
     // Call AI API
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -109,7 +96,7 @@ Important rules:
               { type: 'text', text: userPrompt },
               { 
                 type: 'image_url', 
-                image_url: { url: `data:${contentType};base64,${base64}` } 
+                image_url: { url: `data:${contentType};base64,${fileBase64}` } 
               }
             ]
           }
