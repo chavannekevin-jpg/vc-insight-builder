@@ -33,8 +33,8 @@ const InvestorAuth = () => {
 
         if (roleData) {
           // Check if onboarding is completed
-          const { data: profile } = await supabase
-            .from("investor_profiles")
+          const { data: profile } = await (supabase
+            .from("investor_profiles") as any)
             .select("onboarding_completed")
             .eq("id", session.user.id)
             .maybeSingle();
@@ -62,8 +62,8 @@ const InvestorAuth = () => {
 
       setIsValidatingCode(true);
       try {
-        const { data: invite, error } = await supabase
-          .from("investor_invites")
+        const { data: invite, error } = await (supabase
+          .from("investor_invites") as any)
           .select(`
             *,
             inviter:investor_profiles!investor_invites_inviter_id_fkey(full_name)
@@ -138,15 +138,15 @@ const InvestorAuth = () => {
         }
 
         // Increment the invite code usage - fetch current uses first and increment
-        const { data: currentInvite } = await supabase
-          .from("investor_invites")
+        const { data: currentInvite } = await (supabase
+          .from("investor_invites") as any)
           .select("uses")
           .eq("code", inviteCode.toUpperCase())
           .single();
         
         if (currentInvite) {
-          await supabase
-            .from("investor_invites")
+          await (supabase
+            .from("investor_invites") as any)
             .update({ uses: currentInvite.uses + 1 })
             .eq("code", inviteCode.toUpperCase());
         }
@@ -208,8 +208,8 @@ const InvestorAuth = () => {
         }
 
         // Check onboarding status
-        const { data: profile } = await supabase
-          .from("investor_profiles")
+        const { data: profile } = await (supabase
+          .from("investor_profiles") as any)
           .select("onboarding_completed")
           .eq("id", data.user.id)
           .maybeSingle();

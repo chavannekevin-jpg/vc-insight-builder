@@ -15,7 +15,8 @@ import {
   Mail,
   Phone,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  X
 } from "lucide-react";
 import {
   Dialog,
@@ -88,8 +89,8 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from("investor_contacts")
+      const { error } = await (supabase
+        .from("investor_contacts") as any)
         .update({
           local_notes: notes.trim() || null,
           local_email: email.trim() || null,
@@ -118,8 +119,8 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const { error } = await supabase
-        .from("investor_contacts")
+      const { error } = await (supabase
+        .from("investor_contacts") as any)
         .delete()
         .eq("id", contact.id);
 

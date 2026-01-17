@@ -188,8 +188,8 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModal
     setIsLoading(true);
     try {
       // First, check if a similar global contact exists
-      const { data: existingContacts } = await supabase
-        .from("global_contacts")
+      const { data: existingContacts } = await (supabase
+        .from("global_contacts") as any)
         .select("*")
         .ilike("name", `%${name.trim()}%`)
         .ilike("organization_name", `%${organizationName.trim()}%`)
@@ -202,14 +202,14 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModal
         globalContactId = existingContacts[0].id;
         
         // Increment contributor count
-        await supabase
-          .from("global_contacts")
+        await (supabase
+          .from("global_contacts") as any)
           .update({ contributor_count: (existingContacts[0].contributor_count || 1) + 1 })
           .eq("id", globalContactId);
       } else {
         // Create new global contact
-        const { data: newContact, error: globalError } = await supabase
-          .from("global_contacts")
+        const { data: newContact, error: globalError } = await (supabase
+          .from("global_contacts") as any)
           .insert({
             entity_type: entityType as "investor" | "fund",
             name: name.trim(),
@@ -234,8 +234,8 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModal
       }
 
       // Create investor contact (personal relationship)
-      const { error: contactError } = await supabase
-        .from("investor_contacts")
+      const { error: contactError } = await (supabase
+        .from("investor_contacts") as any)
         .insert({
           investor_id: userId,
           global_contact_id: globalContactId,

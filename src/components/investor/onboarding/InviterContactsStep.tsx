@@ -50,8 +50,8 @@ const InviterContactsStep = ({
   const fetchInviterContacts = async () => {
     try {
       // Get the inviter from the invite code
-      const { data: invite, error: inviteError } = await supabase
-        .from("investor_invites")
+      const { data: invite, error: inviteError } = await (supabase
+        .from("investor_invites") as any)
         .select(`
           inviter_id,
           inviter:investor_profiles!investor_invites_inviter_id_fkey(full_name)
@@ -68,8 +68,8 @@ const InviterContactsStep = ({
       setInviterName((invite.inviter as any)?.full_name || "Your inviter");
 
       // Get the inviter's contacts
-      const { data: contacts, error: contactsError } = await supabase
-        .from("investor_contacts")
+      const { data: contacts, error: contactsError } = await (supabase
+        .from("investor_contacts") as any)
         .select(`
           id,
           global_contact_id,
@@ -103,7 +103,7 @@ const InviterContactsStep = ({
     setAddingId(contact.id);
     try {
       // Add to user's contacts, referencing the global contact
-      const { error } = await supabase.from("investor_contacts").insert({
+      const { error } = await (supabase.from("investor_contacts") as any).insert({
         investor_id: userId,
         global_contact_id: contact.global_contact_id,
         local_name: contact.local_name || contact.global_contact?.name,

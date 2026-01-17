@@ -55,8 +55,8 @@ const SettingsView = ({ userId, userProfile, onProfileUpdate }: SettingsViewProp
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from("investor_profiles")
+      const { error } = await (supabase
+        .from("investor_profiles") as any)
         .update({
           full_name: fullName,
           organization_name: organizationName || null,

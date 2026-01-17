@@ -30,8 +30,8 @@ const InviteCodeGenerator = ({ userId }: InviteCodeGeneratorProps) => {
 
   const fetchInviteCodes = async () => {
     try {
-      const { data, error } = await supabase
-        .from("investor_invites")
+      const { data, error } = await (supabase
+        .from("investor_invites") as any)
         .select("*")
         .eq("inviter_id", userId)
         .order("created_at", { ascending: false });
@@ -55,8 +55,8 @@ const InviteCodeGenerator = ({ userId }: InviteCodeGeneratorProps) => {
         code += chars.charAt(Math.floor(Math.random() * chars.length));
       }
 
-      const { data, error } = await supabase
-        .from("investor_invites")
+      const { data, error } = await (supabase
+        .from("investor_invites") as any)
         .insert({
           code,
           inviter_id: userId,

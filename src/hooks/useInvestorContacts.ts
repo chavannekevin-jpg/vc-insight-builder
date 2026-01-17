@@ -17,8 +17,8 @@ export const useInvestorContacts = (userId: string | null) => {
       if (!userId) return [];
 
       // Fetch investor contacts with global contact data
-      const { data: investorContacts, error } = await supabase
-        .from("investor_contacts")
+      const { data: investorContacts, error } = await (supabase
+        .from("investor_contacts") as any)
         .select(`
           id,
           global_contact_id,
@@ -37,10 +37,10 @@ export const useInvestorContacts = (userId: string | null) => {
 
       // For each contact, fetch the global contact data
       const contactsWithGlobal: InvestorContact[] = await Promise.all(
-        (investorContacts || []).map(async (contact) => {
+        (investorContacts || []).map(async (contact: any) => {
           if (contact.global_contact_id) {
-            const { data: globalContact } = await supabase
-              .from("global_contacts")
+            const { data: globalContact } = await (supabase
+              .from("global_contacts") as any)
               .select("*")
               .eq("id", contact.global_contact_id)
               .maybeSingle();
@@ -54,9 +54,9 @@ export const useInvestorContacts = (userId: string | null) => {
                 investment_focus: (globalContact.investment_focus as string[]) || [],
                 stages: (globalContact.stages as string[]) || [],
               } : undefined,
-            };
+            } as InvestorContact;
           }
-          return contact;
+          return contact as InvestorContact;
         })
       );
 
