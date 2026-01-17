@@ -41,7 +41,21 @@ const SECTORS = [
   "Marketplaces",
   "Crypto / Web3",
   "DeepTech / Hardware",
-  "Other",
+  "Cybersecurity",
+  "EdTech",
+  "PropTech / Real Estate",
+  "FoodTech / AgTech",
+  "Mobility / Transportation",
+  "Gaming / Entertainment",
+  "HR Tech / Future of Work",
+  "LegalTech",
+  "InsurTech",
+  "Space Tech",
+  "Robotics / Automation",
+  "Media / Creator Economy",
+  "B2B Services",
+  "eCommerce / D2C",
+  "Social Impact",
 ];
 
 const REGIONS = [
@@ -105,6 +119,8 @@ const InvestorOnboarding = () => {
   const [preferredStages, setPreferredStages] = useState<string[]>([]);
   const [geographicFocus, setGeographicFocus] = useState<string[]>([]);
   const [primarySectors, setPrimarySectors] = useState<string[]>([]);
+  const [customSector, setCustomSector] = useState("");
+  const [sectorSuggestions, setSectorSuggestions] = useState<string[]>([]);
 
   // City suggestions
   const [citySuggestions, setCitySuggestions] = useState<typeof MAJOR_CITIES>([]);
@@ -168,6 +184,36 @@ const InvestorOnboarding = () => {
     setPrimarySectors((prev) =>
       prev.includes(sector) ? prev.filter((s) => s !== sector) : [...prev, sector]
     );
+  };
+
+  const handleCustomSectorChange = (value: string) => {
+    setCustomSector(value);
+    if (value.length >= 2) {
+      // Filter existing sectors that match
+      const matchingSectors = SECTORS.filter(
+        (s) => s.toLowerCase().includes(value.toLowerCase()) && !primarySectors.includes(s)
+      );
+      setSectorSuggestions(matchingSectors.slice(0, 5));
+    } else {
+      setSectorSuggestions([]);
+    }
+  };
+
+  const addCustomSector = () => {
+    const trimmed = customSector.trim();
+    if (trimmed && !primarySectors.includes(trimmed)) {
+      setPrimarySectors((prev) => [...prev, trimmed]);
+      setCustomSector("");
+      setSectorSuggestions([]);
+    }
+  };
+
+  const selectSectorSuggestion = (sector: string) => {
+    if (!primarySectors.includes(sector)) {
+      setPrimarySectors((prev) => [...prev, sector]);
+    }
+    setCustomSector("");
+    setSectorSuggestions([]);
   };
 
   const canProceed = () => {
@@ -410,20 +456,80 @@ const InvestorOnboarding = () => {
             <div className="space-y-6">
               <div className="text-center mb-8">
                 <h1 className="text-2xl font-bold mb-2">Sector Focus</h1>
-                <p className="text-muted-foreground">Select your primary sectors of interest</p>
+                <p className="text-muted-foreground">Select your primary sectors of interest or add custom ones</p>
               </div>
 
+              {/* Custom Sector Input */}
+              <div className="relative">
+                <Label htmlFor="customSector" className="mb-2 block">Add Custom Sector</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="customSector"
+                    value={customSector}
+                    onChange={(e) => handleCustomSectorChange(e.target.value)}
+                    placeholder="Type a sector name..."
+                    className="flex-1"
+                    autoComplete="off"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addCustomSector();
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    onClick={addCustomSector}
+                    disabled={!customSector.trim()}
+                    variant="outline"
+                  >
+                    Add
+                  </Button>
+                </div>
+                {sectorSuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-md shadow-lg">
+                    {sectorSuggestions.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        onClick={() => selectSectorSuggestion(suggestion)}
+                        className="w-full px-4 py-2 text-left hover:bg-muted transition-colors text-sm"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Sectors */}
+              {primarySectors.length > 0 && (
+                <div>
+                  <Label className="mb-2 block text-sm text-muted-foreground">Selected ({primarySectors.length})</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {primarySectors.map((sector) => (
+                      <button
+                        key={sector}
+                        onClick={() => toggleSector(sector)}
+                        className="px-3 py-1.5 rounded-full bg-primary text-primary-foreground border border-primary flex items-center gap-1.5 text-sm"
+                      >
+                        {sector}
+                        <span className="text-primary-foreground/70">×</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Preset Sectors */}
               <div>
-                <div className="flex flex-wrap gap-2">
-                  {SECTORS.map((sector) => (
+                <Label className="mb-3 block">Popular Sectors</Label>
+                <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto">
+                  {SECTORS.filter(s => !primarySectors.includes(s)).map((sector) => (
                     <button
                       key={sector}
                       onClick={() => toggleSector(sector)}
-                      className={`px-4 py-2 rounded-full border transition-colors ${
-                        primarySectors.includes(sector)
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "border-border hover:border-primary/50"
-                      }`}
+                      className="px-3 py-1.5 rounded-full border border-border hover:border-primary/50 transition-colors text-sm"
                     >
                       {sector}
                     </button>
