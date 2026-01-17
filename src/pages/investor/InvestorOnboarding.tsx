@@ -59,12 +59,21 @@ const SECTORS = [
 ];
 
 const REGIONS = [
-  "North America",
-  "Europe",
-  "Latin America",
-  "Middle East & Africa",
-  "Asia Pacific",
-  "Global",
+  // Europe broken down
+  { label: "Nordic", value: "Nordic" },
+  { label: "DACH (DE/AT/CH)", value: "DACH" },
+  { label: "UK & Ireland", value: "UK & Ireland" },
+  { label: "Benelux", value: "Benelux" },
+  { label: "France", value: "France" },
+  { label: "CEE (Central/Eastern Europe)", value: "CEE" },
+  { label: "Southern Europe", value: "Southern Europe" },
+  { label: "Baltics", value: "Baltics" },
+  // Other regions
+  { label: "North America", value: "North America" },
+  { label: "Latin America", value: "Latin America" },
+  { label: "Middle East & Africa", value: "Middle East & Africa" },
+  { label: "Asia Pacific", value: "Asia Pacific" },
+  { label: "Global", value: "Global" },
 ];
 
 // Major cities with coordinates for autocomplete
@@ -124,6 +133,16 @@ const InvestorOnboarding = () => {
   const [customSector, setCustomSector] = useState("");
   const [sectorSuggestions, setSectorSuggestions] = useState<string[]>([]);
 
+  // Organization suggestions from global database
+  interface OrgSuggestion {
+    name: string;
+    city: string | null;
+    stages: string[] | null;
+    investment_focus: string[] | null;
+  }
+  const [orgSuggestions, setOrgSuggestions] = useState<OrgSuggestion[]>([]);
+  const [selectedFromGlobal, setSelectedFromGlobal] = useState(false);
+
   // City suggestions
   const [citySuggestions, setCitySuggestions] = useState<typeof MAJOR_CITIES>([]);
 
@@ -158,6 +177,79 @@ const InvestorOnboarding = () => {
 
     checkAuth();
   }, [navigate]);
+
+  // Search global_contacts for organization name matches
+  const handleOrganizationChange = async (value: string) => {
+    setOrganizationName(value);
+    setSelectedFromGlobal(false);
+    
+    if (value.length >= 2) {
+      try {
+        const { data: orgs } = await (supabase
+          .from("global_contacts") as any)
+          .select("organization_name, city, stages, investment_focus")
+          .ilike("organization_name", `%${value}%`)
+          .limit(5);
+        
+        if (orgs) {
+          // Deduplicate by organization name
+          const uniqueOrgs = orgs.reduce((acc: OrgSuggestion[], curr: any) => {
+            if (!acc.find(o => o.name === curr.organization_name)) {
+              acc.push({
+                name: curr.organization_name,
+                city: curr.city,
+                stages: curr.stages,
+                investment_focus: curr.investment_focus,
+              });
+            }
+            return acc;
+          }, []);
+          setOrgSuggestions(uniqueOrgs);
+        }
+      } catch (err) {
+        console.error("Error searching organizations:", err);
+      }
+    } else {
+      setOrgSuggestions([]);
+    }
+  };
+
+  const selectOrganization = (org: OrgSuggestion) => {
+    setOrganizationName(org.name);
+    setOrgSuggestions([]);
+    setSelectedFromGlobal(true);
+    
+    // Pre-fill other fields if available
+    if (org.city) {
+      const matchingCity = MAJOR_CITIES.find(c => 
+        c.name.toLowerCase() === org.city?.toLowerCase()
+      );
+      if (matchingCity) {
+        setCity(matchingCity.name);
+        setCityLat(matchingCity.lat);
+        setCityLng(matchingCity.lng);
+      } else {
+        setCity(org.city);
+      }
+    }
+    
+    if (org.stages && Array.isArray(org.stages)) {
+      // Map stages to our format
+      const mappedStages = org.stages.filter(s => STAGES.includes(s));
+      if (mappedStages.length > 0) {
+        setPreferredStages(mappedStages);
+      }
+    }
+    
+    if (org.investment_focus && Array.isArray(org.investment_focus)) {
+      setPrimarySectors(org.investment_focus);
+    }
+    
+    toast({
+      title: "Organization found!",
+      description: "We've pre-filled some information based on existing data.",
+    });
+  };
 
   const handleCityChange = (value: string) => {
     setCity(value);
@@ -385,15 +477,41 @@ const InvestorOnboarding = () => {
                 </Select>
               </div>
 
-              <div>
+              <div className="relative">
                 <Label htmlFor="organization">Fund / Organization Name</Label>
                 <Input
                   id="organization"
                   value={organizationName}
-                  onChange={(e) => setOrganizationName(e.target.value)}
-                  placeholder="Acme Ventures"
+                  onChange={(e) => handleOrganizationChange(e.target.value)}
+                  placeholder="Start typing to search existing funds..."
                   className="mt-1"
+                  autoComplete="off"
                 />
+                {orgSuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-md shadow-lg">
+                    <div className="px-3 py-1.5 text-xs text-muted-foreground border-b border-border">
+                      Organizations in our network
+                    </div>
+                    {orgSuggestions.map((org) => (
+                      <button
+                        key={org.name}
+                        onClick={() => selectOrganization(org)}
+                        className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex flex-col"
+                      >
+                        <span className="font-medium">{org.name}</span>
+                        {org.city && (
+                          <span className="text-sm text-muted-foreground">{org.city}</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {selectedFromGlobal && (
+                  <p className="mt-1 text-xs text-primary flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    Found in network - some fields pre-filled
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -487,18 +605,19 @@ const InvestorOnboarding = () => {
 
               <div>
                 <Label className="mb-3 block">Geographic Focus</Label>
+                <p className="text-xs text-muted-foreground mb-3">Select all regions you invest in</p>
                 <div className="flex flex-wrap gap-2">
                   {REGIONS.map((region) => (
                     <button
-                      key={region}
-                      onClick={() => toggleRegion(region)}
+                      key={region.value}
+                      onClick={() => toggleRegion(region.value)}
                       className={`px-4 py-2 rounded-full border transition-colors ${
-                        geographicFocus.includes(region)
+                        geographicFocus.includes(region.value)
                           ? "bg-primary text-primary-foreground border-primary"
                           : "border-border hover:border-primary/50"
                       }`}
                     >
-                      {region}
+                      {region.label}
                     </button>
                   ))}
                 </div>

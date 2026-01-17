@@ -1101,6 +1101,10 @@ export type Database = {
     }
     Functions: {
       generate_invite_code: { Args: never; Returns: string }
+      get_inviter_id_from_code: {
+        Args: { invite_code: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
