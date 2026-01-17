@@ -41,9 +41,15 @@ const InvestorWorldMap = memo(({
   };
 
   // Calculate marker size based on count and zoom
+  // Tiny dots that grow slowly with contact count, capped at a reasonable max
   const getMarkerSize = (count: number, zoom: number) => {
-    const baseSize = Math.min(3 + count * 1.5, 12);
-    return baseSize / zoom;
+    // Base size starts tiny (1.5), grows logarithmically with count
+    // Log scale prevents huge dots for cities with many contacts
+    const baseSize = 1.5 + Math.log2(count + 1) * 1.2;
+    // Cap the max size at 6 (before zoom adjustment)
+    const cappedSize = Math.min(baseSize, 6);
+    // Adjust for zoom - dots get smaller when zoomed out
+    return cappedSize / Math.pow(zoom, 0.5);
   };
 
   // Filter city groups based on search
