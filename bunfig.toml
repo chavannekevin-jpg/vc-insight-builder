@@ -1,0 +1,12 @@
+# Reduce memory usage during installs/builds (helps avoid CI OOM/timeouts)
+smol = true
+
+[install]
+# Prefer the text lockfile (bun.lock). This avoids lockfile migration work.
+saveTextLockfile = true
+
+# Hoisted installs are typically faster/smaller for single-package repos
+linker = "hoisted"
+
+# Skip optional deps to reduce install size/time (mostly platform-specific extras)
+optional = false
