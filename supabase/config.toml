@@ -110,3 +110,6 @@ verify_jwt = false
 
 [functions.parse-contacts-file]
 verify_jwt = false
+
+[functions.generate-investor-memo]
+verify_jwt = false
