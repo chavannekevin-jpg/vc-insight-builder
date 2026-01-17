@@ -7,6 +7,3 @@ saveTextLockfile = true
 
 # Hoisted installs are typically faster/smaller for single-package repos
 linker = "hoisted"
-
-# Skip optional deps to reduce install size/time (mostly platform-specific extras)
-optional = false
