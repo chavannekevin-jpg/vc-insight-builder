@@ -43,21 +43,22 @@ const InvestorWorldMap = memo(({
   // Calculate marker size based on count and zoom
   // Very tiny for 1, scales up dramatically for more contacts
   const getMarkerSize = (count: number, zoom: number) => {
-    // Base: 1 contact = 1.2, 2 = 2.0, 3 = 2.6, 5 = 3.2, 10 = 4.0, 20+ = 5.0
     const minSize = 1.2;
-    const maxSize = 5.5;
-    
+    const maxSize = 11; // Doubled from 5.5
+
     let size: number;
     if (count === 1) {
       size = minSize;
     } else if (count <= 3) {
-      size = minSize + (count - 1) * 0.5;
+      size = minSize + (count - 1) * 0.8;
     } else if (count <= 10) {
-      size = 2.2 + Math.sqrt(count - 3) * 0.7;
+      size = 2.8 + Math.sqrt(count - 3) * 1.2;
+    } else if (count <= 50) {
+      size = 5.5 + Math.sqrt(count - 10) * 0.8;
     } else {
-      size = 3.5 + Math.log10(count) * 0.8;
+      size = 8 + Math.log10(count) * 1.5;
     }
-    
+
     const cappedSize = Math.min(size, maxSize);
     return cappedSize / Math.pow(zoom, 0.4);
   };
