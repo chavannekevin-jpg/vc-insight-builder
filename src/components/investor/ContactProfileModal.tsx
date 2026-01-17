@@ -74,7 +74,7 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
         .from("investor_contacts")
         .update({
           local_notes: notes.trim() || null,
-          relationship_status: relationshipStatus,
+          relationship_status: relationshipStatus as "prospect" | "warm" | "connected" | "invested",
           last_contact_date: new Date().toISOString(),
         })
         .eq("id", contact.id);

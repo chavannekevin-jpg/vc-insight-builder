@@ -475,6 +475,12 @@ export const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-4">
             <Link
+              to="/investor"
+              className="text-xs font-medium text-muted-foreground hover:text-primary transition-all duration-300 border border-border/50 px-3 py-1.5 rounded-full hover:border-primary/50"
+            >
+              For Investors
+            </Link>
+            <Link
               to="/accelerators"
               className="text-xs font-medium text-muted-foreground hover:text-primary transition-all duration-300 border border-border/50 px-3 py-1.5 rounded-full hover:border-primary/50"
             >
