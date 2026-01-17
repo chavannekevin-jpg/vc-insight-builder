@@ -92,6 +92,18 @@ const NetworkMapView = ({
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Suggested Contacts Badge - compact */}
+          {networkMode === "my" && userProfile && (
+            <SuggestedContacts
+              userId={userId}
+              userProfile={userProfile}
+              existingContactIds={contacts
+                .filter((c) => c.global_contact_id)
+                .map((c) => c.global_contact_id as string)}
+              onContactAdded={onNetworkUpdate}
+            />
+          )}
+
           {/* Network Toggle */}
           <div className="flex rounded-lg border border-border overflow-hidden">
             <button
@@ -159,18 +171,6 @@ const NetworkMapView = ({
           </Button>
         </div>
       </div>
-
-      {/* Suggested Contacts */}
-      {networkMode === "my" && userProfile && (
-        <SuggestedContacts
-          userId={userId}
-          userProfile={userProfile}
-          existingContactIds={contacts
-            .filter((c) => c.global_contact_id)
-            .map((c) => c.global_contact_id as string)}
-          onContactAdded={onNetworkUpdate}
-        />
-      )}
 
       {/* Content */}
       <div className="flex-1 relative">

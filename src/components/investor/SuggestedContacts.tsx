@@ -4,7 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import {
-  Users,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   MapPin,
   Briefcase,
   Target,
@@ -12,9 +17,8 @@ import {
   Check,
   Loader2,
   X,
-  ChevronDown,
-  ChevronUp,
   Sparkles,
+  Users,
 } from "lucide-react";
 
 interface SuggestedContact {
@@ -43,7 +47,7 @@ const SuggestedContacts = ({
 }: SuggestedContactsProps) => {
   const [suggestions, setSuggestions] = useState<SuggestedContact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [addingId, setAddingId] = useState<string | null>(null);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
@@ -99,7 +103,6 @@ const SuggestedContacts = ({
 
         // Geographic focus overlap
         const userGeo = userProfile.geographic_focus || [];
-        // Check if contact is in a region the user focuses on
         const contactRegion = getRegionFromCity(contact.city);
         if (contactRegion && userGeo.some((g: string) => matchesRegion(contactRegion, g))) {
           score += 10;
@@ -122,7 +125,7 @@ const SuggestedContacts = ({
       const filtered = scored
         .filter((c: SuggestedContact) => c.affinityScore > 0 && !dismissedIds.has(c.id))
         .sort((a: SuggestedContact, b: SuggestedContact) => b.affinityScore - a.affinityScore)
-        .slice(0, 8);
+        .slice(0, 10);
 
       setSuggestions(filtered);
     } catch (err) {
@@ -137,21 +140,13 @@ const SuggestedContacts = ({
     const cityLower = city.toLowerCase();
     
     const cityRegionMap: Record<string, string> = {
-      // Nordic
       stockholm: "Nordic", copenhagen: "Nordic", oslo: "Nordic", helsinki: "Nordic",
-      // DACH
       berlin: "DACH", munich: "DACH", zurich: "DACH", vienna: "DACH", frankfurt: "DACH",
-      // UK
       london: "UK & Ireland", dublin: "UK & Ireland", edinburgh: "UK & Ireland",
-      // Benelux
       amsterdam: "Benelux", brussels: "Benelux", rotterdam: "Benelux",
-      // France
       paris: "France", lyon: "France",
-      // Baltics
       tallinn: "Baltics", riga: "Baltics", vilnius: "Baltics",
-      // Southern Europe
       barcelona: "Southern Europe", madrid: "Southern Europe", lisbon: "Southern Europe", milan: "Southern Europe", rome: "Southern Europe",
-      // CEE
       warsaw: "CEE", prague: "CEE", budapest: "CEE", bucharest: "CEE",
     };
     
@@ -160,7 +155,6 @@ const SuggestedContacts = ({
 
   const matchesRegion = (contactRegion: string, userRegion: string): boolean => {
     if (contactRegion === userRegion) return true;
-    // Handle legacy "Europe" matching any European sub-region
     if (userRegion === "Europe") {
       return ["Nordic", "DACH", "UK & Ireland", "Benelux", "France", "Baltics", "Southern Europe", "CEE"].includes(contactRegion);
     }
@@ -220,49 +214,44 @@ const SuggestedContacts = ({
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="p-4 border-b border-border/50 bg-muted/30">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          Finding suggested contacts...
-        </div>
-      </div>
-    );
-  }
+  const pendingCount = suggestions.filter((s) => !addedIds.has(s.id)).length;
 
-  if (suggestions.length === 0) {
-    return null; // Don't show anything if no suggestions
+  if (isLoading || pendingCount === 0) {
+    return null;
   }
 
   return (
-    <div className="border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
-      {/* Header */}
+    <>
+      {/* Compact notification badge in toolbar */}
       <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="w-full p-3 flex items-center justify-between hover:bg-muted/30 transition-colors"
+        onClick={() => setIsModalOpen(true)}
+        className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors text-sm"
       >
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium">Suggested Contacts</span>
-          <Badge variant="secondary" className="text-xs">
-            {suggestions.filter((s) => !addedIds.has(s.id)).length} matches
-          </Badge>
-        </div>
-        {isCollapsed ? (
-          <ChevronDown className="w-4 h-4 text-muted-foreground" />
-        ) : (
-          <ChevronUp className="w-4 h-4 text-muted-foreground" />
-        )}
+        <Sparkles className="w-4 h-4 text-primary" />
+        <span className="text-primary font-medium">Suggestions</span>
+        <Badge 
+          variant="default" 
+          className="ml-1 h-5 min-w-[20px] px-1.5 text-xs bg-primary text-primary-foreground"
+        >
+          {pendingCount}
+        </Badge>
       </button>
 
-      {/* Content */}
-      {!isCollapsed && (
-        <div className="px-3 pb-3">
-          <p className="text-xs text-muted-foreground mb-3">
+      {/* Suggestions Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              Suggested Contacts
+            </DialogTitle>
+          </DialogHeader>
+          
+          <p className="text-sm text-muted-foreground">
             Based on your location, stages, and sectors
           </p>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+
+          <div className="flex-1 overflow-y-auto space-y-2 pr-2">
             {suggestions.map((contact) => {
               const isAdded = addedIds.has(contact.id);
               const isAdding = addingId === contact.id;
@@ -270,74 +259,85 @@ const SuggestedContacts = ({
               return (
                 <div
                   key={contact.id}
-                  className={`flex-shrink-0 w-56 p-3 rounded-lg border transition-all ${
+                  className={`p-3 rounded-lg border transition-all ${
                     isAdded
                       ? "bg-primary/5 border-primary/20"
                       : "bg-card border-border hover:border-primary/30"
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{contact.name}</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium truncate">{contact.name}</p>
+                        {contact.city && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {contact.city}
+                          </span>
+                        )}
+                      </div>
                       {contact.organization_name && (
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p className="text-sm text-muted-foreground truncate">
                           {contact.organization_name}
                         </p>
                       )}
+                      
+                      {/* Affinity reasons */}
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {contact.affinityReasons.map((reason, idx) => (
+                          <Badge
+                            key={idx}
+                            variant="outline"
+                            className="text-[10px] px-1.5 py-0 flex items-center gap-1"
+                          >
+                            {getAffinityIcon(reason.type)}
+                            <span className="truncate max-w-[100px]">{reason.label}</span>
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                    {!isAdded && (
-                      <button
-                        onClick={() => dismissSuggestion(contact.id)}
-                        className="text-muted-foreground hover:text-foreground p-0.5"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
 
-                  {/* Affinity reasons */}
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {contact.affinityReasons.slice(0, 2).map((reason, idx) => (
-                      <Badge
-                        key={idx}
-                        variant="outline"
-                        className="text-[10px] px-1.5 py-0 flex items-center gap-1"
+                    <div className="flex items-center gap-1">
+                      {!isAdded && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          onClick={() => dismissSuggestion(contact.id)}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant={isAdded ? "secondary" : "default"}
+                        className="h-8"
+                        onClick={() => addContact(contact)}
+                        disabled={isAdded || isAdding}
                       >
-                        {getAffinityIcon(reason.type)}
-                        <span className="truncate max-w-[80px]">{reason.label}</span>
-                      </Badge>
-                    ))}
+                        {isAdding ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : isAdded ? (
+                          <>
+                            <Check className="w-4 h-4 mr-1" />
+                            Added
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-
-                  {/* Add button */}
-                  <Button
-                    size="sm"
-                    variant={isAdded ? "secondary" : "default"}
-                    className="w-full h-7 text-xs"
-                    onClick={() => addContact(contact)}
-                    disabled={isAdded || isAdding}
-                  >
-                    {isAdding ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : isAdded ? (
-                      <>
-                        <Check className="w-3 h-3 mr-1" />
-                        Added
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="w-3 h-3 mr-1" />
-                        Add to Network
-                      </>
-                    )}
-                  </Button>
                 </div>
               );
             })}
           </div>
-        </div>
-      )}
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
