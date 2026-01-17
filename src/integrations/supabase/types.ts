@@ -390,6 +390,47 @@ export type Database = {
           },
         ]
       }
+      investor_invites: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          inviter_id: string
+          is_active: boolean
+          max_uses: number | null
+          uses: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          inviter_id: string
+          is_active?: boolean
+          max_uses?: number | null
+          uses?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          inviter_id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          uses?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_invites_inviter_id_fkey"
+            columns: ["inviter_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investor_profiles: {
         Row: {
           city: string
@@ -400,6 +441,7 @@ export type Database = {
           geographic_focus: Json | null
           id: string
           investor_type: Database["public"]["Enums"]["investor_type"]
+          invited_by_code: string | null
           onboarding_completed: boolean | null
           organization_name: string | null
           preferred_stages: Json | null
@@ -417,6 +459,7 @@ export type Database = {
           geographic_focus?: Json | null
           id: string
           investor_type: Database["public"]["Enums"]["investor_type"]
+          invited_by_code?: string | null
           onboarding_completed?: boolean | null
           organization_name?: string | null
           preferred_stages?: Json | null
@@ -434,6 +477,7 @@ export type Database = {
           geographic_focus?: Json | null
           id?: string
           investor_type?: Database["public"]["Enums"]["investor_type"]
+          invited_by_code?: string | null
           onboarding_completed?: boolean | null
           organization_name?: string | null
           preferred_stages?: Json | null
@@ -443,6 +487,45 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      investor_referrals: {
+        Row: {
+          created_at: string
+          id: string
+          invite_code: string
+          invitee_id: string
+          inviter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invite_code: string
+          invitee_id: string
+          inviter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invite_code?: string
+          invitee_id?: string
+          inviter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_referrals_invitee_id_fkey"
+            columns: ["invitee_id"]
+            isOneToOne: true
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_referrals_inviter_id_fkey"
+            columns: ["inviter_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       memo_analyses: {
         Row: {
@@ -1005,6 +1088,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_invite_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

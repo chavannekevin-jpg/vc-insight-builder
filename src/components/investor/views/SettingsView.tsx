@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Save, User, Building2 } from "lucide-react";
+import { Save, User, Building2, Gift } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import InviteCodeGenerator from "@/components/investor/InviteCodeGenerator";
 
 const INVESTOR_TYPES = [
   { value: "vc", label: "Venture Capital" },
@@ -110,6 +111,10 @@ const SettingsView = ({ userId, userProfile, onProfileUpdate }: SettingsViewProp
                 <Building2 className="w-4 h-4" />
                 Fund Profile
               </TabsTrigger>
+              <TabsTrigger value="invite" className="gap-2">
+                <Gift className="w-4 h-4" />
+                Invite
+              </TabsTrigger>
             </TabsList>
 
             {/* Personal Settings */}
@@ -205,6 +210,11 @@ const SettingsView = ({ userId, userProfile, onProfileUpdate }: SettingsViewProp
                   />
                 </div>
               </div>
+            </TabsContent>
+
+            {/* Invite Tab */}
+            <TabsContent value="invite">
+              <InviteCodeGenerator userId={userId} />
             </TabsContent>
           </Tabs>
         </div>

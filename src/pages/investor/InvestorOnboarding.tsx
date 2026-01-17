@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Network, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { Network, ArrowLeft, ArrowRight, Check, Users } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import InviterContactsStep from "@/components/investor/onboarding/InviterContactsStep";
 
 const INVESTOR_TYPES = [
   { value: "vc", label: "Venture Capital" },
@@ -99,6 +99,7 @@ const MAJOR_CITIES = [
   { name: "Milan", lat: 45.4642, lng: 9.1900 },
   { name: "Madrid", lat: 40.4168, lng: -3.7038 },
   { name: "Lisbon", lat: 38.7223, lng: -9.1393 },
+  { name: "Tallinn", lat: 59.4370, lng: 24.7536 },
 ];
 
 const InvestorOnboarding = () => {
@@ -106,6 +107,7 @@ const InvestorOnboarding = () => {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
 
   // Form state
   const [fullName, setFullName] = useState("");
@@ -125,6 +127,8 @@ const InvestorOnboarding = () => {
   // City suggestions
   const [citySuggestions, setCitySuggestions] = useState<typeof MAJOR_CITIES>([]);
 
+  const TOTAL_STEPS = 5; // Added step 5 for inviter contacts
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -133,6 +137,12 @@ const InvestorOnboarding = () => {
         return;
       }
       setUserId(session.user.id);
+
+      // Get invite code from session storage
+      const storedCode = sessionStorage.getItem("investor_invite_code");
+      if (storedCode) {
+        setInviteCode(storedCode);
+      }
 
       // Check if already onboarded
       const { data: profile } = await supabase
@@ -231,7 +241,7 @@ const InvestorOnboarding = () => {
     }
   };
 
-  const handleComplete = async () => {
+  const handleSaveProfile = async () => {
     if (!userId) return;
 
     setIsLoading(true);
@@ -249,16 +259,35 @@ const InvestorOnboarding = () => {
         preferred_stages: preferredStages,
         geographic_focus: geographicFocus,
         primary_sectors: primarySectors,
-        onboarding_completed: true,
+        invited_by_code: inviteCode,
+        onboarding_completed: false, // Will be set to true after contacts step
       });
 
       if (error) throw error;
 
-      toast({
-        title: "Profile created!",
-        description: "Welcome to your investor dashboard.",
-      });
-      navigate("/investor/dashboard");
+      // Create referral record if there's an invite code
+      if (inviteCode) {
+        const { data: invite } = await supabase
+          .from("investor_invites")
+          .select("inviter_id")
+          .eq("code", inviteCode)
+          .maybeSingle();
+
+        if (invite?.inviter_id) {
+          try {
+            await supabase.from("investor_referrals").insert({
+              inviter_id: invite.inviter_id,
+              invitee_id: userId,
+              invite_code: inviteCode,
+            });
+          } catch {
+            // Ignore if already exists
+          }
+        }
+      }
+
+      // Move to contacts step
+      setStep(5);
     } catch (error: any) {
       toast({
         title: "Error saving profile",
@@ -267,6 +296,32 @@ const InvestorOnboarding = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleComplete = async () => {
+    if (!userId) return;
+
+    try {
+      await supabase
+        .from("investor_profiles")
+        .update({ onboarding_completed: true })
+        .eq("id", userId);
+
+      // Clear the invite code from session storage
+      sessionStorage.removeItem("investor_invite_code");
+
+      toast({
+        title: "Welcome to the network!",
+        description: "Your profile is complete.",
+      });
+      navigate("/investor/dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -280,7 +335,7 @@ const InvestorOnboarding = () => {
             <span className="font-semibold">Investor Network</span>
           </div>
           <div className="text-sm text-muted-foreground">
-            Step {step} of 4
+            Step {step} of {TOTAL_STEPS}
           </div>
         </div>
       </header>
@@ -289,7 +344,7 @@ const InvestorOnboarding = () => {
       <div className="h-1 bg-muted">
         <div 
           className="h-full bg-primary transition-all duration-300"
-          style={{ width: `${(step / 4) * 100}%` }}
+          style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
         />
       </div>
 
@@ -539,36 +594,52 @@ const InvestorOnboarding = () => {
             </div>
           )}
 
-          {/* Navigation */}
-          <div className="flex justify-between mt-10">
-            <Button
-              variant="outline"
-              onClick={() => setStep((prev) => prev - 1)}
-              disabled={step === 1}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
+          {/* Step 5: Inviter Contacts */}
+          {step === 5 && userId && (
+            <InviterContactsStep
+              inviteCode={inviteCode}
+              userId={userId}
+              onComplete={handleComplete}
+              onSkip={handleComplete}
+            />
+          )}
 
-            {step < 4 ? (
+          {/* Navigation (only for steps 1-4) */}
+          {step < 5 && (
+            <div className="flex justify-between mt-10">
               <Button
-                onClick={() => setStep((prev) => prev + 1)}
-                disabled={!canProceed()}
+                variant="outline"
+                onClick={() => setStep((prev) => prev - 1)}
+                disabled={step === 1}
               >
-                Next
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
               </Button>
-            ) : (
-              <Button
-                onClick={handleComplete}
-                disabled={!canProceed() || isLoading}
-                className="bg-primary hover:bg-primary/90"
-              >
-                {isLoading ? "Saving..." : "Complete Setup"}
-                <Check className="w-4 h-4 ml-2" />
-              </Button>
-            )}
-          </div>
+
+              {step < 4 ? (
+                <Button
+                  onClick={() => setStep((prev) => prev + 1)}
+                  disabled={!canProceed()}
+                >
+                  Next
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSaveProfile}
+                  disabled={!canProceed() || isLoading}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  {isLoading ? "Saving..." : (
+                    <>
+                      <Users className="w-4 h-4 mr-2" />
+                      Continue to Network
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
