@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { UserPlus, Upload } from "lucide-react";
 
 // Major cities with coordinates
 const MAJOR_CITIES = [
@@ -117,10 +118,14 @@ interface AddContactModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onBulkImport?: () => void;
   userId: string;
 }
 
-const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModalProps) => {
+type ModalMode = "choose" | "manual";
+
+const AddContactModal = ({ isOpen, onClose, onSuccess, onBulkImport, userId }: AddContactModalProps) => {
+  const [mode, setMode] = useState<ModalMode>("choose");
   const [isLoading, setIsLoading] = useState(false);
   const [entityType, setEntityType] = useState("investor");
   const [name, setName] = useState("");
@@ -176,6 +181,17 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModal
     setTicketMax("");
     setLinkedinUrl("");
     setNotes("");
+  };
+
+  const handleClose = () => {
+    resetForm();
+    setMode("choose");
+    onClose();
+  };
+
+  const handleBulkImportClick = () => {
+    handleClose();
+    onBulkImport?.();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -248,6 +264,7 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModal
       if (contactError) throw contactError;
 
       resetForm();
+      setMode("choose");
       onSuccess();
     } catch (error: any) {
       console.error("Error adding contact:", error);
@@ -262,13 +279,50 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModal
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Contact</DialogTitle>
+          <DialogTitle>
+            {mode === "choose" ? "Add Contacts" : "Add New Contact"}
+          </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        {mode === "choose" ? (
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <button
+              onClick={() => setMode("manual")}
+              className="flex flex-col items-center gap-3 p-6 border border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all group"
+            >
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <UserPlus className="w-6 h-6 text-primary" />
+              </div>
+              <div className="text-center">
+                <p className="font-medium">Add Manually</p>
+                <p className="text-sm text-muted-foreground">
+                  Enter contact details one by one
+                </p>
+              </div>
+            </button>
+
+            {onBulkImport && (
+              <button
+                onClick={handleBulkImportClick}
+                className="flex flex-col items-center gap-3 p-6 border border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all group"
+              >
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Upload className="w-6 h-6 text-primary" />
+                </div>
+                <div className="text-center">
+                  <p className="font-medium">Import from File</p>
+                  <p className="text-sm text-muted-foreground">
+                    Upload Excel or CSV file
+                  </p>
+                </div>
+              </button>
+            )}
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           {/* Entity Type */}
           <div>
             <Label>Type</Label>
@@ -450,14 +504,15 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModal
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+            <Button type="button" variant="outline" onClick={() => setMode("choose")}>
+              Back
             </Button>
             <Button type="submit" disabled={isLoading} className="bg-primary">
               {isLoading ? "Adding..." : "Add Contact"}
             </Button>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );

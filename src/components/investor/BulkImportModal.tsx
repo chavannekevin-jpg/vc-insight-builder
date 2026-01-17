@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -9,10 +11,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Upload, FileSpreadsheet, Loader2, CheckCircle2, AlertCircle, Users } from "lucide-react";
+import { Upload, FileSpreadsheet, Loader2, CheckCircle2, AlertCircle, X, Check, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Checkbox } from "@/components/ui/checkbox";
 
 // Major cities for matching
 const MAJOR_CITIES: Record<string, { lat: number; lng: number; country: string }> = {
@@ -54,7 +54,10 @@ interface ExtractedContact {
   ticket_min?: number;
   ticket_max?: number;
   notes?: string;
-  selected?: boolean;
+}
+
+interface ReviewedContact extends ExtractedContact {
+  status: "pending" | "accepted" | "rejected";
 }
 
 interface BulkImportModalProps {
@@ -69,7 +72,10 @@ type ImportStep = "upload" | "processing" | "review" | "importing" | "complete";
 const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModalProps) => {
   const [step, setStep] = useState<ImportStep>("upload");
   const [isDragging, setIsDragging] = useState(false);
-  const [extractedContacts, setExtractedContacts] = useState<ExtractedContact[]>([]);
+  const [contacts, setContacts] = useState<ReviewedContact[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState<ExtractedContact | null>(null);
   const [importProgress, setImportProgress] = useState(0);
   const [importedCount, setImportedCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -97,17 +103,10 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
   };
 
   const processFile = async (file: File) => {
-    // Validate file type
-    const validTypes = [
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-excel',
-      'text/csv',
-      'application/csv',
-    ];
     const validExtensions = ['.xlsx', '.xls', '.csv'];
     const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
     
-    if (!validTypes.includes(file.type) && !hasValidExtension) {
+    if (!hasValidExtension) {
       toast({
         title: "Invalid file type",
         description: "Please upload an Excel (.xlsx, .xls) or CSV file",
@@ -116,7 +115,6 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
       return;
     }
 
-    // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "File too large",
@@ -145,13 +143,13 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
         return;
       }
 
-      // Mark all contacts as selected by default
-      const contactsWithSelection = data.contacts.map((c: ExtractedContact) => ({
+      const reviewContacts: ReviewedContact[] = data.contacts.map((c: ExtractedContact) => ({
         ...c,
-        selected: true,
+        status: "pending" as const,
       }));
 
-      setExtractedContacts(contactsWithSelection);
+      setContacts(reviewContacts);
+      setCurrentIndex(0);
       setStep("review");
 
     } catch (error: any) {
@@ -161,20 +159,79 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
     }
   };
 
-  const toggleContact = (index: number) => {
-    setExtractedContacts(prev => 
-      prev.map((c, i) => i === index ? { ...c, selected: !c.selected } : c)
-    );
+  const currentContact = contacts[currentIndex];
+  const pendingContacts = contacts.filter(c => c.status === "pending");
+  const acceptedContacts = contacts.filter(c => c.status === "accepted");
+  const rejectedContacts = contacts.filter(c => c.status === "rejected");
+
+  const handleAccept = () => {
+    if (!currentContact) return;
+    
+    setContacts(prev => prev.map((c, i) => 
+      i === currentIndex ? { ...c, status: "accepted" as const } : c
+    ));
+    
+    moveToNextPending();
   };
 
-  const toggleAll = (selected: boolean) => {
-    setExtractedContacts(prev => prev.map(c => ({ ...c, selected })));
+  const handleReject = () => {
+    if (!currentContact) return;
+    
+    setContacts(prev => prev.map((c, i) => 
+      i === currentIndex ? { ...c, status: "rejected" as const } : c
+    ));
+    
+    moveToNextPending();
+  };
+
+  const handleEdit = () => {
+    if (!currentContact) return;
+    setEditForm({ ...currentContact });
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editForm) return;
+    
+    setContacts(prev => prev.map((c, i) => 
+      i === currentIndex ? { ...c, ...editForm, status: "accepted" as const } : c
+    ));
+    
+    setIsEditing(false);
+    setEditForm(null);
+    moveToNextPending();
+  };
+
+  const moveToNextPending = () => {
+    const nextPendingIndex = contacts.findIndex((c, i) => i > currentIndex && c.status === "pending");
+    if (nextPendingIndex !== -1) {
+      setCurrentIndex(nextPendingIndex);
+    } else {
+      const firstPendingIndex = contacts.findIndex(c => c.status === "pending");
+      if (firstPendingIndex !== -1 && firstPendingIndex !== currentIndex) {
+        setCurrentIndex(firstPendingIndex);
+      }
+    }
+  };
+
+  const navigateCard = (direction: "prev" | "next") => {
+    if (direction === "prev" && currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    } else if (direction === "next" && currentIndex < contacts.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const acceptAll = () => {
+    setContacts(prev => prev.map(c => 
+      c.status === "pending" ? { ...c, status: "accepted" as const } : c
+    ));
   };
 
   const importContacts = async () => {
-    const selectedContacts = extractedContacts.filter(c => c.selected);
-    if (selectedContacts.length === 0) {
-      toast({ title: "No contacts selected", variant: "destructive" });
+    const toImport = contacts.filter(c => c.status === "accepted");
+    if (toImport.length === 0) {
+      toast({ title: "No contacts to import", variant: "destructive" });
       return;
     }
 
@@ -184,15 +241,13 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
 
     let successCount = 0;
 
-    for (let i = 0; i < selectedContacts.length; i++) {
-      const contact = selectedContacts[i];
+    for (let i = 0; i < toImport.length; i++) {
+      const contact = toImport[i];
       
       try {
-        // Get city coordinates if available
         const cityKey = contact.city?.toLowerCase().trim();
         const cityData = cityKey ? MAJOR_CITIES[cityKey] : null;
 
-        // Create global contact
         const { data: newContact, error: globalError } = await (supabase
           .from("global_contacts") as any)
           .insert({
@@ -219,7 +274,6 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
           continue;
         }
 
-        // Create investor contact
         const { error: contactError } = await (supabase
           .from("investor_contacts") as any)
           .insert({
@@ -237,7 +291,7 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
         console.error("Error importing contact:", contact.name, err);
       }
 
-      setImportProgress(Math.round(((i + 1) / selectedContacts.length) * 100));
+      setImportProgress(Math.round(((i + 1) / toImport.length) * 100));
       setImportedCount(successCount);
     }
 
@@ -246,28 +300,29 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
 
   const handleClose = () => {
     setStep("upload");
-    setExtractedContacts([]);
+    setContacts([]);
+    setCurrentIndex(0);
     setImportProgress(0);
     setImportedCount(0);
     setErrorMessage(null);
+    setIsEditing(false);
+    setEditForm(null);
     if (step === "complete") {
       onSuccess();
     }
     onClose();
   };
 
-  const selectedCount = extractedContacts.filter(c => c.selected).length;
-
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Bulk Import Contacts
+            <Upload className="h-5 w-5" />
+            Import Contacts
           </DialogTitle>
           <DialogDescription>
-            Upload an Excel or CSV file with investor contacts. AI will extract and organize the data.
+            Upload an Excel or CSV file with investor contacts
           </DialogDescription>
         </DialogHeader>
 
@@ -305,21 +360,9 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
                     className="hidden"
                   />
                   <Button variant="outline" asChild>
-                    <span className="cursor-pointer">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Choose File
-                    </span>
+                    <span className="cursor-pointer">Choose File</span>
                   </Button>
                 </label>
-              </div>
-
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium text-sm mb-2">Tips for best results:</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Include columns for name, organization, email, city</li>
-                  <li>• Investment stages and fund info will be auto-detected</li>
-                  <li>• Max 100 contacts per import</li>
-                </ul>
               </div>
             </div>
           )}
@@ -335,82 +378,249 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
             </div>
           )}
 
-          {/* Review Step */}
-          {step === "review" && (
-            <div className="space-y-4 flex flex-col h-full">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Found {extractedContacts.length} contacts • {selectedCount} selected
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleAll(true)}
-                  >
-                    Select All
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleAll(false)}
-                  >
-                    Deselect All
-                  </Button>
+          {/* Review Step - Card Stack */}
+          {step === "review" && !isEditing && (
+            <div className="space-y-4">
+              {/* Stats Bar */}
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex gap-4">
+                  <span className="text-muted-foreground">
+                    {pendingContacts.length} pending
+                  </span>
+                  <span className="text-green-600">
+                    {acceptedContacts.length} accepted
+                  </span>
+                  <span className="text-red-500">
+                    {rejectedContacts.length} rejected
+                  </span>
                 </div>
+                <span className="text-muted-foreground">
+                  {currentIndex + 1} / {contacts.length}
+                </span>
               </div>
 
-              <ScrollArea className="flex-1 max-h-[400px] pr-4">
-                <div className="space-y-2">
-                  {extractedContacts.map((contact, index) => (
-                    <div
-                      key={index}
-                      className={`p-3 border rounded-lg transition-colors ${
-                        contact.selected
-                          ? "border-primary/50 bg-primary/5"
-                          : "border-border"
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <Checkbox
-                          checked={contact.selected}
-                          onCheckedChange={() => toggleContact(index)}
-                          className="mt-1"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium truncate">
-                              {contact.name}
-                            </span>
-                            {contact.organization_name && (
-                              <span className="text-sm text-muted-foreground truncate">
-                                @ {contact.organization_name}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-muted-foreground">
-                            {contact.email && <span>{contact.email}</span>}
-                            {contact.city && <span>{contact.city}</span>}
-                            {contact.stages && contact.stages.length > 0 && (
-                              <span>{contact.stages.join(", ")}</span>
-                            )}
-                          </div>
-                        </div>
+              {/* Card Stack */}
+              {pendingContacts.length > 0 && currentContact?.status === "pending" ? (
+                <div className="relative">
+                  {/* Background cards for stack effect */}
+                  {pendingContacts.length > 2 && (
+                    <div className="absolute inset-x-4 top-2 h-full bg-card border border-border rounded-xl opacity-30" />
+                  )}
+                  {pendingContacts.length > 1 && (
+                    <div className="absolute inset-x-2 top-1 h-full bg-card border border-border rounded-xl opacity-60" />
+                  )}
+                  
+                  {/* Current Card */}
+                  <div className="relative bg-card border border-border rounded-xl p-6 shadow-lg">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-xl font-semibold">{currentContact.name}</h3>
+                        {currentContact.organization_name && (
+                          <p className="text-muted-foreground">@ {currentContact.organization_name}</p>
+                        )}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button variant="outline" onClick={handleClose}>
-                  Cancel
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        {currentContact.email && (
+                          <div>
+                            <span className="text-muted-foreground">Email:</span>
+                            <p className="truncate">{currentContact.email}</p>
+                          </div>
+                        )}
+                        {currentContact.phone && (
+                          <div>
+                            <span className="text-muted-foreground">Phone:</span>
+                            <p>{currentContact.phone}</p>
+                          </div>
+                        )}
+                        {currentContact.city && (
+                          <div>
+                            <span className="text-muted-foreground">Location:</span>
+                            <p>{currentContact.city}{currentContact.country ? `, ${currentContact.country}` : ""}</p>
+                          </div>
+                        )}
+                        {currentContact.stages && currentContact.stages.length > 0 && (
+                          <div>
+                            <span className="text-muted-foreground">Stages:</span>
+                            <p>{currentContact.stages.join(", ")}</p>
+                          </div>
+                        )}
+                        {currentContact.fund_size && (
+                          <div>
+                            <span className="text-muted-foreground">Fund Size:</span>
+                            <p>${currentContact.fund_size}M</p>
+                          </div>
+                        )}
+                        {currentContact.linkedin_url && (
+                          <div>
+                            <span className="text-muted-foreground">LinkedIn:</span>
+                            <p className="truncate text-primary">View Profile</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {currentContact.notes && (
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">Notes:</span>
+                          <p className="mt-1">{currentContact.notes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-center gap-4 mt-6">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-14 w-14 rounded-full border-red-500/50 text-red-500 hover:bg-red-500/10 hover:text-red-500"
+                      onClick={handleReject}
+                    >
+                      <X className="h-6 w-6" />
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-12 w-12 rounded-full"
+                      onClick={handleEdit}
+                    >
+                      <Pencil className="h-5 w-5" />
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-14 w-14 rounded-full border-green-500/50 text-green-500 hover:bg-green-500/10 hover:text-green-500"
+                      onClick={handleAccept}
+                    >
+                      <Check className="h-6 w-6" />
+                    </Button>
+                  </div>
+
+                  {/* Navigation */}
+                  <div className="flex items-center justify-between mt-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigateCard("prev")}
+                      disabled={currentIndex === 0}
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigateCard("next")}
+                      disabled={currentIndex === contacts.length - 1}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-500" />
+                  <h3 className="font-medium mb-2">All contacts reviewed!</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {acceptedContacts.length} contacts ready to import
+                  </p>
+                </div>
+              )}
+
+              {/* Footer Actions */}
+              <div className="flex items-center justify-between pt-4 border-t">
+                <Button variant="ghost" size="sm" onClick={acceptAll}>
+                  Accept All Remaining
                 </Button>
                 <Button
                   onClick={importContacts}
-                  disabled={selectedCount === 0}
+                  disabled={acceptedContacts.length === 0}
                 >
-                  Import {selectedCount} Contacts
+                  Import {acceptedContacts.length} Contacts
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Edit Mode */}
+          {step === "review" && isEditing && editForm && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium">Edit Contact</h3>
+                <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <Label>Name *</Label>
+                  <Input
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>Organization</Label>
+                  <Input
+                    value={editForm.organization_name || ""}
+                    onChange={(e) => setEditForm({ ...editForm, organization_name: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      value={editForm.email || ""}
+                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label>Phone</Label>
+                    <Input
+                      value={editForm.phone || ""}
+                      onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>City</Label>
+                    <Input
+                      value={editForm.city || ""}
+                      onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label>Country</Label>
+                    <Input
+                      value={editForm.country || ""}
+                      onChange={(e) => setEditForm({ ...editForm, country: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>LinkedIn URL</Label>
+                  <Input
+                    value={editForm.linkedin_url || ""}
+                    onChange={(e) => setEditForm({ ...editForm, linkedin_url: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <Button onClick={handleSaveEdit}>
+                  Save & Accept
                 </Button>
               </div>
             </div>
@@ -423,7 +633,7 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
                 <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-primary" />
                 <h3 className="font-medium">Importing contacts...</h3>
                 <p className="text-sm text-muted-foreground">
-                  {importedCount} of {selectedCount} imported
+                  {importedCount} of {acceptedContacts.length} imported
                 </p>
               </div>
               <Progress value={importProgress} className="h-2" />

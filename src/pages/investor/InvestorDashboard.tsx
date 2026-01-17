@@ -206,6 +206,10 @@ const InvestorDashboard = () => {
           isOpen={isAddContactOpen}
           onClose={() => setIsAddContactOpen(false)}
           onSuccess={handleContactAdded}
+          onBulkImport={() => {
+            setIsAddContactOpen(false);
+            setIsBulkImportOpen(true);
+          }}
           userId={userId}
         />
 
