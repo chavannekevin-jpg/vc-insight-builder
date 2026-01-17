@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Filter, Upload } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Search, Plus, Filter, Upload, UserCheck } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -136,9 +137,20 @@ const CRMView = ({ contacts, isLoading, onContactClick, onAddContact, onBulkImpo
                     onClick={() => onContactClick(contact)}
                     className="bg-card border border-border rounded-lg p-3 cursor-pointer hover:border-primary/50 transition-colors"
                   >
-                    <p className="font-medium text-sm truncate">
-                      {contact.local_name || contact.global_contact?.name}
-                    </p>
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-medium text-sm truncate">
+                        {contact.local_name || contact.global_contact?.name}
+                      </p>
+                      {contact.global_contact?.linked_investor_id && (
+                        <Badge 
+                          variant="secondary" 
+                          className="text-[10px] px-1.5 py-0 bg-green-500/10 text-green-600 border-green-500/20 shrink-0"
+                        >
+                          <UserCheck className="w-3 h-3 mr-0.5" />
+                          On Platform
+                        </Badge>
+                      )}
+                    </div>
                     {(contact.local_organization || contact.global_contact?.organization_name) && (
                       <p className="text-xs text-muted-foreground truncate mt-0.5">
                         {contact.local_organization || contact.global_contact?.organization_name}

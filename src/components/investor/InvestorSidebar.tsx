@@ -13,6 +13,7 @@ import {
   Gift,
   Copy,
   Check,
+  Building2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -39,6 +40,7 @@ import { toast } from "@/hooks/use-toast";
 const mainMenuItems = [
   { title: "Network Map", url: "/investor/dashboard", icon: Map, section: "map" },
   { title: "CRM", url: "/investor/dashboard?view=crm", icon: Users, section: "crm" },
+  { title: "Fund Directory", url: "/investor/dashboard?view=funds", icon: Building2, section: "funds" },
   { title: "Dealflow", url: "/investor/dashboard?view=dealflow", icon: Briefcase, section: "dealflow" },
   { title: "Upload Deck", url: "/investor/dashboard?view=upload", icon: FileUp, section: "upload" },
 ];

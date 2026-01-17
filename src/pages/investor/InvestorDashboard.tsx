@@ -16,6 +16,7 @@ import DealflowView from "@/components/investor/views/DealflowView";
 import UploadDeckView from "@/components/investor/views/UploadDeckView";
 import SettingsView from "@/components/investor/views/SettingsView";
 import PlaceholderView from "@/components/investor/views/PlaceholderView";
+import FundDirectoryView from "@/components/investor/views/FundDirectoryView";
 import { BarChart3, CalendarDays, Target } from "lucide-react";
 
 export interface InvestorContact {
@@ -41,6 +42,7 @@ export interface InvestorContact {
     city_lng: number | null;
     country: string | null;
     linkedin_url: string | null;
+    linked_investor_id: string | null;
   };
 }
 
@@ -129,6 +131,8 @@ const InvestorDashboard = () => {
             onAddContact={() => setIsAddContactOpen(true)}
           />
         ) : null;
+      case "funds":
+        return <FundDirectoryView />;
       case "dealflow":
         return <DealflowView onUploadDeck={() => setActiveSection("upload")} />;
       case "upload":
