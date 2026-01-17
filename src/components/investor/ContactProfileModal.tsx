@@ -16,6 +16,8 @@ import {
   Phone,
   Trash2,
   AlertTriangle,
+  Pencil,
+  Check,
   X
 } from "lucide-react";
 import {
@@ -60,6 +62,8 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
   const [notes, setNotes] = useState(contact.local_notes || "");
   const [email, setEmail] = useState((contact as any).local_email || (contact.global_contact as any)?.email || "");
   const [phone, setPhone] = useState((contact as any).local_phone || (contact.global_contact as any)?.phone || "");
+  const [localName, setLocalName] = useState(contact.local_name || "");
+  const [localOrganization, setLocalOrganization] = useState(contact.local_organization || "");
   const [relationshipStatus, setRelationshipStatus] = useState<"prospect" | "warm" | "connected" | "invested">(
     (contact.relationship_status as "prospect" | "warm" | "connected" | "invested") || "prospect"
   );
@@ -67,9 +71,15 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingOrg, setIsEditingOrg] = useState(false);
+  const [tempName, setTempName] = useState("");
+  const [tempOrg, setTempOrg] = useState("");
 
-  const name = contact.local_name || contact.global_contact?.name || "Unknown";
-  const organization = contact.local_organization || contact.global_contact?.organization_name;
+  const globalName = contact.global_contact?.name || "Unknown";
+  const globalOrganization = contact.global_contact?.organization_name;
+  const displayName = localName || globalName;
+  const displayOrganization = localOrganization || globalOrganization;
   const city = contact.global_contact?.city;
   const country = contact.global_contact?.country;
   const entityType = contact.global_contact?.entity_type;
@@ -86,12 +96,46 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
     return `€${value}`;
   };
 
+  const handleStartEditName = () => {
+    setTempName(localName || globalName);
+    setIsEditingName(true);
+  };
+
+  const handleSaveName = () => {
+    setLocalName(tempName);
+    setIsEditingName(false);
+    setIsEditing(true);
+  };
+
+  const handleCancelEditName = () => {
+    setIsEditingName(false);
+    setTempName("");
+  };
+
+  const handleStartEditOrg = () => {
+    setTempOrg(localOrganization || globalOrganization || "");
+    setIsEditingOrg(true);
+  };
+
+  const handleSaveOrg = () => {
+    setLocalOrganization(tempOrg);
+    setIsEditingOrg(false);
+    setIsEditing(true);
+  };
+
+  const handleCancelEditOrg = () => {
+    setIsEditingOrg(false);
+    setTempOrg("");
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
       const { error } = await (supabase
         .from("investor_contacts") as any)
         .update({
+          local_name: localName.trim() || null,
+          local_organization: localOrganization.trim() || null,
           local_notes: notes.trim() || null,
           local_email: email.trim() || null,
           local_phone: phone.trim() || null,
@@ -147,17 +191,75 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 {entityType === "fund" ? (
                   <Building className="w-6 h-6 text-primary" />
                 ) : (
                   <User className="w-6 h-6 text-primary" />
                 )}
               </div>
-              <div>
-                <h2 className="text-xl font-semibold">{name}</h2>
-                {organization && (
-                  <p className="text-sm text-muted-foreground font-normal">{organization}</p>
+              <div className="flex-1 min-w-0">
+                {/* Editable Name */}
+                {isEditingName ? (
+                  <div className="flex items-center gap-1">
+                    <Input
+                      value={tempName}
+                      onChange={(e) => setTempName(e.target.value)}
+                      className="h-8 text-lg font-semibold"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSaveName();
+                        if (e.key === "Escape") handleCancelEditName();
+                      }}
+                    />
+                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSaveName}>
+                      <Check className="h-4 w-4 text-green-500" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleCancelEditName}>
+                      <X className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div 
+                    className="group flex items-center gap-2 cursor-pointer hover:bg-muted/50 rounded px-1 -mx-1"
+                    onClick={handleStartEditName}
+                  >
+                    <h2 className="text-xl font-semibold truncate">{displayName}</h2>
+                    <Pencil className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                  </div>
+                )}
+                
+                {/* Editable Organization */}
+                {isEditingOrg ? (
+                  <div className="flex items-center gap-1 mt-1">
+                    <Input
+                      value={tempOrg}
+                      onChange={(e) => setTempOrg(e.target.value)}
+                      className="h-7 text-sm"
+                      placeholder="Organization"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSaveOrg();
+                        if (e.key === "Escape") handleCancelEditOrg();
+                      }}
+                    />
+                    <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleSaveOrg}>
+                      <Check className="h-3 w-3 text-green-500" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleCancelEditOrg}>
+                      <X className="h-3 w-3 text-red-500" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div 
+                    className="group flex items-center gap-2 cursor-pointer hover:bg-muted/50 rounded px-1 -mx-1 mt-0.5"
+                    onClick={handleStartEditOrg}
+                  >
+                    <p className="text-sm text-muted-foreground font-normal truncate">
+                      {displayOrganization || "Add organization"}
+                    </p>
+                    <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                  </div>
                 )}
               </div>
             </DialogTitle>
@@ -351,7 +453,7 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
               Remove Contact
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove <strong>{name}</strong> from your network? 
+              Are you sure you want to remove <strong>{displayName}</strong> from your network? 
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

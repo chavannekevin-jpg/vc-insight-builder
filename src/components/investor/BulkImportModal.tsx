@@ -681,28 +681,32 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex items-center justify-center gap-4 mt-6">
+                {/* Action Buttons - Tinder Style */}
+                <div className="flex items-center justify-center gap-6 mt-6">
                   <Button
                     variant="outline"
                     size="icon"
-                    className={`h-14 w-14 rounded-full border-red-500/50 text-red-500 hover:bg-red-500/10 hover:text-red-500 ${
-                      currentContact.status === "rejected" ? "bg-red-500/20" : ""
+                    className={`h-16 w-16 rounded-full border-2 transition-all duration-200 ${
+                      currentContact.status === "rejected" 
+                        ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/30" 
+                        : "border-red-500/50 text-red-500 hover:bg-red-500 hover:border-red-500 hover:text-white hover:shadow-lg hover:shadow-red-500/30 hover:scale-110"
                     }`}
                     onClick={handleReject}
                   >
-                    <X className="h-6 w-6" />
+                    <X className="h-7 w-7" />
                   </Button>
                   
                   <Button
                     variant="outline"
                     size="icon"
-                    className={`h-14 w-14 rounded-full border-green-500/50 text-green-500 hover:bg-green-500/10 hover:text-green-500 ${
-                      currentContact.status === "accepted" ? "bg-green-500/20" : ""
+                    className={`h-16 w-16 rounded-full border-2 transition-all duration-200 ${
+                      currentContact.status === "accepted" 
+                        ? "bg-green-500 border-green-500 text-white shadow-lg shadow-green-500/30" 
+                        : "border-green-500/50 text-green-500 hover:bg-green-500 hover:border-green-500 hover:text-white hover:shadow-lg hover:shadow-green-500/30 hover:scale-110"
                     }`}
                     onClick={handleAccept}
                   >
-                    <Check className="h-6 w-6" />
+                    <Check className="h-7 w-7" />
                   </Button>
                 </div>
 
