@@ -42,7 +42,7 @@ const InvestorWorldMap = memo(({
 
   // Calculate marker size based on count and zoom
   const getMarkerSize = (count: number, zoom: number) => {
-    const baseSize = Math.min(4 + count * 2, 20);
+    const baseSize = Math.min(3 + count * 1.5, 12);
     return baseSize / zoom;
   };
 
@@ -126,13 +126,10 @@ const InvestorWorldMap = memo(({
                 />
                 {/* Main dot */}
                 <circle
-                  r={markerSize}
+                  r={isHovered ? markerSize * 1.15 : markerSize}
                   fill="hsl(var(--primary))"
-                  className={`transition-all duration-200 ${isHovered ? "drop-shadow-lg" : ""}`}
-                  style={{
-                    transform: isHovered ? "scale(1.2)" : "scale(1)",
-                    transformOrigin: "center",
-                  }}
+                  className="transition-all duration-200"
+                  style={{ filter: isHovered ? "drop-shadow(0 0 4px hsl(var(--primary)))" : "none" }}
                 />
                 {/* Count label for cities with multiple contacts */}
                 {group.count > 1 && position.zoom > 2 && (
