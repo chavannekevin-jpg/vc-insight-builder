@@ -113,7 +113,8 @@ const InvestorWorldMap = memo(({
                   if (group.count === 1) {
                     onContactClick(group.contacts[0]);
                   } else {
-                    onCityClick(city);
+                    // For multiple contacts, open the first one but also filter
+                    onContactClick(group.contacts[0]);
                   }
                 }}
                 style={{ cursor: "pointer" }}
