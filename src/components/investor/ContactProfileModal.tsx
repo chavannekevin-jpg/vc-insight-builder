@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { resolveLocation } from "@/lib/location";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,83 +53,7 @@ const RELATIONSHIP_STATUSES = [
   { value: "invested", label: "Invested Together" },
 ];
 
-// City coordinates for location updates - All European capitals + major cities
-const CITY_COORDINATES: Record<string, { lat: number; lng: number; country: string }> = {
-  // Baltic States
-  "vilnius": { lat: 54.6872, lng: 25.2797, country: "Lithuania" },
-  "kaunas": { lat: 54.8985, lng: 23.9036, country: "Lithuania" },
-  "riga": { lat: 56.9496, lng: 24.1052, country: "Latvia" },
-  "tallinn": { lat: 59.4370, lng: 24.7536, country: "Estonia" },
-  // Western Europe
-  "london": { lat: 51.5074, lng: -0.1278, country: "UK" },
-  "paris": { lat: 48.8566, lng: 2.3522, country: "France" },
-  "berlin": { lat: 52.5200, lng: 13.4050, country: "Germany" },
-  "amsterdam": { lat: 52.3676, lng: 4.9041, country: "Netherlands" },
-  "brussels": { lat: 50.8503, lng: 4.3517, country: "Belgium" },
-  "luxembourg": { lat: 49.6116, lng: 6.1319, country: "Luxembourg" },
-  // DACH region
-  "vienna": { lat: 48.2082, lng: 16.3738, country: "Austria" },
-  "zurich": { lat: 47.3769, lng: 8.5417, country: "Switzerland" },
-  "geneva": { lat: 46.2044, lng: 6.1432, country: "Switzerland" },
-  "bern": { lat: 46.9480, lng: 7.4474, country: "Switzerland" },
-  "munich": { lat: 48.1351, lng: 11.5820, country: "Germany" },
-  "frankfurt": { lat: 50.1109, lng: 8.6821, country: "Germany" },
-  // Nordics
-  "stockholm": { lat: 59.3293, lng: 18.0686, country: "Sweden" },
-  "copenhagen": { lat: 55.6761, lng: 12.5683, country: "Denmark" },
-  "oslo": { lat: 59.9139, lng: 10.7522, country: "Norway" },
-  "helsinki": { lat: 60.1699, lng: 24.9384, country: "Finland" },
-  "reykjavik": { lat: 64.1466, lng: -21.9426, country: "Iceland" },
-  // Central Europe
-  "warsaw": { lat: 52.2297, lng: 21.0122, country: "Poland" },
-  "krakow": { lat: 50.0647, lng: 19.9450, country: "Poland" },
-  "prague": { lat: 50.0755, lng: 14.4378, country: "Czech Republic" },
-  "budapest": { lat: 47.4979, lng: 19.0402, country: "Hungary" },
-  "bratislava": { lat: 48.1486, lng: 17.1077, country: "Slovakia" },
-  // Eastern Europe
-  "bucharest": { lat: 44.4268, lng: 26.1025, country: "Romania" },
-  "sofia": { lat: 42.6977, lng: 23.3219, country: "Bulgaria" },
-  "kyiv": { lat: 50.4501, lng: 30.5234, country: "Ukraine" },
-  "chisinau": { lat: 47.0105, lng: 28.8638, country: "Moldova" },
-  "minsk": { lat: 53.9006, lng: 27.5590, country: "Belarus" },
-  "moscow": { lat: 55.7558, lng: 37.6173, country: "Russia" },
-  // Balkans
-  "belgrade": { lat: 44.7866, lng: 20.4489, country: "Serbia" },
-  "zagreb": { lat: 45.8150, lng: 15.9819, country: "Croatia" },
-  "ljubljana": { lat: 46.0569, lng: 14.5058, country: "Slovenia" },
-  "sarajevo": { lat: 43.8563, lng: 18.4131, country: "Bosnia and Herzegovina" },
-  "podgorica": { lat: 42.4304, lng: 19.2594, country: "Montenegro" },
-  "skopje": { lat: 41.9981, lng: 21.4254, country: "North Macedonia" },
-  "tirana": { lat: 41.3275, lng: 19.8187, country: "Albania" },
-  "pristina": { lat: 42.6629, lng: 21.1655, country: "Kosovo" },
-  // Southern Europe
-  "athens": { lat: 37.9838, lng: 23.7275, country: "Greece" },
-  "lisbon": { lat: 38.7223, lng: -9.1393, country: "Portugal" },
-  "madrid": { lat: 40.4168, lng: -3.7038, country: "Spain" },
-  "barcelona": { lat: 41.3851, lng: 2.1734, country: "Spain" },
-  "rome": { lat: 41.9028, lng: 12.4964, country: "Italy" },
-  "milan": { lat: 45.4642, lng: 9.1900, country: "Italy" },
-  "dublin": { lat: 53.3498, lng: -6.2603, country: "Ireland" },
-  // Microstates
-  "monaco": { lat: 43.7384, lng: 7.4246, country: "Monaco" },
-  "valletta": { lat: 35.8989, lng: 14.5146, country: "Malta" },
-  "andorra la vella": { lat: 42.5063, lng: 1.5218, country: "Andorra" },
-  "san marino": { lat: 43.9424, lng: 12.4578, country: "San Marino" },
-  "vaduz": { lat: 47.1410, lng: 9.5215, country: "Liechtenstein" },
-  // Global hubs
-  "new york": { lat: 40.7128, lng: -74.0060, country: "USA" },
-  "san francisco": { lat: 37.7749, lng: -122.4194, country: "USA" },
-  "los angeles": { lat: 34.0522, lng: -118.2437, country: "USA" },
-  "boston": { lat: 42.3601, lng: -71.0589, country: "USA" },
-  "miami": { lat: 25.7617, lng: -80.1918, country: "USA" },
-  "singapore": { lat: 1.3521, lng: 103.8198, country: "Singapore" },
-  "hong kong": { lat: 22.3193, lng: 114.1694, country: "Hong Kong" },
-  "tokyo": { lat: 35.6762, lng: 139.6503, country: "Japan" },
-  "tel aviv": { lat: 32.0853, lng: 34.7818, country: "Israel" },
-  "dubai": { lat: 25.2048, lng: 55.2708, country: "UAE" },
-  "sydney": { lat: -33.8688, lng: 151.2093, country: "Australia" },
-  "toronto": { lat: 43.6532, lng: -79.3832, country: "Canada" },
-};
+// City coordinates are resolved via shared location utilities (handles commas/diacritics and common aliases).
 
 interface ContactProfileModalProps {
   contact: InvestorContact;
@@ -231,10 +156,12 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
 
       // Update global_contacts if we have a global_contact_id
       if (contact.global_contact_id) {
-        // Get city coordinates if city was changed
-        const cityKey = city.toLowerCase().trim();
-        const cityCoords = CITY_COORDINATES[cityKey];
-        
+        // Resolve coordinates robustly (handles commas/diacritics/aliases)
+        const resolved = resolveLocation({
+          city: city.trim() || null,
+          country: country.trim() || null,
+        });
+
         const globalUpdate: Record<string, any> = {
           city: city.trim() || null,
           country: country.trim() || null,
@@ -244,14 +171,14 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
           ticket_size_max: ticketMax ? parseFloat(ticketMax) * 1000 : null,
         };
 
-        // Add coordinates if we found a match
-        if (cityCoords) {
-          globalUpdate.city_lat = cityCoords.lat;
-          globalUpdate.city_lng = cityCoords.lng;
-          // Auto-fill country if not set
-          if (!country.trim()) {
-            globalUpdate.country = cityCoords.country;
-            setCountry(cityCoords.country);
+        if (resolved.lat != null && resolved.lng != null) {
+          globalUpdate.city_lat = resolved.lat;
+          globalUpdate.city_lng = resolved.lng;
+
+          // Auto-fill country if not set and we inferred it
+          if (!country.trim() && resolved.country) {
+            globalUpdate.country = resolved.country;
+            setCountry(resolved.country);
           }
         }
 

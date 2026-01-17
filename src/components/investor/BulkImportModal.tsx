@@ -460,6 +460,32 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
       return;
     }
 
+    const normalizeCityKey = (value?: string | null) => {
+      if (!value) return "";
+      return value
+        .trim()
+        .toLowerCase()
+        .split(",")[0]
+        .trim()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[’'`]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    };
+
+    const normalizeCountryKey = (value?: string | null) => {
+      if (!value) return "";
+      return value
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    };
+
     setStep("importing");
     setImportProgress(0);
     setImportedCount(0);
@@ -470,15 +496,15 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
       const contact = toImport[i];
       
       try {
-        const cityKey = contact.city?.toLowerCase().trim();
-        const countryKey = contact.country?.toLowerCase().trim();
+        const cityKey = normalizeCityKey(contact.city);
+        const countryKey = normalizeCountryKey(contact.country);
         const cityData = cityKey ? MAJOR_CITIES[cityKey] : null;
-        
+
         // Fallback to country capital if city not found but country exists
         const countryFallback = !cityData && countryKey ? COUNTRY_CAPITALS[countryKey] : null;
-        
-        const finalLat = cityData?.lat || countryFallback?.lat || null;
-        const finalLng = cityData?.lng || countryFallback?.lng || null;
+
+        const finalLat = cityData?.lat ?? countryFallback?.lat ?? null;
+        const finalLng = cityData?.lng ?? countryFallback?.lng ?? null;
 
         const { data: newContact, error: globalError } = await (supabase
           .from("global_contacts") as any)

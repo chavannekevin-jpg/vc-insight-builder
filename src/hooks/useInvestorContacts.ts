@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveLocation } from "@/lib/location";
 import type { InvestorContact } from "@/pages/investor/InvestorDashboard";
 
 interface CityGroup {
@@ -47,14 +48,14 @@ export const useInvestorContacts = (userId: string | null) => {
 
             return {
               ...contact,
-              global_contact: globalContact ? {
-                ...globalContact,
-                city_lat: globalContact.city_lat ? Number(globalContact.city_lat) : null,
-                city_lng: globalContact.city_lng ? Number(globalContact.city_lng) : null,
-                investment_focus: (globalContact.investment_focus as string[]) || [],
-                stages: (globalContact.stages as string[]) || [],
-                linked_investor_id: globalContact.linked_investor_id || null,
-              } : undefined,
+                global_contact: globalContact ? {
+                  ...globalContact,
+                  city_lat: globalContact.city_lat != null ? Number(globalContact.city_lat) : null,
+                  city_lng: globalContact.city_lng != null ? Number(globalContact.city_lng) : null,
+                  investment_focus: (globalContact.investment_focus as string[]) || [],
+                  stages: (globalContact.stages as string[]) || [],
+                  linked_investor_id: globalContact.linked_investor_id || null,
+                } : undefined,
             } as InvestorContact;
           }
           return contact as InvestorContact;
@@ -68,22 +69,31 @@ export const useInvestorContacts = (userId: string | null) => {
 
   // Group contacts by city
   const cityGroups: Record<string, CityGroup> = {};
-  
+
   contacts.forEach((contact) => {
-    const city = contact.global_contact?.city;
-    if (city) {
-      if (!cityGroups[city]) {
-        cityGroups[city] = {
-          city,
-          lat: contact.global_contact?.city_lat || null,
-          lng: contact.global_contact?.city_lng || null,
-          count: 0,
-          contacts: [],
-        };
-      }
-      cityGroups[city].count++;
-      cityGroups[city].contacts.push(contact);
+    const city = contact.global_contact?.city?.trim();
+    const country = contact.global_contact?.country ?? null;
+    if (!city) return;
+
+    const rawLat = contact.global_contact?.city_lat ?? null;
+    const rawLng = contact.global_contact?.city_lng ?? null;
+    const resolved = (rawLat == null || rawLng == null) ? resolveLocation({ city, country }) : null;
+
+    const lat = rawLat ?? resolved?.lat ?? null;
+    const lng = rawLng ?? resolved?.lng ?? null;
+
+    if (!cityGroups[city]) {
+      cityGroups[city] = {
+        city,
+        lat,
+        lng,
+        count: 0,
+        contacts: [],
+      };
     }
+
+    cityGroups[city].count++;
+    cityGroups[city].contacts.push(contact);
   });
 
   return {

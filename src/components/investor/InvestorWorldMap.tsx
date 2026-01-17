@@ -92,7 +92,7 @@ const InvestorWorldMap = memo(({
 
           {/* City Markers */}
           {filteredCityGroups.map(([city, group]) => {
-            if (!group.lat || !group.lng) return null;
+            if (group.lat == null || group.lng == null) return null;
 
             const isHovered = hoveredCity === city;
             const markerSize = getMarkerSize(group.count, position.zoom);
