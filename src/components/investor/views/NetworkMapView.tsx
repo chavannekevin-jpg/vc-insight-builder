@@ -7,6 +7,7 @@ import GlobalNetworkMap from "@/components/investor/GlobalNetworkMap";
 import ContactListView from "@/components/investor/ContactListView";
 import CityContactsModal from "@/components/investor/CityContactsModal";
 import GlobalCityModal from "@/components/investor/GlobalCityModal";
+import SuggestedContacts from "@/components/investor/SuggestedContacts";
 import { useGlobalNetwork, type NetworkMarker } from "@/hooks/useGlobalNetwork";
 import type { InvestorContact } from "@/pages/investor/InvestorDashboard";
 
@@ -26,6 +27,7 @@ interface NetworkMapViewProps {
   onAddContact: () => void;
   userId: string;
   onNetworkUpdate: () => void;
+  userProfile?: any;
 }
 
 const NetworkMapView = ({
@@ -36,6 +38,7 @@ const NetworkMapView = ({
   onAddContact,
   userId,
   onNetworkUpdate,
+  userProfile,
 }: NetworkMapViewProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
@@ -156,6 +159,18 @@ const NetworkMapView = ({
           </Button>
         </div>
       </div>
+
+      {/* Suggested Contacts */}
+      {networkMode === "my" && userProfile && (
+        <SuggestedContacts
+          userId={userId}
+          userProfile={userProfile}
+          existingContactIds={contacts
+            .filter((c) => c.global_contact_id)
+            .map((c) => c.global_contact_id as string)}
+          onContactAdded={onNetworkUpdate}
+        />
+      )}
 
       {/* Content */}
       <div className="flex-1 relative">
