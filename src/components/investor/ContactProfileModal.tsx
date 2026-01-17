@@ -60,8 +60,8 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
   const [notes, setNotes] = useState(contact.local_notes || "");
   const [email, setEmail] = useState((contact as any).local_email || (contact.global_contact as any)?.email || "");
   const [phone, setPhone] = useState((contact as any).local_phone || (contact.global_contact as any)?.phone || "");
-  const [relationshipStatus, setRelationshipStatus] = useState<string>(
-    contact.relationship_status || "prospect"
+  const [relationshipStatus, setRelationshipStatus] = useState<"prospect" | "warm" | "connected" | "invested">(
+    (contact.relationship_status as "prospect" | "warm" | "connected" | "invested") || "prospect"
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -266,7 +266,7 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
               <Label className="mb-2 block">Relationship Status</Label>
               <Select
                 value={relationshipStatus}
-                onValueChange={(value) => {
+                onValueChange={(value: "prospect" | "warm" | "connected" | "invested") => {
                   setRelationshipStatus(value);
                   setIsEditing(true);
                 }}
