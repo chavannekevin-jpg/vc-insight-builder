@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Upload, FileSpreadsheet, Loader2, CheckCircle2, AlertCircle, X, Check, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
+import { Upload, FileSpreadsheet, Loader2, CheckCircle2, AlertCircle, X, Check, Pencil, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 // Major cities for matching
@@ -58,6 +58,8 @@ interface ExtractedContact {
 
 interface ReviewedContact extends ExtractedContact {
   status: "pending" | "accepted" | "rejected";
+  isDuplicate?: boolean;
+  duplicateMatch?: string;
 }
 
 interface BulkImportModalProps {
@@ -79,6 +81,7 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
   const [importProgress, setImportProgress] = useState(0);
   const [importedCount, setImportedCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [existingContacts, setExistingContacts] = useState<Array<{ name: string; organization_name: string | null; email: string | null }>>([]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -128,6 +131,23 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
     setErrorMessage(null);
 
     try {
+      // Fetch existing contacts for duplicate detection
+      const { data: investorContacts } = await (supabase
+        .from("investor_contacts") as any)
+        .select("global_contact_id")
+        .eq("investor_id", userId);
+
+      const existingGlobalIds = (investorContacts || []).map((c: any) => c.global_contact_id);
+      
+      if (existingGlobalIds.length > 0) {
+        const { data: globalContacts } = await (supabase
+          .from("global_contacts") as any)
+          .select("name, organization_name, email")
+          .in("id", existingGlobalIds);
+        
+        setExistingContacts(globalContacts || []);
+      }
+
       // Read file as base64 and send as JSON (more reliable than FormData)
       const reader = new FileReader();
       const fileData = await new Promise<string>((resolve, reject) => {
@@ -155,10 +175,23 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
         return;
       }
 
-      const reviewContacts: ReviewedContact[] = data.contacts.map((c: ExtractedContact) => ({
-        ...c,
-        status: "pending" as const,
-      }));
+      // Check for duplicates
+      const reviewContacts: ReviewedContact[] = data.contacts.map((c: ExtractedContact) => {
+        const duplicate = existingContacts.find(existing => {
+          const nameMatch = existing.name?.toLowerCase().trim() === c.name?.toLowerCase().trim();
+          const emailMatch = c.email && existing.email && existing.email.toLowerCase() === c.email.toLowerCase();
+          const orgMatch = c.organization_name && existing.organization_name && 
+            existing.organization_name.toLowerCase().includes(c.organization_name.toLowerCase());
+          return nameMatch || emailMatch || (nameMatch && orgMatch);
+        });
+
+        return {
+          ...c,
+          status: duplicate ? "rejected" as const : "pending" as const,
+          isDuplicate: !!duplicate,
+          duplicateMatch: duplicate ? duplicate.name : undefined,
+        };
+      });
 
       setContacts(reviewContacts);
       setCurrentIndex(0);
@@ -405,6 +438,11 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
                   <span className="text-red-500">
                     {rejectedContacts.length} rejected
                   </span>
+                  {contacts.filter(c => c.isDuplicate).length > 0 && (
+                    <span className="text-yellow-600">
+                      {contacts.filter(c => c.isDuplicate).length} duplicates
+                    </span>
+                  )}
                 </div>
                 <span className="text-muted-foreground">
                   {currentIndex + 1} / {contacts.length}
@@ -423,7 +461,13 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
                   )}
                   
                   {/* Current Card */}
-                  <div className="relative bg-card border border-border rounded-xl p-6 shadow-lg">
+                  <div className={`relative bg-card border rounded-xl p-6 shadow-lg ${currentContact.isDuplicate ? 'border-yellow-500/50' : 'border-border'}`}>
+                    {currentContact.isDuplicate && (
+                      <div className="mb-4 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-2 text-yellow-600">
+                        <AlertTriangle className="h-4 w-4" />
+                        <span className="text-sm">Possible duplicate of "{currentContact.duplicateMatch}"</span>
+                      </div>
+                    )}
                     <div className="space-y-4">
                       <div>
                         <h3 className="text-xl font-semibold">{currentContact.name}</h3>
