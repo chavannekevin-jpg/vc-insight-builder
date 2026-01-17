@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Filter } from "lucide-react";
+import { Search, Plus, Filter, Upload } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -16,6 +16,7 @@ interface CRMViewProps {
   isLoading: boolean;
   onContactClick: (contact: InvestorContact) => void;
   onAddContact: () => void;
+  onBulkImport?: () => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -25,7 +26,7 @@ const STATUS_COLORS: Record<string, string> = {
   invested: "bg-primary/20 text-primary",
 };
 
-const CRMView = ({ contacts, isLoading, onContactClick, onAddContact }: CRMViewProps) => {
+const CRMView = ({ contacts, isLoading, onContactClick, onAddContact, onBulkImport }: CRMViewProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -83,6 +84,13 @@ const CRMView = ({ contacts, isLoading, onContactClick, onAddContact }: CRMViewP
               <SelectItem value="invested">Invested</SelectItem>
             </SelectContent>
           </Select>
+
+          {onBulkImport && (
+            <Button onClick={onBulkImport} variant="outline" size="sm" className="gap-1.5">
+              <Upload className="w-4 h-4" />
+              <span className="hidden sm:inline">Import</span>
+            </Button>
+          )}
 
           <Button onClick={onAddContact} size="sm" className="gap-1.5">
             <Plus className="w-4 h-4" />
