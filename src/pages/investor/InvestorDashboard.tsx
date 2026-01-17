@@ -6,6 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import InvestorSidebar from "@/components/investor/InvestorSidebar";
 import AddContactModal from "@/components/investor/AddContactModal";
 import ContactProfileModal from "@/components/investor/ContactProfileModal";
+import BulkImportModal from "@/components/investor/BulkImportModal";
 import { useInvestorContacts } from "@/hooks/useInvestorContacts";
 
 // Views
@@ -49,6 +50,7 @@ const InvestorDashboard = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [activeSection, setActiveSection] = useState("map");
   const [isAddContactOpen, setIsAddContactOpen] = useState(false);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<InvestorContact | null>(null);
 
   const { contacts, isLoading, refetch, cityGroups } = useInvestorContacts(userId);
@@ -90,6 +92,12 @@ const InvestorDashboard = () => {
     toast({ title: "Contact added successfully!" });
   };
 
+  const handleBulkImportSuccess = () => {
+    refetch();
+    setIsBulkImportOpen(false);
+    toast({ title: "Contacts imported successfully!" });
+  };
+
   const handleProfileUpdate = () => {
     if (userId) {
       fetchProfile(userId);
@@ -111,14 +119,15 @@ const InvestorDashboard = () => {
           />
         ) : null;
       case "crm":
-        return (
+        return userId ? (
           <CRMView
             contacts={contacts}
             isLoading={isLoading}
             onContactClick={setSelectedContact}
+            onBulkImport={() => setIsBulkImportOpen(true)}
             onAddContact={() => setIsAddContactOpen(true)}
           />
-        );
+        ) : null;
       case "dealflow":
         return <DealflowView onUploadDeck={() => setActiveSection("upload")} />;
       case "upload":
@@ -197,6 +206,13 @@ const InvestorDashboard = () => {
           isOpen={isAddContactOpen}
           onClose={() => setIsAddContactOpen(false)}
           onSuccess={handleContactAdded}
+          userId={userId}
+        />
+
+        <BulkImportModal
+          isOpen={isBulkImportOpen}
+          onClose={() => setIsBulkImportOpen(false)}
+          onSuccess={handleBulkImportSuccess}
           userId={userId}
         />
 
