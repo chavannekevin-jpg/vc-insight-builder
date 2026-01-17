@@ -22,7 +22,7 @@ interface CityGroup {
 interface GlobalNetworkMapProps {
   cityGroups: Record<string, CityGroup>;
   searchQuery: string;
-  onMarkerClick?: (marker: NetworkMarker) => void;
+  onCityClick?: (city: string, markers: NetworkMarker[]) => void;
 }
 
 const TYPE_COLORS = {
@@ -34,7 +34,7 @@ const TYPE_COLORS = {
 const GlobalNetworkMap = memo(({
   cityGroups,
   searchQuery,
-  onMarkerClick,
+  onCityClick,
 }: GlobalNetworkMapProps) => {
   const [hoveredCity, setHoveredCity] = useState<string | null>(null);
   const [position, setPosition] = useState({ coordinates: [0, 20] as [number, number], zoom: 1 });
@@ -104,8 +104,8 @@ const GlobalNetworkMap = memo(({
                 onMouseEnter={() => setHoveredCity(city)}
                 onMouseLeave={() => setHoveredCity(null)}
                 onClick={() => {
-                  if (group.markers.length === 1 && onMarkerClick) {
-                    onMarkerClick(group.markers[0]);
+                  if (onCityClick) {
+                    onCityClick(city, group.markers);
                   }
                 }}
                 style={{ cursor: "pointer" }}

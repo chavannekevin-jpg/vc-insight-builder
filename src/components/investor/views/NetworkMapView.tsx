@@ -6,7 +6,8 @@ import InvestorWorldMap from "@/components/investor/InvestorWorldMap";
 import GlobalNetworkMap from "@/components/investor/GlobalNetworkMap";
 import ContactListView from "@/components/investor/ContactListView";
 import CityContactsModal from "@/components/investor/CityContactsModal";
-import { useGlobalNetwork } from "@/hooks/useGlobalNetwork";
+import GlobalCityModal from "@/components/investor/GlobalCityModal";
+import { useGlobalNetwork, type NetworkMarker } from "@/hooks/useGlobalNetwork";
 import type { InvestorContact } from "@/pages/investor/InvestorDashboard";
 
 interface CityGroup {
@@ -24,6 +25,7 @@ interface NetworkMapViewProps {
   onContactClick: (contact: InvestorContact) => void;
   onAddContact: () => void;
   userId: string;
+  onNetworkUpdate: () => void;
 }
 
 const NetworkMapView = ({
@@ -33,11 +35,13 @@ const NetworkMapView = ({
   onContactClick,
   onAddContact,
   userId,
+  onNetworkUpdate,
 }: NetworkMapViewProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [networkMode, setNetworkMode] = useState<"my" | "global">("my");
   const [selectedCity, setSelectedCity] = useState<{ city: string; contacts: InvestorContact[] } | null>(null);
+  const [selectedGlobalCity, setSelectedGlobalCity] = useState<{ city: string; markers: NetworkMarker[] } | null>(null);
 
   // Get IDs of user's contacts for highlighting in global view
   const myContactGlobalIds = contacts
@@ -63,6 +67,10 @@ const NetworkMapView = ({
 
   const handleCityClick = (city: string, cityContacts: InvestorContact[]) => {
     setSelectedCity({ city, contacts: cityContacts });
+  };
+
+  const handleGlobalCityClick = (city: string, markers: NetworkMarker[]) => {
+    setSelectedGlobalCity({ city, markers });
   };
 
   const displayStats = networkMode === "my" 
@@ -164,6 +172,7 @@ const NetworkMapView = ({
             <GlobalNetworkMap
               cityGroups={globalCityGroups}
               searchQuery={searchQuery}
+              onCityClick={handleGlobalCityClick}
             />
           )
         ) : (
@@ -175,7 +184,7 @@ const NetworkMapView = ({
         )}
       </div>
 
-      {/* City Contacts Modal */}
+      {/* City Contacts Modal (My Network) */}
       {selectedCity && (
         <CityContactsModal
           city={selectedCity.city}
@@ -183,6 +192,21 @@ const NetworkMapView = ({
           isOpen={!!selectedCity}
           onClose={() => setSelectedCity(null)}
           onContactClick={onContactClick}
+        />
+      )}
+
+      {/* Global City Modal (Ugly Baby Network) */}
+      {selectedGlobalCity && (
+        <GlobalCityModal
+          city={selectedGlobalCity.city}
+          markers={selectedGlobalCity.markers}
+          isOpen={!!selectedGlobalCity}
+          onClose={() => setSelectedGlobalCity(null)}
+          userId={userId}
+          onContactAdded={() => {
+            onNetworkUpdate();
+            setSelectedGlobalCity(null);
+          }}
         />
       )}
     </div>
