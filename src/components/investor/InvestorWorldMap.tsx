@@ -36,7 +36,7 @@ const InvestorWorldMap = memo(({
   const sortedCities = filteredCityGroups.sort((a, b) => b[1].count - a[1].count);
 
   return (
-    <div className="w-full h-full min-h-[500px] bg-background relative overflow-auto p-6">
+    <div className="w-full min-h-[500px] bg-card relative overflow-auto p-6">
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold flex items-center gap-2">

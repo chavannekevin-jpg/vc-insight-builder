@@ -42,7 +42,7 @@ const GlobalNetworkMap = memo(({
   const totalInvestors = Object.values(cityGroups).reduce((sum, g) => sum + g.count, 0);
 
   return (
-    <div className="w-full h-full min-h-[500px] bg-background relative overflow-auto p-6">
+    <div className="w-full min-h-[500px] bg-card relative overflow-auto p-6">
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold flex items-center gap-2">
