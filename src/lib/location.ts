@@ -88,6 +88,79 @@ export const CITY_COORDINATES: Record<string, CityCoordinates> = {
   "milan": { lat: 45.4642, lng: 9.1900, country: "Italy" },
   "zurich": { lat: 47.3769, lng: 8.5417, country: "Switzerland" },
   "geneva": { lat: 46.2044, lng: 6.1432, country: "Switzerland" },
+
+  // France secondary cities
+  "lyon": { lat: 45.7640, lng: 4.8357, country: "France" },
+  "marseille": { lat: 43.2965, lng: 5.3698, country: "France" },
+  "nice": { lat: 43.7102, lng: 7.2620, country: "France" },
+  "toulouse": { lat: 43.6047, lng: 1.4442, country: "France" },
+  "bordeaux": { lat: 44.8378, lng: -0.5792, country: "France" },
+  "strasbourg": { lat: 48.5734, lng: 7.7521, country: "France" },
+  "nantes": { lat: 47.2184, lng: -1.5536, country: "France" },
+  "lille": { lat: 50.6292, lng: 3.0573, country: "France" },
+
+  // Spain secondary cities
+  "valencia": { lat: 39.4699, lng: -0.3763, country: "Spain" },
+  "seville": { lat: 37.3891, lng: -5.9845, country: "Spain" },
+  "bilbao": { lat: 43.2630, lng: -2.9350, country: "Spain" },
+  "malaga": { lat: 36.7213, lng: -4.4214, country: "Spain" },
+  "zaragoza": { lat: 41.6488, lng: -0.8891, country: "Spain" },
+
+  // Italy secondary cities
+  "naples": { lat: 40.8518, lng: 14.2681, country: "Italy" },
+  "turin": { lat: 45.0703, lng: 7.6869, country: "Italy" },
+  "florence": { lat: 43.7696, lng: 11.2558, country: "Italy" },
+  "bologna": { lat: 44.4949, lng: 11.3426, country: "Italy" },
+  "venice": { lat: 45.4408, lng: 12.3155, country: "Italy" },
+  "genoa": { lat: 44.4056, lng: 8.9463, country: "Italy" },
+
+  // Germany secondary cities
+  "munich": { lat: 48.1351, lng: 11.5820, country: "Germany" },
+  "frankfurt": { lat: 50.1109, lng: 8.6821, country: "Germany" },
+  "hamburg": { lat: 53.5511, lng: 9.9937, country: "Germany" },
+  "cologne": { lat: 50.9375, lng: 6.9603, country: "Germany" },
+  "dusseldorf": { lat: 51.2277, lng: 6.7735, country: "Germany" },
+  "stuttgart": { lat: 48.7758, lng: 9.1829, country: "Germany" },
+  "leipzig": { lat: 51.3397, lng: 12.3731, country: "Germany" },
+
+  // UK secondary cities
+  "manchester": { lat: 53.4808, lng: -2.2426, country: "UK" },
+  "birmingham": { lat: 52.4862, lng: -1.8904, country: "UK" },
+  "edinburgh": { lat: 55.9533, lng: -3.1883, country: "UK" },
+  "glasgow": { lat: 55.8642, lng: -4.2518, country: "UK" },
+  "bristol": { lat: 51.4545, lng: -2.5879, country: "UK" },
+  "leeds": { lat: 53.8008, lng: -1.5491, country: "UK" },
+  "liverpool": { lat: 53.4084, lng: -2.9916, country: "UK" },
+  "cambridge": { lat: 52.2053, lng: 0.1218, country: "UK" },
+  "oxford": { lat: 51.7520, lng: -1.2577, country: "UK" },
+
+  // Netherlands secondary cities
+  "rotterdam": { lat: 51.9244, lng: 4.4777, country: "Netherlands" },
+  "the hague": { lat: 52.0705, lng: 4.3007, country: "Netherlands" },
+  "utrecht": { lat: 52.0907, lng: 5.1214, country: "Netherlands" },
+  "eindhoven": { lat: 51.4416, lng: 5.4697, country: "Netherlands" },
+
+  // Belgium secondary cities
+  "antwerp": { lat: 51.2194, lng: 4.4025, country: "Belgium" },
+  "ghent": { lat: 51.0543, lng: 3.7174, country: "Belgium" },
+  "liege": { lat: 50.6326, lng: 5.5797, country: "Belgium" },
+
+  // Portugal secondary cities
+  "porto": { lat: 41.1579, lng: -8.6291, country: "Portugal" },
+  "braga": { lat: 41.5518, lng: -8.4229, country: "Portugal" },
+
+  // Switzerland secondary cities
+  "basel": { lat: 47.5596, lng: 7.5886, country: "Switzerland" },
+  "lausanne": { lat: 46.5197, lng: 6.6323, country: "Switzerland" },
+
+  // Austria secondary cities
+  "salzburg": { lat: 47.8095, lng: 13.0550, country: "Austria" },
+  "innsbruck": { lat: 47.2692, lng: 11.4041, country: "Austria" },
+  "graz": { lat: 47.0707, lng: 15.4395, country: "Austria" },
+
+  // Ireland secondary cities
+  "cork": { lat: 51.8969, lng: -8.4863, country: "Ireland" },
+  "galway": { lat: 53.2707, lng: -9.0568, country: "Ireland" },
 };
 
 export const COUNTRY_CAPITAL_COORDINATES: Record<string, { lat: number; lng: number }> = {
