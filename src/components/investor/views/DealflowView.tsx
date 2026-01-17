@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Briefcase, TrendingUp, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Plus, Search, Briefcase, TrendingUp, Clock, CheckCircle, XCircle, FileUp } from "lucide-react";
 
 interface Deal {
   id: string;
@@ -23,7 +23,11 @@ const STATUS_CONFIG = {
   passed: { label: "Passed", icon: XCircle, color: "text-muted-foreground bg-muted" },
 };
 
-const DealflowView = () => {
+interface DealflowViewProps {
+  onUploadDeck: () => void;
+}
+
+const DealflowView = ({ onUploadDeck }: DealflowViewProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [deals] = useState<Deal[]>(SAMPLE_DEALS);
 
@@ -59,9 +63,9 @@ const DealflowView = () => {
             />
           </div>
 
-          <Button size="sm" className="gap-1.5">
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Deal</span>
+          <Button size="sm" className="gap-1.5" onClick={onUploadDeck}>
+            <FileUp className="w-4 h-4" />
+            <span className="hidden sm:inline">Upload Deck</span>
           </Button>
         </div>
       </div>
@@ -71,15 +75,15 @@ const DealflowView = () => {
         {deals.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Briefcase className="w-8 h-8 text-muted-foreground" />
+              <FileUp className="w-8 h-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold mb-2">No deals yet</h3>
             <p className="text-muted-foreground mb-6 max-w-sm">
-              Track your investment pipeline here. Add deals to see them organized by stage.
+              Upload a pitch deck to add it to your dealflow pipeline. Our AI will analyze it and create a summary.
             </p>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Your First Deal
+            <Button className="gap-2" onClick={onUploadDeck}>
+              <FileUp className="w-4 h-4" />
+              Upload Your First Deck
             </Button>
           </div>
         ) : (
