@@ -169,24 +169,33 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, onBulkImport, userId }: A
 
     setIsSearchingFunds(true);
     try {
-      const { data, error } = await (supabase
-        .from("global_contacts") as any)
+      // Search for funds with matching organization name
+      const { data, error } = await supabase
+        .from("global_contacts")
         .select("id, organization_name, city, country, fund_size, stages, ticket_size_min, ticket_size_max, city_lat, city_lng")
-        .ilike("organization_name", `%${query}%`)
         .not("organization_name", "is", null)
-        .limit(5);
+        .ilike("organization_name", `%${query}%`)
+        .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error in fund search query:", error);
+        throw error;
+      }
 
-      // Remove duplicates by organization name
-      const uniqueFunds = data?.reduce((acc: FundSuggestion[], curr: FundSuggestion) => {
-        if (!acc.find(f => f.organization_name?.toLowerCase() === curr.organization_name?.toLowerCase())) {
-          acc.push(curr);
+      console.log("Fund search results for", query, ":", data);
+
+      // Remove duplicates by organization name (keep first occurrence with most data)
+      const uniqueFunds = (data || []).reduce((acc: FundSuggestion[], curr: any) => {
+        const existingIndex = acc.findIndex(
+          f => f.organization_name?.toLowerCase() === curr.organization_name?.toLowerCase()
+        );
+        if (existingIndex === -1) {
+          acc.push(curr as FundSuggestion);
         }
         return acc;
-      }, []) || [];
+      }, []);
 
-      setFundSuggestions(uniqueFunds);
+      setFundSuggestions(uniqueFunds.slice(0, 5));
     } catch (error) {
       console.error("Error searching funds:", error);
       setFundSuggestions([]);
