@@ -386,27 +386,31 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
 
   const handleAccept = () => {
     if (!currentContact) return;
-    
-    setContacts(prev => prev.map((c, i) => 
-      i === currentIndex ? { ...c, status: "accepted" as const } : c
-    ));
-    
-    // Auto advance to next pending or next card
+
+    setContacts((prev) =>
+      prev.map((c, i) => (i === currentIndex ? { ...c, status: "accepted" as const } : c))
+    );
+
+    // Auto-advance; if this was the last card, go to the "All contacts reviewed" screen
     if (currentIndex < contacts.length - 1) {
       setCurrentIndex(currentIndex + 1);
+    } else {
+      setCurrentIndex(contacts.length);
     }
   };
 
   const handleReject = () => {
     if (!currentContact) return;
-    
-    setContacts(prev => prev.map((c, i) => 
-      i === currentIndex ? { ...c, status: "rejected" as const } : c
-    ));
-    
-    // Auto advance to next pending or next card
+
+    setContacts((prev) =>
+      prev.map((c, i) => (i === currentIndex ? { ...c, status: "rejected" as const } : c))
+    );
+
+    // Auto-advance; if this was the last card, go to the "All contacts reviewed" screen
     if (currentIndex < contacts.length - 1) {
       setCurrentIndex(currentIndex + 1);
+    } else {
+      setCurrentIndex(contacts.length);
     }
   };
 
@@ -448,9 +452,12 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
   };
 
   const acceptAll = () => {
-    setContacts(prev => prev.map(c => 
-      c.status === "pending" ? { ...c, status: "accepted" as const } : c
-    ));
+    setContacts((prev) =>
+      prev.map((c) => (c.status === "pending" ? { ...c, status: "accepted" as const } : c))
+    );
+
+    // Jump to the summary/import screen once everything is accepted
+    setCurrentIndex(contacts.length);
   };
 
   const importContacts = async () => {
