@@ -44,7 +44,7 @@ const InvestorWorldMap = memo(({
   // Very tiny for 1, scales up dramatically for more contacts
   const getMarkerSize = (count: number, zoom: number) => {
     const minSize = 1.2;
-    const maxSize = 11; // Doubled from 5.5
+    const maxSize = 22; // Doubled from 11
 
     let size: number;
     if (count === 1) {
