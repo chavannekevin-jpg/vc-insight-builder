@@ -8,8 +8,8 @@ import {
 } from "react-simple-maps";
 import type { NetworkMarker } from "@/hooks/useGlobalNetwork";
 
-// Europe-focused map - much smaller than full world map
-const geoUrl = "https://raw.githubusercontent.com/deldersveld/topojson/master/continents/europe.json";
+// Europe-focused map from Natural Earth via unpkg - reliable CDN
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json";
 
 interface CityGroup {
   city: string;
