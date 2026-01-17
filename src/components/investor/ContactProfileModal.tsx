@@ -52,6 +52,44 @@ const RELATIONSHIP_STATUSES = [
   { value: "invested", label: "Invested Together" },
 ];
 
+// City coordinates for location updates
+const CITY_COORDINATES: Record<string, { lat: number; lng: number; country: string }> = {
+  "vilnius": { lat: 54.6872, lng: 25.2797, country: "Lithuania" },
+  "riga": { lat: 56.9496, lng: 24.1052, country: "Latvia" },
+  "tallinn": { lat: 59.4370, lng: 24.7536, country: "Estonia" },
+  "london": { lat: 51.5074, lng: -0.1278, country: "UK" },
+  "paris": { lat: 48.8566, lng: 2.3522, country: "France" },
+  "berlin": { lat: 52.5200, lng: 13.4050, country: "Germany" },
+  "amsterdam": { lat: 52.3676, lng: 4.9041, country: "Netherlands" },
+  "brussels": { lat: 50.8503, lng: 4.3517, country: "Belgium" },
+  "vienna": { lat: 48.2082, lng: 16.3738, country: "Austria" },
+  "zurich": { lat: 47.3769, lng: 8.5417, country: "Switzerland" },
+  "stockholm": { lat: 59.3293, lng: 18.0686, country: "Sweden" },
+  "copenhagen": { lat: 55.6761, lng: 12.5683, country: "Denmark" },
+  "oslo": { lat: 59.9139, lng: 10.7522, country: "Norway" },
+  "helsinki": { lat: 60.1699, lng: 24.9384, country: "Finland" },
+  "warsaw": { lat: 52.2297, lng: 21.0122, country: "Poland" },
+  "prague": { lat: 50.0755, lng: 14.4378, country: "Czech Republic" },
+  "budapest": { lat: 47.4979, lng: 19.0402, country: "Hungary" },
+  "bucharest": { lat: 44.4268, lng: 26.1025, country: "Romania" },
+  "sofia": { lat: 42.6977, lng: 23.3219, country: "Bulgaria" },
+  "belgrade": { lat: 44.7866, lng: 20.4489, country: "Serbia" },
+  "zagreb": { lat: 45.8150, lng: 15.9819, country: "Croatia" },
+  "ljubljana": { lat: 46.0569, lng: 14.5058, country: "Slovenia" },
+  "athens": { lat: 37.9838, lng: 23.7275, country: "Greece" },
+  "lisbon": { lat: 38.7223, lng: -9.1393, country: "Portugal" },
+  "madrid": { lat: 40.4168, lng: -3.7038, country: "Spain" },
+  "rome": { lat: 41.9028, lng: 12.4964, country: "Italy" },
+  "milan": { lat: 45.4642, lng: 9.1900, country: "Italy" },
+  "dublin": { lat: 53.3498, lng: -6.2603, country: "Ireland" },
+  "new york": { lat: 40.7128, lng: -74.0060, country: "USA" },
+  "san francisco": { lat: 37.7749, lng: -122.4194, country: "USA" },
+  "singapore": { lat: 1.3521, lng: 103.8198, country: "Singapore" },
+  "tokyo": { lat: 35.6762, lng: 139.6503, country: "Japan" },
+  "tel aviv": { lat: 32.0853, lng: 34.7818, country: "Israel" },
+  "dubai": { lat: 25.2048, lng: 55.2708, country: "UAE" },
+};
+
 interface ContactProfileModalProps {
   contact: InvestorContact;
   onClose: () => void;
@@ -64,6 +102,12 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
   const [phone, setPhone] = useState((contact as any).local_phone || (contact.global_contact as any)?.phone || "");
   const [localName, setLocalName] = useState(contact.local_name || "");
   const [localOrganization, setLocalOrganization] = useState(contact.local_organization || "");
+  const [city, setCity] = useState(contact.global_contact?.city || "");
+  const [country, setCountry] = useState(contact.global_contact?.country || "");
+  const [linkedinUrl, setLinkedinUrl] = useState(contact.global_contact?.linkedin_url || "");
+  const [fundSize, setFundSize] = useState(contact.global_contact?.fund_size ? String(contact.global_contact.fund_size / 1000000) : "");
+  const [ticketMin, setTicketMin] = useState(contact.global_contact?.ticket_size_min ? String(contact.global_contact.ticket_size_min / 1000) : "");
+  const [ticketMax, setTicketMax] = useState(contact.global_contact?.ticket_size_max ? String(contact.global_contact.ticket_size_max / 1000) : "");
   const [relationshipStatus, setRelationshipStatus] = useState<"prospect" | "warm" | "connected" | "invested">(
     (contact.relationship_status as "prospect" | "warm" | "connected" | "invested") || "prospect"
   );
@@ -73,28 +117,26 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingOrg, setIsEditingOrg] = useState(false);
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [isEditingLinkedin, setIsEditingLinkedin] = useState(false);
+  const [isEditingFundSize, setIsEditingFundSize] = useState(false);
+  const [isEditingTicket, setIsEditingTicket] = useState(false);
   const [tempName, setTempName] = useState("");
   const [tempOrg, setTempOrg] = useState("");
+  const [tempCity, setTempCity] = useState("");
+  const [tempCountry, setTempCountry] = useState("");
+  const [tempLinkedin, setTempLinkedin] = useState("");
+  const [tempFundSize, setTempFundSize] = useState("");
+  const [tempTicketMin, setTempTicketMin] = useState("");
+  const [tempTicketMax, setTempTicketMax] = useState("");
 
   const globalName = contact.global_contact?.name || "Unknown";
   const globalOrganization = contact.global_contact?.organization_name;
   const displayName = localName || globalName;
   const displayOrganization = localOrganization || globalOrganization;
-  const city = contact.global_contact?.city;
-  const country = contact.global_contact?.country;
   const entityType = contact.global_contact?.entity_type;
-  const fundSize = contact.global_contact?.fund_size;
   const stages = contact.global_contact?.stages || [];
-  const ticketMin = contact.global_contact?.ticket_size_min;
-  const ticketMax = contact.global_contact?.ticket_size_max;
-  const linkedinUrl = contact.global_contact?.linkedin_url;
 
-  const formatCurrency = (value: number | null | undefined) => {
-    if (!value) return null;
-    if (value >= 1000000) return `€${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `€${(value / 1000).toFixed(0)}K`;
-    return `€${value}`;
-  };
 
   const handleStartEditName = () => {
     setTempName(localName || globalName);
@@ -131,7 +173,8 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const { error } = await (supabase
+      // Update investor_contacts (local overrides)
+      const { error: localError } = await (supabase
         .from("investor_contacts") as any)
         .update({
           local_name: localName.trim() || null,
@@ -144,7 +187,44 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
         })
         .eq("id", contact.id);
 
-      if (error) throw error;
+      if (localError) throw localError;
+
+      // Update global_contacts if we have a global_contact_id
+      if (contact.global_contact_id) {
+        // Get city coordinates if city was changed
+        const cityKey = city.toLowerCase().trim();
+        const cityCoords = CITY_COORDINATES[cityKey];
+        
+        const globalUpdate: Record<string, any> = {
+          city: city.trim() || null,
+          country: country.trim() || null,
+          linkedin_url: linkedinUrl.trim() || null,
+          fund_size: fundSize ? parseFloat(fundSize) * 1000000 : null,
+          ticket_size_min: ticketMin ? parseFloat(ticketMin) * 1000 : null,
+          ticket_size_max: ticketMax ? parseFloat(ticketMax) * 1000 : null,
+        };
+
+        // Add coordinates if we found a match
+        if (cityCoords) {
+          globalUpdate.city_lat = cityCoords.lat;
+          globalUpdate.city_lng = cityCoords.lng;
+          // Auto-fill country if not set
+          if (!country.trim()) {
+            globalUpdate.country = cityCoords.country;
+            setCountry(cityCoords.country);
+          }
+        }
+
+        const { error: globalError } = await (supabase
+          .from("global_contacts") as any)
+          .update(globalUpdate)
+          .eq("id", contact.global_contact_id);
+
+        if (globalError) {
+          console.error("Error updating global contact:", globalError);
+          // Don't throw - local update succeeded
+        }
+      }
 
       toast({ title: "Contact updated!" });
       setIsEditing(false);
@@ -266,43 +346,208 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
           </DialogHeader>
 
           <div className="space-y-4 mt-4">
-            {/* Location */}
-            {(city || country) && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {/* Editable Location */}
+            {isEditingLocation ? (
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5" />
+                  Location
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={tempCity}
+                    onChange={(e) => setTempCity(e.target.value)}
+                    placeholder="City"
+                    className="flex-1"
+                    autoFocus
+                  />
+                  <Input
+                    value={tempCountry}
+                    onChange={(e) => setTempCountry(e.target.value)}
+                    placeholder="Country"
+                    className="flex-1"
+                  />
+                </div>
+                <div className="flex gap-1">
+                  <Button size="sm" variant="ghost" onClick={() => {
+                    setCity(tempCity);
+                    setCountry(tempCountry);
+                    setIsEditingLocation(false);
+                    setIsEditing(true);
+                  }}>
+                    <Check className="h-4 w-4 text-green-500 mr-1" /> Save
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setIsEditingLocation(false)}>
+                    <X className="h-4 w-4 text-red-500 mr-1" /> Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div 
+                className="flex items-center gap-2 text-sm text-muted-foreground group cursor-pointer hover:bg-muted/50 rounded px-2 py-1 -mx-2"
+                onClick={() => {
+                  setTempCity(city);
+                  setTempCountry(country);
+                  setIsEditingLocation(true);
+                }}
+              >
                 <MapPin className="w-4 h-4" />
-                <span>{[city, country].filter(Boolean).join(", ")}</span>
+                <span>{[city, country].filter(Boolean).join(", ") || "Add location"}</span>
+                <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />
               </div>
             )}
 
-            {/* Fund Size */}
-            {fundSize && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {/* Editable Fund Size */}
+            {isEditingFundSize ? (
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground flex items-center gap-2">
+                  <DollarSign className="w-3.5 h-3.5" />
+                  Fund Size (in millions €)
+                </Label>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    type="number"
+                    value={tempFundSize}
+                    onChange={(e) => setTempFundSize(e.target.value)}
+                    placeholder="e.g. 50"
+                    className="w-32"
+                    autoFocus
+                  />
+                  <span className="text-sm text-muted-foreground">M</span>
+                  <Button size="sm" variant="ghost" onClick={() => {
+                    setFundSize(tempFundSize);
+                    setIsEditingFundSize(false);
+                    setIsEditing(true);
+                  }}>
+                    <Check className="h-4 w-4 text-green-500" />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setIsEditingFundSize(false)}>
+                    <X className="h-4 w-4 text-red-500" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div 
+                className="flex items-center gap-2 text-sm text-muted-foreground group cursor-pointer hover:bg-muted/50 rounded px-2 py-1 -mx-2"
+                onClick={() => {
+                  setTempFundSize(fundSize);
+                  setIsEditingFundSize(true);
+                }}
+              >
                 <DollarSign className="w-4 h-4" />
-                <span>Fund Size: {formatCurrency(fundSize)}</span>
+                <span>Fund Size: {fundSize ? `€${fundSize}M` : "Not set"}</span>
+                <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />
               </div>
             )}
 
-            {/* Ticket Range */}
-            {(ticketMin || ticketMax) && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {/* Editable Ticket Range */}
+            {isEditingTicket ? (
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground flex items-center gap-2">
+                  <DollarSign className="w-3.5 h-3.5" />
+                  Ticket Size (in K €)
+                </Label>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    type="number"
+                    value={tempTicketMin}
+                    onChange={(e) => setTempTicketMin(e.target.value)}
+                    placeholder="Min"
+                    className="w-24"
+                    autoFocus
+                  />
+                  <span className="text-sm text-muted-foreground">-</span>
+                  <Input
+                    type="number"
+                    value={tempTicketMax}
+                    onChange={(e) => setTempTicketMax(e.target.value)}
+                    placeholder="Max"
+                    className="w-24"
+                  />
+                  <span className="text-sm text-muted-foreground">K</span>
+                  <Button size="sm" variant="ghost" onClick={() => {
+                    setTicketMin(tempTicketMin);
+                    setTicketMax(tempTicketMax);
+                    setIsEditingTicket(false);
+                    setIsEditing(true);
+                  }}>
+                    <Check className="h-4 w-4 text-green-500" />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setIsEditingTicket(false)}>
+                    <X className="h-4 w-4 text-red-500" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div 
+                className="flex items-center gap-2 text-sm text-muted-foreground group cursor-pointer hover:bg-muted/50 rounded px-2 py-1 -mx-2"
+                onClick={() => {
+                  setTempTicketMin(ticketMin);
+                  setTempTicketMax(ticketMax);
+                  setIsEditingTicket(true);
+                }}
+              >
                 <DollarSign className="w-4 h-4" />
                 <span>
-                  Ticket: {formatCurrency(ticketMin)} - {formatCurrency(ticketMax)}
+                  Ticket: {ticketMin || ticketMax 
+                    ? `€${ticketMin || "?"}K - €${ticketMax || "?"}K` 
+                    : "Not set"}
                 </span>
+                <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />
               </div>
             )}
 
-            {/* LinkedIn */}
-            {linkedinUrl && (
-              <a
-                href={linkedinUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-primary hover:underline"
+            {/* Editable LinkedIn */}
+            {isEditingLinkedin ? (
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground flex items-center gap-2">
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  LinkedIn URL
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={tempLinkedin}
+                    onChange={(e) => setTempLinkedin(e.target.value)}
+                    placeholder="https://linkedin.com/in/..."
+                    className="flex-1"
+                    autoFocus
+                  />
+                  <Button size="sm" variant="ghost" onClick={() => {
+                    setLinkedinUrl(tempLinkedin);
+                    setIsEditingLinkedin(false);
+                    setIsEditing(true);
+                  }}>
+                    <Check className="h-4 w-4 text-green-500" />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setIsEditingLinkedin(false)}>
+                    <X className="h-4 w-4 text-red-500" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div 
+                className="flex items-center gap-2 text-sm group cursor-pointer hover:bg-muted/50 rounded px-2 py-1 -mx-2"
+                onClick={() => {
+                  setTempLinkedin(linkedinUrl);
+                  setIsEditingLinkedin(true);
+                }}
               >
-                <ExternalLink className="w-4 h-4" />
-                <span>LinkedIn Profile</span>
-              </a>
+                <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                {linkedinUrl ? (
+                  <a
+                    href={linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    LinkedIn Profile
+                  </a>
+                ) : (
+                  <span className="text-muted-foreground">Add LinkedIn</span>
+                )}
+                <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />
+              </div>
             )}
 
             {/* Stages */}
