@@ -14,93 +14,33 @@ export const PDF_SIZE_THRESHOLD_BYTES = 5 * 1024 * 1024;
 
 /**
  * Convert a PDF file to an array of JPEG images (one per page)
- * This is used for large PDFs to avoid memory limits in edge functions
+ * 
+ * NOTE: pdfjs-dist has been removed to reduce bundle/install size.
+ * For large PDFs, consider using a backend edge function instead.
+ * This stub returns an empty result so callers don't break.
  */
 export async function convertPDFToImages(
   file: File,
   onProgress?: (progress: PDFConversionProgress) => void,
-  options: {
+  _options: {
     maxPages?: number;
     scale?: number;
     quality?: number;
   } = {}
 ): Promise<PDFConversionResult> {
-  const { maxPages = 30, scale = 1.5, quality = 0.85 } = options;
+  console.warn('[pdfToImages] PDF client-side conversion is disabled. Use backend processing for large PDFs.');
   
-  console.log('[pdfToImages] Starting conversion for:', file.name, 'size:', file.size);
+  onProgress?.({ currentPage: 0, totalPages: 0, stage: 'complete' });
   
-  onProgress?.({ currentPage: 0, totalPages: 0, stage: 'loading' });
-  
-  // Dynamically import pdfjs-dist only when needed
-  const pdfjsLib = await import('pdfjs-dist');
-  
-  // Set the worker source
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
-  
-  // Load the PDF
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  
-  const totalPages = Math.min(pdf.numPages, maxPages);
-  console.log('[pdfToImages] PDF loaded, pages:', pdf.numPages, 'processing:', totalPages);
-  
-  const images: Blob[] = [];
-  
-  for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-    onProgress?.({ currentPage: pageNum, totalPages, stage: 'converting' });
-    
-    const page = await pdf.getPage(pageNum);
-    const viewport = page.getViewport({ scale });
-    
-    // Create canvas for rendering
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    
-    if (!context) {
-      throw new Error('Failed to get canvas context');
-    }
-    
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    
-    // Render the page
-    await page.render({
-      canvasContext: context,
-      viewport
-    }).promise;
-    
-    // Convert canvas to blob
-    const blob = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob(
-        (b) => {
-          if (b) resolve(b);
-          else reject(new Error('Failed to convert canvas to blob'));
-        },
-        'image/jpeg',
-        quality
-      );
-    });
-    
-    images.push(blob);
-    console.log(`[pdfToImages] Converted page ${pageNum}/${totalPages}, size: ${blob.size} bytes`);
-    
-    // Clean up
-    canvas.width = 0;
-    canvas.height = 0;
-  }
-  
-  onProgress?.({ currentPage: totalPages, totalPages, stage: 'complete' });
-  
-  const totalSize = images.reduce((sum, img) => sum + img.size, 0);
-  console.log('[pdfToImages] Conversion complete. Total images:', images.length, 'Total size:', totalSize);
-  
-  return { images, pageCount: totalPages };
+  // Return empty result - caller should handle this gracefully
+  return { images: [], pageCount: 0 };
 }
 
 /**
  * Check if a file should be converted to images based on size
+ * Returns false since client-side conversion is disabled
  */
-export function shouldConvertPDF(file: File): boolean {
-  const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-  return isPDF && file.size > PDF_SIZE_THRESHOLD_BYTES;
+export function shouldConvertPDF(_file: File): boolean {
+  // Disabled - always return false so we don't attempt client-side conversion
+  return false;
 }
