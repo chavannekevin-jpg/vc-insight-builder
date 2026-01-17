@@ -267,6 +267,183 @@ export type Database = {
         }
         Relationships: []
       }
+      global_contacts: {
+        Row: {
+          city: string | null
+          city_lat: number | null
+          city_lng: number | null
+          contributor_count: number | null
+          country: string | null
+          created_at: string | null
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          fund_size: number | null
+          id: string
+          investment_focus: Json | null
+          linkedin_url: string | null
+          name: string
+          organization_name: string | null
+          stages: Json | null
+          ticket_size_max: number | null
+          ticket_size_min: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          city?: string | null
+          city_lat?: number | null
+          city_lng?: number | null
+          contributor_count?: number | null
+          country?: string | null
+          created_at?: string | null
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          fund_size?: number | null
+          id?: string
+          investment_focus?: Json | null
+          linkedin_url?: string | null
+          name: string
+          organization_name?: string | null
+          stages?: Json | null
+          ticket_size_max?: number | null
+          ticket_size_min?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          city?: string | null
+          city_lat?: number | null
+          city_lng?: number | null
+          contributor_count?: number | null
+          country?: string | null
+          created_at?: string | null
+          entity_type?: Database["public"]["Enums"]["entity_type"]
+          fund_size?: number | null
+          id?: string
+          investment_focus?: Json | null
+          linkedin_url?: string | null
+          name?: string
+          organization_name?: string | null
+          stages?: Json | null
+          ticket_size_max?: number | null
+          ticket_size_min?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      investor_contacts: {
+        Row: {
+          created_at: string | null
+          global_contact_id: string | null
+          id: string
+          investor_id: string
+          last_contact_date: string | null
+          local_focus_override: Json | null
+          local_name: string | null
+          local_notes: string | null
+          local_organization: string | null
+          relationship_status:
+            | Database["public"]["Enums"]["relationship_status"]
+            | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          global_contact_id?: string | null
+          id?: string
+          investor_id: string
+          last_contact_date?: string | null
+          local_focus_override?: Json | null
+          local_name?: string | null
+          local_notes?: string | null
+          local_organization?: string | null
+          relationship_status?:
+            | Database["public"]["Enums"]["relationship_status"]
+            | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          global_contact_id?: string | null
+          id?: string
+          investor_id?: string
+          last_contact_date?: string | null
+          local_focus_override?: Json | null
+          local_name?: string | null
+          local_notes?: string | null
+          local_organization?: string | null
+          relationship_status?:
+            | Database["public"]["Enums"]["relationship_status"]
+            | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_contacts_global_contact_id_fkey"
+            columns: ["global_contact_id"]
+            isOneToOne: false
+            referencedRelation: "global_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_contacts_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_profiles: {
+        Row: {
+          city: string
+          city_lat: number | null
+          city_lng: number | null
+          created_at: string | null
+          full_name: string
+          geographic_focus: Json | null
+          id: string
+          investor_type: Database["public"]["Enums"]["investor_type"]
+          onboarding_completed: boolean | null
+          organization_name: string | null
+          preferred_stages: Json | null
+          primary_sectors: Json | null
+          ticket_size_max: number | null
+          ticket_size_min: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          city: string
+          city_lat?: number | null
+          city_lng?: number | null
+          created_at?: string | null
+          full_name: string
+          geographic_focus?: Json | null
+          id: string
+          investor_type: Database["public"]["Enums"]["investor_type"]
+          onboarding_completed?: boolean | null
+          organization_name?: string | null
+          preferred_stages?: Json | null
+          primary_sectors?: Json | null
+          ticket_size_max?: number | null
+          ticket_size_min?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          city?: string
+          city_lat?: number | null
+          city_lng?: number | null
+          created_at?: string | null
+          full_name?: string
+          geographic_focus?: Json | null
+          id?: string
+          investor_type?: Database["public"]["Enums"]["investor_type"]
+          onboarding_completed?: boolean | null
+          organization_name?: string | null
+          preferred_stages?: Json | null
+          primary_sectors?: Json | null
+          ticket_size_max?: number | null
+          ticket_size_min?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       memo_analyses: {
         Row: {
           analysis: Json
@@ -837,7 +1014,16 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "investor"
+      entity_type: "investor" | "fund"
+      investor_type:
+        | "vc"
+        | "family_office"
+        | "business_angel"
+        | "corporate_vc"
+        | "lp"
+        | "other"
+      relationship_status: "prospect" | "warm" | "connected" | "invested"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -965,7 +1151,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "investor"],
+      entity_type: ["investor", "fund"],
+      investor_type: [
+        "vc",
+        "family_office",
+        "business_angel",
+        "corporate_vc",
+        "lp",
+        "other",
+      ],
+      relationship_status: ["prospect", "warm", "connected", "invested"],
     },
   },
 } as const
