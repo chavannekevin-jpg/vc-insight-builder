@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -126,6 +125,8 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModal
   const [entityType, setEntityType] = useState("investor");
   const [name, setName] = useState("");
   const [organizationName, setOrganizationName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [fundSize, setFundSize] = useState("");
   const [city, setCity] = useState("");
   const [selectedStages, setSelectedStages] = useState<string[]>([]);
@@ -165,6 +166,8 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModal
     setEntityType("investor");
     setName("");
     setOrganizationName("");
+    setEmail("");
+    setPhone("");
     setFundSize("");
     setCity("");
     setSelectedCity(null);
@@ -211,6 +214,8 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModal
             entity_type: entityType as "investor" | "fund",
             name: name.trim(),
             organization_name: organizationName.trim() || null,
+            email: email.trim() || null,
+            phone: phone.trim() || null,
             fund_size: fundSize ? parseInt(fundSize) * 1000000 : null,
             stages: selectedStages,
             ticket_size_min: ticketMin ? parseInt(ticketMin) * 1000 : null,
@@ -235,6 +240,8 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModal
           investor_id: userId,
           global_contact_id: globalContactId,
           local_notes: notes.trim() || null,
+          local_email: email.trim() || null,
+          local_phone: phone.trim() || null,
           relationship_status: "prospect",
         });
 
@@ -299,6 +306,32 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, userId }: AddContactModal
               value={organizationName}
               onChange={(e) => setOrganizationName(e.target.value)}
               placeholder="Acme Ventures"
+              className="mt-1"
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="john@example.com"
+              className="mt-1"
+            />
+          </div>
+
+          {/* Phone */}
+          <div>
+            <Label htmlFor="phone">Phone</Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+1 555 123 4567"
               className="mt-1"
             />
           </div>
