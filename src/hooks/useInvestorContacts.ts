@@ -53,6 +53,7 @@ export const useInvestorContacts = (userId: string | null) => {
                 city_lng: globalContact.city_lng ? Number(globalContact.city_lng) : null,
                 investment_focus: (globalContact.investment_focus as string[]) || [],
                 stages: (globalContact.stages as string[]) || [],
+                linked_investor_id: globalContact.linked_investor_id || null,
               } : undefined,
             } as InvestorContact;
           }

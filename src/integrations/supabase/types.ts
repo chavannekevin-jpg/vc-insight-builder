@@ -280,6 +280,7 @@ export type Database = {
           fund_size: number | null
           id: string
           investment_focus: Json | null
+          linked_investor_id: string | null
           linkedin_url: string | null
           name: string
           organization_name: string | null
@@ -301,6 +302,7 @@ export type Database = {
           fund_size?: number | null
           id?: string
           investment_focus?: Json | null
+          linked_investor_id?: string | null
           linkedin_url?: string | null
           name: string
           organization_name?: string | null
@@ -322,6 +324,7 @@ export type Database = {
           fund_size?: number | null
           id?: string
           investment_focus?: Json | null
+          linked_investor_id?: string | null
           linkedin_url?: string | null
           name?: string
           organization_name?: string | null
@@ -331,7 +334,15 @@ export type Database = {
           ticket_size_min?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "global_contacts_linked_investor_id_fkey"
+            columns: ["linked_investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       investor_contacts: {
         Row: {
