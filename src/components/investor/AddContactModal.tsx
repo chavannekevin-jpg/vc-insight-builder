@@ -114,6 +114,28 @@ const ENTITY_TYPES = [
 
 const STAGES = ["Pre-Seed", "Seed", "Series A", "Series B+"];
 
+const SECTORS = [
+  "AI / Machine Learning",
+  "Fintech",
+  "SaaS / Enterprise",
+  "Healthcare / Biotech",
+  "Climate / Cleantech",
+  "Consumer",
+  "Marketplaces",
+  "Crypto / Web3",
+  "DeepTech / Hardware",
+  "Cybersecurity",
+  "EdTech",
+  "PropTech / Real Estate",
+  "FoodTech / AgTech",
+  "Mobility / Transportation",
+  "Gaming / Entertainment",
+  "HR Tech / Future of Work",
+  "LegalTech",
+  "InsurTech",
+  "Space Tech",
+  "Robotics / Automation",
+];
 interface FundSuggestion {
   id: string;
   organization_name: string;
@@ -148,6 +170,7 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, onBulkImport, userId }: A
   const [fundSize, setFundSize] = useState("");
   const [city, setCity] = useState("");
   const [selectedStages, setSelectedStages] = useState<string[]>([]);
+  const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   const [ticketMin, setTicketMin] = useState("");
   const [ticketMax, setTicketMax] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
@@ -292,6 +315,12 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, onBulkImport, userId }: A
     );
   };
 
+  const toggleSector = (sector: string) => {
+    setSelectedSectors((prev) =>
+      prev.includes(sector) ? prev.filter((s) => s !== sector) : [...prev, sector]
+    );
+  };
+
   const resetForm = () => {
     setEntityType("investor");
     setName("");
@@ -302,6 +331,7 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, onBulkImport, userId }: A
     setCity("");
     setSelectedCity(null);
     setSelectedStages([]);
+    setSelectedSectors([]);
     setTicketMin("");
     setTicketMax("");
     setLinkedinUrl("");
@@ -360,7 +390,8 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, onBulkImport, userId }: A
             email: email.trim() || null,
             phone: phone.trim() || null,
             fund_size: fundSize ? parseInt(fundSize) * 1000000 : null,
-            stages: selectedStages,
+            stages: selectedStages.length > 0 ? selectedStages : null,
+            investment_focus: selectedSectors.length > 0 ? selectedSectors : null,
             ticket_size_min: ticketMin ? parseInt(ticketMin) * 1000 : null,
             ticket_size_max: ticketMax ? parseInt(ticketMax) * 1000 : null,
             city: selectedCity?.name || city.trim() || null,
@@ -623,7 +654,38 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, onBulkImport, userId }: A
             </div>
           </div>
 
-          {/* Ticket Size */}
+          {/* Investment Focus / Sectors */}
+          <div>
+            <Label className="mb-2 block">Investment Focus</Label>
+            {selectedSectors.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {selectedSectors.map((sector) => (
+                  <button
+                    key={sector}
+                    type="button"
+                    onClick={() => toggleSector(sector)}
+                    className="px-2 py-1 rounded-full bg-primary text-primary-foreground text-xs flex items-center gap-1"
+                  >
+                    {sector}
+                    <span className="opacity-70">×</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto p-2 border border-border rounded-md bg-muted/30">
+              {SECTORS.filter(s => !selectedSectors.includes(s)).map((sector) => (
+                <button
+                  key={sector}
+                  type="button"
+                  onClick={() => toggleSector(sector)}
+                  className="px-2 py-1 rounded-full border border-border text-xs hover:border-primary/50 transition-colors"
+                >
+                  {sector}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="ticketMin">Min Ticket (K€)</Label>
