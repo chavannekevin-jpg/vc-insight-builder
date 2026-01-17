@@ -86,64 +86,105 @@ serve(async (req) => {
       companyName 
     });
 
-    // System prompt with EXACT questionnaire keys
-    const systemPrompt = `You are an expert VC analyst who extracts structured information from pitch decks. 
-Analyze the provided pitch deck and extract as much relevant information as possible.
+    // Enhanced VC-grade system prompt for comprehensive extraction
+    const systemPrompt = `You are a senior VC investment analyst at a top-tier venture fund. Your job is to extract EVERY piece of relevant information from pitch decks to build comprehensive investment memoranda.
 
-Return a JSON object with the following structure. Use these EXACT keys:
+CRITICAL: Extract ALL details you can find - numbers, names, percentages, dates, claims. VCs need specifics, not vague summaries.
+
+Return a JSON object with this EXACT structure:
+
 {
   "companyInfo": {
-    "name": "extracted company name or null",
-    "description": "one-paragraph company description",
-    "stage": "Pre Seed|Seed|Series A",
-    "category": "industry/sector like SaaS, FinTech, HealthTech, etc."
+    "name": "exact company name",
+    "description": "2-3 sentence description covering: what they do, for whom, and how",
+    "stage": "Pre Seed|Seed|Series A|Series B",
+    "category": "primary sector (SaaS, FinTech, HealthTech, DeepTech, Consumer, Marketplace, etc.)",
+    "foundedYear": "year founded or null",
+    "headquarters": "city/country or null",
+    "website": "URL if visible or null"
+  },
+  "metrics": {
+    "revenue": { "value": "exact figure with currency (e.g., '$50K MRR', '€2M ARR')", "period": "monthly/annual/total", "confidence": 0.0-1.0 },
+    "users": { "value": "number (e.g., '10,000 users', '500 B2B customers')", "type": "users/customers/DAU/MAU", "confidence": 0.0-1.0 },
+    "growth": { "value": "percentage or multiplier (e.g., '20% MoM', '3x YoY')", "metric": "what's growing", "confidence": 0.0-1.0 },
+    "unitEconomics": { 
+      "cac": "customer acquisition cost or null",
+      "ltv": "lifetime value or null", 
+      "ltvCacRatio": "ratio or null",
+      "grossMargin": "percentage or null",
+      "churn": "monthly/annual churn rate or null",
+      "confidence": 0.0-1.0 
+    },
+    "funding": {
+      "raising": "amount being raised (e.g., '$2M')",
+      "valuation": "pre/post-money valuation if stated",
+      "previousRounds": "prior funding raised",
+      "notableInvestors": ["list of named investors"],
+      "confidence": 0.0-1.0
+    }
+  },
+  "team": {
+    "founders": [
+      { "name": "full name", "role": "title", "background": "relevant experience, previous companies, education" }
+    ],
+    "teamSize": "total employees or null",
+    "keyHires": "notable team members beyond founders",
+    "advisors": "advisory board members if mentioned",
+    "confidence": 0.0-1.0
   },
   "extractedSections": {
     "problem_core": { 
-      "content": "What specific problem does this company solve? Who suffers from it and how much does it hurt? Include any evidence of problem validation if available.", 
+      "content": "DETAILED extraction: What specific problem? Who has it (be specific about persona)? How painful is it (quantify if possible)? What's the cost of the status quo? Any customer quotes or validation? Market timing - why now?", 
       "confidence": 0.0-1.0 
     },
     "solution_core": { 
-      "content": "How does the product/service solve the problem? What makes it unique or different from alternatives? Include demo/product details if available.", 
+      "content": "DETAILED extraction: What is the product exactly? Key features and how they work. What makes it 10x better than alternatives? Any technical innovation or IP? Demo screenshots/flow if described. Integration capabilities.", 
       "confidence": 0.0-1.0 
     },
     "target_customer": { 
-      "content": "Who is the ideal customer? Include demographics, market size (TAM/SAM/SOM), and why now is the right time for this solution.", 
+      "content": "DETAILED extraction: Ideal Customer Profile - industry, company size, job titles, geography. TAM/SAM/SOM with methodology if provided. Market trends and tailwinds. Why these customers will pay.", 
       "confidence": 0.0-1.0 
     },
     "competitive_moat": { 
-      "content": "Who are the competitors and what is the company's competitive advantage? What's the moat or unfair advantage that makes them hard to copy?", 
+      "content": "DETAILED extraction: Named competitors and their weaknesses. Company's unfair advantages (network effects, data moat, switching costs, brand, tech, team, speed). Defensibility over time. Positioning matrix if shown.", 
       "confidence": 0.0-1.0 
     },
     "business_model": { 
-      "content": "How does the company make money? Include revenue model, pricing, unit economics (CAC, LTV, margins) if available.", 
+      "content": "DETAILED extraction: Revenue model (subscription, usage, transaction, etc.). Pricing tiers and amounts. Sales motion (PLG, sales-led, hybrid). Unit economics deep dive. Path to profitability.", 
       "confidence": 0.0-1.0 
     },
     "traction_proof": { 
-      "content": "What proof of progress exists? Include current users, revenue, growth metrics, key milestones achieved, and notable wins.", 
+      "content": "DETAILED extraction: ALL metrics mentioned - revenue, users, growth rates, NPS, retention, engagement. Key milestones with dates. Logo customers (name them). Partnerships. Press/awards. Product launches.", 
       "confidence": 0.0-1.0 
     },
     "team_story": { 
-      "content": "Who are the founders and key team members? What's their background and why are they uniquely suited to solve this problem?", 
+      "content": "DETAILED extraction: Each founder's full background - previous companies (especially if acquired/IPO'd), years of experience, domain expertise, education. Why this team for this problem. Team gaps being addressed.", 
       "confidence": 0.0-1.0 
     },
     "vision_ask": { 
-      "content": "What's the big vision and where is the company going? Include funding ask, use of funds, and key milestones planned.", 
+      "content": "DETAILED extraction: Funding amount requested. Use of funds breakdown (% to engineering, sales, etc.). Key milestones for this round. 18-month roadmap. Long-term vision and exit potential.", 
       "confidence": 0.0-1.0 
     }
   },
-  "summary": "2-3 sentence executive summary of the company"
+  "redFlags": ["any concerns a VC might have based on the deck"],
+  "strengths": ["clear strengths that would excite an investor"],
+  "summary": "3-4 sentence executive summary: what they do, key traction, why it's investable, and what makes it unique"
 }
 
-CONFIDENCE SCORING GUIDELINES:
-- 0.9-1.0: Information is explicitly and clearly stated in the deck
-- 0.7-0.8: Information is clearly implied or can be confidently inferred
-- 0.5-0.6: Information is partially available or requires some inference
-- 0.3-0.4: Educated guess based on limited context
-- 0.0: No relevant information found (set content to null)
+CONFIDENCE SCORING:
+- 0.9-1.0: Explicitly stated with specific numbers/facts
+- 0.7-0.8: Clearly shown/implied, can confidently extract
+- 0.5-0.6: Partially available, some inference needed
+- 0.3-0.4: Limited context, educated guess
+- 0.0-0.2: Not found or highly speculative
 
-Be thorough but accurate. Only extract what you can actually find or reasonably infer.
-For missing information, set content to null and confidence to 0.`;
+EXTRACTION RULES:
+1. ALWAYS include specific numbers when visible (don't round or generalize)
+2. Name drop - include company names, investor names, customer logos
+3. If a metric is shown in a chart, describe what the chart shows
+4. Extract dates and timelines when available
+5. For missing critical info, set to null but note in redFlags what's missing
+6. Be comprehensive - VCs read between the lines, you should too`;
 
     let messages: any[] = [];
 
@@ -349,9 +390,10 @@ ${textContent.substring(0, 50000)}`
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: 'google/gemini-2.5-pro',
           messages,
-          response_format: { type: 'json_object' }
+          response_format: { type: 'json_object' },
+          temperature: 0.3
         }),
         signal: controller.signal
       });
