@@ -534,204 +534,219 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
               <div className="relative">
                 {/* Background cards for stack effect */}
                 {contacts.length - currentIndex > 2 && (
-                  <div className="absolute inset-x-4 top-2 h-full bg-card border border-border rounded-xl opacity-30" />
+                  <div className="absolute inset-x-4 top-2 h-full bg-card border border-border rounded-xl opacity-30 pointer-events-none z-0" />
                 )}
                 {contacts.length - currentIndex > 1 && (
-                  <div className="absolute inset-x-2 top-1 h-full bg-card border border-border rounded-xl opacity-60" />
+                  <div className="absolute inset-x-2 top-1 h-full bg-card border border-border rounded-xl opacity-60 pointer-events-none z-0" />
                 )}
-                
-                {/* Current Card */}
-                <div className={`relative bg-card border rounded-xl p-5 shadow-lg ${
-                  currentContact.isDuplicate ? 'border-yellow-500/50' : 
-                  currentContact.status === "accepted" ? 'border-green-500/50' :
-                  currentContact.status === "rejected" ? 'border-red-500/50' : 'border-border'
-                }`}>
-                  {/* Status Badge */}
-                  <div className="absolute top-3 right-3">
-                    {getStatusBadge(currentContact.status)}
-                  </div>
 
-                  {currentContact.isDuplicate && (
-                    <div className="mb-4 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-2 text-yellow-600">
-                      <AlertTriangle className="h-4 w-4" />
-                      <span className="text-xs">Possible duplicate of "{currentContact.duplicateMatch}"</span>
-                    </div>
-                  )}
-
-                  <div className="space-y-3">
-                    {/* Name - Always visible */}
-                    <EditableField
-                      label="Name"
-                      value={currentContact.name}
-                      fieldKey="name"
-                      editingField={editingField}
-                      editValue={editValue}
-                      onStartEdit={handleStartEdit}
-                      onSaveEdit={handleSaveEdit}
-                      onCancelEdit={handleCancelEdit}
-                      onEditValueChange={setEditValue}
-                    />
-
-                    {/* Organization */}
-                    <EditableField
-                      label="Organization"
-                      value={currentContact.organization_name}
-                      fieldKey="organization_name"
-                      editingField={editingField}
-                      editValue={editValue}
-                      onStartEdit={handleStartEdit}
-                      onSaveEdit={handleSaveEdit}
-                      onCancelEdit={handleCancelEdit}
-                      onEditValueChange={setEditValue}
-                    />
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <EditableField
-                        label="Email"
-                        value={currentContact.email}
-                        fieldKey="email"
-                        editingField={editingField}
-                        editValue={editValue}
-                        onStartEdit={handleStartEdit}
-                        onSaveEdit={handleSaveEdit}
-                        onCancelEdit={handleCancelEdit}
-                        onEditValueChange={setEditValue}
-                      />
-                      <EditableField
-                        label="Phone"
-                        value={currentContact.phone}
-                        fieldKey="phone"
-                        editingField={editingField}
-                        editValue={editValue}
-                        onStartEdit={handleStartEdit}
-                        onSaveEdit={handleSaveEdit}
-                        onCancelEdit={handleCancelEdit}
-                        onEditValueChange={setEditValue}
-                      />
+                <div className="relative z-10">
+                  {/* Current Card */}
+                  <div
+                    className={`relative bg-card border rounded-xl p-5 shadow-lg ${
+                      currentContact.isDuplicate
+                        ? "border-yellow-500/50"
+                        : currentContact.status === "accepted"
+                          ? "border-green-500/50"
+                          : currentContact.status === "rejected"
+                            ? "border-red-500/50"
+                            : "border-border"
+                    }`}
+                  >
+                    {/* Status Badge */}
+                    <div className="absolute top-3 right-3">
+                      {getStatusBadge(currentContact.status)}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <EditableField
-                        label="City"
-                        value={currentContact.city}
-                        fieldKey="city"
-                        editingField={editingField}
-                        editValue={editValue}
-                        onStartEdit={handleStartEdit}
-                        onSaveEdit={handleSaveEdit}
-                        onCancelEdit={handleCancelEdit}
-                        onEditValueChange={setEditValue}
-                      />
-                      <EditableField
-                        label="Country"
-                        value={currentContact.country}
-                        fieldKey="country"
-                        editingField={editingField}
-                        editValue={editValue}
-                        onStartEdit={handleStartEdit}
-                        onSaveEdit={handleSaveEdit}
-                        onCancelEdit={handleCancelEdit}
-                        onEditValueChange={setEditValue}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <EditableField
-                        label="Fund Size (M)"
-                        value={currentContact.fund_size}
-                        fieldKey="fund_size"
-                        editingField={editingField}
-                        editValue={editValue}
-                        onStartEdit={handleStartEdit}
-                        onSaveEdit={handleSaveEdit}
-                        onCancelEdit={handleCancelEdit}
-                        onEditValueChange={setEditValue}
-                      />
-                      <EditableField
-                        label="LinkedIn"
-                        value={currentContact.linkedin_url}
-                        fieldKey="linkedin_url"
-                        editingField={editingField}
-                        editValue={editValue}
-                        onStartEdit={handleStartEdit}
-                        onSaveEdit={handleSaveEdit}
-                        onCancelEdit={handleCancelEdit}
-                        onEditValueChange={setEditValue}
-                      />
-                    </div>
-
-                    {currentContact.stages && currentContact.stages.length > 0 && (
-                      <div>
-                        <span className="text-xs text-muted-foreground">Stages</span>
-                        <p className="text-sm">{currentContact.stages.join(", ")}</p>
+                    {currentContact.isDuplicate && (
+                      <div className="mb-4 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-2 text-yellow-600">
+                        <AlertTriangle className="h-4 w-4" />
+                        <span className="text-xs">
+                          Possible duplicate of "{currentContact.duplicateMatch}"
+                        </span>
                       </div>
                     )}
 
-                    <EditableField
-                      label="Notes"
-                      value={currentContact.notes}
-                      fieldKey="notes"
-                      editingField={editingField}
-                      editValue={editValue}
-                      onStartEdit={handleStartEdit}
-                      onSaveEdit={handleSaveEdit}
-                      onCancelEdit={handleCancelEdit}
-                      onEditValueChange={setEditValue}
-                    />
+                    <div className="space-y-3">
+                      {/* Name - Always visible */}
+                      <EditableField
+                        label="Name"
+                        value={currentContact.name}
+                        fieldKey="name"
+                        editingField={editingField}
+                        editValue={editValue}
+                        onStartEdit={handleStartEdit}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={handleCancelEdit}
+                        onEditValueChange={setEditValue}
+                      />
+
+                      {/* Organization */}
+                      <EditableField
+                        label="Organization"
+                        value={currentContact.organization_name}
+                        fieldKey="organization_name"
+                        editingField={editingField}
+                        editValue={editValue}
+                        onStartEdit={handleStartEdit}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={handleCancelEdit}
+                        onEditValueChange={setEditValue}
+                      />
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <EditableField
+                          label="Email"
+                          value={currentContact.email}
+                          fieldKey="email"
+                          editingField={editingField}
+                          editValue={editValue}
+                          onStartEdit={handleStartEdit}
+                          onSaveEdit={handleSaveEdit}
+                          onCancelEdit={handleCancelEdit}
+                          onEditValueChange={setEditValue}
+                        />
+                        <EditableField
+                          label="Phone"
+                          value={currentContact.phone}
+                          fieldKey="phone"
+                          editingField={editingField}
+                          editValue={editValue}
+                          onStartEdit={handleStartEdit}
+                          onSaveEdit={handleSaveEdit}
+                          onCancelEdit={handleCancelEdit}
+                          onEditValueChange={setEditValue}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <EditableField
+                          label="City"
+                          value={currentContact.city}
+                          fieldKey="city"
+                          editingField={editingField}
+                          editValue={editValue}
+                          onStartEdit={handleStartEdit}
+                          onSaveEdit={handleSaveEdit}
+                          onCancelEdit={handleCancelEdit}
+                          onEditValueChange={setEditValue}
+                        />
+                        <EditableField
+                          label="Country"
+                          value={currentContact.country}
+                          fieldKey="country"
+                          editingField={editingField}
+                          editValue={editValue}
+                          onStartEdit={handleStartEdit}
+                          onSaveEdit={handleSaveEdit}
+                          onCancelEdit={handleCancelEdit}
+                          onEditValueChange={setEditValue}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <EditableField
+                          label="Fund Size (M)"
+                          value={currentContact.fund_size}
+                          fieldKey="fund_size"
+                          editingField={editingField}
+                          editValue={editValue}
+                          onStartEdit={handleStartEdit}
+                          onSaveEdit={handleSaveEdit}
+                          onCancelEdit={handleCancelEdit}
+                          onEditValueChange={setEditValue}
+                        />
+                        <EditableField
+                          label="LinkedIn"
+                          value={currentContact.linkedin_url}
+                          fieldKey="linkedin_url"
+                          editingField={editingField}
+                          editValue={editValue}
+                          onStartEdit={handleStartEdit}
+                          onSaveEdit={handleSaveEdit}
+                          onCancelEdit={handleCancelEdit}
+                          onEditValueChange={setEditValue}
+                        />
+                      </div>
+
+                      {currentContact.stages && currentContact.stages.length > 0 && (
+                        <div>
+                          <span className="text-xs text-muted-foreground">Stages</span>
+                          <p className="text-sm">{currentContact.stages.join(", ")}</p>
+                        </div>
+                      )}
+
+                      <EditableField
+                        label="Notes"
+                        value={currentContact.notes}
+                        fieldKey="notes"
+                        editingField={editingField}
+                        editValue={editValue}
+                        onStartEdit={handleStartEdit}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={handleCancelEdit}
+                        onEditValueChange={setEditValue}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Action Buttons - Tinder Style */}
+                  <div className="flex items-center justify-center gap-6 mt-6">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className={`h-16 w-16 rounded-full border-2 transition-all duration-200 ${
+                        currentContact.status === "rejected"
+                          ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/30"
+                          : "border-red-500/50 text-red-500 hover:bg-red-500 hover:border-red-500 hover:text-white hover:shadow-lg hover:shadow-red-500/30 hover:scale-110"
+                      }`}
+                      onClick={handleReject}
+                      type="button"
+                    >
+                      <X className="h-7 w-7" />
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className={`h-16 w-16 rounded-full border-2 transition-all duration-200 ${
+                        currentContact.status === "accepted"
+                          ? "bg-green-500 border-green-500 text-white shadow-lg shadow-green-500/30"
+                          : "border-green-500/50 text-green-500 hover:bg-green-500 hover:border-green-500 hover:text-white hover:shadow-lg hover:shadow-green-500/30 hover:scale-110"
+                      }`}
+                      onClick={handleAccept}
+                      type="button"
+                    >
+                      <Check className="h-7 w-7" />
+                    </Button>
+                  </div>
+
+                  {/* Navigation */}
+                  <div className="flex items-center justify-between mt-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigateCard("prev")}
+                      disabled={currentIndex === 0}
+                      type="button"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigateCard("next")}
+                      disabled={currentIndex === contacts.length - 1}
+                      type="button"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
                   </div>
                 </div>
-
-                {/* Action Buttons - Tinder Style */}
-                <div className="flex items-center justify-center gap-6 mt-6">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className={`h-16 w-16 rounded-full border-2 transition-all duration-200 ${
-                      currentContact.status === "rejected" 
-                        ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/30" 
-                        : "border-red-500/50 text-red-500 hover:bg-red-500 hover:border-red-500 hover:text-white hover:shadow-lg hover:shadow-red-500/30 hover:scale-110"
-                    }`}
-                    onClick={handleReject}
-                  >
-                    <X className="h-7 w-7" />
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className={`h-16 w-16 rounded-full border-2 transition-all duration-200 ${
-                      currentContact.status === "accepted" 
-                        ? "bg-green-500 border-green-500 text-white shadow-lg shadow-green-500/30" 
-                        : "border-green-500/50 text-green-500 hover:bg-green-500 hover:border-green-500 hover:text-white hover:shadow-lg hover:shadow-green-500/30 hover:scale-110"
-                    }`}
-                    onClick={handleAccept}
-                  >
-                    <Check className="h-7 w-7" />
-                  </Button>
-                </div>
-
-                {/* Navigation */}
-                <div className="flex items-center justify-between mt-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigateCard("prev")}
-                    disabled={currentIndex === 0}
-                  >
-                    <ChevronLeft className="h-4 w-4 mr-1" />
-                    Previous
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigateCard("next")}
-                    disabled={currentIndex === contacts.length - 1}
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
-                </div>
               </div>
+
 
               {/* Footer Actions */}
               <div className="flex items-center justify-between pt-4 border-t">
