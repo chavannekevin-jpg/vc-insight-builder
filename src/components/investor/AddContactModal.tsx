@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UserPlus, Upload } from "lucide-react";
+import { UserPlus, Upload, Building2, CheckCircle } from "lucide-react";
 
 // Major cities with coordinates
 const MAJOR_CITIES = [
@@ -114,6 +114,19 @@ const ENTITY_TYPES = [
 
 const STAGES = ["Pre-Seed", "Seed", "Series A", "Series B+"];
 
+interface FundSuggestion {
+  id: string;
+  organization_name: string;
+  city: string | null;
+  country: string | null;
+  fund_size: number | null;
+  stages: string[] | null;
+  ticket_size_min: number | null;
+  ticket_size_max: number | null;
+  city_lat: number | null;
+  city_lng: number | null;
+}
+
 interface AddContactModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -141,6 +154,109 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, onBulkImport, userId }: A
   const [notes, setNotes] = useState("");
   const [citySuggestions, setCitySuggestions] = useState<typeof MAJOR_CITIES>([]);
   const [selectedCity, setSelectedCity] = useState<typeof MAJOR_CITIES[0] | null>(null);
+  
+  // Fund suggestions state
+  const [fundSuggestions, setFundSuggestions] = useState<FundSuggestion[]>([]);
+  const [selectedFund, setSelectedFund] = useState<FundSuggestion | null>(null);
+  const [isSearchingFunds, setIsSearchingFunds] = useState(false);
+
+  // Debounced fund search
+  const searchFunds = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setFundSuggestions([]);
+      return;
+    }
+
+    setIsSearchingFunds(true);
+    try {
+      const { data, error } = await (supabase
+        .from("global_contacts") as any)
+        .select("id, organization_name, city, country, fund_size, stages, ticket_size_min, ticket_size_max, city_lat, city_lng")
+        .ilike("organization_name", `%${query}%`)
+        .not("organization_name", "is", null)
+        .limit(5);
+
+      if (error) throw error;
+
+      // Remove duplicates by organization name
+      const uniqueFunds = data?.reduce((acc: FundSuggestion[], curr: FundSuggestion) => {
+        if (!acc.find(f => f.organization_name?.toLowerCase() === curr.organization_name?.toLowerCase())) {
+          acc.push(curr);
+        }
+        return acc;
+      }, []) || [];
+
+      setFundSuggestions(uniqueFunds);
+    } catch (error) {
+      console.error("Error searching funds:", error);
+      setFundSuggestions([]);
+    } finally {
+      setIsSearchingFunds(false);
+    }
+  }, []);
+
+  // Debounce the fund search
+  useEffect(() => {
+    if (selectedFund) return; // Don't search if fund is already selected
+    
+    const timer = setTimeout(() => {
+      searchFunds(organizationName);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [organizationName, searchFunds, selectedFund]);
+
+  const selectFund = (fund: FundSuggestion) => {
+    setSelectedFund(fund);
+    setOrganizationName(fund.organization_name);
+    setFundSuggestions([]);
+    
+    // Auto-fill fund data
+    if (fund.city) {
+      setCity(fund.city);
+      if (fund.city_lat && fund.city_lng) {
+        const matchingCity = MAJOR_CITIES.find(c => c.name.toLowerCase() === fund.city?.toLowerCase());
+        if (matchingCity) {
+          setSelectedCity(matchingCity);
+        } else {
+          setSelectedCity({
+            name: fund.city,
+            lat: fund.city_lat,
+            lng: fund.city_lng,
+            country: fund.country || ""
+          });
+        }
+      }
+    }
+    if (fund.fund_size) {
+      setFundSize(String(fund.fund_size / 1000000));
+    }
+    if (fund.stages && Array.isArray(fund.stages)) {
+      setSelectedStages(fund.stages);
+    }
+    if (fund.ticket_size_min) {
+      setTicketMin(String(fund.ticket_size_min / 1000));
+    }
+    if (fund.ticket_size_max) {
+      setTicketMax(String(fund.ticket_size_max / 1000));
+    }
+
+    toast({
+      title: "Fund data loaded",
+      description: `Pre-filled data from ${fund.organization_name}`,
+    });
+  };
+
+  const clearSelectedFund = () => {
+    setSelectedFund(null);
+  };
+
+  const handleOrganizationChange = (value: string) => {
+    setOrganizationName(value);
+    if (selectedFund && value !== selectedFund.organization_name) {
+      setSelectedFund(null);
+    }
+  };
 
   const handleCityChange = (value: string) => {
     setCity(value);
@@ -181,6 +297,8 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, onBulkImport, userId }: A
     setTicketMax("");
     setLinkedinUrl("");
     setNotes("");
+    setFundSuggestions([]);
+    setSelectedFund(null);
   };
 
   const handleClose = () => {
@@ -353,15 +471,60 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, onBulkImport, userId }: A
           </div>
 
           {/* Organization */}
-          <div>
+          <div className="relative">
             <Label htmlFor="organization">Fund / Organization</Label>
-            <Input
-              id="organization"
-              value={organizationName}
-              onChange={(e) => setOrganizationName(e.target.value)}
-              placeholder="Acme Ventures"
-              className="mt-1"
-            />
+            <div className="relative mt-1">
+              <Input
+                id="organization"
+                value={organizationName}
+                onChange={(e) => handleOrganizationChange(e.target.value)}
+                placeholder="Acme Ventures"
+                autoComplete="off"
+              />
+              {selectedFund && (
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                  <CheckCircle className="w-3 h-3" />
+                  <span>Linked</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Fund suggestions dropdown */}
+            {fundSuggestions.length > 0 && !selectedFund && (
+              <div className="absolute z-20 w-full mt-1 bg-card border border-border rounded-md shadow-lg overflow-hidden">
+                <div className="px-3 py-1.5 bg-muted/50 border-b border-border">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Building2 className="w-3 h-3" />
+                    Existing funds in database
+                  </span>
+                </div>
+                {fundSuggestions.map((fund) => (
+                  <button
+                    key={fund.id}
+                    type="button"
+                    onClick={() => selectFund(fund)}
+                    className="w-full px-4 py-2.5 text-left hover:bg-muted transition-colors flex items-start gap-3 border-b border-border last:border-b-0"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Building2 className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{fund.organization_name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {fund.city && `${fund.city}${fund.country ? `, ${fund.country}` : ''}`}
+                        {fund.fund_size && ` • €${(fund.fund_size / 1000000).toFixed(0)}M fund`}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {isSearchingFunds && organizationName.length >= 2 && !selectedFund && (
+              <div className="absolute z-20 w-full mt-1 bg-card border border-border rounded-md shadow-lg px-4 py-3">
+                <span className="text-sm text-muted-foreground">Searching funds...</span>
+              </div>
+            )}
           </div>
 
           {/* Email */}
