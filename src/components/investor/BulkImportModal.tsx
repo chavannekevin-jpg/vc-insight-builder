@@ -38,6 +38,72 @@ const MAJOR_CITIES: Record<string, { lat: number; lng: number; country: string }
   "bangalore": { lat: 12.9716, lng: 77.5946, country: "India" },
   "hong kong": { lat: 22.3193, lng: 114.1694, country: "China" },
   "shanghai": { lat: 31.2304, lng: 121.4737, country: "China" },
+  // Baltic states
+  "vilnius": { lat: 54.6872, lng: 25.2797, country: "Lithuania" },
+  "kaunas": { lat: 54.8985, lng: 23.9036, country: "Lithuania" },
+  "riga": { lat: 56.9496, lng: 24.1052, country: "Latvia" },
+  "tallinn": { lat: 59.4370, lng: 24.7536, country: "Estonia" },
+  // More European cities
+  "helsinki": { lat: 60.1699, lng: 24.9384, country: "Finland" },
+  "copenhagen": { lat: 55.6761, lng: 12.5683, country: "Denmark" },
+  "oslo": { lat: 59.9139, lng: 10.7522, country: "Norway" },
+  "warsaw": { lat: 52.2297, lng: 21.0122, country: "Poland" },
+  "prague": { lat: 50.0755, lng: 14.4378, country: "Czech Republic" },
+  "budapest": { lat: 47.4979, lng: 19.0402, country: "Hungary" },
+  "vienna": { lat: 48.2082, lng: 16.3738, country: "Austria" },
+  "dublin": { lat: 53.3498, lng: -6.2603, country: "Ireland" },
+  "lisbon": { lat: 38.7223, lng: -9.1393, country: "Portugal" },
+  "madrid": { lat: 40.4168, lng: -3.7038, country: "Spain" },
+  "barcelona": { lat: 41.3851, lng: 2.1734, country: "Spain" },
+  "milan": { lat: 45.4642, lng: 9.1900, country: "Italy" },
+  "rome": { lat: 41.9028, lng: 12.4964, country: "Italy" },
+  "zurich": { lat: 47.3769, lng: 8.5417, country: "Switzerland" },
+  "geneva": { lat: 46.2044, lng: 6.1432, country: "Switzerland" },
+  "brussels": { lat: 50.8503, lng: 4.3517, country: "Belgium" },
+  "munich": { lat: 48.1351, lng: 11.5820, country: "Germany" },
+  "frankfurt": { lat: 50.1109, lng: 8.6821, country: "Germany" },
+};
+
+// Country capitals as fallback for unknown cities
+const COUNTRY_CAPITALS: Record<string, { lat: number; lng: number }> = {
+  "lithuania": { lat: 54.6872, lng: 25.2797 },
+  "latvia": { lat: 56.9496, lng: 24.1052 },
+  "estonia": { lat: 59.4370, lng: 24.7536 },
+  "finland": { lat: 60.1699, lng: 24.9384 },
+  "sweden": { lat: 59.3293, lng: 18.0686 },
+  "norway": { lat: 59.9139, lng: 10.7522 },
+  "denmark": { lat: 55.6761, lng: 12.5683 },
+  "poland": { lat: 52.2297, lng: 21.0122 },
+  "germany": { lat: 52.5200, lng: 13.4050 },
+  "france": { lat: 48.8566, lng: 2.3522 },
+  "uk": { lat: 51.5074, lng: -0.1278 },
+  "united kingdom": { lat: 51.5074, lng: -0.1278 },
+  "usa": { lat: 40.7128, lng: -74.0060 },
+  "united states": { lat: 40.7128, lng: -74.0060 },
+  "netherlands": { lat: 52.3676, lng: 4.9041 },
+  "belgium": { lat: 50.8503, lng: 4.3517 },
+  "switzerland": { lat: 47.3769, lng: 8.5417 },
+  "austria": { lat: 48.2082, lng: 16.3738 },
+  "czech republic": { lat: 50.0755, lng: 14.4378 },
+  "czechia": { lat: 50.0755, lng: 14.4378 },
+  "hungary": { lat: 47.4979, lng: 19.0402 },
+  "ireland": { lat: 53.3498, lng: -6.2603 },
+  "portugal": { lat: 38.7223, lng: -9.1393 },
+  "spain": { lat: 40.4168, lng: -3.7038 },
+  "italy": { lat: 41.9028, lng: 12.4964 },
+  "greece": { lat: 37.9838, lng: 23.7275 },
+  "romania": { lat: 44.4268, lng: 26.1025 },
+  "ukraine": { lat: 50.4501, lng: 30.5234 },
+  "russia": { lat: 55.7558, lng: 37.6173 },
+  "israel": { lat: 32.0853, lng: 34.7818 },
+  "uae": { lat: 25.2048, lng: 55.2708 },
+  "united arab emirates": { lat: 25.2048, lng: 55.2708 },
+  "singapore": { lat: 1.3521, lng: 103.8198 },
+  "japan": { lat: 35.6762, lng: 139.6503 },
+  "china": { lat: 39.9042, lng: 116.4074 },
+  "india": { lat: 28.6139, lng: 77.2090 },
+  "australia": { lat: -33.8688, lng: 151.2093 },
+  "canada": { lat: 43.6532, lng: -79.3832 },
 };
 
 interface ExtractedContact {
@@ -366,7 +432,14 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
       
       try {
         const cityKey = contact.city?.toLowerCase().trim();
+        const countryKey = contact.country?.toLowerCase().trim();
         const cityData = cityKey ? MAJOR_CITIES[cityKey] : null;
+        
+        // Fallback to country capital if city not found but country exists
+        const countryFallback = !cityData && countryKey ? COUNTRY_CAPITALS[countryKey] : null;
+        
+        const finalLat = cityData?.lat || countryFallback?.lat || null;
+        const finalLng = cityData?.lng || countryFallback?.lng || null;
 
         const { data: newContact, error: globalError } = await (supabase
           .from("global_contacts") as any)
@@ -381,8 +454,8 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
             ticket_size_min: contact.ticket_min ? contact.ticket_min * 1000 : null,
             ticket_size_max: contact.ticket_max ? contact.ticket_max * 1000 : null,
             city: contact.city || null,
-            city_lat: cityData?.lat || null,
-            city_lng: cityData?.lng || null,
+            city_lat: finalLat,
+            city_lng: finalLng,
             country: contact.country || cityData?.country || null,
             linkedin_url: contact.linkedin_url || null,
           })

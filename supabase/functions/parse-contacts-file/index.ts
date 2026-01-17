@@ -147,6 +147,16 @@ const MAJOR_CITIES: Record<string, { lat: number; lng: number; country: string }
   "athens": { lat: 37.9838, lng: 23.7275, country: "Greece" },
   "rome": { lat: 41.9028, lng: 12.4964, country: "Italy" },
   "milan": { lat: 45.4642, lng: 9.1900, country: "Italy" },
+  // Baltic states
+  "vilnius": { lat: 54.6872, lng: 25.2797, country: "Lithuania" },
+  "kaunas": { lat: 54.8985, lng: 23.9036, country: "Lithuania" },
+  "riga": { lat: 56.9496, lng: 24.1052, country: "Latvia" },
+  // More European cities
+  "bucharest": { lat: 44.4268, lng: 26.1025, country: "Romania" },
+  "kyiv": { lat: 50.4501, lng: 30.5234, country: "Ukraine" },
+  "kiev": { lat: 50.4501, lng: 30.5234, country: "Ukraine" },
+  "krakow": { lat: 50.0647, lng: 19.9450, country: "Poland" },
+  "wroclaw": { lat: 51.1079, lng: 17.0385, country: "Poland" },
 };
 
 function parseExcelToText(base64Data: string): string {
@@ -406,6 +416,17 @@ Important rules:
             cityLat = COUNTRY_CAPITALS[cityAsCountry].lat;
             cityLng = COUNTRY_CAPITALS[cityAsCountry].lng;
             contact.location_note = `Location set to capital city (${enrichedCity}) - please update if different`;
+          }
+        }
+
+        // Fallback: if city exists and country exists but no coordinates, use country capital
+        if (contact.city && contact.country && !cityLat) {
+          const countryKey = contact.country.toLowerCase().trim();
+          if (COUNTRY_CAPITALS[countryKey]) {
+            // Keep the original city name but use country capital coordinates as approximation
+            cityLat = COUNTRY_CAPITALS[countryKey].lat;
+            cityLng = COUNTRY_CAPITALS[countryKey].lng;
+            contact.location_note = `Using country capital coordinates as approximation for ${contact.city}`;
           }
         }
 
