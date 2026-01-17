@@ -1,15 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Search, List, Map as MapIcon, LogOut, User } from "lucide-react";
-import InvestorWorldMap from "@/components/investor/InvestorWorldMap";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import InvestorSidebar from "@/components/investor/InvestorSidebar";
 import AddContactModal from "@/components/investor/AddContactModal";
-import ContactListView from "@/components/investor/ContactListView";
 import ContactProfileModal from "@/components/investor/ContactProfileModal";
 import { useInvestorContacts } from "@/hooks/useInvestorContacts";
+
+// Views
+import NetworkMapView from "@/components/investor/views/NetworkMapView";
+import CRMView from "@/components/investor/views/CRMView";
+import DealflowView from "@/components/investor/views/DealflowView";
+import UploadDeckView from "@/components/investor/views/UploadDeckView";
+import SettingsView from "@/components/investor/views/SettingsView";
+import PlaceholderView from "@/components/investor/views/PlaceholderView";
+import { BarChart3, CalendarDays, Target } from "lucide-react";
 
 export interface InvestorContact {
   id: string;
@@ -19,7 +25,6 @@ export interface InvestorContact {
   local_notes: string | null;
   relationship_status: string;
   last_contact_date: string | null;
-  // From global_contacts join
   global_contact?: {
     id: string;
     name: string;
@@ -42,13 +47,22 @@ const InvestorDashboard = () => {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"map" | "list">("map");
+  const [activeSection, setActiveSection] = useState("map");
   const [isAddContactOpen, setIsAddContactOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<InvestorContact | null>(null);
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
   const { contacts, isLoading, refetch, cityGroups } = useInvestorContacts(userId);
+
+  const fetchProfile = async (uid: string) => {
+    const { data: profile } = await supabase
+      .from("investor_profiles")
+      .select("*")
+      .eq("id", uid)
+      .maybeSingle();
+    
+    setUserProfile(profile);
+    return profile;
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -59,28 +73,16 @@ const InvestorDashboard = () => {
       }
       setUserId(session.user.id);
 
-      // Fetch investor profile
-      const { data: profile } = await supabase
-        .from("investor_profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .maybeSingle();
+      const profile = await fetchProfile(session.user.id);
 
       if (!profile?.onboarding_completed) {
         navigate("/investor/onboarding");
         return;
       }
-
-      setUserProfile(profile);
     };
 
     checkAuth();
   }, [navigate]);
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/investor");
-  };
 
   const handleContactAdded = () => {
     refetch();
@@ -88,22 +90,73 @@ const InvestorDashboard = () => {
     toast({ title: "Contact added successfully!" });
   };
 
-  const handleCityClick = (city: string) => {
-    setSelectedCity(city);
-    // Could open a city-specific modal here
+  const handleProfileUpdate = () => {
+    if (userId) {
+      fetchProfile(userId);
+    }
   };
 
-  const filteredContacts = contacts.filter((contact) => {
-    const name = contact.local_name || contact.global_contact?.name || "";
-    const org = contact.local_organization || contact.global_contact?.organization_name || "";
-    const city = contact.global_contact?.city || "";
-    const query = searchQuery.toLowerCase();
-    return (
-      name.toLowerCase().includes(query) ||
-      org.toLowerCase().includes(query) ||
-      city.toLowerCase().includes(query)
-    );
-  });
+  const renderContent = () => {
+    switch (activeSection) {
+      case "map":
+        return (
+          <NetworkMapView
+            contacts={contacts}
+            cityGroups={cityGroups}
+            isLoading={isLoading}
+            onContactClick={setSelectedContact}
+            onAddContact={() => setIsAddContactOpen(true)}
+          />
+        );
+      case "crm":
+        return (
+          <CRMView
+            contacts={contacts}
+            isLoading={isLoading}
+            onContactClick={setSelectedContact}
+            onAddContact={() => setIsAddContactOpen(true)}
+          />
+        );
+      case "dealflow":
+        return <DealflowView />;
+      case "upload":
+        return <UploadDeckView />;
+      case "settings":
+        return userId ? (
+          <SettingsView
+            userId={userId}
+            userProfile={userProfile}
+            onProfileUpdate={handleProfileUpdate}
+          />
+        ) : null;
+      case "portfolio":
+        return (
+          <PlaceholderView
+            title="Portfolio"
+            description="Track your investments and portfolio companies. Coming soon!"
+            icon={BarChart3}
+          />
+        );
+      case "calendar":
+        return (
+          <PlaceholderView
+            title="Calendar"
+            description="Schedule meetings and track your investor calendar. Coming soon!"
+            icon={CalendarDays}
+          />
+        );
+      case "thesis":
+        return (
+          <PlaceholderView
+            title="Investment Thesis"
+            description="Define and share your investment thesis. Coming soon!"
+            icon={Target}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   if (!userId) {
     return (
@@ -114,128 +167,46 @@ const InvestorDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-lg font-semibold">Investor Network</h1>
-            <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{contacts.length} contacts</span>
-              <span>•</span>
-              <span>{Object.keys(cityGroups).length} cities</span>
-            </div>
-          </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <InvestorSidebar
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+          userProfile={userProfile}
+        />
 
-          <div className="flex items-center gap-3">
-            {/* Search */}
-            <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search contacts or cities..."
-                className="pl-9 w-64 h-9"
-              />
-            </div>
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Top Bar with Sidebar Trigger */}
+          <header className="h-12 border-b border-border/50 flex items-center px-4 bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+            <SidebarTrigger className="mr-4" />
+            <span className="text-sm font-medium text-muted-foreground">
+              Investor Dashboard
+            </span>
+          </header>
 
-            {/* View Toggle */}
-            <div className="flex rounded-lg border border-border overflow-hidden">
-              <button
-                onClick={() => setViewMode("map")}
-                className={`px-3 py-1.5 flex items-center gap-1.5 transition-colors ${
-                  viewMode === "map"
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                }`}
-              >
-                <MapIcon className="w-4 h-4" />
-                <span className="hidden sm:inline text-sm">Map</span>
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`px-3 py-1.5 flex items-center gap-1.5 transition-colors ${
-                  viewMode === "list"
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                }`}
-              >
-                <List className="w-4 h-4" />
-                <span className="hidden sm:inline text-sm">List</span>
-              </button>
-            </div>
-
-            {/* User Menu */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleSignOut}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
+          {/* Main Content */}
+          <main className="flex-1 overflow-hidden">
+            {renderContent()}
+          </main>
         </div>
-      </header>
 
-      {/* Mobile Search */}
-      <div className="md:hidden p-3 border-b border-border/50">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search contacts or cities..."
-            className="pl-9"
-          />
-        </div>
-      </div>
+        {/* Modals */}
+        <AddContactModal
+          isOpen={isAddContactOpen}
+          onClose={() => setIsAddContactOpen(false)}
+          onSuccess={handleContactAdded}
+          userId={userId}
+        />
 
-      {/* Main Content */}
-      <div className="flex-1 relative">
-        {viewMode === "map" ? (
-          <InvestorWorldMap
-            contacts={filteredContacts}
-            cityGroups={cityGroups}
-            onCityClick={handleCityClick}
-            onContactClick={setSelectedContact}
-            searchQuery={searchQuery}
-          />
-        ) : (
-          <ContactListView
-            contacts={filteredContacts}
-            isLoading={isLoading}
-            onContactClick={setSelectedContact}
+        {selectedContact && (
+          <ContactProfileModal
+            contact={selectedContact}
+            onClose={() => setSelectedContact(null)}
+            onUpdate={refetch}
           />
         )}
-
-        {/* Floating Add Button */}
-        <Button
-          onClick={() => setIsAddContactOpen(true)}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90"
-        >
-          <Plus className="w-6 h-6" />
-        </Button>
       </div>
-
-      {/* Modals */}
-      <AddContactModal
-        isOpen={isAddContactOpen}
-        onClose={() => setIsAddContactOpen(false)}
-        onSuccess={handleContactAdded}
-        userId={userId}
-      />
-
-      {selectedContact && (
-        <ContactProfileModal
-          contact={selectedContact}
-          onClose={() => setSelectedContact(null)}
-          onUpdate={refetch}
-        />
-      )}
-    </div>
+    </SidebarProvider>
   );
 };
 
