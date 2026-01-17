@@ -99,15 +99,16 @@ const InvestorDashboard = () => {
   const renderContent = () => {
     switch (activeSection) {
       case "map":
-        return (
+        return userId ? (
           <NetworkMapView
             contacts={contacts}
             cityGroups={cityGroups}
             isLoading={isLoading}
             onContactClick={setSelectedContact}
             onAddContact={() => setIsAddContactOpen(true)}
+            userId={userId}
           />
-        );
+        ) : null;
       case "crm":
         return (
           <CRMView
