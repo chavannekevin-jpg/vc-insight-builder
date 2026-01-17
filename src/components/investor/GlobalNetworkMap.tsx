@@ -1,6 +1,6 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import type { NetworkMarker } from "@/hooks/useGlobalNetwork";
-import { Globe } from "lucide-react";
+import LightweightWorldMap from "./LightweightWorldMap";
 
 interface CityGroup {
   city: string;
@@ -17,87 +17,82 @@ interface GlobalNetworkMapProps {
   onCityClick?: (city: string, markers: NetworkMarker[]) => void;
 }
 
-const TYPE_STYLES = {
-  active_user: { bg: "bg-green-500", label: "Active Investors" },
-  global_contact: { bg: "bg-blue-500", label: "Community Added" },
-  my_contact: { bg: "bg-pink-500", label: "My Contacts" },
+const TYPE_COLORS = {
+  active_user: "hsl(142, 76%, 45%)", // Green
+  global_contact: "hsl(217, 91%, 60%)", // Blue  
+  my_contact: "hsl(330, 81%, 60%)", // Pink
 };
 
-/**
- * Lightweight map placeholder - replaces heavy react-simple-maps dependency
- * Shows city list grouped by type instead of interactive SVG world map
- */
 const GlobalNetworkMap = memo(({
   cityGroups,
   searchQuery,
   onCityClick,
 }: GlobalNetworkMapProps) => {
-  const filteredCityGroups = Object.entries(cityGroups).filter(([city]) => {
-    if (!searchQuery) return true;
-    return city.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  // Convert city groups to markers
+  const markers = useMemo(() => {
+    return Object.entries(cityGroups)
+      .filter(([city]) => {
+        if (!searchQuery) return true;
+        return city.toLowerCase().includes(searchQuery.toLowerCase());
+      })
+      .filter(([, group]) => group.lat && group.lng)
+      .map(([city, group]) => ({
+        id: city,
+        lat: group.lat!,
+        lng: group.lng!,
+        count: group.count,
+        label: city,
+        color: TYPE_COLORS[group.dominantType],
+        networkMarkers: group.markers,
+      }));
+  }, [cityGroups, searchQuery]);
 
-  const sortedCities = filteredCityGroups.sort((a, b) => b[1].count - a[1].count);
+  const handleMarkerClick = (marker: { id: string; networkMarkers?: NetworkMarker[] }) => {
+    const group = cityGroups[marker.id];
+    if (!group || !onCityClick) return;
+    onCityClick(marker.id, group.markers);
+  };
 
-  const totalInvestors = Object.values(cityGroups).reduce((sum, g) => sum + g.count, 0);
+  // Empty state
+  if (Object.keys(cityGroups).length === 0) {
+    return (
+      <div className="w-full min-h-[500px] bg-card flex items-center justify-center">
+        <div className="text-center p-8 bg-card/80 backdrop-blur-sm rounded-lg border border-border">
+          <p className="text-lg font-medium mb-2">No investors found</p>
+          <p className="text-muted-foreground">
+            Be the first to add contacts to the network
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full min-h-[500px] bg-card relative overflow-auto p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Globe className="w-5 h-5 text-primary" />
-          Global Network
-        </h3>
-        <p className="text-sm text-muted-foreground mt-1">
-          {Object.keys(cityGroups).length} cities · {totalInvestors} investors
-        </p>
-      </div>
-
+    <div className="w-full min-h-[500px] bg-card relative">
+      <LightweightWorldMap
+        markers={markers}
+        onMarkerClick={handleMarkerClick}
+        className="h-full"
+      />
+      
       {/* Legend */}
-      <div className="flex flex-wrap gap-4 mb-6 p-3 bg-muted/50 rounded-lg">
-        {Object.entries(TYPE_STYLES).map(([type, style]) => (
-          <div key={type} className="flex items-center gap-2 text-xs">
-            <span className={`w-3 h-3 rounded-full ${style.bg}`} />
-            <span>{style.label}</span>
+      <div className="absolute top-4 left-4 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-3 z-10">
+        <p className="text-xs font-medium mb-2 text-muted-foreground">Legend</p>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.active_user }} />
+            <span>Active Investors</span>
           </div>
-        ))}
+          <div className="flex items-center gap-2 text-xs">
+            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.global_contact }} />
+            <span>Community Added</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.my_contact }} />
+            <span>My Contacts</span>
+          </div>
+        </div>
       </div>
-
-      {/* City Grid */}
-      {sortedCities.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {sortedCities.map(([city, group]) => {
-            const typeStyle = TYPE_STYLES[group.dominantType];
-            return (
-              <button
-                key={city}
-                onClick={() => onCityClick?.(city, group.markers)}
-                className="p-4 bg-card border border-border rounded-lg hover:border-primary hover:bg-primary/5 transition-all text-left group"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`w-2 h-2 rounded-full ${typeStyle.bg}`} />
-                  <span className="font-medium text-sm truncate group-hover:text-primary transition-colors">
-                    {city}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {group.count} investor{group.count !== 1 ? "s" : ""}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center p-8 bg-card/80 backdrop-blur-sm rounded-lg border border-border">
-            <p className="text-lg font-medium mb-2">No investors found</p>
-            <p className="text-muted-foreground">
-              Be the first to add contacts to the network
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 });
