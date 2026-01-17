@@ -17,8 +17,8 @@ export const useGlobalNetwork = (userId: string | null, myContactIds: string[]) 
   const { data: activeUsers = [], isLoading: isLoadingUsers } = useQuery({
     queryKey: ["global-investor-profiles"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("investor_profiles")
+      const { data, error } = await (supabase
+        .from("investor_profiles") as any)
         .select("id, full_name, organization_name, city, city_lat, city_lng")
         .eq("onboarding_completed", true);
 
@@ -27,7 +27,7 @@ export const useGlobalNetwork = (userId: string | null, myContactIds: string[]) 
         return [];
       }
 
-      return (data || []).map((profile): NetworkMarker => ({
+      return (data || []).map((profile: any): NetworkMarker => ({
         id: profile.id,
         name: profile.full_name,
         organization_name: profile.organization_name,
@@ -45,8 +45,8 @@ export const useGlobalNetwork = (userId: string | null, myContactIds: string[]) 
   const { data: globalContacts = [], isLoading: isLoadingContacts } = useQuery({
     queryKey: ["global-all-contacts", myContactIds],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("global_contacts")
+      const { data, error } = await (supabase
+        .from("global_contacts") as any)
         .select("id, name, organization_name, city, city_lat, city_lng, country");
 
       if (error) {
@@ -54,7 +54,7 @@ export const useGlobalNetwork = (userId: string | null, myContactIds: string[]) 
         return [];
       }
 
-      return (data || []).map((contact): NetworkMarker => ({
+      return (data || []).map((contact: any): NetworkMarker => ({
         id: contact.id,
         name: contact.name,
         organization_name: contact.organization_name,

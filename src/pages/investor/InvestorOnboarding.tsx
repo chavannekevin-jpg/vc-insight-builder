@@ -145,8 +145,8 @@ const InvestorOnboarding = () => {
       }
 
       // Check if already onboarded
-      const { data: profile } = await supabase
-        .from("investor_profiles")
+      const { data: profile } = await (supabase
+        .from("investor_profiles") as any)
         .select("onboarding_completed")
         .eq("id", session.user.id)
         .maybeSingle();
@@ -246,7 +246,7 @@ const InvestorOnboarding = () => {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.from("investor_profiles").upsert({
+      const { error } = await (supabase.from("investor_profiles") as any).upsert({
         id: userId,
         full_name: fullName.trim(),
         investor_type: investorType as any,
@@ -267,15 +267,15 @@ const InvestorOnboarding = () => {
 
       // Create referral record if there's an invite code
       if (inviteCode) {
-        const { data: invite } = await supabase
-          .from("investor_invites")
+        const { data: invite } = await (supabase
+          .from("investor_invites") as any)
           .select("inviter_id")
           .eq("code", inviteCode)
           .maybeSingle();
 
         if (invite?.inviter_id) {
           try {
-            await supabase.from("investor_referrals").insert({
+            await (supabase.from("investor_referrals") as any).insert({
               inviter_id: invite.inviter_id,
               invitee_id: userId,
               invite_code: inviteCode,
@@ -303,8 +303,8 @@ const InvestorOnboarding = () => {
     if (!userId) return;
 
     try {
-      await supabase
-        .from("investor_profiles")
+      await (supabase
+        .from("investor_profiles") as any)
         .update({ onboarding_completed: true })
         .eq("id", userId);
 

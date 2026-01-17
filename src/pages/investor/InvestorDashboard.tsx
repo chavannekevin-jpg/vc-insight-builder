@@ -54,8 +54,8 @@ const InvestorDashboard = () => {
   const { contacts, isLoading, refetch, cityGroups } = useInvestorContacts(userId);
 
   const fetchProfile = async (uid: string) => {
-    const { data: profile } = await supabase
-      .from("investor_profiles")
+    const { data: profile } = await (supabase
+      .from("investor_profiles") as any)
       .select("*")
       .eq("id", uid)
       .maybeSingle();

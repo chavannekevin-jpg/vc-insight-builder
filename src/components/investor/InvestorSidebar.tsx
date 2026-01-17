@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Map,
@@ -34,7 +34,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+
 
 const mainMenuItems = [
   { title: "Network Map", url: "/investor/dashboard", icon: Map, section: "map" },
@@ -92,8 +92,8 @@ const InvestorSidebar = ({ activeSection, onSectionChange, userProfile }: Invest
     setIsLoadingCode(true);
     try {
       // Check for existing active invite code
-      const { data: existingCodes } = await supabase
-        .from("investor_invites")
+      const { data: existingCodes } = await (supabase
+        .from("investor_invites") as any)
         .select("*")
         .eq("inviter_id", userProfile.id)
         .eq("is_active", true)
@@ -118,8 +118,8 @@ const InvestorSidebar = ({ activeSection, onSectionChange, userProfile }: Invest
         code += chars.charAt(Math.floor(Math.random() * chars.length));
       }
 
-      const { data: newCode, error } = await supabase
-        .from("investor_invites")
+      const { data: newCode, error } = await (supabase
+        .from("investor_invites") as any)
         .insert({
           code,
           inviter_id: userProfile.id,
