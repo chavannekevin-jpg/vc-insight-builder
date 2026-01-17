@@ -14,6 +14,7 @@ import {
   ChevronDown,
   ChevronRight,
   Shield,
+  Network,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -38,6 +39,7 @@ import { useState } from "react";
 const mainNavItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard, exact: true },
   { title: "Users Hub", url: "/admin/users", icon: Users },
+  { title: "Investor Ecosystem", url: "/admin/investors", icon: Network },
 ];
 
 const contentItems = [
