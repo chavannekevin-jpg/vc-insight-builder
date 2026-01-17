@@ -5,6 +5,7 @@ import { Search, Plus, List, Map as MapIcon, Users, Globe } from "lucide-react";
 import InvestorWorldMap from "@/components/investor/InvestorWorldMap";
 import GlobalNetworkMap from "@/components/investor/GlobalNetworkMap";
 import ContactListView from "@/components/investor/ContactListView";
+import CityContactsModal from "@/components/investor/CityContactsModal";
 import { useGlobalNetwork } from "@/hooks/useGlobalNetwork";
 import type { InvestorContact } from "@/pages/investor/InvestorDashboard";
 
@@ -36,6 +37,7 @@ const NetworkMapView = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [networkMode, setNetworkMode] = useState<"my" | "global">("my");
+  const [selectedCity, setSelectedCity] = useState<{ city: string; contacts: InvestorContact[] } | null>(null);
 
   // Get IDs of user's contacts for highlighting in global view
   const myContactGlobalIds = contacts
@@ -59,8 +61,8 @@ const NetworkMapView = ({
     );
   });
 
-  const handleCityClick = (city: string) => {
-    setSearchQuery(city);
+  const handleCityClick = (city: string, cityContacts: InvestorContact[]) => {
+    setSelectedCity({ city, contacts: cityContacts });
   };
 
   const displayStats = networkMode === "my" 
@@ -172,6 +174,17 @@ const NetworkMapView = ({
           />
         )}
       </div>
+
+      {/* City Contacts Modal */}
+      {selectedCity && (
+        <CityContactsModal
+          city={selectedCity.city}
+          contacts={selectedCity.contacts}
+          isOpen={!!selectedCity}
+          onClose={() => setSelectedCity(null)}
+          onContactClick={onContactClick}
+        />
+      )}
     </div>
   );
 };

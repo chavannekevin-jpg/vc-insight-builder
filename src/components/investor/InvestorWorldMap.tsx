@@ -21,7 +21,7 @@ interface CityGroup {
 interface InvestorWorldMapProps {
   contacts: InvestorContact[];
   cityGroups: Record<string, CityGroup>;
-  onCityClick: (city: string) => void;
+  onCityClick: (city: string, contacts: InvestorContact[]) => void;
   onContactClick: (contact: InvestorContact) => void;
   searchQuery: string;
 }
@@ -113,8 +113,7 @@ const InvestorWorldMap = memo(({
                   if (group.count === 1) {
                     onContactClick(group.contacts[0]);
                   } else {
-                    // For multiple contacts, open the first one but also filter
-                    onContactClick(group.contacts[0]);
+                    onCityClick(city, group.contacts);
                   }
                 }}
                 style={{ cursor: "pointer" }}
