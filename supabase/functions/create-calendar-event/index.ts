@@ -176,6 +176,12 @@ async function sendInviteEmails(
   eventId: string
 ): Promise<void> {
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
+  
+  console.log('=== EMAIL SENDING DEBUG ===');
+  console.log('Attendees:', attendees);
+  console.log('RESEND_API_KEY exists:', !!resendApiKey);
+  console.log('Organizer:', organizerName, organizerEmail);
+  
   if (!resendApiKey) {
     console.log('RESEND_API_KEY not configured, skipping email notifications');
     return;
@@ -206,37 +212,46 @@ async function sendInviteEmails(
 
   // Send to each attendee
   for (const attendeeEmail of attendees) {
+    console.log(`Attempting to send invite to: ${attendeeEmail}`);
     try {
+      const emailPayload = {
+        from: 'Lovable Calendar <onboarding@resend.dev>',
+        to: [attendeeEmail],
+        subject: `📅 Invitation: ${title}`,
+        html: htmlContent,
+        attachments: [
+          {
+            filename: 'invite.ics',
+            content: icsBase64,
+          },
+        ],
+      };
+      
+      console.log('Email payload:', JSON.stringify({ ...emailPayload, html: '[HTML CONTENT]', attachments: '[ICS ATTACHMENT]' }));
+      
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${resendApiKey}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          from: `${organizerName} <onboarding@resend.dev>`,
-          to: [attendeeEmail],
-          subject: `📅 Invitation: ${title}`,
-          html: htmlContent,
-          attachments: [
-            {
-              filename: 'invite.ics',
-              content: icsBase64,
-            },
-          ],
-        }),
+        body: JSON.stringify(emailPayload),
       });
 
+      const responseText = await response.text();
+      console.log(`Resend API response status: ${response.status}`);
+      console.log(`Resend API response body: ${responseText}`);
+
       if (response.ok) {
-        console.log(`Invite email sent to ${attendeeEmail}`);
+        console.log(`✅ Invite email sent successfully to ${attendeeEmail}`);
       } else {
-        const error = await response.text();
-        console.error(`Failed to send invite to ${attendeeEmail}:`, error);
+        console.error(`❌ Failed to send invite to ${attendeeEmail}:`, responseText);
       }
     } catch (error) {
-      console.error(`Failed to send invite to ${attendeeEmail}:`, error);
+      console.error(`❌ Exception sending invite to ${attendeeEmail}:`, error);
     }
   }
+  console.log('=== EMAIL SENDING COMPLETE ===');
 }
 
 async function refreshAccessToken(
