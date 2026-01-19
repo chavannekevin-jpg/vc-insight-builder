@@ -108,9 +108,13 @@ const ContactDirectoryView = ({
     return contact.relationship_status !== null;
   };
 
-  // Count contacts in CRM vs directory only
+  // Count contacts in CRM
   const inCRMCount = contacts.filter(c => c.relationship_status !== null).length;
-  const directoryOnlyCount = contacts.filter(c => c.relationship_status === null).length;
+
+  // Get investment focus array safely
+  const getInvestmentFocus = (contact: InvestorContact): string[] => {
+    return (contact.global_contact?.investment_focus as string[]) || [];
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -238,130 +242,173 @@ const ContactDirectoryView = ({
           </div>
         ) : viewMode === "list" ? (
           <div className="space-y-2">
-            {sortedContacts.map((contact) => (
-              <div
-                key={contact.id}
-                className="flex items-center gap-4 p-3 bg-card border border-border rounded-lg hover:border-primary/50 transition-colors group"
-              >
-                <div 
-                  className="flex-1 min-w-0 cursor-pointer"
-                  onClick={() => onContactClick(contact)}
+            {sortedContacts.map((contact) => {
+              const focus = getInvestmentFocus(contact);
+              return (
+                <div
+                  key={contact.id}
+                  className="flex items-center gap-4 p-3 bg-card border border-border rounded-lg hover:border-primary/50 transition-colors group"
                 >
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium truncate">
-                      {contact.local_name || contact.global_contact?.name}
-                    </p>
-                    {contact.global_contact?.linked_investor_id && (
-                      <Badge 
-                        variant="secondary" 
-                        className="text-[10px] px-1.5 py-0 bg-green-500/10 text-green-600 border-green-500/20 shrink-0"
-                      >
-                        <UserCheck className="w-3 h-3 mr-0.5" />
-                        On Platform
-                      </Badge>
-                    )}
-                    {isInCRM(contact) && (
-                      <Badge 
-                        variant="outline" 
-                        className="text-[10px] px-1.5 py-0 shrink-0 capitalize"
-                      >
-                        {contact.relationship_status}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
-                    {(contact.local_organization || contact.global_contact?.organization_name) && (
-                      <span className="flex items-center gap-1 truncate">
-                        <Building2 className="w-3 h-3" />
-                        {contact.local_organization || contact.global_contact?.organization_name}
-                      </span>
-                    )}
-                    {contact.global_contact?.city && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {contact.global_contact.city}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                {!isInCRM(contact) && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddToCRM(contact);
-                    }}
+                  <div 
+                    className="flex-1 min-w-0 cursor-pointer"
+                    onClick={() => onContactClick(contact)}
                   >
-                    Add to CRM
-                  </Button>
-                )}
-              </div>
-            ))}
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium truncate">
+                        {contact.local_name || contact.global_contact?.name}
+                      </p>
+                      {contact.global_contact?.linked_investor_id && (
+                        <Badge 
+                          variant="secondary" 
+                          className="text-[10px] px-1.5 py-0 bg-green-500/10 text-green-600 border-green-500/20 shrink-0"
+                        >
+                          <UserCheck className="w-3 h-3 mr-0.5" />
+                          On Platform
+                        </Badge>
+                      )}
+                      {isInCRM(contact) && (
+                        <Badge 
+                          variant="outline" 
+                          className="text-[10px] px-1.5 py-0 shrink-0 capitalize"
+                        >
+                          {contact.relationship_status}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
+                      {(contact.local_organization || contact.global_contact?.organization_name) && (
+                        <span className="flex items-center gap-1 truncate">
+                          <Building2 className="w-3 h-3" />
+                          {contact.local_organization || contact.global_contact?.organization_name}
+                        </span>
+                      )}
+                      {contact.global_contact?.city && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {contact.global_contact.city}
+                        </span>
+                      )}
+                    </div>
+                    {/* Investment Focus Tags */}
+                    {focus.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {focus.slice(0, 3).map((f) => (
+                          <span
+                            key={f}
+                            className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/50 text-accent-foreground"
+                          >
+                            {f}
+                          </span>
+                        ))}
+                        {focus.length > 3 && (
+                          <span className="text-[10px] text-muted-foreground">
+                            +{focus.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {!isInCRM(contact) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddToCRM(contact);
+                      }}
+                    >
+                      Add to CRM
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {sortedContacts.map((contact) => (
-              <div
-                key={contact.id}
-                className="flex flex-col p-4 bg-card border border-border rounded-lg hover:border-primary/50 transition-colors cursor-pointer group"
-                onClick={() => onContactClick(contact)}
-              >
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <p className="font-medium truncate">
-                    {contact.local_name || contact.global_contact?.name}
-                  </p>
-                  <div className="flex flex-col gap-1 shrink-0">
-                    {contact.global_contact?.linked_investor_id && (
-                      <Badge 
-                        variant="secondary" 
-                        className="text-[10px] px-1.5 py-0 bg-green-500/10 text-green-600 border-green-500/20"
-                      >
-                        <UserCheck className="w-3 h-3" />
-                      </Badge>
-                    )}
-                    {isInCRM(contact) && (
-                      <Badge 
-                        variant="outline" 
-                        className="text-[10px] px-1.5 py-0 capitalize"
-                      >
-                        {contact.relationship_status}
-                      </Badge>
-                    )}
+            {sortedContacts.map((contact) => {
+              const focus = getInvestmentFocus(contact);
+              return (
+                <div
+                  key={contact.id}
+                  className="flex flex-col p-4 bg-card border border-border rounded-lg hover:border-primary/50 transition-colors cursor-pointer group"
+                  onClick={() => onContactClick(contact)}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <p className="font-medium truncate">
+                      {contact.local_name || contact.global_contact?.name}
+                    </p>
+                    <div className="flex flex-col gap-1 shrink-0">
+                      {contact.global_contact?.linked_investor_id && (
+                        <Badge 
+                          variant="secondary" 
+                          className="text-[10px] px-1.5 py-0 bg-green-500/10 text-green-600 border-green-500/20"
+                        >
+                          <UserCheck className="w-3 h-3" />
+                        </Badge>
+                      )}
+                      {isInCRM(contact) && (
+                        <Badge 
+                          variant="outline" 
+                          className="text-[10px] px-1.5 py-0 capitalize"
+                        >
+                          {contact.relationship_status}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                </div>
-                
-                {(contact.local_organization || contact.global_contact?.organization_name) && (
-                  <p className="text-sm text-muted-foreground truncate mb-1">
-                    {contact.local_organization || contact.global_contact?.organization_name}
-                  </p>
-                )}
-                
-                {contact.global_contact?.city && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-auto">
-                    <MapPin className="w-3 h-3" />
-                    {contact.global_contact.city}
-                    {contact.global_contact.country && `, ${contact.global_contact.country}`}
-                  </p>
-                )}
+                  
+                  {(contact.local_organization || contact.global_contact?.organization_name) && (
+                    <p className="text-sm text-muted-foreground truncate mb-1">
+                      {contact.local_organization || contact.global_contact?.organization_name}
+                    </p>
+                  )}
+                  
+                  {contact.global_contact?.city && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {contact.global_contact.city}
+                      {contact.global_contact.country && `, ${contact.global_contact.country}`}
+                    </p>
+                  )}
 
-                {!isInCRM(contact) && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddToCRM(contact);
-                    }}
-                  >
-                    Add to CRM
-                  </Button>
-                )}
-              </div>
-            ))}
+                  {/* Investment Focus Tags for Grid View */}
+                  {focus.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {focus.slice(0, 2).map((f) => (
+                        <span
+                          key={f}
+                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/50 text-accent-foreground"
+                        >
+                          {f}
+                        </span>
+                      ))}
+                      {focus.length > 2 && (
+                        <span className="text-[10px] text-muted-foreground">
+                          +{focus.length - 2}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {!isInCRM(contact) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity w-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddToCRM(contact);
+                      }}
+                    >
+                      Add to CRM
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
