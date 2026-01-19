@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ export default function Auth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const hasRedirected = useRef(false);
+  // Removed hasRedirected ref - was causing redirect issues
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -32,10 +32,13 @@ export default function Auth() {
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (session?.user && !hasRedirected.current) {
-          hasRedirected.current = true;
+        if (session?.user) {
           const redirect = searchParams.get('redirect') || '/hub';
-          navigate(redirect, { replace: true });
+          // Use setTimeout to ensure navigation happens after state updates
+          setTimeout(() => {
+            navigate(redirect, { replace: true });
+          }, 0);
+          return; // Don't set isCheckingAuth to false, we're redirecting
         }
       } finally {
         setIsCheckingAuth(false);
@@ -50,9 +53,8 @@ export default function Auth() {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Only redirect on explicit sign-in events, not on initial load
-        if (session?.user && event === 'SIGNED_IN' && !hasRedirected.current) {
-          hasRedirected.current = true;
+        // Redirect on sign-in events
+        if (session?.user && event === 'SIGNED_IN') {
           const redirect = searchParams.get('redirect') || '/hub';
           navigate(redirect, { replace: true });
         }
@@ -60,7 +62,7 @@ export default function Auth() {
     );
 
     return () => subscription.unsubscribe();
-  }, []); // Empty dependency array - only run once on mount
+  }, [navigate, searchParams]); // Include dependencies
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
