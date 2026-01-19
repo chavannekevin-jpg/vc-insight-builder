@@ -395,36 +395,27 @@ export const VCVerdictCard = memo(({
         </div>
       )}
       
-      <div className="relative bg-card/95 backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
-        {/* Investor Match Banner - Good news banner for unpaid users */}
-        {!hasPaid && matchingFunds > 0 && (
-          <div className="px-6 py-4 bg-gradient-to-r from-green-500/10 via-emerald-500/5 to-transparent border-b border-green-500/20">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0 border border-green-500/30">
-                <Building2 className="w-5 h-5 text-green-500" />
-              </div>
-              <p className="text-sm font-semibold text-green-400">
-                Good news: {matchingFunds} investors in our network look for companies like yours
-              </p>
+      {/* Investor Match Banner - Detached from card */}
+      {!hasPaid && matchingFunds > 0 && (
+        <div className="mb-4 px-6 py-4 bg-gradient-to-r from-green-500/10 via-emerald-500/5 to-transparent border border-green-500/20 rounded-2xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0 border border-green-500/30">
+              <Building2 className="w-5 h-5 text-green-500" />
             </div>
+            <p className="text-sm font-semibold text-green-400">
+              Good news: {matchingFunds} investors in our network look for companies like yours
+            </p>
           </div>
-        )}
+        </div>
+      )}
 
+      <div className="relative bg-card/95 backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
         {/* Preview indicator */}
         <div className="px-6 py-3 bg-primary/10 border-b border-primary/20 flex items-center justify-center gap-2">
           <Eye className="w-4 h-4 text-primary" />
           <span className="text-sm text-primary font-semibold">
             Preview of the 9 page VC analysis
           </span>
-        </div>
-
-        {/* What We Analyzed - Company Context */}
-        <div className="px-6 py-3 bg-muted/20 border-b border-border/30">
-          <p className="text-sm text-muted-foreground">
-            Analysis for a <strong className="text-foreground">{companyStage}</strong>
-            {companyCategory && <> <strong className="text-foreground">{companyCategory}</strong></>} company
-            {deckParsed && <span className="text-xs ml-2 text-primary">(+ pitch deck data)</span>}
-          </p>
         </div>
 
         {/* Header */}
