@@ -46,6 +46,10 @@ interface InvestorProfile {
   profile_slug: string | null;
   city: string | null;
   investor_type: string | null;
+  booking_page_theme: "dark" | "light" | null;
+  booking_page_cover_url: string | null;
+  booking_page_headline: string | null;
+  booking_page_bio: string | null;
 }
 
 const INVESTOR_TYPE_LABELS: Record<string, string> = {
@@ -86,14 +90,14 @@ const PublicBookingPage = () => {
       if (isUUID) {
         const { data } = await supabase
           .from("investor_profiles")
-          .select("id, full_name, organization_name, profile_slug, city, investor_type")
+          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_headline, booking_page_bio")
           .eq("id", investorId)
           .single();
         profile = data as InvestorProfile | null;
       } else {
         const { data } = await supabase
           .from("investor_profiles")
-          .select("id, full_name, organization_name, profile_slug, city, investor_type")
+          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_headline, booking_page_bio")
           .eq("profile_slug", investorId)
           .single();
         profile = data as InvestorProfile | null;
@@ -324,14 +328,36 @@ const PublicBookingPage = () => {
     );
   }
 
+  // Determine theme classes
+  const isLightTheme = investorProfile.booking_page_theme === "light";
+  const themeClasses = isLightTheme
+    ? "min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100"
+    : "min-h-screen bg-gradient-to-br from-background via-background to-primary/5";
+  const cardClasses = isLightTheme
+    ? "border-slate-200 bg-white shadow-sm"
+    : "border-primary/10 bg-gradient-to-br from-card to-primary/5";
+  const textMutedClasses = isLightTheme ? "text-slate-500" : "text-muted-foreground";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="max-w-6xl mx-auto p-4 lg:p-8">
+    <div className={themeClasses}>
+      {/* Cover Image */}
+      {investorProfile.booking_page_cover_url && (
+        <div className="w-full h-48 md:h-64 relative overflow-hidden">
+          <img
+            src={investorProfile.booking_page_cover_url}
+            alt="Cover"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80" />
+        </div>
+      )}
+
+      <div className={`max-w-6xl mx-auto p-4 lg:p-8 ${investorProfile.booking_page_cover_url ? "-mt-16 relative z-10" : ""}`}>
         <div className="grid lg:grid-cols-[320px_1fr] gap-8">
           {/* Left Sidebar - Investor Profile & Network CTA */}
           <div className="space-y-6">
             {/* Investor Card */}
-            <Card className="p-6 border-primary/10 bg-gradient-to-br from-card to-primary/5">
+            <Card className={`p-6 ${cardClasses}`}>
               <div className="flex flex-col items-center text-center">
                 <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4 ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
                   <span className="text-2xl font-bold text-primary">
@@ -342,10 +368,17 @@ const PublicBookingPage = () => {
                 <h1 className="text-xl font-bold mb-1">{investorProfile.full_name}</h1>
                 
                 {investorProfile.organization_name && (
-                  <div className="flex items-center gap-1 text-muted-foreground text-sm mb-2">
+                  <div className={`flex items-center gap-1 text-sm mb-2 ${textMutedClasses}`}>
                     <Building2 className="h-3 w-3" />
                     {investorProfile.organization_name}
                   </div>
+                )}
+
+                {/* Custom Bio */}
+                {investorProfile.booking_page_bio && (
+                  <p className={`text-sm mt-2 mb-3 ${textMutedClasses}`}>
+                    {investorProfile.booking_page_bio}
+                  </p>
                 )}
 
                 <div className="flex flex-wrap gap-2 justify-center">
@@ -438,8 +471,10 @@ const PublicBookingPage = () => {
             {step === "select-event" && (
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-2xl font-bold mb-1">Book a Meeting</h2>
-                  <p className="text-muted-foreground">Select a meeting type to get started</p>
+                  <h2 className="text-2xl font-bold mb-1">
+                    {investorProfile.booking_page_headline || "Book a Meeting"}
+                  </h2>
+                  <p className={textMutedClasses}>Select a meeting type to get started</p>
                 </div>
                 
                 {eventTypes.length === 0 ? (

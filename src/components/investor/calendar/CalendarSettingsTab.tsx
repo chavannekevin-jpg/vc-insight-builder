@@ -12,6 +12,7 @@ import {
 import { Loader2, Calendar, CheckCircle2, ExternalLink, Trash2, Copy, Check, Link2, Edit2, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import BookingPageCustomization from "./BookingPageCustomization";
 
 interface LinkedCalendar {
   id: string;
@@ -327,6 +328,9 @@ const CalendarSettingsTab = ({ userId }: CalendarSettingsTabProps) => {
         )}
       </Card>
 
+      {/* Booking Page Customization */}
+      <BookingPageCustomization userId={userId} />
+
       {/* Tips */}
       <Card className="p-6 bg-muted/50">
         <h3 className="font-medium mb-3">💡 Tips for Better Booking Experience</h3>
@@ -335,6 +339,7 @@ const CalendarSettingsTab = ({ userId }: CalendarSettingsTabProps) => {
           <li>• Toggle "Block availability" to include/exclude calendars from booking slots</li>
           <li>• Create specific event types for different meeting purposes</li>
           <li>• Set buffer times between meetings to avoid back-to-back scheduling</li>
+          <li>• Customize your booking page with a cover image and bio to make it more personal</li>
         </ul>
       </Card>
     </div>
