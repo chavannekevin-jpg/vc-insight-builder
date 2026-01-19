@@ -63,6 +63,9 @@ export type Database = {
           id: string
           memo_content_generated: boolean | null
           name: string
+          referral_code: string | null
+          referral_discount_applied: boolean | null
+          referred_by_investor: string | null
           stage: string
           updated_at: string
           vc_verdict_json: Json | null
@@ -83,6 +86,9 @@ export type Database = {
           id?: string
           memo_content_generated?: boolean | null
           name: string
+          referral_code?: string | null
+          referral_discount_applied?: boolean | null
+          referred_by_investor?: string | null
           stage: string
           updated_at?: string
           vc_verdict_json?: Json | null
@@ -103,6 +109,9 @@ export type Database = {
           id?: string
           memo_content_generated?: boolean | null
           name?: string
+          referral_code?: string | null
+          referral_discount_applied?: boolean | null
+          referred_by_investor?: string | null
           stage?: string
           updated_at?: string
           vc_verdict_json?: Json | null
@@ -114,6 +123,13 @@ export type Database = {
             columns: ["founder_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "companies_referred_by_investor_fkey"
+            columns: ["referred_by_investor"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -421,6 +437,57 @@ export type Database = {
           },
           {
             foreignKeyName: "investor_contacts_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_dealflow: {
+        Row: {
+          added_at: string | null
+          company_id: string
+          id: string
+          investor_id: string
+          invited_via_code: string | null
+          notes: string | null
+          source: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          added_at?: string | null
+          company_id: string
+          id?: string
+          investor_id: string
+          invited_via_code?: string | null
+          notes?: string | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          added_at?: string | null
+          company_id?: string
+          id?: string
+          investor_id?: string
+          invited_via_code?: string | null
+          notes?: string | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_dealflow_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_dealflow_investor_id_fkey"
             columns: ["investor_id"]
             isOneToOne: false
             referencedRelation: "investor_profiles"
@@ -1021,6 +1088,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      startup_invites: {
+        Row: {
+          code: string
+          created_at: string | null
+          discount_percent: number | null
+          expires_at: string | null
+          id: string
+          investor_id: string
+          is_active: boolean | null
+          max_uses: number | null
+          uses: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+          investor_id: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          uses?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+          investor_id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          uses?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_invites_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

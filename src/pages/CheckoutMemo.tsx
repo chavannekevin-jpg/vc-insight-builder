@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ModernCard } from "@/components/ModernCard";
 import { Badge } from "@/components/ui/badge";
-import { Check, CreditCard, Tag, Sparkles, ArrowLeft } from "lucide-react";
+import { Check, CreditCard, Tag, Sparkles, ArrowLeft, Gift } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
 import { isValidCompanyId } from "@/lib/companyIdUtils";
@@ -24,6 +24,13 @@ export default function CheckoutMemo() {
   const [validatingCode, setValidatingCode] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
   
+  // Referral discount state
+  const [referralDiscount, setReferralDiscount] = useState<{ 
+    percent: number; 
+    investorName: string | null;
+    code: string;
+  } | null>(null);
+  
   const { data: pricingSettings, isLoading: pricingLoading } = usePricingSettings();
   
   const basePrice = pricingSettings?.memo_pricing.base_price ?? 59.99;
@@ -39,10 +46,32 @@ export default function CheckoutMemo() {
 
   useEffect(() => {
     if (pricingSettings && finalPrice === null) {
-      const price = earlyAccessEnabled ? basePrice * (1 - earlyAccessDiscount / 100) : basePrice;
-      setFinalPrice(price);
+      recalculatePrice();
     }
-  }, [pricingSettings, finalPrice, basePrice, earlyAccessDiscount, earlyAccessEnabled]);
+  }, [pricingSettings, finalPrice, referralDiscount]);
+
+  const recalculatePrice = () => {
+    if (!pricingSettings) return;
+    
+    let price = basePrice;
+    
+    // Apply early access discount
+    if (earlyAccessEnabled) {
+      price = price * (1 - earlyAccessDiscount / 100);
+    }
+    
+    // Apply referral discount
+    if (referralDiscount) {
+      price = price * (1 - referralDiscount.percent / 100);
+    }
+    
+    // Apply coupon discount
+    if (appliedDiscount) {
+      price = price * (1 - appliedDiscount.discount_percent / 100);
+    }
+    
+    setFinalPrice(Math.max(0, price));
+  };
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -85,10 +114,10 @@ export default function CheckoutMemo() {
       }
     }
 
-    // Verify user owns this company AND check premium status
+    // Verify user owns this company AND check premium status + referral info
     const { data: company } = await supabase
       .from("companies")
-      .select("founder_id, has_premium")
+      .select("founder_id, has_premium, referral_code, referred_by_investor")
       .eq("id", validCompanyId)
       .maybeSingle();
 
@@ -110,6 +139,31 @@ export default function CheckoutMemo() {
       });
       navigate(`/analysis?companyId=${validCompanyId}&view=full`, { replace: true });
       return;
+    }
+    
+    // Check for referral discount
+    if (company.referral_code && company.referred_by_investor) {
+      const { data: invite } = await supabase
+        .from("startup_invites")
+        .select("discount_percent, investor_id")
+        .eq("code", company.referral_code)
+        .eq("is_active", true)
+        .single();
+        
+      if (invite) {
+        // Get investor name
+        const { data: investor } = await supabase
+          .from("investor_profiles")
+          .select("full_name, organization_name")
+          .eq("id", invite.investor_id)
+          .single();
+          
+        setReferralDiscount({
+          percent: invite.discount_percent,
+          investorName: investor?.full_name || investor?.organization_name || null,
+          code: company.referral_code,
+        });
+      }
     }
     
     setCompanyId(validCompanyId);
@@ -366,6 +420,16 @@ export default function CheckoutMemo() {
               <div className="flex items-center justify-between text-success">
                 <span>Early Access Discount ({earlyAccessDiscount}%)</span>
                 <span>-€{(basePrice * earlyAccessDiscount / 100).toFixed(2)}</span>
+              </div>
+            )}
+            
+            {referralDiscount && (
+              <div className="flex items-center justify-between text-green-500">
+                <span className="flex items-center gap-1">
+                  <Gift className="w-4 h-4" />
+                  Referral Discount ({referralDiscount.percent}%)
+                </span>
+                <span>-€{(discountedPrice * referralDiscount.percent / 100).toFixed(2)}</span>
               </div>
             )}
             
