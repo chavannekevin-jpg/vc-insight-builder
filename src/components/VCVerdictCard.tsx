@@ -2,7 +2,7 @@ import { memo, useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import {
   Select,
   SelectContent,
@@ -519,6 +519,7 @@ export const VCVerdictCard = memo(({
         <div className="p-6 border-b border-border/50">
           <h4 className="text-sm font-semibold mb-4">What's Included</h4>
           
+          <TooltipProvider delayDuration={100}>
           <div className="space-y-4">
             {/* The Core Analysis */}
             <div>
@@ -642,6 +643,7 @@ export const VCVerdictCard = memo(({
               </div>
             </div>
           </div>
+          </TooltipProvider>
         </div>
 
         {/* Don't Burn Bridges CTA - Only for unpaid users with matches */}
