@@ -1,6 +1,8 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Eye, TrendingUp, Users, Target, Briefcase, DollarSign, BarChart3, Lightbulb } from "lucide-react";
+import { Eye, TrendingUp, Users, Target, Briefcase, DollarSign, BarChart3, Lightbulb, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const lockedSections = [
   { icon: Target, label: "Solution" },
@@ -16,9 +18,36 @@ export function UnlockMemoCTA() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const companyId = searchParams.get("companyId");
+  const [isChecking, setIsChecking] = useState(false);
+  const [hasPremium, setHasPremium] = useState<boolean | null>(null);
+
+  // Check if company already has premium access (granted by admin)
+  useEffect(() => {
+    const checkPremiumStatus = async () => {
+      if (!companyId) return;
+      
+      const { data } = await supabase
+        .from('companies')
+        .select('has_premium')
+        .eq('id', companyId)
+        .single();
+      
+      setHasPremium(data?.has_premium ?? false);
+    };
+    
+    checkPremiumStatus();
+  }, [companyId]);
 
   const handleUnlock = () => {
-    if (companyId) {
+    if (!companyId) return;
+    
+    setIsChecking(true);
+    
+    // If already has premium (admin granted), go directly to full analysis
+    if (hasPremium) {
+      navigate(`/analysis?companyId=${companyId}&view=full`);
+    } else {
+      // Otherwise, go to checkout
       navigate(`/checkout-analysis?companyId=${companyId}`);
     }
   };
@@ -56,10 +85,15 @@ export function UnlockMemoCTA() {
         <Button 
           size="lg" 
           onClick={handleUnlock}
+          disabled={isChecking}
           className="gap-2 text-base px-8"
         >
-          <Eye className="w-5 h-5" />
-          See What VCs See →
+          {isChecking ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <Eye className="w-5 h-5" />
+          )}
+          {hasPremium ? "View Full Analysis →" : "See What VCs See →"}
         </Button>
       </div>
     </div>
