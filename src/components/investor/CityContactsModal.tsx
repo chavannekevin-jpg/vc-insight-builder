@@ -1,6 +1,9 @@
-import { X, MapPin, Building2, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { MapPin, Building2, ExternalLink, Share2, Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 import type { InvestorContact } from "@/pages/investor/InvestorDashboard";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -16,6 +19,7 @@ interface CityContactsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onContactClick: (contact: InvestorContact) => void;
+  investorSlug?: string | null;
 }
 
 const CityContactsModal = ({
@@ -24,7 +28,78 @@ const CityContactsModal = ({
   isOpen,
   onClose,
   onContactClick,
+  investorSlug,
 }: CityContactsModalProps) => {
+  const [isShareMode, setIsShareMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [copied, setCopied] = useState(false);
+
+  const toggleContact = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedIds(next);
+  };
+
+  const selectAll = () => {
+    const allIds = contacts
+      .filter((c) => c.global_contact_id)
+      .map((c) => c.global_contact_id as string);
+    setSelectedIds(new Set(allIds));
+  };
+
+  const deselectAll = () => {
+    setSelectedIds(new Set());
+  };
+
+  const generateShareLink = () => {
+    if (!investorSlug) {
+      toast({
+        title: "Cannot share",
+        description: "Set up your profile URL in Calendar Settings first.",
+        variant: "destructive",
+      });
+      return null;
+    }
+    
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) {
+      toast({
+        title: "Select contacts",
+        description: "Please select at least one contact to share.",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    const encodedCity = encodeURIComponent(city);
+    const encodedIds = ids.join(",");
+    return `${window.location.origin}/n/${investorSlug}/city/${encodedCity}?contacts=${encodedIds}`;
+  };
+
+  const handleCopyLink = async () => {
+    const link = generateShareLink();
+    if (!link) return;
+    
+    await navigator.clipboard.writeText(link);
+    setCopied(true);
+    toast({ title: "Share link copied!" });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleEnterShareMode = () => {
+    setIsShareMode(true);
+    selectAll(); // Pre-select all by default
+  };
+
+  const handleExitShareMode = () => {
+    setIsShareMode(false);
+    setSelectedIds(new Set());
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md max-h-[80vh] overflow-hidden flex flex-col">
@@ -35,9 +110,32 @@ const CityContactsModal = ({
           </DialogTitle>
         </DialogHeader>
 
-        <p className="text-sm text-muted-foreground -mt-2">
-          {contacts.length} contact{contacts.length !== 1 ? "s" : ""} in this city
-        </p>
+        <div className="flex items-center justify-between -mt-2">
+          <p className="text-sm text-muted-foreground">
+            {contacts.length} contact{contacts.length !== 1 ? "s" : ""} in this city
+          </p>
+          
+          {!isShareMode ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-muted-foreground hover:text-primary"
+              onClick={handleEnterShareMode}
+            >
+              <Share2 className="w-4 h-4" />
+              Share
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={selectAll}>
+                All
+              </Button>
+              <Button variant="ghost" size="sm" onClick={deselectAll}>
+                None
+              </Button>
+            </div>
+          )}
+        </div>
 
         <div className="flex-1 overflow-y-auto space-y-2 mt-4">
           {contacts.map((contact) => {
@@ -45,17 +143,36 @@ const CityContactsModal = ({
             const org = contact.local_organization || contact.global_contact?.organization_name;
             const status = contact.relationship_status || "prospect";
             const linkedinUrl = contact.global_contact?.linkedin_url;
+            const globalId = contact.global_contact_id;
+            const isSelected = globalId ? selectedIds.has(globalId) : false;
 
             return (
               <div
                 key={contact.id}
                 onClick={() => {
-                  onContactClick(contact);
-                  onClose();
+                  if (isShareMode && globalId) {
+                    toggleContact(globalId);
+                  } else {
+                    onContactClick(contact);
+                    onClose();
+                  }
                 }}
-                className="p-3 border border-border rounded-lg hover:border-primary/50 cursor-pointer transition-colors group"
+                className={`p-3 border rounded-lg cursor-pointer transition-colors group ${
+                  isShareMode && isSelected
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50"
+                }`}
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  {isShareMode && (
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => globalId && toggleContact(globalId)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-1"
+                    />
+                  )}
+                  
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <p className="font-medium truncate">{name}</p>
@@ -85,7 +202,7 @@ const CityContactsModal = ({
                     )}
                   </div>
 
-                  {linkedinUrl && (
+                  {!isShareMode && linkedinUrl && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -104,10 +221,22 @@ const CityContactsModal = ({
           })}
         </div>
 
-        <div className="pt-4 border-t border-border mt-auto">
-          <Button variant="outline" onClick={onClose} className="w-full">
-            Close
-          </Button>
+        <div className="pt-4 border-t border-border mt-auto space-y-2">
+          {isShareMode ? (
+            <>
+              <Button onClick={handleCopyLink} className="w-full gap-2">
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? "Copied!" : `Copy link (${selectedIds.size} selected)`}
+              </Button>
+              <Button variant="outline" onClick={handleExitShareMode} className="w-full">
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Button variant="outline" onClick={onClose} className="w-full">
+              Close
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
