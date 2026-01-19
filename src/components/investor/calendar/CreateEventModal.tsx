@@ -72,6 +72,35 @@ const CreateEventModal = ({
   const [attendees, setAttendees] = useState<string[]>([]);
   const [reminder, setReminder] = useState(15);
   const [isCreating, setIsCreating] = useState(false);
+  const [organizerInfo, setOrganizerInfo] = useState<{ name: string; email: string } | null>(null);
+
+  // Fetch investor profile for organizer info
+  useEffect(() => {
+    const fetchOrganizerInfo = async () => {
+      try {
+        // Get investor profile
+        const { data: profile } = await supabase
+          .from("investor_profiles")
+          .select("full_name")
+          .eq("id", userId)
+          .single();
+
+        // Get user email
+        const { data: { user } } = await supabase.auth.getUser();
+
+        setOrganizerInfo({
+          name: profile?.full_name || "Calendar User",
+          email: user?.email || "noreply@lovable.app",
+        });
+      } catch (err) {
+        console.error("Error fetching organizer info:", err);
+      }
+    };
+
+    if (userId) {
+      fetchOrganizerInfo();
+    }
+  }, [userId]);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -146,6 +175,8 @@ const CreateEventModal = ({
           endDateTime: end.toISOString(),
           attendees: attendees.length > 0 ? attendees : undefined,
           reminders: [{ method: "popup", minutes: reminder }],
+          organizerName: organizerInfo?.name || "Calendar User",
+          organizerEmail: organizerInfo?.email || "noreply@lovable.app",
         },
       });
 
