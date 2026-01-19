@@ -294,9 +294,9 @@ function parseCSVToText(base64Data: string): string {
   }
 }
 
-// Max characters to send to AI (roughly 100KB of text - safe limit for API)
-const MAX_CONTENT_LENGTH = 100000;
-const MAX_BASE64_SIZE = 10 * 1024 * 1024; // 10MB max file size
+// Max characters to send to AI (200KB of text - supports up to ~800 rows)
+const MAX_CONTENT_LENGTH = 200000;
+const MAX_BASE64_SIZE = 15 * 1024 * 1024; // 15MB max file size
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -320,7 +320,7 @@ serve(async (req) => {
       console.error(`File too large: ${fileSizeMB}MB`);
       return new Response(
         JSON.stringify({ 
-          error: `File is too large (${fileSizeMB}MB). Please split your contacts into smaller files (max ~500 contacts per file).` 
+          error: `File is too large (${fileSizeMB}MB). Please split your contacts into smaller files (max ~800 contacts per file).` 
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -440,13 +440,13 @@ Important rules:
           'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: 'google/gemini-2.5-pro',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
           ],
           temperature: 0.1,
-          max_tokens: 32000,
+          max_tokens: 65000,
           response_format: { type: 'json_object' }
         }),
         signal: controller.signal,
@@ -467,7 +467,7 @@ Important rules:
         
         if (aiResponse.status === 413) {
           return new Response(
-            JSON.stringify({ error: 'File content too large. Please split your contacts into smaller files (max ~300 contacts per file).' }),
+            JSON.stringify({ error: 'File content too large. Please split your contacts into smaller files (max ~800 contacts per file).' }),
             { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
@@ -626,7 +626,7 @@ Important rules:
       if (fetchError.name === 'AbortError') {
         console.error('AI request timed out');
         return new Response(
-          JSON.stringify({ error: 'Processing timed out. Please split your contacts into smaller files (max ~300 contacts per file).' }),
+          JSON.stringify({ error: 'Processing timed out. Please split your contacts into smaller files (max ~800 contacts per file).' }),
           { status: 504, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
