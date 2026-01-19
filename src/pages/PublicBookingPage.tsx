@@ -240,7 +240,7 @@ const PublicBookingPage = () => {
             </p>
           </Card>
 
-          {/* Network CTA Card */}
+          {/* UglyBaby Intro Card */}
           <Card className="p-8 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent/10 rounded-full blur-2xl" />
@@ -248,40 +248,40 @@ const PublicBookingPage = () => {
             <div className="relative z-10">
               <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
                 <Sparkles className="h-3 w-3 mr-1" />
-                Exclusive Network
+                What is UglyBaby?
               </Badge>
               
               <h3 className="text-2xl font-bold mb-3">
-                Want to connect with more VCs?
+                Get your startup VC-ready
               </h3>
               
               <p className="text-muted-foreground mb-6">
-                Join the invite-only VC network and access thousands of investor contacts, share deals, and grow your network.
+                UglyBaby helps founders understand how VCs actually think. Get a full analysis of your startup, identify blind spots, and build a pitch that resonates with investors.
               </p>
 
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-3 text-sm">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Zap className="h-4 w-4 text-primary" />
+                  </div>
+                  <span>Full VC-style investment memo analysis</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <Network className="h-4 w-4 text-primary" />
                   </div>
-                  <span>Access 1000+ verified investor contacts</span>
+                  <span>Spot weaknesses before VCs do</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <Globe className="h-4 w-4 text-primary" />
                   </div>
-                  <span>Connect with VCs across Europe</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Zap className="h-4 w-4 text-primary" />
-                  </div>
-                  <span>Get your own booking page like this</span>
+                  <span>Built by someone who's seen 1000+ pitches</span>
                 </div>
               </div>
 
-              <Button onClick={handleJoinNetwork} size="lg" className="w-full gap-2">
-                Join the Network
+              <Button onClick={() => navigate("/")} size="lg" className="w-full gap-2">
+                Explore UglyBaby
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
@@ -330,50 +330,38 @@ const PublicBookingPage = () => {
               </div>
             </Card>
 
-            {/* Network CTA */}
+            {/* UglyBaby Intro */}
             <Card className="p-5 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 relative overflow-hidden">
               <div className="absolute -top-10 -right-10 w-24 h-24 bg-primary/10 rounded-full blur-2xl" />
               
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Users className="h-4 w-4 text-primary" />
+                    <Sparkles className="h-4 w-4 text-primary" />
                   </div>
                   <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                    VC Network
+                    UglyBaby
                   </span>
                 </div>
                 
                 <h3 className="font-semibold mb-2">
-                  Not part of the network yet?
+                  Don't have an account yet?
                 </h3>
                 
                 <p className="text-sm text-muted-foreground mb-4">
-                  Join the invite-only community of VCs, angels, and LPs building the European startup ecosystem.
+                  UglyBaby helps startups get VC-ready with honest analysis and investment memos that actually help you raise.
                 </p>
 
                 <Button 
-                  onClick={handleJoinNetwork} 
+                  onClick={() => navigate("/")} 
                   variant="outline"
                   className="w-full gap-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50"
                 >
-                  Join the Network
+                  Learn More
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
             </Card>
-
-            {/* Stats teaser */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-4 rounded-lg bg-muted/50 text-center">
-                <p className="text-2xl font-bold text-primary">1000+</p>
-                <p className="text-xs text-muted-foreground">VCs on Platform</p>
-              </div>
-              <div className="p-4 rounded-lg bg-muted/50 text-center">
-                <p className="text-2xl font-bold text-primary">50+</p>
-                <p className="text-xs text-muted-foreground">Cities Covered</p>
-              </div>
-            </div>
           </div>
 
           {/* Right Side - Booking Flow */}
