@@ -17,10 +17,11 @@ import {
   Rocket,
   RefreshCw, Briefcase, Code, GraduationCap, Building,
   ChevronRight, Pencil, Lightbulb, FileSearch,
-  BookOpen, BarChart3, MessageSquare, Calendar, Wrench
+  BookOpen, BarChart3, MessageSquare, Calendar, Wrench, Building2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useMatchingFundsCount } from "@/hooks/useMatchingFundsCount";
 
 interface Concern {
   text: string;
@@ -142,6 +143,12 @@ export const VCVerdictCard = memo(({
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<string>(cachedVerdict?.founderProfile || 'first_time_founder');
   const [isRegenerating, setIsRegenerating] = useState(false);
+
+  // Get matching funds count for the preview
+  const { matchingFunds, strongMatches, isLoading: matchingLoading } = useMatchingFundsCount(
+    companyId,
+    { stage: companyStage, category: companyCategory || undefined }
+  );
 
   const generateVerdict = useCallback(async (forceProfile?: string) => {
     if (memoGenerated && !forceProfile) {
@@ -555,6 +562,29 @@ export const VCVerdictCard = memo(({
             </div>
           </div>
         </div>
+
+        {/* Investor Match Preview - Only for unpaid users */}
+        {!hasPaid && matchingFunds > 0 && (
+          <div className="px-6 py-4 border-b border-border/50 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <Building2 className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  {matchingFunds}+ investors match your profile
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {strongMatches > 0 ? `Including ${strongMatches} strong matches for ${companyStage}` : `Filtered for ${companyStage} stage startups`}
+                  {companyCategory ? ` in ${companyCategory}` : ''}
+                </p>
+              </div>
+              <Badge className="bg-primary/20 text-primary border-0 text-xs">
+                Premium
+              </Badge>
+            </div>
+          </div>
+        )}
 
         {/* The Key Question */}
         <div className="px-6 py-4 border-b border-border/50">
