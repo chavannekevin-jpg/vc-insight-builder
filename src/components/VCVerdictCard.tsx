@@ -403,14 +403,9 @@ export const VCVerdictCard = memo(({
               <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0 border border-green-500/30">
                 <Building2 className="w-5 h-5 text-green-500" />
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-green-400">
-                  Good news: {matchingFunds} investors in our network look for companies like yours
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {companyStage} stage{companyCategory ? ` • ${companyCategory}` : ''} • Europe
-                </p>
-              </div>
+              <p className="text-sm font-semibold text-green-400">
+                Good news: {matchingFunds} investors in our network look for companies like yours
+              </p>
             </div>
           </div>
         )}
@@ -564,19 +559,25 @@ export const VCVerdictCard = memo(({
             <div className="flex items-start gap-2 text-sm">
               <span className="text-primary font-bold">1.</span>
               <p className="text-muted-foreground">
-                <strong className="text-foreground">Before investor meetings</strong> — Know the questions coming and prepare answers
+                <strong className="text-foreground">See your company through VC eyes</strong> — Understand exactly how investors evaluate your case
               </p>
             </div>
             <div className="flex items-start gap-2 text-sm">
               <span className="text-primary font-bold">2.</span>
               <p className="text-muted-foreground">
-                <strong className="text-foreground">Refining your pitch deck</strong> — Section-by-section gaps to address
+                <strong className="text-foreground">Build a VC-grade economic model</strong> — Transform your story into the math investors need to see
               </p>
             </div>
             <div className="flex items-start gap-2 text-sm">
               <span className="text-primary font-bold">3.</span>
               <p className="text-muted-foreground">
-                <strong className="text-foreground">Prioritizing your roadmap</strong> — 90-day plan based on VC priorities
+                <strong className="text-foreground">Know every question before it's asked</strong> — Walk into meetings with answers already prepared
+              </p>
+            </div>
+            <div className="flex items-start gap-2 text-sm">
+              <span className="text-primary font-bold">4.</span>
+              <p className="text-muted-foreground">
+                <strong className="text-foreground">Prioritize what actually matters</strong> — 90-day roadmap based on what VCs care about
               </p>
             </div>
           </div>
