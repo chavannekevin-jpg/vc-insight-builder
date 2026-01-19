@@ -181,6 +181,8 @@ export const MemoJourneyCard = memo(({
         );
 
       case "preview":
+        // Note: This case shouldn't appear for premium users since status will be "complete"
+        // But adding safety check anyway
         return (
           <>
             <div className="flex items-start justify-between mb-6">
@@ -206,10 +208,17 @@ export const MemoJourneyCard = memo(({
               </Button>
               <Button 
                 className="h-auto py-4 flex-col gap-2 bg-primary hover:bg-primary/90"
-                onClick={navigateToCheckout}
+                onClick={() => {
+                  // Safety check: if somehow hasPaid is true, go to full memo
+                  if (hasPaid) {
+                    navigate(`/analysis?companyId=${companyId}&view=full`);
+                  } else {
+                    navigateToCheckout();
+                  }
+                }}
               >
                 <Sparkles className="w-5 h-5" />
-                <span>Unlock Full Memo</span>
+                <span>{hasPaid ? "View Full Memo" : "Unlock Full Memo"}</span>
               </Button>
             </div>
 

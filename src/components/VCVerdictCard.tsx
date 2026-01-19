@@ -263,9 +263,16 @@ export const VCVerdictCard = memo(({
                 <Lock className="w-4 h-4 mr-2" />
                 Preview
               </Button>
-              <Button onClick={navigateToCheckout} className="shadow-glow">
+              <Button onClick={() => {
+                // hasPaid should already be true if premium, but check just in case
+                if (hasPaid) {
+                  navigateToMemo();
+                } else {
+                  navigateToCheckout();
+                }
+              }} className="shadow-glow">
                 <Sparkles className="w-4 h-4 mr-2" />
-                Unlock Full
+                {hasPaid ? "View Full" : "Unlock Full"}
               </Button>
             </div>
           )}
