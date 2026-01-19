@@ -428,9 +428,9 @@ Important rules:
 
     console.log('Calling AI API with text content...');
 
-    // Create an AbortController for timeout
+    // Create an AbortController for timeout - use 180 seconds for large files (Gemini Pro can take longer)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 55000); // 55 second timeout (edge function limit is 60s)
+    const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minute timeout for large files
 
     try {
       const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -475,7 +475,22 @@ Important rules:
         throw new Error(`AI API error: ${aiResponse.status}`);
       }
 
-      const aiData = await aiResponse.json();
+      // Read the response as text first to handle potential issues
+      const responseText = await aiResponse.text();
+      
+      if (!responseText || responseText.trim() === '') {
+        console.error('Empty response from AI API');
+        throw new Error('Empty response from AI - please try again or use a smaller file');
+      }
+      
+      let aiData;
+      try {
+        aiData = JSON.parse(responseText);
+      } catch (jsonError) {
+        console.error('Failed to parse AI response as JSON, response length:', responseText.length);
+        console.error('First 500 chars:', responseText.substring(0, 500));
+        throw new Error('AI response was incomplete or malformed. Please try again.');
+      }
     const content = aiData.choices?.[0]?.message?.content;
 
     if (!content) {
