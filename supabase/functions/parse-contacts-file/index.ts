@@ -294,6 +294,10 @@ function parseCSVToText(base64Data: string): string {
   }
 }
 
+// Max characters to send to AI (roughly 100KB of text - safe limit for API)
+const MAX_CONTENT_LENGTH = 100000;
+const MAX_BASE64_SIZE = 10 * 1024 * 1024; // 10MB max file size
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -306,6 +310,18 @@ serve(async (req) => {
     if (!fileBase64 || !fileName) {
       return new Response(
         JSON.stringify({ error: 'No file data provided' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check file size before processing
+    if (fileBase64.length > MAX_BASE64_SIZE) {
+      const fileSizeMB = (fileBase64.length / (1024 * 1024)).toFixed(1);
+      console.error(`File too large: ${fileSizeMB}MB`);
+      return new Response(
+        JSON.stringify({ 
+          error: `File is too large (${fileSizeMB}MB). Please split your contacts into smaller files (max ~500 contacts per file).` 
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -330,6 +346,23 @@ serve(async (req) => {
     }
 
     console.log(`Parsed text content length: ${textContent.length}`);
+    
+    // Truncate content if too large for AI processing
+    let wasTruncated = false;
+    if (textContent.length > MAX_CONTENT_LENGTH) {
+      console.log(`Content too large (${textContent.length} chars), truncating to ${MAX_CONTENT_LENGTH}`);
+      
+      // Try to truncate at a row boundary to keep data clean
+      const truncatePoint = textContent.lastIndexOf('\nRow ', MAX_CONTENT_LENGTH);
+      if (truncatePoint > MAX_CONTENT_LENGTH * 0.5) {
+        textContent = textContent.substring(0, truncatePoint);
+      } else {
+        textContent = textContent.substring(0, MAX_CONTENT_LENGTH);
+      }
+      wasTruncated = true;
+      console.log(`Truncated content to ${textContent.length} chars`);
+    }
+    
     console.log(`First 500 chars: ${textContent.substring(0, 500)}`);
 
     // Build the AI prompt
@@ -395,39 +428,54 @@ Important rules:
 
     console.log('Calling AI API with text content...');
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.1,
-        max_tokens: 32000, // Increased for larger files
-        response_format: { type: 'json_object' }
-      }),
-    });
+    // Create an AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 55000); // 55 second timeout (edge function limit is 60s)
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('AI API error:', errorText);
-      
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+    try {
+      const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.1,
+          max_tokens: 32000,
+          response_format: { type: 'json_object' }
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!aiResponse.ok) {
+        const errorText = await aiResponse.text();
+        console.error('AI API error:', errorText);
+        
+        if (aiResponse.status === 429) {
+          return new Response(
+            JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.' }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        if (aiResponse.status === 413) {
+          return new Response(
+            JSON.stringify({ error: 'File content too large. Please split your contacts into smaller files (max ~300 contacts per file).' }),
+            { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        throw new Error(`AI API error: ${aiResponse.status}`);
       }
-      
-      throw new Error(`AI API error: ${aiResponse.status}`);
-    }
 
-    const aiData = await aiResponse.json();
+      const aiData = await aiResponse.json();
     const content = aiData.choices?.[0]?.message?.content;
 
     if (!content) {
@@ -568,9 +616,22 @@ Important rules:
     console.log(`Extracted ${parsed.contacts?.length || 0} contacts`);
 
     return new Response(
-      JSON.stringify(parsed),
+      JSON.stringify({ ...parsed, wasTruncated }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId);
+      
+      if (fetchError.name === 'AbortError') {
+        console.error('AI request timed out');
+        return new Response(
+          JSON.stringify({ error: 'Processing timed out. Please split your contacts into smaller files (max ~300 contacts per file).' }),
+          { status: 504, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw fetchError;
+    }
 
   } catch (error: any) {
     console.error('Error processing file:', error);
