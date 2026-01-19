@@ -224,10 +224,10 @@ const PublicBookingPage = () => {
     input: "bg-white border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-amber-400 focus:ring-amber-400/20",
     button: "bg-stone-900 hover:bg-stone-800 text-white",
     buttonOutline: "border-stone-200 bg-white hover:bg-stone-50 text-stone-700 hover:border-amber-300 hover:text-amber-700",
-    calendarDay: "hover:bg-amber-50 text-stone-700",
-    calendarDaySelected: "bg-stone-900 text-white hover:bg-stone-800",
-    calendarDayToday: "ring-2 ring-amber-400/50 ring-offset-1 ring-offset-white",
-    slotButton: "border-stone-200 bg-white text-stone-700 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-800",
+    calendarDay: "hover:bg-stone-100 text-stone-700",
+    calendarDaySelected: "bg-stone-900 text-white hover:bg-stone-800 shadow-[0_0_10px_rgba(0,0,0,0.15)]",
+    calendarDayToday: "ring-2 ring-stone-300 ring-offset-1 ring-offset-white",
+    slotButton: "border-stone-200 bg-white text-stone-700 hover:bg-stone-900 hover:border-stone-900 hover:text-white hover:shadow-[0_0_10px_rgba(0,0,0,0.15)]",
     eventCard: "bg-white border-stone-200/80 hover:border-stone-300",
   };
 
@@ -248,9 +248,9 @@ const PublicBookingPage = () => {
     button: "bg-primary hover:bg-primary/90 text-primary-foreground",
     buttonOutline: "border-zinc-700 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 hover:border-primary/50 hover:text-primary",
     calendarDay: "hover:bg-zinc-800/80 text-zinc-300",
-    calendarDaySelected: "bg-primary text-primary-foreground hover:bg-primary/90",
-    calendarDayToday: "ring-2 ring-primary/50 ring-offset-1 ring-offset-zinc-900",
-    slotButton: "border-zinc-700 bg-zinc-900/50 text-zinc-300 hover:border-primary/50 hover:bg-primary/10 hover:text-primary",
+    calendarDaySelected: "bg-white text-zinc-900 hover:bg-zinc-100 shadow-[0_0_12px_rgba(255,255,255,0.3)]",
+    calendarDayToday: "ring-2 ring-zinc-500 ring-offset-1 ring-offset-zinc-900",
+    slotButton: "border-zinc-700 bg-zinc-900/50 text-zinc-300 hover:border-white hover:bg-white hover:text-zinc-900 hover:shadow-[0_0_12px_rgba(255,255,255,0.3)]",
     eventCard: "bg-zinc-900/40 border-zinc-800/60 hover:border-zinc-700",
   };
 
