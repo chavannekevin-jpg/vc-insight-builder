@@ -1,4 +1,4 @@
-import { useState, memo } from "react";
+import { useState, memo, useRef } from "react";
 import {
   ComposableMap,
   Geographies,
@@ -7,6 +7,7 @@ import {
   ZoomableGroup,
 } from "react-simple-maps";
 import type { NetworkMarker } from "@/hooks/useGlobalNetwork";
+import { MapPin, Building2, Users } from "lucide-react";
 
 // Europe-focused map from Natural Earth via unpkg - reliable CDN
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json";
@@ -26,6 +27,11 @@ interface GlobalNetworkMapProps {
   onCityClick?: (city: string, markers: NetworkMarker[]) => void;
 }
 
+interface TooltipPosition {
+  x: number;
+  y: number;
+}
+
 const TYPE_COLORS = {
   active_user: "hsl(142, 76%, 45%)", // Green - active investors
   global_contact: "hsl(217, 91%, 60%)", // Blue - contacts added by others
@@ -38,7 +44,9 @@ const GlobalNetworkMap = memo(({
   onCityClick,
 }: GlobalNetworkMapProps) => {
   const [hoveredCity, setHoveredCity] = useState<string | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition | null>(null);
   const [position, setPosition] = useState({ coordinates: [15, 54] as [number, number], zoom: 1 });
+  const mapContainerRef = useRef<HTMLDivElement>(null);
 
   const handleMoveEnd = (position: { coordinates: [number, number]; zoom: number }) => {
     setPosition(position);
@@ -72,8 +80,24 @@ const GlobalNetworkMap = memo(({
     return city.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
+  const handleMarkerHover = (city: string, event: React.MouseEvent) => {
+    setHoveredCity(city);
+    if (mapContainerRef.current) {
+      const rect = mapContainerRef.current.getBoundingClientRect();
+      setTooltipPosition({
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      });
+    }
+  };
+
+  const handleMarkerLeave = () => {
+    setHoveredCity(null);
+    setTooltipPosition(null);
+  };
+
   return (
-    <div className="w-full h-full min-h-[500px] bg-background relative">
+    <div ref={mapContainerRef} className="w-full h-full min-h-[500px] bg-background relative">
       <ComposableMap
         projection="geoMercator"
         projectionConfig={{
@@ -120,8 +144,8 @@ const GlobalNetworkMap = memo(({
               <Marker
                 key={city}
                 coordinates={[group.lng, group.lat]}
-                onMouseEnter={() => setHoveredCity(city)}
-                onMouseLeave={() => setHoveredCity(null)}
+                onMouseEnter={(e) => handleMarkerHover(city, e as unknown as React.MouseEvent)}
+                onMouseLeave={handleMarkerLeave}
                 onClick={() => {
                   if (onCityClick) {
                     onCityClick(city, group.markers);
@@ -159,33 +183,79 @@ const GlobalNetworkMap = memo(({
         </ZoomableGroup>
       </ComposableMap>
 
-      {/* Hover Tooltip */}
-      {hoveredCity && cityGroups[hoveredCity] && (
-        <div className="absolute bottom-4 left-4 bg-card border border-border rounded-lg p-4 shadow-lg z-10 max-w-xs">
-          <h3 className="font-semibold text-lg">{hoveredCity}</h3>
-          <p className="text-sm text-muted-foreground mb-2">
-            {cityGroups[hoveredCity].count} investor{cityGroups[hoveredCity].count !== 1 ? "s" : ""}
-          </p>
-          <div className="space-y-1">
-            {cityGroups[hoveredCity].markers.slice(0, 5).map((marker) => (
-              <div key={marker.id} className="text-sm flex items-center gap-2">
-                <span
-                  className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: TYPE_COLORS[marker.type] }}
-                />
-                <span className="font-medium truncate">{marker.name}</span>
-                {marker.organization_name && (
-                  <span className="text-muted-foreground truncate">
-                    @ {marker.organization_name}
-                  </span>
-                )}
+      {/* Hover Tooltip - Positioned near the marker */}
+      {hoveredCity && cityGroups[hoveredCity] && tooltipPosition && (
+        <div 
+          className="absolute z-50 pointer-events-none animate-fade-in"
+          style={{
+            left: tooltipPosition.x + 16,
+            top: tooltipPosition.y - 8,
+            transform: tooltipPosition.x > (mapContainerRef.current?.clientWidth || 0) / 2 
+              ? 'translateX(-100%) translateX(-32px)' 
+              : 'translateX(0)',
+          }}
+        >
+          <div className="bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl p-4 shadow-2xl max-w-[280px] ring-1 ring-white/5">
+            {/* Header */}
+            <div className="flex items-center gap-2.5 mb-3">
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center ring-1"
+                style={{ 
+                  backgroundColor: `${TYPE_COLORS[cityGroups[hoveredCity].dominantType]}20`,
+                  borderColor: `${TYPE_COLORS[cityGroups[hoveredCity].dominantType]}40`
+                }}
+              >
+                <MapPin className="w-4 h-4" style={{ color: TYPE_COLORS[cityGroups[hoveredCity].dominantType] }} />
               </div>
-            ))}
-            {cityGroups[hoveredCity].count > 5 && (
-              <p className="text-xs text-muted-foreground">
-                +{cityGroups[hoveredCity].count - 5} more
+              <div>
+                <h3 className="font-bold text-sm text-foreground">{hoveredCity}</h3>
+                <p className="text-xs text-muted-foreground/80">
+                  {cityGroups[hoveredCity].count} investor{cityGroups[hoveredCity].count !== 1 ? "s" : ""}
+                </p>
+              </div>
+            </div>
+            
+            {/* Contact List */}
+            <div className="space-y-2">
+              {cityGroups[hoveredCity].markers.slice(0, 4).map((marker) => (
+                <div 
+                  key={marker.id} 
+                  className="flex items-center gap-2.5 p-2 rounded-lg bg-muted/30 border border-border/30"
+                >
+                  <div 
+                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-semibold text-white"
+                    style={{ backgroundColor: TYPE_COLORS[marker.type] }}
+                  >
+                    {marker.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-foreground truncate">
+                      {marker.name}
+                    </p>
+                    {marker.organization_name && (
+                      <p className="text-[10px] text-muted-foreground/70 truncate flex items-center gap-1">
+                        <Building2 className="w-2.5 h-2.5" />
+                        {marker.organization_name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {cityGroups[hoveredCity].count > 4 && (
+                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 pl-1">
+                  <Users className="w-3 h-3" />
+                  +{cityGroups[hoveredCity].count - 4} more investors
+                </div>
+              )}
+            </div>
+            
+            {/* Footer CTA */}
+            <div className="mt-3 pt-2.5 border-t border-border/30">
+              <p className="text-[10px] font-medium flex items-center gap-1" style={{ color: TYPE_COLORS[cityGroups[hoveredCity].dominantType] }}>
+                <span className="w-1 h-1 rounded-full animate-pulse" style={{ backgroundColor: TYPE_COLORS[cityGroups[hoveredCity].dominantType] }} />
+                Click to explore
               </p>
-            )}
+            </div>
           </div>
         </div>
       )}
