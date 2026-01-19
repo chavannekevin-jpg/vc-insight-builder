@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, X, Sun, Moon, ImageIcon, Sparkles, Move } from "lucide-react";
+import { Loader2, X, Sun, Moon, ImageIcon, Sparkles, Move, Linkedin, Globe, Twitter } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,6 +18,9 @@ interface CustomizationSettings {
   coverPosition: string;
   headline: string | null;
   bio: string | null;
+  socialLinkedin: string | null;
+  socialTwitter: string | null;
+  socialWebsite: string | null;
 }
 
 const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => {
@@ -27,6 +30,9 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
     coverPosition: "50% 50%",
     headline: null,
     bio: null,
+    socialLinkedin: null,
+    socialTwitter: null,
+    socialWebsite: null,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -41,7 +47,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
     const fetchSettings = async () => {
       const { data, error } = await supabase
         .from("investor_profiles")
-        .select("booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio")
+        .select("booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, social_linkedin, social_twitter, social_website")
         .eq("id", userId)
         .single();
 
@@ -52,6 +58,9 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
           coverPosition: data.booking_page_cover_position || "50% 50%",
           headline: data.booking_page_headline,
           bio: data.booking_page_bio,
+          socialLinkedin: data.social_linkedin,
+          socialTwitter: data.social_twitter,
+          socialWebsite: data.social_website,
         });
       }
       setIsLoading(false);
@@ -67,6 +76,9 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
         booking_page_theme: settings.theme,
         booking_page_headline: settings.headline,
         booking_page_bio: settings.bio,
+        social_linkedin: settings.socialLinkedin || null,
+        social_twitter: settings.socialTwitter || null,
+        social_website: settings.socialWebsite || null,
       })
       .eq("id", userId);
 
@@ -443,6 +455,46 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
           />
           <p className="text-xs text-muted-foreground">
             A brief description shown on your booking page. Max 300 characters.
+          </p>
+        </div>
+
+        {/* Social Links */}
+        <div className="space-y-4">
+          <Label>Social Links</Label>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-md bg-muted">
+                <Linkedin className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <Input
+                placeholder="https://linkedin.com/in/yourprofile"
+                value={settings.socialLinkedin || ""}
+                onChange={(e) => setSettings(prev => ({ ...prev, socialLinkedin: e.target.value }))}
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-md bg-muted">
+                <Twitter className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <Input
+                placeholder="https://twitter.com/yourhandle"
+                value={settings.socialTwitter || ""}
+                onChange={(e) => setSettings(prev => ({ ...prev, socialTwitter: e.target.value }))}
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-md bg-muted">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <Input
+                placeholder="https://yourwebsite.com"
+                value={settings.socialWebsite || ""}
+                onChange={(e) => setSettings(prev => ({ ...prev, socialWebsite: e.target.value }))}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Add your social profiles to display on your booking page.
           </p>
         </div>
 

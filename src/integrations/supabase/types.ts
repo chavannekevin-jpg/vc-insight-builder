@@ -929,6 +929,9 @@ export type Database = {
           preferred_stages: Json | null
           primary_sectors: Json | null
           profile_slug: string | null
+          social_linkedin: string | null
+          social_twitter: string | null
+          social_website: string | null
           ticket_size_max: number | null
           ticket_size_min: number | null
           updated_at: string | null
@@ -953,6 +956,9 @@ export type Database = {
           preferred_stages?: Json | null
           primary_sectors?: Json | null
           profile_slug?: string | null
+          social_linkedin?: string | null
+          social_twitter?: string | null
+          social_website?: string | null
           ticket_size_max?: number | null
           ticket_size_min?: number | null
           updated_at?: string | null
@@ -977,6 +983,9 @@ export type Database = {
           preferred_stages?: Json | null
           primary_sectors?: Json | null
           profile_slug?: string | null
+          social_linkedin?: string | null
+          social_twitter?: string | null
+          social_website?: string | null
           ticket_size_max?: number | null
           ticket_size_min?: number | null
           updated_at?: string | null

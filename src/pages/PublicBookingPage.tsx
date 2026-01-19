@@ -22,7 +22,10 @@ import {
   Globe,
   Sparkles,
   Network,
-  Zap
+  Zap,
+  Linkedin,
+  Twitter,
+  ExternalLink
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -51,6 +54,9 @@ interface InvestorProfile {
   booking_page_cover_position: string | null;
   booking_page_headline: string | null;
   booking_page_bio: string | null;
+  social_linkedin: string | null;
+  social_twitter: string | null;
+  social_website: string | null;
 }
 
 const INVESTOR_TYPE_LABELS: Record<string, string> = {
@@ -91,14 +97,14 @@ const PublicBookingPage = () => {
       if (isUUID) {
         const { data } = await supabase
           .from("investor_profiles")
-          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio")
+          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, social_linkedin, social_twitter, social_website")
           .eq("id", investorId)
           .single();
         profile = data as InvestorProfile | null;
       } else {
         const { data } = await supabase
           .from("investor_profiles")
-          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio")
+          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, social_linkedin, social_twitter, social_website")
           .eq("profile_slug", investorId)
           .single();
         profile = data as InvestorProfile | null;
@@ -395,6 +401,45 @@ const PublicBookingPage = () => {
                     </Badge>
                   )}
                 </div>
+
+                {/* Social Links */}
+                {(investorProfile.social_linkedin || investorProfile.social_twitter || investorProfile.social_website) && (
+                  <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border justify-center">
+                    {investorProfile.social_linkedin && (
+                      <a
+                        href={investorProfile.social_linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-muted hover:bg-primary/10 transition-colors"
+                        title="LinkedIn"
+                      >
+                        <Linkedin className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                      </a>
+                    )}
+                    {investorProfile.social_twitter && (
+                      <a
+                        href={investorProfile.social_twitter}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-muted hover:bg-primary/10 transition-colors"
+                        title="Twitter"
+                      >
+                        <Twitter className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                      </a>
+                    )}
+                    {investorProfile.social_website && (
+                      <a
+                        href={investorProfile.social_website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-muted hover:bg-primary/10 transition-colors"
+                        title="Website"
+                      >
+                        <Globe className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </Card>
 
