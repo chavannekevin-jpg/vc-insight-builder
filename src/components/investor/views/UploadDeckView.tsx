@@ -210,11 +210,11 @@ const UploadDeckView = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-fade-in">
       {/* Header */}
-      <div className="p-4 border-b border-border/50">
-        <h2 className="text-lg font-semibold">Upload Deck</h2>
-        <p className="text-sm text-muted-foreground mt-1">
+      <div className="p-5 border-b border-border/30 bg-gradient-to-r from-card/80 to-card/40 backdrop-blur-sm">
+        <h2 className="text-xl font-bold tracking-tight">Upload Deck</h2>
+        <p className="text-sm text-muted-foreground/80 mt-1">
           Upload a pitch deck and get an instant AI-generated investment memo
         </p>
       </div>

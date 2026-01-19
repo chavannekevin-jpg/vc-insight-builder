@@ -171,18 +171,21 @@ ${userProfile.full_name}`
 
   return (
     <>
-      <Sidebar collapsible="icon" className="border-r border-border/50">
+      <Sidebar collapsible="icon" className="border-r border-border/30 bg-gradient-to-b from-card/80 to-card/50 backdrop-blur-xl">
         <SidebarContent className="flex flex-col h-full">
           {/* User Profile Section */}
-          <div className={`p-4 border-b border-border/50 ${collapsed ? "px-2" : ""}`}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
-                {userProfile?.full_name ? getInitials(userProfile.full_name) : "IN"}
+          <div className={`p-4 border-b border-border/30 ${collapsed ? "px-2" : ""}`}>
+            <div className={`flex items-center gap-3 ${!collapsed ? "p-3 rounded-xl bg-gradient-to-br from-primary/5 to-transparent border border-border/30 hover:border-primary/20 transition-all duration-300" : ""}`}>
+              <div className="relative group">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-semibold flex-shrink-0 ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all duration-300">
+                  {userProfile?.full_name ? getInitials(userProfile.full_name) : "IN"}
+                </div>
+                <div className="absolute inset-0 rounded-full bg-primary/20 blur-md opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
               </div>
               {!collapsed && (
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm truncate">{userProfile?.full_name || "Investor"}</p>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="font-semibold text-sm truncate text-foreground">{userProfile?.full_name || "Investor"}</p>
+                  <p className="text-xs text-muted-foreground/80 truncate">
                     {userProfile?.organization_name || "—"}
                   </p>
                 </div>
@@ -191,9 +194,9 @@ ${userProfile.full_name}`
           </div>
 
           {/* Main Menu */}
-          <SidebarGroup>
-            <SidebarGroupLabel>Main</SidebarGroupLabel>
-            <SidebarGroupContent>
+          <SidebarGroup className="mt-2">
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium px-4">Main</SidebarGroupLabel>
+            <SidebarGroupContent className="px-2">
               <SidebarMenu>
                 {mainMenuItems.map((item) => (
                   <SidebarMenuItem key={item.section}>
@@ -201,9 +204,14 @@ ${userProfile.full_name}`
                       onClick={() => handleNavClick(item.section)}
                       isActive={activeSection === item.section}
                       tooltip={item.title}
+                      className={`group relative rounded-lg transition-all duration-200 ${
+                        activeSection === item.section 
+                          ? "bg-primary/10 text-primary shadow-sm before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-5 before:bg-primary before:rounded-r-full before:shadow-[0_0_8px_rgba(var(--primary),0.5)]" 
+                          : "hover:bg-muted/50 hover:translate-x-0.5"
+                      }`}
                     >
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
+                      <item.icon className={`w-4 h-4 transition-transform duration-200 ${activeSection === item.section ? "scale-110" : "group-hover:scale-105"}`} />
+                      <span className="font-medium">{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -213,8 +221,8 @@ ${userProfile.full_name}`
 
           {/* Tools Menu */}
           <SidebarGroup>
-            <SidebarGroupLabel>Tools</SidebarGroupLabel>
-            <SidebarGroupContent>
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium px-4">Tools</SidebarGroupLabel>
+            <SidebarGroupContent className="px-2">
               <SidebarMenu>
                 {toolsMenuItems.map((item) => (
                   <SidebarMenuItem key={item.section}>
@@ -222,9 +230,14 @@ ${userProfile.full_name}`
                       onClick={() => handleNavClick(item.section)}
                       isActive={activeSection === item.section}
                       tooltip={item.title}
+                      className={`group relative rounded-lg transition-all duration-200 ${
+                        activeSection === item.section 
+                          ? "bg-primary/10 text-primary shadow-sm before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-5 before:bg-primary before:rounded-r-full before:shadow-[0_0_8px_rgba(var(--primary),0.5)]" 
+                          : "hover:bg-muted/50 hover:translate-x-0.5"
+                      }`}
                     >
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
+                      <item.icon className={`w-4 h-4 transition-transform duration-200 ${activeSection === item.section ? "scale-110" : "group-hover:scale-105"}`} />
+                      <span className="font-medium">{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -236,18 +249,18 @@ ${userProfile.full_name}`
           <div className="flex-1" />
 
           {/* Invite & Settings & Sign Out */}
-          <SidebarGroup>
-            <SidebarGroupContent>
+          <SidebarGroup className="border-t border-border/30 pt-2">
+            <SidebarGroupContent className="px-2">
               <SidebarMenu>
                 {/* Invite Friends */}
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={handleOpenInviteModal}
                     tooltip="Invite Investors"
-                    className="text-primary hover:text-primary"
+                    className="group relative rounded-lg transition-all duration-200 hover:bg-primary/10 text-primary hover:translate-x-0.5"
                   >
-                    <Gift className="w-4 h-4" />
-                    <span>Invite Friends</span>
+                    <Gift className="w-4 h-4 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-12" />
+                    <span className="font-medium">Invite Friends</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 
@@ -257,16 +270,25 @@ ${userProfile.full_name}`
                       onClick={() => handleNavClick(item.section)}
                       isActive={activeSection === item.section}
                       tooltip={item.title}
+                      className={`group relative rounded-lg transition-all duration-200 ${
+                        activeSection === item.section 
+                          ? "bg-primary/10 text-primary shadow-sm before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-5 before:bg-primary before:rounded-r-full" 
+                          : "hover:bg-muted/50 hover:translate-x-0.5"
+                      }`}
                     >
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
+                      <item.icon className={`w-4 h-4 transition-transform duration-200 ${activeSection === item.section ? "scale-110" : "group-hover:scale-105"}`} />
+                      <span className="font-medium">{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
                 <SidebarMenuItem>
-                  <SidebarMenuButton onClick={handleSignOut} tooltip="Sign Out">
-                    <LogOut className="w-4 h-4" />
-                    <span>Sign Out</span>
+                  <SidebarMenuButton 
+                    onClick={handleSignOut} 
+                    tooltip="Sign Out"
+                    className="group rounded-lg transition-all duration-200 hover:bg-destructive/10 hover:text-destructive hover:translate-x-0.5"
+                  >
+                    <LogOut className="w-4 h-4 transition-transform duration-200 group-hover:scale-105" />
+                    <span className="font-medium">Sign Out</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -277,11 +299,13 @@ ${userProfile.full_name}`
 
       {/* Invite Modal */}
       <Dialog open={inviteModalOpen} onOpenChange={setInviteModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Gift className="w-5 h-5 text-primary" />
-              Invite Fellow Investors
+            <DialogTitle className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-primary/20">
+                <Gift className="w-5 h-5 text-primary" />
+              </div>
+              <span className="text-xl font-bold tracking-tight">Invite Fellow Investors</span>
             </DialogTitle>
           </DialogHeader>
 
@@ -293,29 +317,30 @@ ${userProfile.full_name}`
             ) : (
               <>
                 {/* Invite Code Display */}
-                <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg text-center">
-                  <p className="text-xs text-muted-foreground mb-2">Your Invite Code</p>
-                  <code className="text-2xl font-mono font-bold tracking-wider text-primary">
+                <div className="p-5 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl text-center shadow-inner">
+                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider font-medium">Your Invite Code</p>
+                  <code className="text-3xl font-mono font-bold tracking-[0.2em] text-primary drop-shadow-sm">
                     {inviteCode}
                   </code>
                 </div>
 
                 {/* Invite Link */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Invite Link</label>
+                  <label className="text-sm font-semibold mb-2 block text-foreground">Invite Link</label>
                   <div className="flex gap-2">
                     <input
                       readOnly
                       value={inviteLink}
-                      className="flex-1 px-3 py-2 text-sm bg-muted rounded-md border border-border truncate"
+                      className="flex-1 px-3 py-2.5 text-sm bg-muted/50 rounded-lg border border-border/50 truncate focus:ring-2 focus:ring-primary/20 transition-all"
                     />
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => copyToClipboard(inviteLink, "link")}
+                      className="h-10 w-10 p-0 hover:bg-primary/10 hover:border-primary/30 transition-all duration-200"
                     >
                       {copied === "link" ? (
-                        <Check className="w-4 h-4 text-green-500" />
+                        <Check className="w-4 h-4 text-emerald-500" />
                       ) : (
                         <Copy className="w-4 h-4" />
                       )}
@@ -325,22 +350,22 @@ ${userProfile.full_name}`
 
                 {/* Pre-made Message */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Ready-to-send Message</label>
+                  <label className="text-sm font-semibold mb-2 block text-foreground">Ready-to-send Message</label>
                   <div className="relative">
                     <textarea
                       readOnly
                       value={inviteMessage}
                       rows={6}
-                      className="w-full px-3 py-2 text-sm bg-muted rounded-md border border-border resize-none"
+                      className="w-full px-3 py-2.5 text-sm bg-muted/50 rounded-lg border border-border/50 resize-none focus:ring-2 focus:ring-primary/20 transition-all"
                     />
                     <Button
                       size="sm"
                       variant="outline"
-                      className="absolute top-2 right-2"
+                      className="absolute top-2 right-2 hover:bg-primary/10 hover:border-primary/30 transition-all duration-200"
                       onClick={() => copyToClipboard(inviteMessage, "message")}
                     >
                       {copied === "message" ? (
-                        <Check className="w-4 h-4 text-green-500" />
+                        <Check className="w-4 h-4 text-emerald-500" />
                       ) : (
                         <Copy className="w-4 h-4" />
                       )}
@@ -348,7 +373,7 @@ ${userProfile.full_name}`
                   </div>
                 </div>
 
-                <p className="text-xs text-muted-foreground text-center">
+                <p className="text-xs text-muted-foreground/70 text-center py-2 px-4 rounded-lg bg-muted/30 border border-border/30">
                   Your invite code can be used up to 5 times
                 </p>
               </>

@@ -164,14 +164,14 @@ const ContactDirectoryView = ({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-border/50">
+    <div className="flex flex-col h-full animate-fade-in">
+      <div className="p-5 border-b border-border/30 bg-gradient-to-r from-card/80 to-card/40 backdrop-blur-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold">Contact Directory</h2>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{filteredContacts.length} contacts</span>
-              {inCRMCount > 0 && <Badge variant="secondary" className="text-xs">{inCRMCount} in CRM</Badge>}
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-bold tracking-tight">Contact Directory</h2>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground/80 font-medium px-3 py-1 rounded-full bg-muted/50 border border-border/30">{filteredContacts.length} contacts</span>
+              {inCRMCount > 0 && <Badge variant="secondary" className="text-xs border border-border/30">{inCRMCount} in CRM</Badge>}
             </div>
           </div>
           <div className="flex items-center gap-2">

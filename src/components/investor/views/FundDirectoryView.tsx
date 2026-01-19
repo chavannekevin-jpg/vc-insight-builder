@@ -197,16 +197,16 @@ const FundDirectoryView = ({ onSelectFund, onSelectInvestor }: FundDirectoryView
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-fade-in">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+      <div className="p-5 border-b border-border/30 bg-gradient-to-r from-card/80 to-card/40 backdrop-blur-sm">
+        <div className="flex items-center gap-4 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-primary/10">
             <Building2 className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold">Fund Directory</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="text-xl font-bold tracking-tight">Fund Directory</h2>
+            <p className="text-sm text-muted-foreground/80">
               Explore {funds.length} funds and their investors
             </p>
           </div>

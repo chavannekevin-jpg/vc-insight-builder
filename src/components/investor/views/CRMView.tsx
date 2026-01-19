@@ -54,12 +54,12 @@ const CRMView = ({ contacts, isLoading, onContactClick, onAddContact }: CRMViewP
   const totalContacts = Object.values(groupedByStatus).flat().length;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-fade-in">
       {/* Toolbar */}
-      <div className="p-4 border-b border-border/50 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold">CRM Pipeline</h2>
-          <div className="text-sm text-muted-foreground">
+      <div className="p-5 border-b border-border/30 bg-gradient-to-r from-card/80 to-card/40 backdrop-blur-sm flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-bold tracking-tight">CRM Pipeline</h2>
+          <div className="text-sm text-muted-foreground/80 font-medium px-3 py-1 rounded-full bg-muted/50 border border-border/30">
             {filteredContacts.length} tracked contacts
           </div>
         </div>
