@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, Clock, Settings, ListChecks } from "lucide-react";
+import { CalendarDays, Clock, Settings, ListChecks, Calendar } from "lucide-react";
 import BookingsListTab from "./BookingsListTab";
 import AvailabilityTab from "./AvailabilityTab";
 import EventTypesTab from "./EventTypesTab";
 import CalendarSettingsTab from "./CalendarSettingsTab";
+import WeeklyCalendarView from "./WeeklyCalendarView";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
@@ -13,7 +14,7 @@ interface CalendarViewProps {
 }
 
 const CalendarView = ({ userId }: CalendarViewProps) => {
-  const [activeTab, setActiveTab] = useState("bookings");
+  const [activeTab, setActiveTab] = useState("calendar");
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Handle Google Calendar connection callbacks
@@ -50,27 +51,23 @@ const CalendarView = ({ userId }: CalendarViewProps) => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="p-4 border-b border-border/50">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <CalendarDays className="h-5 w-5" />
-          Calendar & Booking
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage your availability and let startups book meetings with you
-        </p>
-      </div>
-
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         <div className="border-b border-border/50 px-4">
           <TabsList className="bg-transparent h-auto p-0 space-x-6">
             <TabsTrigger
+              value="calendar"
+              className="pb-3 pt-2 px-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Calendar
+            </TabsTrigger>
+            <TabsTrigger
               value="bookings"
               className="pb-3 pt-2 px-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             >
               <ListChecks className="h-4 w-4 mr-2" />
-              My Bookings
+              Bookings
             </TabsTrigger>
             <TabsTrigger
               value="availability"
@@ -97,6 +94,9 @@ const CalendarView = ({ userId }: CalendarViewProps) => {
         </div>
 
         <div className="flex-1 overflow-auto">
+          <TabsContent value="calendar" className="m-0 h-full">
+            <WeeklyCalendarView userId={userId} />
+          </TabsContent>
           <TabsContent value="bookings" className="m-0 h-full">
             <BookingsListTab userId={userId} />
           </TabsContent>

@@ -63,69 +63,75 @@ serve(async (req) => {
       .gte('start_time', startDate)
       .lte('end_time', endDate);
 
-    // Try to get Google Calendar busy times
+    // Try to get Google Calendar busy times from ALL linked calendars that include availability
     let googleBusyTimes: TimeSlot[] = [];
-    const { data: tokenData } = await supabase
-      .from('google_calendar_tokens')
+    const { data: linkedCalendars } = await supabase
+      .from('linked_calendars')
       .select('*')
       .eq('investor_id', investorId)
-      .single();
+      .eq('include_in_availability', true);
 
-    if (tokenData) {
-      try {
-        // Refresh token if expired
-        let accessToken = tokenData.access_token;
-        if (new Date(tokenData.expires_at) < new Date()) {
-          const refreshResponse = await fetch('https://oauth2.googleapis.com/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-              refresh_token: tokenData.refresh_token,
-              client_id: Deno.env.get('GOOGLE_CALENDAR_CLIENT_ID')!,
-              client_secret: Deno.env.get('GOOGLE_CALENDAR_CLIENT_SECRET')!,
-              grant_type: 'refresh_token'
-            })
-          });
-
-          if (refreshResponse.ok) {
-            const newTokens = await refreshResponse.json();
-            accessToken = newTokens.access_token;
-            
-            // Update stored token
-            await supabase
-              .from('google_calendar_tokens')
-              .update({
-                access_token: newTokens.access_token,
-                expires_at: new Date(Date.now() + newTokens.expires_in * 1000).toISOString()
+    if (linkedCalendars && linkedCalendars.length > 0) {
+      for (const calendar of linkedCalendars) {
+        try {
+          // Refresh token if expired
+          let accessToken = calendar.access_token;
+          if (new Date(calendar.expires_at) < new Date()) {
+            const refreshResponse = await fetch('https://oauth2.googleapis.com/token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams({
+                refresh_token: calendar.refresh_token,
+                client_id: Deno.env.get('GOOGLE_CALENDAR_CLIENT_ID')!,
+                client_secret: Deno.env.get('GOOGLE_CALENDAR_CLIENT_SECRET')!,
+                grant_type: 'refresh_token'
               })
-              .eq('investor_id', investorId);
-          }
-        }
+            });
 
-        // Fetch busy times from Google Calendar
-        const calendarResponse = await fetch(
-          `https://www.googleapis.com/calendar/v3/freeBusy`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              timeMin: new Date(startDate).toISOString(),
-              timeMax: new Date(endDate).toISOString(),
-              items: [{ id: tokenData.calendar_id || 'primary' }]
-            })
+            if (refreshResponse.ok) {
+              const newTokens = await refreshResponse.json();
+              accessToken = newTokens.access_token;
+              
+              // Update stored token
+              await supabase
+                .from('linked_calendars')
+                .update({
+                  access_token: newTokens.access_token,
+                  expires_at: new Date(Date.now() + newTokens.expires_in * 1000).toISOString()
+                })
+                .eq('id', calendar.id);
+            } else {
+              console.error(`Failed to refresh token for calendar ${calendar.id}`);
+              continue;
+            }
           }
-        );
 
-        if (calendarResponse.ok) {
-          const calendarData = await calendarResponse.json();
-          const calendarId = tokenData.calendar_id || 'primary';
-          googleBusyTimes = calendarData.calendars?.[calendarId]?.busy || [];
+          // Fetch busy times from this calendar
+          const calendarResponse = await fetch(
+            `https://www.googleapis.com/calendar/v3/freeBusy`,
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                timeMin: new Date(startDate).toISOString(),
+                timeMax: new Date(endDate).toISOString(),
+                items: [{ id: calendar.calendar_id || 'primary' }]
+              })
+            }
+          );
+
+          if (calendarResponse.ok) {
+            const calendarData = await calendarResponse.json();
+            const calendarId = calendar.calendar_id || 'primary';
+            const busyTimes = calendarData.calendars?.[calendarId]?.busy || [];
+            googleBusyTimes.push(...busyTimes);
+          }
+        } catch (e) {
+          console.error(`Error fetching calendar ${calendar.id}:`, e);
         }
-      } catch (e) {
-        console.error('Error fetching Google Calendar:', e);
       }
     }
 

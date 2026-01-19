@@ -90,14 +90,70 @@ serve(async (req) => {
     }
 
     const tokens = await tokenResponse.json();
-    console.log('Tokens received, storing...');
+    console.log('Tokens received, fetching calendar info...');
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
+
+    // Fetch the user's primary calendar info to get email
+    let calendarEmail = null;
+    let calendarName = 'Primary Calendar';
+    try {
+      const calendarInfoResponse = await fetch(
+        'https://www.googleapis.com/calendar/v3/calendars/primary',
+        {
+          headers: {
+            'Authorization': `Bearer ${tokens.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      if (calendarInfoResponse.ok) {
+        const calendarInfo = await calendarInfoResponse.json();
+        calendarEmail = calendarInfo.id;
+        calendarName = calendarInfo.summary || 'Primary Calendar';
+      }
+    } catch (e) {
+      console.error('Error fetching calendar info:', e);
+    }
 
     // Store tokens in database
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
+    // Check if this is the first calendar (make it primary)
+    const { data: existingCalendars } = await supabase
+      .from('linked_calendars')
+      .select('id')
+      .eq('investor_id', investorId);
+
+    const isPrimary = !existingCalendars || existingCalendars.length === 0;
+
+    // Upsert to linked_calendars table
     const { error: upsertError } = await supabase
+      .from('linked_calendars')
+      .upsert({
+        investor_id: investorId,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_at: expiresAt.toISOString(),
+        calendar_id: 'primary',
+        calendar_name: calendarName,
+        calendar_email: calendarEmail,
+        is_primary: isPrimary,
+        include_in_availability: true,
+        color: '#4285f4',
+        connected_at: new Date().toISOString()
+      }, { onConflict: 'investor_id,calendar_id' });
+
+    if (upsertError) {
+      console.error('Error storing tokens:', upsertError);
+      return new Response(null, {
+        status: 302,
+        headers: { 'Location': `${finalRedirectUrl}?calendar_error=storage_failed` }
+      });
+    }
+
+    // Also update the legacy table for backwards compatibility
+    await supabase
       .from('google_calendar_tokens')
       .upsert({
         investor_id: investorId,
@@ -107,14 +163,6 @@ serve(async (req) => {
         calendar_id: 'primary',
         connected_at: new Date().toISOString()
       }, { onConflict: 'investor_id' });
-
-    if (upsertError) {
-      console.error('Error storing tokens:', upsertError);
-      return new Response(null, {
-        status: 302,
-        headers: { 'Location': `${finalRedirectUrl}?calendar_error=storage_failed` }
-      });
-    }
 
     console.log('Calendar connected successfully!');
     // Redirect back to app with success

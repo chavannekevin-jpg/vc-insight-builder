@@ -1007,6 +1007,65 @@ export type Database = {
           },
         ]
       }
+      linked_calendars: {
+        Row: {
+          access_token: string
+          calendar_email: string | null
+          calendar_id: string
+          calendar_name: string
+          color: string | null
+          connected_at: string | null
+          created_at: string | null
+          expires_at: string
+          id: string
+          include_in_availability: boolean | null
+          investor_id: string
+          is_primary: boolean | null
+          refresh_token: string
+          updated_at: string | null
+        }
+        Insert: {
+          access_token: string
+          calendar_email?: string | null
+          calendar_id?: string
+          calendar_name?: string
+          color?: string | null
+          connected_at?: string | null
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          include_in_availability?: boolean | null
+          investor_id: string
+          is_primary?: boolean | null
+          refresh_token: string
+          updated_at?: string | null
+        }
+        Update: {
+          access_token?: string
+          calendar_email?: string | null
+          calendar_id?: string
+          calendar_name?: string
+          color?: string | null
+          connected_at?: string | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          include_in_availability?: boolean | null
+          investor_id?: string
+          is_primary?: boolean | null
+          refresh_token?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linked_calendars_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memo_analyses: {
         Row: {
           analysis: Json
