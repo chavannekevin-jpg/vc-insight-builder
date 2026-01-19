@@ -14,6 +14,7 @@ import {
   Copy,
   Check,
   Building2,
+  Shield,
 } from "lucide-react";
 import {
   Sidebar,
@@ -73,6 +74,25 @@ const InvestorSidebar = ({ activeSection, onSectionChange, userProfile }: Invest
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [isLoadingCode, setIsLoadingCode] = useState(false);
   const [copied, setCopied] = useState<"link" | "message" | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (!userProfile?.id) return;
+      
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userProfile.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      
+      setIsAdmin(!!data);
+    };
+    
+    checkAdminRole();
+  }, [userProfile?.id]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -264,6 +284,20 @@ ${userProfile.full_name}`
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 
+                {/* Admin Access - Only for admin users */}
+                {isAdmin && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      onClick={() => navigate("/admin")} 
+                      tooltip="Admin Panel"
+                      className="group rounded-lg transition-all duration-200 hover:bg-amber-500/10 text-amber-600 hover:translate-x-0.5"
+                    >
+                      <Shield className="w-4 h-4 transition-transform duration-200 group-hover:scale-105" />
+                      <span className="font-medium">Admin Panel</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                
                 {settingsMenuItems.map((item) => (
                   <SidebarMenuItem key={item.section}>
                     <SidebarMenuButton

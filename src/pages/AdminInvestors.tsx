@@ -50,10 +50,12 @@ import {
   Copy,
   Check,
   ExternalLink,
+  Upload,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { safeLower } from "@/lib/stringUtils";
+import { AdminBulkUploadModal } from "@/components/admin/AdminBulkUploadModal";
 
 interface InvestorProfile {
   id: string;
@@ -115,6 +117,7 @@ const AdminInvestors = () => {
   const [selectedInvestor, setSelectedInvestor] = useState<InvestorProfile | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   const activeTab = searchParams.get("tab") || "investors";
 
@@ -371,7 +374,7 @@ const AdminInvestors = () => {
           </ModernCard>
         </div>
 
-        {/* Search & Refresh */}
+        {/* Search & Actions */}
         <ModernCard>
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -385,6 +388,10 @@ const AdminInvestors = () => {
             </div>
             <Button variant="outline" onClick={fetchData} disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            </Button>
+            <Button onClick={() => setIsBulkUploadOpen(true)} className="gap-2">
+              <Upload className="w-4 h-4" />
+              Bulk Upload
             </Button>
           </div>
         </ModernCard>
@@ -818,6 +825,16 @@ const AdminInvestors = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Upload Modal */}
+      <AdminBulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => {
+          fetchGlobalContacts();
+          setIsBulkUploadOpen(false);
+        }}
+      />
     </AdminLayout>
   );
 };
