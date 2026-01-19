@@ -911,6 +911,7 @@ export type Database = {
       investor_profiles: {
         Row: {
           booking_page_bio: string | null
+          booking_page_cover_position: string | null
           booking_page_cover_url: string | null
           booking_page_headline: string | null
           booking_page_theme: string | null
@@ -934,6 +935,7 @@ export type Database = {
         }
         Insert: {
           booking_page_bio?: string | null
+          booking_page_cover_position?: string | null
           booking_page_cover_url?: string | null
           booking_page_headline?: string | null
           booking_page_theme?: string | null
@@ -957,6 +959,7 @@ export type Database = {
         }
         Update: {
           booking_page_bio?: string | null
+          booking_page_cover_position?: string | null
           booking_page_cover_url?: string | null
           booking_page_headline?: string | null
           booking_page_theme?: string | null
