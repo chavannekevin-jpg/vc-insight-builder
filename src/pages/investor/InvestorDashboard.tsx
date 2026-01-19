@@ -193,6 +193,7 @@ const InvestorDashboard = () => {
               setAddToCRMContact(contact);
               setAddToCRMStatus("prospect");
             }}
+            onRefresh={refetch}
           />
         ) : null;
       case "crm":

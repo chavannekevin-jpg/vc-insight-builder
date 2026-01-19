@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import { 
   Search, 
   Plus, 
@@ -12,7 +14,9 @@ import {
   List,
   ArrowUpDown,
   MapPin,
-  Building2
+  Building2,
+  Sparkles,
+  Loader2
 } from "lucide-react";
 import {
   Select,
@@ -36,6 +40,7 @@ interface ContactDirectoryViewProps {
   onAddContact: () => void;
   onBulkImport?: () => void;
   onAddToCRM: (contact: InvestorContact) => void;
+  onRefresh?: () => void;
 }
 
 type ViewMode = "list" | "grid";
@@ -48,11 +53,14 @@ const ContactDirectoryView = ({
   onAddContact,
   onBulkImport,
   onAddToCRM,
+  onRefresh,
 }: ContactDirectoryViewProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [sortField, setSortField] = useState<SortField>("name");
   const [countryFilter, setCountryFilter] = useState<string>("all");
+  const [isResearchingAll, setIsResearchingAll] = useState(false);
+  const [researchProgress, setResearchProgress] = useState({ current: 0, total: 0 });
 
   // Get unique countries for filter
   const countries = Array.from(
@@ -116,6 +124,72 @@ const ContactDirectoryView = ({
     return (contact.global_contact?.investment_focus as string[]) || [];
   };
 
+  // Find contacts that need research (no investment_focus data)
+  const contactsNeedingResearch = contacts.filter(c => {
+    const focus = getInvestmentFocus(c);
+    const hasResearchData = (c.global_contact as any)?.focus_last_researched_at;
+    return c.global_contact_id && focus.length === 0 && !hasResearchData;
+  });
+
+  // Batch research all contacts without focus data
+  const handleResearchAll = async () => {
+    if (contactsNeedingResearch.length === 0) {
+      toast({
+        title: "All contacts researched",
+        description: "All contacts already have investment focus data.",
+      });
+      return;
+    }
+
+    setIsResearchingAll(true);
+    setResearchProgress({ current: 0, total: contactsNeedingResearch.length });
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (let i = 0; i < contactsNeedingResearch.length; i++) {
+      const contact = contactsNeedingResearch[i];
+      setResearchProgress({ current: i + 1, total: contactsNeedingResearch.length });
+
+      try {
+        const response = await supabase.functions.invoke("research-contact", {
+          body: {
+            name: contact.local_name || contact.global_contact?.name,
+            organization_name: contact.local_organization || contact.global_contact?.organization_name,
+            linkedin_url: contact.global_contact?.linkedin_url || undefined,
+            global_contact_id: contact.global_contact_id,
+          },
+        });
+
+        if (response.error) {
+          console.error(`Research failed for ${contact.global_contact?.name}:`, response.error);
+          errorCount++;
+        } else {
+          successCount++;
+        }
+
+        // Add a small delay to avoid rate limiting
+        if (i < contactsNeedingResearch.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      } catch (err) {
+        console.error(`Research error for ${contact.global_contact?.name}:`, err);
+        errorCount++;
+      }
+    }
+
+    setIsResearchingAll(false);
+    setResearchProgress({ current: 0, total: 0 });
+
+    toast({
+      title: "Batch research complete",
+      description: `Successfully researched ${successCount} contacts. ${errorCount > 0 ? `${errorCount} failed.` : ''}`,
+    });
+
+    // Refresh the contact list
+    onRefresh?.();
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -134,6 +208,30 @@ const ContactDirectoryView = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Batch Research Button */}
+            {contactsNeedingResearch.length > 0 && (
+              <Button 
+                onClick={handleResearchAll} 
+                variant="outline" 
+                size="sm" 
+                className="gap-1.5"
+                disabled={isResearchingAll}
+              >
+                {isResearchingAll ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="hidden sm:inline">
+                      {researchProgress.current}/{researchProgress.total}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    <span className="hidden sm:inline">Research {contactsNeedingResearch.length}</span>
+                  </>
+                )}
+              </Button>
+            )}
             {onBulkImport && (
               <Button onClick={onBulkImport} variant="outline" size="sm" className="gap-1.5">
                 <Upload className="w-4 h-4" />
