@@ -4,12 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { 
   Building2, Search, MapPin, Users, DollarSign, 
   Target, ArrowLeft, X, SlidersHorizontal, Sparkles,
-  TrendingUp, ChevronRight, Filter, Briefcase, Hash,
-  CheckCircle, AlertCircle, ChevronDown, ChevronUp, Globe
+  TrendingUp, ChevronRight, Briefcase, Hash,
+  CheckCircle, Lightbulb, Info
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCompany } from "@/hooks/useCompany";
 import { useAuth } from "@/hooks/useAuth";
+import { useStartupMatchingProfile } from "@/hooks/useStartupMatchingProfile";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,12 +31,16 @@ import {
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { 
   calculateStartupAffinity, 
   getMatchTierStyle, 
-  StartupProfile,
   StartupAffinityResult 
 } from "@/lib/startupAffinityCalculator";
 
@@ -122,14 +127,24 @@ export default function FundDiscovery() {
   // Check premium access
   const hasPremium = company?.has_premium === true;
 
-  // Build startup profile for matching
-  const startupProfile: StartupProfile = useMemo(() => ({
-    stage: company?.stage,
-    category: company?.category,
-    sector: company?.category ? [company.category] : [],
+  // Fetch enriched startup profile from memo_responses
+  const { data: enrichedProfile, isLoading: profileLoading } = useStartupMatchingProfile(
+    company?.id || null,
+    company ? { stage: company.stage, category: company.category } : null
+  );
+
+  // Build startup profile for matching using enriched data
+  const startupProfile = useMemo(() => ({
+    stage: enrichedProfile?.stage || company?.stage,
+    category: enrichedProfile?.category || company?.category,
+    sector: enrichedProfile?.sectors || (company?.category ? [company.category] : []),
+    keywords: enrichedProfile?.keywords || [],
     location: null,
-    fundingAsk: null,
-  }), [company]);
+    fundingAsk: enrichedProfile?.fundingAsk || null,
+    hasRevenue: enrichedProfile?.hasRevenue || false,
+    hasCustomers: enrichedProfile?.hasCustomers || false,
+    currentARR: enrichedProfile?.currentARR || null,
+  }), [company, enrichedProfile]);
 
   // Fetch aggregated fund data
   const { data: funds, isLoading: fundsLoading } = useQuery({
@@ -322,8 +337,9 @@ export default function FundDiscovery() {
 
   const strongMatches = fundsWithMatches.filter(f => f.matchResult.tier === 'strong').length;
   const goodMatches = fundsWithMatches.filter(f => f.matchResult.tier === 'good').length;
-  const isLoading = companyLoading || fundsLoading;
+  const isLoading = companyLoading || fundsLoading || profileLoading;
   const hasActiveFilters = stageFilter !== "All Stages" || sectorFilter !== "All Sectors" || matchFilter !== "all" || searchQuery;
+  const dataCompleteness = enrichedProfile?.dataCompleteness || 10;
 
   // Premium access gate
   if (!companyLoading && !hasPremium) {
@@ -399,38 +415,87 @@ export default function FundDiscovery() {
       </header>
 
       {/* AI Matching Banner */}
-      {(strongMatches > 0 || goodMatches > 0) && (
-        <div className="border-b border-primary/20 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
-          <div className="max-w-6xl mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                </div>
-                <div>
+      <div className="border-b border-primary/20 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
+        <div className="max-w-6xl mx-auto px-4 py-3">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-sm font-medium">
-                    Based on your {company?.stage || 'stage'} {company?.category && `• ${company.category}`} profile
+                    AI Matching based on your profile
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    We found <span className="text-primary font-medium">{strongMatches} strong</span> and <span className="text-green-400 font-medium">{goodMatches} good</span> investor matches
-                  </p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-help">
+                          <Info className="w-3 h-3" />
+                          <span>{dataCompleteness}% data</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-xs">
+                        <p className="text-xs">
+                          Match quality improves with more profile data. 
+                          {dataCompleteness < 50 && " Complete your questionnaire or upload a deck to improve matches."}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground mt-1">
+                  {startupProfile.stage && (
+                    <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-primary/10 border-primary/30 text-primary">
+                      {startupProfile.stage}
+                    </Badge>
+                  )}
+                  {startupProfile.sector?.slice(0, 2).map((s, i) => (
+                    <Badge key={i} variant="outline" className="text-[10px] py-0 px-1.5">
+                      {s}
+                    </Badge>
+                  ))}
+                  {startupProfile.fundingAsk && (
+                    <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-green-500/10 border-green-500/30 text-green-400">
+                      €{formatCurrency(startupProfile.fundingAsk).replace('€', '')} ask
+                    </Badge>
+                  )}
+                  {startupProfile.hasRevenue && (
+                    <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-green-500/10 border-green-500/30 text-green-400">
+                      <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
+                      Revenue
+                    </Badge>
+                  )}
                 </div>
               </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {strongMatches > 0 && (
+                <Badge className="bg-primary/20 text-primary border border-primary/30 shrink-0">
+                  {strongMatches} strong match{strongMatches !== 1 ? 'es' : ''}
+                </Badge>
+              )}
+              {goodMatches > 0 && (
+                <Badge className="bg-green-500/20 text-green-400 border border-green-500/30 shrink-0">
+                  {goodMatches} good
+                </Badge>
+              )}
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="border-primary/30 text-primary hover:bg-primary/10"
+                className="border-primary/30 text-primary hover:bg-primary/10 shrink-0"
                 onClick={() => {
                   setMatchFilter("strong");
                   setSortBy("match");
                 }}
               >
-                Show Top Matches
+                Top Matches
               </Button>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Search & Filters */}
       <div className="border-b border-border/50 bg-muted/20">
@@ -653,7 +718,7 @@ function InvestorRow({ fund, onClick }: { fund: FundWithMatch; onClick: () => vo
           {/* Match Signals */}
           {fund.matchResult.matchSignals.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
-              {fund.matchResult.matchSignals.slice(0, 3).map((signal, i) => (
+              {fund.matchResult.matchSignals.slice(0, 4).map((signal, i) => (
                 <Badge 
                   key={i} 
                   variant="outline" 
@@ -664,7 +729,9 @@ function InvestorRow({ fund, onClick }: { fund: FundWithMatch; onClick: () => vo
                   {signal.type === 'stage' && <Target className="w-2.5 h-2.5 mr-1" />}
                   {signal.type === 'sector' && <Briefcase className="w-2.5 h-2.5 mr-1" />}
                   {signal.type === 'keyword' && <Hash className="w-2.5 h-2.5 mr-1" />}
+                  {signal.type === 'theme' && <Lightbulb className="w-2.5 h-2.5 mr-1" />}
                   {signal.type === 'ticket' && <DollarSign className="w-2.5 h-2.5 mr-1" />}
+                  {signal.type === 'traction' && <TrendingUp className="w-2.5 h-2.5 mr-1" />}
                   {signal.label}
                 </Badge>
               ))}
@@ -724,10 +791,13 @@ function FundDetailPanel({ fund }: { fund: FundWithMatch }) {
             <div className="space-y-2">
               {fund.matchResult.matchSignals.map((signal, i) => (
                 <div key={i} className="flex items-center gap-2 text-sm">
-                  <CheckCircle className={`w-4 h-4 ${
-                    signal.strength === 'high' ? 'text-primary' : 'text-muted-foreground'
-                  }`} />
-                  <span className="capitalize">{signal.type}:</span>
+                  {signal.type === 'stage' && <Target className={`w-4 h-4 ${signal.strength === 'high' ? 'text-primary' : 'text-muted-foreground'}`} />}
+                  {signal.type === 'sector' && <Briefcase className={`w-4 h-4 ${signal.strength === 'high' ? 'text-primary' : 'text-muted-foreground'}`} />}
+                  {signal.type === 'theme' && <Lightbulb className={`w-4 h-4 ${signal.strength === 'high' ? 'text-primary' : 'text-muted-foreground'}`} />}
+                  {signal.type === 'keyword' && <Hash className={`w-4 h-4 ${signal.strength === 'high' ? 'text-primary' : 'text-muted-foreground'}`} />}
+                  {signal.type === 'ticket' && <DollarSign className={`w-4 h-4 ${signal.strength === 'high' ? 'text-primary' : 'text-muted-foreground'}`} />}
+                  {signal.type === 'traction' && <TrendingUp className={`w-4 h-4 ${signal.strength === 'high' ? 'text-primary' : 'text-muted-foreground'}`} />}
+                  <span className="capitalize font-medium">{signal.type}:</span>
                   <span className="text-muted-foreground">{signal.label}</span>
                 </div>
               ))}
