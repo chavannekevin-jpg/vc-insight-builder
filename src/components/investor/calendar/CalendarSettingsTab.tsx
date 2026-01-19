@@ -4,34 +4,62 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { format } from "date-fns";
 import {
-  useGoogleCalendarStatus,
   useConnectGoogleCalendar,
-  useDisconnectGoogleCalendar,
 } from "@/hooks/useCalendarBooking";
-import { Loader2, Calendar, CheckCircle2, ExternalLink, Unlink, Copy, Check, Link2, Edit2 } from "lucide-react";
+import { Loader2, Calendar, CheckCircle2, ExternalLink, Trash2, Copy, Check, Link2, Edit2, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+interface LinkedCalendar {
+  id: string;
+  calendar_id: string;
+  calendar_name: string;
+  calendar_email: string | null;
+  is_primary: boolean;
+  include_in_availability: boolean;
+  color: string;
+  connected_at: string;
+}
 
 interface CalendarSettingsTabProps {
   userId: string;
 }
 
 const CalendarSettingsTab = ({ userId }: CalendarSettingsTabProps) => {
-  const { data: calendarStatus, isLoading } = useGoogleCalendarStatus(userId);
   const connectCalendar = useConnectGoogleCalendar();
-  const disconnectCalendar = useDisconnectGoogleCalendar();
   
+  const [linkedCalendars, setLinkedCalendars] = useState<LinkedCalendar[]>([]);
+  const [isLoadingCalendars, setIsLoadingCalendars] = useState(true);
   const [profileSlug, setProfileSlug] = useState<string | null>(null);
   const [isEditingSlug, setIsEditingSlug] = useState(false);
   const [newSlug, setNewSlug] = useState("");
   const [isSavingSlug, setIsSavingSlug] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const fetchCalendars = async () => {
+    setIsLoadingCalendars(true);
+    const { data, error } = await (supabase
+      .from("linked_calendars") as any)
+      .select("*")
+      .eq("investor_id", userId)
+      .order("is_primary", { ascending: false });
+    
+    if (!error && data) {
+      setLinkedCalendars(data);
+    }
+    setIsLoadingCalendars(false);
+  };
+
+  useEffect(() => {
+    fetchCalendars();
+  }, [userId]);
+
   useEffect(() => {
     const fetchSlug = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("investor_profiles")
         .select("profile_slug")
         .eq("id", userId)
@@ -52,9 +80,32 @@ const CalendarSettingsTab = ({ userId }: CalendarSettingsTabProps) => {
     });
   };
 
-  const handleDisconnect = () => {
-    if (confirm("Are you sure you want to disconnect Google Calendar? Your bookings will still work, but won't sync to your calendar.")) {
-      disconnectCalendar.mutate(userId);
+  const handleRemoveCalendar = async (calendarId: string) => {
+    if (!confirm("Remove this calendar? It will no longer sync events or block availability.")) return;
+    
+    const { error } = await (supabase
+      .from("linked_calendars") as any)
+      .delete()
+      .eq("id", calendarId);
+    
+    if (error) {
+      toast({ title: "Failed to remove calendar", variant: "destructive" });
+    } else {
+      toast({ title: "Calendar removed" });
+      fetchCalendars();
+    }
+  };
+
+  const handleToggleAvailability = async (calendarId: string, currentValue: boolean) => {
+    const { error } = await (supabase
+      .from("linked_calendars") as any)
+      .update({ include_in_availability: !currentValue })
+      .eq("id", calendarId);
+    
+    if (!error) {
+      setLinkedCalendars(prev => 
+        prev.map(c => c.id === calendarId ? { ...c, include_in_availability: !currentValue } : c)
+      );
     }
   };
 
@@ -72,7 +123,6 @@ const CalendarSettingsTab = ({ userId }: CalendarSettingsTabProps) => {
   const handleSaveSlug = async () => {
     if (!newSlug.trim()) return;
     
-    // Validate slug format
     const slugRegex = /^[a-z0-9-]+$/;
     if (!slugRegex.test(newSlug.toLowerCase())) {
       toast({
@@ -117,14 +167,6 @@ const CalendarSettingsTab = ({ userId }: CalendarSettingsTabProps) => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
     <div className="p-4 max-w-2xl space-y-6">
       {/* Professional Booking Link */}
@@ -136,7 +178,7 @@ const CalendarSettingsTab = ({ userId }: CalendarSettingsTabProps) => {
           <div className="flex-1">
             <h3 className="font-medium mb-1">Your Booking Link</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Share this clean, professional link with startups to let them book meetings.
+              Share this link with startups to let them book meetings.
             </p>
 
             {isEditingSlug ? (
@@ -152,9 +194,6 @@ const CalendarSettingsTab = ({ userId }: CalendarSettingsTabProps) => {
                       className="flex-1 max-w-48"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Only lowercase letters, numbers, and hyphens
-                  </p>
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={handleSaveSlug} disabled={isSavingSlug}>
@@ -205,70 +244,97 @@ const CalendarSettingsTab = ({ userId }: CalendarSettingsTabProps) => {
         </div>
       </Card>
 
-      {/* Google Calendar Integration */}
+      {/* Linked Calendars */}
       <Card className="p-6">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-lg bg-muted">
-            <Calendar className="h-6 w-6" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-medium">Google Calendar</h3>
-              {calendarStatus?.connected && (
-                <Badge variant="outline" className="text-green-600 border-green-600">
-                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                  Connected
-                </Badge>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              {calendarStatus?.connected
-                ? "Your calendar is synced. New bookings will appear on your Google Calendar and your busy times are blocked from booking."
-                : "Connect your Google Calendar to sync bookings and block busy times automatically."}
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-medium">Linked Calendars</h3>
+            <p className="text-sm text-muted-foreground">
+              Connect calendars to sync events and manage availability
             </p>
-
-            {calendarStatus?.connected ? (
-              <div className="space-y-3">
-                <p className="text-xs text-muted-foreground">
-                  Connected on {format(new Date(calendarStatus.connectedAt!), "MMMM d, yyyy")}
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDisconnect}
-                  disabled={disconnectCalendar.isPending}
-                  className="text-destructive hover:text-destructive"
-                >
-                  {disconnectCalendar.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Unlink className="h-4 w-4 mr-2" />
-                  )}
-                  Disconnect
-                </Button>
-              </div>
-            ) : (
-              <Button onClick={handleConnect} disabled={connectCalendar.isPending}>
-                {connectCalendar.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Calendar className="h-4 w-4 mr-2" />
-                )}
-                Connect Google Calendar
-              </Button>
-            )}
           </div>
+          <Button onClick={handleConnect} disabled={connectCalendar.isPending} size="sm" className="gap-2">
+            {connectCalendar.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
+            Add Calendar
+          </Button>
         </div>
+
+        {isLoadingCalendars ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : linkedCalendars.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <Calendar className="h-10 w-10 mx-auto mb-3 opacity-50" />
+            <p>No calendars connected yet</p>
+            <p className="text-sm">Add your Google Calendar to get started</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {linkedCalendars.map((calendar) => (
+              <div
+                key={calendar.id}
+                className="flex items-center justify-between p-4 border border-border rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: calendar.color }}
+                  />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{calendar.calendar_name}</span>
+                      {calendar.is_primary && (
+                        <Badge variant="outline" className="text-xs">Primary</Badge>
+                      )}
+                      <Badge variant="outline" className="text-green-600 border-green-600 text-xs">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        Connected
+                      </Badge>
+                    </div>
+                    {calendar.calendar_email && (
+                      <p className="text-xs text-muted-foreground">{calendar.calendar_email}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Connected {format(new Date(calendar.connected_at), "MMM d, yyyy")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={calendar.include_in_availability}
+                      onCheckedChange={() => handleToggleAvailability(calendar.id, calendar.include_in_availability)}
+                    />
+                    <Label className="text-xs text-muted-foreground">Block availability</Label>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => handleRemoveCalendar(calendar.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
 
       {/* Tips */}
       <Card className="p-6 bg-muted/50">
         <h3 className="font-medium mb-3">💡 Tips for Better Booking Experience</h3>
         <ul className="space-y-2 text-sm text-muted-foreground">
-          <li>• Customize your URL to something memorable like <code className="bg-muted px-1 rounded">/book/john-smith</code></li>
-          <li>• Create specific event types for different meeting purposes (intro calls, deep dives, etc.)</li>
+          <li>• Link multiple calendars to aggregate all your busy times</li>
+          <li>• Toggle "Block availability" to include/exclude calendars from booking slots</li>
+          <li>• Create specific event types for different meeting purposes</li>
           <li>• Set buffer times between meetings to avoid back-to-back scheduling</li>
-          <li>• Connect Google Calendar to automatically block times when you're busy</li>
         </ul>
       </Card>
     </div>
