@@ -37,6 +37,7 @@ interface CreateEventModalProps {
   calendars: LinkedCalendar[];
   initialDate?: Date;
   initialHour?: number;
+  initialDuration?: number;
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -59,6 +60,7 @@ const CreateEventModal = ({
   calendars,
   initialDate,
   initialHour,
+  initialDuration,
 }: CreateEventModalProps) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -111,13 +113,13 @@ const CreateEventModal = ({
       setDate(format(initialDate || new Date(), "yyyy-MM-dd"));
       setStartHour(initialHour ?? 9);
       setStartMinute(0);
-      setDuration(60);
+      setDuration(initialDuration ?? 60);
       setSelectedCalendar(calendars[0]?.calendarId || "primary");
       setAttendees([]);
       setAttendeeEmail("");
       setReminder(15);
     }
-  }, [isOpen, initialDate, initialHour, calendars]);
+  }, [isOpen, initialDate, initialHour, initialDuration, calendars]);
 
   const handleAddAttendee = () => {
     const email = attendeeEmail.trim().toLowerCase();
