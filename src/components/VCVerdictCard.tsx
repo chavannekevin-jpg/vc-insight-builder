@@ -15,7 +15,8 @@ import {
   FileText, Scale, 
   Rocket,
   RefreshCw, Briefcase, Code, GraduationCap, Building,
-  Pencil, Building2
+  Pencil, Building2,
+  MessageSquareX, BarChart3, MessageSquare, Calendar, Wrench, Target
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -332,10 +333,7 @@ export const VCVerdictCard = memo(({
     );
   }
 
-  const concerns = verdict.concerns || [];
-  const totalHiddenIssues = verdict.hiddenIssuesCount || Math.max(concerns.length * 3, 8);
-  const inevitabilityStatement = verdict.inevitabilityStatement || 
-    "This pitch fails because the core logic doesn't survive partner scrutiny. It's not about timing—it's about structure.";
+
   const narrativeTransformation = verdict.narrativeTransformation || {
     currentNarrative: "Another pitch that doesn't clear the bar.",
     transformedNarrative: "A company that understands what VCs actually fund."
