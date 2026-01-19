@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Filter, Upload, UserCheck } from "lucide-react";
+import { Search, Plus, Filter, UserCheck } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -27,7 +27,7 @@ const STATUS_COLORS: Record<string, string> = {
   invested: "bg-primary/20 text-primary",
 };
 
-const CRMView = ({ contacts, isLoading, onContactClick, onAddContact, onBulkImport }: CRMViewProps) => {
+const CRMView = ({ contacts, isLoading, onContactClick, onAddContact }: CRMViewProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -50,14 +50,17 @@ const CRMView = ({ contacts, isLoading, onContactClick, onAddContact, onBulkImpo
     invested: filteredContacts.filter((c) => c.relationship_status === "invested"),
   };
 
+  // Count total contacts for empty state messaging
+  const totalContacts = Object.values(groupedByStatus).flat().length;
+
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
       <div className="p-4 border-b border-border/50 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold">CRM</h2>
+          <h2 className="text-lg font-semibold">CRM Pipeline</h2>
           <div className="text-sm text-muted-foreground">
-            {filteredContacts.length} contacts
+            {filteredContacts.length} tracked contacts
           </div>
         </div>
 
@@ -86,16 +89,9 @@ const CRMView = ({ contacts, isLoading, onContactClick, onAddContact, onBulkImpo
             </SelectContent>
           </Select>
 
-          {onBulkImport && (
-            <Button onClick={onBulkImport} variant="outline" size="sm" className="gap-1.5">
-              <Upload className="w-4 h-4" />
-              <span className="hidden sm:inline">Import</span>
-            </Button>
-          )}
-
-          <Button onClick={onAddContact} size="sm" className="gap-1.5">
+          <Button onClick={onAddContact} variant="outline" size="sm" className="gap-1.5">
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Contact</span>
+            <span className="hidden sm:inline">Add from Directory</span>
           </Button>
         </div>
       </div>
