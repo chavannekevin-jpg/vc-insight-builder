@@ -712,7 +712,7 @@ const PublicBookingPage = () => {
                           <p className="text-xs">No available times</p>
                         </div>
                       ) : (
-                        <ScrollArea className="h-[220px] pr-2">
+                        <ScrollArea className={`h-[220px] pr-2 ${isLightTheme ? "[&_[data-radix-scroll-area-thumb]]:bg-stone-300" : "[&_[data-radix-scroll-area-thumb]]:bg-zinc-600"}`}>
                           <div className="grid grid-cols-2 gap-1.5">
                             {availableSlots.map((slot, index) => (
                               <button
