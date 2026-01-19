@@ -35,6 +35,7 @@ import SettingsView from "@/components/investor/views/SettingsView";
 import PlaceholderView from "@/components/investor/views/PlaceholderView";
 import FundDirectoryView from "@/components/investor/views/FundDirectoryView";
 import BusinessCRMView from "@/components/investor/views/BusinessCRMView";
+import CalendarView from "@/components/investor/calendar/CalendarView";
 import { BarChart3, CalendarDays, Target } from "lucide-react";
 
 export interface InvestorContact {
@@ -233,13 +234,7 @@ const InvestorDashboard = () => {
           />
         );
       case "calendar":
-        return (
-          <PlaceholderView
-            title="Calendar"
-            description="Schedule meetings and track your investor calendar. Coming soon!"
-            icon={CalendarDays}
-          />
-        );
+        return <CalendarView userId={userId} />;
       case "thesis":
         return (
           <PlaceholderView
