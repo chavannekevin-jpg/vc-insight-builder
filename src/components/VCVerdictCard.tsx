@@ -507,11 +507,43 @@ export const VCVerdictCard = memo(({
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
                   "Investment Readiness Score (8 dimensions)",
-                  "Section-by-section VC verdict",
-                  "30+ investor questions + answers",
+                  "VC benchmark comparison per section",
+                  "Stage-calibrated verdict & expectations",
+                  "30+ investor questions with prepared answers",
+                  "\"Why VCs ask this\" context for each question",
                   "Red flags surfaced before your pitch",
                   "Holistic fundability assessment",
                   "Prioritized \"fix these first\" action plan",
+                  "Good vs. bad answer examples",
+                  "VC-grade narrative for each section",
+                  "Peer cohort benchmarking (not generic)",
+                  "Real case study comparisons",
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
+                    <span className="text-muted-foreground text-[11px]">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Section Deep Dives */}
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-2">Section Deep-Dives</p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                {[
+                  "Problem evidence threshold test",
+                  "Founder blind spot detection",
+                  "Solution technical defensibility score",
+                  "Commoditization risk teardown",
+                  "\"Can competitors build this?\" analysis",
+                  "Market readiness index",
+                  "VC market narrative framing",
+                  "Competitor chessboard positioning",
+                  "Moat durability assessment",
+                  "Team credibility gap analysis",
+                  "Business model stress test",
+                  "Traction depth & momentum signals",
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
@@ -531,9 +563,9 @@ export const VCVerdictCard = memo(({
                   "Valuation calculator (real numbers)",
                   "Dilution simulator (SAFE/CLA/Equity)",
                   "Raise calculator (runway planning)",
-                  "Competitive moat durability analysis",
-                  "90-day milestone roadmap",
+                  "90-day milestone roadmap per section",
                   "Exit pathway scenario planning",
+                  "Venture scale diagnostic",
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
@@ -550,7 +582,7 @@ export const VCVerdictCard = memo(({
                 {[
                   "VC Network: 300+ matching investors",
                   "Investor cold email generator",
-                  "\"Roast Your Baby\" VC simulation",
+                  "\"Roast Your Baby\" VC Q&A simulation",
                   "60+ VC Brain tactical guides",
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-1.5">
