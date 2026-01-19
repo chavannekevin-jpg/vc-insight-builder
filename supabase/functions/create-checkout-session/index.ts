@@ -78,14 +78,15 @@ serve(async (req) => {
 
     // Apply discount if provided (allow up to 100%)
     if (discountPercent && discountPercent > 0 && discountPercent <= 100) {
-      // Create a coupon for this specific discount
+      // Create a coupon with a short name (Stripe has 40 char limit)
+      // Full discount details are stored in session metadata
       const coupon = await stripe.coupons.create({
         percent_off: discountPercent,
         duration: "once",
-        name: `Discount: ${discountCode}`,
+        name: `${discountPercent}% off`,
       });
       sessionParams.discounts = [{ coupon: coupon.id }];
-      logStep("Created discount coupon", { couponId: coupon.id, percent: discountPercent });
+      logStep("Created discount coupon", { couponId: coupon.id, percent: discountPercent, originalCode: discountCode });
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
