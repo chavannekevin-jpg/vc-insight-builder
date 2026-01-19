@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, List, Map as MapIcon, Users, Globe } from "lucide-react";
+import { Search, Plus, List, Map as MapIcon, Users, Globe, Rocket } from "lucide-react";
 import InvestorWorldMap from "@/components/investor/InvestorWorldMap";
 import GlobalNetworkMap from "@/components/investor/GlobalNetworkMap";
 import ContactListView from "@/components/investor/ContactListView";
 import CityContactsModal from "@/components/investor/CityContactsModal";
 import GlobalCityModal from "@/components/investor/GlobalCityModal";
 import SuggestedContacts from "@/components/investor/SuggestedContacts";
+import InviteStartupModal from "@/components/investor/InviteStartupModal";
 import { useGlobalNetwork, type NetworkMarker } from "@/hooks/useGlobalNetwork";
 import type { InvestorContact } from "@/pages/investor/InvestorDashboard";
 
@@ -45,6 +46,7 @@ const NetworkMapView = ({
   const [networkMode, setNetworkMode] = useState<"my" | "global">("my");
   const [selectedCity, setSelectedCity] = useState<{ city: string; contacts: InvestorContact[] } | null>(null);
   const [selectedGlobalCity, setSelectedGlobalCity] = useState<{ city: string; markers: NetworkMarker[] } | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Get IDs of user's contacts for highlighting in global view
   const myContactGlobalIds = contacts
@@ -171,12 +173,29 @@ const NetworkMapView = ({
             </button>
           </div>
 
-          <Button onClick={onAddContact} size="sm" className="gap-1.5">
+          {/* Invite Startup CTA */}
+          <Button 
+            onClick={() => setShowInviteModal(true)} 
+            size="sm" 
+            className="gap-1.5 bg-primary hover:bg-primary/90"
+          >
+            <Rocket className="w-4 h-4" />
+            <span className="hidden sm:inline">Invite Startup</span>
+          </Button>
+
+          <Button onClick={onAddContact} size="sm" variant="outline" className="gap-1.5">
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Contact</span>
           </Button>
         </div>
       </div>
+
+      {/* Invite Startup Modal */}
+      <InviteStartupModal
+        open={showInviteModal}
+        onOpenChange={setShowInviteModal}
+        userId={userId}
+      />
 
       {/* Content */}
       <div className="flex-1 relative">
