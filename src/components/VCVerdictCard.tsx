@@ -145,7 +145,7 @@ export const VCVerdictCard = memo(({
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   // Get matching funds count for the preview
-  const { matchingFunds, strongMatches, isLoading: matchingLoading } = useMatchingFundsCount(
+  const { matchingFunds } = useMatchingFundsCount(
     companyId,
     { stage: companyStage, category: companyCategory || undefined }
   );
@@ -396,6 +396,25 @@ export const VCVerdictCard = memo(({
       )}
       
       <div className="relative bg-card/95 backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
+        {/* Investor Match Banner - Good news banner for unpaid users */}
+        {!hasPaid && matchingFunds > 0 && (
+          <div className="px-6 py-4 bg-gradient-to-r from-green-500/10 via-emerald-500/5 to-transparent border-b border-green-500/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0 border border-green-500/30">
+                <Building2 className="w-5 h-5 text-green-500" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-green-400">
+                  Good news: {matchingFunds} investors in our network look for companies like yours
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {companyStage} stage{companyCategory ? ` • ${companyCategory}` : ''} • Europe
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Preview indicator */}
         <div className="px-6 py-3 bg-primary/10 border-b border-primary/20 flex items-center justify-center gap-2">
           <Eye className="w-4 h-4 text-primary" />
@@ -563,38 +582,37 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* Investor Match Preview - Only for unpaid users */}
+        {/* Don't Burn Bridges CTA - Only for unpaid users with matches */}
         {!hasPaid && matchingFunds > 0 && (
-          <div className="px-6 py-4 border-b border-border/50 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                <Building2 className="w-6 h-6 text-primary" />
+          <div className="px-6 py-5 border-b border-border/50 bg-gradient-to-r from-amber-500/5 via-orange-500/5 to-transparent">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/15 flex items-center justify-center flex-shrink-0 border border-amber-500/20">
+                <Target className="w-6 h-6 text-amber-500" />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
                 <p className="text-sm font-semibold text-foreground">
-                  {matchingFunds}+ investors match your profile
+                  Before you reach out to these {matchingFunds} investors...
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {strongMatches > 0 ? `Including ${strongMatches} strong matches for ${companyStage}` : `Filtered for ${companyStage} stage startups`}
-                  {companyCategory ? ` in ${companyCategory}` : ''}
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  VCs talk. A bad first impression travels fast. Build your analysis first so you walk in prepared — 
+                  <strong className="text-foreground"> don't burn bridges you haven't even crossed yet.</strong>
                 </p>
               </div>
-              <Badge className="bg-primary/20 text-primary border-0 text-xs">
-                Premium
-              </Badge>
             </div>
           </div>
         )}
 
-        {/* The Key Question */}
-        <div className="px-6 py-4 border-b border-border/50">
-          <div className="p-4 rounded-xl border-2 border-dashed border-primary/30 text-center">
-            <p className="text-sm text-foreground">
-              Would you rather discover these questions in your next VC meeting — 
-              or <strong className="text-primary">walk in with answers already prepared</strong>?
-            </p>
+        {/* The Key Question - Only show if no matches or paid */}
+        {(hasPaid || matchingFunds === 0) && (
+          <div className="px-6 py-4 border-b border-border/50">
+            <div className="p-4 rounded-xl border-2 border-dashed border-primary/30 text-center">
+              <p className="text-sm text-foreground">
+                Would you rather discover these questions in your next VC meeting — 
+                or <strong className="text-primary">walk in with answers already prepared</strong>?
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* CTA Section */}
         <div className="p-6 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
@@ -604,16 +622,24 @@ export const VCVerdictCard = memo(({
             size="lg"
           >
             <FileText className="w-4 h-4 mr-2" />
-            {hasPaid && generationsAvailable > 0 ? "Edit & Regenerate" : "Unlock the Full 9 Page Analysis"}
+            {hasPaid && generationsAvailable > 0 
+              ? "Edit & Regenerate" 
+              : matchingFunds > 0 
+                ? "Prepare Before You Pitch" 
+                : "Unlock the Full 9 Page Analysis"}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
           <p className="text-xs text-center text-muted-foreground mt-3">
             {hasPaid && generationsAvailable > 0 
               ? `You have ${generationsAvailable} generation credit${generationsAvailable !== 1 ? 's' : ''} available.`
-              : "Problem · Solution · Market · Team · Traction · Business Model · Competition · Vision · Exit"}
+              : matchingFunds > 0
+                ? `Know exactly what ${matchingFunds} investors will ask — before they ask it`
+                : "Problem · Solution · Market · Team · Traction · Business Model · Competition · Vision · Exit"}
           </p>
           <p className="text-[10px] text-center text-muted-foreground/60 mt-1">
-            This is not advice. This is the room after the meeting.
+            {matchingFunds > 0 && !hasPaid 
+              ? "VCs talk. Don't burn bridges before you cross them."
+              : "This is not advice. This is the room after the meeting."}
           </p>
         </div>
       </div>

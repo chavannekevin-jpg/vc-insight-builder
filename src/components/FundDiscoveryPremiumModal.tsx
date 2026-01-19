@@ -53,17 +53,17 @@ export const FundDiscoveryPremiumModal = memo(({
 
         {/* Matching preview */}
         {matchingFundsCount > 0 && (
-          <div className="px-6 py-4 bg-primary/5 border-b border-border/50">
+          <div className="px-6 py-4 bg-gradient-to-r from-green-500/10 via-emerald-500/5 to-transparent border-b border-green-500/20">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                <Target className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center border border-green-500/30">
+                <Target className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">
-                  {matchingFundsCount}+ investors match your profile
+                <p className="text-sm font-semibold text-green-400">
+                  {matchingFundsCount} investors match your profile
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Based on {companyStage}{companyCategory ? ` • ${companyCategory}` : ''}
+                  {companyStage} stage{companyCategory ? ` • ${companyCategory}` : ''} • Europe
                 </p>
               </div>
             </div>
