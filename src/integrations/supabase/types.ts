@@ -175,6 +175,58 @@ export type Database = {
           },
         ]
       }
+      dealflow_shares: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          from_investor_id: string
+          id: string
+          is_read: boolean | null
+          message: string | null
+          to_investor_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          from_investor_id: string
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          to_investor_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          from_investor_id?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          to_investor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealflow_shares_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealflow_shares_from_investor_id_fkey"
+            columns: ["from_investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealflow_shares_to_investor_id_fkey"
+            columns: ["to_investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discount_codes: {
         Row: {
           code: string
@@ -452,6 +504,8 @@ export type Database = {
           investor_id: string
           invited_via_code: string | null
           notes: string | null
+          shared_at: string | null
+          shared_by_investor_id: string | null
           source: string | null
           status: string | null
           updated_at: string | null
@@ -463,6 +517,8 @@ export type Database = {
           investor_id: string
           invited_via_code?: string | null
           notes?: string | null
+          shared_at?: string | null
+          shared_by_investor_id?: string | null
           source?: string | null
           status?: string | null
           updated_at?: string | null
@@ -474,6 +530,8 @@ export type Database = {
           investor_id?: string
           invited_via_code?: string | null
           notes?: string | null
+          shared_at?: string | null
+          shared_by_investor_id?: string | null
           source?: string | null
           status?: string | null
           updated_at?: string | null
@@ -489,6 +547,13 @@ export type Database = {
           {
             foreignKeyName: "investor_dealflow_investor_id_fkey"
             columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_dealflow_shared_by_investor_id_fkey"
+            columns: ["shared_by_investor_id"]
             isOneToOne: false
             referencedRelation: "investor_profiles"
             referencedColumns: ["id"]

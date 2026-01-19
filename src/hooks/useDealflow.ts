@@ -14,6 +14,8 @@ export interface DealflowItem {
   notes: string | null;
   added_at: string;
   updated_at: string;
+  shared_by_investor_id: string | null;
+  shared_at: string | null;
   company: {
     id: string;
     name: string;
@@ -24,6 +26,11 @@ export interface DealflowItem {
     vc_verdict_json: any;
     memo_content_generated: boolean | null;
     created_at: string;
+  } | null;
+  shared_by?: {
+    id: string;
+    full_name: string;
+    organization_name: string | null;
   } | null;
 }
 
@@ -47,6 +54,11 @@ export function useDealflow(investorId: string | null) {
             vc_verdict_json,
             memo_content_generated,
             created_at
+          ),
+          shared_by:investor_profiles!shared_by_investor_id (
+            id,
+            full_name,
+            organization_name
           )
         `)
         .eq("investor_id", investorId)

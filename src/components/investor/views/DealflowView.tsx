@@ -2,15 +2,11 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Briefcase, TrendingUp, Clock, CheckCircle, XCircle, FileUp, Rocket, Gift, Loader2, FileText, Star, Plus } from "lucide-react";
-import { useDealflow, useUpdateDealStatus, DealStatus, DealflowItem } from "@/hooks/useDealflow";
+import { Search, Briefcase, TrendingUp, Clock, CheckCircle, XCircle, FileUp, Rocket, Gift, Loader2, FileText, Star, Share2 } from "lucide-react";
+import { useDealflow, DealStatus, DealflowItem } from "@/hooks/useDealflow";
 import InviteStartupModal from "../InviteStartupModal";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DealDetailModal } from "../DealDetailModal";
+import { formatDistanceToNow } from "date-fns";
 
 const STATUS_CONFIG = {
   reviewing: { label: "Reviewing", icon: Clock, color: "text-yellow-500 bg-yellow-500/10" },
@@ -34,9 +30,9 @@ interface DealflowViewProps {
 const DealflowView = ({ onUploadDeck, userId }: DealflowViewProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [selectedDeal, setSelectedDeal] = useState<DealflowItem | null>(null);
   
   const { data: deals = [], isLoading } = useDealflow(userId || null);
-  const updateStatus = useUpdateDealStatus(userId || null);
 
   const filteredDeals = useMemo(() => {
     return deals.filter((deal) =>
@@ -52,10 +48,6 @@ const DealflowView = ({ onUploadDeck, userId }: DealflowViewProps) => {
     closed: filteredDeals.filter((d) => d.status === "closed"),
     passed: filteredDeals.filter((d) => d.status === "passed"),
   }), [filteredDeals]);
-
-  const handleStatusChange = (dealId: string, newStatus: DealStatus) => {
-    updateStatus.mutate({ dealId, status: newStatus });
-  };
 
   const getVerdictScore = (deal: DealflowItem): number | null => {
     if (deal.company?.vc_verdict_json) {
@@ -119,6 +111,16 @@ const DealflowView = ({ onUploadDeck, userId }: DealflowViewProps) => {
         />
       )}
 
+      {/* Deal Detail Modal */}
+      {userId && (
+        <DealDetailModal
+          isOpen={!!selectedDeal}
+          onClose={() => setSelectedDeal(null)}
+          deal={selectedDeal}
+          currentInvestorId={userId}
+        />
+      )}
+
       {/* Content */}
       <div className="flex-1 overflow-auto p-4">
         {deals.length === 0 ? (
@@ -165,67 +167,66 @@ const DealflowView = ({ onUploadDeck, userId }: DealflowViewProps) => {
                         const sourceConfig = SOURCE_BADGES[deal.source];
                         const SourceIcon = sourceConfig.icon;
                         const score = getVerdictScore(deal);
+                        const isShared = !!deal.shared_by_investor_id;
 
                         return (
-                          <DropdownMenu key={deal.id}>
-                            <DropdownMenuTrigger asChild>
-                              <div className="bg-card border border-border rounded-lg p-3 cursor-pointer hover:border-primary/50 transition-colors">
-                                <div className="flex items-start justify-between gap-2 mb-1">
-                                  <p className="font-medium text-sm line-clamp-1">
-                                    {deal.company?.name || "Unknown"}
-                                  </p>
-                                  <Badge 
-                                    variant="outline" 
-                                    className={`text-[10px] px-1.5 py-0 h-5 shrink-0 ${sourceConfig.color}`}
-                                  >
-                                    <SourceIcon className="w-3 h-3 mr-1" />
-                                    {sourceConfig.label}
-                                  </Badge>
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                  {deal.company?.stage || "Unknown stage"}
-                                  {deal.company?.category && ` • ${deal.company.category}`}
-                                </p>
-                                {deal.company?.description && (
-                                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                    {deal.company.description}
-                                  </p>
-                                )}
-                                <div className="flex items-center justify-between mt-2">
-                                  {score !== null && (
-                                    <div className="flex items-center gap-1 text-xs">
-                                      <Star className="w-3 h-3 text-yellow-500" />
-                                      <span className="font-medium">{score}/100</span>
-                                    </div>
+                          <div 
+                            key={deal.id}
+                            onClick={() => setSelectedDeal(deal)}
+                            className="bg-card border border-border rounded-lg p-3 cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <p className="font-medium text-sm line-clamp-1">
+                                {deal.company?.name || "Unknown"}
+                              </p>
+                              <Badge 
+                                variant="outline" 
+                                className={`text-[10px] px-1.5 py-0 h-5 shrink-0 ${sourceConfig.color}`}
+                              >
+                                <SourceIcon className="w-3 h-3 mr-1" />
+                                {sourceConfig.label}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {deal.company?.stage || "Unknown stage"}
+                              {deal.company?.category && ` • ${deal.company.category}`}
+                            </p>
+                            {deal.company?.description && (
+                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                {deal.company.description}
+                              </p>
+                            )}
+                            
+                            {/* Shared By Badge */}
+                            {isShared && deal.shared_by && (
+                              <div className="flex items-center gap-1 mt-2 text-xs text-green-600 bg-green-500/10 px-2 py-1 rounded-md">
+                                <Share2 className="w-3 h-3" />
+                                <span className="truncate">
+                                  Shared by {deal.shared_by.full_name.split(' ')[0]}
+                                  {deal.shared_at && (
+                                    <span className="text-green-600/70">
+                                      {' '}• {formatDistanceToNow(new Date(deal.shared_at), { addSuffix: true })}
+                                    </span>
                                   )}
-                                  {deal.company?.memo_content_generated && (
-                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
-                                      <FileText className="w-3 h-3 mr-1" />
-                                      Memo
-                                    </Badge>
-                                  )}
-                                </div>
+                                </span>
                               </div>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start">
-                              {(["reviewing", "due_diligence", "term_sheet", "closed", "passed"] as const)
-                                .filter(s => s !== status)
-                                .map(newStatus => {
-                                  const cfg = STATUS_CONFIG[newStatus];
-                                  const StatusIcon = cfg.icon;
-                                  return (
-                                    <DropdownMenuItem 
-                                      key={newStatus}
-                                      onClick={() => handleStatusChange(deal.id, newStatus)}
-                                    >
-                                      <StatusIcon className={`w-4 h-4 mr-2 ${cfg.color.split(" ")[0]}`} />
-                                      Move to {cfg.label}
-                                    </DropdownMenuItem>
-                                  );
-                                })
-                              }
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                            )}
+
+                            <div className="flex items-center justify-between mt-2">
+                              {score !== null && (
+                                <div className="flex items-center gap-1 text-xs">
+                                  <Star className="w-3 h-3 text-yellow-500" />
+                                  <span className="font-medium">{score}/100</span>
+                                </div>
+                              )}
+                              {deal.company?.memo_content_generated && (
+                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
+                                  <FileText className="w-3 h-3 mr-1" />
+                                  Memo
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
