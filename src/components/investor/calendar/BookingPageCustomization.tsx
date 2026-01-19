@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, X, Sun, Moon, ImageIcon, Sparkles, Move, Linkedin, Globe, Twitter } from "lucide-react";
+import { Loader2, X, Sun, Moon, ImageIcon, Sparkles, Move, Linkedin, Globe, Twitter, User, Building2, Camera, Plus, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,8 +16,11 @@ interface CustomizationSettings {
   theme: "dark" | "light";
   coverUrl: string | null;
   coverPosition: string;
+  profilePictureUrl: string | null;
   headline: string | null;
   bio: string | null;
+  fullName: string;
+  organizationName: string | null;
   socialLinkedin: string | null;
   socialTwitter: string | null;
   socialWebsite: string | null;
@@ -28,18 +31,23 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
     theme: "dark",
     coverUrl: null,
     coverPosition: "50% 50%",
+    profilePictureUrl: null,
     headline: null,
     bio: null,
+    fullName: "",
+    organizationName: null,
     socialLinkedin: null,
     socialTwitter: null,
     socialWebsite: null,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [isUploadingProfile, setIsUploadingProfile] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isRepositioning, setIsRepositioning] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const profileInputRef = useRef<HTMLInputElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<{ x: number; y: number; posX: number; posY: number } | null>(null);
 
@@ -47,7 +55,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
     const fetchSettings = async () => {
       const { data, error } = await supabase
         .from("investor_profiles")
-        .select("booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, social_linkedin, social_twitter, social_website")
+        .select("booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, social_linkedin, social_twitter, social_website, full_name, organization_name, profile_picture_url")
         .eq("id", userId)
         .single();
 
@@ -56,8 +64,11 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
           theme: (data.booking_page_theme as "dark" | "light") || "dark",
           coverUrl: data.booking_page_cover_url,
           coverPosition: data.booking_page_cover_position || "50% 50%",
+          profilePictureUrl: data.profile_picture_url,
           headline: data.booking_page_headline,
           bio: data.booking_page_bio,
+          fullName: data.full_name || "",
+          organizationName: data.organization_name,
           socialLinkedin: data.social_linkedin,
           socialTwitter: data.social_twitter,
           socialWebsite: data.social_website,
@@ -76,6 +87,8 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
         booking_page_theme: settings.theme,
         booking_page_headline: settings.headline,
         booking_page_bio: settings.bio,
+        full_name: settings.fullName,
+        organization_name: settings.organizationName || null,
         social_linkedin: settings.socialLinkedin || null,
         social_twitter: settings.socialTwitter || null,
         social_website: settings.socialWebsite || null,
@@ -88,6 +101,91 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
       toast({ title: "Booking page settings saved!" });
     }
     setIsSaving(false);
+  };
+
+  const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Please upload an image file", variant: "destructive" });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Image must be under 5MB", variant: "destructive" });
+      return;
+    }
+
+    setIsUploadingProfile(true);
+
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${userId}/profile-${Date.now()}.${fileExt}`;
+
+      if (settings.profilePictureUrl) {
+        const oldPath = settings.profilePictureUrl.split("/booking-covers/")[1];
+        if (oldPath) {
+          await supabase.storage.from("booking-covers").remove([oldPath]);
+        }
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from("booking-covers")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("booking-covers")
+        .getPublicUrl(fileName);
+
+      const publicUrl = urlData.publicUrl;
+
+      const { error: updateError } = await supabase
+        .from("investor_profiles")
+        .update({ profile_picture_url: publicUrl })
+        .eq("id", userId);
+
+      if (updateError) throw updateError;
+
+      setSettings(prev => ({ ...prev, profilePictureUrl: publicUrl }));
+      toast({ title: "Profile picture uploaded!" });
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingProfile(false);
+      if (profileInputRef.current) profileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveProfilePicture = async () => {
+    if (!settings.profilePictureUrl) return;
+
+    try {
+      const oldPath = settings.profilePictureUrl.split("/booking-covers/")[1];
+      if (oldPath) {
+        await supabase.storage.from("booking-covers").remove([oldPath]);
+      }
+
+      await supabase
+        .from("investor_profiles")
+        .update({ profile_picture_url: null })
+        .eq("id", userId);
+
+      setSettings(prev => ({ ...prev, profilePictureUrl: null }));
+      toast({ title: "Profile picture removed" });
+    } catch (error: any) {
+      toast({
+        title: "Failed to remove profile picture",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleCoverUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +202,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
       return;
     }
 
-    setIsUploading(true);
+    setIsUploadingCover(true);
 
     try {
       const fileExt = file.name.split(".").pop();
@@ -148,8 +246,8 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
         variant: "destructive",
       });
     } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      setIsUploadingCover(false);
+      if (coverInputRef.current) coverInputRef.current.value = "";
     }
   };
 
@@ -208,7 +306,6 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
     const deltaX = ((clientX - dragStartRef.current.x) / containerRect.width) * 100;
     const deltaY = ((clientY - dragStartRef.current.y) / containerRect.height) * 100;
     
-    // Invert the delta because we're moving the object-position (not the viewport)
     const newX = Math.max(0, Math.min(100, dragStartRef.current.posX - deltaX));
     const newY = Math.max(0, Math.min(100, dragStartRef.current.posY - deltaY));
     
@@ -220,7 +317,6 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
     setIsDragging(false);
     dragStartRef.current = null;
     
-    // Save position to database
     const { error } = await supabase
       .from("investor_profiles")
       .update({ booking_page_cover_position: settings.coverPosition })
@@ -269,44 +365,134 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
+        {/* Profile Section */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            <User className="h-4 w-4" />
+            Profile Information
+          </div>
+          
+          <div className="grid gap-6 sm:grid-cols-[auto_1fr]">
+            {/* Profile Picture */}
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative group">
+                {settings.profilePictureUrl ? (
+                  <div className="w-24 h-24 rounded-full overflow-hidden ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
+                    <img
+                      src={settings.profilePictureUrl}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
+                    <span className="text-3xl font-bold text-primary">
+                      {settings.fullName?.charAt(0)?.toUpperCase() || "?"}
+                    </span>
+                  </div>
+                )}
+                
+                <button
+                  onClick={() => profileInputRef.current?.click()}
+                  disabled={isUploadingProfile}
+                  className="absolute -bottom-1 -right-1 p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg"
+                >
+                  {isUploadingProfile ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
+                </button>
+
+                {settings.profilePictureUrl && (
+                  <button
+                    onClick={handleRemoveProfilePicture}
+                    className="absolute -top-1 -right-1 p-1.5 rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+              
+              <input
+                ref={profileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleProfilePictureUpload}
+              />
+              <span className="text-xs text-muted-foreground">Profile Photo</span>
+            </div>
+
+            {/* Name & Organization */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Display Name</Label>
+                <Input
+                  id="fullName"
+                  placeholder="Your full name"
+                  value={settings.fullName}
+                  onChange={(e) => setSettings(prev => ({ ...prev, fullName: e.target.value }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="organizationName">Organization / Company</Label>
+                <Input
+                  id="organizationName"
+                  placeholder="e.g., Sequoia Capital, Angel Investor"
+                  value={settings.organizationName || ""}
+                  onChange={(e) => setSettings(prev => ({ ...prev, organizationName: e.target.value }))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Your fund, firm, or primary affiliation
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Theme Selection */}
         <div className="space-y-3">
-          <Label>Theme</Label>
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            <Sun className="h-4 w-4" />
+            Theme
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setSettings(prev => ({ ...prev, theme: "dark" }))}
-              className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+              className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                 settings.theme === "dark"
-                  ? "border-primary bg-primary/5"
+                  ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
                   : "border-border hover:border-primary/50"
               }`}
             >
-              <div className="p-2 rounded-md bg-background border border-border">
-                <Moon className="h-5 w-5 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-700">
+                <Moon className="h-5 w-5 text-zinc-300" />
               </div>
               <div className="text-left">
                 <div className="font-medium">Dark</div>
-                <div className="text-xs text-muted-foreground">Dark background theme</div>
+                <div className="text-xs text-muted-foreground">Elegant dark mode</div>
               </div>
             </button>
 
             <button
               type="button"
               onClick={() => setSettings(prev => ({ ...prev, theme: "light" }))}
-              className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+              className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                 settings.theme === "light"
-                  ? "border-primary bg-primary/5"
+                  ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
                   : "border-border hover:border-primary/50"
               }`}
             >
-              <div className="p-2 rounded-md bg-card border border-border">
-                <Sun className="h-5 w-5 text-accent" />
+              <div className="p-2 rounded-lg bg-white border border-slate-200 shadow-sm">
+                <Sun className="h-5 w-5 text-amber-500" />
               </div>
               <div className="text-left">
                 <div className="font-medium">Light</div>
-                <div className="text-xs text-muted-foreground">Light background theme</div>
+                <div className="text-xs text-muted-foreground">Clean & bright</div>
               </div>
             </button>
           </div>
@@ -315,7 +501,10 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
         {/* Cover Image */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>Cover Image</Label>
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+              <ImageIcon className="h-4 w-4" />
+              Cover Image
+            </div>
             {settings.coverUrl && !isRepositioning && (
               <Button
                 variant="ghost"
@@ -333,7 +522,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
               <div className="relative">
                 <div
                   ref={imageContainerRef}
-                  className={`relative overflow-hidden rounded-lg border ${
+                  className={`relative overflow-hidden rounded-xl border ${
                     isRepositioning 
                       ? "border-primary ring-2 ring-primary/20 cursor-move" 
                       : "border-border"
@@ -381,14 +570,14 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
                     </Button>
                   </div>
                 ) : (
-                  <div className="absolute inset-0 bg-background/60 opacity-0 hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+                  <div className="absolute inset-0 bg-background/60 opacity-0 hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-2">
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploading}
+                      onClick={() => coverInputRef.current?.click()}
+                      disabled={isUploadingCover}
                     >
-                      {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Replace"}
+                      {isUploadingCover ? <Loader2 className="h-4 w-4 animate-spin" /> : "Replace"}
                     </Button>
                     <Button
                       variant="destructive"
@@ -402,11 +591,11 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
               </div>
             ) : (
               <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="w-full h-40 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                onClick={() => coverInputRef.current?.click()}
+                disabled={isUploadingCover}
+                className="w-full h-40 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-colors"
               >
-                {isUploading ? (
+                {isUploadingCover ? (
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 ) : (
                   <>
@@ -418,7 +607,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
               </button>
             )}
             <input
-              ref={fileInputRef}
+              ref={coverInputRef}
               type="file"
               accept="image/*"
               className="hidden"
@@ -427,44 +616,55 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
           </div>
         </div>
 
-        {/* Custom Headline */}
-        <div className="space-y-2">
-          <Label htmlFor="headline">Custom Headline</Label>
-          <Input
-            id="headline"
-            placeholder="e.g., Book a meeting with me"
-            value={settings.headline || ""}
-            onChange={(e) => setSettings(prev => ({ ...prev, headline: e.target.value }))}
-            maxLength={100}
-          />
-          <p className="text-xs text-muted-foreground">
-            Shown above your event types. Leave empty to use default.
-          </p>
-        </div>
+        {/* Content Section */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            <Sparkles className="h-4 w-4" />
+            Page Content
+          </div>
+          
+          {/* Custom Headline */}
+          <div className="space-y-2">
+            <Label htmlFor="headline">Custom Headline</Label>
+            <Input
+              id="headline"
+              placeholder="e.g., Book a meeting with me"
+              value={settings.headline || ""}
+              onChange={(e) => setSettings(prev => ({ ...prev, headline: e.target.value }))}
+              maxLength={100}
+            />
+            <p className="text-xs text-muted-foreground">
+              Shown above your event types. Leave empty to use default.
+            </p>
+          </div>
 
-        {/* Bio */}
-        <div className="space-y-2">
-          <Label htmlFor="bio">Short Bio</Label>
-          <Textarea
-            id="bio"
-            placeholder="e.g., I invest in early-stage B2B SaaS startups..."
-            value={settings.bio || ""}
-            onChange={(e) => setSettings(prev => ({ ...prev, bio: e.target.value }))}
-            maxLength={300}
-            rows={3}
-          />
-          <p className="text-xs text-muted-foreground">
-            A brief description shown on your booking page. Max 300 characters.
-          </p>
+          {/* Bio */}
+          <div className="space-y-2">
+            <Label htmlFor="bio">Short Bio</Label>
+            <Textarea
+              id="bio"
+              placeholder="e.g., I invest in early-stage B2B SaaS startups..."
+              value={settings.bio || ""}
+              onChange={(e) => setSettings(prev => ({ ...prev, bio: e.target.value }))}
+              maxLength={300}
+              rows={3}
+            />
+            <p className="text-xs text-muted-foreground">
+              A brief description shown on your booking page. Max 300 characters.
+            </p>
+          </div>
         </div>
 
         {/* Social Links */}
         <div className="space-y-4">
-          <Label>Social Links</Label>
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            <Globe className="h-4 w-4" />
+            Social Links
+          </div>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-md bg-muted">
-                <Linkedin className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2.5 rounded-lg bg-[#0077B5]/10">
+                <Linkedin className="h-4 w-4 text-[#0077B5]" />
               </div>
               <Input
                 placeholder="https://linkedin.com/in/yourprofile"
@@ -473,8 +673,8 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
               />
             </div>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-md bg-muted">
-                <Twitter className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2.5 rounded-lg bg-foreground/10">
+                <Twitter className="h-4 w-4" />
               </div>
               <Input
                 placeholder="https://twitter.com/yourhandle"
@@ -483,8 +683,8 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
               />
             </div>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-md bg-muted">
-                <Globe className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2.5 rounded-lg bg-primary/10">
+                <Globe className="h-4 w-4 text-primary" />
               </div>
               <Input
                 placeholder="https://yourwebsite.com"
@@ -499,7 +699,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
         </div>
 
         {/* Save Button */}
-        <Button onClick={handleSave} disabled={isSaving} className="w-full gap-2">
+        <Button onClick={handleSave} disabled={isSaving} className="w-full gap-2" size="lg">
           {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           Save Changes
         </Button>
