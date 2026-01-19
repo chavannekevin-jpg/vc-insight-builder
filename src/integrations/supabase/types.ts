@@ -277,15 +277,20 @@ export type Database = {
           created_at: string | null
           email: string | null
           entity_type: Database["public"]["Enums"]["entity_type"]
+          focus_confidence: string | null
+          focus_last_researched_at: string | null
+          focus_source: string | null
           fund_size: number | null
           id: string
           investment_focus: Json | null
           linked_investor_id: string | null
           linkedin_url: string | null
           name: string
+          notable_investments: Json | null
           organization_name: string | null
           phone: string | null
           stages: Json | null
+          thesis_keywords: Json | null
           ticket_size_max: number | null
           ticket_size_min: number | null
           updated_at: string | null
@@ -299,15 +304,20 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           entity_type: Database["public"]["Enums"]["entity_type"]
+          focus_confidence?: string | null
+          focus_last_researched_at?: string | null
+          focus_source?: string | null
           fund_size?: number | null
           id?: string
           investment_focus?: Json | null
           linked_investor_id?: string | null
           linkedin_url?: string | null
           name: string
+          notable_investments?: Json | null
           organization_name?: string | null
           phone?: string | null
           stages?: Json | null
+          thesis_keywords?: Json | null
           ticket_size_max?: number | null
           ticket_size_min?: number | null
           updated_at?: string | null
@@ -321,15 +331,20 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           entity_type?: Database["public"]["Enums"]["entity_type"]
+          focus_confidence?: string | null
+          focus_last_researched_at?: string | null
+          focus_source?: string | null
           fund_size?: number | null
           id?: string
           investment_focus?: Json | null
           linked_investor_id?: string | null
           linkedin_url?: string | null
           name?: string
+          notable_investments?: Json | null
           organization_name?: string | null
           phone?: string | null
           stages?: Json | null
+          thesis_keywords?: Json | null
           ticket_size_max?: number | null
           ticket_size_min?: number | null
           updated_at?: string | null

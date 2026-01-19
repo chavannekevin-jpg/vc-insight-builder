@@ -113,3 +113,6 @@ verify_jwt = false
 
 [functions.generate-investor-memo]
 verify_jwt = false
+
+[functions.research-contact]
+verify_jwt = false
