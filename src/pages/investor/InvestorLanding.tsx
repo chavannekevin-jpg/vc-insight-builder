@@ -1,29 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Map, Users, Share2, TrendingUp, Network, Globe } from "lucide-react";
+import { Header } from "@/components/Header";
 
 const InvestorLanding = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div 
-            className="text-xl font-bold text-primary cursor-pointer" 
-            onClick={() => navigate("/")}
-          >
-            VC Insight Builder
-          </div>
-          <Button 
-            onClick={() => navigate("/investor/auth")}
-            className="bg-primary hover:bg-primary/90"
-          >
-            Sign In
-          </Button>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="py-20 md:py-32 px-4">
