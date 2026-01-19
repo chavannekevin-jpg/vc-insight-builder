@@ -480,8 +480,8 @@ const PublicBookingPage = () => {
       <div className={`max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 ${investorProfile.booking_page_cover_url ? "-mt-8 sm:-mt-12 relative z-10" : "pt-4 sm:pt-6"}`}>
         {/* Mobile: Stack vertically, Desktop: Side by side */}
         <div className="flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-4 lg:gap-5">
-          {/* Profile Card - More compact on mobile */}
-          <div className="space-y-3 order-1 lg:order-none">
+          {/* Profile Card & CTA Cards - Show after booking on mobile */}
+          <div className="space-y-3 order-2 lg:order-none">
             <ProfileCard />
 
             {/* CTA - Investors */}
@@ -530,7 +530,7 @@ const PublicBookingPage = () => {
           </div>
 
           {/* Right Side - Booking Flow - Comes first on mobile */}
-          <div className="animate-fade-in order-2 lg:order-none">
+          <div className="animate-fade-in order-1 lg:order-none">
             {/* Back Button - Larger touch target on mobile */}
             {step !== "select-event" && (
               <Button 
