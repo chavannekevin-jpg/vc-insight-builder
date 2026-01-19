@@ -208,44 +208,50 @@ const PublicBookingPage = () => {
   // Theme configuration
   const isLightTheme = investorProfile?.booking_page_theme === "light";
 
+  // Light Theme - Clean, airy, professional with warm accents
   const lightTheme = {
-    bg: "bg-gradient-to-br from-slate-50 via-white to-slate-100",
-    card: "bg-white border-slate-200 shadow-sm",
-    cardHover: "hover:border-violet-300 hover:shadow-md",
-    text: "text-slate-900",
-    textMuted: "text-slate-600",
-    textSubtle: "text-slate-500",
-    border: "border-slate-200",
-    accent: "bg-violet-600",
-    accentLight: "bg-violet-50",
-    accentBorder: "border-violet-200",
-    badge: "bg-slate-100 text-slate-700 border-slate-200",
-    input: "bg-white border-slate-300 focus:border-violet-500",
-    button: "bg-violet-600 hover:bg-violet-700 text-white",
-    buttonOutline: "border-slate-300 hover:bg-slate-50 text-slate-700",
-    calendarDay: "hover:bg-violet-50 text-slate-700",
-    calendarDaySelected: "bg-violet-600 text-white hover:bg-violet-700",
-    calendarDayToday: "ring-2 ring-violet-300",
+    bg: "bg-gradient-to-br from-stone-50 via-white to-amber-50/30",
+    card: "bg-white/80 backdrop-blur-sm border-stone-200/60 shadow-sm shadow-stone-200/50",
+    cardHover: "hover:border-amber-300/60 hover:shadow-lg hover:shadow-amber-100/50",
+    text: "text-stone-900",
+    textMuted: "text-stone-600",
+    textSubtle: "text-stone-400",
+    border: "border-stone-200/60",
+    accent: "bg-amber-500",
+    accentLight: "bg-amber-50",
+    accentBorder: "border-amber-200/60",
+    badge: "bg-stone-100/80 text-stone-600 border-stone-200/60",
+    input: "bg-white border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-amber-400 focus:ring-amber-400/20",
+    button: "bg-stone-900 hover:bg-stone-800 text-white",
+    buttonOutline: "border-stone-200 bg-white hover:bg-stone-50 text-stone-700 hover:border-amber-300 hover:text-amber-700",
+    calendarDay: "hover:bg-amber-50 text-stone-700",
+    calendarDaySelected: "bg-stone-900 text-white hover:bg-stone-800",
+    calendarDayToday: "ring-2 ring-amber-400/50 ring-offset-1 ring-offset-white",
+    slotButton: "border-stone-200 bg-white text-stone-700 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-800",
+    eventCard: "bg-white border-stone-200/80 hover:border-stone-300",
   };
 
+  // Dark Theme - Bold, neon-accented, cyberpunk-inspired
   const darkTheme = {
-    bg: "bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950",
-    card: "bg-zinc-900/80 border-zinc-800 backdrop-blur-sm",
-    cardHover: "hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10",
+    bg: "bg-gradient-to-br from-zinc-950 via-black to-zinc-950",
+    card: "bg-zinc-900/60 backdrop-blur-xl border-zinc-800/80 shadow-xl shadow-black/20",
+    cardHover: "hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10",
     text: "text-white",
     textMuted: "text-zinc-400",
     textSubtle: "text-zinc-500",
-    border: "border-zinc-800",
+    border: "border-zinc-800/80",
     accent: "bg-primary",
     accentLight: "bg-primary/10",
     accentBorder: "border-primary/30",
-    badge: "bg-zinc-800 text-zinc-300 border-zinc-700",
-    input: "bg-zinc-900 border-zinc-700 focus:border-primary",
-    button: "bg-primary hover:bg-primary/90",
-    buttonOutline: "border-zinc-700 hover:bg-zinc-800",
-    calendarDay: "hover:bg-zinc-800 text-zinc-300",
+    badge: "bg-zinc-800/80 text-zinc-300 border-zinc-700/80",
+    input: "bg-zinc-900/80 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-primary focus:ring-primary/20",
+    button: "bg-primary hover:bg-primary/90 text-primary-foreground",
+    buttonOutline: "border-zinc-700 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 hover:border-primary/50 hover:text-primary",
+    calendarDay: "hover:bg-zinc-800/80 text-zinc-300",
     calendarDaySelected: "bg-primary text-primary-foreground hover:bg-primary/90",
-    calendarDayToday: "ring-2 ring-primary/50",
+    calendarDayToday: "ring-2 ring-primary/50 ring-offset-1 ring-offset-zinc-900",
+    slotButton: "border-zinc-700 bg-zinc-900/50 text-zinc-300 hover:border-primary/50 hover:bg-primary/10 hover:text-primary",
+    eventCard: "bg-zinc-900/40 border-zinc-800/60 hover:border-zinc-700",
   };
 
   const theme = isLightTheme ? lightTheme : darkTheme;
@@ -284,16 +290,16 @@ const PublicBookingPage = () => {
     return (
       <div className={`min-h-screen p-4 ${theme.bg}`}>
         <div className="max-w-4xl mx-auto pt-12 grid lg:grid-cols-2 gap-8 items-start">
-          <Card className={`p-8 text-center border-emerald-500/30 ${isLightTheme ? "bg-emerald-50" : "bg-emerald-500/10"}`}>
+          <Card className={`p-8 text-center ${isLightTheme ? "border-emerald-200 bg-gradient-to-br from-emerald-50 to-white" : "border-emerald-500/30 bg-emerald-500/10"}`}>
             <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${isLightTheme ? "bg-emerald-100" : "bg-emerald-500/20"}`}>
               <CheckCircle2 className="h-10 w-10 text-emerald-500" />
             </div>
-            <h2 className={`text-2xl font-bold mb-2 ${theme.text}`}>You're Booked!</h2>
+            <h2 className={`text-2xl font-semibold mb-2 ${theme.text}`}>You're Booked!</h2>
             <p className={`mb-6 ${theme.textMuted}`}>
               Your meeting with {investorProfile.full_name} is confirmed.
             </p>
-            <div className={`p-4 rounded-xl text-left space-y-3 mb-4 ${isLightTheme ? "bg-white border border-slate-200" : "bg-zinc-800/50"}`}>
-              <p className={`font-semibold ${theme.text}`}>{selectedEvent?.name}</p>
+            <div className={`p-4 rounded-xl text-left space-y-3 mb-4 ${isLightTheme ? "bg-white border border-stone-200/80" : "bg-zinc-800/50"}`}>
+              <p className={`font-medium ${theme.text}`}>{selectedEvent?.name}</p>
               <div className={`flex items-center gap-2 text-sm ${theme.textMuted}`}>
                 <Calendar className="h-4 w-4" />
                 {format(new Date(selectedSlot!.start), "EEEE, MMMM d, yyyy")}
@@ -349,7 +355,7 @@ const PublicBookingPage = () => {
     <Card className={`p-6 ${theme.card}`}>
       <div className="flex flex-col items-center text-center">
         {investorProfile.profile_picture_url ? (
-          <div className="w-20 h-20 rounded-full overflow-hidden mb-4 ring-4 ring-primary/20 ring-offset-2 ring-offset-background shadow-xl">
+          <div className={`w-20 h-20 rounded-full overflow-hidden mb-4 ring-4 ring-offset-2 shadow-xl ${isLightTheme ? "ring-amber-200/60 ring-offset-white" : "ring-primary/20 ring-offset-zinc-900"}`}>
             <img
               src={investorProfile.profile_picture_url}
               alt={investorProfile.full_name}
@@ -357,8 +363,8 @@ const PublicBookingPage = () => {
             />
           </div>
         ) : (
-          <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 ring-4 ring-primary/20 ring-offset-2 ring-offset-background shadow-xl ${isLightTheme ? "bg-violet-100" : "bg-primary/10"}`}>
-            <span className={`text-2xl font-bold ${isLightTheme ? "text-violet-600" : "text-primary"}`}>
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 ring-4 ring-offset-2 shadow-xl ${isLightTheme ? "bg-gradient-to-br from-amber-100 to-stone-100 ring-amber-200/60 ring-offset-white" : "bg-gradient-to-br from-primary/20 to-zinc-800 ring-primary/20 ring-offset-zinc-900"}`}>
+            <span className={`text-2xl font-semibold ${isLightTheme ? "text-stone-700" : "text-primary"}`}>
               {investorProfile.full_name.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -411,7 +417,7 @@ const PublicBookingPage = () => {
                 href={investorProfile.social_linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`p-2 rounded-lg transition-all ${isLightTheme ? "bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600" : "bg-zinc-800 hover:bg-blue-500/20 text-zinc-400 hover:text-blue-400"}`}
+                className={`p-2 rounded-lg transition-all ${isLightTheme ? "bg-stone-100 hover:bg-blue-50 text-stone-500 hover:text-blue-600" : "bg-zinc-800 hover:bg-blue-500/20 text-zinc-400 hover:text-blue-400"}`}
               >
                 <Linkedin className="h-4 w-4" />
               </a>
@@ -421,7 +427,7 @@ const PublicBookingPage = () => {
                 href={investorProfile.social_twitter}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`p-2 rounded-lg transition-all ${isLightTheme ? "bg-slate-100 hover:bg-slate-200 text-slate-600" : "bg-zinc-800 hover:bg-zinc-700 text-zinc-400"}`}
+                className={`p-2 rounded-lg transition-all ${isLightTheme ? "bg-stone-100 hover:bg-stone-200 text-stone-500" : "bg-zinc-800 hover:bg-zinc-700 text-zinc-400"}`}
               >
                 <Twitter className="h-4 w-4" />
               </a>
@@ -431,7 +437,7 @@ const PublicBookingPage = () => {
                 href={investorProfile.social_website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`p-2 rounded-lg transition-all ${isLightTheme ? "bg-slate-100 hover:bg-violet-50 text-slate-600 hover:text-violet-600" : "bg-zinc-800 hover:bg-primary/20 text-zinc-400 hover:text-primary"}`}
+                className={`p-2 rounded-lg transition-all ${isLightTheme ? "bg-stone-100 hover:bg-amber-50 text-stone-500 hover:text-amber-600" : "bg-zinc-800 hover:bg-primary/20 text-zinc-400 hover:text-primary"}`}
               >
                 <Globe className="h-4 w-4" />
               </a>
@@ -466,14 +472,14 @@ const PublicBookingPage = () => {
             {/* CTAs */}
             <Card className={`p-4 ${theme.card} ${theme.accentBorder}`}>
               <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${isLightTheme ? "bg-violet-100" : "bg-primary/20"}`}>
-                  <Users className={`h-4 w-4 ${isLightTheme ? "text-violet-600" : "text-primary"}`} />
+                <div className={`p-2 rounded-lg ${isLightTheme ? "bg-amber-100" : "bg-primary/20"}`}>
+                  <Users className={`h-4 w-4 ${isLightTheme ? "text-amber-700" : "text-primary"}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-medium ${theme.text}`}>Are you an investor?</p>
                   <p className={`text-xs truncate ${theme.textSubtle}`}>Join the VC Brain Network</p>
                 </div>
-                <Button size="sm" variant="ghost" onClick={handleJoinNetwork}>
+                <Button size="sm" variant="ghost" onClick={handleJoinNetwork} className={isLightTheme ? "text-stone-500 hover:text-amber-700 hover:bg-amber-50" : ""}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -481,14 +487,14 @@ const PublicBookingPage = () => {
 
             <Card className={`p-4 ${theme.card}`}>
               <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${isLightTheme ? "bg-pink-100" : "bg-pink-500/20"}`}>
-                  <Sparkles className={`h-4 w-4 ${isLightTheme ? "text-pink-600" : "text-pink-400"}`} />
+                <div className={`p-2 rounded-lg ${isLightTheme ? "bg-rose-100" : "bg-pink-500/20"}`}>
+                  <Sparkles className={`h-4 w-4 ${isLightTheme ? "text-rose-600" : "text-pink-400"}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-medium ${theme.text}`}>Are you a startup?</p>
                   <p className={`text-xs truncate ${theme.textSubtle}`}>Get VC-ready with AI analysis</p>
                 </div>
-                <Button size="sm" variant="ghost" onClick={() => navigate("/")}>
+                <Button size="sm" variant="ghost" onClick={() => navigate("/")} className={isLightTheme ? "text-stone-500 hover:text-rose-600 hover:bg-rose-50" : ""}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -511,62 +517,66 @@ const PublicBookingPage = () => {
               </Button>
             )}
 
-            {/* Select Event Type - Modern Cards */}
+            {/* Select Event Type - Premium Minimal Cards */}
             {step === "select-event" && (
-              <div className="space-y-5">
+              <div className="space-y-6">
                 <div>
-                  <h2 className={`text-2xl font-bold mb-2 ${theme.text}`}>
+                  <h2 className={`text-2xl font-semibold tracking-tight mb-1 ${theme.text}`}>
                     {investorProfile.booking_page_headline || "Book a Meeting"}
                   </h2>
-                  <p className={theme.textMuted}>Select a meeting type to get started</p>
+                  <p className={`text-sm ${theme.textMuted}`}>Select a meeting type to get started</p>
                 </div>
                 
                 {eventTypes.length === 0 ? (
-                  <Card className={`p-12 text-center border-dashed ${theme.card}`}>
-                    <Calendar className={`h-12 w-12 mx-auto mb-4 ${theme.textMuted}`} />
-                    <p className={theme.textMuted}>No meeting types available yet</p>
-                  </Card>
+                  <div className={`py-16 text-center rounded-2xl border-2 border-dashed ${theme.border}`}>
+                    <Calendar className={`h-10 w-10 mx-auto mb-3 ${theme.textSubtle}`} />
+                    <p className={`text-sm ${theme.textMuted}`}>No meeting types available yet</p>
+                  </div>
                 ) : (
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-3">
                     {eventTypes.map((event) => (
-                      <Card
+                      <button
                         key={event.id}
-                        className={`relative overflow-hidden cursor-pointer transition-all group ${theme.card} ${theme.cardHover}`}
+                        className={`w-full text-left group transition-all duration-200 rounded-xl border p-4 ${theme.eventCard}`}
                         onClick={() => { setSelectedEvent(event); setStep("calendar"); }}
                       >
-                        {/* Color accent bar */}
-                        <div 
-                          className="absolute top-0 left-0 right-0 h-1 transition-all group-hover:h-1.5"
-                          style={{ backgroundColor: event.color }}
-                        />
-                        
-                        <div className="p-5 pt-6">
-                          <div className="flex items-start justify-between mb-3">
-                            <div 
-                              className="p-2.5 rounded-xl"
-                              style={{ backgroundColor: `${event.color}20` }}
-                            >
-                              <Video className="h-5 w-5" style={{ color: event.color }} />
+                        <div className="flex items-center gap-4">
+                          {/* Color indicator */}
+                          <div 
+                            className="w-1 h-12 rounded-full flex-shrink-0 transition-all group-hover:h-14"
+                            style={{ backgroundColor: event.color }}
+                          />
+                          
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className={`font-medium ${theme.text} group-hover:${isLightTheme ? "text-amber-800" : "text-primary"} transition-colors`}>
+                                {event.name}
+                              </h3>
                             </div>
-                            <ChevronRight className={`h-5 w-5 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1 ${theme.textMuted}`} />
+                            
+                            <div className="flex items-center gap-3">
+                              <span className={`inline-flex items-center gap-1.5 text-sm ${theme.textMuted}`}>
+                                <Clock className="h-3.5 w-3.5" />
+                                {event.duration_minutes} min
+                              </span>
+                              {event.description && (
+                                <>
+                                  <span className={theme.textSubtle}>·</span>
+                                  <span className={`text-sm truncate ${theme.textSubtle}`}>
+                                    {event.description}
+                                  </span>
+                                </>
+                              )}
+                            </div>
                           </div>
-                          
-                          <h3 className={`font-semibold text-lg mb-2 group-hover:text-primary transition-colors ${theme.text}`}>
-                            {event.name}
-                          </h3>
-                          
-                          <div className={`flex items-center gap-2 text-sm ${theme.textMuted}`}>
-                            <Timer className="h-4 w-4" />
-                            <span>{event.duration_minutes} min</span>
+
+                          {/* Arrow */}
+                          <div className={`flex-shrink-0 p-2 rounded-full transition-all ${isLightTheme ? "bg-stone-100 group-hover:bg-amber-100" : "bg-zinc-800 group-hover:bg-primary/20"}`}>
+                            <ArrowRight className={`h-4 w-4 transition-all group-hover:translate-x-0.5 ${isLightTheme ? "text-stone-400 group-hover:text-amber-600" : "text-zinc-500 group-hover:text-primary"}`} />
                           </div>
-                          
-                          {event.description && (
-                            <p className={`text-sm mt-3 line-clamp-2 ${theme.textSubtle}`}>
-                              {event.description}
-                            </p>
-                          )}
                         </div>
-                      </Card>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -675,14 +685,13 @@ const PublicBookingPage = () => {
                         <ScrollArea className="h-[280px] pr-3">
                           <div className="space-y-2">
                             {availableSlots.map((slot) => (
-                              <Button
+                              <button
                                 key={slot.start}
-                                variant="outline"
-                                className={`w-full justify-center font-medium ${theme.buttonOutline} ${isLightTheme ? "hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700" : "hover:border-primary/50 hover:bg-primary/10 hover:text-primary"}`}
+                                className={`w-full py-2.5 px-4 rounded-lg border text-sm font-medium transition-all duration-150 ${theme.slotButton}`}
                                 onClick={() => handleSlotSelect(slot)}
                               >
                                 {format(new Date(slot.start), "h:mm a")}
-                              </Button>
+                              </button>
                             ))}
                           </div>
                         </ScrollArea>
@@ -696,20 +705,21 @@ const PublicBookingPage = () => {
             {/* Booking Form */}
             {step === "form" && selectedSlot && (
               <Card className={`p-6 ${theme.card}`}>
-                <div className={`mb-6 p-4 rounded-xl ${isLightTheme ? "bg-violet-50 border border-violet-100" : "bg-primary/5 border border-primary/10"}`}>
+                <div className={`mb-6 p-4 rounded-xl ${isLightTheme ? "bg-amber-50/50 border border-amber-100/60" : "bg-primary/5 border border-primary/10"}`}>
                   <div className="flex items-center gap-4">
                     <div 
-                      className="w-1.5 h-14 rounded-full" 
+                      className="w-1 h-12 rounded-full" 
                       style={{ backgroundColor: selectedEvent?.color }} 
                     />
                     <div>
-                      <p className={`font-semibold ${theme.text}`}>{selectedEvent?.name}</p>
+                      <p className={`font-medium ${theme.text}`}>{selectedEvent?.name}</p>
                       <div className={`flex items-center gap-3 text-sm mt-1 ${theme.textMuted}`}>
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1.5">
                           <Calendar className="h-3.5 w-3.5" />
                           {format(new Date(selectedSlot.start), "EEE, MMM d")}
                         </span>
-                        <span className="flex items-center gap-1">
+                        <span className={isLightTheme ? "text-stone-300" : "text-zinc-600"}>·</span>
+                        <span className="flex items-center gap-1.5">
                           <Clock className="h-3.5 w-3.5" />
                           {format(new Date(selectedSlot.start), "h:mm a")}
                         </span>
