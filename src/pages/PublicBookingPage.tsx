@@ -48,6 +48,7 @@ interface InvestorProfile {
   investor_type: string | null;
   booking_page_theme: "dark" | "light" | null;
   booking_page_cover_url: string | null;
+  booking_page_cover_position: string | null;
   booking_page_headline: string | null;
   booking_page_bio: string | null;
 }
@@ -90,14 +91,14 @@ const PublicBookingPage = () => {
       if (isUUID) {
         const { data } = await supabase
           .from("investor_profiles")
-          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_headline, booking_page_bio")
+          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio")
           .eq("id", investorId)
           .single();
         profile = data as InvestorProfile | null;
       } else {
         const { data } = await supabase
           .from("investor_profiles")
-          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_headline, booking_page_bio")
+          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio")
           .eq("profile_slug", investorId)
           .single();
         profile = data as InvestorProfile | null;
@@ -347,6 +348,7 @@ const PublicBookingPage = () => {
             src={investorProfile.booking_page_cover_url}
             alt="Cover"
             className="w-full h-full object-cover"
+            style={{ objectPosition: investorProfile.booking_page_cover_position || "50% 50%" }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80" />
         </div>

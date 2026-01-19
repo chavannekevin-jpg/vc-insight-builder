@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Upload, X, Sun, Moon, ImageIcon, Sparkles } from "lucide-react";
+import { Loader2, X, Sun, Moon, ImageIcon, Sparkles, Move } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,6 +15,7 @@ interface BookingPageCustomizationProps {
 interface CustomizationSettings {
   theme: "dark" | "light";
   coverUrl: string | null;
+  coverPosition: string;
   headline: string | null;
   bio: string | null;
 }
@@ -23,19 +24,24 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
   const [settings, setSettings] = useState<CustomizationSettings>({
     theme: "dark",
     coverUrl: null,
+    coverPosition: "50% 50%",
     headline: null,
     bio: null,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isRepositioning, setIsRepositioning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const dragStartRef = useRef<{ x: number; y: number; posX: number; posY: number } | null>(null);
 
   useEffect(() => {
     const fetchSettings = async () => {
       const { data, error } = await supabase
         .from("investor_profiles")
-        .select("booking_page_theme, booking_page_cover_url, booking_page_headline, booking_page_bio")
+        .select("booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio")
         .eq("id", userId)
         .single();
 
@@ -43,6 +49,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
         setSettings({
           theme: (data.booking_page_theme as "dark" | "light") || "dark",
           coverUrl: data.booking_page_cover_url,
+          coverPosition: data.booking_page_cover_position || "50% 50%",
           headline: data.booking_page_headline,
           bio: data.booking_page_bio,
         });
@@ -75,13 +82,11 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       toast({ title: "Please upload an image file", variant: "destructive" });
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({ title: "Image must be under 5MB", variant: "destructive" });
       return;
@@ -90,11 +95,9 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
     setIsUploading(true);
 
     try {
-      // Generate unique filename
       const fileExt = file.name.split(".").pop();
       const fileName = `${userId}/cover-${Date.now()}.${fileExt}`;
 
-      // Delete old cover if exists
       if (settings.coverUrl) {
         const oldPath = settings.coverUrl.split("/booking-covers/")[1];
         if (oldPath) {
@@ -102,30 +105,30 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
         }
       }
 
-      // Upload new cover
       const { error: uploadError } = await supabase.storage
         .from("booking-covers")
         .upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from("booking-covers")
         .getPublicUrl(fileName);
 
       const publicUrl = urlData.publicUrl;
 
-      // Update profile with new cover URL
       const { error: updateError } = await supabase
         .from("investor_profiles")
-        .update({ booking_page_cover_url: publicUrl })
+        .update({ 
+          booking_page_cover_url: publicUrl,
+          booking_page_cover_position: "50% 50%"
+        })
         .eq("id", userId);
 
       if (updateError) throw updateError;
 
-      setSettings(prev => ({ ...prev, coverUrl: publicUrl }));
-      toast({ title: "Cover image uploaded!" });
+      setSettings(prev => ({ ...prev, coverUrl: publicUrl, coverPosition: "50% 50%" }));
+      toast({ title: "Cover image uploaded! Drag to reposition." });
     } catch (error: any) {
       toast({
         title: "Upload failed",
@@ -149,10 +152,10 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
 
       await supabase
         .from("investor_profiles")
-        .update({ booking_page_cover_url: null })
+        .update({ booking_page_cover_url: null, booking_page_cover_position: "50% 50%" })
         .eq("id", userId);
 
-      setSettings(prev => ({ ...prev, coverUrl: null }));
+      setSettings(prev => ({ ...prev, coverUrl: null, coverPosition: "50% 50%" }));
       toast({ title: "Cover image removed" });
     } catch (error: any) {
       toast({
@@ -160,6 +163,73 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
         description: error.message,
         variant: "destructive",
       });
+    }
+  };
+
+  const parsePosition = (pos: string): { x: number; y: number } => {
+    const parts = pos.split(" ");
+    const x = parseFloat(parts[0]) || 50;
+    const y = parseFloat(parts[1]) || 50;
+    return { x, y };
+  };
+
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isRepositioning) return;
+    e.preventDefault();
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const { x, y } = parsePosition(settings.coverPosition);
+    
+    dragStartRef.current = { x: clientX, y: clientY, posX: x, posY: y };
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging || !dragStartRef.current || !imageContainerRef.current) return;
+    e.preventDefault();
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    const containerRect = imageContainerRef.current.getBoundingClientRect();
+    const deltaX = ((clientX - dragStartRef.current.x) / containerRect.width) * 100;
+    const deltaY = ((clientY - dragStartRef.current.y) / containerRect.height) * 100;
+    
+    // Invert the delta because we're moving the object-position (not the viewport)
+    const newX = Math.max(0, Math.min(100, dragStartRef.current.posX - deltaX));
+    const newY = Math.max(0, Math.min(100, dragStartRef.current.posY - deltaY));
+    
+    setSettings(prev => ({ ...prev, coverPosition: `${newX.toFixed(1)}% ${newY.toFixed(1)}%` }));
+  };
+
+  const handleDragEnd = async () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    dragStartRef.current = null;
+    
+    // Save position to database
+    const { error } = await supabase
+      .from("investor_profiles")
+      .update({ booking_page_cover_position: settings.coverPosition })
+      .eq("id", userId);
+    
+    if (error) {
+      toast({ title: "Failed to save position", variant: "destructive" });
+    }
+  };
+
+  const handleSavePosition = async () => {
+    const { error } = await supabase
+      .from("investor_profiles")
+      .update({ booking_page_cover_position: settings.coverPosition })
+      .eq("id", userId);
+    
+    if (error) {
+      toast({ title: "Failed to save position", variant: "destructive" });
+    } else {
+      toast({ title: "Cover position saved!" });
+      setIsRepositioning(false);
     }
   };
 
@@ -232,32 +302,91 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
 
         {/* Cover Image */}
         <div className="space-y-3">
-          <Label>Cover Image</Label>
+          <div className="flex items-center justify-between">
+            <Label>Cover Image</Label>
+            {settings.coverUrl && !isRepositioning && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsRepositioning(true)}
+                className="gap-1 text-xs"
+              >
+                <Move className="h-3 w-3" />
+                Reposition
+              </Button>
+            )}
+          </div>
           <div className="relative">
             {settings.coverUrl ? (
-              <div className="relative group">
-                <img
-                  src={settings.coverUrl}
-                  alt="Cover"
-                  className="w-full h-40 object-cover rounded-lg border border-border"
-                />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                  >
-                    {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Replace"}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleRemoveCover}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+              <div className="relative">
+                <div
+                  ref={imageContainerRef}
+                  className={`relative overflow-hidden rounded-lg border ${
+                    isRepositioning 
+                      ? "border-primary ring-2 ring-primary/20 cursor-move" 
+                      : "border-border"
+                  }`}
+                  onMouseDown={handleDragStart}
+                  onMouseMove={handleDragMove}
+                  onMouseUp={handleDragEnd}
+                  onMouseLeave={handleDragEnd}
+                  onTouchStart={handleDragStart}
+                  onTouchMove={handleDragMove}
+                  onTouchEnd={handleDragEnd}
+                >
+                  <img
+                    src={settings.coverUrl}
+                    alt="Cover"
+                    className="w-full h-40 object-cover select-none"
+                    style={{ objectPosition: settings.coverPosition }}
+                    draggable={false}
+                  />
+                  {isRepositioning && (
+                    <div className="absolute inset-0 bg-primary/10 flex items-center justify-center pointer-events-none">
+                      <div className="bg-background/90 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium">
+                        <Move className="h-4 w-4" />
+                        Drag to reposition
+                      </div>
+                    </div>
+                  )}
                 </div>
+                
+                {isRepositioning ? (
+                  <div className="flex gap-2 mt-3">
+                    <Button
+                      size="sm"
+                      onClick={handleSavePosition}
+                      className="flex-1"
+                    >
+                      Save Position
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsRepositioning(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 bg-background/60 opacity-0 hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Replace"}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleRemoveCover}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : (
               <button
