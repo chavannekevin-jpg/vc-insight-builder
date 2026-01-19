@@ -125,7 +125,7 @@ const InvestorLanding = lazy(() => import("./pages/investor/InvestorLanding"));
 const InvestorAuth = lazy(() => import("./pages/investor/InvestorAuth"));
 const InvestorOnboarding = lazy(() => import("./pages/investor/InvestorOnboarding"));
 const InvestorDashboard = lazy(() => import("./pages/investor/InvestorDashboard"));
-
+const PublicBookingPage = lazy(() => import("./pages/PublicBookingPage"));
 // Accelerator Demo Pages
 const AcceleratorDemoDashboard = lazy(() => import("./pages/acceleratorDemo/AcceleratorDemoDashboard"));
 const CohortOverview = lazy(() => import("./pages/acceleratorDemo/CohortOverview"));
@@ -171,6 +171,9 @@ const App = () => (
             <Route path="/investor/auth" element={<InvestorAuth />} />
             <Route path="/investor/onboarding" element={<InvestorOnboarding />} />
             <Route path="/investor/dashboard" element={<InvestorDashboard />} />
+            {/* Public Booking Pages */}
+            <Route path="/book/:investorId" element={<PublicBookingPage />} />
+            <Route path="/book/:investorId/:eventTypeId" element={<PublicBookingPage />} />
             {/* Accelerator Demo Routes */}
             <Route path="/accelerator-demo" element={<AcceleratorDemoDashboard />} />
             <Route path="/accelerator-demo/cohort" element={<CohortOverview />} />
