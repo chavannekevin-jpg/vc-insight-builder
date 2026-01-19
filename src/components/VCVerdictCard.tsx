@@ -13,11 +13,9 @@ import {
   ArrowRight, AlertTriangle, 
   Eye, CheckCircle2, Lock, Sparkles, 
   FileText, Scale, 
-  MessageSquareX, Target,
   Rocket,
   RefreshCw, Briefcase, Code, GraduationCap, Building,
-  ChevronRight, Pencil, Lightbulb, FileSearch,
-  BookOpen, BarChart3, MessageSquare, Calendar, Wrench, Building2
+  Pencil, Building2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -346,293 +344,154 @@ export const VCVerdictCard = memo(({
   const currentProfile = founderProfiles.find(p => p.value === selectedProfile) || founderProfiles[4];
   const ProfileIcon = currentProfile.icon;
 
-  // Content explanation items for "What Each Section Contains"
-  const sectionContents = [
-    { 
-      icon: BookOpen, 
-      title: 'Investment Memo Narrative', 
-      description: 'Each section includes a VC-style narrative—like what partners write in their internal deal memos',
-      color: 'text-primary' 
-    },
-    { 
-      icon: BarChart3, 
-      title: 'Scores + Benchmarks', 
-      description: `See how your ${companyCategory || 'company'} scores against VC investment criteria and ${companyStage} stage averages`,
-      color: 'text-warning' 
-    },
-    { 
-      icon: MessageSquare, 
-      title: 'Complete VC Question Bank', 
-      description: 'Every question investors will raise across all 9 sections—with suggested responses',
-      color: 'text-destructive' 
-    },
-    { 
-      icon: Calendar, 
-      title: '90-Day Action Plan', 
-      description: 'Week-by-week priorities to strengthen each section before your next investor meeting',
-      color: 'text-success' 
-    },
-    { 
-      icon: Wrench, 
-      title: 'Section-Specific Tools', 
-      description: 'TAM calculator, moat durability analysis, team credibility gaps, exit narrative, and more',
-      color: 'text-primary' 
-    },
-  ];
-
   return (
-    <div className="relative animate-fade-in">
-      {/* Glow effect */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-destructive/40 via-primary/30 to-destructive/40 rounded-2xl blur-xl opacity-60" />
-      
-      {/* Regenerating overlay */}
-      {isRegenerating && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-2xl z-10 flex items-center justify-center">
-          <div className="text-center space-y-3">
-            <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto" />
-            <p className="text-sm text-muted-foreground">Regenerating verdict for {currentProfile.label}...</p>
-          </div>
-        </div>
-      )}
-      
-      {/* Investor Match Banner - Detached from card */}
+    <div className="relative animate-fade-in space-y-4">
+      {/* Investor Match Banner - Detached */}
       {!hasPaid && matchingFunds > 0 && (
-        <div className="mb-4 px-6 py-4 bg-gradient-to-r from-green-500/10 via-emerald-500/5 to-transparent border border-green-500/20 rounded-2xl">
+        <div className="px-5 py-3 bg-gradient-to-r from-green-500/10 via-emerald-500/5 to-transparent border border-green-500/20 rounded-xl">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0 border border-green-500/30">
-              <Building2 className="w-5 h-5 text-green-500" />
+            <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0 border border-green-500/30">
+              <Building2 className="w-4 h-4 text-green-500" />
             </div>
-            <p className="text-sm font-semibold text-green-400">
-              Good news: {matchingFunds} investors in our network look for companies like yours
+            <p className="text-sm font-medium text-green-400">
+              {matchingFunds} investors in our network look for companies like yours
             </p>
           </div>
         </div>
       )}
 
-      <div className="relative bg-card/95 backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
-        {/* Preview indicator */}
-        <div className="px-6 py-3 bg-primary/10 border-b border-primary/20 flex items-center justify-center gap-2">
-          <Eye className="w-4 h-4 text-primary" />
-          <span className="text-sm text-primary font-semibold">
-            Preview of the 9 page VC analysis
-          </span>
-        </div>
+      {/* Main Card - Streamlined */}
+      <div className="relative">
+        {/* Glow effect */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-destructive/30 via-primary/20 to-destructive/30 rounded-2xl blur-lg opacity-50" />
+        
+        {/* Regenerating overlay */}
+        {isRegenerating && (
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-2xl z-10 flex items-center justify-center">
+            <div className="text-center space-y-3">
+              <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto" />
+              <p className="text-sm text-muted-foreground">Regenerating verdict for {currentProfile.label}...</p>
+            </div>
+          </div>
+        )}
 
-        {/* Header */}
-        <div className="p-6 border-b border-border/50">
-          <div className="flex items-center justify-between mb-4">
+        <div className="relative bg-card/95 backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
+          {/* Compact Header with Preview Badge */}
+          <div className="px-5 py-4 border-b border-border/30">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px] px-2 py-0.5">
+                  <Eye className="w-3 h-3 mr-1" />
+                  Preview
+                </Badge>
+                <span className="text-xs text-muted-foreground">9-Page VC Analysis</span>
+              </div>
+              
+              {/* Editable Founder Profile - Compact */}
+              {isEditingProfile ? (
+                <Select value={selectedProfile} onValueChange={handleProfileChange}>
+                  <SelectTrigger className="w-[160px] h-7 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {founderProfiles.map((profile) => (
+                      <SelectItem key={profile.value} value={profile.value}>
+                        <div className="flex items-center gap-2">
+                          <profile.icon className="w-3 h-3" />
+                          <span>{profile.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <button
+                  onClick={() => setIsEditingProfile(true)}
+                  className="flex items-center gap-1 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
+                >
+                  <ProfileIcon className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground">{currentProfile.label}</span>
+                  <Pencil className="w-2 h-2 text-muted-foreground/50" />
+                </button>
+              )}
+            </div>
+
+            {/* The Verdict Quote - Tighter */}
+            <div className="relative pl-4 border-l-2 border-primary/30">
+              <p className="text-sm text-foreground leading-relaxed italic">
+                "{verdict.verdict.length > 150 ? verdict.verdict.slice(0, 150) + '...' : verdict.verdict}"
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-1.5">— Monday IC meeting</p>
+            </div>
+          </div>
+
+          {/* Narrative Transformation - More Visual */}
+          <div className="px-5 py-3 bg-muted/10 border-b border-border/30">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-destructive/20 flex items-center justify-center">
-                <MessageSquareX className="w-5 h-5 text-destructive" />
+              <div className="flex-1 text-center">
+                <p className="text-[9px] uppercase tracking-wider text-muted-foreground/70 mb-0.5">What VCs hear</p>
+                <p className="text-xs text-muted-foreground line-clamp-1">"{narrativeTransformation.currentNarrative}"</p>
               </div>
-              <div>
-                <h2 className="font-display font-bold text-foreground">The Room After You Leave</h2>
-                <p className="text-xs text-muted-foreground">What VCs say when you're not there</p>
+              <div className="flex-shrink-0">
+                <ArrowRight className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 text-center">
+                <p className="text-[9px] uppercase tracking-wider text-primary/70 mb-0.5">What they could hear</p>
+                <p className="text-xs text-foreground line-clamp-1">"{narrativeTransformation.transformedNarrative}"</p>
               </div>
             </div>
-            
-            {/* Editable Founder Profile */}
-            {isEditingProfile ? (
-              <Select value={selectedProfile} onValueChange={handleProfileChange}>
-                <SelectTrigger className="w-[180px] h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {founderProfiles.map((profile) => (
-                    <SelectItem key={profile.value} value={profile.value}>
-                      <div className="flex items-center gap-2">
-                        <profile.icon className="w-3 h-3" />
-                        <span>{profile.label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <button
-                onClick={() => setIsEditingProfile(true)}
-                className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/50 border border-border/50 hover:border-primary/50 hover:bg-muted transition-colors"
-              >
-                <ProfileIcon className="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors" />
-                <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{currentProfile.label}</span>
-                <Pencil className="w-2.5 h-2.5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
-              </button>
+          </div>
+
+          {/* 3 Value Props - Tight Bullets */}
+          <div className="px-5 py-4 space-y-2">
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Every question VCs will ask</strong> — with word-for-word responses
+              </p>
+            </div>
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">See how investors score your pitch</strong> — section by section
+              </p>
+            </div>
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">90-day roadmap</strong> — prioritized by what VCs actually care about
+              </p>
+            </div>
+          </div>
+
+          {/* CTA Section - Prominent */}
+          <div className="px-5 py-5 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+            {/* Urgency line for users with matches */}
+            {!hasPaid && matchingFunds > 0 && (
+              <p className="text-xs text-center text-amber-400 mb-3 font-medium">
+                VCs talk. Prepare before you pitch to these {matchingFunds} investors.
+              </p>
             )}
-          </div>
-
-          {/* The Verdict Quote */}
-          <div className="relative">
-            <div className="absolute -left-2 top-0 text-4xl text-primary/30 font-serif">"</div>
-            <p className="text-lg text-foreground leading-relaxed pl-6 pr-4 italic">
-              {verdict.verdict}
+            
+            <Button 
+              onClick={handleFixAction} 
+              className="w-full h-14 text-base font-bold shadow-glow hover-neon-pulse" 
+              size="lg"
+            >
+              {hasPaid && generationsAvailable > 0 
+                ? "Edit & Regenerate" 
+                : matchingFunds > 0 
+                  ? "Prepare Before You Pitch" 
+                  : "Unlock Full Analysis"}
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+            
+            <p className="text-xs text-center text-muted-foreground mt-2.5">
+              {hasPaid && generationsAvailable > 0 
+                ? `${generationsAvailable} credit${generationsAvailable !== 1 ? 's' : ''} available`
+                : "Know what they'll ask before they ask it"}
             </p>
-            <div className="absolute -right-2 bottom-0 text-4xl text-primary/30 font-serif">"</div>
           </div>
-          <p className="text-xs text-muted-foreground mt-3 pl-6">— Monday IC meeting</p>
-        </div>
-
-        {/* Narrative Transformation */}
-        <div className="px-6 py-4 bg-muted/20 border-b border-border/50">
-          <div className="flex items-stretch gap-4">
-            <div className="flex-1 p-3 rounded-lg bg-muted/40 border border-border/50">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">What VCs hear</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">"{narrativeTransformation.currentNarrative}"</p>
-            </div>
-            <div className="flex items-center">
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            </div>
-            <div className="flex-1 p-3 rounded-lg bg-primary/10 border border-primary/20">
-              <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">What they could hear</p>
-              <p className="text-xs text-foreground leading-relaxed">"{narrativeTransformation.transformedNarrative}"</p>
-            </div>
-          </div>
-        </div>
-
-        {/* What We've Prepared For You - Narrative Summary */}
-        <div className="p-6 border-b border-border/50">
-          <div className="flex items-center gap-2 mb-4">
-            <FileSearch className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">What We've Prepared For You</h3>
-          </div>
-          
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {verdict?.preparationSummary || `VCs will ask over 30 questions during your raise—we've identified and prepared responses for each one. Looking at your ${companyCategory || 'company'} pitch at ${companyStage} stage, we've mapped the key areas investors will probe: market validation, competitive positioning, team credibility, and milestone planning. Each section of the full analysis addresses these gaps with specific frameworks and prepared responses.`}
-          </p>
-        </div>
-
-        {/* The Good News - Constructive Path Forward */}
-        <div className="px-6 py-4 bg-gradient-to-r from-primary/5 to-transparent border-b border-border/50">
-          <div className="flex items-center gap-2 mb-3">
-            <Lightbulb className="w-4 h-4 text-primary" />
-            <h4 className="text-sm font-semibold text-foreground">The Good News</h4>
-          </div>
-          <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-            {verdict?.pathForward || "Every question above has a proven way to address it—the full analysis shows exactly how."}
-          </p>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">✓</span>
-              <span>Every concern listed above <strong className="text-foreground">can be addressed</strong> with the right framing</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">✓</span>
-              <span>The full analysis covers <strong className="text-foreground">every question VCs will ask</strong>—with word-for-word responses</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">✓</span>
-              <span>Founders who prepare for these questions <strong className="text-foreground">close rounds faster</strong></span>
-            </li>
-          </ul>
-        </div>
-
-        {/* What Each Section Contains */}
-        <div className="p-6 border-b border-border/50">
-          <h4 className="text-sm font-semibold mb-4">What Each Section Contains</h4>
-          
-          <div className="space-y-4">
-            {sectionContents.map((item, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <item.icon className={`w-5 h-5 ${item.color} flex-shrink-0 mt-0.5`} />
-                <div>
-                  <p className="text-sm font-medium text-foreground">{item.title}</p>
-                  <p className="text-xs text-muted-foreground">{item.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* How Founders Use This */}
-        <div className="px-6 py-4 border-b border-border/50 bg-muted/10">
-          <h4 className="text-sm font-semibold mb-3">How Founders Use This</h4>
-          
-          <div className="space-y-2">
-            <div className="flex items-start gap-2 text-sm">
-              <span className="text-primary font-bold">1.</span>
-              <p className="text-muted-foreground">
-                <strong className="text-foreground">See your company through VC eyes</strong> — Understand exactly how investors evaluate your case
-              </p>
-            </div>
-            <div className="flex items-start gap-2 text-sm">
-              <span className="text-primary font-bold">2.</span>
-              <p className="text-muted-foreground">
-                <strong className="text-foreground">Build a VC-grade economic model</strong> — Transform your story into the math investors need to see
-              </p>
-            </div>
-            <div className="flex items-start gap-2 text-sm">
-              <span className="text-primary font-bold">3.</span>
-              <p className="text-muted-foreground">
-                <strong className="text-foreground">Know every question before it's asked</strong> — Walk into meetings with answers already prepared
-              </p>
-            </div>
-            <div className="flex items-start gap-2 text-sm">
-              <span className="text-primary font-bold">4.</span>
-              <p className="text-muted-foreground">
-                <strong className="text-foreground">Prioritize what actually matters</strong> — 90-day roadmap based on what VCs care about
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Don't Burn Bridges CTA - Only for unpaid users with matches */}
-        {!hasPaid && matchingFunds > 0 && (
-          <div className="px-6 py-5 border-b border-border/50 bg-gradient-to-r from-amber-500/5 via-orange-500/5 to-transparent">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-amber-500/15 flex items-center justify-center flex-shrink-0 border border-amber-500/20">
-                <Target className="w-6 h-6 text-amber-500" />
-              </div>
-              <div className="flex-1 space-y-2">
-                <p className="text-sm font-semibold text-foreground">
-                  Before you reach out to these {matchingFunds} investors...
-                </p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  VCs talk. A bad first impression travels fast. Build your analysis first so you walk in prepared — 
-                  <strong className="text-foreground"> don't burn bridges you haven't even crossed yet.</strong>
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* The Key Question - Only show if no matches or paid */}
-        {(hasPaid || matchingFunds === 0) && (
-          <div className="px-6 py-4 border-b border-border/50">
-            <div className="p-4 rounded-xl border-2 border-dashed border-primary/30 text-center">
-              <p className="text-sm text-foreground">
-                Would you rather discover these questions in your next VC meeting — 
-                or <strong className="text-primary">walk in with answers already prepared</strong>?
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* CTA Section */}
-        <div className="p-6 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
-          <Button 
-            onClick={handleFixAction} 
-            className="w-full h-12 text-sm font-semibold shadow-glow hover-neon-pulse" 
-            size="lg"
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            {hasPaid && generationsAvailable > 0 
-              ? "Edit & Regenerate" 
-              : matchingFunds > 0 
-                ? "Prepare Before You Pitch" 
-                : "Unlock the Full 9 Page Analysis"}
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-          <p className="text-xs text-center text-muted-foreground mt-3">
-            {hasPaid && generationsAvailable > 0 
-              ? `You have ${generationsAvailable} generation credit${generationsAvailable !== 1 ? 's' : ''} available.`
-              : matchingFunds > 0
-                ? `Know exactly what ${matchingFunds} investors will ask — before they ask it`
-                : "Problem · Solution · Market · Team · Traction · Business Model · Competition · Vision · Exit"}
-          </p>
-          <p className="text-[10px] text-center text-muted-foreground/60 mt-1">
-            {matchingFunds > 0 && !hasPaid 
-              ? "VCs talk. Don't burn bridges before you cross them."
-              : "This is not advice. This is the room after the meeting."}
-          </p>
         </div>
       </div>
     </div>
