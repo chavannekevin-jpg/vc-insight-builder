@@ -14,7 +14,9 @@ import { CollapsedLibrary } from "@/components/CollapsedLibrary";
 import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MiniScorecard } from "@/components/memo/MiniScorecard";
-import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench, Trash2, Settings } from "lucide-react";
+import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench, Trash2, Settings, Building2 } from "lucide-react";
+import { FundDiscoveryPremiumModal } from "@/components/FundDiscoveryPremiumModal";
+import { useMatchingFundsCount } from "@/hooks/useMatchingFundsCount";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/hooks/useCompany";
@@ -119,6 +121,7 @@ export default function FreemiumHub() {
   const [cachedVerdict, setCachedVerdict] = useState<any>(null);
   const [vcQuickTake, setVcQuickTake] = useState<any>(null);
   const [sectionTools, setSectionTools] = useState<Record<string, any> | null>(null);
+  const [fundDiscoveryModalOpen, setFundDiscoveryModalOpen] = useState(false);
 
   // Map companyData to Company type for compatibility
   const company: Company | null = companyData ? {
@@ -131,6 +134,12 @@ export default function FreemiumHub() {
     deck_parsed_at: (companyData as any).deck_parsed_at || null,
     vc_verdict_json: (companyData as any).vc_verdict_json || null,
   } : null;
+
+  // Get matching funds count for preview
+  const { matchingFunds, strongMatches, isLoading: matchingLoading } = useMatchingFundsCount(
+    company?.id || null,
+    company ? { stage: company.stage, category: company.category || undefined } : null
+  );
 
   // Load cached verdict and VC Quick Take from company data
   useEffect(() => {
@@ -623,6 +632,26 @@ export default function FreemiumHub() {
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => {
+                if (hasPaid) {
+                  navigate("/fund-discovery");
+                } else {
+                  setFundDiscoveryModalOpen(true);
+                }
+              }}
+              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
+            >
+              <Building2 className="w-4 h-4" />
+              VC Network
+              {!hasPaid && matchingFunds > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 bg-primary/20 text-primary rounded text-[10px] font-bold">
+                  {matchingFunds}+
+                </span>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => navigate("/sample-memo")}
               className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
             >
@@ -917,6 +946,15 @@ export default function FreemiumHub() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Fund Discovery Premium Modal */}
+      <FundDiscoveryPremiumModal
+        open={fundDiscoveryModalOpen}
+        onOpenChange={setFundDiscoveryModalOpen}
+        matchingFundsCount={matchingFunds}
+        companyStage={company.stage}
+        companyCategory={company.category}
+      />
     </div>
   );
 }
