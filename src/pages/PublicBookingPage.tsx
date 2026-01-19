@@ -480,57 +480,63 @@ const PublicBookingPage = () => {
       <div className={`max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 ${investorProfile.booking_page_cover_url ? "-mt-8 sm:-mt-12 relative z-10" : "pt-4 sm:pt-6"}`}>
         {/* Mobile: Stack vertically, Desktop: Side by side */}
         <div className="flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-4 lg:gap-5">
-          {/* Profile Card & CTA Cards - Show after booking on mobile */}
-          <div className="space-y-3 order-2 lg:order-none">
-            <ProfileCard />
+          {/* Left Column - Contains Profile + CTAs on desktop */}
+          <div className="contents lg:block lg:space-y-3">
+            {/* Profile Card - Always first on mobile */}
+            <div className="order-1 lg:order-none">
+              <ProfileCard />
+            </div>
 
-            {/* CTA - Investors */}
-            <Card className={`p-4 overflow-hidden relative transition-all duration-300 hover:shadow-lg ${isLightTheme ? "bg-white border-stone-200/80 shadow-sm hover:shadow-stone-200/50" : "bg-zinc-900/80 border-zinc-800 hover:shadow-zinc-900/50"}`}>
-              <div className="relative">
-                <div className="flex items-start gap-2.5 mb-2">
-                  <div className={`p-1.5 rounded-md flex-shrink-0 ${isLightTheme ? "bg-stone-100" : "bg-zinc-800"}`}>
-                    <Users className={`h-3.5 w-3.5 ${isLightTheme ? "text-stone-600" : "text-zinc-400"}`} />
+            {/* CTA Cards - Last on mobile, after booking */}
+            <div className="space-y-3 order-3 lg:order-none lg:mt-3">
+              {/* CTA - Investors */}
+              <Card className={`p-4 overflow-hidden relative transition-all duration-300 hover:shadow-lg ${isLightTheme ? "bg-white border-stone-200/80 shadow-sm hover:shadow-stone-200/50" : "bg-zinc-900/80 border-zinc-800 hover:shadow-zinc-900/50"}`}>
+                <div className="relative">
+                  <div className="flex items-start gap-2.5 mb-2">
+                    <div className={`p-1.5 rounded-md flex-shrink-0 ${isLightTheme ? "bg-stone-100" : "bg-zinc-800"}`}>
+                      <Users className={`h-3.5 w-3.5 ${isLightTheme ? "text-stone-600" : "text-zinc-400"}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className={`text-sm font-semibold ${theme.text}`}>Are you an investor?</p>
+                      <p className={`text-xs ${theme.textSubtle}`}>Invite-only VC network</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className={`text-sm font-semibold ${theme.text}`}>Are you an investor?</p>
-                    <p className={`text-xs ${theme.textSubtle}`}>Invite-only VC network</p>
-                  </div>
+                  <p className={`text-xs leading-relaxed mb-2.5 ${theme.textSubtle}`}>
+                    Join me on VC Brain — it's where I map my network and track opportunities.
+                  </p>
+                  <Button size="sm" variant="outline" onClick={handleJoinNetwork} className={`w-full gap-1.5 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${isLightTheme ? "border-stone-300 bg-white hover:bg-stone-900 hover:border-stone-900 text-stone-700 hover:text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.3)]" : "border-zinc-700 bg-zinc-800/50 hover:bg-white hover:border-white text-zinc-300 hover:text-zinc-900 hover:shadow-[0_0_12px_rgba(255,255,255,0.4)]"}`}>
+                    Request an Invite
+                    <ChevronRight className="h-3 w-3" />
+                  </Button>
                 </div>
-                <p className={`text-xs leading-relaxed mb-2.5 ${theme.textSubtle}`}>
-                  Join me on VC Brain — it's where I map my network and track opportunities.
-                </p>
-                <Button size="sm" variant="outline" onClick={handleJoinNetwork} className={`w-full gap-1.5 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${isLightTheme ? "border-stone-300 bg-white hover:bg-stone-900 hover:border-stone-900 text-stone-700 hover:text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.3)]" : "border-zinc-700 bg-zinc-800/50 hover:bg-white hover:border-white text-zinc-300 hover:text-zinc-900 hover:shadow-[0_0_12px_rgba(255,255,255,0.4)]"}`}>
-                  Request an Invite
-                  <ChevronRight className="h-3 w-3" />
-                </Button>
-              </div>
-            </Card>
+              </Card>
 
-            {/* CTA - Startups */}
-            <Card className={`p-4 overflow-hidden relative transition-all duration-300 hover:shadow-lg ${isLightTheme ? "bg-white border-stone-200/80 shadow-sm hover:shadow-stone-200/50" : "bg-zinc-900/80 border-zinc-800 hover:shadow-zinc-900/50"}`}>
-              <div className="relative">
-                <div className="flex items-start gap-2.5 mb-2">
-                  <div className={`p-1.5 rounded-md flex-shrink-0 ${isLightTheme ? "bg-stone-100" : "bg-zinc-800"}`}>
-                    <Sparkles className={`h-3.5 w-3.5 ${isLightTheme ? "text-stone-600" : "text-zinc-400"}`} />
+              {/* CTA - Startups */}
+              <Card className={`p-4 overflow-hidden relative transition-all duration-300 hover:shadow-lg ${isLightTheme ? "bg-white border-stone-200/80 shadow-sm hover:shadow-stone-200/50" : "bg-zinc-900/80 border-zinc-800 hover:shadow-zinc-900/50"}`}>
+                <div className="relative">
+                  <div className="flex items-start gap-2.5 mb-2">
+                    <div className={`p-1.5 rounded-md flex-shrink-0 ${isLightTheme ? "bg-stone-100" : "bg-zinc-800"}`}>
+                      <Sparkles className={`h-3.5 w-3.5 ${isLightTheme ? "text-stone-600" : "text-zinc-400"}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className={`text-sm font-semibold ${theme.text}`}>Are you a startup?</p>
+                      <p className={`text-xs ${theme.textSubtle}`}>Get VC-ready before you pitch</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className={`text-sm font-semibold ${theme.text}`}>Are you a startup?</p>
-                    <p className={`text-xs ${theme.textSubtle}`}>Get VC-ready before you pitch</p>
-                  </div>
+                  <p className={`text-xs leading-relaxed mb-2.5 ${theme.textSubtle}`}>
+                    Curious how I'd assess your pitch? Get the feedback I wish founders had before walking into my office.
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => navigate("/")} className={`w-full gap-1.5 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${isLightTheme ? "border-stone-300 bg-white hover:bg-stone-900 hover:border-stone-900 text-stone-700 hover:text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.3)]" : "border-zinc-700 bg-zinc-800/50 hover:bg-white hover:border-white text-zinc-300 hover:text-zinc-900 hover:shadow-[0_0_12px_rgba(255,255,255,0.4)]"}`}>
+                    Analyze My Startup
+                    <ChevronRight className="h-3 w-3" />
+                  </Button>
                 </div>
-                <p className={`text-xs leading-relaxed mb-2.5 ${theme.textSubtle}`}>
-                  Curious how I'd assess your pitch? Get the feedback I wish founders had before walking into my office.
-                </p>
-                <Button size="sm" variant="outline" onClick={() => navigate("/")} className={`w-full gap-1.5 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${isLightTheme ? "border-stone-300 bg-white hover:bg-stone-900 hover:border-stone-900 text-stone-700 hover:text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.3)]" : "border-zinc-700 bg-zinc-800/50 hover:bg-white hover:border-white text-zinc-300 hover:text-zinc-900 hover:shadow-[0_0_12px_rgba(255,255,255,0.4)]"}`}>
-                  Analyze My Startup
-                  <ChevronRight className="h-3 w-3" />
-                </Button>
-              </div>
-            </Card>
+              </Card>
+            </div>
           </div>
 
-          {/* Right Side - Booking Flow - Comes first on mobile */}
-          <div className="animate-fade-in order-1 lg:order-none">
+          {/* Right Side - Booking Flow - Second on mobile (after profile) */}
+          <div className="animate-fade-in order-2 lg:order-none">
             {/* Back Button - Larger touch target on mobile */}
             {step !== "select-event" && (
               <Button 
