@@ -119,6 +119,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const RoastYourBaby = lazy(() => import("./pages/RoastYourBaby"));
 const DilutionLab = lazy(() => import("./pages/DilutionLab"));
 const AcceleratorLanding = lazy(() => import("./pages/AcceleratorLanding"));
+const FundDiscovery = lazy(() => import("./pages/FundDiscovery"));
 
 // Investor Pages
 const InvestorLanding = lazy(() => import("./pages/investor/InvestorLanding"));
@@ -293,6 +294,7 @@ const App = () => (
             <Route path="/raise-calculator" element={<RaiseCalculator />} />
             <Route path="/valuation-calculator" element={<ValuationCalculator />} />
             <Route path="/venture-scale-diagnostic" element={<VentureScaleDiagnostic />} />
+            <Route path="/fund-discovery" element={<FundDiscovery />} />
             <Route path="/investor-email-generator" element={<InvestorEmailGenerator />} />
             <Route path="/about" element={<About />} />
             <Route path="/product" element={<Product />} />

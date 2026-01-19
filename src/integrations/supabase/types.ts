@@ -1707,6 +1707,7 @@ export type Database = {
         Args: { invite_code: string }
         Returns: string
       }
+      has_premium_company: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
