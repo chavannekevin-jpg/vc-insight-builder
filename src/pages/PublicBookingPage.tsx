@@ -208,22 +208,22 @@ const PublicBookingPage = () => {
   // Theme configuration
   const isLightTheme = investorProfile?.booking_page_theme === "light";
 
-  // Light Theme - Clean, airy, professional with warm accents
+  // Light Theme - Clean, professional, neutral
   const lightTheme = {
-    bg: "bg-gradient-to-br from-stone-50 via-white to-amber-50/30",
+    bg: "bg-gradient-to-br from-stone-50 via-white to-stone-100/30",
     card: "bg-white/80 backdrop-blur-sm border-stone-200/60 shadow-sm shadow-stone-200/50",
-    cardHover: "hover:border-amber-300/60 hover:shadow-lg hover:shadow-amber-100/50",
+    cardHover: "hover:border-stone-300 hover:shadow-lg hover:shadow-stone-200/50",
     text: "text-stone-900",
     textMuted: "text-stone-600",
     textSubtle: "text-stone-400",
     border: "border-stone-200/60",
-    accent: "bg-amber-500",
-    accentLight: "bg-amber-50",
-    accentBorder: "border-amber-200/60",
+    accent: "bg-stone-900",
+    accentLight: "bg-stone-100",
+    accentBorder: "border-stone-300",
     badge: "bg-stone-100/80 text-stone-600 border-stone-200/60",
-    input: "bg-white border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-amber-400 focus:ring-amber-400/20",
+    input: "bg-white border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:ring-stone-400/20",
     button: "bg-stone-900 hover:bg-stone-800 text-white",
-    buttonOutline: "border-stone-200 bg-white hover:bg-stone-50 text-stone-700 hover:border-amber-300 hover:text-amber-700",
+    buttonOutline: "border-stone-200 bg-white hover:bg-stone-900 hover:border-stone-900 text-stone-700 hover:text-white",
     calendarDay: "hover:bg-stone-100 text-stone-700",
     calendarDaySelected: "bg-stone-900 text-white hover:bg-stone-800 shadow-[0_0_10px_rgba(0,0,0,0.15)]",
     calendarDayToday: "ring-2 ring-stone-300 ring-offset-1 ring-offset-white",
@@ -231,22 +231,22 @@ const PublicBookingPage = () => {
     eventCard: "bg-white border-stone-200/80 hover:border-stone-300",
   };
 
-  // Dark Theme - Bold, neon-accented, cyberpunk-inspired
+  // Dark Theme - Bold, clean, white accents
   const darkTheme = {
     bg: "bg-gradient-to-br from-zinc-950 via-black to-zinc-950",
     card: "bg-zinc-900/60 backdrop-blur-xl border-zinc-800/80 shadow-xl shadow-black/20",
-    cardHover: "hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10",
+    cardHover: "hover:border-zinc-600 hover:shadow-2xl hover:shadow-black/30",
     text: "text-white",
     textMuted: "text-zinc-400",
     textSubtle: "text-zinc-500",
     border: "border-zinc-800/80",
-    accent: "bg-primary",
-    accentLight: "bg-primary/10",
-    accentBorder: "border-primary/30",
+    accent: "bg-white",
+    accentLight: "bg-zinc-800",
+    accentBorder: "border-zinc-600",
     badge: "bg-zinc-800/80 text-zinc-300 border-zinc-700/80",
-    input: "bg-zinc-900/80 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-primary focus:ring-primary/20",
-    button: "bg-primary hover:bg-primary/90 text-primary-foreground",
-    buttonOutline: "border-zinc-700 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 hover:border-primary/50 hover:text-primary",
+    input: "bg-zinc-900/80 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-zinc-500 focus:ring-zinc-500/20",
+    button: "bg-white hover:bg-zinc-100 text-zinc-900",
+    buttonOutline: "border-zinc-700 bg-zinc-900/50 hover:bg-white hover:border-white text-zinc-300 hover:text-zinc-900",
     calendarDay: "hover:bg-zinc-800/80 text-zinc-300",
     calendarDaySelected: "bg-white text-zinc-900 hover:bg-zinc-100 shadow-[0_0_12px_rgba(255,255,255,0.3)]",
     calendarDayToday: "ring-2 ring-zinc-500 ring-offset-1 ring-offset-zinc-900",
@@ -260,7 +260,7 @@ const PublicBookingPage = () => {
     return (
       <div className={`min-h-screen flex items-center justify-center ${theme.bg}`}>
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <Loader2 className={`h-10 w-10 animate-spin ${isLightTheme ? "text-stone-600" : "text-white"}`} />
           <p className={theme.textMuted}>Loading...</p>
         </div>
       </div>
@@ -271,8 +271,8 @@ const PublicBookingPage = () => {
     return (
       <div className={`min-h-screen flex items-center justify-center ${theme.bg}`}>
         <Card className={`p-8 text-center max-w-md ${theme.card}`}>
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <Calendar className="h-8 w-8 text-primary" />
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isLightTheme ? "bg-stone-100" : "bg-zinc-800"}`}>
+            <Calendar className={`h-8 w-8 ${isLightTheme ? "text-stone-600" : "text-zinc-300"}`} />
           </div>
           <h2 className={`text-xl font-semibold mb-2 ${theme.text}`}>Booking Page Not Found</h2>
           <p className={`mb-6 ${theme.textMuted}`}>This booking page doesn't exist or is no longer available.</p>
@@ -290,9 +290,9 @@ const PublicBookingPage = () => {
     return (
       <div className={`min-h-screen p-4 ${theme.bg}`}>
         <div className="max-w-5xl mx-auto pt-8 grid lg:grid-cols-[1fr_320px] gap-6 items-start">
-          <Card className={`p-6 text-center animate-fade-in ${isLightTheme ? "border-emerald-200/80 bg-gradient-to-br from-emerald-50/80 to-white" : "border-emerald-500/20 bg-emerald-500/5"}`}>
-            <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 animate-scale-in ${isLightTheme ? "bg-emerald-100" : "bg-emerald-500/20"}`}>
-              <CheckCircle2 className="h-7 w-7 text-emerald-500" />
+          <Card className={`p-6 text-center animate-fade-in ${isLightTheme ? "border-stone-200/80 bg-gradient-to-br from-stone-50/80 to-white" : "border-zinc-700/50 bg-zinc-900/60"}`}>
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 animate-scale-in ${isLightTheme ? "bg-stone-900" : "bg-white"}`}>
+              <CheckCircle2 className={`h-7 w-7 ${isLightTheme ? "text-white" : "text-zinc-900"}`} />
             </div>
             <h2 className={`text-xl font-semibold mb-1 ${theme.text}`}>You're Booked!</h2>
             <p className={`text-sm mb-4 ${theme.textMuted}`}>
@@ -431,7 +431,7 @@ const PublicBookingPage = () => {
                 href={investorProfile.social_linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`p-1.5 rounded-md transition-all duration-200 hover:scale-110 active:scale-95 ${isLightTheme ? "bg-stone-100 hover:bg-blue-50 text-stone-500 hover:text-blue-600" : "bg-zinc-800 hover:bg-blue-500/20 text-zinc-400 hover:text-blue-400"}`}
+                className={`p-1.5 rounded-md transition-all duration-200 hover:scale-110 active:scale-95 ${isLightTheme ? "bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-700" : "bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200"}`}
               >
                 <Linkedin className="h-3.5 w-3.5" />
               </a>
@@ -704,7 +704,7 @@ const PublicBookingPage = () => {
                       
                       {isLoadingSlots ? (
                         <div className="flex items-center justify-center py-8">
-                          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                          <Loader2 className={`h-5 w-5 animate-spin ${isLightTheme ? "text-stone-600" : "text-white"}`} />
                         </div>
                       ) : availableSlots.length === 0 ? (
                         <div className={`text-center py-6 ${theme.textMuted}`}>
