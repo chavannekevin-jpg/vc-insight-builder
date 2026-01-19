@@ -85,10 +85,10 @@ export default function CheckoutMemo() {
       }
     }
 
-    // Verify user owns this company
+    // Verify user owns this company AND check premium status
     const { data: company } = await supabase
       .from("companies")
-      .select("founder_id")
+      .select("founder_id, has_premium")
       .eq("id", validCompanyId)
       .maybeSingle();
 
@@ -99,6 +99,16 @@ export default function CheckoutMemo() {
         variant: "destructive",
       });
       navigate("/portal");
+      return;
+    }
+    
+    // If user already has premium access (admin-granted), bypass checkout
+    if (company.has_premium) {
+      toast({
+        title: "Access already granted",
+        description: "Redirecting to your full analysis...",
+      });
+      navigate(`/analysis?companyId=${validCompanyId}&view=full`, { replace: true });
       return;
     }
     
