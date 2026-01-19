@@ -305,6 +305,7 @@ const InvestorDashboard = () => {
             onClose={() => setSelectedContact(null)}
             onUpdate={refetch}
             userProfile={userProfile}
+            investorSlug={userProfile?.profile_slug}
           />
         )}
 

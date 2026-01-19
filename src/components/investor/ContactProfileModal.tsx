@@ -56,7 +56,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, Globe, Briefcase } from "lucide-react";
+import { ChevronDown, Globe, Briefcase, Share2, Copy } from "lucide-react";
 
 const RELATIONSHIP_STATUSES = [
   { value: "prospect", label: "Prospect" },
@@ -72,9 +72,10 @@ interface ContactProfileModalProps {
   onClose: () => void;
   onUpdate: () => void;
   userProfile?: UserProfile | null;
+  investorSlug?: string | null;
 }
 
-const ContactProfileModal = ({ contact, onClose, onUpdate, userProfile }: ContactProfileModalProps) => {
+const ContactProfileModal = ({ contact, onClose, onUpdate, userProfile, investorSlug }: ContactProfileModalProps) => {
   const [notes, setNotes] = useState(contact.local_notes || "");
   const [email, setEmail] = useState((contact as any).local_email || (contact.global_contact as any)?.email || "");
   const [phone, setPhone] = useState((contact as any).local_phone || (contact.global_contact as any)?.phone || "");
@@ -127,6 +128,27 @@ const ContactProfileModal = ({ contact, onClose, onUpdate, userProfile }: Contac
   );
   const [isEditingFocus, setIsEditingFocus] = useState(false);
   const [focusInput, setFocusInput] = useState("");
+  const [copiedShareLink, setCopiedShareLink] = useState(false);
+
+  // Share link for this contact
+  const shareLink = investorSlug && contact.global_contact_id 
+    ? `${window.location.origin}/n/${investorSlug}/contact/${contact.global_contact_id}`
+    : null;
+
+  const handleCopyShareLink = async () => {
+    if (!shareLink) {
+      toast({ 
+        title: "Cannot share", 
+        description: "Your profile needs a custom URL. Set one in Calendar Settings.", 
+        variant: "destructive" 
+      });
+      return;
+    }
+    await navigator.clipboard.writeText(shareLink);
+    setCopiedShareLink(true);
+    toast({ title: "Contact link copied!" });
+    setTimeout(() => setCopiedShareLink(false), 2000);
+  };
 
   const globalName = contact.global_contact?.name || "Unknown";
   const globalOrganization = contact.global_contact?.organization_name;
@@ -945,15 +967,31 @@ const ContactProfileModal = ({ contact, onClose, onUpdate, userProfile }: Contac
 
             {/* Actions */}
             <div className="flex justify-between gap-3 pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={() => setShowDeleteConfirm(true)}
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Remove
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Remove
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyShareLink}
+                  disabled={!shareLink}
+                  title={shareLink ? "Copy shareable link" : "Set a custom URL in Calendar Settings to share"}
+                >
+                  {copiedShareLink ? (
+                    <Check className="w-4 h-4 mr-1 text-green-500" />
+                  ) : (
+                    <Share2 className="w-4 h-4 mr-1" />
+                  )}
+                  Share
+                </Button>
+              </div>
               <div className="flex gap-3">
                 <Button variant="outline" onClick={onClose}>
                   Close
