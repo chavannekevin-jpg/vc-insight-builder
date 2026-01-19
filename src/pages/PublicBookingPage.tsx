@@ -315,34 +315,70 @@ const PublicBookingPage = () => {
           </Card>
 
           <div className="space-y-4">
-            <Card className={`p-6 ${theme.card} ${theme.accentBorder}`}>
-              <Badge className={`mb-3 ${theme.badge}`}>
-                <Users className="h-3 w-3 mr-1" />
-                For Investors
-              </Badge>
-              <h3 className={`text-lg font-bold mb-2 ${theme.text}`}>VC Brain Network</h3>
-              <p className={`text-sm mb-4 ${theme.textMuted}`}>
-                Private, invite-only platform for VCs. Share dealflow with trusted peers, get AI-powered analysis.
-              </p>
-              <Button onClick={handleJoinNetwork} variant="outline" size="sm" className={`w-full gap-2 ${theme.buttonOutline}`}>
-                Join Network
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+            <Card className={`p-6 overflow-hidden relative ${isLightTheme ? "bg-gradient-to-br from-slate-50 via-white to-blue-50/50 border-slate-200/80" : "bg-gradient-to-br from-zinc-900 via-zinc-900/95 to-primary/5 border-primary/20"}`}>
+              <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 ${isLightTheme ? "bg-blue-400" : "bg-primary"}`} />
+              <div className="relative">
+                <Badge className={`mb-3 ${isLightTheme ? "bg-blue-100 text-blue-700 border-blue-200" : "bg-primary/20 text-primary border-primary/30"}`}>
+                  <Users className="h-3 w-3 mr-1" />
+                  For Investors
+                </Badge>
+                <h3 className={`text-xl font-bold mb-3 ${theme.text}`}>VC Brain Network</h3>
+                <p className={`text-sm leading-relaxed mb-4 ${theme.textMuted}`}>
+                  An exclusive, invite-only community where VCs privately share dealflow with trusted peers. 
+                  Get AI-powered startup analysis, coordinate on due diligence, and never miss a warm intro opportunity.
+                </p>
+                <ul className={`text-xs space-y-1.5 mb-5 ${theme.textSubtle}`}>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className={`h-3.5 w-3.5 ${isLightTheme ? "text-blue-500" : "text-primary"}`} />
+                    Private dealflow sharing with verified VCs
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className={`h-3.5 w-3.5 ${isLightTheme ? "text-blue-500" : "text-primary"}`} />
+                    AI memo generation for every deck you receive
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className={`h-3.5 w-3.5 ${isLightTheme ? "text-blue-500" : "text-primary"}`} />
+                    Coordinate investments with co-investors
+                  </li>
+                </ul>
+                <Button onClick={handleJoinNetwork} variant="outline" size="sm" className={`w-full gap-2 ${isLightTheme ? "border-slate-300 bg-white hover:bg-blue-50 text-slate-700 hover:border-blue-400 hover:text-blue-700" : "border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary"}`}>
+                  Join the Network
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
             </Card>
 
-            <Card className={`p-6 ${theme.card}`}>
-              <Badge className={`mb-3 ${theme.badge}`}>
-                <Sparkles className="h-3 w-3 mr-1" />
-                For Startups
-              </Badge>
-              <h3 className={`text-lg font-bold mb-2 ${theme.text}`}>Get VC-Ready</h3>
-              <p className={`text-sm mb-4 ${theme.textMuted}`}>
-                UglyBaby analyzes your startup the way VCs do — full investment memo, scoring, and blind spot detection.
-              </p>
-              <Button onClick={() => navigate("/")} size="sm" className={`w-full gap-2 ${theme.button}`}>
-                Analyze My Startup
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+            <Card className={`p-6 overflow-hidden relative ${isLightTheme ? "bg-gradient-to-br from-stone-50 via-white to-rose-50/50 border-stone-200/80" : "bg-gradient-to-br from-zinc-900 via-zinc-900/95 to-pink-500/5 border-pink-500/20"}`}>
+              <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 ${isLightTheme ? "bg-rose-400" : "bg-pink-500"}`} />
+              <div className="relative">
+                <Badge className={`mb-3 ${isLightTheme ? "bg-rose-100 text-rose-700 border-rose-200" : "bg-pink-500/20 text-pink-400 border-pink-500/30"}`}>
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  For Startups
+                </Badge>
+                <h3 className={`text-xl font-bold mb-3 ${theme.text}`}>Get VC-Ready with UglyBaby</h3>
+                <p className={`text-sm leading-relaxed mb-4 ${theme.textMuted}`}>
+                  Stop guessing what VCs want. UglyBaby analyzes your startup exactly the way investors do—generating 
+                  a full investment memo, risk scoring, and exposing blind spots before you ever pitch.
+                </p>
+                <ul className={`text-xs space-y-1.5 mb-5 ${theme.textSubtle}`}>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className={`h-3.5 w-3.5 ${isLightTheme ? "text-rose-500" : "text-pink-400"}`} />
+                    Investor-grade memo in minutes, not weeks
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className={`h-3.5 w-3.5 ${isLightTheme ? "text-rose-500" : "text-pink-400"}`} />
+                    VC-style scoring across 8 investment dimensions
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className={`h-3.5 w-3.5 ${isLightTheme ? "text-rose-500" : "text-pink-400"}`} />
+                    Blind spot detection before you walk into the room
+                  </li>
+                </ul>
+                <Button onClick={() => navigate("/")} size="sm" className={`w-full gap-2 ${isLightTheme ? "bg-stone-900 hover:bg-stone-800 text-white" : "bg-gradient-to-r from-pink-500 to-primary hover:from-pink-600 hover:to-primary/90 text-white"}`}>
+                  Analyze My Startup
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
             </Card>
           </div>
         </div>
@@ -469,33 +505,48 @@ const PublicBookingPage = () => {
           <div className="space-y-4">
             <ProfileCard />
 
-            {/* CTAs */}
-            <Card className={`p-4 ${theme.card} ${theme.accentBorder}`}>
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${isLightTheme ? "bg-amber-100" : "bg-primary/20"}`}>
-                  <Users className={`h-4 w-4 ${isLightTheme ? "text-amber-700" : "text-primary"}`} />
+            {/* CTA - Investors */}
+            <Card className={`p-5 overflow-hidden relative ${isLightTheme ? "bg-gradient-to-br from-slate-50 via-white to-blue-50/50 border-slate-200/80" : "bg-gradient-to-br from-zinc-900 via-zinc-900/95 to-primary/5 border-primary/20"}`}>
+              <div className={`absolute -top-4 -right-4 w-24 h-24 rounded-full blur-2xl opacity-15 ${isLightTheme ? "bg-blue-400" : "bg-primary"}`} />
+              <div className="relative">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className={`p-2 rounded-lg flex-shrink-0 ${isLightTheme ? "bg-blue-100" : "bg-primary/20"}`}>
+                    <Users className={`h-4 w-4 ${isLightTheme ? "text-blue-600" : "text-primary"}`} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className={`text-sm font-semibold ${theme.text}`}>Are you an investor?</p>
+                    <p className={`text-xs mt-0.5 ${theme.textMuted}`}>Join VC Brain — the private network for VCs</p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${theme.text}`}>Are you an investor?</p>
-                  <p className={`text-xs truncate ${theme.textSubtle}`}>Join the VC Brain Network</p>
-                </div>
-                <Button size="sm" variant="ghost" onClick={handleJoinNetwork} className={isLightTheme ? "text-stone-500 hover:text-amber-700 hover:bg-amber-50" : ""}>
-                  <ChevronRight className="h-4 w-4" />
+                <p className={`text-xs leading-relaxed mb-3 ${theme.textSubtle}`}>
+                  Share dealflow with trusted peers, get AI-powered memo analysis on every deck, and coordinate investments — all in a private, invite-only community.
+                </p>
+                <Button size="sm" variant="outline" onClick={handleJoinNetwork} className={`w-full gap-1.5 ${isLightTheme ? "border-slate-300 bg-white hover:bg-blue-50 text-slate-700 hover:border-blue-400 hover:text-blue-700" : "border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary"}`}>
+                  Join the Network
+                  <ChevronRight className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </Card>
 
-            <Card className={`p-4 ${theme.card}`}>
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${isLightTheme ? "bg-rose-100" : "bg-pink-500/20"}`}>
-                  <Sparkles className={`h-4 w-4 ${isLightTheme ? "text-rose-600" : "text-pink-400"}`} />
+            {/* CTA - Startups */}
+            <Card className={`p-5 overflow-hidden relative ${isLightTheme ? "bg-gradient-to-br from-stone-50 via-white to-rose-50/50 border-stone-200/80" : "bg-gradient-to-br from-zinc-900 via-zinc-900/95 to-pink-500/5 border-pink-500/20"}`}>
+              <div className={`absolute -top-4 -right-4 w-24 h-24 rounded-full blur-2xl opacity-15 ${isLightTheme ? "bg-rose-400" : "bg-pink-500"}`} />
+              <div className="relative">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className={`p-2 rounded-lg flex-shrink-0 ${isLightTheme ? "bg-rose-100" : "bg-pink-500/20"}`}>
+                    <Sparkles className={`h-4 w-4 ${isLightTheme ? "text-rose-600" : "text-pink-400"}`} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className={`text-sm font-semibold ${theme.text}`}>Are you a startup?</p>
+                    <p className={`text-xs mt-0.5 ${theme.textMuted}`}>Get VC-ready before your pitch</p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${theme.text}`}>Are you a startup?</p>
-                  <p className={`text-xs truncate ${theme.textSubtle}`}>Get VC-ready with AI analysis</p>
-                </div>
-                <Button size="sm" variant="ghost" onClick={() => navigate("/")} className={isLightTheme ? "text-stone-500 hover:text-rose-600 hover:bg-rose-50" : ""}>
-                  <ChevronRight className="h-4 w-4" />
+                <p className={`text-xs leading-relaxed mb-3 ${theme.textSubtle}`}>
+                  UglyBaby analyzes your startup exactly like VCs do — investment memo, risk scoring, and blind spot detection. Stop guessing what investors want.
+                </p>
+                <Button size="sm" onClick={() => navigate("/")} className={`w-full gap-1.5 ${isLightTheme ? "bg-stone-900 hover:bg-stone-800 text-white" : "bg-gradient-to-r from-pink-500 to-primary hover:from-pink-600 hover:to-primary/90 text-white"}`}>
+                  Analyze My Startup
+                  <ChevronRight className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </Card>
