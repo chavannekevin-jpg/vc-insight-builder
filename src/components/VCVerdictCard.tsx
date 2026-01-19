@@ -416,28 +416,28 @@ export const VCVerdictCard = memo(({
               )}
             </div>
 
-            {/* The Verdict Quote - Tighter */}
+            {/* The Verdict Quote */}
             <div className="relative pl-4 border-l-2 border-primary/30">
               <p className="text-sm text-foreground leading-relaxed italic">
-                "{verdict.verdict.length > 150 ? verdict.verdict.slice(0, 150) + '...' : verdict.verdict}"
+                "{verdict.verdict}"
               </p>
               <p className="text-[10px] text-muted-foreground mt-1.5">— Monday IC meeting</p>
             </div>
           </div>
 
-          {/* Narrative Transformation - More Visual */}
+          {/* Narrative Transformation */}
           <div className="px-5 py-3 bg-muted/10 border-b border-border/30">
             <div className="flex items-center gap-3">
               <div className="flex-1 text-center">
                 <p className="text-[9px] uppercase tracking-wider text-muted-foreground/70 mb-0.5">What VCs hear</p>
-                <p className="text-xs text-muted-foreground line-clamp-1">"{narrativeTransformation.currentNarrative}"</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">"{narrativeTransformation.currentNarrative}"</p>
               </div>
               <div className="flex-shrink-0">
                 <ArrowRight className="w-4 h-4 text-primary" />
               </div>
               <div className="flex-1 text-center">
                 <p className="text-[9px] uppercase tracking-wider text-primary/70 mb-0.5">What they could hear</p>
-                <p className="text-xs text-foreground line-clamp-1">"{narrativeTransformation.transformedNarrative}"</p>
+                <p className="text-xs text-foreground line-clamp-2">"{narrativeTransformation.transformedNarrative}"</p>
               </div>
             </div>
           </div>
