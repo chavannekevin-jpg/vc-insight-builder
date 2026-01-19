@@ -421,9 +421,34 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, onBulkImport, userId }: A
 
       if (contactError) throw contactError;
 
+      // Auto-research the new contact in the background (don't block the UI)
+      if (globalContactId) {
+        supabase.functions.invoke("research-contact", {
+          body: {
+            name: name.trim(),
+            organization_name: organizationName.trim() || undefined,
+            linkedin_url: linkedinUrl.trim() || undefined,
+            global_contact_id: globalContactId,
+          },
+        }).then((response) => {
+          if (response.error) {
+            console.error("Auto-research failed:", response.error);
+          } else if (response.data?.data) {
+            console.log("Auto-research completed:", response.data.data.investment_focus);
+          }
+        }).catch((err) => {
+          console.error("Auto-research error:", err);
+        });
+      }
+
       resetForm();
       setMode("choose");
       onSuccess();
+      
+      toast({
+        title: "Contact added",
+        description: "AI is researching investment focus in the background...",
+      });
     } catch (error: any) {
       console.error("Error adding contact:", error);
       toast({
