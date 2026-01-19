@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Loader2, Upload, X, Sun, Moon, ImageIcon, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -192,45 +191,43 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
         {/* Theme Selection */}
         <div className="space-y-3">
           <Label>Theme</Label>
-          <RadioGroup
-            value={settings.theme}
-            onValueChange={(value) => setSettings(prev => ({ ...prev, theme: value as "dark" | "light" }))}
-            className="grid grid-cols-2 gap-3"
-          >
-            <label
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setSettings(prev => ({ ...prev, theme: "dark" }))}
               className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                 settings.theme === "dark"
                   ? "border-primary bg-primary/5"
                   : "border-border hover:border-primary/50"
               }`}
             >
-              <RadioGroupItem value="dark" id="dark" className="sr-only" />
               <div className="p-2 rounded-md bg-background border border-border">
                 <Moon className="h-5 w-5 text-muted-foreground" />
               </div>
-              <div>
+              <div className="text-left">
                 <div className="font-medium">Dark</div>
                 <div className="text-xs text-muted-foreground">Dark background theme</div>
               </div>
-            </label>
+            </button>
 
-            <label
+            <button
+              type="button"
+              onClick={() => setSettings(prev => ({ ...prev, theme: "light" }))}
               className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                 settings.theme === "light"
                   ? "border-primary bg-primary/5"
                   : "border-border hover:border-primary/50"
               }`}
             >
-              <RadioGroupItem value="light" id="light" className="sr-only" />
               <div className="p-2 rounded-md bg-card border border-border">
                 <Sun className="h-5 w-5 text-accent" />
               </div>
-              <div>
+              <div className="text-left">
                 <div className="font-medium">Light</div>
                 <div className="text-xs text-muted-foreground">Light background theme</div>
               </div>
-            </label>
-          </RadioGroup>
+            </button>
+          </div>
         </div>
 
         {/* Cover Image */}
