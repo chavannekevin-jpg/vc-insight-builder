@@ -25,8 +25,10 @@ interface TimeSlot {
 }
 
 interface InvestorProfile {
+  id: string;
   full_name: string;
   organization_name: string | null;
+  profile_slug: string | null;
 }
 
 const PublicBookingPage = () => {
@@ -50,19 +52,40 @@ const PublicBookingPage = () => {
     const fetchData = async () => {
       if (!investorId) return;
       
-      // Fetch investor profile
-      const { data: profile } = await supabase
-        .from("investor_profiles")
-        .select("full_name, organization_name")
-        .eq("id", investorId)
-        .single();
+      // First try to find by UUID, then by slug
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(investorId);
+      
+      let profile: InvestorProfile | null = null;
+      
+      if (isUUID) {
+        const { data } = await supabase
+          .from("investor_profiles")
+          .select("id, full_name, organization_name, profile_slug")
+          .eq("id", investorId)
+          .single();
+        profile = data as InvestorProfile | null;
+      } else {
+        // Try to find by slug
+        const { data } = await supabase
+          .from("investor_profiles")
+          .select("id, full_name, organization_name, profile_slug")
+          .eq("profile_slug", investorId)
+          .single();
+        profile = data as InvestorProfile | null;
+      }
+      
+      if (!profile) {
+        setIsLoading(false);
+        return;
+      }
+      
       setInvestorProfile(profile);
 
-      // Fetch event types
+      // Fetch event types using the actual investor ID
       const { data: events } = await supabase
         .from("booking_event_types")
         .select("id, name, description, duration_minutes, color")
-        .eq("investor_id", investorId)
+        .eq("investor_id", profile.id)
         .eq("is_active", true);
       setEventTypes(events || []);
 
@@ -81,14 +104,14 @@ const PublicBookingPage = () => {
   }, [investorId, eventTypeId]);
 
   const fetchSlots = async (date: Date) => {
-    if (!selectedEvent || !investorId) return;
+    if (!selectedEvent || !investorProfile) return;
     setIsLoadingSlots(true);
     
     const startDate = startOfDay(date).toISOString();
     const endDate = addDays(startOfDay(date), 1).toISOString();
 
     const { data, error } = await supabase.functions.invoke("calculate-available-slots", {
-      body: { investorId, eventTypeId: selectedEvent.id, startDate, endDate },
+      body: { investorId: investorProfile.id, eventTypeId: selectedEvent.id, startDate, endDate },
     });
 
     if (!error && data?.slots) {
@@ -111,12 +134,12 @@ const PublicBookingPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedSlot || !selectedEvent || !investorId) return;
+    if (!selectedSlot || !selectedEvent || !investorProfile) return;
 
     setIsSubmitting(true);
     const { data, error } = await supabase.functions.invoke("create-booking", {
       body: {
-        investorId,
+        investorId: investorProfile.id,
         eventTypeId: selectedEvent.id,
         startTime: selectedSlot.start,
         bookerName: formData.name,

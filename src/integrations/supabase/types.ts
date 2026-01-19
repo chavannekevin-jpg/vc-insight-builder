@@ -923,6 +923,7 @@ export type Database = {
           organization_name: string | null
           preferred_stages: Json | null
           primary_sectors: Json | null
+          profile_slug: string | null
           ticket_size_max: number | null
           ticket_size_min: number | null
           updated_at: string | null
@@ -941,6 +942,7 @@ export type Database = {
           organization_name?: string | null
           preferred_stages?: Json | null
           primary_sectors?: Json | null
+          profile_slug?: string | null
           ticket_size_max?: number | null
           ticket_size_min?: number | null
           updated_at?: string | null
@@ -959,6 +961,7 @@ export type Database = {
           organization_name?: string | null
           preferred_stages?: Json | null
           primary_sectors?: Json | null
+          profile_slug?: string | null
           ticket_size_max?: number | null
           ticket_size_min?: number | null
           updated_at?: string | null
@@ -1610,6 +1613,7 @@ export type Database = {
     }
     Functions: {
       generate_invite_code: { Args: never; Returns: string }
+      generate_profile_slug: { Args: { full_name: string }; Returns: string }
       get_inviter_id_from_code: {
         Args: { invite_code: string }
         Returns: string
