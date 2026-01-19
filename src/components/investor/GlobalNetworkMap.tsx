@@ -183,78 +183,23 @@ const GlobalNetworkMap = memo(({
         </ZoomableGroup>
       </ComposableMap>
 
-      {/* Hover Tooltip - Positioned near the marker */}
+      {/* Minimal Hover Tooltip */}
       {hoveredCity && cityGroups[hoveredCity] && tooltipPosition && (
         <div 
           className="absolute z-50 pointer-events-none animate-fade-in"
           style={{
-            left: tooltipPosition.x + 16,
-            top: tooltipPosition.y - 8,
+            left: tooltipPosition.x + 12,
+            top: tooltipPosition.y - 4,
             transform: tooltipPosition.x > (mapContainerRef.current?.clientWidth || 0) / 2 
-              ? 'translateX(-100%) translateX(-32px)' 
+              ? 'translateX(-100%) translateX(-24px)' 
               : 'translateX(0)',
           }}
         >
-          <div className="bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl p-4 shadow-2xl max-w-[280px] ring-1 ring-white/5">
-            {/* Header */}
-            <div className="flex items-center gap-2.5 mb-3">
-              <div 
-                className="w-8 h-8 rounded-lg flex items-center justify-center ring-1"
-                style={{ 
-                  backgroundColor: `${TYPE_COLORS[cityGroups[hoveredCity].dominantType]}20`,
-                  borderColor: `${TYPE_COLORS[cityGroups[hoveredCity].dominantType]}40`
-                }}
-              >
-                <MapPin className="w-4 h-4" style={{ color: TYPE_COLORS[cityGroups[hoveredCity].dominantType] }} />
-              </div>
-              <div>
-                <h3 className="font-bold text-sm text-foreground">{hoveredCity}</h3>
-                <p className="text-xs text-muted-foreground/80">
-                  {cityGroups[hoveredCity].count} investor{cityGroups[hoveredCity].count !== 1 ? "s" : ""}
-                </p>
-              </div>
-            </div>
-            
-            {/* Contact List */}
-            <div className="space-y-2">
-              {cityGroups[hoveredCity].markers.slice(0, 4).map((marker) => (
-                <div 
-                  key={marker.id} 
-                  className="flex items-center gap-2.5 p-2 rounded-lg bg-muted/30 border border-border/30"
-                >
-                  <div 
-                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-semibold text-white"
-                    style={{ backgroundColor: TYPE_COLORS[marker.type] }}
-                  >
-                    {marker.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-foreground truncate">
-                      {marker.name}
-                    </p>
-                    {marker.organization_name && (
-                      <p className="text-[10px] text-muted-foreground/70 truncate flex items-center gap-1">
-                        <Building2 className="w-2.5 h-2.5" />
-                        {marker.organization_name}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {cityGroups[hoveredCity].count > 4 && (
-                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 pl-1">
-                  <Users className="w-3 h-3" />
-                  +{cityGroups[hoveredCity].count - 4} more investors
-                </div>
-              )}
-            </div>
-            
-            {/* Footer CTA */}
-            <div className="mt-3 pt-2.5 border-t border-border/30">
-              <p className="text-[10px] font-medium flex items-center gap-1" style={{ color: TYPE_COLORS[cityGroups[hoveredCity].dominantType] }}>
-                <span className="w-1 h-1 rounded-full animate-pulse" style={{ backgroundColor: TYPE_COLORS[cityGroups[hoveredCity].dominantType] }} />
-                Click to explore
-              </p>
+          <div className="bg-card/95 backdrop-blur-md border border-border/40 rounded-lg px-3 py-2 shadow-xl">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-foreground">{hoveredCity}</span>
+              <span className="text-xs text-muted-foreground">·</span>
+              <span className="text-xs text-muted-foreground">{cityGroups[hoveredCity].count}</span>
             </div>
           </div>
         </div>
