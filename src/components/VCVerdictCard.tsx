@@ -490,10 +490,28 @@ export const VCVerdictCard = memo(({
 
         {/* The Transformation - Conceptual Value */}
         <div className="px-6 py-5 border-b border-border/50 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
-          <p className="text-sm text-foreground leading-relaxed">
+          <p className="text-sm text-foreground leading-relaxed mb-3">
             <strong className="text-primary">Stop guessing what VCs think.</strong> See your company the way investors see it — 
             then fix the gaps before they become rejections.
           </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+            <div className="flex items-start gap-1.5">
+              <span className="text-primary">→</span>
+              <span>Your story rewritten in VC language — <strong className="text-foreground">learn how investors frame deals</strong></span>
+            </div>
+            <div className="flex items-start gap-1.5">
+              <span className="text-primary">→</span>
+              <span>The Monday IC meeting simulation — <strong className="text-foreground">what partners say when you leave</strong></span>
+            </div>
+            <div className="flex items-start gap-1.5">
+              <span className="text-primary">→</span>
+              <span>Coherence check — <strong className="text-foreground">where your story doesn't add up</strong></span>
+            </div>
+            <div className="flex items-start gap-1.5">
+              <span className="text-primary">→</span>
+              <span>Stage reality check — <strong className="text-foreground">are you actually where you think you are?</strong></span>
+            </div>
+          </div>
         </div>
 
         {/* What's Included - Comprehensive but Scannable */}
@@ -506,18 +524,20 @@ export const VCVerdictCard = memo(({
               <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-2">The 9-Page VC Analysis</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
+                  "Your narrative rewritten in VC framing",
                   "Investment Readiness Score (8 dimensions)",
                   "VC benchmark comparison per section",
                   "Stage-calibrated verdict & expectations",
                   "30+ investor questions with prepared answers",
-                  "\"Why VCs ask this\" context for each question",
+                  "\"Why VCs ask this\" context for each",
                   "Red flags surfaced before your pitch",
-                  "Holistic fundability assessment",
+                  "Holistic cross-section coherence check",
                   "Prioritized \"fix these first\" action plan",
                   "Good vs. bad answer examples",
-                  "VC-grade narrative for each section",
                   "Peer cohort benchmarking (not generic)",
                   "Real case study comparisons",
+                  "VC framing explainers (learn the patterns)",
+                  "Internal IC meeting simulation",
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
