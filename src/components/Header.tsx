@@ -1,8 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, LogIn, LogOut, ChevronDown, RotateCcw } from "lucide-react";
+import { Menu, X, LogIn, LogOut, ChevronDown, RotateCcw, Rocket, Users, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -486,22 +492,48 @@ export const Header = () => {
             >
               For Accelerators
             </Link>
-            <button
-              onClick={isAuthenticated ? handleSignOut : () => navigate('/auth')}
-              className="neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
-            >
-              {isAuthenticated ? (
-                <>
-                  <LogOut className="w-4 h-4" />
-                  Sign Out
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-4 h-4" />
-                  Sign In
-                </>
-              )}
-            </button>
+            {isAuthenticated ? (
+              <button
+                onClick={handleSignOut}
+                className="neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </button>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2">
+                    <LogIn className="w-4 h-4" />
+                    Sign In
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64 bg-card border-border">
+                  <DropdownMenuItem onClick={() => navigate('/auth')} className="cursor-pointer py-3">
+                    <Rocket className="w-4 h-4 mr-3 text-primary" />
+                    <div>
+                      <div className="font-medium">Startup Founder</div>
+                      <div className="text-xs text-muted-foreground">Get your investment analysis</div>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/investor/auth')} className="cursor-pointer py-3">
+                    <Users className="w-4 h-4 mr-3 text-primary" />
+                    <div>
+                      <div className="font-medium">Investor</div>
+                      <div className="text-xs text-muted-foreground">Access the investor network</div>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/accelerators')} className="cursor-pointer py-3">
+                    <Building2 className="w-4 h-4 mr-3 text-primary" />
+                    <div>
+                      <div className="font-medium">Accelerator</div>
+                      <div className="text-xs text-muted-foreground">Cohort analysis tools</div>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <Button 
               onClick={() => {
                 const pricingSection = document.getElementById('pricing-section');
@@ -541,29 +573,52 @@ export const Header = () => {
                   {link.name}
                 </Link>
               ))}
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (isAuthenticated) {
+              {isAuthenticated ? (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
                     handleSignOut();
-                  } else {
-                    navigate('/auth');
-                  }
-                }}
-                className="w-full neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
-              >
-                {isAuthenticated ? (
-                  <>
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
-                  </>
-                ) : (
-                  <>
-                    <LogIn className="w-4 h-4" />
-                    Sign In
-                  </>
-                )}
-              </button>
+                  }}
+                  className="w-full neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              ) : (
+                <div className="space-y-2 pt-2 border-t border-border">
+                  <p className="text-xs text-muted-foreground px-2 font-medium">Sign in as:</p>
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); navigate('/auth'); }}
+                    className="w-full text-left px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg flex items-center gap-3 transition-colors"
+                  >
+                    <Rocket className="w-4 h-4 text-primary" />
+                    <div>
+                      <div className="font-medium text-foreground">Startup Founder</div>
+                      <div className="text-xs text-muted-foreground">Get your investment analysis</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); navigate('/investor/auth'); }}
+                    className="w-full text-left px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg flex items-center gap-3 transition-colors"
+                  >
+                    <Users className="w-4 h-4 text-primary" />
+                    <div>
+                      <div className="font-medium text-foreground">Investor</div>
+                      <div className="text-xs text-muted-foreground">Access the investor network</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); navigate('/accelerators'); }}
+                    className="w-full text-left px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg flex items-center gap-3 transition-colors"
+                  >
+                    <Building2 className="w-4 h-4 text-primary" />
+                    <div>
+                      <div className="font-medium text-foreground">Accelerator</div>
+                      <div className="text-xs text-muted-foreground">Cohort analysis tools</div>
+                    </div>
+                  </button>
+                </div>
+              )}
               <Button 
                 onClick={() => {
                   setMobileMenuOpen(false);
