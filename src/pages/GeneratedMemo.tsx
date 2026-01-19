@@ -1134,8 +1134,14 @@ export default function GeneratedMemo() {
               <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
                 Unlock detailed VC analysis, strategic tools, benchmarks, and actionable insights for each section.
               </p>
-              <Button onClick={() => navigate(`/checkout-analysis?companyId=${companyId}`)}>
-                Unlock Full Memo
+              <Button onClick={() => {
+                if (hasPremium) {
+                  navigate(`/analysis?companyId=${companyId}&view=full`);
+                } else {
+                  navigate(`/checkout-analysis?companyId=${companyId}`);
+                }
+              }}>
+                {hasPremium ? "View Full Analysis" : "Unlock Full Memo"}
               </Button>
             </div>
           </div>

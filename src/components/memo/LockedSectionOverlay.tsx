@@ -1,7 +1,8 @@
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Lock, AlertCircle, Users, TrendingUp, Target, DollarSign, Lightbulb, Shield, Rocket } from "lucide-react";
 import { safeTitle } from "@/lib/stringUtils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LockedSectionOverlayProps {
   children: ReactNode;
@@ -94,9 +95,32 @@ export function LockedSectionOverlay({ children, sectionTitle }: LockedSectionOv
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const companyId = searchParams.get("companyId");
+  const [hasPremium, setHasPremium] = useState(false);
+
+  // Check if company already has premium access (granted by admin)
+  useEffect(() => {
+    const checkPremiumStatus = async () => {
+      if (!companyId) return;
+      
+      const { data } = await supabase
+        .from('companies')
+        .select('has_premium')
+        .eq('id', companyId)
+        .single();
+      
+      setHasPremium(data?.has_premium ?? false);
+    };
+    
+    checkPremiumStatus();
+  }, [companyId]);
 
   const handleClick = () => {
-    if (companyId) {
+    if (!companyId) return;
+    
+    // If already has premium (admin granted), go directly to full analysis
+    if (hasPremium) {
+      navigate(`/analysis?companyId=${companyId}&view=full`);
+    } else {
       navigate(`/checkout-analysis?companyId=${companyId}`);
     }
   };
