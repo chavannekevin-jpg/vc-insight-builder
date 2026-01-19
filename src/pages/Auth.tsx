@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Session, User } from "@supabase/supabase-js";
-import { Lock, Sparkles, ArrowLeft } from "lucide-react";
+import { Lock, Sparkles, ArrowLeft, Gift } from "lucide-react";
+import { useStartupReferral } from "@/hooks/useStartupReferral";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
@@ -16,13 +17,23 @@ export default function Auth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  // Removed hasRedirected ref - was causing redirect issues
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
 
   const selectedPlan = searchParams.get('plan');
   const selectedPrice = searchParams.get('price');
+  const startupInviteCode = searchParams.get('startup_invite');
+  
+  // Validate startup invite code
+  const { inviteInfo, isLoading: isValidatingInvite } = useStartupReferral(startupInviteCode);
+
+  // Store invite code in sessionStorage for use in Intake
+  useEffect(() => {
+    if (startupInviteCode && inviteInfo?.isValid) {
+      sessionStorage.setItem('startup_invite_code', startupInviteCode);
+    }
+  }, [startupInviteCode, inviteInfo]);
 
   useEffect(() => {
     // Check for existing session once on mount
@@ -205,6 +216,16 @@ export default function Auth() {
 
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
+          {/* Referral badge */}
+          {inviteInfo?.isValid && (
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/30 backdrop-blur-xl mb-3">
+              <Gift className="w-4 h-4 text-green-500" />
+              <span className="text-sm font-semibold text-green-500">
+                {inviteInfo.discountPercent}% discount from {inviteInfo.investorName || 'an investor'}
+              </span>
+            </div>
+          )}
+          
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 backdrop-blur-xl mb-4">
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-sm font-semibold text-primary">

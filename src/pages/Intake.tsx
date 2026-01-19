@@ -9,8 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ModernCard } from "@/components/ModernCard";
 import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
-import { ArrowRight, Upload, Zap, FileText, AlertTriangle, PenLine, Target, Search, ArrowLeft } from "lucide-react";
+import { ArrowRight, Upload, Zap, FileText, AlertTriangle, PenLine, Target, Search, ArrowLeft, Gift } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { processStartupReferral, useStartupReferral } from "@/hooks/useStartupReferral";
 
 type IntakeMode = "choose" | "deck" | "manual";
 
@@ -26,6 +27,10 @@ export default function Intake() {
   const [description, setDescription] = useState("");
   const [stage, setStage] = useState("Pre Seed");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Referral tracking
+  const startupInviteCode = sessionStorage.getItem('startup_invite_code');
+  const { inviteInfo } = useStartupReferral(startupInviteCode);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -73,12 +78,23 @@ export default function Intake() {
           stage: companyStage,
           category: data.companyInfo.category || null,
           has_premium: false,
-          deck_parsed_at: new Date().toISOString()
+          deck_parsed_at: new Date().toISOString(),
+          // Add referral tracking if present
+          ...(inviteInfo?.isValid && {
+            referred_by_investor: inviteInfo.investorId,
+            referral_code: startupInviteCode,
+          }),
         })
         .select()
         .single();
 
       if (companyError) throw companyError;
+
+      // Process referral to add to investor dealflow
+      if (inviteInfo?.isValid && startupInviteCode) {
+        await processStartupReferral(newCompany.id, startupInviteCode);
+        sessionStorage.removeItem('startup_invite_code');
+      }
 
       // Save high-confidence responses
       const highConfidenceResponses = Object.entries(data.extractedSections)
@@ -148,12 +164,23 @@ export default function Intake() {
           name: companyName.trim(),
           description: description.trim() || null,
           stage: stage,
-          has_premium: false
+          has_premium: false,
+          // Add referral tracking if present
+          ...(inviteInfo?.isValid && {
+            referred_by_investor: inviteInfo.investorId,
+            referral_code: startupInviteCode,
+          }),
         })
         .select()
         .single();
 
       if (companyError) throw companyError;
+
+      // Process referral to add to investor dealflow
+      if (inviteInfo?.isValid && startupInviteCode) {
+        await processStartupReferral(newCompany.id, startupInviteCode);
+        sessionStorage.removeItem('startup_invite_code');
+      }
 
       // Invalidate company query cache before navigation
       await queryClient.invalidateQueries({ queryKey: ["company"] });
@@ -185,6 +212,21 @@ export default function Intake() {
         <div className="w-full max-w-2xl space-y-8 animate-fade-in">
           <ModernCard className="p-8">
             <div className="space-y-6">
+              {/* Referral banner */}
+              {inviteInfo?.isValid && (
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/30">
+                  <Gift className="w-6 h-6 text-green-500 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-green-600 dark:text-green-400">
+                      You've been invited by {inviteInfo.investorName || 'an investor'}!
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Get {inviteInfo.discountPercent}% off when you generate your VC memo.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               <div className="text-center space-y-3 mb-8">
                 <h2 className="text-3xl font-display font-bold">Let's Analyze Your Startup</h2>
                 <p className="text-muted-foreground">

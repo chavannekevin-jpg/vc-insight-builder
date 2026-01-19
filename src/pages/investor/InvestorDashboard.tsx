@@ -210,7 +210,7 @@ const InvestorDashboard = () => {
       case "funds":
         return <FundDirectoryView />;
       case "dealflow":
-        return <DealflowView onUploadDeck={() => setActiveSection("upload")} />;
+        return <DealflowView onUploadDeck={() => setActiveSection("upload")} userId={userId} />;
       case "upload":
         return <UploadDeckView />;
       case "settings":
