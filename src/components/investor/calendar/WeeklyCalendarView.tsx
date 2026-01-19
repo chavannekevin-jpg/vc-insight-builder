@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval, isSameDay, parseISO, addDays } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Calendar, Loader2, RefreshCw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, Loader2, RefreshCw, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -12,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import CreateEventModal from "./CreateEventModal";
 
 interface CalendarEvent {
   id: string;
@@ -47,6 +47,11 @@ const WeeklyCalendarView = ({ userId }: WeeklyCalendarViewProps) => {
   const [calendars, setCalendars] = useState<LinkedCalendar[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  
+  // Create event state
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createEventDate, setCreateEventDate] = useState<Date | undefined>();
+  const [createEventHour, setCreateEventHour] = useState<number | undefined>();
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
@@ -117,6 +122,38 @@ const WeeklyCalendarView = ({ userId }: WeeklyCalendarViewProps) => {
     return (start.getMinutes() / 60) * 100;
   };
 
+  const handleCellClick = (day: Date, hour: number) => {
+    if (calendars.length === 0) {
+      toast({
+        title: "Connect a calendar first",
+        description: "Go to Settings to connect your Google Calendar",
+        variant: "destructive",
+      });
+      return;
+    }
+    setCreateEventDate(day);
+    setCreateEventHour(hour);
+    setShowCreateModal(true);
+  };
+
+  const handleCreateEvent = () => {
+    if (calendars.length === 0) {
+      toast({
+        title: "Connect a calendar first",
+        description: "Go to Settings to connect your Google Calendar",
+        variant: "destructive",
+      });
+      return;
+    }
+    setCreateEventDate(new Date());
+    setCreateEventHour(new Date().getHours() + 1);
+    setShowCreateModal(true);
+  };
+
+  const handleEventCreated = () => {
+    fetchEvents();
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -137,14 +174,20 @@ const WeeklyCalendarView = ({ userId }: WeeklyCalendarViewProps) => {
         </div>
         <div className="flex items-center gap-2">
           {calendars.length > 0 && (
-            <div className="flex items-center gap-1.5">
-              {calendars.slice(0, 3).map((cal) => (
-                <Badge key={cal.id} variant="outline" className="text-xs" style={{ borderColor: cal.color }}>
-                  <span className="w-2 h-2 rounded-full mr-1.5" style={{ backgroundColor: cal.color }} />
-                  {cal.name}
-                </Badge>
-              ))}
-            </div>
+            <>
+              <Button onClick={handleCreateEvent} size="sm" className="gap-2">
+                <Plus className="h-4 w-4" />
+                New Event
+              </Button>
+              <div className="flex items-center gap-1.5 ml-2">
+                {calendars.slice(0, 3).map((cal) => (
+                  <Badge key={cal.id} variant="outline" className="text-xs" style={{ borderColor: cal.color }}>
+                    <span className="w-2 h-2 rounded-full mr-1.5" style={{ backgroundColor: cal.color }} />
+                    {cal.name}
+                  </Badge>
+                ))}
+              </div>
+            </>
           )}
           <Button variant="ghost" size="icon" onClick={fetchEvents} disabled={isLoading}>
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
@@ -199,7 +242,10 @@ const WeeklyCalendarView = ({ userId }: WeeklyCalendarViewProps) => {
                     {getAllDayEvents(day).map((event) => (
                       <div
                         key={event.id}
-                        onClick={() => setSelectedEvent(event)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedEvent(event);
+                        }}
                         className="text-xs px-2 py-1 rounded cursor-pointer truncate hover:opacity-80"
                         style={{ backgroundColor: event.color + "20", color: event.color }}
                       >
@@ -222,7 +268,8 @@ const WeeklyCalendarView = ({ userId }: WeeklyCalendarViewProps) => {
                   return (
                     <div
                       key={day.toISOString()}
-                      className={`relative h-14 border-l border-border/50 ${
+                      onClick={() => handleCellClick(day, hour)}
+                      className={`relative h-14 border-l border-border/50 cursor-pointer hover:bg-muted/30 transition-colors ${
                         isSameDay(day, new Date()) ? "bg-primary/5" : ""
                       }`}
                     >
@@ -233,7 +280,10 @@ const WeeklyCalendarView = ({ userId }: WeeklyCalendarViewProps) => {
                         return (
                           <div
                             key={event.id}
-                            onClick={() => setSelectedEvent(event)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedEvent(event);
+                            }}
                             className="absolute left-0.5 right-0.5 rounded px-1.5 py-0.5 text-xs cursor-pointer hover:opacity-90 overflow-hidden z-10"
                             style={{
                               backgroundColor: event.color + "30",
@@ -312,6 +362,17 @@ const WeeklyCalendarView = ({ userId }: WeeklyCalendarViewProps) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Create Event Modal */}
+      <CreateEventModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onEventCreated={handleEventCreated}
+        userId={userId}
+        calendars={calendars}
+        initialDate={createEventDate}
+        initialHour={createEventHour}
+      />
     </div>
   );
 };
