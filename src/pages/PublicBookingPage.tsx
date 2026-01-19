@@ -240,52 +240,85 @@ const PublicBookingPage = () => {
             </p>
           </Card>
 
-          {/* UglyBaby Intro Card */}
-          <Card className="p-8 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent/10 rounded-full blur-2xl" />
-            
-            <div className="relative z-10">
-              <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
-                <Sparkles className="h-3 w-3 mr-1" />
-                What is UglyBaby?
-              </Badge>
+          {/* Two-Part Ecosystem Intro */}
+          <div className="space-y-6">
+            {/* For Investors - VC Brain */}
+            <Card className="p-6 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
               
-              <h3 className="text-2xl font-bold mb-3">
-                Get your startup VC-ready
-              </h3>
-              
-              <p className="text-muted-foreground mb-6">
-                UglyBaby helps founders understand how VCs actually think. Get a full analysis of your startup, identify blind spots, and build a pitch that resonates with investors.
-              </p>
+              <div className="relative z-10">
+                <Badge className="mb-3 bg-primary/10 text-primary border-primary/20">
+                  <Users className="h-3 w-3 mr-1" />
+                  For Investors
+                </Badge>
+                
+                <h3 className="text-xl font-bold mb-2">VC Brain</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  A private, invite-only platform for VCs, angels, and LPs. Share dealflow with trusted peers, access AI-powered startup analysis, manage your calendar, and build your investor network — all in one place.
+                </p>
 
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Zap className="h-4 w-4 text-primary" />
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-start gap-2 text-sm">
+                    <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <span>Private dealflow sharing with attribution</span>
                   </div>
-                  <span>Full VC-style investment memo analysis</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Network className="h-4 w-4 text-primary" />
+                  <div className="flex items-start gap-2 text-sm">
+                    <Zap className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <span>AI analysis on every startup in your pipeline</span>
                   </div>
-                  <span>Spot weaknesses before VCs do</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Globe className="h-4 w-4 text-primary" />
+                  <div className="flex items-start gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <span>Booking pages & calendar sync</span>
                   </div>
-                  <span>Built by someone who's seen 1000+ pitches</span>
                 </div>
+
+                <Button onClick={handleJoinNetwork} variant="outline" size="sm" className="w-full gap-2 border-primary/30">
+                  Join the VC Network
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
               </div>
+            </Card>
 
-              <Button onClick={() => navigate("/")} size="lg" className="w-full gap-2">
-                Explore UglyBaby
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </Card>
+            {/* For Startups - UglyBaby Platform */}
+            <Card className="p-6 border-accent/20 bg-gradient-to-br from-accent/5 via-transparent to-primary/5 relative overflow-hidden">
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent/10 rounded-full blur-2xl" />
+              
+              <div className="relative z-10">
+                <Badge className="mb-3 bg-accent/10 text-accent-foreground border-accent/20">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  For Startups
+                </Badge>
+                
+                <h3 className="text-xl font-bold mb-2">UglyBaby</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Most founders don't understand how VCs actually evaluate startups — and that's why they fail to raise. UglyBaby changes that.
+                </p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Built by someone who's spent 10+ years in VC, met thousands of founders, and written hundreds of investment memos, UglyBaby gives you the same analysis VCs run internally — before you ever step into a pitch room.
+                </p>
+
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-start gap-2 text-sm">
+                    <Zap className="h-4 w-4 text-accent mt-0.5 shrink-0" />
+                    <span>Full investment memo with VC-style scoring</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <Globe className="h-4 w-4 text-accent mt-0.5 shrink-0" />
+                    <span>Identify blind spots VCs will find anyway</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <Network className="h-4 w-4 text-accent mt-0.5 shrink-0" />
+                    <span>Market, traction, team & financials analysis</span>
+                  </div>
+                </div>
+
+                <Button onClick={() => navigate("/")} size="sm" className="w-full gap-2">
+                  Get Your Startup Analyzed
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -330,35 +363,55 @@ const PublicBookingPage = () => {
               </div>
             </Card>
 
-            {/* UglyBaby Intro */}
-            <Card className="p-5 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 relative overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-24 h-24 bg-primary/10 rounded-full blur-2xl" />
+            {/* For Investors */}
+            <Card className="p-5 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-transparent relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-20 h-20 bg-primary/10 rounded-full blur-2xl" />
               
               <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="h-4 w-4 text-primary" />
-                  </div>
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                    UglyBaby
-                  </span>
-                </div>
+                <Badge variant="outline" className="mb-3 text-xs border-primary/30">
+                  <Users className="h-3 w-3 mr-1" />
+                  For Investors
+                </Badge>
                 
-                <h3 className="font-semibold mb-2">
-                  Don't have an account yet?
-                </h3>
+                <h3 className="font-semibold mb-2 text-sm">VC Brain Network</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Private, invite-only platform for VCs. Share dealflow, get AI analysis on startups, and manage your investor network.
+                </p>
+
+                <Button 
+                  onClick={handleJoinNetwork} 
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-2 border-primary/30 hover:bg-primary/10 text-xs"
+                >
+                  Join Network
+                  <ArrowRight className="h-3 w-3" />
+                </Button>
+              </div>
+            </Card>
+
+            {/* For Startups */}
+            <Card className="p-5 border-accent/20 bg-gradient-to-br from-accent/5 via-transparent to-transparent relative overflow-hidden">
+              <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-accent/10 rounded-full blur-2xl" />
+              
+              <div className="relative z-10">
+                <Badge variant="outline" className="mb-3 text-xs border-accent/30">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  For Startups
+                </Badge>
                 
-                <p className="text-sm text-muted-foreground mb-4">
-                  UglyBaby helps startups get VC-ready with honest analysis and investment memos that actually help you raise.
+                <h3 className="font-semibold mb-2 text-sm">Get VC-Ready</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  UglyBaby analyzes your startup the way VCs do — full investment memo, scoring, and blind spot detection. Built by 10+ years of VC experience.
                 </p>
 
                 <Button 
                   onClick={() => navigate("/")} 
-                  variant="outline"
-                  className="w-full gap-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50"
+                  size="sm"
+                  className="w-full gap-2 text-xs"
                 >
-                  Learn More
-                  <ArrowRight className="h-4 w-4" />
+                  Analyze My Startup
+                  <ArrowRight className="h-3 w-3" />
                 </Button>
               </div>
             </Card>
