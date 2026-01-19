@@ -49,6 +49,7 @@ const mainMenuItems = [
 ];
 
 const toolsMenuItems = [
+  { title: "Business CRM", url: "/investor/dashboard?view=businesscrm", icon: Briefcase, section: "businesscrm" },
   { title: "Portfolio", url: "/investor/dashboard?view=portfolio", icon: BarChart3, section: "portfolio" },
   { title: "Calendar", url: "/investor/dashboard?view=calendar", icon: CalendarDays, section: "calendar" },
   { title: "Thesis", url: "/investor/dashboard?view=thesis", icon: Target, section: "thesis" },

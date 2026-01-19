@@ -34,6 +34,7 @@ import UploadDeckView from "@/components/investor/views/UploadDeckView";
 import SettingsView from "@/components/investor/views/SettingsView";
 import PlaceholderView from "@/components/investor/views/PlaceholderView";
 import FundDirectoryView from "@/components/investor/views/FundDirectoryView";
+import BusinessCRMView from "@/components/investor/views/BusinessCRMView";
 import { BarChart3, CalendarDays, Target } from "lucide-react";
 
 export interface InvestorContact {
@@ -221,6 +222,8 @@ const InvestorDashboard = () => {
             onProfileUpdate={handleProfileUpdate}
           />
         ) : null;
+      case "businesscrm":
+        return <BusinessCRMView userId={userId} />;
       case "portfolio":
         return (
           <PlaceholderView
