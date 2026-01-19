@@ -428,9 +428,10 @@ Important rules:
 
     console.log('Calling AI API with text content...');
 
-    // Create an AbortController for timeout - use 180 seconds for large files (Gemini Pro can take longer)
+    // Create an AbortController for timeout
+    // IMPORTANT: Edge functions have a hard request timeout (~60s). Abort earlier so we can return a clean JSON error.
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minute timeout for large files
+    const timeoutId = setTimeout(() => controller.abort(), 55000); // 55s
 
     try {
       const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -440,13 +441,15 @@ Important rules:
           'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-pro',
+          // Flash is significantly faster and more reliable within the edge timeout.
+          model: 'google/gemini-2.5-flash',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
           ],
           temperature: 0.1,
-          max_tokens: 65000,
+          // Keep response size bounded to reduce truncation/timeouts.
+          max_tokens: 32000,
           response_format: { type: 'json_object' }
         }),
         signal: controller.signal,
