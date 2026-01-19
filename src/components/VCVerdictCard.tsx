@@ -488,28 +488,74 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* What You Get - Focused Checklist */}
+        {/* What You Get - Comprehensive Checklist */}
         <div className="p-6 border-b border-border/50">
-          <h4 className="text-sm font-semibold mb-4">What You Get</h4>
+          <h4 className="text-sm font-semibold mb-4">What's Inside the Analysis</h4>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {[
-              "Investment Readiness Score across 8 dimensions",
-              "VC-grade narrative for each section",
-              "30+ investor questions with prepared answers",
-              "Bottoms-up TAM/SAM/SOM calculator",
-              "Unit economics & payback modeling",
-              "Competitive moat analysis",
-              "90-day action plan based on VC priorities",
-              "Red flags VCs will spot (before they do)",
-              "Team credibility gap assessment",
-              "Exit pathway & scenario planning"
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm">
-                <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-                <span className="text-muted-foreground">{item}</span>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+            {/* Column 1: Core Analysis */}
+            <div className="space-y-2">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">Readiness & Scoring</p>
+              {[
+                "Investment Readiness Score (8 dimensions)",
+                "VC benchmark comparison per section",
+                "Stage-calibrated verdict (Pre-seed → Series A)",
+                "Red flags VCs will spot instantly",
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                  <span className="text-muted-foreground text-xs">{item}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Column 2: Strategic Tools */}
+            <div className="space-y-2">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">Strategic Tools</p>
+              {[
+                "Bottom-up TAM/SAM/SOM calculator",
+                "Unit economics & CAC payback model",
+                "Competitive moat durability analysis",
+                "90-day milestone roadmap",
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                  <span className="text-muted-foreground text-xs">{item}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Column 3: Deep Dive */}
+            <div className="space-y-2 mt-3 sm:mt-0">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">Deep Dive Analysis</p>
+              {[
+                "Problem evidence threshold test",
+                "Solution defensibility & moat score",
+                "Team credibility gap assessment",
+                "Traction depth & momentum signals",
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                  <span className="text-muted-foreground text-xs">{item}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Column 4: Investor Prep */}
+            <div className="space-y-2 mt-3 sm:mt-0">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">Investor Prep</p>
+              {[
+                "30+ VC questions with prepared answers",
+                "\"Why VCs ask this\" context for each",
+                "Exit narrative & scenario planning",
+                "Prioritized action plan (fix these first)",
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                  <span className="text-muted-foreground text-xs">{item}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
