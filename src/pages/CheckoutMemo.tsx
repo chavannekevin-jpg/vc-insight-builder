@@ -45,10 +45,10 @@ export default function CheckoutMemo() {
   }, []);
 
   useEffect(() => {
-    if (pricingSettings && finalPrice === null) {
+    if (pricingSettings) {
       recalculatePrice();
     }
-  }, [pricingSettings, finalPrice, referralDiscount]);
+  }, [pricingSettings, referralDiscount, appliedDiscount]);
 
   const recalculatePrice = () => {
     if (!pricingSettings) return;
@@ -195,12 +195,7 @@ export default function CheckoutMemo() {
         discount_percent: data.discount_percent,
         code: data.code
       });
-      // Stack coupon discount ON TOP of early access price
-      const priceAfterEarlyAccess = earlyAccessEnabled 
-        ? basePrice * (1 - earlyAccessDiscount / 100) 
-        : basePrice;
-      const newPrice = Math.max(0, priceAfterEarlyAccess * (1 - data.discount_percent / 100));
-      setFinalPrice(newPrice);
+      // Price will be recalculated by useEffect when appliedDiscount changes
 
       toast({
         title: "Discount applied! 🎉",
@@ -259,22 +254,27 @@ export default function CheckoutMemo() {
         return;
       }
 
-      // Calculate combined discount for Stripe (stacking early access + coupon)
-      let combinedDiscountPercent = 0;
-      let discountLabel = "";
+      // Calculate combined discount for Stripe (stacking early access + referral + coupon)
+      let remainingPrice = 1; // Start at 100%
+      const discountLabels: string[] = [];
 
       if (earlyAccessEnabled) {
-        combinedDiscountPercent = earlyAccessDiscount;
-        discountLabel = "EARLY_ACCESS";
+        remainingPrice = remainingPrice * (1 - earlyAccessDiscount / 100);
+        discountLabels.push("EARLY_ACCESS");
+      }
+
+      if (referralDiscount) {
+        remainingPrice = remainingPrice * (1 - referralDiscount.percent / 100);
+        discountLabels.push(`REFERRAL_${referralDiscount.code}`);
       }
 
       if (appliedDiscount) {
-        // Stack: combined = 1 - ((1 - early/100) × (1 - coupon/100))
-        const remainingAfterEarly = 1 - (earlyAccessEnabled ? earlyAccessDiscount / 100 : 0);
-        const remainingAfterCoupon = remainingAfterEarly * (1 - appliedDiscount.discount_percent / 100);
-        combinedDiscountPercent = Math.round((1 - remainingAfterCoupon) * 100);
-        discountLabel = appliedDiscount.code;
+        remainingPrice = remainingPrice * (1 - appliedDiscount.discount_percent / 100);
+        discountLabels.push(appliedDiscount.code);
       }
+
+      const combinedDiscountPercent = Math.round((1 - remainingPrice) * 100);
+      const discountLabel = discountLabels.join(" + ");
 
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
@@ -307,7 +307,7 @@ export default function CheckoutMemo() {
   const removeDiscount = () => {
     setAppliedDiscount(null);
     setDiscountCode("");
-    setFinalPrice(discountedPrice);
+    // Price will be recalculated by useEffect when appliedDiscount changes
   };
 
   if (pricingLoading || finalPrice === null) {
