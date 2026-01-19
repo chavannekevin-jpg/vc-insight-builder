@@ -47,6 +47,59 @@ export type Database = {
         }
         Relationships: []
       }
+      business_opportunities: {
+        Row: {
+          company_name: string | null
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          investor_id: string
+          name: string
+          notes: string | null
+          status: string
+          updated_at: string | null
+          value_estimate: number | null
+        }
+        Insert: {
+          company_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          investor_id: string
+          name: string
+          notes?: string | null
+          status?: string
+          updated_at?: string | null
+          value_estimate?: number | null
+        }
+        Update: {
+          company_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          investor_id?: string
+          name?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string | null
+          value_estimate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_opportunities_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           biggest_challenge: string | null

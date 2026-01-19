@@ -37,13 +37,25 @@ import {
   AlertTriangle,
   Rocket,
   CheckCircle,
+  Trash2,
 } from "lucide-react";
-import { DealflowItem, DealStatus, useUpdateDealStatus, useUpdateDealNotes } from "@/hooks/useDealflow";
+import { DealflowItem, DealStatus, useUpdateDealStatus, useUpdateDealNotes, useRemoveFromDealflow } from "@/hooks/useDealflow";
 import { useCompanyMemoData } from "@/hooks/useCompanyMemoData";
 import { useDealShares } from "@/hooks/useDealShares";
 import { ShareDealModal } from "./ShareDealModal";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface DealDetailModalProps {
   isOpen: boolean;
@@ -102,6 +114,7 @@ export function DealDetailModal({
   const { data: shares = [] } = useDealShares(deal?.company?.id || null, currentInvestorId);
   const updateStatus = useUpdateDealStatus(currentInvestorId);
   const updateNotes = useUpdateDealNotes(currentInvestorId);
+  const removeDeal = useRemoveFromDealflow(currentInvestorId);
 
   if (!deal || !deal.company) return null;
 
@@ -112,6 +125,11 @@ export function DealDetailModal({
 
   const handleStatusChange = async (status: DealStatus) => {
     await updateStatus.mutateAsync({ dealId: deal.id, status });
+  };
+
+  const handleDelete = async () => {
+    await removeDeal.mutateAsync(deal.id);
+    onClose();
   };
 
   const handleSaveNotes = async () => {
@@ -395,14 +413,14 @@ export function DealDetailModal({
           </ScrollArea>
 
           {/* Actions Footer */}
-          <div className="p-4 border-t bg-muted/30 flex items-center gap-2">
+          <div className="p-4 border-t bg-muted/30 flex items-center gap-2 flex-wrap">
             <Button
               variant="outline"
               className="gap-2"
               onClick={() => setShowShareModal(true)}
             >
               <Share2 className="h-4 w-4" />
-              Share with Investor
+              Share
             </Button>
 
             <DropdownMenu>
@@ -425,6 +443,32 @@ export function DealDetailModal({
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="gap-2 text-destructive hover:text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove from Dealflow?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will remove "{company.name}" from your dealflow. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             {company.memo_content_generated && (
               <Button variant="ghost" className="gap-2 ml-auto" asChild>
