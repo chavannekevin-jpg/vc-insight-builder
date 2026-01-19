@@ -195,11 +195,21 @@ const GlobalNetworkMap = memo(({
               : 'translateX(0)',
           }}
         >
-          <div className="bg-card/95 backdrop-blur-md border border-border/40 rounded-lg px-3 py-2 shadow-xl">
-            <div className="flex items-center gap-2">
+          <div className="bg-card/80 backdrop-blur-sm border border-border/30 rounded-lg px-3 py-2.5 shadow-lg">
+            <div className="flex items-center gap-2 mb-1.5">
               <span className="text-sm font-medium text-foreground">{hoveredCity}</span>
-              <span className="text-xs text-muted-foreground">·</span>
-              <span className="text-xs text-muted-foreground">{cityGroups[hoveredCity].count}</span>
+              <span className="text-xs text-muted-foreground/60">·</span>
+              <span className="text-xs text-muted-foreground/60">{cityGroups[hoveredCity].count}</span>
+            </div>
+            <div className="space-y-0.5">
+              {cityGroups[hoveredCity].markers.slice(0, 4).map((marker) => (
+                <p key={marker.id} className="text-xs text-muted-foreground/70 truncate max-w-[180px]">
+                  {marker.name}
+                </p>
+              ))}
+              {cityGroups[hoveredCity].count > 4 && (
+                <p className="text-xs text-muted-foreground/50">+{cityGroups[hoveredCity].count - 4} more</p>
+              )}
             </div>
           </div>
         </div>
