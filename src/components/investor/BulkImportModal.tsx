@@ -10,7 +10,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Upload, FileSpreadsheet, Loader2, CheckCircle2, AlertCircle, X, Check, Pencil, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
+import { Upload, FileSpreadsheet, Loader2, CheckCircle2, AlertCircle, X, Check, Pencil, ChevronLeft, ChevronRight, AlertTriangle, Image, Camera } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 
 // Major cities for matching
@@ -174,6 +175,7 @@ interface BulkImportModalProps {
 }
 
 type ImportStep = "upload" | "processing" | "review" | "importing" | "complete";
+type ImportMode = "file" | "screenshot";
 
 type EditableField = "name" | "organization_name" | "email" | "phone" | "city" | "country" | "linkedin_url" | "fund_size" | "notes";
 
@@ -248,6 +250,7 @@ const EditableField = ({
 
 const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModalProps) => {
   const [step, setStep] = useState<ImportStep>("upload");
+  const [importMode, setImportMode] = useState<ImportMode>("file");
   const [isDragging, setIsDragging] = useState(false);
   const [contacts, setContacts] = useState<ReviewedContact[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -272,12 +275,128 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file) processFile(file);
-  }, []);
+    if (file) {
+      if (importMode === "screenshot") {
+        processScreenshot(file);
+      } else {
+        processFile(file);
+      }
+    }
+  }, [importMode]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) processFile(file);
+    if (file) {
+      if (importMode === "screenshot") {
+        processScreenshot(file);
+      } else {
+        processFile(file);
+      }
+    }
+  };
+
+  const processScreenshot = async (file: File) => {
+    const validImageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+    
+    if (!validImageTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image (PNG, JPG, or WebP)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Maximum file size is 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setStep("processing");
+    setErrorMessage(null);
+
+    try {
+      // Fetch existing contacts for duplicate detection
+      const { data: investorContacts } = await (supabase
+        .from("investor_contacts") as any)
+        .select("global_contact_id")
+        .eq("investor_id", userId);
+
+      const existingGlobalIds = (investorContacts || []).map((c: any) => c.global_contact_id);
+      
+      if (existingGlobalIds.length > 0) {
+        const { data: globalContacts } = await (supabase
+          .from("global_contacts") as any)
+          .select("name, organization_name, email")
+          .in("id", existingGlobalIds);
+        
+        setExistingContacts(globalContacts || []);
+      }
+
+      // Read image as base64
+      const reader = new FileReader();
+      const imageData = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const base64 = (reader.result as string).split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const { data, error } = await supabase.functions.invoke('parse-contacts-screenshot', {
+        body: {
+          imageBase64: imageData,
+          mimeType: file.type,
+        },
+      });
+
+      if (error) throw error;
+
+      if (!data.contacts || data.contacts.length === 0) {
+        setErrorMessage("No investor contacts found in the screenshot. Make sure the image contains visible investor information.");
+        setStep("upload");
+        return;
+      }
+
+      // Transform and check for duplicates
+      const reviewContacts: ReviewedContact[] = data.contacts.map((c: any) => {
+        const duplicate = existingContacts.find(existing => {
+          const nameMatch = existing.name?.toLowerCase().trim() === c.name?.toLowerCase().trim();
+          const emailMatch = c.email && existing.email && existing.email.toLowerCase() === c.email.toLowerCase();
+          const orgMatch = c.organization && existing.organization_name && 
+            existing.organization_name.toLowerCase().includes(c.organization.toLowerCase());
+          return nameMatch || emailMatch || (nameMatch && orgMatch);
+        });
+
+        return {
+          name: c.name,
+          organization_name: c.organization || null,
+          email: c.email || null,
+          phone: c.phone || null,
+          city: c.city || null,
+          country: c.country || null,
+          linkedin_url: c.linkedin_url || null,
+          stages: c.stages || null,
+          status: "pending" as const,
+          isDuplicate: !!duplicate,
+          duplicateMatch: duplicate ? duplicate.name : undefined,
+        };
+      });
+
+      setContacts(reviewContacts);
+      setCurrentIndex(0);
+      setStep("review");
+
+    } catch (error: any) {
+      console.error("Error processing screenshot:", error);
+      setErrorMessage(error.message || "Failed to process screenshot. Please try a clearer image.");
+      setStep("upload");
+    }
   };
 
   const processFile = async (file: File) => {
@@ -598,7 +717,7 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
             Import Contacts
           </DialogTitle>
           <DialogDescription>
-            Upload an Excel or CSV file with investor contacts
+            Import investor contacts from a file or screenshot
           </DialogDescription>
         </DialogHeader>
 
@@ -613,33 +732,87 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
                 </div>
               )}
 
-              <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                  isDragging
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <FileSpreadsheet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="font-medium mb-2">Drop your file here</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Supports Excel (.xlsx, .xls) and CSV files
+              {/* Import Mode Tabs */}
+              <Tabs value={importMode} onValueChange={(v) => setImportMode(v as ImportMode)} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="file" className="flex items-center gap-2">
+                    <FileSpreadsheet className="h-4 w-4" />
+                    Excel/CSV
+                  </TabsTrigger>
+                  <TabsTrigger value="screenshot" className="flex items-center gap-2">
+                    <Camera className="h-4 w-4" />
+                    Screenshot
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {/* File Upload Zone */}
+              {importMode === "file" && (
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                    isDragging
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <FileSpreadsheet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="font-medium mb-2">Drop your file here</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Supports Excel (.xlsx, .xls) and CSV files
+                  </p>
+                  <label>
+                    <input
+                      type="file"
+                      accept=".xlsx,.xls,.csv"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <Button variant="outline" asChild>
+                      <span className="cursor-pointer">Choose File</span>
+                    </Button>
+                  </label>
+                </div>
+              )}
+
+              {/* Screenshot Upload Zone */}
+              {importMode === "screenshot" && (
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                    isDragging
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <Image className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="font-medium mb-2">Drop your screenshot here</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Take a screenshot of any investor database (Airtable, Notion, etc.)
+                  </p>
+                  <label>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <Button variant="outline" asChild>
+                      <span className="cursor-pointer">Choose Screenshot</span>
+                    </Button>
+                  </label>
+                </div>
+              )}
+
+              {importMode === "screenshot" && (
+                <p className="text-xs text-muted-foreground text-center">
+                  💡 Tip: For best results, capture the full table with visible headers
                 </p>
-                <label>
-                  <input
-                    type="file"
-                    accept=".xlsx,.xls,.csv"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                  <Button variant="outline" asChild>
-                    <span className="cursor-pointer">Choose File</span>
-                  </Button>
-                </label>
-              </div>
+              )}
             </div>
           )}
 
@@ -647,7 +820,9 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
           {step === "processing" && (
             <div className="py-12 text-center">
               <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
-              <h3 className="font-medium mb-2">Analyzing your file...</h3>
+              <h3 className="font-medium mb-2">
+                {importMode === "screenshot" ? "Analyzing your screenshot..." : "Analyzing your file..."}
+              </h3>
               <p className="text-sm text-muted-foreground">
                 AI is extracting investor information
               </p>
