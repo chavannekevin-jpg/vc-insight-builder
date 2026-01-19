@@ -2,6 +2,7 @@ import { memo, useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Select,
   SelectContent,
@@ -524,25 +525,32 @@ export const VCVerdictCard = memo(({
               <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-2">The 9-Page VC Analysis</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
-                  "Your narrative rewritten in VC framing",
-                  "Investment Readiness Score (8 dimensions)",
-                  "VC benchmark comparison per section",
-                  "Stage-calibrated verdict & expectations",
-                  "30+ investor questions with prepared answers",
-                  "\"Why VCs ask this\" context for each",
-                  "Red flags surfaced before your pitch",
-                  "Holistic cross-section coherence check",
-                  "Prioritized \"fix these first\" action plan",
-                  "Good vs. bad answer examples",
-                  "Peer cohort benchmarking (not generic)",
-                  "Real case study comparisons",
-                  "VC framing explainers (learn the patterns)",
-                  "Internal IC meeting simulation",
+                  { name: "Your narrative rewritten in VC framing", tip: "VCs have a specific language they use internally. We rewrite your story in their vocabulary so it \"clicks\" immediately in partner meetings." },
+                  { name: "Investment Readiness Score (8 dimensions)", tip: "See exactly where you stand across Problem, Solution, Market, Competition, Team, Traction, Business Model, and Vision — with scores benchmarked against fundable companies." },
+                  { name: "VC benchmark comparison per section", tip: "Stop guessing if you're \"good enough.\" See how your answers compare to companies that actually got funded at your stage." },
+                  { name: "Stage-calibrated verdict & expectations", tip: "Pre-seed expectations ≠ Series A expectations. We calibrate feedback to what VCs actually expect at YOUR stage." },
+                  { name: "30+ investor questions with prepared answers", tip: "The exact questions VCs will ask in your meeting — with draft answers you can refine and practice." },
+                  { name: "\"Why VCs ask this\" context for each", tip: "Understanding the intent behind each question helps you give answers that address what they're really evaluating." },
+                  { name: "Red flags surfaced before your pitch", tip: "Better to discover deal-breakers yourself than have a VC find them. Fix issues before they cost you the meeting." },
+                  { name: "Holistic cross-section coherence check", tip: "VCs notice when your TAM doesn't match your go-to-market, or your team doesn't match your technical claims. We catch these misalignments." },
+                  { name: "Prioritized \"fix these first\" action plan", tip: "Not all gaps are equal. We rank what to fix first based on what will move the needle most with investors." },
+                  { name: "Good vs. bad answer examples", tip: "See side-by-side examples of weak answers vs. strong answers for each question — learn the patterns." },
+                  { name: "Peer cohort benchmarking (not generic)", tip: "We compare you against companies at your stage, in your sector — not random startups that aren't relevant." },
+                  { name: "Real case study comparisons", tip: "Learn from companies that succeeded (or failed) with similar positioning — concrete examples, not abstract advice." },
+                  { name: "VC framing explainers (learn the patterns)", tip: "Understand the mental models VCs use to evaluate deals — power laws, ownership math, pattern matching." },
+                  { name: "Internal IC meeting simulation", tip: "What happens when the partner presents your deal on Monday? We simulate the internal discussion and objections." },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
-                    <span className="text-muted-foreground text-[11px]">{item}</span>
-                  </div>
+                  <Tooltip key={i}>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1.5 cursor-help hover:text-foreground transition-colors">
+                        <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
+                        <span className="text-muted-foreground text-[11px] hover:text-foreground transition-colors">{item.name}</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[280px] text-xs">
+                      <p>{item.tip}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 ))}
               </div>
             </div>
@@ -552,23 +560,30 @@ export const VCVerdictCard = memo(({
               <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-2">Section Deep-Dives</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
-                  "Problem evidence threshold test",
-                  "Founder blind spot detection",
-                  "Solution technical defensibility score",
-                  "Commoditization risk teardown",
-                  "\"Can competitors build this?\" analysis",
-                  "Market readiness index",
-                  "VC market narrative framing",
-                  "Competitor chessboard positioning",
-                  "Moat durability assessment",
-                  "Team credibility gap analysis",
-                  "Business model stress test",
-                  "Traction depth & momentum signals",
+                  { name: "Problem evidence threshold test", tip: "VCs need proof the problem is real and painful. We check if your evidence is strong enough to pass the \"so what?\" test." },
+                  { name: "Founder blind spot detection", tip: "Every founder has assumptions they don't question. We surface the ones that could derail your pitch." },
+                  { name: "Solution technical defensibility score", tip: "How hard would it be for Google or a well-funded competitor to copy this? We assess your technical moat." },
+                  { name: "Commoditization risk teardown", tip: "Will your solution become a feature in someone else's product? We analyze your long-term differentiation risk." },
+                  { name: "\"Can competitors build this?\" analysis", tip: "Honest assessment of build vs. buy — will incumbents just add this feature, or is there real defensibility?" },
+                  { name: "Market readiness index", tip: "Is the market ready for your solution NOW, or are you too early? Timing kills more startups than bad ideas." },
+                  { name: "VC market narrative framing", tip: "VCs need a compelling \"why now\" and \"why big\" story. We help frame your market the way investors think about it." },
+                  { name: "Competitor chessboard positioning", tip: "Visualize where you sit vs. competitors across key dimensions — find your defensible corner of the market." },
+                  { name: "Moat durability assessment", tip: "Is your competitive advantage growing or shrinking over time? We analyze the sustainability of your moat." },
+                  { name: "Team credibility gap analysis", tip: "What's missing from your team that VCs will immediately notice? Identify and address credibility gaps before they're raised." },
+                  { name: "Business model stress test", tip: "Can your unit economics actually work at scale? We pressure-test the math behind your business model." },
+                  { name: "Traction depth & momentum signals", tip: "Vanity metrics vs. real traction — we help you identify and present the metrics that actually matter to VCs." },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
-                    <span className="text-muted-foreground text-[11px]">{item}</span>
-                  </div>
+                  <Tooltip key={i}>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1.5 cursor-help hover:text-foreground transition-colors">
+                        <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
+                        <span className="text-muted-foreground text-[11px] hover:text-foreground transition-colors">{item.name}</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[280px] text-xs">
+                      <p>{item.tip}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 ))}
               </div>
             </div>
@@ -578,19 +593,26 @@ export const VCVerdictCard = memo(({
               <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-2">Premium Tools Suite</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
-                  "Bottom-up TAM/SAM/SOM calculator",
-                  "Unit economics & CAC payback model",
-                  "Valuation calculator (real numbers)",
-                  "Dilution simulator (SAFE/CLA/Equity)",
-                  "Raise calculator (runway planning)",
-                  "90-day milestone roadmap per section",
-                  "Exit pathway scenario planning",
-                  "Venture scale diagnostic",
+                  { name: "Bottom-up TAM/SAM/SOM calculator", tip: "VCs hate top-down TAM (\"it's a $50B market\"). Build credible bottom-up market sizing they'll actually believe." },
+                  { name: "Unit economics & CAC payback model", tip: "Know your LTV:CAC ratio, payback period, and contribution margin — the numbers VCs will definitely ask about." },
+                  { name: "Valuation calculator (real numbers)", tip: "Get realistic valuation ranges based on your stage, traction, and sector — not fantasy numbers that kill deals." },
+                  { name: "Dilution simulator (SAFE/CLA/Equity)", tip: "See exactly how much you'll own after your raise under different scenarios — SAFE caps, discounts, pro-rata." },
+                  { name: "Raise calculator (runway planning)", tip: "Calculate how much to raise based on milestones, burn rate, and the runway needed to hit your next stage." },
+                  { name: "90-day milestone roadmap per section", tip: "Concrete next steps for each section of your pitch — what to achieve in the next 90 days to strengthen your story." },
+                  { name: "Exit pathway scenario planning", tip: "VCs invest for exits. Model potential acquisition and IPO scenarios to show you understand the end game." },
+                  { name: "Venture scale diagnostic", tip: "Is your business actually venture-scale? Honest assessment of whether VC is the right funding path for you." },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
-                    <span className="text-muted-foreground text-[11px]">{item}</span>
-                  </div>
+                  <Tooltip key={i}>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1.5 cursor-help hover:text-foreground transition-colors">
+                        <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
+                        <span className="text-muted-foreground text-[11px] hover:text-foreground transition-colors">{item.name}</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[280px] text-xs">
+                      <p>{item.tip}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 ))}
               </div>
             </div>
@@ -600,15 +622,22 @@ export const VCVerdictCard = memo(({
               <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-2">Bonus Access</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
-                  "VC Network: 300+ matching investors",
-                  "Investor cold email generator",
-                  "\"Roast Your Baby\" VC Q&A simulation",
-                  "60+ VC Brain tactical guides",
+                  { name: "VC Network: 300+ matching investors", tip: "Filter our database of 300+ VCs and angels by stage, sector, geography, and check size — find investors who actually fund companies like yours." },
+                  { name: "Investor cold email generator", tip: "AI-generated personalized outreach emails based on each investor's thesis, portfolio, and public statements." },
+                  { name: "\"Roast Your Baby\" VC Q&A simulation", tip: "Practice answering tough VC questions in a safe environment. Get scored on your responses and improve before real meetings." },
+                  { name: "60+ VC Brain tactical guides", tip: "Deep-dive guides on everything from term sheets to negotiation tactics to what VCs discuss in partner meetings." },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
-                    <span className="text-muted-foreground text-[11px]">{item}</span>
-                  </div>
+                  <Tooltip key={i}>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1.5 cursor-help hover:text-foreground transition-colors">
+                        <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
+                        <span className="text-muted-foreground text-[11px] hover:text-foreground transition-colors">{item.name}</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[280px] text-xs">
+                      <p>{item.tip}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 ))}
               </div>
             </div>
