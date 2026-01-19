@@ -194,6 +194,7 @@ const InvestorDashboard = () => {
               setAddToCRMStatus("prospect");
             }}
             onRefresh={refetch}
+            userProfile={userProfile}
           />
         ) : null;
       case "crm":
@@ -305,6 +306,7 @@ const InvestorDashboard = () => {
             contact={selectedContact}
             onClose={() => setSelectedContact(null)}
             onUpdate={refetch}
+            userProfile={userProfile}
           />
         )}
 
