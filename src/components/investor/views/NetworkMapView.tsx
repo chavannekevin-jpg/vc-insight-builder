@@ -232,6 +232,7 @@ const NetworkMapView = ({
           isOpen={!!selectedCity}
           onClose={() => setSelectedCity(null)}
           onContactClick={onContactClick}
+          investorSlug={userProfile?.profile_slug}
         />
       )}
 
