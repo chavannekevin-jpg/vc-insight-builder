@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2, X, Sun, Moon, ImageIcon, Sparkles, Move, Linkedin, Globe, Twitter, User, Building2, Camera, Plus, Trash2, GripVertical } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import QRCodeShareCard from "@/components/investor/QRCodeShareCard";
 
 interface BookingPageCustomizationProps {
   userId: string;
@@ -30,6 +31,7 @@ interface CustomizationSettings {
   socialLinkedin: string | null;
   socialTwitter: string | null;
   socialWebsite: string | null;
+  profileSlug: string | null;
 }
 
 const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => {
@@ -46,7 +48,9 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
     socialLinkedin: null,
     socialTwitter: null,
     socialWebsite: null,
+    profileSlug: null,
   });
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -62,7 +66,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
     const fetchSettings = async () => {
       const { data, error } = await supabase
         .from("investor_profiles")
-        .select("booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, social_linkedin, social_twitter, social_website, full_name, organization_name, profile_picture_url, additional_organizations")
+        .select("booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, social_linkedin, social_twitter, social_website, full_name, organization_name, profile_picture_url, additional_organizations, profile_slug")
         .eq("id", userId)
         .single();
 
@@ -84,11 +88,29 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
           socialLinkedin: data.social_linkedin,
           socialTwitter: data.social_twitter,
           socialWebsite: data.social_website,
+          profileSlug: data.profile_slug,
         });
       }
       setIsLoading(false);
     };
+    
+    const fetchInviteCode = async () => {
+      const { data } = await supabase
+        .from("investor_invites")
+        .select("code")
+        .eq("inviter_id", userId)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (data) {
+        setInviteCode(data.code);
+      }
+    };
+    
     fetchSettings();
+    fetchInviteCode();
   }, [userId]);
 
   const handleSave = async () => {
@@ -788,6 +810,15 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
             Add your social profiles to display on your booking page.
           </p>
         </div>
+
+        {/* QR Code Section */}
+        {settings.profileSlug && (
+          <QRCodeShareCard 
+            profileSlug={settings.profileSlug}
+            fullName={settings.fullName}
+            inviteCode={inviteCode || undefined}
+          />
+        )}
 
         {/* Save Button */}
         <Button onClick={handleSave} disabled={isSaving} className="w-full gap-2" size="lg">

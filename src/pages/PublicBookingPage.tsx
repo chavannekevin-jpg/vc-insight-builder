@@ -463,24 +463,25 @@ const PublicBookingPage = () => {
   );
 
   return (
-    <div className={`min-h-screen ${theme.bg}`}>
-      {/* Cover Image */}
+    <div className={`min-h-screen ${theme.bg} pb-safe`}>
+      {/* Cover Image - Shorter on mobile */}
       {investorProfile.booking_page_cover_url && (
-        <div className="w-full h-32 md:h-40 relative overflow-hidden">
+        <div className="w-full h-24 sm:h-32 md:h-40 relative overflow-hidden">
           <img
             src={investorProfile.booking_page_cover_url}
             alt="Cover"
-            className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+            className="w-full h-full object-cover"
             style={{ objectPosition: investorProfile.booking_page_cover_position || "50% 50%" }}
           />
           <div className={`absolute inset-0 ${isLightTheme ? "bg-gradient-to-b from-transparent via-transparent to-white/90" : "bg-gradient-to-b from-transparent via-zinc-950/20 to-zinc-950"}`} />
         </div>
       )}
 
-      <div className={`max-w-6xl mx-auto p-4 lg:p-6 ${investorProfile.booking_page_cover_url ? "-mt-12 relative z-10" : "pt-6"}`}>
-        <div className="grid lg:grid-cols-[280px_1fr] gap-5">
-          {/* Left Sidebar - Compact */}
-          <div className="space-y-3">
+      <div className={`max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 ${investorProfile.booking_page_cover_url ? "-mt-8 sm:-mt-12 relative z-10" : "pt-4 sm:pt-6"}`}>
+        {/* Mobile: Stack vertically, Desktop: Side by side */}
+        <div className="flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-4 lg:gap-5">
+          {/* Profile Card - More compact on mobile */}
+          <div className="space-y-3 order-1 lg:order-none">
             <ProfileCard />
 
             {/* CTA - Investors */}
@@ -528,13 +529,14 @@ const PublicBookingPage = () => {
             </Card>
           </div>
 
-          {/* Right Side - Booking Flow */}
-          <div className="animate-fade-in">
-            {/* Back Button */}
+          {/* Right Side - Booking Flow - Comes first on mobile */}
+          <div className="animate-fade-in order-2 lg:order-none">
+            {/* Back Button - Larger touch target on mobile */}
             {step !== "select-event" && (
               <Button 
                 variant="ghost" 
-                className={`mb-3 transition-all duration-200 hover:translate-x-[-2px] ${theme.textMuted}`}
+                size="sm"
+                className={`mb-3 -ml-1 h-10 px-3 transition-all active:scale-95 ${theme.textMuted}`}
                 onClick={() => {
                   if (step === "calendar") { setStep("select-event"); setSelectedDate(null); setAvailableSlots([]); }
                   else if (step === "form") setStep("calendar");
@@ -632,39 +634,40 @@ const PublicBookingPage = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row">
-                  {/* Calendar - Compact grid */}
-                  <div className={`p-3 transition-all duration-500 ease-out md:w-[55%] ${selectedDate ? "md:border-r" : ""} ${theme.border}`}>
-                    {/* Month navigation */}
-                    <div className="flex items-center justify-between mb-2">
+                {/* Mobile: Stack, Desktop: Side by side */}
+                <div className="flex flex-col sm:flex-row">
+                  {/* Calendar grid - Full width on mobile */}
+                  <div className={`p-3 sm:p-4 transition-all duration-300 sm:flex-1 ${selectedDate ? "sm:border-r" : ""} ${theme.border}`}>
+                    {/* Month navigation - Larger touch targets */}
+                    <div className="flex items-center justify-between mb-3">
                       <button
                         onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                        className={`p-1.5 rounded-md transition-all duration-200 hover:scale-110 active:scale-95 ${theme.calendarDay}`}
+                        className={`p-2.5 -ml-1 rounded-lg transition-all active:scale-90 ${theme.calendarDay}`}
                       >
-                        <ChevronLeft className="h-4 w-4" />
+                        <ChevronLeft className="h-5 w-5" />
                       </button>
-                      <h4 className={`font-medium text-sm ${theme.text}`}>
+                      <h4 className={`font-semibold text-base ${theme.text}`}>
                         {format(currentMonth, "MMMM yyyy")}
                       </h4>
                       <button
                         onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                        className={`p-1.5 rounded-md transition-all duration-200 hover:scale-110 active:scale-95 ${theme.calendarDay}`}
+                        className={`p-2.5 -mr-1 rounded-lg transition-all active:scale-90 ${theme.calendarDay}`}
                       >
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-5 w-5" />
                       </button>
                     </div>
 
-                    {/* Day headers - Compact */}
-                    <div className="grid grid-cols-7 gap-0.5 mb-1">
+                    {/* Day headers */}
+                    <div className="grid grid-cols-7 gap-1 mb-2">
                       {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
-                        <div key={`${day}-${i}`} className={`text-center text-[10px] font-medium py-1 ${theme.textSubtle}`}>
+                        <div key={`${day}-${i}`} className={`text-center text-xs font-medium py-1.5 ${theme.textSubtle}`}>
                           {day}
                         </div>
                       ))}
                     </div>
 
-                    {/* Calendar grid - Compact cells */}
-                    <div className="grid grid-cols-7 gap-0.5">
+                    {/* Calendar grid - Larger touch targets on mobile */}
+                    <div className="grid grid-cols-7 gap-1">
                       {/* Empty cells for days before month start */}
                       {Array.from({ length: startingDayOfWeek }).map((_, i) => (
                         <div key={`empty-${i}`} className="aspect-square" />
@@ -681,10 +684,10 @@ const PublicBookingPage = () => {
                             onClick={() => !isPast && handleDateSelect(day)}
                             disabled={isPast}
                             className={`
-                              aspect-square rounded-md flex items-center justify-center text-xs font-medium 
-                              transition-all duration-200 hover:scale-105 active:scale-95
+                              aspect-square rounded-lg flex items-center justify-center text-sm font-medium 
+                              transition-all active:scale-90 min-h-[40px]
                               ${isPast ? `opacity-30 cursor-not-allowed ${theme.textSubtle}` : ""}
-                              ${isSelected ? `${theme.calendarDaySelected} scale-105` : !isPast ? theme.calendarDay : ""}
+                              ${isSelected ? `${theme.calendarDaySelected}` : !isPast ? theme.calendarDay : ""}
                               ${isToday && !isSelected ? theme.calendarDayToday : ""}
                             `}
                           >
@@ -695,10 +698,10 @@ const PublicBookingPage = () => {
                     </div>
                   </div>
 
-                  {/* Time slots - Compact */}
+                  {/* Time slots - Mobile friendly */}
                   {selectedDate && (
-                    <div className="md:w-[45%] p-3 animate-fade-in">
-                      <h4 className={`font-medium text-sm mb-2 ${theme.text}`}>
+                    <div className="sm:w-[45%] p-3 sm:p-4 border-t sm:border-t-0 animate-fade-in">
+                      <h4 className={`font-semibold text-base mb-3 ${theme.text}`}>
                         {format(selectedDate, "EEE, MMM d")}
                       </h4>
                       
@@ -709,17 +712,16 @@ const PublicBookingPage = () => {
                       ) : availableSlots.length === 0 ? (
                         <div className={`text-center py-6 ${theme.textMuted}`}>
                           <Clock className="h-6 w-6 mx-auto mb-1.5 opacity-50" />
-                          <p className="text-xs">No available times</p>
+                          <p className="text-sm">No available times</p>
                         </div>
                       ) : (
-                        <ScrollArea className={`h-[220px] pr-2 ${isLightTheme ? "[&_[data-radix-scroll-area-thumb]]:bg-stone-300" : "[&_[data-radix-scroll-area-thumb]]:bg-zinc-600"}`}>
-                          <div className="grid grid-cols-2 gap-1.5">
-                            {availableSlots.map((slot, index) => (
+                        <ScrollArea className={`h-[200px] sm:h-[240px] ${isLightTheme ? "[&_[data-radix-scroll-area-thumb]]:bg-stone-300" : "[&_[data-radix-scroll-area-thumb]]:bg-zinc-600"}`}>
+                          <div className="grid grid-cols-3 sm:grid-cols-2 gap-2">
+                            {availableSlots.map((slot) => (
                               <button
                                 key={slot.start}
-                                className={`py-2 px-3 rounded-md border text-xs font-medium transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] ${theme.slotButton}`}
+                                className={`py-3 px-2 rounded-lg border text-sm font-medium transition-all active:scale-95 min-h-[44px] ${theme.slotButton}`}
                                 onClick={() => handleSlotSelect(slot)}
-                                style={{ animationDelay: `${index * 30}ms` }}
                               >
                                 {format(new Date(slot.start), "h:mm a")}
                               </button>
@@ -733,19 +735,20 @@ const PublicBookingPage = () => {
               </Card>
             )}
 
-            {/* Booking Form - Compact with animations */}
+            {/* Booking Form - Mobile optimized */}
             {step === "form" && selectedSlot && (
-              <Card className={`p-5 animate-fade-in ${theme.card}`}>
+              <Card className={`p-4 sm:p-5 animate-fade-in ${theme.card}`}>
+                {/* Meeting summary */}
                 <div className={`mb-4 p-3 rounded-lg ${isLightTheme ? "bg-stone-50 border border-stone-100" : "bg-zinc-800/50 border border-zinc-700/50"}`}>
                   <div className="flex items-center gap-3">
                     <div 
-                      className="w-8 h-8 rounded-lg flex items-center justify-center" 
+                      className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" 
                       style={{ backgroundColor: `${selectedEvent?.color}15` }}
                     >
-                      <Video className="h-3.5 w-3.5" style={{ color: selectedEvent?.color }} />
+                      <Video className="h-4 w-4" style={{ color: selectedEvent?.color }} />
                     </div>
-                    <div>
-                      <p className={`font-medium text-sm ${theme.text}`}>{selectedEvent?.name}</p>
+                    <div className="min-w-0">
+                      <p className={`font-medium text-sm truncate ${theme.text}`}>{selectedEvent?.name}</p>
                       <div className={`flex items-center gap-2 text-xs mt-0.5 ${theme.textMuted}`}>
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
@@ -762,54 +765,59 @@ const PublicBookingPage = () => {
                 </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className={`text-xs font-medium ${theme.text}`}>Your Name *</Label>
+                  {/* Stack on mobile, side by side on larger */}
+                  <div className="grid gap-4 sm:grid-cols-2 sm:gap-3">
+                    <div className="space-y-2">
+                      <Label className={`text-sm font-medium ${theme.text}`}>Your Name *</Label>
                       <Input 
                         required 
                         value={formData.name} 
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className={`h-9 text-sm transition-all duration-200 focus:scale-[1.01] ${theme.input}`}
+                        className={`h-11 sm:h-10 text-base sm:text-sm ${theme.input}`}
                         placeholder="John Doe"
+                        autoComplete="name"
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className={`text-xs font-medium ${theme.text}`}>Email *</Label>
+                    <div className="space-y-2">
+                      <Label className={`text-sm font-medium ${theme.text}`}>Email *</Label>
                       <Input 
                         type="email" 
                         required 
                         value={formData.email} 
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className={`h-9 text-sm transition-all duration-200 focus:scale-[1.01] ${theme.input}`}
+                        className={`h-11 sm:h-10 text-base sm:text-sm ${theme.input}`}
                         placeholder="john@startup.com"
+                        autoComplete="email"
+                        inputMode="email"
                       />
                     </div>
                   </div>
                   
-                  <div className="space-y-1.5">
-                    <Label className={`text-xs font-medium ${theme.text}`}>Company / Startup</Label>
+                  <div className="space-y-2">
+                    <Label className={`text-sm font-medium ${theme.text}`}>Company / Startup</Label>
                     <Input 
                       value={formData.company} 
                       onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                      className={`h-9 text-sm transition-all duration-200 focus:scale-[1.01] ${theme.input}`}
+                      className={`h-11 sm:h-10 text-base sm:text-sm ${theme.input}`}
                       placeholder="Acme Inc."
+                      autoComplete="organization"
                     />
                   </div>
                   
-                  <div className="space-y-1.5">
-                    <Label className={`text-xs font-medium ${theme.text}`}>What would you like to discuss?</Label>
+                  <div className="space-y-2">
+                    <Label className={`text-sm font-medium ${theme.text}`}>What would you like to discuss?</Label>
                     <Textarea 
                       value={formData.notes} 
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      className={`text-sm transition-all duration-200 focus:scale-[1.005] ${theme.input}`}
+                      className={`text-base sm:text-sm min-h-[80px] ${theme.input}`}
                       placeholder="Brief context about your startup..."
-                      rows={2}
+                      rows={3}
                     />
                   </div>
                   
                   <Button 
                     type="submit" 
-                    className={`w-full h-10 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${theme.button}`} 
+                    className={`w-full h-12 sm:h-11 text-base sm:text-sm font-medium transition-all active:scale-[0.98] ${theme.button}`} 
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
