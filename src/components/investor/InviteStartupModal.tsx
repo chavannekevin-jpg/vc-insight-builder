@@ -31,7 +31,6 @@ const InviteStartupModal = ({ open, onOpenChange, userId }: InviteStartupModalPr
   const [activeCode, setActiveCode] = useState<StartupInvite | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [stats, setStats] = useState({ invited: 0, inDealflow: 0 });
 
@@ -110,12 +109,12 @@ const InviteStartupModal = ({ open, onOpenChange, userId }: InviteStartupModalPr
 
       setActiveCode(data as StartupInvite);
       toast({
-        title: "Invite code created!",
-        description: "Share this code with startups to add them to your dealflow.",
+        title: "Invite link created!",
+        description: "Share this link with startups to add them to your dealflow.",
       });
     } catch (error: any) {
       toast({
-        title: "Failed to generate code",
+        title: "Failed to generate invite link",
         description: error.message,
         variant: "destructive",
       });
@@ -124,21 +123,17 @@ const InviteStartupModal = ({ open, onOpenChange, userId }: InviteStartupModalPr
     }
   };
 
-  const copyCode = () => {
-    if (!activeCode) return;
-    navigator.clipboard.writeText(activeCode.code);
-    setCopiedCode(true);
-    setTimeout(() => setCopiedCode(false), 2000);
-    toast({ title: "Code copied!" });
+  const getInviteLink = () => {
+    if (!activeCode) return "";
+    return `${window.location.origin}/auth?startup_invite=${activeCode.code}`;
   };
 
   const copyInviteLink = () => {
     if (!activeCode) return;
-    const link = `${window.location.origin}/auth?startup_invite=${activeCode.code}`;
-    navigator.clipboard.writeText(link);
+    navigator.clipboard.writeText(getInviteLink());
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
-    toast({ title: "Invite link copied!" });
+    toast({ title: "Invite link copied!", description: "Share it with startups to grow your dealflow." });
   };
 
   const benefits = [
@@ -185,24 +180,24 @@ const InviteStartupModal = ({ open, onOpenChange, userId }: InviteStartupModalPr
               <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
           ) : activeCode ? (
-            <div className="space-y-3">
-              {/* Code display */}
+            <div className="space-y-4">
+              {/* Invite link display */}
               <div>
-                <label className="text-xs text-muted-foreground mb-1.5 block">Your invite code</label>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Your shareable invite link</label>
                 <div className="flex items-center gap-2">
                   <Input
-                    value={activeCode.code}
+                    value={getInviteLink()}
                     readOnly
-                    className="font-mono text-center font-bold tracking-widest text-lg h-12 bg-muted/50"
+                    className="text-sm h-11 bg-muted/50 text-muted-foreground"
                   />
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="icon"
-                    className="h-12 w-12 shrink-0"
-                    onClick={copyCode}
+                    className="h-11 w-11 shrink-0"
+                    onClick={copyInviteLink}
                   >
-                    {copiedCode ? (
-                      <Check className="w-4 h-4 text-green-500" />
+                    {copiedLink ? (
+                      <Check className="w-4 h-4" />
                     ) : (
                       <Copy className="w-4 h-4" />
                     )}
@@ -210,33 +205,33 @@ const InviteStartupModal = ({ open, onOpenChange, userId }: InviteStartupModalPr
                 </div>
               </div>
 
-              {/* Copy link button */}
+              {/* Large copy button */}
               <Button
                 variant="default"
-                className="w-full gap-2 h-11"
+                className="w-full gap-2 h-12 text-base"
                 onClick={copyInviteLink}
               >
                 {copiedLink ? (
                   <>
-                    <Check className="w-4 h-4" />
-                    Link Copied!
+                    <Check className="w-5 h-5" />
+                    Link Copied to Clipboard!
                   </>
                 ) : (
                   <>
-                    <Link className="w-4 h-4" />
+                    <Link className="w-5 h-5" />
                     Copy Invite Link
                   </>
                 )}
               </Button>
 
               {/* Usage stats */}
-              <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+              <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 px-1">
                 <span className="flex items-center gap-1.5">
                   <Gift className="w-3.5 h-3.5" />
                   {activeCode.discount_percent}% discount for startups
                 </span>
                 <span>
-                  {activeCode.uses}/{activeCode.max_uses || "∞"} used
+                  {activeCode.uses}/{activeCode.max_uses || "∞"} invites used
                 </span>
               </div>
             </div>
@@ -253,8 +248,8 @@ const InviteStartupModal = ({ open, onOpenChange, userId }: InviteStartupModalPr
                 </>
               ) : (
                 <>
-                  <Rocket className="w-4 h-4" />
-                  Generate Invite Code
+                  <Link className="w-4 h-4" />
+                  Generate Invite Link
                 </>
               )}
             </Button>
