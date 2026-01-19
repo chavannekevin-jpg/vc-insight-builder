@@ -910,6 +910,10 @@ export type Database = {
       }
       investor_profiles: {
         Row: {
+          booking_page_bio: string | null
+          booking_page_cover_url: string | null
+          booking_page_headline: string | null
+          booking_page_theme: string | null
           city: string
           city_lat: number | null
           city_lng: number | null
@@ -929,6 +933,10 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          booking_page_bio?: string | null
+          booking_page_cover_url?: string | null
+          booking_page_headline?: string | null
+          booking_page_theme?: string | null
           city: string
           city_lat?: number | null
           city_lng?: number | null
@@ -948,6 +956,10 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          booking_page_bio?: string | null
+          booking_page_cover_url?: string | null
+          booking_page_headline?: string | null
+          booking_page_theme?: string | null
           city?: string
           city_lat?: number | null
           city_lng?: number | null
