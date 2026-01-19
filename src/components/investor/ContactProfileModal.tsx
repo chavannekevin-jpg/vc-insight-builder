@@ -98,6 +98,25 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
   const [tempFundSize, setTempFundSize] = useState("");
   const [tempTicketMin, setTempTicketMin] = useState("");
   const [tempTicketMax, setTempTicketMax] = useState("");
+  
+  // Investment focus state - editable and updated from AI research
+  const [investmentFocus, setInvestmentFocus] = useState<string[]>(
+    (contact.global_contact?.investment_focus as string[]) || []
+  );
+  const [thesisKeywords, setThesisKeywords] = useState<string[]>(
+    ((contact.global_contact as any)?.thesis_keywords as string[]) || []
+  );
+  const [notableInvestments, setNotableInvestments] = useState<string[]>(
+    ((contact.global_contact as any)?.notable_investments as string[]) || []
+  );
+  const [focusConfidence, setFocusConfidence] = useState<string | null>(
+    (contact.global_contact as any)?.focus_confidence || null
+  );
+  const [focusLastResearched, setFocusLastResearched] = useState<string | null>(
+    (contact.global_contact as any)?.focus_last_researched_at || null
+  );
+  const [isEditingFocus, setIsEditingFocus] = useState(false);
+  const [focusInput, setFocusInput] = useState("");
 
   const globalName = contact.global_contact?.name || "Unknown";
   const globalOrganization = contact.global_contact?.organization_name;
@@ -105,11 +124,6 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
   const displayOrganization = localOrganization || globalOrganization;
   const entityType = contact.global_contact?.entity_type;
   const stages = contact.global_contact?.stages || [];
-  const investmentFocus = contact.global_contact?.investment_focus || [];
-  const thesisKeywords = (contact.global_contact as any)?.thesis_keywords || [];
-  const notableInvestments = (contact.global_contact as any)?.notable_investments || [];
-  const focusConfidence = (contact.global_contact as any)?.focus_confidence;
-  const focusLastResearched = (contact.global_contact as any)?.focus_last_researched_at;
 
   const handleResearchContact = async () => {
     if (!contact.global_contact_id) {
@@ -141,12 +155,19 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
         throw new Error(result.error);
       }
 
+      // Update local state immediately with research results
+      setInvestmentFocus(result.data.investment_focus || []);
+      setThesisKeywords(result.data.thesis_keywords || []);
+      setNotableInvestments(result.data.notable_investments || []);
+      setFocusConfidence(result.data.confidence || null);
+      setFocusLastResearched(new Date().toISOString());
+
       toast({
         title: "Research complete!",
         description: `Found ${result.data.investment_focus.length} focus areas with ${result.data.confidence} confidence.`,
       });
 
-      // Refresh the contact data
+      // Also refresh the parent data
       onUpdate();
     } catch (error: any) {
       console.error("Research error:", error);
@@ -157,6 +178,58 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
       });
     } finally {
       setIsResearching(false);
+    }
+  };
+
+  const handleAddFocus = async (newFocus: string) => {
+    if (!newFocus.trim() || !contact.global_contact_id) return;
+    
+    const trimmedFocus = newFocus.trim();
+    if (investmentFocus.includes(trimmedFocus)) {
+      toast({ title: "Focus already exists", variant: "destructive" });
+      return;
+    }
+    
+    const updatedFocus = [...investmentFocus, trimmedFocus];
+    setInvestmentFocus(updatedFocus);
+    setFocusInput("");
+    
+    // Save to database
+    const { error } = await supabase
+      .from("global_contacts")
+      .update({ 
+        investment_focus: updatedFocus,
+        focus_source: focusLastResearched ? "ai_research" : "manual",
+      })
+      .eq("id", contact.global_contact_id);
+    
+    if (error) {
+      console.error("Failed to save focus:", error);
+      setInvestmentFocus(investmentFocus); // Revert
+      toast({ title: "Failed to save focus", variant: "destructive" });
+    } else {
+      onUpdate();
+    }
+  };
+
+  const handleRemoveFocus = async (focusToRemove: string) => {
+    if (!contact.global_contact_id) return;
+    
+    const updatedFocus = investmentFocus.filter(f => f !== focusToRemove);
+    setInvestmentFocus(updatedFocus);
+    
+    // Save to database
+    const { error } = await supabase
+      .from("global_contacts")
+      .update({ investment_focus: updatedFocus })
+      .eq("id", contact.global_contact_id);
+    
+    if (error) {
+      console.error("Failed to remove focus:", error);
+      setInvestmentFocus(investmentFocus); // Revert
+      toast({ title: "Failed to remove focus", variant: "destructive" });
+    } else {
+      onUpdate();
     }
   };
 
@@ -601,85 +674,139 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
                   <Sparkles className="w-4 h-4 text-primary" />
                   Investment Focus
                 </Label>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleResearchContact}
-                  disabled={isResearching || !contact.global_contact_id}
-                  className="h-7 text-xs"
-                >
-                  {isResearching ? (
-                    <>
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                      Researching...
-                    </>
-                  ) : focusLastResearched ? (
-                    <>
-                      <RefreshCw className="w-3 h-3 mr-1" />
-                      Refresh
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-3 h-3 mr-1" />
-                      Research with AI
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditingFocus(!isEditingFocus)}
+                    className="h-7 text-xs"
+                  >
+                    {isEditingFocus ? (
+                      <Check className="w-3 h-3" />
+                    ) : (
+                      <Pencil className="w-3 h-3" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResearchContact}
+                    disabled={isResearching || !contact.global_contact_id}
+                    className="h-7 text-xs"
+                  >
+                    {isResearching ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        Researching...
+                      </>
+                    ) : focusLastResearched ? (
+                      <>
+                        <RefreshCw className="w-3 h-3 mr-1" />
+                        Refresh
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        Research with AI
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
 
-              {investmentFocus.length > 0 ? (
-                <div className="space-y-2">
+              {/* Focus Tags - Editable */}
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {investmentFocus.map((focus: string) => (
+                    <span
+                      key={focus}
+                      className={`text-xs px-2 py-1 rounded-full bg-accent text-accent-foreground flex items-center gap-1 ${
+                        isEditingFocus ? 'pr-1' : ''
+                      }`}
+                    >
+                      {focus}
+                      {isEditingFocus && (
+                        <button
+                          onClick={() => handleRemoveFocus(focus)}
+                          className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                  {investmentFocus.length === 0 && !isEditingFocus && (
+                    <p className="text-xs text-muted-foreground">
+                      No focus areas yet. Click edit to add manually or use AI research.
+                    </p>
+                  )}
+                </div>
+                
+                {/* Add new focus input */}
+                {isEditingFocus && (
+                  <div className="flex gap-2">
+                    <Input
+                      value={focusInput}
+                      onChange={(e) => setFocusInput(e.target.value)}
+                      placeholder="Add focus (e.g., Fintech, SaaS)"
+                      className="h-8 text-xs"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddFocus(focusInput);
+                        }
+                      }}
+                    />
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="h-8 text-xs"
+                      onClick={() => handleAddFocus(focusInput)}
+                      disabled={!focusInput.trim()}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                )}
+                
+                {/* Thesis keywords */}
+                {thesisKeywords.length > 0 && (
                   <div className="flex flex-wrap gap-1">
-                    {investmentFocus.map((focus: string) => (
+                    {thesisKeywords.map((keyword: string) => (
                       <span
-                        key={focus}
-                        className="text-xs px-2 py-1 rounded-full bg-accent text-accent-foreground"
+                        key={keyword}
+                        className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
                       >
-                        {focus}
+                        {keyword}
                       </span>
                     ))}
                   </div>
-                  
-                  {thesisKeywords.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {thesisKeywords.map((keyword: string) => (
-                        <span
-                          key={keyword}
-                          className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
-                        >
-                          {keyword}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                )}
 
-                  {notableInvestments.length > 0 && (
-                    <div className="text-xs text-muted-foreground">
-                      <span className="font-medium">Portfolio:</span>{" "}
-                      {notableInvestments.join(", ")}
-                    </div>
-                  )}
+                {/* Notable investments */}
+                {notableInvestments.length > 0 && (
+                  <div className="text-xs text-muted-foreground">
+                    <span className="font-medium">Portfolio:</span>{" "}
+                    {notableInvestments.join(", ")}
+                  </div>
+                )}
 
-                  {focusConfidence && focusLastResearched && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className={`px-1.5 py-0.5 rounded ${
-                        focusConfidence === 'high' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                        focusConfidence === 'medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                        'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                      }`}>
-                        {focusConfidence} confidence
-                      </span>
-                      <span>
-                        Researched {new Date(focusLastResearched).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  No investment focus data yet. Click "Research with AI" to automatically discover this contact's investment preferences.
-                </p>
-              )}
+                {/* Confidence badge */}
+                {focusConfidence && focusLastResearched && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className={`px-1.5 py-0.5 rounded ${
+                      focusConfidence === 'high' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                      focusConfidence === 'medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                      'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                    }`}>
+                      {focusConfidence} confidence
+                    </span>
+                    <span>
+                      Researched {new Date(focusLastResearched).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Divider */}
