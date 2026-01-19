@@ -110,6 +110,27 @@ const InvestorAuth = () => {
     return () => clearTimeout(debounce);
   }, [inviteCode]);
 
+  // Retry helper for critical operations
+  const retryOperation = async <T,>(
+    operation: () => Promise<{ data: T | null; error: any }>,
+    maxRetries: number = 3,
+    delayMs: number = 500
+  ): Promise<{ data: T | null; error: any }> => {
+    let lastError: any = null;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      const result = await operation();
+      if (!result.error) {
+        return result;
+      }
+      lastError = result.error;
+      console.warn(`Attempt ${attempt}/${maxRetries} failed:`, result.error);
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
+      }
+    }
+    return { data: null, error: lastError };
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -139,13 +160,27 @@ const InvestorAuth = () => {
       if (error) throw error;
 
       if (data.user) {
-        // Add investor role
-        const { error: roleError } = await supabase
-          .from("user_roles")
-          .insert({ user_id: data.user.id, role: "investor" });
+        // CRITICAL: Add investor role with retry logic
+        const roleResult = await retryOperation(async () => {
+          const result = await supabase
+            .from("user_roles")
+            .insert({ user_id: data.user!.id, role: "investor" });
+          return { data: result.data, error: result.error };
+        });
 
-        if (roleError) {
-          console.error("Error adding investor role:", roleError);
+        if (roleResult.error) {
+          // Role insertion failed after all retries - this is critical
+          console.error("Critical error: Failed to add investor role after retries:", roleResult.error);
+          
+          // Sign out the user to prevent orphaned account
+          await supabase.auth.signOut();
+          
+          toast({
+            title: "Account setup failed",
+            description: "We couldn't complete your registration. Please try again or contact support if the issue persists.",
+            variant: "destructive",
+          });
+          return;
         }
 
         // Increment the invite code usage - fetch current uses first and increment
