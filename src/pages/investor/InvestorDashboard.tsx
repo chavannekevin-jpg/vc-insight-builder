@@ -9,10 +9,26 @@ import AddContactModal from "@/components/investor/AddContactModal";
 import ContactProfileModal from "@/components/investor/ContactProfileModal";
 import BulkImportModal from "@/components/investor/BulkImportModal";
 import { useInvestorContacts } from "@/hooks/useInvestorContacts";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Views
 import NetworkMapView from "@/components/investor/views/NetworkMapView";
 import CRMView from "@/components/investor/views/CRMView";
+import ContactDirectoryView from "@/components/investor/views/ContactDirectoryView";
 import DealflowView from "@/components/investor/views/DealflowView";
 import UploadDeckView from "@/components/investor/views/UploadDeckView";
 import SettingsView from "@/components/investor/views/SettingsView";
@@ -26,7 +42,7 @@ export interface InvestorContact {
   local_name: string | null;
   local_organization: string | null;
   local_notes: string | null;
-  relationship_status: string;
+  relationship_status: string | null;
   last_contact_date: string | null;
   global_contact?: {
     id: string;
@@ -56,6 +72,11 @@ const InvestorDashboard = () => {
   const [isAddContactOpen, setIsAddContactOpen] = useState(false);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<InvestorContact | null>(null);
+  
+  // Add to CRM modal state
+  const [addToCRMContact, setAddToCRMContact] = useState<InvestorContact | null>(null);
+  const [addToCRMStatus, setAddToCRMStatus] = useState<string>("prospect");
+  const [isAddingToCRM, setIsAddingToCRM] = useState(false);
 
   const { contacts, isLoading, refetch, cityGroups } = useInvestorContacts(userId);
 
@@ -114,6 +135,37 @@ const InvestorDashboard = () => {
     }
   };
 
+  // Handle adding contact to CRM
+  const handleAddToCRM = async () => {
+    if (!addToCRMContact) return;
+    
+    setIsAddingToCRM(true);
+    try {
+      const { error } = await (supabase
+        .from("investor_contacts") as any)
+        .update({ relationship_status: addToCRMStatus })
+        .eq("id", addToCRMContact.id);
+
+      if (error) throw error;
+
+      toast({ title: "Contact added to CRM pipeline!" });
+      setAddToCRMContact(null);
+      invalidateNetworkQueries();
+    } catch (error: any) {
+      console.error("Error adding to CRM:", error);
+      toast({
+        title: "Error adding to CRM",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingToCRM(false);
+    }
+  };
+
+  // Filter contacts for CRM (only those with relationship_status set)
+  const crmContacts = contacts.filter(c => c.relationship_status !== null);
+
   const renderContent = () => {
     switch (activeSection) {
       case "map":
@@ -129,14 +181,28 @@ const InvestorDashboard = () => {
             userProfile={userProfile}
           />
         ) : null;
-      case "crm":
+      case "directory":
         return userId ? (
-          <CRMView
+          <ContactDirectoryView
             contacts={contacts}
             isLoading={isLoading}
             onContactClick={setSelectedContact}
             onBulkImport={() => setIsBulkImportOpen(true)}
             onAddContact={() => setIsAddContactOpen(true)}
+            onAddToCRM={(contact) => {
+              setAddToCRMContact(contact);
+              setAddToCRMStatus("prospect");
+            }}
+          />
+        ) : null;
+      case "crm":
+        return userId ? (
+          <CRMView
+            contacts={crmContacts}
+            isLoading={isLoading}
+            onContactClick={setSelectedContact}
+            onBulkImport={() => setIsBulkImportOpen(true)}
+            onAddContact={() => setActiveSection("directory")}
           />
         ) : null;
       case "funds":
@@ -240,6 +306,42 @@ const InvestorDashboard = () => {
             onUpdate={refetch}
           />
         )}
+
+        {/* Add to CRM Modal */}
+        <Dialog open={!!addToCRMContact} onOpenChange={(open) => !open && setAddToCRMContact(null)}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Add to CRM Pipeline</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Start tracking <span className="font-medium text-foreground">{addToCRMContact?.local_name || addToCRMContact?.global_contact?.name}</span> in your CRM pipeline.
+              </p>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Initial Status</label>
+                <Select value={addToCRMStatus} onValueChange={setAddToCRMStatus}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="prospect">Prospect</SelectItem>
+                    <SelectItem value="warm">Warm</SelectItem>
+                    <SelectItem value="connected">Connected</SelectItem>
+                    <SelectItem value="invested">Invested</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAddToCRMContact(null)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddToCRM} disabled={isAddingToCRM}>
+                {isAddingToCRM ? "Adding..." : "Add to CRM"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </SidebarProvider>
   );

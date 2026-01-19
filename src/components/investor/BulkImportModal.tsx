@@ -547,7 +547,7 @@ const BulkImportModal = ({ isOpen, onClose, onSuccess, userId }: BulkImportModal
             local_notes: contact.notes || null,
             local_email: contact.email || null,
             local_phone: contact.phone || null,
-            relationship_status: "prospect",
+            relationship_status: null,
           });
 
         if (!contactError) successCount++;

@@ -416,7 +416,7 @@ const AddContactModal = ({ isOpen, onClose, onSuccess, onBulkImport, userId }: A
           local_notes: notes.trim() || null,
           local_email: email.trim() || null,
           local_phone: phone.trim() || null,
-          relationship_status: "prospect",
+          relationship_status: null,
         });
 
       if (contactError) throw contactError;
