@@ -634,7 +634,7 @@ const PublicBookingPage = () => {
 
                 <div className="flex flex-col md:flex-row">
                   {/* Calendar - Compact grid */}
-                  <div className={`p-3 transition-all duration-500 ease-out ${selectedDate ? "md:w-[55%] md:border-r" : "md:max-w-[320px]"} ${theme.border}`}>
+                  <div className={`p-3 transition-all duration-500 ease-out md:w-[55%] ${selectedDate ? "md:border-r" : ""} ${theme.border}`}>
                     {/* Month navigation */}
                     <div className="flex items-center justify-between mb-2">
                       <button
