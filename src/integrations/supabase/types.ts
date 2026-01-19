@@ -910,6 +910,7 @@ export type Database = {
       }
       investor_profiles: {
         Row: {
+          additional_organizations: Json | null
           booking_page_bio: string | null
           booking_page_cover_position: string | null
           booking_page_cover_url: string | null
@@ -938,6 +939,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          additional_organizations?: Json | null
           booking_page_bio?: string | null
           booking_page_cover_position?: string | null
           booking_page_cover_url?: string | null
@@ -966,6 +968,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          additional_organizations?: Json | null
           booking_page_bio?: string | null
           booking_page_cover_position?: string | null
           booking_page_cover_url?: string | null

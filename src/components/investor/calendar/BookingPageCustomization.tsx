@@ -4,12 +4,17 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, X, Sun, Moon, ImageIcon, Sparkles, Move, Linkedin, Globe, Twitter, User, Building2, Camera, Plus, Trash2 } from "lucide-react";
+import { Loader2, X, Sun, Moon, ImageIcon, Sparkles, Move, Linkedin, Globe, Twitter, User, Building2, Camera, Plus, Trash2, GripVertical } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface BookingPageCustomizationProps {
   userId: string;
+}
+
+interface Organization {
+  name: string;
+  role: string;
 }
 
 interface CustomizationSettings {
@@ -21,6 +26,7 @@ interface CustomizationSettings {
   bio: string | null;
   fullName: string;
   organizationName: string | null;
+  additionalOrganizations: Organization[];
   socialLinkedin: string | null;
   socialTwitter: string | null;
   socialWebsite: string | null;
@@ -36,6 +42,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
     bio: null,
     fullName: "",
     organizationName: null,
+    additionalOrganizations: [],
     socialLinkedin: null,
     socialTwitter: null,
     socialWebsite: null,
@@ -55,11 +62,15 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
     const fetchSettings = async () => {
       const { data, error } = await supabase
         .from("investor_profiles")
-        .select("booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, social_linkedin, social_twitter, social_website, full_name, organization_name, profile_picture_url")
+        .select("booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, social_linkedin, social_twitter, social_website, full_name, organization_name, profile_picture_url, additional_organizations")
         .eq("id", userId)
         .single();
 
       if (!error && data) {
+        const additionalOrgs = Array.isArray(data.additional_organizations) 
+          ? (data.additional_organizations as unknown as Organization[])
+          : [];
+        
         setSettings({
           theme: (data.booking_page_theme as "dark" | "light") || "dark",
           coverUrl: data.booking_page_cover_url,
@@ -69,6 +80,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
           bio: data.booking_page_bio,
           fullName: data.full_name || "",
           organizationName: data.organization_name,
+          additionalOrganizations: additionalOrgs,
           socialLinkedin: data.social_linkedin,
           socialTwitter: data.social_twitter,
           socialWebsite: data.social_website,
@@ -89,6 +101,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
         booking_page_bio: settings.bio,
         full_name: settings.fullName,
         organization_name: settings.organizationName || null,
+        additional_organizations: JSON.parse(JSON.stringify(settings.additionalOrganizations)),
         social_linkedin: settings.socialLinkedin || null,
         social_twitter: settings.socialTwitter || null,
         social_website: settings.socialWebsite || null,
@@ -101,6 +114,29 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
       toast({ title: "Booking page settings saved!" });
     }
     setIsSaving(false);
+  };
+
+  const addOrganization = () => {
+    setSettings(prev => ({
+      ...prev,
+      additionalOrganizations: [...prev.additionalOrganizations, { name: "", role: "" }]
+    }));
+  };
+
+  const removeOrganization = (index: number) => {
+    setSettings(prev => ({
+      ...prev,
+      additionalOrganizations: prev.additionalOrganizations.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateOrganization = (index: number, field: "name" | "role", value: string) => {
+    setSettings(prev => ({
+      ...prev,
+      additionalOrganizations: prev.additionalOrganizations.map((org, i) => 
+        i === index ? { ...org, [field]: value } : org
+      )
+    }));
   };
 
   const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -354,11 +390,11 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
   return (
     <Card className="p-6">
       <div className="flex items-start gap-4 mb-6">
-        <div className="p-3 rounded-lg bg-primary/10">
+        <div className="p-3 rounded-xl bg-primary/10">
           <Sparkles className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h3 className="font-medium mb-1">Customize Your Booking Page</h3>
+          <h3 className="font-semibold mb-1">Customize Your Booking Page</h3>
           <p className="text-sm text-muted-foreground">
             Personalize the public booking page that startups and other investors see
           </p>
@@ -378,7 +414,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
             <div className="flex flex-col items-center gap-3">
               <div className="relative group">
                 {settings.profilePictureUrl ? (
-                  <div className="w-24 h-24 rounded-full overflow-hidden ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
+                  <div className="w-24 h-24 rounded-full overflow-hidden ring-2 ring-primary/20 ring-offset-2 ring-offset-background shadow-lg">
                     <img
                       src={settings.profilePictureUrl}
                       alt="Profile"
@@ -386,7 +422,7 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
                     />
                   </div>
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
+                  <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20 ring-offset-2 ring-offset-background shadow-lg">
                     <span className="text-3xl font-bold text-primary">
                       {settings.fullName?.charAt(0)?.toUpperCase() || "?"}
                     </span>
@@ -438,19 +474,76 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="organizationName">Organization / Company</Label>
+                <Label htmlFor="organizationName">Primary Organization</Label>
                 <Input
                   id="organizationName"
-                  placeholder="e.g., Sequoia Capital, Angel Investor"
+                  placeholder="e.g., Sequoia Capital"
                   value={settings.organizationName || ""}
                   onChange={(e) => setSettings(prev => ({ ...prev, organizationName: e.target.value }))}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Your fund, firm, or primary affiliation
+                  Your main fund, firm, or affiliation
                 </p>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Additional Organizations */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+              <Building2 className="h-4 w-4" />
+              Additional Affiliations
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addOrganization}
+              className="gap-1"
+            >
+              <Plus className="h-4 w-4" />
+              Add
+            </Button>
+          </div>
+
+          {settings.additionalOrganizations.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-4 text-center border border-dashed rounded-lg">
+              No additional affiliations. Click "Add" to add companies you work with or represent.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {settings.additionalOrganizations.map((org, index) => (
+                <div key={index} className="flex items-start gap-3 p-3 rounded-lg border bg-muted/30">
+                  <div className="p-1.5 text-muted-foreground">
+                    <GripVertical className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 grid gap-3 sm:grid-cols-2">
+                    <Input
+                      placeholder="Organization name"
+                      value={org.name}
+                      onChange={(e) => updateOrganization(index, "name", e.target.value)}
+                    />
+                    <Input
+                      placeholder="Your role (e.g., Advisor, Partner)"
+                      value={org.role}
+                      onChange={(e) => updateOrganization(index, "role", e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeOrganization(index)}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Theme Selection */}
@@ -623,7 +716,6 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
             Page Content
           </div>
           
-          {/* Custom Headline */}
           <div className="space-y-2">
             <Label htmlFor="headline">Custom Headline</Label>
             <Input
@@ -638,7 +730,6 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
             </p>
           </div>
 
-          {/* Bio */}
           <div className="space-y-2">
             <Label htmlFor="bio">Short Bio</Label>
             <Textarea
@@ -663,8 +754,8 @@ const BookingPageCustomization = ({ userId }: BookingPageCustomizationProps) => 
           </div>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-[#0077B5]/10">
-                <Linkedin className="h-4 w-4 text-[#0077B5]" />
+              <div className="p-2.5 rounded-lg bg-blue-500/10">
+                <Linkedin className="h-4 w-4 text-blue-500" />
               </div>
               <Input
                 placeholder="https://linkedin.com/in/yourprofile"
