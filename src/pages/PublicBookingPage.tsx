@@ -11,9 +11,7 @@ import { format, addDays, startOfDay } from "date-fns";
 import { 
   Calendar, 
   Clock, 
-  User, 
   Building2, 
-  Mail, 
   Loader2, 
   CheckCircle2, 
   ArrowLeft,
@@ -25,7 +23,8 @@ import {
   Zap,
   Linkedin,
   Twitter,
-  ExternalLink
+  MapPin,
+  ChevronRight
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -54,6 +53,7 @@ interface InvestorProfile {
   booking_page_cover_position: string | null;
   booking_page_headline: string | null;
   booking_page_bio: string | null;
+  profile_picture_url: string | null;
   social_linkedin: string | null;
   social_twitter: string | null;
   social_website: string | null;
@@ -83,7 +83,6 @@ const PublicBookingPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", company: "", notes: "" });
 
-  // Generate next 14 days
   const availableDates = Array.from({ length: 14 }, (_, i) => addDays(startOfDay(new Date()), i + 1));
 
   useEffect(() => {
@@ -97,14 +96,14 @@ const PublicBookingPage = () => {
       if (isUUID) {
         const { data } = await supabase
           .from("investor_profiles")
-          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, social_linkedin, social_twitter, social_website")
+          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, profile_picture_url, social_linkedin, social_twitter, social_website")
           .eq("id", investorId)
           .single();
         profile = data as InvestorProfile | null;
       } else {
         const { data } = await supabase
           .from("investor_profiles")
-          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, social_linkedin, social_twitter, social_website")
+          .select("id, full_name, organization_name, profile_slug, city, investor_type, booking_page_theme, booking_page_cover_url, booking_page_cover_position, booking_page_headline, booking_page_bio, profile_picture_url, social_linkedin, social_twitter, social_website")
           .eq("profile_slug", investorId)
           .single();
         profile = data as InvestorProfile | null;
@@ -195,23 +194,67 @@ const PublicBookingPage = () => {
     navigate("/investor/auth");
   };
 
+  // Theme configuration
+  const isLightTheme = investorProfile?.booking_page_theme === "light";
+
+  // Light theme colors - refined for better readability
+  const lightTheme = {
+    bg: "bg-gradient-to-br from-slate-50 via-white to-slate-100",
+    card: "bg-white border-slate-200 shadow-sm",
+    cardHover: "hover:border-slate-300 hover:shadow-md",
+    text: "text-slate-900",
+    textMuted: "text-slate-600",
+    textSubtle: "text-slate-500",
+    border: "border-slate-200",
+    accent: "bg-violet-600",
+    accentLight: "bg-violet-50",
+    accentBorder: "border-violet-200",
+    badge: "bg-slate-100 text-slate-700 border-slate-200",
+    input: "bg-white border-slate-300 focus:border-violet-500",
+    button: "bg-violet-600 hover:bg-violet-700 text-white",
+    buttonOutline: "border-slate-300 hover:bg-slate-50 text-slate-700",
+  };
+
+  // Dark theme colors - neon aesthetic
+  const darkTheme = {
+    bg: "bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950",
+    card: "bg-zinc-900/50 border-zinc-800 backdrop-blur-sm",
+    cardHover: "hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5",
+    text: "text-white",
+    textMuted: "text-zinc-400",
+    textSubtle: "text-zinc-500",
+    border: "border-zinc-800",
+    accent: "bg-primary",
+    accentLight: "bg-primary/10",
+    accentBorder: "border-primary/30",
+    badge: "bg-zinc-800 text-zinc-300 border-zinc-700",
+    input: "bg-zinc-900 border-zinc-700 focus:border-primary",
+    button: "bg-primary hover:bg-primary/90",
+    buttonOutline: "border-zinc-700 hover:bg-zinc-800",
+  };
+
+  const theme = isLightTheme ? lightTheme : darkTheme;
+
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className={`min-h-screen flex items-center justify-center ${theme.bg}`}>
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className={theme.textMuted}>Loading...</p>
+        </div>
       </div>
     );
   }
 
   if (!investorProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
-        <Card className="p-8 text-center max-w-md border-primary/20">
+      <div className={`min-h-screen flex items-center justify-center ${theme.bg}`}>
+        <Card className={`p-8 text-center max-w-md ${theme.card}`}>
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Calendar className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="text-xl font-semibold mb-2">Booking Page Not Found</h2>
-          <p className="text-muted-foreground mb-6">This booking page doesn't exist or is no longer available.</p>
+          <h2 className={`text-xl font-semibold mb-2 ${theme.text}`}>Booking Page Not Found</h2>
+          <p className={`mb-6 ${theme.textMuted}`}>This booking page doesn't exist or is no longer available.</p>
           <Button onClick={handleJoinNetwork} className="gap-2">
             Join the VC Network
             <ArrowRight className="h-4 w-4" />
@@ -221,113 +264,64 @@ const PublicBookingPage = () => {
     );
   }
 
-  // Confirmed state - with network CTA
+  // Confirmed state
   if (step === "confirmed") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4">
-        <div className="max-w-4xl mx-auto pt-12 grid lg:grid-cols-2 gap-8 items-center">
-          {/* Success Card */}
-          <Card className="p-8 text-center border-green-500/20 bg-gradient-to-br from-green-500/5 to-transparent">
-            <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="h-10 w-10 text-green-500" />
+      <div className={`min-h-screen p-4 ${theme.bg}`}>
+        <div className="max-w-4xl mx-auto pt-12 grid lg:grid-cols-2 gap-8 items-start">
+          <Card className={`p-8 text-center border-emerald-500/30 ${isLightTheme ? "bg-emerald-50" : "bg-emerald-500/10"}`}>
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${isLightTheme ? "bg-emerald-100" : "bg-emerald-500/20"}`}>
+              <CheckCircle2 className="h-10 w-10 text-emerald-500" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">You're Booked!</h2>
-            <p className="text-muted-foreground mb-6">
+            <h2 className={`text-2xl font-bold mb-2 ${theme.text}`}>You're Booked!</h2>
+            <p className={`mb-6 ${theme.textMuted}`}>
               Your meeting with {investorProfile.full_name} is confirmed.
             </p>
-            <div className="bg-muted/50 p-4 rounded-lg text-left space-y-2 mb-4">
-              <p className="font-semibold">{selectedEvent?.name}</p>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className={`p-4 rounded-xl text-left space-y-3 mb-4 ${isLightTheme ? "bg-white border border-slate-200" : "bg-zinc-800/50"}`}>
+              <p className={`font-semibold ${theme.text}`}>{selectedEvent?.name}</p>
+              <div className={`flex items-center gap-2 text-sm ${theme.textMuted}`}>
                 <Calendar className="h-4 w-4" />
                 {format(new Date(selectedSlot!.start), "EEEE, MMMM d, yyyy")}
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className={`flex items-center gap-2 text-sm ${theme.textMuted}`}>
                 <Clock className="h-4 w-4" />
                 {format(new Date(selectedSlot!.start), "h:mm a")} - {format(new Date(selectedSlot!.end), "h:mm a")}
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className={`text-sm ${theme.textSubtle}`}>
               Confirmation sent to {formData.email}
             </p>
           </Card>
 
-          {/* Two-Part Ecosystem Intro */}
-          <div className="space-y-6">
-            {/* For Investors - VC Brain */}
-            <Card className="p-6 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
-              
-              <div className="relative z-10">
-                <Badge className="mb-3 bg-primary/10 text-primary border-primary/20">
-                  <Users className="h-3 w-3 mr-1" />
-                  For Investors
-                </Badge>
-                
-                <h3 className="text-xl font-bold mb-2">VC Brain</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  A private, invite-only platform for VCs, angels, and LPs. Share dealflow with trusted peers, access AI-powered startup analysis, manage your calendar, and build your investor network — all in one place.
-                </p>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-start gap-2 text-sm">
-                    <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <span>Private dealflow sharing with attribution</span>
-                  </div>
-                  <div className="flex items-start gap-2 text-sm">
-                    <Zap className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <span>AI analysis on every startup in your pipeline</span>
-                  </div>
-                  <div className="flex items-start gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <span>Booking pages & calendar sync</span>
-                  </div>
-                </div>
-
-                <Button onClick={handleJoinNetwork} variant="outline" size="sm" className="w-full gap-2 border-primary/30">
-                  Join the VC Network
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
+          <div className="space-y-4">
+            <Card className={`p-6 ${theme.card} ${theme.accentBorder}`}>
+              <Badge className={`mb-3 ${theme.badge}`}>
+                <Users className="h-3 w-3 mr-1" />
+                For Investors
+              </Badge>
+              <h3 className={`text-lg font-bold mb-2 ${theme.text}`}>VC Brain Network</h3>
+              <p className={`text-sm mb-4 ${theme.textMuted}`}>
+                Private, invite-only platform for VCs. Share dealflow with trusted peers, get AI-powered analysis.
+              </p>
+              <Button onClick={handleJoinNetwork} variant="outline" size="sm" className={`w-full gap-2 ${theme.buttonOutline}`}>
+                Join Network
+                <ArrowRight className="h-4 w-4" />
+              </Button>
             </Card>
 
-            {/* For Startups - UglyBaby Platform */}
-            <Card className="p-6 border-accent/20 bg-gradient-to-br from-accent/5 via-transparent to-primary/5 relative overflow-hidden">
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent/10 rounded-full blur-2xl" />
-              
-              <div className="relative z-10">
-                <Badge className="mb-3 bg-accent/10 text-accent-foreground border-accent/20">
-                  <Sparkles className="h-3 w-3 mr-1" />
-                  For Startups
-                </Badge>
-                
-                <h3 className="text-xl font-bold mb-2">UglyBaby</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Most founders don't understand how VCs actually evaluate startups — and that's why they fail to raise. UglyBaby changes that.
-                </p>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Built by someone who's spent 10+ years in VC, met thousands of founders, and written hundreds of investment memos, UglyBaby gives you the same analysis VCs run internally — before you ever step into a pitch room.
-                </p>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-start gap-2 text-sm">
-                    <Zap className="h-4 w-4 text-accent mt-0.5 shrink-0" />
-                    <span>Full investment memo with VC-style scoring</span>
-                  </div>
-                  <div className="flex items-start gap-2 text-sm">
-                    <Globe className="h-4 w-4 text-accent mt-0.5 shrink-0" />
-                    <span>Identify blind spots VCs will find anyway</span>
-                  </div>
-                  <div className="flex items-start gap-2 text-sm">
-                    <Network className="h-4 w-4 text-accent mt-0.5 shrink-0" />
-                    <span>Market, traction, team & financials analysis</span>
-                  </div>
-                </div>
-
-                <Button onClick={() => navigate("/")} size="sm" className="w-full gap-2">
-                  Get Your Startup Analyzed
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
+            <Card className={`p-6 ${theme.card}`}>
+              <Badge className={`mb-3 ${theme.badge}`}>
+                <Sparkles className="h-3 w-3 mr-1" />
+                For Startups
+              </Badge>
+              <h3 className={`text-lg font-bold mb-2 ${theme.text}`}>Get VC-Ready</h3>
+              <p className={`text-sm mb-4 ${theme.textMuted}`}>
+                UglyBaby analyzes your startup the way VCs do — full investment memo, scoring, and blind spot detection.
+              </p>
+              <Button onClick={() => navigate("/")} size="sm" className={`w-full gap-2 ${theme.button}`}>
+                Analyze My Startup
+                <ArrowRight className="h-4 w-4" />
+              </Button>
             </Card>
           </div>
         </div>
@@ -335,85 +329,84 @@ const PublicBookingPage = () => {
     );
   }
 
-  // Determine theme classes
-  const isLightTheme = investorProfile.booking_page_theme === "light";
-  const themeClasses = isLightTheme
-    ? "min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100"
-    : "min-h-screen bg-gradient-to-br from-background via-background to-primary/5";
-  const cardClasses = isLightTheme
-    ? "border-slate-200 bg-white shadow-sm"
-    : "border-primary/10 bg-gradient-to-br from-card to-primary/5";
-  const textMutedClasses = isLightTheme ? "text-slate-500" : "text-muted-foreground";
-
   return (
-    <div className={themeClasses}>
+    <div className={`min-h-screen ${theme.bg}`}>
       {/* Cover Image */}
       {investorProfile.booking_page_cover_url && (
-        <div className="w-full h-48 md:h-64 relative overflow-hidden">
+        <div className="w-full h-56 md:h-72 relative overflow-hidden">
           <img
             src={investorProfile.booking_page_cover_url}
             alt="Cover"
             className="w-full h-full object-cover"
             style={{ objectPosition: investorProfile.booking_page_cover_position || "50% 50%" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80" />
+          <div className={`absolute inset-0 ${isLightTheme ? "bg-gradient-to-b from-transparent via-transparent to-white/90" : "bg-gradient-to-b from-transparent via-zinc-950/20 to-zinc-950"}`} />
         </div>
       )}
 
-      <div className={`max-w-6xl mx-auto p-4 lg:p-8 ${investorProfile.booking_page_cover_url ? "-mt-16 relative z-10" : ""}`}>
-        <div className="grid lg:grid-cols-[320px_1fr] gap-8">
-          {/* Left Sidebar - Investor Profile & Network CTA */}
-          <div className="space-y-6">
-            {/* Investor Card */}
-            <Card className={`p-6 ${cardClasses}`}>
+      <div className={`max-w-6xl mx-auto p-4 lg:p-8 ${investorProfile.booking_page_cover_url ? "-mt-20 relative z-10" : "pt-8"}`}>
+        <div className="grid lg:grid-cols-[340px_1fr] gap-8">
+          {/* Left Sidebar - Investor Profile */}
+          <div className="space-y-5">
+            <Card className={`p-6 ${theme.card}`}>
               <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4 ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
-                  <span className="text-2xl font-bold text-primary">
-                    {investorProfile.full_name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
+                {/* Profile Picture */}
+                {investorProfile.profile_picture_url ? (
+                  <div className="w-24 h-24 rounded-full overflow-hidden mb-4 ring-4 ring-primary/20 ring-offset-4 ring-offset-background shadow-xl">
+                    <img
+                      src={investorProfile.profile_picture_url}
+                      alt={investorProfile.full_name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 ring-4 ring-primary/20 ring-offset-4 ring-offset-background shadow-xl ${isLightTheme ? "bg-violet-100" : "bg-primary/10"}`}>
+                    <span className={`text-3xl font-bold ${isLightTheme ? "text-violet-600" : "text-primary"}`}>
+                      {investorProfile.full_name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
                 
-                <h1 className="text-xl font-bold mb-1">{investorProfile.full_name}</h1>
+                <h1 className={`text-xl font-bold mb-1 ${theme.text}`}>{investorProfile.full_name}</h1>
                 
                 {investorProfile.organization_name && (
-                  <div className={`flex items-center gap-1 text-sm mb-2 ${textMutedClasses}`}>
-                    <Building2 className="h-3 w-3" />
+                  <div className={`flex items-center gap-1.5 text-sm mb-3 ${theme.textMuted}`}>
+                    <Building2 className="h-3.5 w-3.5" />
                     {investorProfile.organization_name}
                   </div>
                 )}
 
-                {/* Custom Bio */}
                 {investorProfile.booking_page_bio && (
-                  <p className={`text-sm mt-2 mb-3 ${textMutedClasses}`}>
+                  <p className={`text-sm mb-4 leading-relaxed ${theme.textMuted}`}>
                     {investorProfile.booking_page_bio}
                   </p>
                 )}
 
                 <div className="flex flex-wrap gap-2 justify-center">
                   {investorProfile.investor_type && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge className={theme.badge}>
                       {INVESTOR_TYPE_LABELS[investorProfile.investor_type] || investorProfile.investor_type}
                     </Badge>
                   )}
                   {investorProfile.city && (
-                    <Badge variant="outline" className="text-xs">
-                      📍 {investorProfile.city}
+                    <Badge variant="outline" className={`${theme.badge} gap-1`}>
+                      <MapPin className="h-3 w-3" />
+                      {investorProfile.city}
                     </Badge>
                   )}
                 </div>
 
                 {/* Social Links */}
                 {(investorProfile.social_linkedin || investorProfile.social_twitter || investorProfile.social_website) && (
-                  <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border justify-center">
+                  <div className={`flex items-center gap-2 mt-5 pt-5 border-t ${theme.border} justify-center`}>
                     {investorProfile.social_linkedin && (
                       <a
                         href={investorProfile.social_linkedin}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 rounded-full bg-muted hover:bg-primary/10 transition-colors"
-                        title="LinkedIn"
+                        className={`p-2.5 rounded-xl transition-all ${isLightTheme ? "bg-slate-100 hover:bg-[#0077B5]/10 text-slate-600 hover:text-[#0077B5]" : "bg-zinc-800 hover:bg-[#0077B5]/20 text-zinc-400 hover:text-[#0077B5]"}`}
                       >
-                        <Linkedin className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                        <Linkedin className="h-4 w-4" />
                       </a>
                     )}
                     {investorProfile.social_twitter && (
@@ -421,10 +414,9 @@ const PublicBookingPage = () => {
                         href={investorProfile.social_twitter}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 rounded-full bg-muted hover:bg-primary/10 transition-colors"
-                        title="Twitter"
+                        className={`p-2.5 rounded-xl transition-all ${isLightTheme ? "bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900" : "bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white"}`}
                       >
-                        <Twitter className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                        <Twitter className="h-4 w-4" />
                       </a>
                     )}
                     {investorProfile.social_website && (
@@ -432,10 +424,9 @@ const PublicBookingPage = () => {
                         href={investorProfile.social_website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 rounded-full bg-muted hover:bg-primary/10 transition-colors"
-                        title="Website"
+                        className={`p-2.5 rounded-xl transition-all ${isLightTheme ? "bg-slate-100 hover:bg-violet-50 text-slate-600 hover:text-violet-600" : "bg-zinc-800 hover:bg-primary/20 text-zinc-400 hover:text-primary"}`}
                       >
-                        <Globe className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                        <Globe className="h-4 w-4" />
                       </a>
                     )}
                   </div>
@@ -443,55 +434,49 @@ const PublicBookingPage = () => {
               </div>
             </Card>
 
-            {/* For Investors */}
-            <Card className="p-5 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-transparent relative overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-20 h-20 bg-primary/10 rounded-full blur-2xl" />
-              
+            {/* For Investors CTA */}
+            <Card className={`p-5 relative overflow-hidden ${theme.card} ${theme.accentBorder}`}>
+              <div className={`absolute -top-8 -right-8 w-24 h-24 rounded-full blur-3xl ${isLightTheme ? "bg-violet-200/50" : "bg-primary/20"}`} />
               <div className="relative z-10">
-                <Badge variant="outline" className="mb-3 text-xs border-primary/30">
+                <Badge variant="outline" className={`mb-3 text-xs ${theme.badge}`}>
                   <Users className="h-3 w-3 mr-1" />
                   For Investors
                 </Badge>
-                
-                <h3 className="font-semibold mb-2 text-sm">VC Brain Network</h3>
-                <p className="text-xs text-muted-foreground mb-3">
-                  Private, invite-only platform for VCs. Share dealflow, get AI analysis on startups, and manage your investor network.
+                <h3 className={`font-semibold mb-2 ${theme.text}`}>VC Brain Network</h3>
+                <p className={`text-xs mb-4 ${theme.textMuted}`}>
+                  Private network for VCs. Share dealflow, get AI analysis on startups, and manage your investor pipeline.
                 </p>
-
                 <Button 
                   onClick={handleJoinNetwork} 
                   variant="outline"
                   size="sm"
-                  className="w-full gap-2 border-primary/30 hover:bg-primary/10 text-xs"
+                  className={`w-full gap-2 ${theme.buttonOutline}`}
                 >
                   Join Network
-                  <ArrowRight className="h-3 w-3" />
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </Card>
 
-            {/* For Startups */}
-            <Card className="p-5 border-accent/20 bg-gradient-to-br from-accent/5 via-transparent to-transparent relative overflow-hidden">
-              <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-accent/10 rounded-full blur-2xl" />
-              
+            {/* For Startups CTA */}
+            <Card className={`p-5 relative overflow-hidden ${theme.card}`}>
+              <div className={`absolute -bottom-8 -left-8 w-20 h-20 rounded-full blur-2xl ${isLightTheme ? "bg-pink-200/50" : "bg-pink-500/10"}`} />
               <div className="relative z-10">
-                <Badge variant="outline" className="mb-3 text-xs border-accent/30">
+                <Badge variant="outline" className={`mb-3 text-xs ${theme.badge}`}>
                   <Sparkles className="h-3 w-3 mr-1" />
                   For Startups
                 </Badge>
-                
-                <h3 className="font-semibold mb-2 text-sm">Get VC-Ready</h3>
-                <p className="text-xs text-muted-foreground mb-3">
-                  UglyBaby analyzes your startup the way VCs do — full investment memo, scoring, and blind spot detection. Built by 10+ years of VC experience.
+                <h3 className={`font-semibold mb-2 ${theme.text}`}>Get VC-Ready</h3>
+                <p className={`text-xs mb-4 ${theme.textMuted}`}>
+                  UglyBaby analyzes your startup the way VCs do — full investment memo, scoring, and blind spot detection.
                 </p>
-
                 <Button 
                   onClick={() => navigate("/")} 
                   size="sm"
-                  className="w-full gap-2 text-xs"
+                  className={`w-full gap-2 ${theme.button}`}
                 >
                   Analyze My Startup
-                  <ArrowRight className="h-3 w-3" />
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </Card>
@@ -503,7 +488,7 @@ const PublicBookingPage = () => {
             {step !== "select-event" && (
               <Button 
                 variant="ghost" 
-                className="mb-4" 
+                className={`mb-4 ${theme.textMuted}`}
                 onClick={() => {
                   if (step === "select-date") setStep("select-event");
                   else if (step === "select-time") setStep("select-date");
@@ -516,45 +501,45 @@ const PublicBookingPage = () => {
 
             {/* Select Event Type */}
             {step === "select-event" && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <h2 className="text-2xl font-bold mb-1">
+                  <h2 className={`text-2xl font-bold mb-2 ${theme.text}`}>
                     {investorProfile.booking_page_headline || "Book a Meeting"}
                   </h2>
-                  <p className={textMutedClasses}>Select a meeting type to get started</p>
+                  <p className={theme.textMuted}>Select a meeting type to get started</p>
                 </div>
                 
                 {eventTypes.length === 0 ? (
-                  <Card className="p-8 text-center border-dashed">
-                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">No meeting types available yet</p>
+                  <Card className={`p-12 text-center border-dashed ${theme.card}`}>
+                    <Calendar className={`h-12 w-12 mx-auto mb-4 ${theme.textMuted}`} />
+                    <p className={theme.textMuted}>No meeting types available yet</p>
                   </Card>
                 ) : (
                   <div className="space-y-3">
                     {eventTypes.map((event) => (
                       <Card
                         key={event.id}
-                        className="p-4 cursor-pointer hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all group"
+                        className={`p-5 cursor-pointer transition-all group ${theme.card} ${theme.cardHover}`}
                         onClick={() => { setSelectedEvent(event); setStep("select-date"); }}
                       >
                         <div className="flex items-center gap-4">
                           <div 
-                            className="w-1.5 h-14 rounded-full transition-all group-hover:w-2" 
+                            className="w-1.5 h-16 rounded-full transition-all group-hover:w-2" 
                             style={{ backgroundColor: event.color }} 
                           />
                           <div className="flex-1">
-                            <h3 className="font-semibold group-hover:text-primary transition-colors">
+                            <h3 className={`font-semibold text-lg group-hover:text-primary transition-colors ${theme.text}`}>
                               {event.name}
                             </h3>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Clock className="h-3 w-3" />
+                            <div className={`flex items-center gap-2 text-sm mt-1 ${theme.textMuted}`}>
+                              <Clock className="h-3.5 w-3.5" />
                               {event.duration_minutes} minutes
                             </div>
                             {event.description && (
-                              <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
+                              <p className={`text-sm mt-2 ${theme.textSubtle}`}>{event.description}</p>
                             )}
                           </div>
-                          <ArrowRight className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <ChevronRight className={`h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity ${theme.textMuted}`} />
                         </div>
                       </Card>
                     ))}
@@ -565,17 +550,17 @@ const PublicBookingPage = () => {
 
             {/* Select Date */}
             {step === "select-date" && selectedEvent && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: selectedEvent.color }} />
-                    <span className="font-medium">{selectedEvent.name}</span>
-                    <Badge variant="secondary" className="text-xs">
+                    <span className={`font-medium ${theme.text}`}>{selectedEvent.name}</span>
+                    <Badge className={theme.badge}>
                       {selectedEvent.duration_minutes} min
                     </Badge>
                   </div>
-                  <h2 className="text-2xl font-bold mb-1">Select a Date</h2>
-                  <p className="text-muted-foreground">Pick a day that works for you</p>
+                  <h2 className={`text-2xl font-bold mb-2 ${theme.text}`}>Select a Date</h2>
+                  <p className={theme.textMuted}>Pick a day that works for you</p>
                 </div>
                 
                 <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-2">
@@ -584,18 +569,16 @@ const PublicBookingPage = () => {
                     return (
                       <Card
                         key={date.toISOString()}
-                        className={`p-3 cursor-pointer hover:border-primary/50 hover:shadow-md transition-all text-center group ${
-                          isWeekend ? "opacity-60" : ""
-                        }`}
+                        className={`p-3 cursor-pointer transition-all text-center group ${theme.card} ${theme.cardHover} ${isWeekend ? "opacity-50" : ""}`}
                         onClick={() => handleDateSelect(date)}
                       >
-                        <p className="text-xs text-muted-foreground uppercase">
+                        <p className={`text-xs uppercase font-medium ${theme.textSubtle}`}>
                           {format(date, "EEE")}
                         </p>
-                        <p className="text-xl font-bold group-hover:text-primary transition-colors">
+                        <p className={`text-2xl font-bold my-1 group-hover:text-primary transition-colors ${theme.text}`}>
                           {format(date, "d")}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className={`text-xs ${theme.textSubtle}`}>
                           {format(date, "MMM")}
                         </p>
                       </Card>
@@ -607,23 +590,23 @@ const PublicBookingPage = () => {
 
             {/* Select Time */}
             {step === "select-time" && selectedDate && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <h2 className="text-2xl font-bold mb-1">
+                  <h2 className={`text-2xl font-bold mb-2 ${theme.text}`}>
                     {format(selectedDate, "EEEE, MMMM d")}
                   </h2>
-                  <p className="text-muted-foreground">Select an available time slot</p>
+                  <p className={theme.textMuted}>Select an available time slot</p>
                 </div>
                 
                 {isLoadingSlots ? (
-                  <div className="flex justify-center py-12">
+                  <div className="flex justify-center py-16">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
                 ) : availableSlots.length === 0 ? (
-                  <Card className="p-8 text-center border-dashed">
-                    <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">No available times on this date</p>
-                    <Button variant="link" onClick={() => setStep("select-date")}>
+                  <Card className={`p-12 text-center border-dashed ${theme.card}`}>
+                    <Clock className={`h-12 w-12 mx-auto mb-4 ${theme.textMuted}`} />
+                    <p className={theme.textMuted}>No available times on this date</p>
+                    <Button variant="link" onClick={() => setStep("select-date")} className="mt-2">
                       Choose another date
                     </Button>
                   </Card>
@@ -633,7 +616,7 @@ const PublicBookingPage = () => {
                       <Button 
                         key={slot.start} 
                         variant="outline" 
-                        className="hover:border-primary/50 hover:bg-primary/5"
+                        className={`${theme.buttonOutline} ${isLightTheme ? "hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700" : "hover:border-primary/50 hover:bg-primary/10"}`}
                         onClick={() => handleSlotSelect(slot)}
                       >
                         {format(new Date(slot.start), "h:mm a")}
@@ -646,73 +629,76 @@ const PublicBookingPage = () => {
 
             {/* Booking Form */}
             {step === "form" && selectedSlot && (
-              <Card className="p-6 border-primary/10">
-                <div className="mb-6 p-4 bg-primary/5 rounded-lg border border-primary/10">
-                  <div className="flex items-center gap-3">
+              <Card className={`p-6 ${theme.card}`}>
+                <div className={`mb-6 p-4 rounded-xl ${isLightTheme ? "bg-violet-50 border border-violet-100" : "bg-primary/5 border border-primary/10"}`}>
+                  <div className="flex items-center gap-4">
                     <div 
-                      className="w-1 h-12 rounded-full" 
+                      className="w-1.5 h-14 rounded-full" 
                       style={{ backgroundColor: selectedEvent?.color }} 
                     />
                     <div>
-                      <p className="font-semibold">{selectedEvent?.name}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        {format(new Date(selectedSlot.start), "EEEE, MMMM d")}
-                        <span className="mx-1">•</span>
-                        <Clock className="h-3 w-3" />
-                        {format(new Date(selectedSlot.start), "h:mm a")}
+                      <p className={`font-semibold ${theme.text}`}>{selectedEvent?.name}</p>
+                      <div className={`flex items-center gap-3 text-sm mt-1 ${theme.textMuted}`}>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {format(new Date(selectedSlot.start), "EEEE, MMMM d")}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3.5 w-3.5" />
+                          {format(new Date(selectedSlot.start), "h:mm a")}
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm">Your Name *</Label>
+                    <div className="space-y-2">
+                      <Label className={`text-sm font-medium ${theme.text}`}>Your Name *</Label>
                       <Input 
                         required 
                         value={formData.name} 
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="mt-1"
+                        className={theme.input}
                         placeholder="John Doe"
                       />
                     </div>
-                    <div>
-                      <Label className="text-sm">Email *</Label>
+                    <div className="space-y-2">
+                      <Label className={`text-sm font-medium ${theme.text}`}>Email *</Label>
                       <Input 
                         type="email" 
                         required 
                         value={formData.email} 
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="mt-1"
+                        className={theme.input}
                         placeholder="john@startup.com"
                       />
                     </div>
                   </div>
                   
-                  <div>
-                    <Label className="text-sm">Company / Startup</Label>
+                  <div className="space-y-2">
+                    <Label className={`text-sm font-medium ${theme.text}`}>Company / Startup</Label>
                     <Input 
                       value={formData.company} 
                       onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                      className="mt-1"
+                      className={theme.input}
                       placeholder="Acme Inc."
                     />
                   </div>
                   
-                  <div>
-                    <Label className="text-sm">What would you like to discuss?</Label>
+                  <div className="space-y-2">
+                    <Label className={`text-sm font-medium ${theme.text}`}>What would you like to discuss?</Label>
                     <Textarea 
                       value={formData.notes} 
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      className="mt-1"
+                      className={theme.input}
                       placeholder="Tell us a bit about your startup and what you'd like to cover..."
                       rows={3}
                     />
                   </div>
                   
-                  <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                  <Button type="submit" className={`w-full ${theme.button}`} size="lg" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     ) : (

@@ -928,6 +928,7 @@ export type Database = {
           organization_name: string | null
           preferred_stages: Json | null
           primary_sectors: Json | null
+          profile_picture_url: string | null
           profile_slug: string | null
           social_linkedin: string | null
           social_twitter: string | null
@@ -955,6 +956,7 @@ export type Database = {
           organization_name?: string | null
           preferred_stages?: Json | null
           primary_sectors?: Json | null
+          profile_picture_url?: string | null
           profile_slug?: string | null
           social_linkedin?: string | null
           social_twitter?: string | null
@@ -982,6 +984,7 @@ export type Database = {
           organization_name?: string | null
           preferred_stages?: Json | null
           primary_sectors?: Json | null
+          profile_picture_url?: string | null
           profile_slug?: string | null
           social_linkedin?: string | null
           social_twitter?: string | null
