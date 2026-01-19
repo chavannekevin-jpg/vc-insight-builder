@@ -18,7 +18,8 @@ import {
   Rocket,
   RefreshCw, Briefcase, Code, GraduationCap, Building,
   ChevronRight, Pencil, Lightbulb, FileSearch,
-  BookOpen, BarChart3, MessageSquare, Calendar, Wrench, Building2
+  BookOpen, BarChart3, MessageSquare, Calendar, Wrench, Building2,
+  Info
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -543,9 +544,10 @@ export const VCVerdictCard = memo(({
                 ].map((item, i) => (
                   <Tooltip key={i}>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1.5 cursor-help hover:text-foreground transition-colors">
+                      <div className="flex items-center gap-1.5 cursor-help group">
                         <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
-                        <span className="text-muted-foreground text-[11px] hover:text-foreground transition-colors">{item.name}</span>
+                        <span className="text-muted-foreground text-[11px] group-hover:text-foreground transition-colors">{item.name}</span>
+                        <Info className="w-2.5 h-2.5 text-muted-foreground/50 group-hover:text-primary transition-colors flex-shrink-0" />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-[280px] text-xs">
@@ -576,9 +578,10 @@ export const VCVerdictCard = memo(({
                 ].map((item, i) => (
                   <Tooltip key={i}>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1.5 cursor-help hover:text-foreground transition-colors">
+                      <div className="flex items-center gap-1.5 cursor-help group">
                         <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
-                        <span className="text-muted-foreground text-[11px] hover:text-foreground transition-colors">{item.name}</span>
+                        <span className="text-muted-foreground text-[11px] group-hover:text-foreground transition-colors">{item.name}</span>
+                        <Info className="w-2.5 h-2.5 text-muted-foreground/50 group-hover:text-primary transition-colors flex-shrink-0" />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-[280px] text-xs">
@@ -605,9 +608,10 @@ export const VCVerdictCard = memo(({
                 ].map((item, i) => (
                   <Tooltip key={i}>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1.5 cursor-help hover:text-foreground transition-colors">
+                      <div className="flex items-center gap-1.5 cursor-help group">
                         <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
-                        <span className="text-muted-foreground text-[11px] hover:text-foreground transition-colors">{item.name}</span>
+                        <span className="text-muted-foreground text-[11px] group-hover:text-foreground transition-colors">{item.name}</span>
+                        <Info className="w-2.5 h-2.5 text-muted-foreground/50 group-hover:text-primary transition-colors flex-shrink-0" />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-[280px] text-xs">
@@ -630,9 +634,10 @@ export const VCVerdictCard = memo(({
                 ].map((item, i) => (
                   <Tooltip key={i}>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1.5 cursor-help hover:text-foreground transition-colors">
+                      <div className="flex items-center gap-1.5 cursor-help group">
                         <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
-                        <span className="text-muted-foreground text-[11px] hover:text-foreground transition-colors">{item.name}</span>
+                        <span className="text-muted-foreground text-[11px] group-hover:text-foreground transition-colors">{item.name}</span>
+                        <Info className="w-2.5 h-2.5 text-muted-foreground/50 group-hover:text-primary transition-colors flex-shrink-0" />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-[280px] text-xs">
