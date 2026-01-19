@@ -50,10 +50,10 @@ const CalendarView = ({ userId }: CalendarViewProps) => {
   }, [searchParams, setSearchParams]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-fade-in">
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <div className="border-b border-border/50 px-4">
+        <div className="border-b border-border/30 px-5 bg-gradient-to-r from-card/80 to-card/40 backdrop-blur-sm">
           <TabsList className="bg-transparent h-auto p-0 space-x-6">
             <TabsTrigger
               value="calendar"

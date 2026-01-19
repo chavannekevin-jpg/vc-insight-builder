@@ -258,7 +258,7 @@ const InvestorDashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-background to-muted/20">
         <InvestorSidebar
           activeSection={activeSection}
           onSectionChange={setActiveSection}
@@ -267,11 +267,14 @@ const InvestorDashboard = () => {
 
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Bar with Sidebar Trigger */}
-          <header className="h-12 border-b border-border/50 flex items-center px-4 bg-card/50 backdrop-blur-sm sticky top-0 z-40">
-            <SidebarTrigger className="mr-4" />
-            <span className="text-sm font-medium text-muted-foreground">
-              Investor Dashboard
-            </span>
+          <header className="h-14 border-b border-border/30 flex items-center px-5 bg-card/60 backdrop-blur-xl sticky top-0 z-40 shadow-sm">
+            <SidebarTrigger className="mr-4 hover:bg-muted/50 transition-colors duration-200 rounded-lg" />
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+              <span className="text-sm font-semibold text-foreground tracking-tight">
+                VC Brain
+              </span>
+            </div>
           </header>
 
           {/* Main Content */}

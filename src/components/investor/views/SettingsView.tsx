@@ -83,16 +83,16 @@ const SettingsView = ({ userId, userProfile, onProfileUpdate }: SettingsViewProp
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-fade-in">
       {/* Header */}
-      <div className="p-4 border-b border-border/50 flex items-center justify-between">
+      <div className="p-5 border-b border-border/30 bg-gradient-to-r from-card/80 to-card/40 backdrop-blur-sm flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Settings</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-xl font-bold tracking-tight">Settings</h2>
+          <p className="text-sm text-muted-foreground/80">
             Manage your profile and preferences
           </p>
         </div>
-        <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+        <Button onClick={handleSave} disabled={isSaving} className="gap-2 shadow-sm hover:shadow-md transition-shadow duration-200">
           <Save className="w-4 h-4" />
           {isSaving ? "Saving..." : "Save Changes"}
         </Button>
