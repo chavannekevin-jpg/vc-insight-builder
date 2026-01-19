@@ -22,7 +22,8 @@ import {
   X,
   Sparkles,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  Target
 } from "lucide-react";
 import {
   Dialog,
@@ -48,6 +49,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { InvestorContact } from "@/pages/investor/InvestorDashboard";
+import { calculateAffinity, getMatchColor, type UserProfile } from "@/lib/affinityCalculator";
+import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown, Globe, Briefcase } from "lucide-react";
 
 const RELATIONSHIP_STATUSES = [
   { value: "prospect", label: "Prospect" },
@@ -62,9 +71,10 @@ interface ContactProfileModalProps {
   contact: InvestorContact;
   onClose: () => void;
   onUpdate: () => void;
+  userProfile?: UserProfile | null;
 }
 
-const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModalProps) => {
+const ContactProfileModal = ({ contact, onClose, onUpdate, userProfile }: ContactProfileModalProps) => {
   const [notes, setNotes] = useState(contact.local_notes || "");
   const [email, setEmail] = useState((contact as any).local_email || (contact.global_contact as any)?.email || "");
   const [phone, setPhone] = useState((contact as any).local_phone || (contact.global_contact as any)?.phone || "");
@@ -124,6 +134,14 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
   const displayOrganization = localOrganization || globalOrganization;
   const entityType = contact.global_contact?.entity_type;
   const stages = contact.global_contact?.stages || [];
+  
+  // Calculate affinity with user profile
+  const affinity = calculateAffinity(userProfile, {
+    city: contact.global_contact?.city,
+    stages: contact.global_contact?.stages,
+    investment_focus: investmentFocus,
+  });
+  const matchColors = getMatchColor(affinity.percentage);
 
   const handleResearchContact = async () => {
     if (!contact.global_contact_id) {
@@ -444,6 +462,32 @@ const ContactProfileModal = ({ contact, onClose, onUpdate }: ContactProfileModal
           </DialogHeader>
 
           <div className="space-y-4 mt-4">
+            {/* Why You Match Section */}
+            {userProfile && affinity.percentage > 0 && (
+              <Collapsible defaultOpen={affinity.percentage >= 50}>
+                <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/10 hover:border-primary/20 transition-colors group">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${matchColors.bg} ${matchColors.text} border ${matchColors.border}`}>
+                      {affinity.percentage}%
+                    </div>
+                    <span className="text-sm font-medium">Why you match</span>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2 space-y-1.5 px-1">
+                  {affinity.reasons.map((reason, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      {reason.type === "location" && <MapPin className="w-4 h-4 text-primary/70" />}
+                      {reason.type === "stage" && <Target className="w-4 h-4 text-primary/70" />}
+                      {reason.type === "sector" && <Briefcase className="w-4 h-4 text-primary/70" />}
+                      {reason.type === "geo" && <Globe className="w-4 h-4 text-primary/70" />}
+                      <span>{reason.label}</span>
+                    </div>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+            
             {/* Editable Location */}
             {isEditingLocation ? (
               <div className="space-y-2">
