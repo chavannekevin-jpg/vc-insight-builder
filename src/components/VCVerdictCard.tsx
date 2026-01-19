@@ -488,89 +488,28 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* What We've Prepared For You - Narrative Summary */}
+        {/* What You Get - Focused Checklist */}
         <div className="p-6 border-b border-border/50">
-          <div className="flex items-center gap-2 mb-4">
-            <FileSearch className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">What We've Prepared For You</h3>
-          </div>
+          <h4 className="text-sm font-semibold mb-4">What You Get</h4>
           
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {verdict?.preparationSummary || `VCs will ask over 30 questions during your raise—we've identified and prepared responses for each one. Looking at your ${companyCategory || 'company'} pitch at ${companyStage} stage, we've mapped the key areas investors will probe: market validation, competitive positioning, team credibility, and milestone planning. Each section of the full analysis addresses these gaps with specific frameworks and prepared responses.`}
-          </p>
-        </div>
-
-        {/* The Good News - Constructive Path Forward */}
-        <div className="px-6 py-4 bg-gradient-to-r from-primary/5 to-transparent border-b border-border/50">
-          <div className="flex items-center gap-2 mb-3">
-            <Lightbulb className="w-4 h-4 text-primary" />
-            <h4 className="text-sm font-semibold text-foreground">The Good News</h4>
-          </div>
-          <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-            {verdict?.pathForward || "Every question above has a proven way to address it—the full analysis shows exactly how."}
-          </p>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">✓</span>
-              <span>Every concern listed above <strong className="text-foreground">can be addressed</strong> with the right framing</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">✓</span>
-              <span>The full analysis covers <strong className="text-foreground">every question VCs will ask</strong>—with word-for-word responses</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">✓</span>
-              <span>Founders who prepare for these questions <strong className="text-foreground">close rounds faster</strong></span>
-            </li>
-          </ul>
-        </div>
-
-        {/* What Each Section Contains */}
-        <div className="p-6 border-b border-border/50">
-          <h4 className="text-sm font-semibold mb-4">What Each Section Contains</h4>
-          
-          <div className="space-y-4">
-            {sectionContents.map((item, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <item.icon className={`w-5 h-5 ${item.color} flex-shrink-0 mt-0.5`} />
-                <div>
-                  <p className="text-sm font-medium text-foreground">{item.title}</p>
-                  <p className="text-xs text-muted-foreground">{item.description}</p>
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {[
+              "Investment Readiness Score across 8 dimensions",
+              "VC-grade narrative for each section",
+              "30+ investor questions with prepared answers",
+              "Bottoms-up TAM/SAM/SOM calculator",
+              "Unit economics & payback modeling",
+              "Competitive moat analysis",
+              "90-day action plan based on VC priorities",
+              "Red flags VCs will spot (before they do)",
+              "Team credibility gap assessment",
+              "Exit pathway & scenario planning"
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm">
+                <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
+                <span className="text-muted-foreground">{item}</span>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* How Founders Use This */}
-        <div className="px-6 py-4 border-b border-border/50 bg-muted/10">
-          <h4 className="text-sm font-semibold mb-3">How Founders Use This</h4>
-          
-          <div className="space-y-2">
-            <div className="flex items-start gap-2 text-sm">
-              <span className="text-primary font-bold">1.</span>
-              <p className="text-muted-foreground">
-                <strong className="text-foreground">See your company through VC eyes</strong> — Understand exactly how investors evaluate your case
-              </p>
-            </div>
-            <div className="flex items-start gap-2 text-sm">
-              <span className="text-primary font-bold">2.</span>
-              <p className="text-muted-foreground">
-                <strong className="text-foreground">Build a VC-grade economic model</strong> — Transform your story into the math investors need to see
-              </p>
-            </div>
-            <div className="flex items-start gap-2 text-sm">
-              <span className="text-primary font-bold">3.</span>
-              <p className="text-muted-foreground">
-                <strong className="text-foreground">Know every question before it's asked</strong> — Walk into meetings with answers already prepared
-              </p>
-            </div>
-            <div className="flex items-start gap-2 text-sm">
-              <span className="text-primary font-bold">4.</span>
-              <p className="text-muted-foreground">
-                <strong className="text-foreground">Prioritize what actually matters</strong> — 90-day roadmap based on what VCs care about
-              </p>
-            </div>
           </div>
         </div>
 
