@@ -10,6 +10,10 @@ export interface CompanyMemoData {
   market: string | null;
   team: string | null;
   vision: string | null;
+  competition: string | null;
+  financials: string | null;
+  risks: string | null;
+  askUse: string | null;
 }
 
 export function useCompanyMemoData(companyId: string | null) {
@@ -26,6 +30,10 @@ export function useCompanyMemoData(companyId: string | null) {
           market: null,
           team: null,
           vision: null,
+          competition: null,
+          financials: null,
+          risks: null,
+          askUse: null,
         };
       }
 
@@ -46,14 +54,18 @@ export function useCompanyMemoData(companyId: string | null) {
       };
 
       return {
-        summary: getAnswer(["ai_company_summary", "company_description"]),
-        problem: getAnswer(["problem_validation", "problem_core", "problem_description"]),
-        solution: getAnswer(["solution_core", "solution_description", "solution_validation"]),
-        businessModel: getAnswer(["business_model", "revenue_model", "monetization"]),
-        traction: getAnswer(["traction_revenue", "traction_milestones", "traction_validation"]),
-        market: getAnswer(["market_size", "market_tam", "market_validation"]),
-        team: getAnswer(["team_background", "team_why_us", "team_validation"]),
-        vision: getAnswer(["vision_outcome", "vision_exit", "vision_validation"]),
+        summary: getAnswer(["ai_company_summary", "company_description", "executive_summary"]),
+        problem: getAnswer(["problem_validation", "problem_core", "problem_description", "problem"]),
+        solution: getAnswer(["solution_core", "solution_description", "solution_validation", "solution"]),
+        businessModel: getAnswer(["business_model", "revenue_model", "monetization", "business_model_description"]),
+        traction: getAnswer(["traction_revenue", "traction_milestones", "traction_validation", "traction", "traction_description"]),
+        market: getAnswer(["market_size", "market_tam", "market_validation", "market", "market_description"]),
+        team: getAnswer(["team_background", "team_why_us", "team_validation", "team", "team_description"]),
+        vision: getAnswer(["vision_outcome", "vision_exit", "vision_validation", "vision", "vision_description"]),
+        competition: getAnswer(["competition", "competition_description", "competitors", "competitive_landscape"]),
+        financials: getAnswer(["financials", "financial_projections", "unit_economics", "financials_description"]),
+        risks: getAnswer(["risks", "risk_factors", "challenges", "risks_description"]),
+        askUse: getAnswer(["ask", "ask_use", "funding_ask", "use_of_funds", "ask_description"]),
       };
     },
     enabled: !!companyId,

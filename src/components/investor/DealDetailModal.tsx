@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,9 +31,16 @@ import {
   ExternalLink,
   Loader2,
   Clock,
+  Globe,
+  Swords,
+  DollarSign,
+  AlertTriangle,
+  Rocket,
+  CheckCircle,
 } from "lucide-react";
 import { DealflowItem, DealStatus, useUpdateDealStatus, useUpdateDealNotes } from "@/hooks/useDealflow";
 import { useCompanyMemoData } from "@/hooks/useCompanyMemoData";
+import { useDealShares } from "@/hooks/useDealShares";
 import { ShareDealModal } from "./ShareDealModal";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -91,6 +99,7 @@ export function DealDetailModal({
   const [notesValue, setNotesValue] = useState("");
 
   const { data: memoData, isLoading: isMemoLoading } = useCompanyMemoData(deal?.company?.id || null);
+  const { data: shares = [] } = useDealShares(deal?.company?.id || null, currentInvestorId);
   const updateStatus = useUpdateDealStatus(currentInvestorId);
   const updateNotes = useUpdateDealNotes(currentInvestorId);
 
@@ -114,6 +123,13 @@ export function DealDetailModal({
     setNotesValue(deal.notes || "");
     setIsEditingNotes(true);
   };
+
+  const hasAnyMemoData = memoData && (
+    memoData.summary || memoData.problem || memoData.solution || 
+    memoData.traction || memoData.businessModel || memoData.market ||
+    memoData.team || memoData.vision || memoData.competition ||
+    memoData.financials || memoData.risks || memoData.askUse
+  );
 
   return (
     <>
@@ -161,6 +177,42 @@ export function DealDetailModal({
                 </span>
               </div>
             )}
+
+            {/* Shared With Section */}
+            {shares.length > 0 && (
+              <div className="mt-3 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-700">
+                    You shared this deal with {shares.length} investor{shares.length > 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {shares.map((share) => (
+                    <div 
+                      key={share.id}
+                      className="flex items-center gap-2 bg-white/50 px-2 py-1 rounded-md"
+                    >
+                      <Avatar className="h-5 w-5">
+                        <AvatarFallback className="text-[10px] bg-blue-500/20 text-blue-700">
+                          {share.to_investor?.full_name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-blue-700">
+                        {share.to_investor?.full_name}
+                        <span className="text-blue-600/60 ml-1">
+                          • {formatDistanceToNow(new Date(share.created_at), { addSuffix: true })}
+                        </span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </DialogHeader>
 
           <ScrollArea className="flex-1 max-h-[50vh]">
@@ -175,7 +227,7 @@ export function DealDetailModal({
               {/* AI Summary */}
               <SectionCard
                 icon={<Sparkles className="h-4 w-4 text-primary" />}
-                title="AI Summary"
+                title="Executive Summary"
                 content={memoData?.summary}
                 isLoading={isMemoLoading}
               />
@@ -196,6 +248,14 @@ export function DealDetailModal({
                 isLoading={isMemoLoading}
               />
 
+              {/* Market */}
+              <SectionCard
+                icon={<Globe className="h-4 w-4 text-cyan-500" />}
+                title="Market Opportunity"
+                content={memoData?.market}
+                isLoading={isMemoLoading}
+              />
+
               {/* Traction */}
               <SectionCard
                 icon={<TrendingUp className="h-4 w-4 text-green-500" />}
@@ -212,6 +272,14 @@ export function DealDetailModal({
                 isLoading={isMemoLoading}
               />
 
+              {/* Competition */}
+              <SectionCard
+                icon={<Swords className="h-4 w-4 text-orange-500" />}
+                title="Competition"
+                content={memoData?.competition}
+                isLoading={isMemoLoading}
+              />
+
               {/* Team */}
               <SectionCard
                 icon={<Users className="h-4 w-4 text-purple-500" />}
@@ -220,17 +288,46 @@ export function DealDetailModal({
                 isLoading={isMemoLoading}
               />
 
+              {/* Financials */}
+              <SectionCard
+                icon={<DollarSign className="h-4 w-4 text-emerald-500" />}
+                title="Financials & Unit Economics"
+                content={memoData?.financials}
+                isLoading={isMemoLoading}
+              />
+
+              {/* Vision */}
+              <SectionCard
+                icon={<Rocket className="h-4 w-4 text-indigo-500" />}
+                title="Vision"
+                content={memoData?.vision}
+                isLoading={isMemoLoading}
+              />
+
+              {/* Ask & Use of Funds */}
+              <SectionCard
+                icon={<DollarSign className="h-4 w-4 text-pink-500" />}
+                title="The Ask & Use of Funds"
+                content={memoData?.askUse}
+                isLoading={isMemoLoading}
+              />
+
+              {/* Risks */}
+              <SectionCard
+                icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
+                title="Risks & Challenges"
+                content={memoData?.risks}
+                isLoading={isMemoLoading}
+              />
+
               {/* No Data State */}
-              {!isMemoLoading &&
-                !memoData?.summary &&
-                !memoData?.problem &&
-                !memoData?.solution && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                    <p className="font-medium">No analysis data available yet</p>
-                    <p className="text-sm">The company hasn't completed their questionnaire</p>
-                  </div>
-                )}
+              {!isMemoLoading && !hasAnyMemoData && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                  <p className="font-medium">No analysis data available yet</p>
+                  <p className="text-sm">The company hasn't completed their questionnaire</p>
+                </div>
+              )}
 
               <Separator />
 
