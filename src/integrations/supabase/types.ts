@@ -47,6 +47,216 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_availability: {
+        Row: {
+          created_at: string | null
+          day_of_week: number
+          end_time: string
+          id: string
+          investor_id: string
+          is_active: boolean | null
+          start_time: string
+          timezone: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          day_of_week: number
+          end_time: string
+          id?: string
+          investor_id: string
+          is_active?: boolean | null
+          start_time: string
+          timezone?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          investor_id?: string
+          is_active?: boolean | null
+          start_time?: string
+          timezone?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_availability_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_event_types: {
+        Row: {
+          buffer_after_minutes: number | null
+          buffer_before_minutes: number | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          duration_minutes: number
+          id: string
+          investor_id: string
+          is_active: boolean | null
+          max_bookings_per_day: number | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          buffer_after_minutes?: number | null
+          buffer_before_minutes?: number | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          investor_id: string
+          is_active?: boolean | null
+          max_bookings_per_day?: number | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          buffer_after_minutes?: number | null
+          buffer_before_minutes?: number | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          investor_id?: string
+          is_active?: boolean | null
+          max_bookings_per_day?: number | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_event_types_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_slot_overrides: {
+        Row: {
+          created_at: string | null
+          date: string
+          end_time: string | null
+          id: string
+          investor_id: string
+          is_available: boolean | null
+          reason: string | null
+          start_time: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          end_time?: string | null
+          id?: string
+          investor_id: string
+          is_available?: boolean | null
+          reason?: string | null
+          start_time?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          end_time?: string | null
+          id?: string
+          investor_id?: string
+          is_available?: boolean | null
+          reason?: string | null
+          start_time?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_slot_overrides_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          booker_company: string | null
+          booker_email: string
+          booker_name: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          created_at: string | null
+          end_time: string
+          event_type_id: string
+          google_event_id: string | null
+          id: string
+          investor_id: string
+          notes: string | null
+          start_time: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          booker_company?: string | null
+          booker_email: string
+          booker_name: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string | null
+          end_time: string
+          event_type_id: string
+          google_event_id?: string | null
+          id?: string
+          investor_id: string
+          notes?: string | null
+          start_time: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          booker_company?: string | null
+          booker_email?: string
+          booker_name?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string | null
+          end_time?: string
+          event_type_id?: string
+          google_event_id?: string | null
+          id?: string
+          investor_id?: string
+          notes?: string | null
+          start_time?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "booking_event_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_opportunities: {
         Row: {
           company_name: string | null
@@ -475,6 +685,50 @@ export type Database = {
             foreignKeyName: "global_contacts_linked_investor_id_fkey"
             columns: ["linked_investor_id"]
             isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      google_calendar_tokens: {
+        Row: {
+          access_token: string
+          calendar_id: string | null
+          connected_at: string | null
+          created_at: string | null
+          expires_at: string
+          id: string
+          investor_id: string
+          refresh_token: string
+          updated_at: string | null
+        }
+        Insert: {
+          access_token: string
+          calendar_id?: string | null
+          connected_at?: string | null
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          investor_id: string
+          refresh_token: string
+          updated_at?: string | null
+        }
+        Update: {
+          access_token?: string
+          calendar_id?: string | null
+          connected_at?: string | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          investor_id?: string
+          refresh_token?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_calendar_tokens_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: true
             referencedRelation: "investor_profiles"
             referencedColumns: ["id"]
           },

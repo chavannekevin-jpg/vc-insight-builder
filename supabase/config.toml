@@ -116,3 +116,15 @@ verify_jwt = false
 
 [functions.research-contact]
 verify_jwt = false
+
+[functions.google-calendar-auth]
+verify_jwt = false
+
+[functions.google-calendar-callback]
+verify_jwt = false
+
+[functions.calculate-available-slots]
+verify_jwt = false
+
+[functions.create-booking]
+verify_jwt = false
