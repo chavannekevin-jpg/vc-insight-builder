@@ -329,7 +329,7 @@ const PublicBookingPage = () => {
                   </div>
                 </div>
                 <p className={`text-xs leading-relaxed mb-2.5 ${theme.textSubtle}`}>
-                  Visualize your ecosystem on an interactive map. Manage contacts, track relationships, and discover opportunities.
+                  Join me on VC Brain — it's where I map my network and track opportunities.
                 </p>
                 <Button size="sm" variant="outline" onClick={handleJoinNetwork} className={`w-full gap-1.5 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${isLightTheme ? "border-stone-300 bg-white hover:bg-stone-50 text-stone-700" : "border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300"}`}>
                   Request an Invite
@@ -350,7 +350,7 @@ const PublicBookingPage = () => {
                   </div>
                 </div>
                 <p className={`text-xs leading-relaxed mb-2.5 ${theme.textSubtle}`}>
-                  Get the brutally honest feedback VCs will never tell you — before you walk into the room.
+                  Curious how I'd assess your pitch? Get the feedback I wish founders had before walking into my office.
                 </p>
                 <Button size="sm" onClick={() => navigate("/")} className={`w-full gap-1.5 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${isLightTheme ? "bg-stone-900 hover:bg-stone-800 text-white" : "bg-white hover:bg-zinc-100 text-zinc-900"}`}>
                   Analyze My Startup
@@ -496,7 +496,7 @@ const PublicBookingPage = () => {
                   </div>
                 </div>
                 <p className={`text-xs leading-relaxed mb-2.5 ${theme.textSubtle}`}>
-                  Visualize your ecosystem on an interactive map. Manage contacts, track relationships, and discover opportunities.
+                  Join me on VC Brain — it's where I map my network and track opportunities.
                 </p>
                 <Button size="sm" variant="outline" onClick={handleJoinNetwork} className={`w-full gap-1.5 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${isLightTheme ? "border-stone-300 bg-white hover:bg-stone-900 hover:border-stone-900 text-stone-700 hover:text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.3)]" : "border-zinc-700 bg-zinc-800/50 hover:bg-white hover:border-white text-zinc-300 hover:text-zinc-900 hover:shadow-[0_0_12px_rgba(255,255,255,0.4)]"}`}>
                   Request an Invite
@@ -518,7 +518,7 @@ const PublicBookingPage = () => {
                   </div>
                 </div>
                 <p className={`text-xs leading-relaxed mb-2.5 ${theme.textSubtle}`}>
-                  Get the brutally honest feedback VCs will never tell you — before you walk into the room.
+                  Curious how I'd assess your pitch? Get the feedback I wish founders had before walking into my office.
                 </p>
                 <Button size="sm" variant="outline" onClick={() => navigate("/")} className={`w-full gap-1.5 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${isLightTheme ? "border-stone-300 bg-white hover:bg-stone-900 hover:border-stone-900 text-stone-700 hover:text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.3)]" : "border-zinc-700 bg-zinc-800/50 hover:bg-white hover:border-white text-zinc-300 hover:text-zinc-900 hover:shadow-[0_0_12px_rgba(255,255,255,0.4)]"}`}>
                   Analyze My Startup
