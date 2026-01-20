@@ -1,4 +1,4 @@
-import { Building2, Users, Globe } from "lucide-react";
+import { Building2, Users, TrendingUp } from "lucide-react";
 
 export const InvestorNetworkBanner = () => {
   return (
@@ -42,7 +42,7 @@ export const InvestorNetworkBanner = () => {
             
             <div className="text-center p-4 rounded-xl bg-card/50 border border-border/50 backdrop-blur-sm">
               <div className="w-10 h-10 mx-auto mb-2 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Globe className="w-5 h-5 text-primary" />
+                <TrendingUp className="w-5 h-5 text-primary" />
               </div>
               <div 
                 className="text-2xl md:text-3xl font-bold text-primary"
@@ -50,9 +50,9 @@ export const InvestorNetworkBanner = () => {
                   textShadow: '0 0 10px hsl(var(--primary) / 0.4)'
                 }}
               >
-                Europe
+                Pre-Seed to A
               </div>
-              <div className="text-xs md:text-sm text-muted-foreground">Focus Region</div>
+              <div className="text-xs md:text-sm text-muted-foreground">Stage Coverage</div>
             </div>
           </div>
           
