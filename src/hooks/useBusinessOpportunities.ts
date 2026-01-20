@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export type OpportunityStatus = "lead" | "contacted" | "negotiating" | "won" | "lost";
+export type CurrencyCode = "USD" | "EUR" | "CHF";
 
 export interface BusinessOpportunity {
   id: string;
@@ -13,6 +14,7 @@ export interface BusinessOpportunity {
   contact_name: string | null;
   contact_email: string | null;
   value_estimate: number | null;
+  currency: CurrencyCode;
   status: OpportunityStatus;
   notes: string | null;
   created_at: string;
