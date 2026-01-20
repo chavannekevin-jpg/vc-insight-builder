@@ -352,7 +352,7 @@ const PublicBookingPage = () => {
                 <p className={`text-xs leading-relaxed mb-2.5 ${theme.textSubtle}`}>
                   Curious how I'd assess your pitch? Get the feedback I wish founders had before walking into my office.
                 </p>
-                <Button size="sm" onClick={() => navigate("/")} className={`w-full gap-1.5 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${isLightTheme ? "bg-stone-900 hover:bg-stone-800 text-white" : "bg-white hover:bg-zinc-100 text-zinc-900"}`}>
+                <Button size="sm" variant="outline" onClick={() => navigate("/")} className={`w-full gap-1.5 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${isLightTheme ? "border-stone-300 bg-white hover:bg-stone-50 text-stone-700" : "border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300"}`}>
                   Analyze My Startup
                   <ChevronRight className="h-3 w-3" />
                 </Button>
