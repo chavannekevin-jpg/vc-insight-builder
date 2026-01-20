@@ -122,6 +122,7 @@ const AcceleratorLanding = lazy(() => import("./pages/AcceleratorLanding"));
 const FundDiscovery = lazy(() => import("./pages/FundDiscovery"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const InvitedStartupLanding = lazy(() => import("./pages/InvitedStartupLanding"));
 
 // Investor Pages
 const InvestorLanding = lazy(() => import("./pages/investor/InvestorLanding"));
@@ -167,6 +168,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/portal" element={<Portal />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/invite" element={<InvitedStartupLanding />} />
             <Route path="/intake" element={<Intake />} />
             <Route path="/hub" element={<HooksErrorBoundary><FreemiumHub /></HooksErrorBoundary>} />
             <Route path="/roast-your-baby" element={<RoastYourBaby />} />

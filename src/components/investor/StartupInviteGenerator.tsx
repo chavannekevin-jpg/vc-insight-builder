@@ -110,7 +110,7 @@ const StartupInviteGenerator = ({ userId }: StartupInviteGeneratorProps) => {
   };
 
   const copyInviteLink = (code: string) => {
-    const link = `${window.location.origin}/auth?startup_invite=${code}`;
+    const link = `${window.location.origin}/invite?code=${code}`;
     navigator.clipboard.writeText(link);
     toast({
       title: "Invite link copied!",
