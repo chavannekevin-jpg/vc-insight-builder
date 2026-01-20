@@ -120,6 +120,8 @@ const RoastYourBaby = lazy(() => import("./pages/RoastYourBaby"));
 const DilutionLab = lazy(() => import("./pages/DilutionLab"));
 const AcceleratorLanding = lazy(() => import("./pages/AcceleratorLanding"));
 const FundDiscovery = lazy(() => import("./pages/FundDiscovery"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 
 // Investor Pages
 const InvestorLanding = lazy(() => import("./pages/investor/InvestorLanding"));
@@ -299,6 +301,8 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/product" element={<Product />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/sample-analysis" element={<SampleMemo />} />
             <Route path="/sample-analysis/section" element={<SampleMemoSectionView />} />
