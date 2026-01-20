@@ -46,16 +46,16 @@ export const HeroSection = () => {
           {/* Three-tier value prop */}
           <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto pt-4">
             <div className="p-4 rounded-lg bg-muted/50 border border-border/50 backdrop-blur-sm">
-              <div className="text-2xl font-bold text-primary mb-1">Free Hub</div>
-              <div className="text-sm text-muted-foreground">Guides, resources & frameworks</div>
-            </div>
-            <div className="p-4 rounded-lg bg-muted/50 border border-border/50 backdrop-blur-sm">
-              <div className="text-2xl font-bold text-primary mb-1">Methodology</div>
-              <div className="text-sm text-muted-foreground">My proven investment framework</div>
-            </div>
-            <div className="p-4 rounded-lg bg-muted/50 border border-border/50 backdrop-blur-sm">
               <div className="text-2xl font-bold text-primary mb-1">VC Analysis</div>
-              <div className="text-sm text-muted-foreground">Tailor made to your business</div>
+              <div className="text-sm text-muted-foreground">38 tools tailor-made to your business</div>
+            </div>
+            <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-muted/50 border border-primary/30 backdrop-blur-sm shadow-[0_0_15px_rgba(236,72,153,0.1)]">
+              <div className="text-2xl font-bold text-primary mb-1">800+ Investors</div>
+              <div className="text-sm text-muted-foreground">AI-matched to your profile</div>
+            </div>
+            <div className="p-4 rounded-lg bg-muted/50 border border-border/50 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-primary mb-1">VC Brain</div>
+              <div className="text-sm text-muted-foreground">60+ tactical guides</div>
             </div>
           </div>
 

@@ -106,9 +106,9 @@ export const FundDiscoveryPremiumModal = memo(({
                 <Users className="w-4 h-4 text-blue-500" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">Growing Network</p>
+                <p className="text-sm font-medium text-foreground">800+ Investor Network</p>
                 <p className="text-xs text-muted-foreground">
-                  Access to 100+ European VCs, angels & family offices
+                  Access to 800+ curated European VCs, angels & family offices
                 </p>
               </div>
             </div>

@@ -66,11 +66,19 @@ export const WHATS_INCLUDED_DATA: WhatsIncludedCategory[] = [
     ]
   },
   {
+    title: "Investor Network Access",
+    key: "network",
+    items: [
+      { name: "800+ curated European investors", tip: "Access our database of 800+ VCs, angels, and family offices actively investing in European startups — curated with verified thesis and ticket sizes." },
+      { name: "AI-powered matching by stage & sector", tip: "Our algorithm scores each investor based on your stage, sector, traction, and geography — surface the best-fit investors instantly." },
+      { name: "Fund profiles with ticket sizes & thesis", tip: "Detailed profiles for each fund including check sizes, portfolio companies, investment thesis, and partner preferences." },
+      { name: "Personalized cold email generator", tip: "AI-generated personalized outreach emails based on each investor's thesis, portfolio, and public statements." },
+    ]
+  },
+  {
     title: "Bonus Access",
     key: "bonus",
     items: [
-      { name: "VC Network: 300+ matching investors", tip: "Filter our database of 300+ VCs and angels by stage, sector, geography, and check size — find investors who actually fund companies like yours." },
-      { name: "Investor cold email generator", tip: "AI-generated personalized outreach emails based on each investor's thesis, portfolio, and public statements." },
       { name: "\"Roast Your Baby\" VC Q&A simulation", tip: "Practice answering tough VC questions in a safe environment. Get scored on your responses and improve before real meetings." },
       { name: "60+ VC Brain tactical guides", tip: "Deep-dive guides on everything from term sheets to negotiation tactics to what VCs discuss in partner meetings." },
     ]
