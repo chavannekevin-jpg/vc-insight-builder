@@ -15,7 +15,7 @@ const TermsOfService = () => {
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-foreground mb-4">1. Acceptance of Terms</h2>
             <p className="text-muted-foreground">
-              By accessing or using UglyBaby (the "Platform"), operated by Kevin Chavanne, you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Platform. We reserve the right to modify these Terms at any time, and your continued use constitutes acceptance of any changes.
+              By accessing or using UglyBaby (the "Platform"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Platform. We reserve the right to modify these Terms at any time, and your continued use constitutes acceptance of any changes.
             </p>
           </section>
 
@@ -91,7 +91,25 @@ const TermsOfService = () => {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">6. Payment Terms</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-4">6. Data Privacy & Sharing</h2>
+            
+            <div className="bg-muted/30 border border-border rounded-lg p-4 mb-4">
+              <h3 className="text-lg font-medium text-foreground mb-3">Startup Data</h3>
+              <p className="text-muted-foreground">
+                Your startup data, pitch decks, and generated memos are private by default. We do not share your company information with other users or third parties unless you explicitly choose to share your profile through our platform's opt-in sharing features. See our Privacy Policy for full details.
+              </p>
+            </div>
+
+            <div className="bg-muted/30 border border-border rounded-lg p-4">
+              <h3 className="text-lg font-medium text-foreground mb-3">Investor Contacts</h3>
+              <p className="text-muted-foreground">
+                Contacts you add to your investor dashboard remain private to your account. Other users cannot see your personal contact list. Only fund-level information you choose to make public will be visible on the UglyBaby network.
+              </p>
+            </div>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold text-foreground mb-4">7. Payment Terms</h2>
             
             <h3 className="text-lg font-medium text-foreground mb-3">Pricing</h3>
             <p className="text-muted-foreground mb-4">
@@ -105,12 +123,12 @@ const TermsOfService = () => {
 
             <h3 className="text-lg font-medium text-foreground mb-3">Refunds</h3>
             <p className="text-muted-foreground">
-              Due to the digital nature of our services, refunds are generally not provided once a memo has been generated. If you experience technical issues preventing service delivery, contact us at kevin@uglybaby.co for assistance. Refund requests are considered on a case-by-case basis.
+              Due to the digital nature of our services, refunds are generally not provided once a memo has been generated. If you experience technical issues preventing service delivery, contact us at kev@vc-brain.com for assistance. Refund requests are considered on a case-by-case basis.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">7. Third-Party Services</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-4">8. Third-Party Services</h2>
             <p className="text-muted-foreground mb-4">
               The Platform integrates with third-party services including:
             </p>
@@ -124,7 +142,7 @@ const TermsOfService = () => {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">8. Disclaimers</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-4">9. Disclaimers</h2>
             
             <div className="bg-muted/30 border border-border rounded-lg p-4 mb-4">
               <h3 className="text-lg font-medium text-foreground mb-3">Not Investment Advice</h3>
@@ -145,7 +163,7 @@ const TermsOfService = () => {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">9. Limitation of Liability</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-4">10. Limitation of Liability</h2>
             <p className="text-muted-foreground mb-4">
               TO THE MAXIMUM EXTENT PERMITTED BY LAW:
             </p>
@@ -158,14 +176,14 @@ const TermsOfService = () => {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">10. Indemnification</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-4">11. Indemnification</h2>
             <p className="text-muted-foreground">
               You agree to indemnify and hold harmless UglyBaby, its operators, and affiliates from any claims, damages, losses, or expenses arising from your use of the Platform, your content, or your violation of these Terms.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">11. Termination</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-4">12. Termination</h2>
             <p className="text-muted-foreground mb-4">
               We may terminate or suspend your account at our discretion, including for:
             </p>
@@ -181,7 +199,7 @@ const TermsOfService = () => {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">12. Governing Law & Disputes</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-4">13. Governing Law & Disputes</h2>
             <p className="text-muted-foreground mb-4">
               These Terms are governed by the laws of the European Union and applicable member state laws. Any disputes shall be resolved through good-faith negotiation first. If negotiation fails, disputes may be submitted to the competent courts.
             </p>
@@ -191,7 +209,7 @@ const TermsOfService = () => {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">13. Miscellaneous</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-4">14. Miscellaneous</h2>
             <ul className="list-disc pl-6 text-muted-foreground">
               <li><strong>Entire Agreement:</strong> These Terms, together with our Privacy Policy, constitute the entire agreement between you and UglyBaby</li>
               <li><strong>Severability:</strong> If any provision is found unenforceable, the remaining provisions remain in effect</li>
@@ -201,13 +219,13 @@ const TermsOfService = () => {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">14. Contact Us</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-4">15. Contact Us</h2>
             <p className="text-muted-foreground mb-4">
               Questions about these Terms? Contact us:
             </p>
             <ul className="list-none text-muted-foreground">
-              <li><strong>Email:</strong> kevin@uglybaby.co</li>
-              <li><strong>Website:</strong> uglybaby.co</li>
+              <li><strong>Email:</strong> kev@vc-brain.com</li>
+              <li><strong>Website:</strong> vc-brain.com</li>
             </ul>
           </section>
         </ModernCard>
