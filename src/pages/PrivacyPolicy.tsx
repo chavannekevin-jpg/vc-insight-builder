@@ -15,7 +15,7 @@ const PrivacyPolicy = () => {
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-foreground mb-4">1. Introduction</h2>
             <p className="text-muted-foreground mb-4">
-              UglyBaby ("we", "our", or "us") is operated by Kevin Chavanne. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform at uglybaby.co and vc-insight-builder.lovable.app.
+              UglyBaby ("we", "our", or "us") operates the platform at vc-brain.com and vc-insight-builder.lovable.app. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
             </p>
             <p className="text-muted-foreground">
               We are committed to protecting your privacy and being transparent about our data practices. By using UglyBaby, you agree to the collection and use of information in accordance with this policy.
@@ -116,12 +116,32 @@ const PrivacyPolicy = () => {
             <p className="text-muted-foreground mb-4">
               We do NOT sell your personal data. We may share information only in these cases:
             </p>
-            <ul className="list-disc pl-6 text-muted-foreground">
+            <ul className="list-disc pl-6 text-muted-foreground mb-4">
               <li><strong>Service Providers:</strong> Trusted third parties that help us operate (Stripe for payments, email providers for notifications)</li>
               <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
               <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li>
-              <li><strong>With Your Consent:</strong> When you explicitly agree to share data (e.g., sharing your startup profile with investors)</li>
+              <li><strong>With Your Consent:</strong> When you explicitly agree to share data (e.g., sharing your startup profile with investors on the platform)</li>
             </ul>
+
+            <div className="bg-muted/30 border border-border rounded-lg p-4 mb-4">
+              <h3 className="text-lg font-medium text-foreground mb-3">Startup Data Protection</h3>
+              <p className="text-muted-foreground mb-2">
+                <strong>Your startup data, pitch decks, and analysis are private by default.</strong> We do not share your company information, memos, or any analysis with other users or third parties unless you explicitly opt-in to share your profile through our platform's sharing features.
+              </p>
+              <p className="text-muted-foreground">
+                Any future sharing options (e.g., showcasing your startup to investors on the UglyBaby network) will require your explicit consent and can be revoked at any time.
+              </p>
+            </div>
+
+            <div className="bg-muted/30 border border-border rounded-lg p-4">
+              <h3 className="text-lg font-medium text-foreground mb-3">Investor Contact Privacy</h3>
+              <p className="text-muted-foreground mb-2">
+                <strong>Your personal contacts are never shared with other users.</strong> When you add contacts to your investor dashboard, they remain completely private to your account. Other investors and startups cannot see your personal contact list.
+              </p>
+              <p className="text-muted-foreground">
+                Only fund-level information (e.g., fund names, investment thesis) may be visible on the UglyBaby network to help startups find relevant investors. You control how and whether your fund profile appears on the network. Any future contact sharing features will be fully opt-in and require your explicit consent.
+              </p>
+            </div>
           </section>
 
           <section className="mb-8">
@@ -161,7 +181,7 @@ const PrivacyPolicy = () => {
               <li><strong>Object:</strong> Object to certain data processing activities</li>
             </ul>
             <p className="text-muted-foreground mt-4">
-              To exercise these rights, contact us at kevin@uglybaby.co.
+              To exercise these rights, contact us at kev@vc-brain.com.
             </p>
           </section>
 
@@ -185,8 +205,8 @@ const PrivacyPolicy = () => {
               If you have questions about this Privacy Policy or our data practices, contact us:
             </p>
             <ul className="list-none text-muted-foreground">
-              <li><strong>Email:</strong> kevin@uglybaby.co</li>
-              <li><strong>Website:</strong> uglybaby.co</li>
+              <li><strong>Email:</strong> kev@vc-brain.com</li>
+              <li><strong>Website:</strong> vc-brain.com</li>
             </ul>
           </section>
         </ModernCard>
