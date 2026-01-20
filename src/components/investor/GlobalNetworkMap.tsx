@@ -121,7 +121,54 @@ const GlobalNetworkMap = memo(({
   };
 
   return (
-    <div ref={mapContainerRef} className="w-full h-full min-h-[500px] bg-background relative">
+    <div ref={mapContainerRef} className="w-full h-full min-h-[500px] bg-background relative overflow-hidden">
+      {/* Static Controls Layer - Always visible above map */}
+      <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none">
+        <div className="flex justify-between items-start p-4">
+          {/* Legend with Region Selector */}
+          <div className="bg-card/90 backdrop-blur-sm border border-border rounded-lg p-3 pointer-events-auto">
+            <div className="mb-2">
+              <RegionSelector 
+                selectedRegion={selectedRegion} 
+                onRegionChange={onRegionChange}
+                className="!bg-transparent !border-0 !p-0 hover:!bg-transparent"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-xs">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.active_user }} />
+                <span>Active Investors</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.global_contact }} />
+                <span>Community Added</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.my_contact }} />
+                <span>My Contacts</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Zoom Controls */}
+          <div className="flex flex-col gap-1 pointer-events-auto">
+            <button
+              onClick={() => setPosition((prev) => ({ ...prev, zoom: Math.min(prev.zoom * 1.5, 8) }))}
+              className="w-8 h-8 bg-card border border-border rounded flex items-center justify-center hover:bg-muted transition-colors"
+            >
+              +
+            </button>
+            <button
+              onClick={() => setPosition((prev) => ({ ...prev, zoom: Math.max(prev.zoom / 1.5, 0.5) }))}
+              className="w-8 h-8 bg-card border border-border rounded flex items-center justify-center hover:bg-muted transition-colors"
+            >
+              −
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Map Layer */}
       <ComposableMap
         projection="geoMercator"
         projectionConfig={{
@@ -238,47 +285,6 @@ const GlobalNetworkMap = memo(({
           </div>
         </div>
       )}
-
-      {/* Legend with Region Selector */}
-      <div className="absolute top-4 left-4 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-3 z-10">
-        <div className="mb-2">
-          <RegionSelector 
-            selectedRegion={selectedRegion} 
-            onRegionChange={onRegionChange}
-            className="!bg-transparent !border-0 !p-0 hover:!bg-transparent"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.active_user }} />
-            <span>Active Investors</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.global_contact }} />
-            <span>Community Added</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.my_contact }} />
-            <span>My Contacts</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Zoom Controls */}
-      <div className="absolute top-4 right-4 flex flex-col gap-1 z-10">
-        <button
-          onClick={() => setPosition((prev) => ({ ...prev, zoom: Math.min(prev.zoom * 1.5, 8) }))}
-          className="w-8 h-8 bg-card border border-border rounded flex items-center justify-center hover:bg-muted transition-colors"
-        >
-          +
-        </button>
-        <button
-          onClick={() => setPosition((prev) => ({ ...prev, zoom: Math.max(prev.zoom / 1.5, 0.5) }))}
-          className="w-8 h-8 bg-card border border-border rounded flex items-center justify-center hover:bg-muted transition-colors"
-        >
-          −
-        </button>
-      </div>
 
       {/* Empty State */}
       {filteredCityGroups.length === 0 && (

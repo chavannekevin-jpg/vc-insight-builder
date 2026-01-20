@@ -117,7 +117,37 @@ const InvestorWorldMap = memo(({
   };
 
   return (
-    <div ref={mapContainerRef} className="w-full h-full min-h-[500px] bg-background relative">
+    <div ref={mapContainerRef} className="w-full h-full min-h-[500px] bg-background relative overflow-hidden">
+      {/* Static Controls Layer - Always visible above map */}
+      <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none">
+        <div className="flex justify-between items-start p-4">
+          {/* Region Selector */}
+          <div className="pointer-events-auto">
+            <RegionSelector 
+              selectedRegion={selectedRegion} 
+              onRegionChange={onRegionChange} 
+            />
+          </div>
+
+          {/* Zoom Controls */}
+          <div className="flex flex-col gap-1 pointer-events-auto">
+            <button
+              onClick={() => setPosition((prev) => ({ ...prev, zoom: Math.min(prev.zoom * 1.5, 8) }))}
+              className="w-8 h-8 bg-card border border-border rounded flex items-center justify-center hover:bg-muted transition-colors"
+            >
+              +
+            </button>
+            <button
+              onClick={() => setPosition((prev) => ({ ...prev, zoom: Math.max(prev.zoom / 1.5, 0.5) }))}
+              className="w-8 h-8 bg-card border border-border rounded flex items-center justify-center hover:bg-muted transition-colors"
+            >
+              −
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Map Layer */}
       <ComposableMap
         projection="geoMercator"
         projectionConfig={{
@@ -239,30 +269,6 @@ const InvestorWorldMap = memo(({
           </div>
         </div>
       )}
-
-      {/* Zoom Controls */}
-      <div className="absolute top-4 right-4 flex flex-col gap-1 z-10">
-        <button
-          onClick={() => setPosition((prev) => ({ ...prev, zoom: Math.min(prev.zoom * 1.5, 8) }))}
-          className="w-8 h-8 bg-card border border-border rounded flex items-center justify-center hover:bg-muted transition-colors"
-        >
-          +
-        </button>
-        <button
-          onClick={() => setPosition((prev) => ({ ...prev, zoom: Math.max(prev.zoom / 1.5, 0.5) }))}
-          className="w-8 h-8 bg-card border border-border rounded flex items-center justify-center hover:bg-muted transition-colors"
-        >
-          −
-        </button>
-      </div>
-
-      {/* Region Selector */}
-      <div className="absolute top-4 left-4 z-10">
-        <RegionSelector 
-          selectedRegion={selectedRegion} 
-          onRegionChange={onRegionChange} 
-        />
-      </div>
 
       {/* Empty State */}
       {filteredCityGroups.length === 0 && (
