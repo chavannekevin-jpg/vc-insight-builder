@@ -25,15 +25,15 @@ export default function Auth() {
   const selectedPrice = searchParams.get('price');
   const startupInviteCode = searchParams.get('startup_invite');
   
-  // Validate startup invite code
-  const { inviteInfo, isLoading: isValidatingInvite } = useStartupReferral(startupInviteCode);
-
-  // Store invite code in sessionStorage for use in Intake
+  // Redirect to dedicated invite page if startup_invite param is present
   useEffect(() => {
-    if (startupInviteCode && inviteInfo?.isValid) {
-      sessionStorage.setItem('startup_invite_code', startupInviteCode);
+    if (startupInviteCode) {
+      navigate(`/invite?code=${startupInviteCode}`, { replace: true });
     }
-  }, [startupInviteCode, inviteInfo]);
+  }, [startupInviteCode, navigate]);
+  
+  // Validate startup invite code (kept for backwards compatibility)
+  const { inviteInfo, isLoading: isValidatingInvite } = useStartupReferral(startupInviteCode);
 
   useEffect(() => {
     // Check for existing session once on mount
