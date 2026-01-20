@@ -260,26 +260,8 @@ export default function InvitedStartupLanding() {
       <div className="container mx-auto px-4 py-8 lg:py-16 relative z-10">
         {/* Top invitation banner */}
         <div className="text-center mb-8 lg:mb-12 animate-fade-in">
-          {/* Calculate total discount: base platform discount (50%) + referral discount */}
-          {(() => {
-            const baseDiscount = 50; // Platform early access discount
-            const referralDiscount = inviteInfo.discountPercent || 0;
-            const totalDiscount = Math.min(baseDiscount + referralDiscount, 90); // Cap at 90%
-            return (
-              <div 
-                className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-green-500/10 border border-green-500/30 backdrop-blur-xl mb-6"
-                style={{ boxShadow: '0 0 30px hsl(142 76% 36% / 0.2)' }}
-              >
-                <Gift className="w-5 h-5 text-green-500" />
-                <span className="text-base font-semibold text-green-500">
-                  {totalDiscount}% OFF
-                </span>
-              </div>
-            );
-          })()}
-          
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-            <span className="text-foreground">You've Been Selected to Join </span>
+            <span className="text-foreground">You've Been Invited to Join </span>
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">UglyBaby</span>
           </h1>
           
