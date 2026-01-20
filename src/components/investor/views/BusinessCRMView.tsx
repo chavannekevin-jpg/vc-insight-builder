@@ -3,6 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +40,11 @@ import {
   Building2,
   User,
   Mail,
-  DollarSign,
+  TrendingUp,
+  BarChart3,
+  PieChart,
+  List,
+  LayoutGrid,
 } from "lucide-react";
 import {
   useBusinessOpportunities,
@@ -40,6 +53,7 @@ import {
   useDeleteOpportunity,
   BusinessOpportunity,
   OpportunityStatus,
+  CurrencyCode,
 } from "@/hooks/useBusinessOpportunities";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -52,6 +66,14 @@ const STATUS_CONFIG: Record<OpportunityStatus, { label: string; icon: any; color
   lost: { label: "Lost", icon: XCircle, color: "text-muted-foreground bg-muted" },
 };
 
+const CURRENCY_CONFIG: Record<CurrencyCode, { symbol: string; locale: string }> = {
+  USD: { symbol: "$", locale: "en-US" },
+  EUR: { symbol: "€", locale: "de-DE" },
+  CHF: { symbol: "CHF", locale: "de-CH" },
+};
+
+type ViewMode = "kanban" | "list" | "analytics";
+
 interface BusinessCRMViewProps {
   userId?: string | null;
 }
@@ -60,6 +82,8 @@ const BusinessCRMView = ({ userId }: BusinessCRMViewProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingOpportunity, setEditingOpportunity] = useState<BusinessOpportunity | null>(null);
+  const [advancedMode, setAdvancedMode] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("kanban");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -67,6 +91,7 @@ const BusinessCRMView = ({ userId }: BusinessCRMViewProps) => {
     contact_name: "",
     contact_email: "",
     value_estimate: "",
+    currency: "USD" as CurrencyCode,
     status: "lead" as OpportunityStatus,
     notes: "",
   });
@@ -96,6 +121,19 @@ const BusinessCRMView = ({ userId }: BusinessCRMViewProps) => {
     [filteredOpportunities]
   );
 
+  // Analytics calculations
+  const analytics = useMemo(() => {
+    const totalValue = opportunities.reduce((sum, opp) => sum + (opp.value_estimate || 0), 0);
+    const wonValue = opportunities.filter(o => o.status === "won").reduce((sum, opp) => sum + (opp.value_estimate || 0), 0);
+    const lostValue = opportunities.filter(o => o.status === "lost").reduce((sum, opp) => sum + (opp.value_estimate || 0), 0);
+    const pipelineValue = opportunities.filter(o => !["won", "lost"].includes(o.status)).reduce((sum, opp) => sum + (opp.value_estimate || 0), 0);
+    const winRate = opportunities.filter(o => ["won", "lost"].includes(o.status)).length > 0
+      ? (opportunities.filter(o => o.status === "won").length / opportunities.filter(o => ["won", "lost"].includes(o.status)).length) * 100
+      : 0;
+    
+    return { totalValue, wonValue, lostValue, pipelineValue, winRate };
+  }, [opportunities]);
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -104,6 +142,7 @@ const BusinessCRMView = ({ userId }: BusinessCRMViewProps) => {
       contact_name: "",
       contact_email: "",
       value_estimate: "",
+      currency: "USD",
       status: "lead",
       notes: "",
     });
@@ -123,6 +162,7 @@ const BusinessCRMView = ({ userId }: BusinessCRMViewProps) => {
       contact_name: opp.contact_name || "",
       contact_email: opp.contact_email || "",
       value_estimate: opp.value_estimate?.toString() || "",
+      currency: opp.currency || "USD",
       status: opp.status,
       notes: opp.notes || "",
     });
@@ -140,6 +180,7 @@ const BusinessCRMView = ({ userId }: BusinessCRMViewProps) => {
       contact_name: formData.contact_name.trim() || null,
       contact_email: formData.contact_email.trim() || null,
       value_estimate: formData.value_estimate ? parseFloat(formData.value_estimate) : null,
+      currency: formData.currency,
       status: formData.status,
       notes: formData.notes.trim() || null,
     };
@@ -162,13 +203,23 @@ const BusinessCRMView = ({ userId }: BusinessCRMViewProps) => {
     deleteOpportunity.mutate(id);
   };
 
-  const formatValue = (value: number | null) => {
+  const formatValue = (value: number | null, currency: CurrencyCode = "USD") => {
     if (!value) return null;
-    return new Intl.NumberFormat("en-US", {
+    const config = CURRENCY_CONFIG[currency];
+    return new Intl.NumberFormat(config.locale, {
       style: "currency",
-      currency: "USD",
+      currency: currency,
       notation: "compact",
       maximumFractionDigits: 1,
+    }).format(value);
+  };
+
+  const formatFullValue = (value: number, currency: CurrencyCode = "USD") => {
+    const config = CURRENCY_CONFIG[currency];
+    return new Intl.NumberFormat(config.locale, {
+      style: "currency",
+      currency: currency,
+      maximumFractionDigits: 0,
     }).format(value);
   };
 
@@ -180,16 +231,315 @@ const BusinessCRMView = ({ userId }: BusinessCRMViewProps) => {
     );
   }
 
+  const renderKanbanView = () => (
+    <div className="flex gap-4 min-w-max h-full">
+      {(["lead", "contacted", "negotiating", "won", "lost"] as const).map((status) => {
+        const config = STATUS_CONFIG[status];
+        const Icon = config.icon;
+
+        return (
+          <div key={status} className="w-64 bg-muted/30 rounded-lg flex flex-col min-h-[400px]">
+            <div className="p-3 border-b border-border/50 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Icon className={`w-4 h-4 ${config.color.split(" ")[0]}`} />
+                <span className="font-medium text-sm">{config.label}</span>
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {groupedOpportunities[status].length}
+              </span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-2 space-y-2">
+              {groupedOpportunities[status].map((opp) => (
+                <div
+                  key={opp.id}
+                  onClick={() => handleOpenEdit(opp)}
+                  className="bg-card border border-border rounded-lg p-3 cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <p className="font-medium text-sm line-clamp-1">{opp.name}</p>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
+                          <MoreVertical className="h-3 w-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                        {(["lead", "contacted", "negotiating", "won", "lost"] as const)
+                          .filter((s) => s !== status)
+                          .map((newStatus) => {
+                            const cfg = STATUS_CONFIG[newStatus];
+                            const StatusIcon = cfg.icon;
+                            return (
+                              <DropdownMenuItem
+                                key={newStatus}
+                                onClick={() => handleStatusChange(opp.id, newStatus)}
+                              >
+                                <StatusIcon className={`w-4 h-4 mr-2 ${cfg.color.split(" ")[0]}`} />
+                                Move to {cfg.label}
+                              </DropdownMenuItem>
+                            );
+                          })}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleDelete(opp.id)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  {opp.company_name && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                      <Building2 className="w-3 h-3" />
+                      {opp.company_name}
+                    </div>
+                  )}
+
+                  {opp.description && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">{opp.description}</p>
+                  )}
+
+                  <div className="flex items-center justify-between mt-2">
+                    {opp.value_estimate && (
+                      <Badge variant="secondary" className="text-xs">
+                        {formatValue(opp.value_estimate, opp.currency)}
+                      </Badge>
+                    )}
+                    <span className="text-[10px] text-muted-foreground ml-auto">
+                      {formatDistanceToNow(new Date(opp.created_at), { addSuffix: true })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const renderListView = () => (
+    <div className="space-y-2">
+      <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-4 py-2 text-xs font-medium text-muted-foreground border-b border-border">
+        <span>Opportunity</span>
+        <span>Company</span>
+        <span>Status</span>
+        <span>Value</span>
+        <span>Created</span>
+        <span></span>
+      </div>
+      {filteredOpportunities.map((opp) => {
+        const config = STATUS_CONFIG[opp.status];
+        const Icon = config.icon;
+        return (
+          <div
+            key={opp.id}
+            onClick={() => handleOpenEdit(opp)}
+            className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 bg-card border border-border rounded-lg cursor-pointer hover:border-primary/50 transition-all items-center"
+          >
+            <div>
+              <p className="font-medium text-sm">{opp.name}</p>
+              {opp.contact_name && (
+                <p className="text-xs text-muted-foreground">{opp.contact_name}</p>
+              )}
+            </div>
+            <span className="text-sm text-muted-foreground">{opp.company_name || "-"}</span>
+            <Badge className={cn("text-xs w-fit", config.color)}>
+              <Icon className="w-3 h-3 mr-1" />
+              {config.label}
+            </Badge>
+            <span className="text-sm font-medium">
+              {opp.value_estimate ? formatValue(opp.value_estimate, opp.currency) : "-"}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {formatDistanceToNow(new Date(opp.created_at), { addSuffix: true })}
+            </span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                {(["lead", "contacted", "negotiating", "won", "lost"] as const)
+                  .filter((s) => s !== opp.status)
+                  .map((newStatus) => {
+                    const cfg = STATUS_CONFIG[newStatus];
+                    const StatusIcon = cfg.icon;
+                    return (
+                      <DropdownMenuItem
+                        key={newStatus}
+                        onClick={() => handleStatusChange(opp.id, newStatus)}
+                      >
+                        <StatusIcon className={`w-4 h-4 mr-2 ${cfg.color.split(" ")[0]}`} />
+                        Move to {cfg.label}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => handleDelete(opp.id)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const renderAnalyticsView = () => (
+    <div className="space-y-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-card border border-border rounded-lg p-4">
+          <div className="flex items-center gap-2 text-muted-foreground mb-2">
+            <TrendingUp className="w-4 h-4" />
+            <span className="text-xs font-medium">Pipeline Value</span>
+          </div>
+          <p className="text-2xl font-bold">{formatFullValue(analytics.pipelineValue)}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {opportunities.filter(o => !["won", "lost"].includes(o.status)).length} active deals
+          </p>
+        </div>
+        
+        <div className="bg-card border border-border rounded-lg p-4">
+          <div className="flex items-center gap-2 text-green-500 mb-2">
+            <Trophy className="w-4 h-4" />
+            <span className="text-xs font-medium">Won</span>
+          </div>
+          <p className="text-2xl font-bold text-green-500">{formatFullValue(analytics.wonValue)}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {opportunities.filter(o => o.status === "won").length} deals closed
+          </p>
+        </div>
+        
+        <div className="bg-card border border-border rounded-lg p-4">
+          <div className="flex items-center gap-2 text-destructive mb-2">
+            <XCircle className="w-4 h-4" />
+            <span className="text-xs font-medium">Lost</span>
+          </div>
+          <p className="text-2xl font-bold text-destructive">{formatFullValue(analytics.lostValue)}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {opportunities.filter(o => o.status === "lost").length} deals lost
+          </p>
+        </div>
+        
+        <div className="bg-card border border-border rounded-lg p-4">
+          <div className="flex items-center gap-2 text-primary mb-2">
+            <BarChart3 className="w-4 h-4" />
+            <span className="text-xs font-medium">Win Rate</span>
+          </div>
+          <p className="text-2xl font-bold text-primary">{analytics.winRate.toFixed(0)}%</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            of closed deals
+          </p>
+        </div>
+      </div>
+
+      {/* Stage Breakdown */}
+      <div className="bg-card border border-border rounded-lg p-4">
+        <h3 className="font-semibold mb-4">Pipeline by Stage</h3>
+        <div className="space-y-3">
+          {(["lead", "contacted", "negotiating", "won", "lost"] as const).map((status) => {
+            const config = STATUS_CONFIG[status];
+            const Icon = config.icon;
+            const count = groupedOpportunities[status].length;
+            const value = groupedOpportunities[status].reduce((sum, o) => sum + (o.value_estimate || 0), 0);
+            const percentage = opportunities.length > 0 ? (count / opportunities.length) * 100 : 0;
+
+            return (
+              <div key={status} className="flex items-center gap-4">
+                <div className="flex items-center gap-2 w-28">
+                  <Icon className={`w-4 h-4 ${config.color.split(" ")[0]}`} />
+                  <span className="text-sm font-medium">{config.label}</span>
+                </div>
+                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={cn(
+                      "h-full rounded-full",
+                      status === "lead" && "bg-blue-500",
+                      status === "contacted" && "bg-purple-500",
+                      status === "negotiating" && "bg-amber-500",
+                      status === "won" && "bg-green-500",
+                      status === "lost" && "bg-muted-foreground"
+                    )}
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+                <span className="text-sm text-muted-foreground w-12 text-right">{count}</span>
+                <span className="text-sm font-medium w-24 text-right">{formatFullValue(value)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col h-full animate-fade-in">
       {/* Toolbar */}
       <div className="p-5 border-b border-border/30 bg-gradient-to-r from-card/80 to-card/40 backdrop-blur-sm flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-bold tracking-tight">Business CRM</h2>
-          <div className="text-sm text-muted-foreground/80 font-medium px-3 py-1 rounded-full bg-muted/50 border border-border/30">{opportunities.length} opportunities</div>
+          <div className="text-sm text-muted-foreground/80 font-medium px-3 py-1 rounded-full bg-muted/50 border border-border/30">
+            {opportunities.length} opportunities
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* Advanced Mode Toggle */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 border border-border/30">
+            <Switch
+              id="advanced-mode"
+              checked={advancedMode}
+              onCheckedChange={setAdvancedMode}
+              className="scale-75"
+            />
+            <Label htmlFor="advanced-mode" className="text-xs font-medium cursor-pointer">
+              Advanced
+            </Label>
+          </div>
+
+          {/* View Mode Toggles (only in advanced mode) */}
+          {advancedMode && (
+            <div className="flex items-center border border-border rounded-lg overflow-hidden">
+              <Button
+                variant={viewMode === "kanban" ? "secondary" : "ghost"}
+                size="sm"
+                className="rounded-none h-8 px-2"
+                onClick={() => setViewMode("kanban")}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "secondary" : "ghost"}
+                size="sm"
+                className="rounded-none h-8 px-2 border-x border-border"
+                onClick={() => setViewMode("list")}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === "analytics" ? "secondary" : "ghost"}
+                size="sm"
+                className="rounded-none h-8 px-2"
+                onClick={() => setViewMode("analytics")}
+              >
+                <PieChart className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -223,96 +573,12 @@ const BusinessCRMView = ({ userId }: BusinessCRMViewProps) => {
               Add First Opportunity
             </Button>
           </div>
+        ) : advancedMode && viewMode === "list" ? (
+          renderListView()
+        ) : advancedMode && viewMode === "analytics" ? (
+          renderAnalyticsView()
         ) : (
-          <div className="flex gap-4 min-w-max h-full">
-            {(["lead", "contacted", "negotiating", "won", "lost"] as const).map((status) => {
-              const config = STATUS_CONFIG[status];
-              const Icon = config.icon;
-
-              return (
-                <div key={status} className="w-64 bg-muted/30 rounded-lg flex flex-col min-h-[400px]">
-                  <div className="p-3 border-b border-border/50 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Icon className={`w-4 h-4 ${config.color.split(" ")[0]}`} />
-                      <span className="font-medium text-sm">{config.label}</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {groupedOpportunities[status].length}
-                    </span>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                    {groupedOpportunities[status].map((opp) => (
-                      <div
-                        key={opp.id}
-                        onClick={() => handleOpenEdit(opp)}
-                        className="bg-card border border-border rounded-lg p-3 cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
-                      >
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <p className="font-medium text-sm line-clamp-1">{opp.name}</p>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
-                                <MoreVertical className="h-3 w-3" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                              {(["lead", "contacted", "negotiating", "won", "lost"] as const)
-                                .filter((s) => s !== status)
-                                .map((newStatus) => {
-                                  const cfg = STATUS_CONFIG[newStatus];
-                                  const StatusIcon = cfg.icon;
-                                  return (
-                                    <DropdownMenuItem
-                                      key={newStatus}
-                                      onClick={() => handleStatusChange(opp.id, newStatus)}
-                                    >
-                                      <StatusIcon className={`w-4 h-4 mr-2 ${cfg.color.split(" ")[0]}`} />
-                                      Move to {cfg.label}
-                                    </DropdownMenuItem>
-                                  );
-                                })}
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(opp.id)}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-
-                        {opp.company_name && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                            <Building2 className="w-3 h-3" />
-                            {opp.company_name}
-                          </div>
-                        )}
-
-                        {opp.description && (
-                          <p className="text-xs text-muted-foreground line-clamp-2">{opp.description}</p>
-                        )}
-
-                        <div className="flex items-center justify-between mt-2">
-                          {opp.value_estimate && (
-                            <Badge variant="secondary" className="text-xs">
-                              <DollarSign className="w-3 h-3 mr-0.5" />
-                              {formatValue(opp.value_estimate)}
-                            </Badge>
-                          )}
-                          <span className="text-[10px] text-muted-foreground ml-auto">
-                            {formatDistanceToNow(new Date(opp.created_at), { addSuffix: true })}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          renderKanbanView()
         )}
       </div>
 
@@ -348,15 +614,29 @@ const BusinessCRMView = ({ userId }: BusinessCRMViewProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-1">
-                  <DollarSign className="w-3 h-3" /> Value
-                </label>
-                <Input
-                  type="number"
-                  value={formData.value_estimate}
-                  onChange={(e) => setFormData({ ...formData, value_estimate: e.target.value })}
-                  placeholder="Estimated value"
-                />
+                <label className="text-sm font-medium">Value</label>
+                <div className="flex gap-2">
+                  <Select
+                    value={formData.currency}
+                    onValueChange={(value: CurrencyCode) => setFormData({ ...formData, currency: value })}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">$ USD</SelectItem>
+                      <SelectItem value="EUR">€ EUR</SelectItem>
+                      <SelectItem value="CHF">CHF</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="number"
+                    value={formData.value_estimate}
+                    onChange={(e) => setFormData({ ...formData, value_estimate: e.target.value })}
+                    placeholder="Amount"
+                    className="flex-1"
+                  />
+                </div>
               </div>
             </div>
 

@@ -263,6 +263,7 @@ export type Database = {
           contact_email: string | null
           contact_name: string | null
           created_at: string | null
+          currency: string
           description: string | null
           id: string
           investor_id: string
@@ -277,6 +278,7 @@ export type Database = {
           contact_email?: string | null
           contact_name?: string | null
           created_at?: string | null
+          currency?: string
           description?: string | null
           id?: string
           investor_id: string
@@ -291,6 +293,7 @@ export type Database = {
           contact_email?: string | null
           contact_name?: string | null
           created_at?: string | null
+          currency?: string
           description?: string | null
           id?: string
           investor_id?: string
