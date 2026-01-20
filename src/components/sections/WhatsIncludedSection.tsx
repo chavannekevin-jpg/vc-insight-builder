@@ -26,8 +26,13 @@ export const WhatsIncludedSection = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section header */}
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm mb-6">
-            <span className="text-sm font-semibold text-primary">{totalFeatures} Tools & Features</span>
+          <div className="inline-flex items-center gap-3 mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+              <span className="text-sm font-semibold text-primary">{totalFeatures} Analysis Tools</span>
+            </div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 shadow-[0_0_15px_rgba(236,72,153,0.15)]">
+              <span className="text-sm font-semibold text-primary">800+ Curated Investors</span>
+            </div>
           </div>
           
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
