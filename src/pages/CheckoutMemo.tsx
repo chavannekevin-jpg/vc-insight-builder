@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -488,7 +488,10 @@ export default function CheckoutMemo() {
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">
-              By purchasing, you agree to our terms of service and privacy policy.
+              By purchasing, you agree to our{" "}
+              <Link to="/terms" className="underline hover:text-primary">terms of service</Link>
+              {" "}and{" "}
+              <Link to="/privacy" className="underline hover:text-primary">privacy policy</Link>.
               {finalPrice > 0 && " Secure payment processing powered by Stripe."}
             </p>
           </div>
