@@ -43,6 +43,11 @@ interface TimeSlot {
   end: string;
 }
 
+interface DayAvailability {
+  date: string;
+  hasSlots: boolean;
+}
+
 interface InvestorProfile {
   id: string;
   full_name: string;
@@ -84,7 +89,9 @@ const PublicBookingPage = () => {
   const [investorProfile, setInvestorProfile] = useState<InvestorProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [isLoadingDays, setIsLoadingDays] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availableDays, setAvailableDays] = useState<Record<string, boolean>>({});
   const [formData, setFormData] = useState({ name: "", email: "", company: "", notes: "" });
 
   useEffect(() => {
@@ -137,6 +144,37 @@ const PublicBookingPage = () => {
     };
     fetchData();
   }, [investorId, eventTypeId]);
+
+  // Fetch available days for the current month
+  const fetchAvailableDays = async () => {
+    if (!selectedEvent || !investorProfile) return;
+    setIsLoadingDays(true);
+    
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const startDate = monthStart.toISOString();
+    const endDate = addDays(monthEnd, 1).toISOString();
+
+    const { data, error } = await supabase.functions.invoke("get-available-days", {
+      body: { investorId: investorProfile.id, eventTypeId: selectedEvent.id, startDate, endDate },
+    });
+
+    if (!error && data?.days) {
+      const daysMap: Record<string, boolean> = {};
+      data.days.forEach((day: DayAvailability) => {
+        daysMap[day.date] = day.hasSlots;
+      });
+      setAvailableDays(daysMap);
+    }
+    setIsLoadingDays(false);
+  };
+
+  // Fetch available days when month or event changes
+  useEffect(() => {
+    if (step === "calendar" && selectedEvent && investorProfile) {
+      fetchAvailableDays();
+    }
+  }, [currentMonth, selectedEvent, investorProfile, step]);
 
   const fetchSlots = async (date: Date) => {
     if (!selectedEvent || !investorProfile) return;
@@ -681,19 +719,23 @@ const PublicBookingPage = () => {
                       
                       {calendarDays.map(day => {
                         const isPast = day < today;
+                        const dateStr = format(day, "yyyy-MM-dd");
+                        const hasAvailability = availableDays[dateStr] !== false;
+                        const isUnavailable = !isPast && availableDays[dateStr] === false;
                         const isSelected = selectedDate && isSameDay(day, selectedDate);
                         const isToday = isSameDay(day, today);
+                        const isDisabled = isPast || isUnavailable;
                         
                         return (
                           <button
                             key={day.toISOString()}
-                            onClick={() => !isPast && handleDateSelect(day)}
-                            disabled={isPast}
+                            onClick={() => !isDisabled && handleDateSelect(day)}
+                            disabled={isDisabled}
                             className={`
                               aspect-square rounded-lg flex items-center justify-center text-sm font-medium 
                               transition-all active:scale-90 min-h-[40px]
-                              ${isPast ? `opacity-30 cursor-not-allowed ${theme.textSubtle}` : ""}
-                              ${isSelected ? `${theme.calendarDaySelected}` : !isPast ? theme.calendarDay : ""}
+                              ${isDisabled ? `opacity-30 cursor-not-allowed ${theme.textSubtle}` : ""}
+                              ${isSelected ? `${theme.calendarDaySelected}` : !isDisabled ? theme.calendarDay : ""}
                               ${isToday && !isSelected ? theme.calendarDayToday : ""}
                             `}
                           >
