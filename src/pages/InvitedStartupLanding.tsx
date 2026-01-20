@@ -266,7 +266,7 @@ export default function InvitedStartupLanding() {
           >
             <Gift className="w-5 h-5 text-green-500" />
             <span className="text-base font-semibold text-green-500">
-              Invited by {inviteInfo.investorName || 'an investor'} • {inviteInfo.discountPercent}% OFF
+              Exclusive Invite • {inviteInfo.discountPercent}% OFF
             </span>
           </div>
           
