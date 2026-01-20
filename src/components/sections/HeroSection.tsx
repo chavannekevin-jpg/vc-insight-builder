@@ -51,7 +51,7 @@ export const HeroSection = () => {
             </div>
             <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-muted/50 border border-primary/30 backdrop-blur-sm shadow-[0_0_15px_rgba(236,72,153,0.1)]">
               <div className="text-2xl font-bold text-primary mb-1">800+ Investors</div>
-              <div className="text-sm text-muted-foreground">AI-matched to your profile</div>
+              <div className="text-sm text-muted-foreground">Matched to your profile</div>
             </div>
             <div className="p-4 rounded-lg bg-muted/50 border border-border/50 backdrop-blur-sm">
               <div className="text-2xl font-bold text-primary mb-1">VC Brain</div>
