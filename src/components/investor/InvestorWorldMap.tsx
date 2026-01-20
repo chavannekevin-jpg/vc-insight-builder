@@ -1,4 +1,4 @@
-import { useState, memo, useRef } from "react";
+import { useState, memo, useRef, useEffect } from "react";
 import {
   ComposableMap,
   Geographies,
@@ -7,9 +7,10 @@ import {
   ZoomableGroup,
 } from "react-simple-maps";
 import type { InvestorContact } from "@/pages/investor/InvestorDashboard";
-import { MapPin, Building2, Users } from "lucide-react";
+import RegionSelector from "./RegionSelector";
+import { REGION_CONFIG, CITY_COORDINATES, normalizeCityKey, type MapRegion } from "@/lib/location";
 
-// Europe-focused map from Natural Earth via unpkg - reliable CDN
+// World map from Natural Earth via CDN
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json";
 
 interface CityGroup {
@@ -26,6 +27,8 @@ interface InvestorWorldMapProps {
   onCityClick: (city: string, contacts: InvestorContact[]) => void;
   onContactClick: (contact: InvestorContact) => void;
   searchQuery: string;
+  selectedRegion: MapRegion;
+  onRegionChange: (region: MapRegion) => void;
 }
 
 interface TooltipPosition {
@@ -38,21 +41,32 @@ const InvestorWorldMap = memo(({
   onCityClick,
   onContactClick,
   searchQuery,
+  selectedRegion,
+  onRegionChange,
 }: InvestorWorldMapProps) => {
+  const regionConfig = REGION_CONFIG[selectedRegion];
   const [hoveredCity, setHoveredCity] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition | null>(null);
-  const [position, setPosition] = useState({ coordinates: [15, 54] as [number, number], zoom: 1 });
+  const [position, setPosition] = useState({ 
+    coordinates: regionConfig.center as [number, number], 
+    zoom: regionConfig.zoom 
+  });
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleMoveEnd = (position: { coordinates: [number, number]; zoom: number }) => {
-    setPosition(position);
+  // Update position when region changes
+  useEffect(() => {
+    const config = REGION_CONFIG[selectedRegion];
+    setPosition({ coordinates: config.center, zoom: config.zoom });
+  }, [selectedRegion]);
+
+  const handleMoveEnd = (pos: { coordinates: [number, number]; zoom: number }) => {
+    setPosition(pos);
   };
 
   // Calculate marker size based on count and zoom
-  // Very tiny for 1, scales up dramatically for more contacts
   const getMarkerSize = (count: number, zoom: number) => {
     const minSize = 1.2;
-    const maxSize = 22; // Doubled from 11
+    const maxSize = 22;
 
     let size: number;
     if (count === 1) {
@@ -71,10 +85,19 @@ const InvestorWorldMap = memo(({
     return cappedSize / Math.pow(zoom, 0.4);
   };
 
-  // Filter city groups based on search
+  // Filter city groups based on search AND region
   const filteredCityGroups = Object.entries(cityGroups).filter(([city]) => {
-    if (!searchQuery) return true;
-    return city.toLowerCase().includes(searchQuery.toLowerCase());
+    // Check search query
+    if (searchQuery && !city.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    // Check region - look up the city in CITY_COORDINATES
+    const cityKey = normalizeCityKey(city);
+    const cityData = CITY_COORDINATES[cityKey];
+    if (cityData && cityData.region !== selectedRegion) {
+      return false;
+    }
+    return true;
   });
 
   const handleMarkerHover = (city: string, event: React.MouseEvent) => {
@@ -98,8 +121,8 @@ const InvestorWorldMap = memo(({
       <ComposableMap
         projection="geoMercator"
         projectionConfig={{
-          scale: 700,
-          center: [15, 54],
+          scale: regionConfig.scale,
+          center: regionConfig.center,
         }}
         className="w-full h-full"
         style={{ width: "100%", height: "100%" }}
@@ -233,18 +256,21 @@ const InvestorWorldMap = memo(({
         </button>
       </div>
 
-      {/* Region Label */}
-      <div className="absolute top-4 left-4 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-3 py-2 z-10">
-        <p className="text-xs font-medium text-muted-foreground">Europe</p>
+      {/* Region Selector */}
+      <div className="absolute top-4 left-4 z-10">
+        <RegionSelector 
+          selectedRegion={selectedRegion} 
+          onRegionChange={onRegionChange} 
+        />
       </div>
 
       {/* Empty State */}
-      {Object.keys(cityGroups).length === 0 && (
+      {filteredCityGroups.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center p-8 bg-card/80 backdrop-blur-sm rounded-lg border border-border">
-            <p className="text-lg font-medium mb-2">No contacts yet</p>
+            <p className="text-lg font-medium mb-2">No contacts in {regionConfig.label}</p>
             <p className="text-muted-foreground">
-              Add your first contact to see them on the map
+              Add contacts or switch regions to see them on the map
             </p>
           </div>
         </div>

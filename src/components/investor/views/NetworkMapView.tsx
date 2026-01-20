@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Plus, List, Map as MapIcon, Users, Globe, Rocket } from "lucide-react";
@@ -10,6 +10,7 @@ import GlobalCityModal from "@/components/investor/GlobalCityModal";
 import SuggestedContacts from "@/components/investor/SuggestedContacts";
 import InviteStartupModal from "@/components/investor/InviteStartupModal";
 import { useGlobalNetwork, type NetworkMarker } from "@/hooks/useGlobalNetwork";
+import { getRegionForLocation, type MapRegion } from "@/lib/location";
 import type { InvestorContact } from "@/pages/investor/InvestorDashboard";
 
 interface CityGroup {
@@ -47,6 +48,31 @@ const NetworkMapView = ({
   const [selectedCity, setSelectedCity] = useState<{ city: string; contacts: InvestorContact[] } | null>(null);
   const [selectedGlobalCity, setSelectedGlobalCity] = useState<{ city: string; markers: NetworkMarker[] } | null>(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  
+  // Region state - try to detect from user profile or first contact
+  const [selectedRegion, setSelectedRegion] = useState<MapRegion>(() => {
+    // Try to get from localStorage first
+    const saved = localStorage.getItem("investor-map-region");
+    if (saved === "europe" || saved === "asia") return saved;
+    return "europe"; // Default
+  });
+
+  // Auto-detect region from user profile city
+  useEffect(() => {
+    if (userProfile?.city) {
+      const detectedRegion = getRegionForLocation({ city: userProfile.city });
+      if (detectedRegion) {
+        setSelectedRegion(detectedRegion);
+        localStorage.setItem("investor-map-region", detectedRegion);
+      }
+    }
+  }, [userProfile?.city]);
+
+  // Persist region selection
+  const handleRegionChange = (region: MapRegion) => {
+    setSelectedRegion(region);
+    localStorage.setItem("investor-map-region", region);
+  };
 
   // Get IDs of user's contacts for highlighting in global view
   const myContactGlobalIds = contacts
@@ -207,12 +233,16 @@ const NetworkMapView = ({
               onCityClick={handleCityClick}
               onContactClick={onContactClick}
               searchQuery={searchQuery}
+              selectedRegion={selectedRegion}
+              onRegionChange={handleRegionChange}
             />
           ) : (
             <GlobalNetworkMap
               cityGroups={globalCityGroups}
               searchQuery={searchQuery}
               onCityClick={handleGlobalCityClick}
+              selectedRegion={selectedRegion}
+              onRegionChange={handleRegionChange}
             />
           )
         ) : (
