@@ -15,6 +15,13 @@ import {
   Check,
   Building2,
   Shield,
+  QrCode,
+  Download,
+  Share2,
+  Calendar,
+  Network,
+  X,
+  Maximize2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -36,7 +43,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-
+import { QRCodeSVG } from "qrcode.react";
 
 import { BookUser } from "lucide-react";
 
@@ -75,6 +82,9 @@ const InvestorSidebar = ({ activeSection, onSectionChange, userProfile }: Invest
   const [isLoadingCode, setIsLoadingCode] = useState(false);
   const [copied, setCopied] = useState<"link" | "message" | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrMode, setQrMode] = useState<"booking" | "network">("booking");
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Check if user is admin
   useEffect(() => {
@@ -182,11 +192,63 @@ See you on the inside!
 ${userProfile.full_name}`
     : "";
 
-  const copyToClipboard = (text: string, type: "link" | "message") => {
+  const copyToClipboard = (text: string, type: "link" | "message" | "qr") => {
     navigator.clipboard.writeText(text);
-    setCopied(type);
-    toast({ title: type === "link" ? "Link copied!" : "Message copied!" });
+    setCopied(type as any);
+    toast({ title: "Copied to clipboard!" });
     setTimeout(() => setCopied(null), 2000);
+  };
+
+  // QR Code URLs
+  const bookingUrl = userProfile?.profile_slug 
+    ? `${window.location.origin}/book/${userProfile.profile_slug}`
+    : "";
+  const networkUrl = inviteCode 
+    ? `${window.location.origin}/investor/auth?code=${inviteCode}`
+    : "";
+
+  const handleOpenQrModal = () => {
+    setQrModalOpen(true);
+    fetchOrCreateInviteCode();
+  };
+
+  const handleDownloadQR = () => {
+    const svg = document.getElementById("sidebar-qr-code");
+    if (!svg) return;
+    
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    
+    img.onload = () => {
+      canvas.width = img.width * 2;
+      canvas.height = img.height * 2;
+      ctx?.scale(2, 2);
+      ctx?.drawImage(img, 0, 0);
+      
+      const a = document.createElement("a");
+      a.download = `${qrMode === "booking" ? "booking" : "network"}-qr.png`;
+      a.href = canvas.toDataURL("image/png");
+      a.click();
+    };
+    
+    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+  };
+
+  const handleShare = async () => {
+    const url = qrMode === "booking" ? bookingUrl : networkUrl;
+    const title = qrMode === "booking" ? "Book a meeting with me" : "Join my investor network";
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch (err) {
+        copyToClipboard(url, "qr");
+      }
+    } else {
+      copyToClipboard(url, "qr");
+    }
   };
 
   return (
@@ -272,12 +334,24 @@ ${userProfile.full_name}`
           <SidebarGroup className="border-t border-border/30 pt-2">
             <SidebarGroupContent className="px-2">
               <SidebarMenu>
+                {/* QR Code - Conference Mode */}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={handleOpenQrModal}
+                    tooltip="QR Code"
+                    className="group relative rounded-lg transition-all duration-200 hover:bg-primary/10 text-primary hover:translate-x-0.5"
+                  >
+                    <QrCode className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+                    <span className="font-medium">My QR Code</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
                 {/* Invite Friends */}
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={handleOpenInviteModal}
                     tooltip="Invite Investors"
-                    className="group relative rounded-lg transition-all duration-200 hover:bg-primary/10 text-primary hover:translate-x-0.5"
+                    className="group relative rounded-lg transition-all duration-200 hover:bg-muted/50 hover:translate-x-0.5"
                   >
                     <Gift className="w-4 h-4 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-12" />
                     <span className="font-medium">Invite Friends</span>
@@ -413,6 +487,162 @@ ${userProfile.full_name}`
               </>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* QR Code Modal - Conference Mode */}
+      <Dialog open={qrModalOpen} onOpenChange={(open) => { setQrModalOpen(open); if (!open) setIsFullscreen(false); }}>
+        <DialogContent className={`border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl transition-all duration-300 ${isFullscreen ? "max-w-none w-screen h-screen m-0 rounded-none" : "max-w-sm"}`}>
+          {isFullscreen ? (
+            // Fullscreen mode - Just the QR code
+            <div className="flex flex-col items-center justify-center h-full gap-6 relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsFullscreen(false)}
+                className="absolute top-4 right-4 h-12 w-12 rounded-full bg-muted/50 hover:bg-muted"
+              >
+                <X className="h-6 w-6" />
+              </Button>
+              
+              <div className="bg-white p-8 rounded-3xl shadow-2xl">
+                <QRCodeSVG
+                  id="sidebar-qr-code"
+                  value={qrMode === "booking" ? bookingUrl : networkUrl}
+                  size={280}
+                  level="H"
+                  includeMargin
+                  bgColor="#ffffff"
+                  fgColor="#000000"
+                />
+              </div>
+              
+              <div className="text-center">
+                <p className="text-xl font-semibold text-foreground">
+                  {qrMode === "booking" ? "Book a Meeting" : "Join My Network"}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Scan to {qrMode === "booking" ? "schedule time with me" : "request an invite"}
+                </p>
+              </div>
+
+              {/* Mode toggle in fullscreen */}
+              <div className="flex gap-2 bg-muted/30 p-1 rounded-xl">
+                <Button
+                  variant={qrMode === "booking" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setQrMode("booking")}
+                  className="gap-2"
+                >
+                  <Calendar className="h-4 w-4" />
+                  Booking
+                </Button>
+                <Button
+                  variant={qrMode === "network" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setQrMode("network")}
+                  className="gap-2"
+                >
+                  <Network className="h-4 w-4" />
+                  Network
+                </Button>
+              </div>
+            </div>
+          ) : (
+            // Normal modal mode
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-primary/20">
+                    <QrCode className="w-5 h-5 text-primary" />
+                  </div>
+                  <span className="text-xl font-bold tracking-tight">Conference Mode</span>
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-4 mt-2">
+                {/* Mode Toggle */}
+                <div className="flex gap-2 p-1 bg-muted/30 rounded-xl">
+                  <Button
+                    variant={qrMode === "booking" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setQrMode("booking")}
+                    className="flex-1 gap-2"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Booking Page
+                  </Button>
+                  <Button
+                    variant={qrMode === "network" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setQrMode("network")}
+                    className="flex-1 gap-2"
+                  >
+                    <Network className="h-4 w-4" />
+                    Network Invite
+                  </Button>
+                </div>
+
+                {/* QR Code Display */}
+                <div className="flex flex-col items-center">
+                  <div 
+                    className="bg-white p-4 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+                    onClick={() => setIsFullscreen(true)}
+                  >
+                    <QRCodeSVG
+                      id="sidebar-qr-code"
+                      value={qrMode === "booking" ? bookingUrl : networkUrl}
+                      size={180}
+                      level="H"
+                      includeMargin
+                      bgColor="#ffffff"
+                      fgColor="#000000"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3 text-center">
+                    {qrMode === "booking" 
+                      ? "Let people book meetings with you" 
+                      : "Invite investors to your network"}
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsFullscreen(true)}
+                    className="flex-1 gap-2"
+                  >
+                    <Maximize2 className="h-4 w-4" />
+                    Fullscreen
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadQR}
+                    className="flex-1 gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleShare}
+                    className="flex-1 gap-2"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    Share
+                  </Button>
+                </div>
+
+                <p className="text-xs text-muted-foreground/70 text-center py-2 px-4 rounded-lg bg-muted/30 border border-border/30">
+                  Tap the QR code to go fullscreen for easy scanning
+                </p>
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </>
