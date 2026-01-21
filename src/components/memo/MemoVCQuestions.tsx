@@ -1,8 +1,14 @@
 import { useState } from "react";
-import { HelpCircle, ChevronDown, Brain, FileText } from "lucide-react";
+import { HelpCircle, ChevronDown, Brain, FileText, Info } from "lucide-react";
 import { MemoVCQuestion } from "@/types/memo";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { renderMarkdownText } from "@/lib/markdownParser";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface MemoVCQuestionsProps {
   questions: (string | MemoVCQuestion)[];
@@ -39,10 +45,29 @@ export const MemoVCQuestions = ({ questions, defaultAllOpen = false }: MemoVCQue
 
   return (
     <div className="bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl p-6 border border-accent/30 mt-6">
-      <h4 className="text-sm font-semibold text-accent mb-4 uppercase tracking-wider flex items-center gap-2">
-        <HelpCircle className="w-4 h-4" />
-        Key Investor Questions
-      </h4>
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-sm font-semibold text-accent uppercase tracking-wider flex items-center gap-2">
+          <HelpCircle className="w-4 h-4" />
+          Key Investor Questions
+        </h4>
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger>
+              <Info className="w-4 h-4 text-muted-foreground hover:text-accent transition-colors cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm p-4 bg-background/98 border-2 border-accent/30 shadow-2xl">
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-accent uppercase tracking-wide">
+                  Why these questions matter
+                </p>
+                <p className="text-sm text-foreground leading-relaxed">
+                  These are the questions VCs will likely ask in a pitch meeting or IC discussion. Click each question to see why investors care about this and what they're really looking for in your answer.
+                </p>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
       <div className="space-y-3">
         {questions.map((question, index) => {
           const isEnhanced = isEnhancedQuestion(question);

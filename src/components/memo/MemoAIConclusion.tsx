@@ -1,6 +1,8 @@
 import { Sparkles, TrendingUp, AlertTriangle, Target, CheckCircle2 } from "lucide-react";
 import { renderMarkdownText } from "@/lib/markdownParser";
 import { safeLower } from "@/lib/stringUtils";
+import { InsightWithTooltip } from "./InsightWithTooltip";
+import { generateInsightExplanation } from "@/lib/insightExplanations";
 
 interface MemoAIConclusionProps {
   text: string;
@@ -124,11 +126,16 @@ export const MemoAIConclusion = ({ text }: MemoAIConclusionProps) => {
             </div>
             <div className="pl-10 space-y-2">
               {parsed.merits.map((merit, index) => (
-                <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-green-500/5 border border-green-500/10">
-                  <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-green-600">{index + 1}</span>
+                <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/10">
+                  <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-success">{index + 1}</span>
                   </div>
-                  <p className="text-foreground text-sm leading-relaxed">{merit}</p>
+                  <InsightWithTooltip
+                    explanation={generateInsightExplanation(merit)}
+                    className="text-foreground text-sm leading-relaxed"
+                  >
+                    {merit}
+                  </InsightWithTooltip>
                 </div>
               ))}
             </div>
@@ -146,11 +153,16 @@ export const MemoAIConclusion = ({ text }: MemoAIConclusionProps) => {
             </div>
             <div className="pl-10 space-y-2">
               {parsed.considerations.map((consideration, index) => (
-                <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
-                  <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-amber-600">!</span>
+                <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-warning/5 border border-warning/10">
+                  <div className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-warning">!</span>
                   </div>
-                  <p className="text-foreground text-sm leading-relaxed">{consideration}</p>
+                  <InsightWithTooltip
+                    explanation={generateInsightExplanation(consideration)}
+                    className="text-foreground text-sm leading-relaxed"
+                  >
+                    {consideration}
+                  </InsightWithTooltip>
                 </div>
               ))}
             </div>
