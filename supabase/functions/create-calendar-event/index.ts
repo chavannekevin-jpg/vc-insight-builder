@@ -368,7 +368,7 @@ serve(async (req) => {
       }
     }
 
-    // Prepare the Google Calendar event
+    // Prepare the Google Calendar event with Google Meet
     const eventBody: Record<string, unknown> = {
       summary: title,
       start: {
@@ -378,6 +378,13 @@ serve(async (req) => {
       end: {
         dateTime: endDateTime,
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      },
+      // Add Google Meet video conferencing
+      conferenceData: {
+        createRequest: {
+          requestId: `meet-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          conferenceSolutionKey: { type: 'hangoutsMeet' }
+        }
       }
     };
 
@@ -401,10 +408,10 @@ serve(async (req) => {
       };
     }
 
-    // Create the event in Google Calendar
+    // Create the event in Google Calendar with conferenceDataVersion=1 for Google Meet
     const targetCalendarId = calendar!.calendar_id || 'primary';
     const createResponse = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events?sendUpdates=all`,
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events?sendUpdates=all&conferenceDataVersion=1`,
       {
         method: 'POST',
         headers: {
@@ -446,7 +453,8 @@ serve(async (req) => {
           title: createdEvent.summary,
           start: createdEvent.start?.dateTime || createdEvent.start?.date,
           end: createdEvent.end?.dateTime || createdEvent.end?.date,
-          htmlLink: createdEvent.htmlLink
+          htmlLink: createdEvent.htmlLink,
+          meetLink: createdEvent.hangoutLink || createdEvent.conferenceData?.entryPoints?.[0]?.uri || null
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
