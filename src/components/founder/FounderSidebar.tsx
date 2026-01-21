@@ -25,6 +25,7 @@ import {
   DollarSign,
   Flame,
   Users,
+  Trophy,
 } from "lucide-react";
 import {
   Sidebar,
@@ -57,6 +58,7 @@ interface FounderSidebarProps {
   onDeleteAccountClick: () => void;
   onFundDiscoveryClick: () => void;
   onInviteFounderClick: () => void;
+  onScoreboardClick: () => void;
 }
 
 const mainMenuItems = [
@@ -92,6 +94,7 @@ export const FounderSidebar = ({
   onDeleteAccountClick,
   onFundDiscoveryClick,
   onInviteFounderClick,
+  onScoreboardClick,
 }: FounderSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -220,6 +223,17 @@ export const FounderSidebar = ({
                 >
                   <Gift className="w-4 h-4 shrink-0 text-primary" />
                   {!collapsed && <span>Invite a Founder</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              {/* Scoreboard */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={onScoreboardClick}
+                  className="w-full transition-all hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                >
+                  <Trophy className="w-4 h-4 shrink-0 text-yellow-500" />
+                  {!collapsed && <span>Scoreboard</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
