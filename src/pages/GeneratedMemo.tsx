@@ -41,6 +41,7 @@ import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools, ConditionalAssessment } from "@/types/memo";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useMemoContent, useInvalidateMemoContent, findSectionTools } from "@/hooks/useMemoContent";
 
 // Import new VC tools
 import {
@@ -67,30 +68,6 @@ import {
   VisionScenarioPlanningCard,
   VisionExitNarrativeCard
 } from "@/components/memo/tools";
-
-// Helper to find section tools with flexible matching
-const findSectionTools = (
-  sectionTitle: string, 
-  tools: Record<string, EnhancedSectionTools>
-): EnhancedSectionTools => {
-  // Direct match first
-  if (tools[sectionTitle]) return tools[sectionTitle];
-  
-  // Try normalized title
-  const normalized = safeTitle(sectionTitle).toLowerCase();
-  const key = Object.keys(tools).find(k => {
-    const normalizedKey = safeTitle(k).toLowerCase();
-    return normalizedKey === normalized ||
-           k.toLowerCase().includes(normalized) ||
-           normalized.includes(k.toLowerCase());
-  });
-  
-  if (!key && Object.keys(tools).length > 0) {
-    console.warn(`[GeneratedMemo] No tools found for section: "${sectionTitle}". Available: ${Object.keys(tools).join(', ')}`);
-  }
-  
-  return key ? tools[key] : {};
-};
 
 interface SmartQuestion {
   questionKey: string;
@@ -122,6 +99,15 @@ export default function GeneratedMemo() {
   const viewMode = searchParams.get("view"); // 'full' for full memo, otherwise redirect to wizard
   const shouldRegenerate = searchParams.get("regenerate") === "true";
   
+  // Cache invalidation hook for after regeneration
+  const invalidateMemoCache = useInvalidateMemoContent();
+  
+  // Use cached memo content for instant initial load
+  const { 
+    data: cachedMemoData, 
+    isLoading: cacheLoading,
+  } = useMemoContent(companyId);
+  
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
@@ -144,6 +130,29 @@ export default function GeneratedMemo() {
   // VC Rejection Preview state
   const [showRejectionPreview, setShowRejectionPreview] = useState(false);
   const [pendingGeneration, setPendingGeneration] = useState(false);
+
+  // Use cached data for instant load (when not generating/regenerating)
+  useEffect(() => {
+    if (cachedMemoData && !regenerating && !analyzing) {
+      // Populate state from cache for instant display
+      if (cachedMemoData.memoContent) {
+        setMemoContent(cachedMemoData.memoContent);
+        setCompanyInfo(cachedMemoData.companyInfo);
+        setHasPremium(cachedMemoData.hasPremium);
+        setSectionTools(cachedMemoData.sectionTools);
+        setMemoResponses(cachedMemoData.memoResponses);
+        setAnchoredAssumptions(cachedMemoData.anchoredAssumptions || undefined);
+        setHolisticStage(cachedMemoData.holisticStage);
+        setHolisticVerdicts(cachedMemoData.holisticVerdicts);
+        setLoading(false);
+        
+        // Check if we should redirect to wizard mode
+        if (viewMode !== 'full' && searchParams.get("regenerate") !== "true") {
+          setShouldRedirectToWizard(true);
+        }
+      }
+    }
+  }, [cachedMemoData, regenerating, analyzing, viewMode, searchParams]);
 
   // IMPORTANT: useMemo must be called before any early returns to follow Rules of Hooks
   const actionPlan = useMemo(() => {

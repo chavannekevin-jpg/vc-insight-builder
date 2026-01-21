@@ -24,6 +24,7 @@ import { useMatchingFundsCount } from "@/hooks/useMatchingFundsCount";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/hooks/useCompany";
+import { usePrefetchMemoContent } from "@/hooks/useMemoContent";
 
 // Insider articles for daily rotation
 const insiderArticles = [
@@ -206,6 +207,15 @@ export default function FreemiumHub() {
     };
     loadSectionTools();
   }, [company?.id, hasPaidData, memoHasContent]);
+
+  // Prefetch memo content for instant navigation (paid users with generated memo)
+  const prefetchMemo = usePrefetchMemoContent();
+  useEffect(() => {
+    if (hasPaidData && company?.id && memoHasContent) {
+      console.log('[FreemiumHub] Prefetching memo content for instant loading...');
+      prefetchMemo(company.id);
+    }
+  }, [hasPaidData, company?.id, memoHasContent, prefetchMemo]);
 
   // Redirect to auth if not authenticated
   useEffect(() => {

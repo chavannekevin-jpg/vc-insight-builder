@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { MemoScoreRadar } from "@/components/memo/MemoScoreRadar";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,7 +27,6 @@ import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 import { StageMismatchWarning } from "@/components/memo/StageMismatchWarning";
 
 import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics } from "@/lib/memoDataExtractor";
-import { extractAnchoredAssumptions, detectCurrencyFromResponses, getAIMetricEstimate, applyAIEstimate, getFallbackMetricValue, type AnchoredAssumptions } from "@/lib/anchoredAssumptions";
 import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptions";
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { Button } from "@/components/ui/button";
@@ -35,9 +34,10 @@ import { Progress } from "@/components/ui/progress";
 import ShareScoreButton from "@/components/founder/ShareScoreButton";
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Grid, BookOpen, Zap, AlertTriangle, Eye, Lock, FileText, Target, Users, TrendingUp, Swords, DollarSign, Rocket, Lightbulb, Trophy, BarChart } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
+import { MemoParagraph } from "@/types/memo";
+import { useMemoContent, findSectionTools } from "@/hooks/useMemoContent";
 
-import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
+import { safeTitle } from "@/lib/stringUtils";
 
 // Import new VC tools
 import {
@@ -65,30 +65,6 @@ import {
   VisionExitNarrativeCard
 } from "@/components/memo/tools";
 
-// Helper to find section tools with flexible matching
-const findSectionTools = (
-  sectionTitle: string, 
-  tools: Record<string, EnhancedSectionTools>
-): EnhancedSectionTools => {
-  // Direct match first
-  if (tools[sectionTitle]) return tools[sectionTitle];
-  
-  // Try normalized title
-  const normalized = safeTitle(sectionTitle).toLowerCase();
-  const key = Object.keys(tools).find(k => {
-    const normalizedKey = safeTitle(k).toLowerCase();
-    return normalizedKey === normalized ||
-           k.toLowerCase().includes(normalized) ||
-           normalized.includes(k.toLowerCase());
-  });
-  
-  if (!key && Object.keys(tools).length > 0) {
-    console.warn(`[MemoSectionView] No tools found for section: "${sectionTitle}". Available: ${Object.keys(tools).join(', ')}`);
-  }
-  
-  return key ? tools[key] : {};
-};
-
 import { isValidCompanyId } from "@/lib/companyIdUtils";
 
 export default function MemoSectionView() {
@@ -96,27 +72,35 @@ export default function MemoSectionView() {
   const [searchParams] = useSearchParams();
   const companyIdFromUrl = searchParams.get("companyId");
   const sectionIndex = parseInt(searchParams.get("section") || "0");
-  
-  const [loading, setLoading] = useState(true);
-  const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
-  const [companyInfo, setCompanyInfo] = useState<any>(null);
-  const [hasPremium, setHasPremium] = useState(false);
-  const [sectionTools, setSectionTools] = useState<Record<string, EnhancedSectionTools>>({});
-  const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
-  const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | null>(null);
-  const [holisticVerdicts, setHolisticVerdicts] = useState<Record<string, { verdict: string; stageContext?: string }>>({});
-  const [holisticStage, setHolisticStage] = useState<any>(null);
+
+  // Use cached memo content hook for instant loading
+  const { 
+    data: memoData, 
+    isLoading, 
+    error 
+  } = useMemoContent(isValidCompanyId(companyIdFromUrl) ? companyIdFromUrl : null);
+
+  // Extract cached data
+  const memoContent = memoData?.memoContent || null;
+  const companyInfo = memoData?.companyInfo || null;
+  const hasPremium = memoData?.hasPremium || false;
+  const sectionTools = memoData?.sectionTools || {};
+  const memoResponses = memoData?.memoResponses || {};
+  const anchoredAssumptions = memoData?.anchoredAssumptions || null;
+  const holisticVerdicts = memoData?.holisticVerdicts || {};
+  const holisticStage = memoData?.holisticStage || null;
+
+  // Use companyInfo.id as source of truth for navigation (more reliable than URL params)
+  const companyId = companyInfo?.id || companyIdFromUrl;
 
   // Scroll to top when section changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [sectionIndex]);
 
-  // Use companyInfo.id as source of truth for navigation (more reliable than URL params)
-  const companyId = companyInfo?.id || companyIdFromUrl;
-
+  // Handle invalid companyId - try to recover
   useEffect(() => {
-    const loadMemo = async () => {
+    const recoverCompanyId = async () => {
       if (!isValidCompanyId(companyIdFromUrl)) {
         console.error('[MemoSectionView] Missing or invalid companyId:', companyIdFromUrl);
         
@@ -139,175 +123,53 @@ export default function MemoSectionView() {
         }
         
         navigate("/portal");
-        return;
       }
+    };
+    
+    if (!isValidCompanyId(companyIdFromUrl)) {
+      recoverCompanyId();
+    }
+  }, [companyIdFromUrl, navigate, sectionIndex]);
 
+  // Handle authentication check
+  useEffect(() => {
+    const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         const returnTo = `${window.location.pathname}${window.location.search}`;
         navigate(`/auth?redirect=${encodeURIComponent(returnTo)}`, { replace: true });
-        return;
-      }
-
-      try {
-        const { data: company } = await supabase
-          .from("companies")
-          .select("*")
-          .eq("id", companyIdFromUrl)
-          .maybeSingle();
-
-        if (!company) {
-          navigate("/portal");
-          return;
-        }
-
-        setCompanyInfo(company);
-        setHasPremium(company.has_premium || false);
-
-        const { data: memo } = await supabase
-          .from("memos")
-          .select("structured_content")
-          .eq("company_id", companyIdFromUrl)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (memo?.structured_content) {
-          setMemoContent(sanitizeMemoContent(memo.structured_content));
-          
-          // Fetch tool data for this company
-          const { data: toolData } = await supabase
-            .from("memo_tool_data")
-            .select("*")
-            .eq("company_id", companyIdFromUrl);
-          
-          // Fetch memo responses for pricing extraction
-          const { data: responsesData } = await supabase
-            .from("memo_responses")
-            .select("question_key, answer")
-            .eq("company_id", companyIdFromUrl);
-          
-          if (responsesData) {
-            const responsesMap: Record<string, string> = {};
-            responsesData.forEach(r => {
-              if (r.answer) responsesMap[r.question_key] = r.answer;
-            });
-            setMemoResponses(responsesMap);
-            
-            // Fetch company model for anchored assumptions AND holistic stage
-            const { data: companyModelData } = await supabase
-              .from("company_models")
-              .select("model_data")
-              .eq("company_id", companyIdFromUrl)
-              .maybeSingle();
-            
-            // Extract holistic stage from company model
-            if (companyModelData?.model_data) {
-              const modelData = companyModelData.model_data as any;
-              if (modelData.holisticStage) {
-                setHolisticStage(modelData.holisticStage);
-              }
-            }
-            
-            // Extract anchored assumptions with AI estimation
-            const currency = detectCurrencyFromResponses(responsesMap);
-            let assumptions = extractAnchoredAssumptions(
-              companyModelData?.model_data as any || null, 
-              responsesMap, 
-              currency,
-              { category: company.category, stage: company.stage, name: company.name }
-            );
-            
-            // AI estimation if no primary metric value
-            if (assumptions.primaryMetricValue === null) {
-              try {
-                const estimate = await getAIMetricEstimate(assumptions, {
-                  name: company.name,
-                  category: company.category,
-                  stage: company.stage
-                }, responsesMap);
-                if (estimate) {
-                  assumptions = applyAIEstimate(assumptions, estimate);
-                }
-              } catch (e) {
-                console.error('AI estimation failed, using fallback:', e);
-                const fallback = getFallbackMetricValue(assumptions, company.stage);
-                assumptions = { ...assumptions, primaryMetricValue: fallback, source: 'ai_estimated' };
-              }
-            }
-            setAnchoredAssumptions(assumptions);
-          }
-          
-          if (toolData && toolData.length > 0) {
-            const toolsMap: Record<string, EnhancedSectionTools> = {};
-            const verdictsMap: Record<string, { verdict: string; stageContext?: string }> = {};
-            
-            toolData.forEach((tool) => {
-              const sectionName = tool.section_name;
-              
-              // Extract holistic verdicts separately
-              if (tool.tool_name === 'holisticVerdict') {
-                const aiData = tool.ai_generated_data as Record<string, any> || {};
-                if (aiData.verdict) {
-                  verdictsMap[sectionName] = {
-                    verdict: aiData.verdict,
-                    stageContext: aiData.stageContext
-                  };
-                }
-                return;
-              }
-              
-              if (!toolsMap[sectionName]) {
-                toolsMap[sectionName] = {};
-              }
-              let aiData = tool.ai_generated_data as Record<string, any> || {};
-              const userOverrides = tool.user_overrides as Record<string, any> || {};
-              
-              // CRITICAL: Unwrap double-wrapped data from AI hallucination
-              if (aiData.aiGenerated !== undefined && typeof aiData.aiGenerated === 'object') {
-                console.log(`Unwrapping double-wrapped data for ${tool.tool_name}`);
-                aiData = aiData.aiGenerated;
-              }
-              
-              const directMergeTools = ["sectionScore", "benchmarks", "caseStudy", "vcInvestmentLogic", "actionPlan90Day", "leadInvestorRequirements"];
-              
-              if (directMergeTools.includes(tool.tool_name)) {
-                (toolsMap[sectionName] as any)[tool.tool_name] = {
-                  ...aiData,
-                  ...userOverrides,
-                  dataSource: tool.data_source || "ai-complete"
-                };
-              } else {
-                (toolsMap[sectionName] as any)[tool.tool_name] = {
-                  aiGenerated: aiData,
-                  userOverrides: userOverrides,
-                  dataSource: tool.data_source || "ai-complete"
-                };
-              }
-            });
-            setSectionTools(toolsMap);
-            setHolisticVerdicts(verdictsMap);
-          }
-        } else {
-          navigate(`/analysis?companyId=${companyIdFromUrl}&view=full`);
-          return;
-        }
-      } catch (error) {
-        console.error("Error loading memo:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load section",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
       }
     };
+    checkAuth();
+  }, [navigate]);
 
-    loadMemo();
-  }, [companyIdFromUrl, navigate]);
+  // Handle error state
+  useEffect(() => {
+    if (error) {
+      console.error("[MemoSectionView] Error loading memo:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load section",
+        variant: "destructive"
+      });
+    }
+  }, [error]);
 
-  if (loading) {
+  // Handle no memo content - redirect to generation
+  useEffect(() => {
+    if (!isLoading && memoData && !memoData.memoContent && companyIdFromUrl) {
+      navigate(`/analysis?companyId=${companyIdFromUrl}&view=full`);
+    }
+  }, [isLoading, memoData, companyIdFromUrl, navigate]);
+
+  // Handle no company - redirect to portal
+  useEffect(() => {
+    if (!isLoading && memoData && !memoData.companyInfo) {
+      navigate("/portal");
+    }
+  }, [isLoading, memoData, navigate]);
+
+  if (isLoading) {
     return <MemoLoadingScreen />;
   }
 
