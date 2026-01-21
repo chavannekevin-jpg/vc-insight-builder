@@ -104,20 +104,21 @@ serve(async (req) => {
           logStep("Purchase recorded", { companyId, amountPaid });
         }
 
-        // Grant premium access and 1 generation credit
+        // Grant premium access, 1 generation credit, and reset earned referral discount
         const { error: updateError } = await supabase
           .from("companies")
           .update({ 
             has_premium: true,
             generations_available: 1,
-            generations_used: 0
+            generations_used: 0,
+            earned_referral_discount: 0 // Reset after purchase
           })
           .eq("id", companyId);
 
         if (updateError) {
           logStep("Error granting premium access", { error: updateError });
         } else {
-          logStep("Premium access and generation credit granted", { companyId });
+          logStep("Premium access granted, earned discount reset", { companyId });
         }
 
         // Update discount code usage if applicable

@@ -24,12 +24,15 @@ export default function CheckoutMemo() {
   const [validatingCode, setValidatingCode] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
   
-  // Referral discount state
+  // Referral discount state (from investor invites)
   const [referralDiscount, setReferralDiscount] = useState<{ 
     percent: number; 
     investorName: string | null;
     code: string;
   } | null>(null);
+  
+  // Earned referral discount state (from referring other founders)
+  const [earnedReferralDiscount, setEarnedReferralDiscount] = useState<number>(0);
   
   const { data: pricingSettings, isLoading: pricingLoading } = usePricingSettings();
   
@@ -48,7 +51,7 @@ export default function CheckoutMemo() {
     if (pricingSettings) {
       recalculatePrice();
     }
-  }, [pricingSettings, referralDiscount, appliedDiscount]);
+  }, [pricingSettings, referralDiscount, appliedDiscount, earnedReferralDiscount]);
 
   const recalculatePrice = () => {
     if (!pricingSettings) return;
@@ -60,7 +63,12 @@ export default function CheckoutMemo() {
       price = price * (1 - earlyAccessDiscount / 100);
     }
     
-    // Apply referral discount
+    // Apply earned referral discount (from referring other founders)
+    if (earnedReferralDiscount > 0) {
+      price = price * (1 - earnedReferralDiscount / 100);
+    }
+    
+    // Apply investor referral discount
     if (referralDiscount) {
       price = price * (1 - referralDiscount.percent / 100);
     }
@@ -114,10 +122,10 @@ export default function CheckoutMemo() {
       }
     }
 
-    // Verify user owns this company AND check premium status + referral info
+    // Verify user owns this company AND check premium status + referral info + earned discount
     const { data: company } = await supabase
       .from("companies")
-      .select("founder_id, has_premium, referral_code, referred_by_investor")
+      .select("founder_id, has_premium, referral_code, referred_by_investor, earned_referral_discount")
       .eq("id", validCompanyId)
       .maybeSingle();
 
@@ -139,6 +147,11 @@ export default function CheckoutMemo() {
       });
       navigate(`/analysis?companyId=${validCompanyId}&view=full`, { replace: true });
       return;
+    }
+    
+    // Check for earned referral discount (from referring other founders)
+    if (company.earned_referral_discount && company.earned_referral_discount > 0) {
+      setEarnedReferralDiscount(company.earned_referral_discount);
     }
     
     // Check for referral discount
@@ -263,9 +276,14 @@ export default function CheckoutMemo() {
         discountLabels.push("EARLY_ACCESS");
       }
 
+      if (earnedReferralDiscount > 0) {
+        remainingPrice = remainingPrice * (1 - earnedReferralDiscount / 100);
+        discountLabels.push(`FOUNDER_REFERRAL_${earnedReferralDiscount}%`);
+      }
+
       if (referralDiscount) {
         remainingPrice = remainingPrice * (1 - referralDiscount.percent / 100);
-        discountLabels.push(`REFERRAL_${referralDiscount.code}`);
+        discountLabels.push(`INVESTOR_REFERRAL_${referralDiscount.code}`);
       }
 
       if (appliedDiscount) {
@@ -423,13 +441,23 @@ export default function CheckoutMemo() {
               </div>
             )}
             
-            {referralDiscount && (
-              <div className="flex items-center justify-between text-green-500">
+            {earnedReferralDiscount > 0 && (
+              <div className="flex items-center justify-between text-success">
                 <span className="flex items-center gap-1">
                   <Gift className="w-4 h-4" />
-                  Referral Discount ({referralDiscount.percent}%)
+                  Founder Referral Bonus ({earnedReferralDiscount}%)
                 </span>
-                <span>-€{(discountedPrice * referralDiscount.percent / 100).toFixed(2)}</span>
+                <span>-€{(discountedPrice * earnedReferralDiscount / 100).toFixed(2)}</span>
+              </div>
+            )}
+            
+            {referralDiscount && (
+              <div className="flex items-center justify-between text-success">
+                <span className="flex items-center gap-1">
+                  <Gift className="w-4 h-4" />
+                  Investor Referral ({referralDiscount.percent}%)
+                </span>
+                <span>-€{((discountedPrice * (1 - earnedReferralDiscount / 100)) * referralDiscount.percent / 100).toFixed(2)}</span>
               </div>
             )}
             

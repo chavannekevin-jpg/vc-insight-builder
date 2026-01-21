@@ -118,9 +118,9 @@ export const InviteFounderModal = ({
                   <span className="text-sm font-bold text-primary">1</span>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">Free Regeneration Credit</p>
+                  <p className="font-semibold text-foreground">20% Off Your Purchase</p>
                   <p className="text-sm text-muted-foreground">
-                    Earn 1 credit for every founder who signs up
+                    Earn 20% discount per signup (max 40% total)
                   </p>
                 </div>
               </div>
@@ -130,9 +130,9 @@ export const InviteFounderModal = ({
                   <span className="text-sm font-bold text-primary">2</span>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">Upgrade Your Analysis</p>
+                  <p className="font-semibold text-foreground">Free Regeneration Credits</p>
                   <p className="text-sm text-muted-foreground">
-                    Use credits to regenerate and improve your score
+                    After you've paid, referrals earn you free regenerations instead
                   </p>
                 </div>
               </div>
