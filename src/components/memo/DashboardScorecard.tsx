@@ -261,18 +261,18 @@ export const DashboardScorecard = ({
                 </span>
                 {/* Tooltip on hover */}
                 <div className="absolute left-0 top-full mt-2 z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
-                  <div className="bg-card/95 backdrop-blur-md border border-primary/30 rounded-lg p-3 shadow-xl max-w-xs">
-                    <div className="space-y-2 text-xs">
-                      <div className="flex items-start gap-2">
-                        <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-[10px] font-bold text-primary">1</span>
+                  <div className="bg-card border-2 border-primary/40 rounded-xl p-4 shadow-2xl max-w-sm">
+                    <div className="space-y-3 text-xs">
+                      <div className="flex items-start gap-3">
+                        <span className="w-6 h-6 rounded-full bg-primary/30 flex items-center justify-center shrink-0 text-xs font-bold text-primary">1</span>
                         <span className="text-foreground"><strong className="text-primary">Share</strong> your scorecard → Earn free regeneration credits</span>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-[10px] font-bold text-primary">2</span>
+                      <div className="flex items-start gap-3">
+                        <span className="w-6 h-6 rounded-full bg-primary/30 flex items-center justify-center shrink-0 text-xs font-bold text-primary">2</span>
                         <span className="text-foreground"><strong className="text-primary">Regenerate</strong> → Improve your score with better data</span>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <span className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center shrink-0 text-[10px] font-bold text-success">3</span>
+                      <div className="flex items-start gap-3">
+                        <span className="w-6 h-6 rounded-full bg-success/30 flex items-center justify-center shrink-0 text-xs font-bold text-success">3</span>
                         <span className="text-foreground"><strong className="text-success">Score 60+</strong> → Get a free intro to any VC in our network</span>
                       </div>
                     </div>
