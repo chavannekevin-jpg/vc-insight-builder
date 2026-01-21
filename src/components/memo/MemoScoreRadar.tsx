@@ -24,6 +24,13 @@ import {
   type SectionVerdict,
   type DynamicHolisticVerdict
 } from "@/lib/holisticVerdictGenerator";
+import { InsightWithTooltip } from "./InsightWithTooltip";
+import { 
+  findConcernExplanation, 
+  DEFAULT_INSIGHT_EXPLANATION,
+  getStrengthHeadline,
+  getWeaknessHeadline
+} from "@/lib/insightExplanations";
 
 interface MemoScoreRadarProps {
   sectionTools: Record<string, { sectionScore?: { score: number; vcBenchmark: number } }>;
@@ -368,39 +375,81 @@ export const MemoScoreRadar = ({
                     </h3>
                   </div>
                   <ul className="space-y-2">
-                    {scorecard.strategicConcerns.map((concern, i) => (
-                      <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                        <span className="text-destructive mt-0.5">•</span>
-                        {concern}
-                      </li>
-                    ))}
+                    {scorecard.strategicConcerns.map((concern, i) => {
+                      const explanationData = findConcernExplanation(concern);
+                      const explanation = explanationData?.explanation || DEFAULT_INSIGHT_EXPLANATION.explanation;
+                      
+                      return (
+                        <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                          <span className="text-destructive mt-0.5">•</span>
+                          <InsightWithTooltip 
+                            explanation={explanation}
+                            companyContext={explanationData?.getCompanyContext?.({ category })}
+                          >
+                            {concern}
+                          </InsightWithTooltip>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
               
-              {/* Quick Stats */}
+              {/* Quick Stats - Now with headlines */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 rounded-xl bg-success/5 border border-success/20">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="w-4 h-4 text-success" />
-                    <span className="text-xs font-semibold text-success uppercase">Strengths</span>
+                    <span className="text-xs font-semibold text-success uppercase">Top Strength</span>
                   </div>
-                  <p className="text-sm text-foreground">
-                    {scorecard.topStrengths.length > 0 
-                      ? scorecard.topStrengths.join(', ')
-                      : 'Build more evidence'}
-                  </p>
+                  {scorecard.topStrengths.length > 0 ? (
+                    <InsightWithTooltip
+                      explanation={`Your ${scorecard.topStrengths[0]} section scores significantly above stage benchmarks, making it a standout area that will impress investors.`}
+                      showUnderline={false}
+                    >
+                      <p className="text-sm text-foreground font-medium">
+                        {getStrengthHeadline(
+                          scorecard.topStrengths[0], 
+                          scorecard.sections.find(s => s.section === scorecard.topStrengths[0])?.score || 0,
+                          scorecard.sections.find(s => s.section === scorecard.topStrengths[0])?.benchmark || 60
+                        )}
+                      </p>
+                    </InsightWithTooltip>
+                  ) : (
+                    <InsightWithTooltip
+                      explanation="You don't have any sections scoring significantly above benchmark yet. Focus on building evidence in your strongest areas."
+                      showUnderline={false}
+                    >
+                      <p className="text-sm text-muted-foreground">Build more evidence</p>
+                    </InsightWithTooltip>
+                  )}
                 </div>
                 <div className="p-4 rounded-xl bg-warning/5 border border-warning/20">
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle className="w-4 h-4 text-warning" />
-                    <span className="text-xs font-semibold text-warning uppercase">Focus Areas</span>
+                    <span className="text-xs font-semibold text-warning uppercase">Critical Gap</span>
                   </div>
-                  <p className="text-sm text-foreground">
-                    {scorecard.criticalWeaknesses.length > 0 
-                      ? scorecard.criticalWeaknesses.join(', ')
-                      : 'On track'}
-                  </p>
+                  {scorecard.criticalWeaknesses.length > 0 ? (
+                    <InsightWithTooltip
+                      explanation={`Your ${scorecard.criticalWeaknesses[0]} section is below stage benchmarks. This is likely where VCs will push back — address it proactively.`}
+                      showUnderline={false}
+                    >
+                      <p className="text-sm text-foreground font-medium">
+                        {getWeaknessHeadline(
+                          scorecard.criticalWeaknesses[0],
+                          scorecard.sections.find(s => s.section === scorecard.criticalWeaknesses[0])?.score || 0,
+                          scorecard.sections.find(s => s.section === scorecard.criticalWeaknesses[0])?.benchmark || 60
+                        )}
+                      </p>
+                    </InsightWithTooltip>
+                  ) : (
+                    <InsightWithTooltip
+                      explanation="All your sections meet or exceed benchmark — you're in good shape for your stage."
+                      showUnderline={false}
+                    >
+                      <p className="text-sm text-muted-foreground">On track</p>
+                    </InsightWithTooltip>
+                  )}
                 </div>
               </div>
             </div>

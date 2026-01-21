@@ -38,6 +38,8 @@ import { buildHolisticScorecard, type SectionVerdict } from "@/lib/holisticVerdi
 import { SectionDetailModal } from "./SectionDetailModal";
 import { ShareScorecardModal } from "@/components/founder/ShareScorecardModal";
 import { InviteFounderModal } from "@/components/founder/InviteFounderModal";
+import { InsightWithTooltip } from "./InsightWithTooltip";
+import { getStrengthHeadline, getWeaknessHeadline } from "@/lib/insightExplanations";
 
 interface DashboardScorecardProps {
   sectionTools: Record<string, { sectionScore?: { score: number; vcBenchmark: number } }>;
@@ -394,24 +396,56 @@ export const DashboardScorecard = ({
                 <div className="p-2 rounded-lg bg-success/5 border border-success/20">
                   <div className="flex items-center gap-1 mb-0.5">
                     <TrendingUp className="w-2.5 h-2.5 text-success" />
-                    <span className="text-[9px] font-semibold text-success uppercase">Strengths</span>
+                    <span className="text-[9px] font-semibold text-success uppercase">Top Strength</span>
                   </div>
-                  <p className="text-[10px] text-foreground line-clamp-2">
-                    {scorecard.topStrengths.length > 0 
-                      ? scorecard.topStrengths.slice(0, 2).join(', ')
-                      : 'Build evidence'}
-                  </p>
+                  {scorecard.topStrengths.length > 0 ? (
+                    <InsightWithTooltip
+                      explanation={`Your ${scorecard.topStrengths[0]} section scores significantly above stage benchmarks.`}
+                      showUnderline={false}
+                    >
+                      <p className="text-[10px] text-foreground font-medium line-clamp-2">
+                        {getStrengthHeadline(
+                          scorecard.topStrengths[0],
+                          scorecard.sections.find(s => s.section === scorecard.topStrengths[0])?.score || 0,
+                          scorecard.sections.find(s => s.section === scorecard.topStrengths[0])?.benchmark || 60
+                        )}
+                      </p>
+                    </InsightWithTooltip>
+                  ) : (
+                    <InsightWithTooltip
+                      explanation="No sections scoring significantly above benchmark yet."
+                      showUnderline={false}
+                    >
+                      <p className="text-[10px] text-muted-foreground">Build evidence</p>
+                    </InsightWithTooltip>
+                  )}
                 </div>
                 <div className="p-2 rounded-lg bg-warning/5 border border-warning/20">
                   <div className="flex items-center gap-1 mb-0.5">
                     <AlertTriangle className="w-2.5 h-2.5 text-warning" />
-                    <span className="text-[9px] font-semibold text-warning uppercase">Focus</span>
+                    <span className="text-[9px] font-semibold text-warning uppercase">Critical Gap</span>
                   </div>
-                  <p className="text-[10px] text-foreground line-clamp-2">
-                    {scorecard.criticalWeaknesses.length > 0 
-                      ? scorecard.criticalWeaknesses.slice(0, 2).join(', ')
-                      : 'On track'}
-                  </p>
+                  {scorecard.criticalWeaknesses.length > 0 ? (
+                    <InsightWithTooltip
+                      explanation={`Your ${scorecard.criticalWeaknesses[0]} section is below stage benchmarks — VCs will push back here.`}
+                      showUnderline={false}
+                    >
+                      <p className="text-[10px] text-foreground font-medium line-clamp-2">
+                        {getWeaknessHeadline(
+                          scorecard.criticalWeaknesses[0],
+                          scorecard.sections.find(s => s.section === scorecard.criticalWeaknesses[0])?.score || 0,
+                          scorecard.sections.find(s => s.section === scorecard.criticalWeaknesses[0])?.benchmark || 60
+                        )}
+                      </p>
+                    </InsightWithTooltip>
+                  ) : (
+                    <InsightWithTooltip
+                      explanation="All sections meet or exceed benchmark — you're in good shape."
+                      showUnderline={false}
+                    >
+                      <p className="text-[10px] text-muted-foreground">On track</p>
+                    </InsightWithTooltip>
+                  )}
                 </div>
               </div>
             </div>

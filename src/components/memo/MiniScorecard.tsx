@@ -19,6 +19,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { buildHolisticScorecard } from "@/lib/holisticVerdictGenerator";
+import { InsightWithTooltip } from "./InsightWithTooltip";
+import { getStrengthHeadline, getWeaknessHeadline } from "@/lib/insightExplanations";
 
 interface MiniScorecardProps {
   sectionTools: Record<string, { sectionScore?: { score: number; vcBenchmark: number } }>;
@@ -192,26 +194,58 @@ export const MiniScorecard = ({
             <div className="p-2.5 rounded-lg bg-success/5 border border-success/20">
               <div className="flex items-center gap-1.5 mb-1">
                 <TrendingUp className="w-3 h-3 text-success" />
-                <span className="text-[10px] font-semibold text-success uppercase">Strengths</span>
+                <span className="text-[10px] font-semibold text-success uppercase">Top Strength</span>
               </div>
-              <p className="text-xs text-foreground line-clamp-1">
-                {scorecard.topStrengths.length > 0 
-                  ? scorecard.topStrengths.slice(0, 2).join(', ')
-                  : 'Build more evidence'}
-              </p>
+              {scorecard.topStrengths.length > 0 ? (
+                <InsightWithTooltip
+                  explanation={`Your ${scorecard.topStrengths[0]} section scores above benchmark.`}
+                  showUnderline={false}
+                >
+                  <p className="text-xs text-foreground font-medium line-clamp-1">
+                    {getStrengthHeadline(
+                      scorecard.topStrengths[0],
+                      scorecard.sections.find(s => s.section === scorecard.topStrengths[0])?.score || 0,
+                      scorecard.sections.find(s => s.section === scorecard.topStrengths[0])?.benchmark || 60
+                    )}
+                  </p>
+                </InsightWithTooltip>
+              ) : (
+                <InsightWithTooltip
+                  explanation="No sections scoring significantly above benchmark yet."
+                  showUnderline={false}
+                >
+                  <p className="text-xs text-muted-foreground">Build more evidence</p>
+                </InsightWithTooltip>
+              )}
             </div>
             
             {/* Focus Areas */}
             <div className="p-2.5 rounded-lg bg-warning/5 border border-warning/20">
               <div className="flex items-center gap-1.5 mb-1">
                 <AlertTriangle className="w-3 h-3 text-warning" />
-                <span className="text-[10px] font-semibold text-warning uppercase">Focus</span>
+                <span className="text-[10px] font-semibold text-warning uppercase">Critical Gap</span>
               </div>
-              <p className="text-xs text-foreground line-clamp-1">
-                {scorecard.criticalWeaknesses.length > 0 
-                  ? scorecard.criticalWeaknesses.slice(0, 2).join(', ')
-                  : 'On track'}
-              </p>
+              {scorecard.criticalWeaknesses.length > 0 ? (
+                <InsightWithTooltip
+                  explanation={`Your ${scorecard.criticalWeaknesses[0]} section is below benchmark.`}
+                  showUnderline={false}
+                >
+                  <p className="text-xs text-foreground font-medium line-clamp-1">
+                    {getWeaknessHeadline(
+                      scorecard.criticalWeaknesses[0],
+                      scorecard.sections.find(s => s.section === scorecard.criticalWeaknesses[0])?.score || 0,
+                      scorecard.sections.find(s => s.section === scorecard.criticalWeaknesses[0])?.benchmark || 60
+                    )}
+                  </p>
+                </InsightWithTooltip>
+              ) : (
+                <InsightWithTooltip
+                  explanation="All sections meet or exceed benchmark."
+                  showUnderline={false}
+                >
+                  <p className="text-xs text-muted-foreground">On track</p>
+                </InsightWithTooltip>
+              )}
             </div>
           </div>
         </div>
