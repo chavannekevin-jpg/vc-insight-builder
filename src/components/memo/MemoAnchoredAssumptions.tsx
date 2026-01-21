@@ -11,13 +11,24 @@ import {
   TrendingUp,
   Sparkles,
   Target,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  History
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { AnchoredAssumptions, AIMetricEstimate } from "@/lib/anchoredAssumptions";
+import type { 
+  AnchoredAssumptions, 
+  AIMetricEstimate,
+  FinancialMetricSet,
+  MetricDiscrepancy,
+  ClassifiedMetric,
+  MetricClassification
+} from "@/lib/anchoredAssumptions";
 import type { BusinessModelType } from "@/lib/businessModelFramework";
 
 interface MemoAnchoredAssumptionsProps {
@@ -54,6 +65,16 @@ const confidenceConfig: Record<'high' | 'medium' | 'low', { label: string; color
   low: { label: 'Low Confidence', color: 'text-destructive' },
 };
 
+const classificationConfig: Record<MetricClassification, { label: string; color: string; icon: typeof CheckCircle2 }> = {
+  actual: { label: 'Actual', color: 'bg-success/20 text-success border-success/30', icon: CheckCircle2 },
+  calculated: { label: 'Calculated', color: 'bg-primary/20 text-primary border-primary/30', icon: Calculator },
+  projected: { label: 'Projected', color: 'bg-warning/20 text-warning border-warning/30', icon: TrendingUp },
+  target: { label: 'Target', color: 'bg-muted text-muted-foreground border-border', icon: Target },
+  assumed: { label: 'Assumed', color: 'bg-destructive/20 text-destructive border-destructive/30', icon: AlertCircle },
+  minimum: { label: 'Minimum', color: 'bg-accent/50 text-accent-foreground border-accent', icon: AlertTriangle },
+  benchmark: { label: 'Benchmark', color: 'bg-secondary text-secondary-foreground border-secondary', icon: Info },
+};
+
 const formatCurrency = (value: number, currency: string = 'USD'): string => {
   const symbols: Record<string, string> = { USD: '$', EUR: '€', GBP: '£', SEK: 'kr', NOK: 'kr', DKK: 'kr' };
   const symbol = symbols[currency] || '$';
@@ -71,6 +92,72 @@ const formatPeriod = (periodicity: string): string => {
   }
 };
 
+const ClassifiedMetricDisplay = ({ 
+  metric, 
+  label,
+  showCalculation = false 
+}: { 
+  metric: ClassifiedMetric; 
+  label: string;
+  showCalculation?: boolean;
+}) => {
+  const config = classificationConfig[metric.classification];
+  const ClassIcon = config.icon;
+  
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <Badge variant="outline" className={`text-xs ${config.color}`}>
+        <ClassIcon className="w-3 h-3 mr-1" />
+        {config.label}
+      </Badge>
+      <span className="font-medium">{label}:</span>
+      <span className="font-bold">{formatCurrency(metric.value, metric.currency)}</span>
+      {metric.asOfDate && (
+        <span className="text-xs text-muted-foreground flex items-center gap-1">
+          <Clock className="w-3 h-3" />
+          {metric.asOfDate}
+        </span>
+      )}
+      {showCalculation && metric.calculationMethod && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Info className="w-3 h-3 text-muted-foreground" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs text-xs">{metric.calculationMethod}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </div>
+  );
+};
+
+const DiscrepancyAlert = ({ discrepancy }: { discrepancy: MetricDiscrepancy }) => {
+  return (
+    <div className={`p-3 rounded-lg border ${
+      discrepancy.severity === 'error' 
+        ? 'bg-destructive/10 border-destructive/30' 
+        : discrepancy.severity === 'warning'
+        ? 'bg-warning/10 border-warning/30'
+        : 'bg-muted border-border'
+    }`}>
+      <div className="flex items-start gap-2">
+        <AlertTriangle className={`w-4 h-4 mt-0.5 ${
+          discrepancy.severity === 'error' ? 'text-destructive' : 'text-warning'
+        }`} />
+        <div className="space-y-1">
+          <p className="text-sm">{discrepancy.explanation}</p>
+          {discrepancy.recommendation && (
+            <p className="text-xs text-muted-foreground">{discrepancy.recommendation}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const MemoAnchoredAssumptions = ({ 
   assumptions, 
   companyName = 'Company',
@@ -85,6 +172,8 @@ export const MemoAnchoredAssumptions = ({
   const confidenceInfo = confidenceConfig[assumptions.sourceConfidence] || confidenceConfig.low;
   
   const hasAIEstimate = assumptions.source === 'ai_estimated' && assumptions.aiEstimate;
+  const hasClassifiedMetrics = assumptions.classifiedMetrics;
+  const hasDiscrepancies = assumptions.metricDiscrepancies && assumptions.metricDiscrepancies.length > 0;
 
   return (
     <div className="relative animate-fade-in mb-8">
@@ -108,6 +197,12 @@ export const MemoAnchoredAssumptions = ({
                       <SourceIcon className="w-3 h-3 mr-1" />
                       {sourceInfo.label}
                     </Badge>
+                    {hasDiscrepancies && (
+                      <Badge variant="outline" className="text-xs bg-warning/20 text-warning border-warning/30">
+                        <AlertTriangle className="w-3 h-3 mr-1" />
+                        {assumptions.metricDiscrepancies!.length} issue{assumptions.metricDiscrepancies!.length > 1 ? 's' : ''}
+                      </Badge>
+                    )}
                   </div>
                   
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -148,87 +243,231 @@ export const MemoAnchoredAssumptions = ({
           
           {/* Expanded content */}
           <CollapsibleContent>
-            <div className="px-4 pb-4 pt-2 border-t border-border/50">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Primary Metric Card */}
-                <div className="bg-muted/30 rounded-xl p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      {assumptions.primaryMetricFullLabel}
-                    </span>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <span className={`text-xs font-medium ${confidenceInfo.color}`}>
-                            {confidenceInfo.label}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs text-xs">{assumptions.sourceDescription}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-foreground">
-                      {assumptions.primaryMetricValue 
-                        ? formatCurrency(assumptions.primaryMetricValue, assumptions.currency)
-                        : '—'}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {formatPeriod(assumptions.periodicity)}
-                    </span>
-                  </div>
-                  
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {assumptions.sourceDescription}
-                  </p>
+            <div className="px-4 pb-4 pt-2 border-t border-border/50 space-y-4">
+              {/* Discrepancy Alerts */}
+              {hasDiscrepancies && (
+                <div className="space-y-2">
+                  {assumptions.metricDiscrepancies!.map((discrepancy, idx) => (
+                    <DiscrepancyAlert key={idx} discrepancy={discrepancy} />
+                  ))}
                 </div>
-                
-                {/* Scale Requirements Card */}
-                {assumptions.scaleRequirements && (
+              )}
+              
+              {/* Classified Metrics Section */}
+              {hasClassifiedMetrics && (
+                <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium">Financial Metrics (Classified)</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Actual Metrics */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Actual (Verified)
+                      </span>
+                      <div className="space-y-1.5">
+                        {assumptions.classifiedMetrics!.arr.actual && (
+                          <ClassifiedMetricDisplay 
+                            metric={assumptions.classifiedMetrics!.arr.actual} 
+                            label="ARR"
+                            showCalculation
+                          />
+                        )}
+                        {assumptions.classifiedMetrics!.mrr.actual && (
+                          <ClassifiedMetricDisplay 
+                            metric={assumptions.classifiedMetrics!.mrr.actual} 
+                            label="MRR"
+                          />
+                        )}
+                        {assumptions.classifiedMetrics!.acv.actual && (
+                          <ClassifiedMetricDisplay 
+                            metric={assumptions.classifiedMetrics!.acv.actual} 
+                            label="Avg ACV"
+                            showCalculation
+                          />
+                        )}
+                        {assumptions.classifiedMetrics!.customers.actual && (
+                          <ClassifiedMetricDisplay 
+                            metric={assumptions.classifiedMetrics!.customers.actual} 
+                            label="Customers"
+                          />
+                        )}
+                        {assumptions.classifiedMetrics!.growth.yearlyRate && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Badge variant="outline" className="text-xs bg-success/20 text-success border-success/30">
+                              <TrendingUp className="w-3 h-3 mr-1" />
+                              Actual
+                            </Badge>
+                            <span className="font-medium">YoY Growth:</span>
+                            <span className="font-bold text-success">
+                              +{assumptions.classifiedMetrics!.growth.yearlyRate.value}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Stated Pricing / Minimums */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Stated Pricing
+                      </span>
+                      <div className="space-y-1.5">
+                        {assumptions.classifiedMetrics!.acv.minimum && (
+                          <ClassifiedMetricDisplay 
+                            metric={assumptions.classifiedMetrics!.acv.minimum} 
+                            label="Minimum"
+                          />
+                        )}
+                        {assumptions.classifiedMetrics!.acv.target && (
+                          <ClassifiedMetricDisplay 
+                            metric={assumptions.classifiedMetrics!.acv.target} 
+                            label="Target ACV"
+                          />
+                        )}
+                      </div>
+                      
+                      {/* Historical if available */}
+                      {assumptions.classifiedMetrics!.mrr.historical && assumptions.classifiedMetrics!.mrr.historical.length > 0 && (
+                        <div className="mt-3 pt-2 border-t border-border/30">
+                          <span className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-1.5">
+                            <History className="w-3 h-3" />
+                            Historical
+                          </span>
+                          {assumptions.classifiedMetrics!.mrr.historical.map((m, idx) => (
+                            <ClassifiedMetricDisplay key={idx} metric={m} label="MRR" />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Legacy display for non-classified data */}
+              {!hasClassifiedMetrics && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Primary Metric Card */}
                   <div className="bg-muted/30 rounded-xl p-4 space-y-3">
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      Scale to $100M ARR
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        {assumptions.primaryMetricFullLabel}
+                      </span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <span className={`text-xs font-medium ${confidenceInfo.color}`}>
+                              {confidenceInfo.label}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs text-xs">{assumptions.sourceDescription}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl font-bold text-foreground">
-                        {assumptions.scaleRequirements.unitsNeeded.toLocaleString()}
+                        {assumptions.primaryMetricValue 
+                          ? formatCurrency(assumptions.primaryMetricValue, assumptions.currency)
+                          : '—'}
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        {assumptions.scaleRequirements.unitLabel}
+                        {formatPeriod(assumptions.periodicity)}
                       </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${
-                          assumptions.scaleRequirements.feasibilityAssessment === 'highly_feasible' 
-                            ? 'bg-success/20 text-success border-success/30'
-                            : assumptions.scaleRequirements.feasibilityAssessment === 'feasible'
-                            ? 'bg-primary/20 text-primary border-primary/30'
-                            : assumptions.scaleRequirements.feasibilityAssessment === 'challenging'
-                            ? 'bg-warning/20 text-warning border-warning/30'
-                            : 'bg-destructive/20 text-destructive border-destructive/30'
-                        }`}
-                      >
-                        {assumptions.scaleRequirements.feasibilityAssessment.replace('_', ' ')}
-                      </Badge>
                     </div>
                     
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      {assumptions.scaleRequirements.context}
+                      {assumptions.sourceDescription}
                     </p>
                   </div>
-                )}
-              </div>
+                  
+                  {/* Scale Requirements Card */}
+                  {assumptions.scaleRequirements && (
+                    <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Scale to $100M ARR
+                      </span>
+                      
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-foreground">
+                          {assumptions.scaleRequirements.unitsNeeded.toLocaleString()}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {assumptions.scaleRequirements.unitLabel}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            assumptions.scaleRequirements.feasibilityAssessment === 'highly_feasible' 
+                              ? 'bg-success/20 text-success border-success/30'
+                              : assumptions.scaleRequirements.feasibilityAssessment === 'feasible'
+                              ? 'bg-primary/20 text-primary border-primary/30'
+                              : assumptions.scaleRequirements.feasibilityAssessment === 'challenging'
+                              ? 'bg-warning/20 text-warning border-warning/30'
+                              : 'bg-destructive/20 text-destructive border-destructive/30'
+                          }`}
+                        >
+                          {assumptions.scaleRequirements.feasibilityAssessment.replace('_', ' ')}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {assumptions.scaleRequirements.context}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Scale Requirements (shown even with classified metrics) */}
+              {hasClassifiedMetrics && assumptions.scaleRequirements && (
+                <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Path to $100M ARR (using actual ACV of {assumptions.classifiedMetrics?.acv.actual ? formatCurrency(assumptions.classifiedMetrics.acv.actual.value, assumptions.currency) : formatCurrency(assumptions.primaryMetricValue || 0, assumptions.currency)})
+                  </span>
+                  
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-foreground">
+                      {assumptions.scaleRequirements.unitsNeeded.toLocaleString()}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {assumptions.scaleRequirements.unitLabel}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs ${
+                        assumptions.scaleRequirements.feasibilityAssessment === 'highly_feasible' 
+                          ? 'bg-success/20 text-success border-success/30'
+                          : assumptions.scaleRequirements.feasibilityAssessment === 'feasible'
+                          ? 'bg-primary/20 text-primary border-primary/30'
+                          : assumptions.scaleRequirements.feasibilityAssessment === 'challenging'
+                          ? 'bg-warning/20 text-warning border-warning/30'
+                          : 'bg-destructive/20 text-destructive border-destructive/30'
+                      }`}
+                    >
+                      {assumptions.scaleRequirements.feasibilityAssessment.replace('_', ' ')}
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {assumptions.scaleRequirements.context}
+                  </p>
+                </div>
+              )}
               
               {/* AI Comparables Section */}
               {hasAIEstimate && assumptions.aiEstimate && (
-                <div className="mt-4 p-4 bg-primary/5 rounded-xl border border-primary/20">
+                <div className="p-4 bg-primary/5 rounded-xl border border-primary/20">
                   <div className="flex items-center gap-2 mb-3">
                     <Sparkles className="w-4 h-4 text-primary" />
                     <span className="text-sm font-medium text-foreground">AI Estimation Details</span>

@@ -482,3 +482,135 @@ export interface BuildCompanyModelResponse {
   warnings: string[];
   errors: string[];
 }
+
+// -----------------------------------------------------------------------------
+// CLASSIFIED FINANCIAL METRICS - Intelligent metric categorization
+// -----------------------------------------------------------------------------
+
+/**
+ * Classification for financial metrics that distinguishes between:
+ * - actual: Current, verified values from real data
+ * - calculated: Derived from formulas (e.g., ARR ÷ customers = ACV)
+ * - projected: Future targets mentioned in plans
+ * - target: Aspirational goals (e.g., $100M ARR)
+ * - assumed: Values used for modeling when real data is missing
+ * - minimum: Stated floor/minimum values (e.g., "minimum annual €10k")
+ * - benchmark: Industry comparables for context
+ */
+export type MetricClassification = 
+  | 'actual'      // Current, verified from real traction data
+  | 'calculated'  // Derived from formula (ARR/customers, MRR×12)
+  | 'projected'   // Future target mentioned in vision/ask
+  | 'target'      // Aspirational goal like $100M ARR
+  | 'assumed'     // Used for modeling when data missing
+  | 'minimum'     // Stated floor/minimum pricing
+  | 'benchmark';  // Industry comparable
+
+/**
+ * Temporality of the metric - when does this value apply?
+ */
+export type MetricTemporality = 
+  | 'current'        // As of now / most recent
+  | 'historical'     // Past value with date
+  | 'future_12m'     // Projected 12 months out
+  | 'future_24m'     // Projected 24 months out
+  | 'at_exit'        // Exit/acquisition target
+  | 'unspecified';   // No temporal context
+
+/**
+ * A single classified metric with full provenance
+ */
+export interface ClassifiedMetric {
+  value: number;
+  currency: 'USD' | 'EUR' | 'GBP' | 'SEK' | 'NOK' | 'DKK';
+  classification: MetricClassification;
+  temporality: MetricTemporality;
+  asOfDate?: string;  // "March 2025" for eID Easy's €45k MRR
+  confidence: 'verified' | 'extracted' | 'inferred' | 'estimated';
+  sourceText?: string;  // Original text this was extracted from
+  calculationMethod?: string;  // "ARR ÷ Customers" for derived values
+  sourceField?: string;  // Which questionnaire field this came from
+}
+
+/**
+ * Comprehensive set of classified metrics for a company
+ * Separates actual vs projected vs target vs assumed values
+ */
+export interface FinancialMetricSet {
+  // Annual Recurring Revenue
+  arr: {
+    actual?: ClassifiedMetric;     // Current verified ARR
+    historical?: ClassifiedMetric[];  // Previous ARR values with dates
+    projected?: ClassifiedMetric;  // Targeted future ARR
+    target?: ClassifiedMetric;     // VC-scale target ($100M)
+  };
+  
+  // Monthly Recurring Revenue
+  mrr: {
+    actual?: ClassifiedMetric;     // Current MRR
+    historical?: ClassifiedMetric[];  // Previous MRR values
+  };
+  
+  // Average Contract Value / ARPU / Deal Size
+  acv: {
+    actual?: ClassifiedMetric;     // Calculated from ARR/customers
+    minimum?: ClassifiedMetric;    // Stated minimum pricing floor
+    target?: ClassifiedMetric;     // Ideal enterprise ACV
+    benchmark?: ClassifiedMetric;  // Industry comparable
+  };
+  
+  // Customer metrics
+  customers: {
+    actual?: ClassifiedMetric;     // Current paying customers
+    historical?: ClassifiedMetric[];  // Previous counts with dates
+    target?: ClassifiedMetric;     // Customer goal
+  };
+  
+  // Revenue (non-recurring)
+  revenue: {
+    actual?: ClassifiedMetric;
+    projected?: ClassifiedMetric;
+  };
+  
+  // Growth rates
+  growth: {
+    monthlyRate?: ClassifiedMetric;
+    yearlyRate?: ClassifiedMetric;
+  };
+}
+
+/**
+ * Discrepancy between classified metrics (e.g., actual ACV < stated minimum)
+ */
+export interface MetricDiscrepancy {
+  metricType: 'arr' | 'mrr' | 'acv' | 'customers' | 'growth';
+  classification1: MetricClassification;
+  value1: number;
+  classification2: MetricClassification;
+  value2: number;
+  severity: 'info' | 'warning' | 'error';
+  explanation: string;
+  recommendation?: string;
+}
+
+/**
+ * Context for which metric should be used in different scenarios
+ */
+export type MetricContext = 
+  | 'traction_analysis'      // Evaluating current state
+  | 'unit_economics'         // CAC/LTV calculations
+  | 'scale_test'             // Path to $100M ARR
+  | 'valuation'              // Valuation modeling
+  | 'benchmark_comparison'   // Industry comparison
+  | 'investor_narrative';    // Deck/memo content
+
+/**
+ * Extended AnchoredAssumptions with full metric set
+ */
+export interface ExtendedAnchoredAssumptions {
+  metricSet: FinancialMetricSet;
+  discrepancies: MetricDiscrepancy[];
+  
+  // Context-aware metric selection
+  getMetricForContext(context: MetricContext): ClassifiedMetric | null;
+}
