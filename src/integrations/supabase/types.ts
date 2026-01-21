@@ -322,6 +322,7 @@ export type Database = {
           deck_parsed_at: string | null
           deck_url: string | null
           description: string | null
+          earned_referral_discount: number | null
           founder_id: string
           generations_available: number
           generations_used: number
@@ -350,6 +351,7 @@ export type Database = {
           deck_parsed_at?: string | null
           deck_url?: string | null
           description?: string | null
+          earned_referral_discount?: number | null
           founder_id: string
           generations_available?: number
           generations_used?: number
@@ -378,6 +380,7 @@ export type Database = {
           deck_parsed_at?: string | null
           deck_url?: string | null
           description?: string | null
+          earned_referral_discount?: number | null
           founder_id?: string
           generations_available?: number
           generations_used?: number
