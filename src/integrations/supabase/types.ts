@@ -329,9 +329,14 @@ export type Database = {
           id: string
           memo_content_generated: boolean | null
           name: string
+          public_score: number | null
           referral_code: string | null
           referral_discount_applied: boolean | null
+          referred_by_company_id: string | null
+          referred_by_founder_code: string | null
           referred_by_investor: string | null
+          scoreboard_anonymous: boolean | null
+          scoreboard_opt_in: boolean | null
           stage: string
           updated_at: string
           vc_verdict_json: Json | null
@@ -352,9 +357,14 @@ export type Database = {
           id?: string
           memo_content_generated?: boolean | null
           name: string
+          public_score?: number | null
           referral_code?: string | null
           referral_discount_applied?: boolean | null
+          referred_by_company_id?: string | null
+          referred_by_founder_code?: string | null
           referred_by_investor?: string | null
+          scoreboard_anonymous?: boolean | null
+          scoreboard_opt_in?: boolean | null
           stage: string
           updated_at?: string
           vc_verdict_json?: Json | null
@@ -375,9 +385,14 @@ export type Database = {
           id?: string
           memo_content_generated?: boolean | null
           name?: string
+          public_score?: number | null
           referral_code?: string | null
           referral_discount_applied?: boolean | null
+          referred_by_company_id?: string | null
+          referred_by_founder_code?: string | null
           referred_by_investor?: string | null
+          scoreboard_anonymous?: boolean | null
+          scoreboard_opt_in?: boolean | null
           stage?: string
           updated_at?: string
           vc_verdict_json?: Json | null
@@ -389,6 +404,13 @@ export type Database = {
             columns: ["founder_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "companies_referred_by_company_id_fkey"
+            columns: ["referred_by_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
           {
@@ -600,6 +622,92 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      founder_referral_signups: {
+        Row: {
+          created_at: string | null
+          credit_awarded: boolean | null
+          id: string
+          referral_id: string
+          referred_company_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          credit_awarded?: boolean | null
+          id?: string
+          referral_id: string
+          referred_company_id: string
+        }
+        Update: {
+          created_at?: string | null
+          credit_awarded?: boolean | null
+          id?: string
+          referral_id?: string
+          referred_company_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "founder_referral_signups_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "founder_referrals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "founder_referral_signups_referred_company_id_fkey"
+            columns: ["referred_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      founder_referrals: {
+        Row: {
+          code: string
+          created_at: string | null
+          credits_per_signup: number | null
+          discount_percent: number | null
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          referrer_company_id: string
+          referrer_user_id: string
+          uses: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          credits_per_signup?: number | null
+          discount_percent?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          referrer_company_id: string
+          referrer_user_id: string
+          uses?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          credits_per_signup?: number | null
+          discount_percent?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          referrer_company_id?: string
+          referrer_user_id?: string
+          uses?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "founder_referrals_referrer_company_id_fkey"
+            columns: ["referrer_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       global_contacts: {
         Row: {
@@ -1704,6 +1812,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_founder_referral_credit: {
+        Args: { p_referral_code: string; p_referred_company_id: string }
+        Returns: boolean
+      }
+      generate_founder_referral_code: { Args: never; Returns: string }
       generate_invite_code: { Args: never; Returns: string }
       generate_profile_slug: { Args: { full_name: string }; Returns: string }
       get_inviter_id_from_code: {
