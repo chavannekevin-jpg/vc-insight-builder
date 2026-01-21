@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { buildHolisticScorecard } from "@/lib/holisticVerdictGenerator";
 import { InsightWithTooltip } from "./InsightWithTooltip";
 import { getStrengthHeadline, getWeaknessHeadline } from "@/lib/insightExplanations";
+import { type CompanyInsightContext } from "@/lib/companyInsightContext";
 
 interface MiniScorecardProps {
   sectionTools: Record<string, { sectionScore?: { score: number; vcBenchmark: number } }>;
@@ -29,6 +30,7 @@ interface MiniScorecardProps {
   category?: string;
   companyId: string;
   onNavigate: (path: string) => void;
+  companyInsightContext?: CompanyInsightContext | null;
 }
 
 const READINESS_CONFIG = {
@@ -61,7 +63,8 @@ export const MiniScorecard = ({
   stage, 
   category,
   companyId,
-  onNavigate
+  onNavigate,
+  companyInsightContext
 }: MiniScorecardProps) => {
   const scorecard = useMemo(() =>
     buildHolisticScorecard(sectionTools, companyName, stage, category),
