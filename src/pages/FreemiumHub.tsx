@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { CompanyBadge } from "@/components/CompanyBadge";
 import { CompanyProfileCard } from "@/components/CompanyProfileCard";
 import { VCVerdictCard } from "@/components/VCVerdictCard";
@@ -14,7 +15,8 @@ import { CollapsedLibrary } from "@/components/CollapsedLibrary";
 import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { DashboardScorecard } from "@/components/memo/DashboardScorecard";
-import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench, Trash2, Settings, Building2 } from "lucide-react";
+import { FounderSidebar } from "@/components/founder/FounderSidebar";
+import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench, Trash2, Settings, Building2, Menu } from "lucide-react";
 import { FundDiscoveryPremiumModal } from "@/components/FundDiscoveryPremiumModal";
 import { useMatchingFundsCount } from "@/hooks/useMatchingFundsCount";
 import { toast } from "@/hooks/use-toast";
@@ -580,159 +582,57 @@ export default function FreemiumHub() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Stakes Reminder Banner - Only show if no memo and not paid */}
-      {!memoGenerated && !hasPaid && (
-        <StakesReminderBanner 
-          onAction={() => navigate("/portal")} 
-          hasMemo={!!memoGenerated}
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        {/* Sidebar */}
+        <FounderSidebar
+          isAdmin={isAdmin}
+          hasPaid={hasPaid}
+          matchingFunds={matchingFunds}
+          onResetClick={() => setResetDialogOpen(true)}
+          onDeleteAccountClick={() => setDeleteAccountDialogOpen(true)}
+          onFundDiscoveryClick={() => setFundDiscoveryModalOpen(true)}
         />
-      )}
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-6">
-          {/* Top Bar */}
-          <div className="h-16 flex items-center justify-between border-b border-border/20">
-            <div className="flex items-center gap-6">
-              <button 
-                onClick={() => navigate("/")}
-                className="text-2xl font-display font-black tracking-tight neon-pink hover:scale-105 transition-transform"
+        
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Stakes Reminder Banner - Only show if no memo and not paid */}
+          {!memoGenerated && !hasPaid && (
+            <StakesReminderBanner 
+              onAction={() => navigate("/portal")} 
+              hasMemo={!!memoGenerated}
+            />
+          )}
+          
+          {/* Header */}
+          <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="px-6 h-14 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+                <CompanyBadge
+                  name={company.name}
+                  sector={company.category || undefined}
+                  tagline={generatingTagline ? "Generating tagline..." : tagline}
+                  isLoading={generatingTagline}
+                />
+              </div>
+              
+              {/* Sign out button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="gap-2 text-muted-foreground hover:text-foreground"
               >
-                UglyBaby
-              </button>
-              <CompanyBadge
-                name={company.name}
-                sector={company.category || undefined}
-                tagline={generatingTagline ? "Generating tagline..." : tagline}
-                isLoading={generatingTagline}
-              />
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </Button>
             </div>
-          </div>
+          </header>
 
-          {/* Navigation Menu */}
-          <div className="h-12 flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/hub")}
-              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              <Sparkles className="w-4 h-4" />
-              Dashboard
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/company-profile")}
-              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              <Edit className="w-4 h-4" />
-              My Profile
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                if (hasPaid) {
-                  navigate("/fund-discovery");
-                } else {
-                  setFundDiscoveryModalOpen(true);
-                }
-              }}
-              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              <Building2 className="w-4 h-4" />
-              VC Network
-              {!hasPaid && matchingFunds > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 bg-primary/20 text-primary rounded text-[10px] font-bold">
-                  {matchingFunds}+
-                </span>
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/sample-memo")}
-              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              <FileText className="w-4 h-4" />
-              Sample Analysis
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/vcbrain")}
-              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              <BookOpen className="w-4 h-4" />
-              Knowledge Library
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/tools")}
-              className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              <Calculator className="w-4 h-4" />
-              Tools
-            </Button>
-            {isAdmin && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/admin")}
-                  className="gap-2 hover:text-primary transition-colors"
-                >
-                  <Shield className="w-4 h-4" />
-                  Admin
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setResetDialogOpen(true)}
-                  className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Reset
-                </Button>
-              </>
-            )}
-            
-            {/* Account Settings Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  <Settings className="w-4 h-4" />
-                  Account
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-background border border-border">
-                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => setDeleteAccountDialogOpen(true)} 
-                  className="cursor-pointer text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete Account
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content - Single Column Layout */}
-      <main className="container mx-auto px-6 py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Main Content - Single Column Layout */}
+          <main className="flex-1 px-6 py-8 overflow-auto">
+            <div className="max-w-4xl mx-auto space-y-8">
           
           {/* Main Content based on paid/unpaid status */}
           {hasPaid && memoGenerated ? (
@@ -883,79 +783,81 @@ export default function FreemiumHub() {
             completedQuestions={completedQuestions}
             totalQuestions={totalQuestions}
           />
+            </div>
+          </main>
         </div>
-      </main>
+        
+        {/* Deck Import Wizard */}
+        <DeckImportWizard
+          open={deckWizardOpen}
+          onOpenChange={setDeckWizardOpen}
+          companyId={company.id}
+          companyName={company.name}
+          companyDescription={company.description || undefined}
+          onImportComplete={handleDeckImportComplete}
+        />
 
-      {/* Deck Import Wizard */}
-      <DeckImportWizard
-        open={deckWizardOpen}
-        onOpenChange={setDeckWizardOpen}
-        companyId={company.id}
-        companyName={company.name}
-        companyDescription={company.description || undefined}
-        onImportComplete={handleDeckImportComplete}
-      />
+        {/* Reset Confirmation Dialog */}
+        <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reset Profile: {company.name}</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will clear all questionnaire responses, memos, deck data, and reset the company profile. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isResetting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleSoftReset}
+                disabled={isResetting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isResetting ? "Resetting..." : "Reset Profile"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
-      {/* Reset Confirmation Dialog */}
-      <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reset Profile: {company.name}</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will clear all questionnaire responses, memos, deck data, and reset the company profile. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isResetting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleSoftReset}
-              disabled={isResetting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isResetting ? "Resetting..." : "Reset Profile"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        {/* Delete Account Confirmation Dialog */}
+        <AlertDialog open={deleteAccountDialogOpen} onOpenChange={setDeleteAccountDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-destructive">Delete Account Permanently</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete your account and all associated data including:
+                <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
+                  <li>Your company profile</li>
+                  <li>All questionnaire responses</li>
+                  <li>Generated memos and analyses</li>
+                  <li>Purchase history</li>
+                </ul>
+                <br />
+                <strong className="text-destructive">This action cannot be undone. Your data cannot be recovered.</strong>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeletingAccount}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteAccount}
+                disabled={isDeletingAccount}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isDeletingAccount ? "Deleting..." : "Delete My Account"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
-      {/* Delete Account Confirmation Dialog */}
-      <AlertDialog open={deleteAccountDialogOpen} onOpenChange={setDeleteAccountDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-destructive">Delete Account Permanently</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete your account and all associated data including:
-              <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
-                <li>Your company profile</li>
-                <li>All questionnaire responses</li>
-                <li>Generated memos and analyses</li>
-                <li>Purchase history</li>
-              </ul>
-              <br />
-              <strong className="text-destructive">This action cannot be undone. Your data cannot be recovered.</strong>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeletingAccount}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteAccount}
-              disabled={isDeletingAccount}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeletingAccount ? "Deleting..." : "Delete My Account"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Fund Discovery Premium Modal */}
-      <FundDiscoveryPremiumModal
-        open={fundDiscoveryModalOpen}
-        onOpenChange={setFundDiscoveryModalOpen}
-        matchingFundsCount={matchingFunds}
-        companyStage={company.stage}
-        companyCategory={company.category}
-      />
-    </div>
+        {/* Fund Discovery Premium Modal */}
+        <FundDiscoveryPremiumModal
+          open={fundDiscoveryModalOpen}
+          onOpenChange={setFundDiscoveryModalOpen}
+          matchingFundsCount={matchingFunds}
+          companyStage={company.stage}
+          companyCategory={company.category}
+        />
+      </div>
+    </SidebarProvider>
   );
 }
