@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { 
@@ -6,18 +7,38 @@ import {
   XCircle,
   TrendingUp,
   ExternalLink,
-  Target
+  Target,
+  Sparkles,
+  Clock,
+  Zap,
+  RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type SectionVerdict } from "@/lib/holisticVerdictGenerator";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface SectionDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   section: SectionVerdict | null;
   companyId: string;
+  companyDescription?: string;
+  allSectionScores?: Record<string, { score: number; benchmark: number }>;
   sectionIndex?: number;
+}
+
+interface Suggestion {
+  title: string;
+  description: string;
+  impact: 'high' | 'medium';
+  timeframe: string;
+}
+
+interface AIImprovements {
+  suggestions: Suggestion[];
+  keyInsight: string;
 }
 
 const STATUS_CONFIG = {
@@ -55,7 +76,6 @@ const STATUS_CONFIG = {
   }
 };
 
-// Map section names to their indices in the memo
 const SECTION_INDEX_MAP: Record<string, number> = {
   'Problem': 0,
   'Solution': 1,
@@ -72,16 +92,63 @@ export const SectionDetailModal = ({
   onOpenChange, 
   section, 
   companyId,
+  companyDescription,
+  allSectionScores,
   sectionIndex 
 }: SectionDetailModalProps) => {
   const navigate = useNavigate();
+  const [improvements, setImprovements] = useState<AIImprovements | null>(null);
+  const [loadingImprovements, setLoadingImprovements] = useState(false);
+  
+  useEffect(() => {
+    if (open && section && !improvements) {
+      loadImprovements();
+    }
+  }, [open, section]);
+  
+  useEffect(() => {
+    // Reset when section changes
+    if (!open) {
+      setImprovements(null);
+    }
+  }, [open]);
+  
+  const loadImprovements = async () => {
+    if (!section) return;
+    
+    setLoadingImprovements(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('suggest-section-improvements', {
+        body: {
+          sectionName: section.section,
+          sectionScore: { score: section.score, benchmark: section.benchmark },
+          sectionVerdict: section.holisticVerdict,
+          companyContext: companyDescription,
+          allSectionScores
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.suggestions) {
+        setImprovements(data);
+      }
+    } catch (err) {
+      console.error('Failed to load improvements:', err);
+      toast({
+        title: "Couldn't load suggestions",
+        description: "AI suggestions are temporarily unavailable",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingImprovements(false);
+    }
+  };
   
   if (!section) return null;
   
   const config = STATUS_CONFIG[section.status];
   const Icon = config.icon;
-  
-  // Get the section index for navigation
   const navIndex = sectionIndex ?? SECTION_INDEX_MAP[section.section] ?? 0;
   
   const handleViewFullSection = () => {
@@ -89,13 +156,12 @@ export const SectionDetailModal = ({
     navigate(`/analysis/section?companyId=${companyId}&section=${navIndex}`);
   };
   
-  // Calculate score difference from benchmark
   const scoreDiff = section.score - section.benchmark;
   const diffLabel = scoreDiff >= 0 ? `+${scoreDiff}` : `${scoreDiff}`;
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg bg-card border-border/50">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-card border-border/50">
         <DialogHeader className="pb-4 border-b border-border/30">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold flex items-center gap-3">
@@ -112,7 +178,7 @@ export const SectionDetailModal = ({
           </div>
         </DialogHeader>
         
-        <div className="space-y-6 py-4">
+        <div className="space-y-5 py-4">
           {/* Score Display */}
           <div className="flex items-center justify-between p-5 rounded-xl bg-muted/30 border border-border/50">
             <div className="space-y-1">
@@ -158,34 +224,72 @@ export const SectionDetailModal = ({
             </div>
           </div>
           
-          {/* Stage Context if available */}
-          {section.stageContext && (
-            <div className="space-y-3">
+          {/* AI Improvement Suggestions */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-warning" />
+                <Sparkles className="w-4 h-4 text-primary" />
                 <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-                  Stage Context
+                  How to Improve
                 </h4>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {section.stageContext}
-              </p>
+              {loadingImprovements && (
+                <RefreshCw className="w-4 h-4 animate-spin text-muted-foreground" />
+              )}
             </div>
-          )}
-          
-          {/* Status explanation */}
-          <div className={cn(
-            "p-4 rounded-lg border",
-            config.bg,
-            config.border
-          )}>
-            <div className="flex items-center gap-2">
-              <Icon className={cn("w-5 h-5", config.color)} />
-              <div>
-                <p className={cn("font-semibold", config.color)}>{config.label}</p>
-                <p className="text-sm text-muted-foreground">{config.description}</p>
+            
+            {loadingImprovements ? (
+              <div className="p-6 rounded-lg bg-muted/30 border border-border/50 flex flex-col items-center justify-center gap-2">
+                <RefreshCw className="w-5 h-5 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">Analyzing your data...</p>
               </div>
-            </div>
+            ) : improvements ? (
+              <div className="space-y-3">
+                {/* Key Insight */}
+                {improvements.keyInsight && (
+                  <div className="p-3 rounded-lg bg-warning/5 border border-warning/20">
+                    <div className="flex items-start gap-2">
+                      <Zap className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+                      <p className="text-sm text-foreground">{improvements.keyInsight}</p>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Suggestions */}
+                <div className="space-y-2">
+                  {improvements.suggestions.map((suggestion, i) => (
+                    <div 
+                      key={i}
+                      className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <h5 className="font-medium text-foreground text-sm">{suggestion.title}</h5>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {suggestion.impact === 'high' && (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success uppercase">
+                              High Impact
+                            </span>
+                          )}
+                          <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                            <Clock className="w-3 h-3" />
+                            {suggestion.timeframe}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {suggestion.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 rounded-lg bg-muted/30 border border-border/50 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Suggestions unavailable. View full section for detailed analysis.
+                </p>
+              </div>
+            )}
           </div>
         </div>
         
