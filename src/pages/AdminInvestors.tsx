@@ -51,11 +51,13 @@ import {
   Check,
   ExternalLink,
   Upload,
+  Sparkles,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { safeLower } from "@/lib/stringUtils";
 import { AdminBulkUploadModal } from "@/components/admin/AdminBulkUploadModal";
+import { DuplicateCleanupModal } from "@/components/admin/DuplicateCleanupModal";
 
 interface InvestorProfile {
   id: string;
@@ -118,6 +120,7 @@ const AdminInvestors = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isDuplicateCleanupOpen, setIsDuplicateCleanupOpen] = useState(false);
 
   const activeTab = searchParams.get("tab") || "investors";
 
@@ -388,6 +391,10 @@ const AdminInvestors = () => {
             </div>
             <Button variant="outline" onClick={fetchData} disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            </Button>
+            <Button variant="outline" onClick={() => setIsDuplicateCleanupOpen(true)} className="gap-2">
+              <Sparkles className="w-4 h-4" />
+              Clean Up Duplicates
             </Button>
             <Button onClick={() => setIsBulkUploadOpen(true)} className="gap-2">
               <Upload className="w-4 h-4" />
@@ -833,6 +840,16 @@ const AdminInvestors = () => {
         onSuccess={() => {
           fetchGlobalContacts();
           setIsBulkUploadOpen(false);
+        }}
+      />
+
+      {/* Duplicate Cleanup Modal */}
+      <DuplicateCleanupModal
+        isOpen={isDuplicateCleanupOpen}
+        onClose={() => setIsDuplicateCleanupOpen(false)}
+        onSuccess={() => {
+          fetchGlobalContacts();
+          setIsDuplicateCleanupOpen(false);
         }}
       />
     </AdminLayout>
