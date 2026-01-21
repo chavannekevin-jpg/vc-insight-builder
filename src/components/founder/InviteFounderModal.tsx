@@ -10,7 +10,7 @@ import {
   Sparkles,
   RefreshCw
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+// Note: keep UI resilient to long URLs (no horizontal scroll)
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -93,7 +93,7 @@ export const InviteFounderModal = ({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] overflow-y-auto bg-gradient-to-br from-card via-card to-primary/5 border-primary/30 p-0">
+      <DialogContent className="max-w-xl w-[95vw] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-gradient-to-br from-card via-card to-primary/5 border-primary/30 p-0">
         <DialogHeader className="p-6 pb-4 border-b border-border/30">
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <Gift className="w-5 h-5 text-primary" />
@@ -104,7 +104,7 @@ export const InviteFounderModal = ({
           </DialogDescription>
         </DialogHeader>
         
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5 overflow-x-hidden">
           {/* Value Proposition */}
           <div className="p-5 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/5 border border-primary/20 space-y-4">
             <div className="flex items-center gap-2">
@@ -171,11 +171,11 @@ export const InviteFounderModal = ({
           ) : referralLink ? (
             <div className="space-y-3">
               <label className="text-sm font-medium text-foreground">Your unique referral link</label>
-              <div className="flex gap-2">
-                <div className="flex-1 bg-muted/50 border rounded-lg px-3 py-2.5 text-sm truncate font-mono">
+              <div className="flex min-w-0 gap-2">
+                <div className="min-w-0 flex-1 bg-muted/50 border rounded-lg px-3 py-2.5 text-sm font-mono break-all">
                   {referralLink}
                 </div>
-                <Button onClick={handleCopy} className="gradient-primary gap-2">
+                <Button onClick={handleCopy} className="gradient-primary gap-2 shrink-0">
                   {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   {copied ? 'Copied!' : 'Copy'}
                 </Button>
