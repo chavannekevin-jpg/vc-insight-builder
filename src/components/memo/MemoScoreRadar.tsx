@@ -29,8 +29,13 @@ import {
   findConcernExplanation, 
   DEFAULT_INSIGHT_EXPLANATION,
   getStrengthHeadline,
-  getWeaknessHeadline
+  getWeaknessHeadline,
+  generateInsightExplanation
 } from "@/lib/insightExplanations";
+import { 
+  getCompanyContextForInsight, 
+  type CompanyInsightContext 
+} from "@/lib/companyInsightContext";
 
 interface MemoScoreRadarProps {
   sectionTools: Record<string, { sectionScore?: { score: number; vcBenchmark: number } }>;
@@ -40,6 +45,8 @@ interface MemoScoreRadarProps {
   onSectionClick?: (sectionName: string) => void;
   // Dynamic holistic verdicts from AI generation
   holisticVerdicts?: Record<string, DynamicHolisticVerdict>;
+  // Company-specific insight context for tooltips
+  companyInsightContext?: CompanyInsightContext | null;
 }
 
 const STATUS_CONFIG = {
@@ -193,7 +200,8 @@ export const MemoScoreRadar = ({
   stage, 
   category,
   onSectionClick,
-  holisticVerdicts
+  holisticVerdicts,
+  companyInsightContext
 }: MemoScoreRadarProps) => {
   const scorecard = useMemo(() =>
     buildHolisticScorecard(sectionTools, companyName, stage, category, holisticVerdicts),
@@ -379,12 +387,18 @@ export const MemoScoreRadar = ({
                       const explanationData = findConcernExplanation(concern);
                       const explanation = explanationData?.explanation || DEFAULT_INSIGHT_EXPLANATION.explanation;
                       
+                      // Get company-specific context
+                      const companyContext = companyInsightContext 
+                        ? getCompanyContextForInsight(concern, companyInsightContext)
+                        : null;
+                      
                       return (
                         <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                           <span className="text-destructive mt-0.5">•</span>
                           <InsightWithTooltip 
                             explanation={explanation}
-                            companyContext={explanationData?.getCompanyContext?.({ category })}
+                            companyContext={companyContext?.companyContext || explanationData?.getCompanyContext?.({ category })}
+                            evidence={companyContext?.evidence}
                           >
                             {concern}
                           </InsightWithTooltip>
@@ -402,20 +416,26 @@ export const MemoScoreRadar = ({
                     <TrendingUp className="w-4 h-4 text-success" />
                     <span className="text-xs font-semibold text-success uppercase">Top Strength</span>
                   </div>
-                  {scorecard.topStrengths.length > 0 ? (
-                    <InsightWithTooltip
-                      explanation={`Your ${scorecard.topStrengths[0]} section scores significantly above stage benchmarks, making it a standout area that will impress investors.`}
-                      showUnderline={false}
-                    >
-                      <p className="text-sm text-foreground font-medium">
-                        {getStrengthHeadline(
-                          scorecard.topStrengths[0], 
-                          scorecard.sections.find(s => s.section === scorecard.topStrengths[0])?.score || 0,
-                          scorecard.sections.find(s => s.section === scorecard.topStrengths[0])?.benchmark || 60
-                        )}
-                      </p>
-                    </InsightWithTooltip>
-                  ) : (
+                  {scorecard.topStrengths.length > 0 ? (() => {
+                    const strengthSection = scorecard.topStrengths[0];
+                    const strengthInsight = companyInsightContext?.sectionInsights[strengthSection];
+                    return (
+                      <InsightWithTooltip
+                        explanation={`Your ${strengthSection} section scores significantly above stage benchmarks, making it a standout area that will impress investors.`}
+                        companyContext={strengthInsight?.topInsight || strengthInsight?.whatThisTellsVC}
+                        evidence={strengthInsight?.evidencePoints?.slice(0, 2)}
+                        showUnderline={false}
+                      >
+                        <p className="text-sm text-foreground font-medium">
+                          {getStrengthHeadline(
+                            strengthSection, 
+                            scorecard.sections.find(s => s.section === strengthSection)?.score || 0,
+                            scorecard.sections.find(s => s.section === strengthSection)?.benchmark || 60
+                          )}
+                        </p>
+                      </InsightWithTooltip>
+                    );
+                  })() : (
                     <InsightWithTooltip
                       explanation="You don't have any sections scoring significantly above benchmark yet. Focus on building evidence in your strongest areas."
                       showUnderline={false}
@@ -429,20 +449,26 @@ export const MemoScoreRadar = ({
                     <AlertTriangle className="w-4 h-4 text-warning" />
                     <span className="text-xs font-semibold text-warning uppercase">Critical Gap</span>
                   </div>
-                  {scorecard.criticalWeaknesses.length > 0 ? (
-                    <InsightWithTooltip
-                      explanation={`Your ${scorecard.criticalWeaknesses[0]} section is below stage benchmarks. This is likely where VCs will push back — address it proactively.`}
-                      showUnderline={false}
-                    >
-                      <p className="text-sm text-foreground font-medium">
-                        {getWeaknessHeadline(
-                          scorecard.criticalWeaknesses[0],
-                          scorecard.sections.find(s => s.section === scorecard.criticalWeaknesses[0])?.score || 0,
-                          scorecard.sections.find(s => s.section === scorecard.criticalWeaknesses[0])?.benchmark || 60
-                        )}
-                      </p>
-                    </InsightWithTooltip>
-                  ) : (
+                  {scorecard.criticalWeaknesses.length > 0 ? (() => {
+                    const weakSection = scorecard.criticalWeaknesses[0];
+                    const weakInsight = companyInsightContext?.sectionInsights[weakSection];
+                    return (
+                      <InsightWithTooltip
+                        explanation={`Your ${weakSection} section is below stage benchmarks. This is likely where VCs will push back — address it proactively.`}
+                        companyContext={weakInsight?.reasoning || weakInsight?.fundabilityImpact}
+                        evidence={weakInsight?.assumptions?.slice(0, 2) || weakInsight?.evidencePoints?.slice(0, 2)}
+                        showUnderline={false}
+                      >
+                        <p className="text-sm text-foreground font-medium">
+                          {getWeaknessHeadline(
+                            weakSection,
+                            scorecard.sections.find(s => s.section === weakSection)?.score || 0,
+                            scorecard.sections.find(s => s.section === weakSection)?.benchmark || 60
+                          )}
+                        </p>
+                      </InsightWithTooltip>
+                    );
+                  })() : (
                     <InsightWithTooltip
                       explanation="All your sections meet or exceed benchmark — you're in good shape for your stage."
                       showUnderline={false}

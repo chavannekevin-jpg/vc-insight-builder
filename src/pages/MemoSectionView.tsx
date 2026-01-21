@@ -88,6 +88,7 @@ export default function MemoSectionView() {
   const memoResponses = memoData?.memoResponses || {};
   const anchoredAssumptions = memoData?.anchoredAssumptions || null;
   const holisticVerdicts = memoData?.holisticVerdicts || {};
+  const companyInsightContext = memoData?.companyInsightContext || null;
   const holisticStage = memoData?.holisticStage || null;
 
   // Use companyInfo.id as source of truth for navigation (more reliable than URL params)
@@ -319,6 +320,7 @@ export default function MemoSectionView() {
                 stage={holisticStage?.benchmarkingStage || companyInfo?.stage || 'seed'}
                 category={companyInfo?.category}
                 holisticVerdicts={holisticVerdicts}
+                companyInsightContext={companyInsightContext}
                 onSectionClick={(sectionName) => {
                   const sectionIdx = memoContent.sections.findIndex(s => 
                     safeTitle(s.title).toLowerCase().includes(sectionName.toLowerCase())
