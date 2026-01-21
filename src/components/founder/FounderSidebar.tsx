@@ -98,7 +98,7 @@ export const FounderSidebar = ({
 }: FounderSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { state } = useSidebar();
+  const { state, setOpen } = useSidebar();
   const collapsed = state === "collapsed";
   
   const [toolsOpen, setToolsOpen] = useState(false);
@@ -117,6 +117,19 @@ export const FounderSidebar = ({
     }
   };
 
+  // Hover handlers for auto-expand
+  const handleMouseEnter = () => {
+    if (collapsed) {
+      setOpen(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    // Only collapse if it was auto-expanded via hover
+    // We use a slight delay to prevent flickering
+    setOpen(false);
+  };
+
   return (
     <Sidebar
       className={cn(
@@ -124,6 +137,8 @@ export const FounderSidebar = ({
         collapsed ? "w-16" : "w-64"
       )}
       collapsible="icon"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <SidebarContent className="flex flex-col h-full">
         {/* Logo Section */}
