@@ -260,9 +260,9 @@ serve(async (req) => {
         const investorEmail = userProfile?.email || 'noreply@lovable.app';
         const investorName = investorProfile?.full_name || 'Investor';
 
-        // Create calendar event with sendUpdates=all to send invitations
+        // Create calendar event with sendUpdates=all to send invitations and conferenceDataVersion=1 for Google Meet
         const calendarResponse = await fetch(
-          `https://www.googleapis.com/calendar/v3/calendars/${tokenData.calendar_id || 'primary'}/events?sendUpdates=all`,
+          `https://www.googleapis.com/calendar/v3/calendars/${tokenData.calendar_id || 'primary'}/events?sendUpdates=all&conferenceDataVersion=1`,
           {
             method: 'POST',
             headers: {
@@ -283,6 +283,12 @@ serve(async (req) => {
               attendees: [
                 { email: bookerEmail, displayName: bookerName }
               ],
+              conferenceData: {
+                createRequest: {
+                  requestId: `meet-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                  conferenceSolutionKey: { type: 'hangoutsMeet' }
+                }
+              },
               reminders: {
                 useDefault: false,
                 overrides: [

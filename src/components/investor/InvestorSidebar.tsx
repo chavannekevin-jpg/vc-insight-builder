@@ -78,8 +78,19 @@ interface InvestorSidebarProps {
 
 const InvestorSidebar = ({ activeSection, onSectionChange, userProfile }: InvestorSidebarProps) => {
   const navigate = useNavigate();
-  const { state } = useSidebar();
+  const { state, setOpen } = useSidebar();
   const collapsed = state === "collapsed";
+
+  // Hover handlers for auto-expand
+  const handleMouseEnter = () => {
+    if (collapsed) {
+      setOpen(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setOpen(false);
+  };
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [isLoadingCode, setIsLoadingCode] = useState(false);
@@ -256,7 +267,12 @@ ${userProfile.full_name}`
 
   return (
     <>
-      <Sidebar collapsible="icon" className="border-r border-border/30 bg-gradient-to-b from-card/80 to-card/50 backdrop-blur-xl">
+      <Sidebar 
+        collapsible="icon" 
+        className="border-r border-border/30 bg-gradient-to-b from-card/80 to-card/50 backdrop-blur-xl"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <SidebarContent className="flex flex-col h-full">
           {/* User Profile Section */}
           <div className={`p-4 border-b border-border/30 ${collapsed ? "px-2" : ""}`}>
