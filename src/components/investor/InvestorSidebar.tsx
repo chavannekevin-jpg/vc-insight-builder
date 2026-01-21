@@ -22,6 +22,8 @@ import {
   Network,
   X,
   Maximize2,
+  Compass,
+  BookUser,
 } from "lucide-react";
 import {
   Sidebar,
@@ -45,7 +47,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { QRCodeSVG } from "qrcode.react";
 
-import { BookUser } from "lucide-react";
+
 
 const mainMenuItems = [
   { title: "Network Map", url: "/investor/dashboard", icon: Map, section: "map" },
@@ -53,6 +55,7 @@ const mainMenuItems = [
   { title: "CRM Pipeline", url: "/investor/dashboard?view=crm", icon: Users, section: "crm" },
   { title: "Fund Directory", url: "/investor/dashboard?view=funds", icon: Building2, section: "funds" },
   { title: "Dealflow", url: "/investor/dashboard?view=dealflow", icon: Briefcase, section: "dealflow" },
+  { title: "Scout Deals", url: "/investor/dashboard?view=scout", icon: Compass, section: "scout" },
   { title: "Upload Deck", url: "/investor/dashboard?view=upload", icon: FileUp, section: "upload" },
 ];
 

@@ -31,6 +31,7 @@ import CRMView from "@/components/investor/views/CRMView";
 import ContactDirectoryView from "@/components/investor/views/ContactDirectoryView";
 import DealflowView from "@/components/investor/views/DealflowView";
 import UploadDeckView from "@/components/investor/views/UploadDeckView";
+import DealScoutView from "@/components/investor/views/DealScoutView";
 import SettingsView from "@/components/investor/views/SettingsView";
 import PlaceholderView from "@/components/investor/views/PlaceholderView";
 import FundDirectoryView from "@/components/investor/views/FundDirectoryView";
@@ -243,6 +244,8 @@ const InvestorDashboard = () => {
             icon={Target}
           />
         );
+      case "scout":
+        return <DealScoutView userId={userId} />;
       default:
         return null;
     }
