@@ -7,6 +7,7 @@ import {
   TrendingUp, ChevronRight, Briefcase, Hash,
   Lightbulb, Zap, Filter, Globe, ArrowUpRight
 } from "lucide-react";
+import { FounderLayout } from "@/components/founder/FounderLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useCompany } from "@/hooks/useCompany";
 import { useAuth } from "@/hooks/useAuth";
@@ -249,31 +250,34 @@ export default function FundDiscovery() {
 
   if (!companyLoading && !hasPremium) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-2xl mx-auto text-center py-20">
-          <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-primary/20 shadow-[0_0_30px_rgba(236,72,153,0.2)]">
-            <Building2 className="w-10 h-10 text-primary" />
+      <FounderLayout>
+        <div className="p-6">
+          <div className="max-w-2xl mx-auto text-center py-20">
+            <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-primary/20 shadow-[0_0_30px_rgba(236,72,153,0.2)]">
+              <Building2 className="w-10 h-10 text-primary" />
+            </div>
+            <h1 className="text-3xl font-display font-bold mb-4">Investor Discovery</h1>
+            <p className="text-muted-foreground mb-8">
+              Find VCs, angels, and family offices that match your startup profile. 
+              AI-powered matching based on stage, sector, and investment thesis.
+            </p>
+            <Button onClick={() => navigate('/checkout-memo')} size="lg" className="shadow-[0_0_20px_rgba(236,72,153,0.3)]">
+              <Zap className="w-4 h-4 mr-2" />
+              Unlock Full Access
+            </Button>
+            <Button variant="ghost" onClick={() => navigate('/hub')} className="ml-4">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
           </div>
-          <h1 className="text-3xl font-display font-bold mb-4">Investor Discovery</h1>
-          <p className="text-muted-foreground mb-8">
-            Find VCs, angels, and family offices that match your startup profile. 
-            AI-powered matching based on stage, sector, and investment thesis.
-          </p>
-          <Button onClick={() => navigate('/checkout-memo')} size="lg" className="shadow-[0_0_20px_rgba(236,72,153,0.3)]">
-            <Zap className="w-4 h-4 mr-2" />
-            Unlock Full Access
-          </Button>
-          <Button variant="ghost" onClick={() => navigate('/portal')} className="ml-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
         </div>
-      </div>
+      </FounderLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <FounderLayout>
+      <div className="bg-background">
       {/* Header */}
       <header className="border-b border-border/40 bg-background/95 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 py-3">
@@ -460,7 +464,8 @@ export default function FundDiscovery() {
           {selectedFund && <FundDetailPanel fund={selectedFund} />}
         </SheetContent>
       </Sheet>
-    </div>
+      </div>
+    </FounderLayout>
   );
 }
 
