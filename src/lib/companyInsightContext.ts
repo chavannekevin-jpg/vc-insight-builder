@@ -164,7 +164,7 @@ function extractSectionInsight(
 
 /**
  * Get company-specific context for a concern or insight
- * Matches the insight text to relevant section data
+ * Matches the insight text to relevant section data and finds the MOST RELEVANT sentence
  */
 export function getCompanyContextForInsight(
   insightText: string,
@@ -172,88 +172,126 @@ export function getCompanyContextForInsight(
 ): { companyContext: string; evidence: string[] } | null {
   const lower = insightText.toLowerCase();
   
-  // Map keywords to sections
-  const sectionKeywords: Record<string, string[]> = {
-    'Problem': ['problem', 'pain', 'customer validation', 'pain point'],
-    'Solution': ['solution', 'product', 'api', 'technology', 'differentiation'],
-    'Market': ['market', 'tam', 'sam', 'som', 'addressable', 'market size'],
-    'Competition': ['competition', 'competitor', 'moat', 'defensibility', 'crowded'],
-    'Team': ['team', 'founder', 'experience', 'domain expertise', 'execution'],
-    'Business Model': ['unit economics', 'acv', 'cac', 'ltv', 'pricing', 'revenue model', 'burn'],
-    'Traction': ['traction', 'customer', 'revenue', 'growth', 'retention', 'churn', 'pmf'],
-    'Vision': ['vision', 'exit', 'scale', 'roadmap', 'milestone']
-  };
+  // Extract significant words from the insight (4+ chars, not common words)
+  const commonWords = ['this', 'that', 'with', 'from', 'have', 'been', 'will', 'would', 'could', 'should', 'their', 'there', 'about', 'which', 'when', 'what', 'into', 'more', 'some', 'than', 'very', 'also', 'just', 'only'];
+  const significantWords = lower
+    .split(/\s+/)
+    .filter(w => w.length >= 4 && !commonWords.includes(w))
+    .map(w => w.replace(/[^a-z]/g, ''))
+    .filter(w => w.length >= 4);
   
-  // Find matching section
-  let matchedSection: string | null = null;
-  for (const [section, keywords] of Object.entries(sectionKeywords)) {
-    if (keywords.some(kw => lower.includes(kw))) {
-      matchedSection = section;
-      break;
+  // Score each section's relevance to the insight
+  let bestMatch: { section: string; score: number; sentence: string } | null = null;
+  
+  for (const [sectionName, insight] of Object.entries(context.sectionInsights)) {
+    if (!insight.reasoning) continue;
+    
+    // Split reasoning into sentences
+    const sentences = insight.reasoning.split(/(?<=[.!?])\s+(?=[A-Z])/);
+    
+    for (const sentence of sentences) {
+      const sentenceLower = sentence.toLowerCase();
+      
+      // Score based on matching significant words
+      let score = 0;
+      for (const word of significantWords) {
+        if (sentenceLower.includes(word)) {
+          score += word.length; // Longer matching words = higher score
+        }
+      }
+      
+      // Bonus for matching multiple words
+      const matchCount = significantWords.filter(w => sentenceLower.includes(w)).length;
+      if (matchCount >= 2) score *= 1.5;
+      if (matchCount >= 3) score *= 2;
+      
+      if (score > 0 && (!bestMatch || score > bestMatch.score)) {
+        bestMatch = { section: sectionName, score, sentence: sentence.trim() };
+      }
     }
-  }
-  
-  if (!matchedSection) {
-    // Try to find any section with relevant data
-    for (const [section, insight] of Object.entries(context.sectionInsights)) {
-      if (insight.reasoning?.toLowerCase().includes(lower.substring(0, 20))) {
-        matchedSection = section;
-        break;
+    
+    // Also check whatThisTellsVC and fundabilityImpact
+    const altTexts = [insight.whatThisTellsVC, insight.fundabilityImpact, insight.topInsight].filter(Boolean);
+    for (const text of altTexts) {
+      if (!text) continue;
+      const textLower = text.toLowerCase();
+      let score = 0;
+      for (const word of significantWords) {
+        if (textLower.includes(word)) score += word.length;
+      }
+      if (score > 0 && (!bestMatch || score > bestMatch.score)) {
+        bestMatch = { section: sectionName, score, sentence: text };
       }
     }
   }
   
-  if (!matchedSection) return null;
-  
-  const sectionInsight = context.sectionInsights[matchedSection];
-  if (!sectionInsight) return null;
-  
-  // Build company-specific context
-  let companyContext = '';
-  const evidence: string[] = [];
-  
-  // Use reasoning if available
-  if (sectionInsight.reasoning) {
-    // Extract the most relevant sentence from reasoning
-    const sentences = sectionInsight.reasoning.split(/\. (?=[A-Z])/);
-    const relevantSentence = sentences.find(s => 
-      lower.split(' ').some(word => word.length > 4 && s.toLowerCase().includes(word))
-    ) || sentences[0];
+  // If no good match found by content, fall back to section keyword matching
+  if (!bestMatch || bestMatch.score < 12) {
+    const sectionKeywords: Record<string, string[]> = {
+      'Problem': ['problem', 'pain', 'customer validation', 'pain point', 'evidence'],
+      'Solution': ['solution', 'product', 'api', 'technology', 'differentiation', 'technical'],
+      'Market': ['market', 'tam', 'sam', 'som', 'addressable', 'market size'],
+      'Competition': ['competition', 'competitor', 'moat', 'defensibility', 'crowded'],
+      'Team': ['team', 'founder', 'experience', 'domain expertise', 'execution', 'hire'],
+      'Business Model': ['unit economics', 'acv', 'cac', 'ltv', 'pricing', 'revenue model', 'burn', 'margin'],
+      'Traction': ['traction', 'customer', 'revenue', 'growth', 'retention', 'churn', 'pmf', 'paying'],
+      'Vision': ['vision', 'exit', 'scale', 'roadmap', 'milestone', 'future']
+    };
     
-    if (relevantSentence) {
-      companyContext = relevantSentence.trim();
-      if (!companyContext.endsWith('.')) companyContext += '.';
+    for (const [section, keywords] of Object.entries(sectionKeywords)) {
+      if (keywords.some(kw => lower.includes(kw))) {
+        const insight = context.sectionInsights[section];
+        if (insight?.reasoning) {
+          bestMatch = { 
+            section, 
+            score: 5, 
+            sentence: insight.reasoning.split(/(?<=[.!?])\s+/)[0] || insight.reasoning.substring(0, 200)
+          };
+          break;
+        }
+      }
     }
   }
   
-  // Add key condition as actionable context
-  if (sectionInsight.keyCondition && !companyContext.includes(sectionInsight.keyCondition.substring(0, 30))) {
-    companyContext += ` ${sectionInsight.keyCondition}`;
+  if (!bestMatch) return null;
+  
+  const sectionInsight = context.sectionInsights[bestMatch.section];
+  if (!sectionInsight) return null;
+  
+  // Clean up the matched sentence
+  let companyContext = bestMatch.sentence;
+  if (!companyContext.endsWith('.') && !companyContext.endsWith('!') && !companyContext.endsWith('?')) {
+    companyContext += '.';
+  }
+  
+  // Truncate if too long
+  if (companyContext.length > 400) {
+    companyContext = companyContext.substring(0, 397) + '...';
   }
   
   // Collect evidence
+  const evidence: string[] = [];
+  
   if (sectionInsight.assumptions && sectionInsight.assumptions.length > 0) {
-    evidence.push(...sectionInsight.assumptions.slice(0, 3));
+    evidence.push(...sectionInsight.assumptions.slice(0, 2));
   }
   
-  // Add score context
+  // Add score context if relevant
   if (sectionInsight.score !== undefined && sectionInsight.benchmark !== undefined) {
     const delta = sectionInsight.score - sectionInsight.benchmark;
-    if (delta < -10) {
-      evidence.push(`${matchedSection} score: ${sectionInsight.score}/${sectionInsight.benchmark} benchmark (${delta} gap)`);
+    if (Math.abs(delta) >= 5) {
+      evidence.push(`${bestMatch.section} score: ${sectionInsight.score}/${sectionInsight.benchmark} benchmark`);
     }
   }
   
-  // Add confidence context
+  // Add confidence if low
   if (sectionInsight.confidenceScore && sectionInsight.confidenceScore < 50) {
-    evidence.push(`Confidence: ${sectionInsight.confidenceScore}/100 (data quality issues)`);
+    evidence.push(`Data confidence: ${sectionInsight.confidenceScore}/100`);
   }
   
-  if (!companyContext && evidence.length === 0) return null;
-  
   return {
-    companyContext: companyContext || 'This assessment is based on your provided data.',
-    evidence
+    companyContext,
+    evidence: evidence.slice(0, 3) // Max 3 evidence points
   };
 }
 
