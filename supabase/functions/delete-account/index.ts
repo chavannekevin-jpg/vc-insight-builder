@@ -133,7 +133,29 @@ serve(async (req) => {
         .in('company_id', companyIds);
       console.log('[delete-account] Deleted memo_generation_jobs');
 
-      // 11. Delete companies
+      // 11. Get referral IDs before deactivating (for cleanup)
+      const { data: referralIds } = await supabaseAdmin
+        .from('founder_referrals')
+        .select('id')
+        .in('referrer_company_id', companyIds);
+
+      // 12. Deactivate founder referral codes so they can't be used after account deletion
+      await supabaseAdmin
+        .from('founder_referrals')
+        .update({ is_active: false })
+        .in('referrer_company_id', companyIds);
+      console.log('[delete-account] Deactivated founder_referrals');
+
+      // 13. Delete founder_referral_signups for those referrals
+      if (referralIds && referralIds.length > 0) {
+        await supabaseAdmin
+          .from('founder_referral_signups')
+          .delete()
+          .in('referral_id', referralIds.map(r => r.id));
+        console.log('[delete-account] Deleted founder_referral_signups');
+      }
+
+      // 14. Delete companies
       await supabaseAdmin
         .from('companies')
         .delete()
