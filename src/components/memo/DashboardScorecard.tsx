@@ -254,34 +254,53 @@ export const DashboardScorecard = ({
         <div className="relative z-10 mx-5 mt-5 p-4 rounded-xl bg-gradient-to-r from-primary/15 via-secondary/10 to-primary/5 border border-primary/30">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 space-y-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 group relative">
                 <Sparkles className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-sm text-foreground">Share & Unlock VC Intros</span>
+                <span className="font-semibold text-sm text-foreground cursor-help border-b border-dashed border-primary/50">
+                  Share & Unlock VC Intros
+                </span>
+                {/* Tooltip on hover */}
+                <div className="absolute left-0 top-full mt-2 z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
+                  <div className="bg-card/95 backdrop-blur-md border border-primary/30 rounded-lg p-3 shadow-xl max-w-xs">
+                    <div className="space-y-2 text-xs">
+                      <div className="flex items-start gap-2">
+                        <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-[10px] font-bold text-primary">1</span>
+                        <span className="text-foreground"><strong className="text-primary">Share</strong> your scorecard → Earn free regeneration credits</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-[10px] font-bold text-primary">2</span>
+                        <span className="text-foreground"><strong className="text-primary">Regenerate</strong> → Improve your score with better data</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center shrink-0 text-[10px] font-bold text-success">3</span>
+                        <span className="text-foreground"><strong className="text-success">Score 60+</strong> → Get a free intro to any VC in our network</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {isEligibleForIntro ? (
-                  <span className="text-success">✓ You're eligible for a free VC intro with your score of {scorecard.overallScore}!</span>
-                ) : (
-                  <>Earn credits by sharing → Upgrade your score → Get free intros to VCs (score 60+)</>
-                )}
-              </p>
+              {isEligibleForIntro && (
+                <p className="text-xs text-success font-medium">
+                  ✓ You're eligible for a free VC intro with your score of {scorecard.overallScore}!
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={() => setInviteFounderOpen(true)}
-                className="gap-1.5 border-primary/50 hover:bg-primary/10 text-xs"
+                className="gap-1.5 h-9 px-4 border-primary/40 bg-card hover:bg-primary/10 hover:border-primary/60 text-foreground font-medium shadow-sm transition-all"
               >
-                <Gift className="w-3.5 h-3.5" />
+                <Gift className="w-4 h-4 text-primary" />
                 Invite
               </Button>
               <Button 
                 size="sm" 
                 onClick={() => setShareScorecardOpen(true)}
-                className="gap-1.5 gradient-primary shadow-glow text-xs"
+                className="gap-1.5 h-9 px-4 gradient-primary shadow-glow font-medium"
               >
-                <Share2 className="w-3.5 h-3.5" />
+                <Share2 className="w-4 h-4" />
                 Share Score
               </Button>
             </div>
@@ -427,40 +446,40 @@ export const DashboardScorecard = ({
           </Collapsible>
           
           {/* Action buttons */}
-          <div className="mt-5 pt-4 border-t border-border/30 flex flex-wrap items-center justify-center gap-2">
+          <div className="mt-5 pt-4 border-t border-border/30 flex flex-wrap items-center justify-center gap-3">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onNavigate(`/analysis/section?companyId=${companyId}&section=0`)}
-              className="border-primary/50 hover:bg-primary/10 text-xs"
+              className="h-9 px-4 gap-2 border-border/60 bg-card hover:bg-muted/50 hover:border-primary/50 text-foreground font-medium shadow-sm transition-all"
             >
-              <FileText className="w-3.5 h-3.5 mr-1.5" />
+              <FileText className="w-4 h-4 text-muted-foreground" />
               Full Memo
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => onNavigate(`/tools`)}
-              className="border-primary/50 hover:bg-primary/10 text-xs"
+              className="h-9 px-4 gap-2 border-border/60 bg-card hover:bg-muted/50 hover:border-primary/50 text-foreground font-medium shadow-sm transition-all"
             >
-              <Wrench className="w-3.5 h-3.5 mr-1.5" />
+              <Wrench className="w-4 h-4 text-muted-foreground" />
               Tools
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => onNavigate(`/analysis/regenerate?companyId=${companyId}`)}
-              className="border-warning/50 hover:bg-warning/10 hover:border-warning text-xs"
+              className="h-9 px-4 gap-2 border-warning/40 bg-card hover:bg-warning/10 hover:border-warning/60 text-foreground font-medium shadow-sm transition-all"
             >
-              <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+              <RotateCcw className="w-4 h-4 text-warning" />
               Regenerate
             </Button>
             <Button
               size="sm"
               onClick={() => onNavigate(`/analysis/overview?companyId=${companyId}`)}
-              className="gradient-primary shadow-glow text-xs"
+              className="h-9 px-4 gap-2 gradient-primary shadow-glow font-medium"
             >
-              <LayoutGrid className="w-3.5 h-3.5 mr-1.5" />
+              <LayoutGrid className="w-4 h-4" />
               Overview
             </Button>
           </div>
