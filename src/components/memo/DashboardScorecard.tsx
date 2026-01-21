@@ -23,7 +23,9 @@ import {
   RotateCcw,
   LayoutGrid,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Sparkles,
+  ArrowRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,25 +34,19 @@ import {
   CollapsibleContent,
   CollapsibleTrigger 
 } from "@/components/ui/collapsible";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { buildHolisticScorecard, type SectionVerdict } from "@/lib/holisticVerdictGenerator";
 import { SectionDetailModal } from "./SectionDetailModal";
+import { ShareScorecardModal } from "@/components/founder/ShareScorecardModal";
+import { InviteFounderModal } from "@/components/founder/InviteFounderModal";
 
 interface DashboardScorecardProps {
   sectionTools: Record<string, { sectionScore?: { score: number; vcBenchmark: number } }>;
   companyName: string;
+  companyDescription?: string;
   stage: string;
   category?: string;
   companyId: string;
   onNavigate: (path: string) => void;
-  onInviteStartup: () => void;
-  onShareScorecard: () => void;
 }
 
 const STATUS_CONFIG = {
@@ -130,7 +126,6 @@ const MiniSectionCard = ({
       )}
     >
       <div className="relative z-10">
-        {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold text-foreground uppercase tracking-wide truncate">
             {section.section}
@@ -138,7 +133,6 @@ const MiniSectionCard = ({
           <Icon className={cn("w-3.5 h-3.5 shrink-0", config.color)} />
         </div>
         
-        {/* Score */}
         <div className="flex items-baseline gap-1">
           <span className={cn(
             "text-2xl font-bold tabular-nums",
@@ -152,7 +146,6 @@ const MiniSectionCard = ({
           </span>
         </div>
         
-        {/* Click hint */}
         <div className="absolute bottom-1.5 right-1.5 text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
           View →
         </div>
@@ -167,7 +160,7 @@ const CustomTooltip = ({ active, payload }: any) => {
     const data = payload[0].payload;
     return (
       <div className="bg-card/95 backdrop-blur-sm border border-border rounded-lg p-2 shadow-lg text-xs">
-        <p className="font-semibold text-foreground">{data.section}</p>
+        <p className="font-semibold text-foreground">{data.fullSection || data.section}</p>
         <div className="flex items-center gap-3 mt-1">
           <span>Score: <span className="font-bold text-primary">{data.score}</span></span>
           <span className="text-muted-foreground">Benchmark: {data.benchmark}</span>
@@ -180,17 +173,18 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 export const DashboardScorecard = ({ 
   sectionTools, 
-  companyName, 
+  companyName,
+  companyDescription,
   stage, 
   category,
   companyId,
-  onNavigate,
-  onInviteStartup,
-  onShareScorecard
+  onNavigate
 }: DashboardScorecardProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedSection, setSelectedSection] = useState<SectionVerdict | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [sectionModalOpen, setSectionModalOpen] = useState(false);
+  const [shareScorecardOpen, setShareScorecardOpen] = useState(false);
+  const [inviteFounderOpen, setInviteFounderOpen] = useState(false);
   
   const scorecard = useMemo(() =>
     buildHolisticScorecard(sectionTools, companyName, stage, category),
@@ -208,7 +202,17 @@ export const DashboardScorecard = ({
     [scorecard]
   );
   
+  // Build allSectionScores for AI context
+  const allSectionScores = useMemo(() => {
+    const scores: Record<string, { score: number; benchmark: number }> = {};
+    scorecard.sections.forEach(s => {
+      scores[s.section] = { score: s.score, benchmark: s.benchmark };
+    });
+    return scores;
+  }, [scorecard]);
+  
   const readinessConfig = READINESS_CONFIG[scorecard.investmentReadiness];
+  const isEligibleForIntro = scorecard.overallScore >= 60;
   
   const scoreColor = scorecard.overallScore >= 65 ? 'border-success' :
                      scorecard.overallScore >= 50 ? 'border-warning' : 'border-destructive';
@@ -219,7 +223,7 @@ export const DashboardScorecard = ({
   
   const handleSectionClick = (section: SectionVerdict) => {
     setSelectedSection(section);
-    setModalOpen(true);
+    setSectionModalOpen(true);
   };
   
   return (
@@ -241,45 +245,46 @@ export const DashboardScorecard = ({
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            {/* Share dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1.5 border-primary/50 hover:bg-primary/10">
-                  <Share2 className="w-3.5 h-3.5" />
-                  Share
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64">
-                <DropdownMenuItem onClick={onInviteStartup} className="cursor-pointer py-3">
-                  <div className="flex items-start gap-3">
-                    <Gift className="w-4 h-4 mt-0.5 text-primary" />
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Invite a Founder</p>
-                      <p className="text-xs text-muted-foreground">
-                        Give friends a discount, earn free credits
-                      </p>
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onShareScorecard} className="cursor-pointer py-3">
-                  <div className="flex items-start gap-3">
-                    <Users className="w-4 h-4 mt-0.5 text-primary" />
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Share Your Scorecard</p>
-                      <p className="text-xs text-muted-foreground">
-                        Show off your score publicly
-                      </p>
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <span className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
-              {stage}
-            </span>
+          <span className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
+            {stage}
+          </span>
+        </div>
+        
+        {/* Prominent Share CTA Banner */}
+        <div className="relative z-10 mx-5 mt-5 p-4 rounded-xl bg-gradient-to-r from-primary/15 via-secondary/10 to-primary/5 border border-primary/30">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span className="font-semibold text-sm text-foreground">Share & Unlock VC Intros</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {isEligibleForIntro ? (
+                  <span className="text-success">✓ You're eligible for a free VC intro with your score of {scorecard.overallScore}!</span>
+                ) : (
+                  <>Earn credits by sharing → Upgrade your score → Get free intros to VCs (score 60+)</>
+                )}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setInviteFounderOpen(true)}
+                className="gap-1.5 border-primary/50 hover:bg-primary/10 text-xs"
+              >
+                <Gift className="w-3.5 h-3.5" />
+                Invite
+              </Button>
+              <Button 
+                size="sm" 
+                onClick={() => setShareScorecardOpen(true)}
+                className="gap-1.5 gradient-primary shadow-glow text-xs"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                Share Score
+              </Button>
+            </div>
           </div>
         </div>
         
@@ -356,7 +361,6 @@ export const DashboardScorecard = ({
             
             {/* Right: Verdict + Stats */}
             <div className="col-span-4 space-y-3">
-              {/* Mini Verdict */}
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Target className="w-3 h-3 text-primary" />
@@ -367,7 +371,6 @@ export const DashboardScorecard = ({
                 </p>
               </div>
               
-              {/* Strengths & Weaknesses */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-2 rounded-lg bg-success/5 border border-success/20">
                   <div className="flex items-center gap-1 mb-0.5">
@@ -400,7 +403,7 @@ export const DashboardScorecard = ({
             <CollapsibleTrigger asChild>
               <button className="w-full mt-5 pt-4 border-t border-border/30 flex items-center justify-between text-sm text-muted-foreground hover:text-foreground transition-colors">
                 <span className="font-semibold uppercase tracking-wide text-xs">
-                  Section Breakdown
+                  Section Breakdown <span className="text-muted-foreground font-normal">(click to see how to improve)</span>
                 </span>
                 {isExpanded ? (
                   <ChevronUp className="w-4 h-4" />
@@ -447,7 +450,7 @@ export const DashboardScorecard = ({
               variant="outline"
               size="sm"
               onClick={() => onNavigate(`/analysis/regenerate?companyId=${companyId}`)}
-              className="border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500 text-xs"
+              className="border-warning/50 hover:bg-warning/10 hover:border-warning text-xs"
             >
               <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
               Regenerate
@@ -464,12 +467,34 @@ export const DashboardScorecard = ({
         </div>
       </div>
       
-      {/* Section Detail Modal */}
+      {/* Section Detail Modal with AI Suggestions */}
       <SectionDetailModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
+        open={sectionModalOpen}
+        onOpenChange={setSectionModalOpen}
         section={selectedSection}
         companyId={companyId}
+        companyDescription={companyDescription}
+        allSectionScores={allSectionScores}
+      />
+      
+      {/* Share Scorecard Modal */}
+      <ShareScorecardModal
+        open={shareScorecardOpen}
+        onOpenChange={setShareScorecardOpen}
+        companyId={companyId}
+        companyName={companyName}
+        companyDescription={companyDescription}
+        stage={stage}
+        category={category}
+        sectionTools={sectionTools}
+      />
+      
+      {/* Invite Founder Modal */}
+      <InviteFounderModal
+        open={inviteFounderOpen}
+        onOpenChange={setInviteFounderOpen}
+        companyId={companyId}
+        companyName={companyName}
       />
     </>
   );

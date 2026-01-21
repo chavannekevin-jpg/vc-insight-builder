@@ -742,21 +742,11 @@ export default function FreemiumHub() {
                 <DashboardScorecard
                   sectionTools={sectionTools}
                   companyName={company.name}
+                  companyDescription={company.description || undefined}
                   stage={company.stage}
                   category={company.category || undefined}
                   companyId={company.id}
                   onNavigate={navigate}
-                  onInviteStartup={() => {
-                    // Generate referral link and copy
-                    const baseUrl = window.location.origin;
-                    navigator.clipboard.writeText(`${baseUrl}/invite?founder=`);
-                    navigate(`/scorecard?id=${company.id}`);
-                  }}
-                  onShareScorecard={() => {
-                    const shareUrl = `${window.location.origin}/scorecard?id=${company.id}`;
-                    navigator.clipboard.writeText(shareUrl);
-                    toast({ title: "Scorecard link copied!", description: "Share your investment readiness with others." });
-                  }}
                 />
               ) : (
                 // Fallback card when sectionTools not available
