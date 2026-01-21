@@ -116,8 +116,8 @@ export const ShareScorecardModal = ({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto bg-gradient-to-br from-card via-card to-primary/5 border-primary/30">
-        <DialogHeader className="pb-3 border-b border-border/30">
+      <DialogContent className="max-w-xl w-[95vw] max-h-[90vh] overflow-y-auto bg-gradient-to-br from-card via-card to-primary/5 border-primary/30 p-0">
+        <DialogHeader className="p-5 pb-4 border-b border-border/30">
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary" />
             Share Your Scorecard
@@ -127,8 +127,10 @@ export const ShareScorecardModal = ({
           </DialogDescription>
         </DialogHeader>
         
-        {/* Compact Scorecard Preview */}
-        <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 p-4">
+        <div className="p-5 space-y-4">
+        
+        {/* Scorecard Preview */}
+        <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 p-5">
           {/* Company Header */}
           <div className="relative z-10 mb-3">
             <div className="flex items-start justify-between gap-3">
@@ -148,38 +150,38 @@ export const ShareScorecardModal = ({
           </div>
           
           {/* Score + Radar */}
-          <div className="relative z-10 grid grid-cols-2 gap-3 items-center">
+          <div className="relative z-10 grid grid-cols-2 gap-4 items-center mt-4">
             {/* Score Circle */}
             <div className="flex flex-col items-center">
               <div className={cn(
-                "w-16 h-16 rounded-full flex items-center justify-center",
+                "w-20 h-20 rounded-full flex items-center justify-center",
                 "bg-gradient-to-br from-card to-muted border-2",
                 scorecard.overallScore >= 65 ? "border-success shadow-[0_0_20px_rgba(34,197,94,0.3)]" :
                 scorecard.overallScore >= 50 ? "border-warning shadow-[0_0_20px_rgba(234,179,8,0.3)]" :
                 "border-destructive shadow-[0_0_20px_rgba(239,68,68,0.3)]"
               )}>
                 <div className="text-center">
-                  <span className="text-xl font-bold text-foreground">{scorecard.overallScore}</span>
-                  <span className="text-[10px] text-muted-foreground block -mt-0.5">/100</span>
+                  <span className="text-2xl font-bold text-foreground">{scorecard.overallScore}</span>
+                  <span className="text-xs text-muted-foreground block -mt-0.5">/100</span>
                 </div>
               </div>
               <div className={cn(
-                "mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold",
+                "mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold",
                 readinessConfig.bg, readinessConfig.color
               )}>
-                <Shield className="w-2.5 h-2.5" />
+                <Shield className="w-3 h-3" />
                 {readinessConfig.label}
               </div>
             </div>
             
             {/* Radar Chart */}
-            <div className="h-24">
+            <div className="h-32">
               <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+                <RadarChart data={radarData} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                   <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.4} />
                   <PolarAngleAxis 
                     dataKey="section" 
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 7, fontWeight: 500 }}
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 8, fontWeight: 500 }}
                   />
                   <Radar
                     dataKey="benchmark"
@@ -200,16 +202,16 @@ export const ShareScorecardModal = ({
             </div>
           </div>
           
-          {/* Compact Section Grid */}
-          <div className="relative z-10 mt-3 grid grid-cols-4 gap-1">
+          {/* Section Grid */}
+          <div className="relative z-10 mt-4 grid grid-cols-4 gap-2">
             {scorecard.sections.slice(0, 8).map((section) => {
               const Icon = STATUS_ICONS[section.status];
               return (
                 <div 
                   key={section.section}
-                  className="flex items-center justify-between px-1.5 py-1 rounded bg-muted/30 text-[10px]"
+                  className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-muted/40 text-xs"
                 >
-                  <span className="truncate text-foreground">{section.section.substring(0, 3)}</span>
+                  <span className="truncate text-foreground font-medium">{section.section.substring(0, 4)}</span>
                   <span className={cn(
                     "font-bold tabular-nums",
                     section.score >= section.benchmark ? "text-success" : 
@@ -224,25 +226,26 @@ export const ShareScorecardModal = ({
         </div>
         
         {/* Share Link */}
-        <div className="space-y-2 pt-2">
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-foreground">Share link</label>
           <div className="flex gap-2">
-            <div className="flex-1 bg-muted/50 border rounded-lg px-2.5 py-1.5 text-xs truncate font-mono">
+            <div className="flex-1 bg-muted/50 border rounded-lg px-3 py-2 text-sm truncate font-mono">
               {shareUrl}
             </div>
-            <Button onClick={handleCopy} variant="outline" size="sm" className="gap-1.5 h-8">
-              {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
+            <Button onClick={handleCopy} variant="outline" size="default" className="gap-2">
+              {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
               {copied ? 'Copied!' : 'Copy'}
             </Button>
           </div>
           
           {/* Social Buttons */}
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1 gap-1.5 h-8 text-xs" onClick={shareToTwitter}>
-              <Twitter className="w-3.5 h-3.5" />
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1 gap-2" onClick={shareToTwitter}>
+              <Twitter className="w-4 h-4" />
               Share on X
             </Button>
-            <Button variant="outline" size="sm" className="flex-1 gap-1.5 h-8 text-xs" onClick={shareToLinkedIn}>
-              <Linkedin className="w-3.5 h-3.5" />
+            <Button variant="outline" className="flex-1 gap-2" onClick={shareToLinkedIn}>
+              <Linkedin className="w-4 h-4" />
               LinkedIn
             </Button>
           </div>
@@ -250,26 +253,27 @@ export const ShareScorecardModal = ({
         
         {/* VC Intro Eligibility */}
         {isEligibleForIntro ? (
-          <div className="p-2.5 rounded-lg bg-success/10 border border-success/30 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+          <div className="p-4 rounded-xl bg-success/10 border border-success/30 flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
             <div>
-              <p className="font-semibold text-success text-xs">You're eligible for a free VC intro!</p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="font-semibold text-success text-sm">You're eligible for a free VC intro!</p>
+              <p className="text-xs text-muted-foreground">
                 Score {scorecard.overallScore} qualifies you for an intro to a VC from our network.
               </p>
             </div>
           </div>
         ) : (
-          <div className="p-2.5 rounded-lg bg-muted/50 border border-border/50 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-muted-foreground shrink-0" />
+          <div className="p-4 rounded-xl bg-muted/50 border border-border/50 flex items-center gap-3">
+            <TrendingUp className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>
-              <p className="font-medium text-foreground text-xs">Score 60+ to unlock VC intros</p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="font-medium text-foreground text-sm">Score 60+ to unlock VC intros</p>
+              <p className="text-xs text-muted-foreground">
                 You're {60 - scorecard.overallScore} points away from a free intro.
               </p>
             </div>
           </div>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );

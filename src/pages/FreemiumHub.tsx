@@ -16,6 +16,7 @@ import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { DashboardScorecard } from "@/components/memo/DashboardScorecard";
 import { FounderSidebar } from "@/components/founder/FounderSidebar";
+import { InviteFounderModal } from "@/components/founder/InviteFounderModal";
 import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench, Trash2, Settings, Building2, Menu } from "lucide-react";
 import { FundDiscoveryPremiumModal } from "@/components/FundDiscoveryPremiumModal";
 import { useMatchingFundsCount } from "@/hooks/useMatchingFundsCount";
@@ -124,6 +125,7 @@ export default function FreemiumHub() {
   const [vcQuickTake, setVcQuickTake] = useState<any>(null);
   const [sectionTools, setSectionTools] = useState<Record<string, any> | null>(null);
   const [fundDiscoveryModalOpen, setFundDiscoveryModalOpen] = useState(false);
+  const [inviteFounderOpen, setInviteFounderOpen] = useState(false);
 
   // Map companyData to Company type for compatibility
   const company: Company | null = companyData ? {
@@ -588,10 +590,13 @@ export default function FreemiumHub() {
         <FounderSidebar
           isAdmin={isAdmin}
           hasPaid={hasPaid}
+          hasMemo={memoHasContent}
+          companyId={company.id}
           matchingFunds={matchingFunds}
           onResetClick={() => setResetDialogOpen(true)}
           onDeleteAccountClick={() => setDeleteAccountDialogOpen(true)}
           onFundDiscoveryClick={() => setFundDiscoveryModalOpen(true)}
+          onInviteFounderClick={() => setInviteFounderOpen(true)}
         />
         
         {/* Main Content Area */}
@@ -856,6 +861,14 @@ export default function FreemiumHub() {
           matchingFundsCount={matchingFunds}
           companyStage={company.stage}
           companyCategory={company.category}
+        />
+
+        {/* Invite Founder Modal */}
+        <InviteFounderModal
+          open={inviteFounderOpen}
+          onOpenChange={setInviteFounderOpen}
+          companyId={company.id}
+          companyName={company.name}
         />
       </div>
     </SidebarProvider>
