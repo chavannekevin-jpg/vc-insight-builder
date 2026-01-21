@@ -10,17 +10,17 @@ const corsHeaders = {
 // Confidence threshold for auto-filling
 const CONFIDENCE_THRESHOLD = 0.6;
 
-// Timeout for AI API call (90 seconds)
-const AI_TIMEOUT_MS = 90000;
+// Timeout for AI API call (120 seconds for larger files)
+const AI_TIMEOUT_MS = 120000;
 
-// Max file size for single file upload (10MB) - reduced for memory safety
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+// Max file size for single file upload (20MB) - matching client-side limit
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 
-// Max size per image when processing multiple images (3MB each)
-const MAX_IMAGE_SIZE_BYTES = 3 * 1024 * 1024;
+// Max size per image when processing multiple images (5MB each)
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 // Max number of images to process (to avoid CPU limits)
-const MAX_IMAGES_TO_PROCESS = 8;
+const MAX_IMAGES_TO_PROCESS = 12;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -284,9 +284,9 @@ EXTRACTION RULES:
         console.error('File too large:', fileSizeBytes, 'bytes');
         return new Response(
           JSON.stringify({ 
-            error: `File too large (${fileSizeMB}MB). Maximum size is 10MB for direct upload. For larger decks, please use a supported format that enables client-side conversion.`,
+            error: `File too large (${fileSizeMB}MB). Maximum size is 20MB. For larger decks, try compressing the PDF or reducing image quality.`,
             fileSizeMB: parseFloat(fileSizeMB),
-            maxSizeMB: 10
+            maxSizeMB: 20
           }),
           { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
@@ -304,9 +304,9 @@ EXTRACTION RULES:
         console.error('File too large after download:', fileSize, 'bytes');
         return new Response(
           JSON.stringify({ 
-            error: `File too large (${actualSizeMB}MB). Maximum size is 10MB.`,
+            error: `File too large (${actualSizeMB}MB). Maximum size is 20MB.`,
             fileSizeMB: parseFloat(actualSizeMB),
-            maxSizeMB: 10
+            maxSizeMB: 20
           }),
           { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
