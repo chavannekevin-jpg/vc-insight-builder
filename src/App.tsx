@@ -124,6 +124,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const InvitedStartupLanding = lazy(() => import("./pages/InvitedStartupLanding"));
 const Scoreboard = lazy(() => import("./pages/Scoreboard"));
+const PublicScorecard = lazy(() => import("./pages/PublicScorecard"));
 
 // Investor Pages
 const InvestorLanding = lazy(() => import("./pages/investor/InvestorLanding"));
@@ -188,6 +189,7 @@ const App = () => (
             <Route path="/n/:slug/city/:cityName" element={<PublicNetworkPage />} />
             <Route path="/n/:slug/contact/:contactId" element={<PublicContactCard />} />
             <Route path="/scoreboard" element={<Scoreboard />} />
+            <Route path="/scorecard" element={<PublicScorecard />} />
             {/* Accelerator Demo Routes */}
             <Route path="/accelerator-demo" element={<AcceleratorDemoDashboard />} />
             <Route path="/accelerator-demo/cohort" element={<CohortOverview />} />

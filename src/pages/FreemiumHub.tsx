@@ -13,7 +13,7 @@ import { ToolsRow } from "@/components/ToolsRow";
 import { CollapsedLibrary } from "@/components/CollapsedLibrary";
 import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
-import { MiniScorecard } from "@/components/memo/MiniScorecard";
+import { DashboardScorecard } from "@/components/memo/DashboardScorecard";
 import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench, Trash2, Settings, Building2 } from "lucide-react";
 import { FundDiscoveryPremiumModal } from "@/components/FundDiscoveryPremiumModal";
 import { useMatchingFundsCount } from "@/hooks/useMatchingFundsCount";
@@ -739,13 +739,24 @@ export default function FreemiumHub() {
             <div className="space-y-6">
               {/* Investment Readiness Scorecard - with spider graph (always first) */}
               {sectionTools && Object.keys(sectionTools).length > 0 ? (
-                <MiniScorecard
+                <DashboardScorecard
                   sectionTools={sectionTools}
                   companyName={company.name}
                   stage={company.stage}
                   category={company.category || undefined}
                   companyId={company.id}
                   onNavigate={navigate}
+                  onInviteStartup={() => {
+                    // Generate referral link and copy
+                    const baseUrl = window.location.origin;
+                    navigator.clipboard.writeText(`${baseUrl}/invite?founder=`);
+                    navigate(`/scorecard?id=${company.id}`);
+                  }}
+                  onShareScorecard={() => {
+                    const shareUrl = `${window.location.origin}/scorecard?id=${company.id}`;
+                    navigator.clipboard.writeText(shareUrl);
+                    toast({ title: "Scorecard link copied!", description: "Share your investment readiness with others." });
+                  }}
                 />
               ) : (
                 // Fallback card when sectionTools not available
