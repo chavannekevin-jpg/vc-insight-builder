@@ -525,6 +525,7 @@ export default function MemoSectionView() {
               <SectionScoreCard
                 sectionName={currentSection!.title}
                 score={currentSectionTools.sectionScore}
+                companyInsightContext={companyInsightContext}
               />
             )}
 
@@ -744,7 +745,7 @@ export default function MemoSectionView() {
                     <MemoBenchmarking text={currentSection!.vcReflection.benchmarking} />
                   )}
                   
-                  <MemoAIConclusion text={currentSection!.vcReflection.conclusion} />
+                  <MemoAIConclusion text={currentSection!.vcReflection.conclusion} companyInsightContext={companyInsightContext} />
                 </div>
               ) : (
                 <MemoCollapsibleVC vcReflection={currentSection!.vcReflection} defaultOpen={true} />

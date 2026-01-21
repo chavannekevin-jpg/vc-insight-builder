@@ -40,6 +40,7 @@ import { ShareScorecardModal } from "@/components/founder/ShareScorecardModal";
 import { InviteFounderModal } from "@/components/founder/InviteFounderModal";
 import { InsightWithTooltip } from "./InsightWithTooltip";
 import { getStrengthHeadline, getWeaknessHeadline } from "@/lib/insightExplanations";
+import { type CompanyInsightContext } from "@/lib/companyInsightContext";
 
 interface DashboardScorecardProps {
   sectionTools: Record<string, { sectionScore?: { score: number; vcBenchmark: number } }>;
@@ -49,6 +50,7 @@ interface DashboardScorecardProps {
   category?: string;
   companyId: string;
   onNavigate: (path: string) => void;
+  companyInsightContext?: CompanyInsightContext | null;
 }
 
 const STATUS_CONFIG = {
@@ -180,7 +182,8 @@ export const DashboardScorecard = ({
   stage, 
   category,
   companyId,
-  onNavigate
+  onNavigate,
+  companyInsightContext
 }: DashboardScorecardProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedSection, setSelectedSection] = useState<SectionVerdict | null>(null);
@@ -398,20 +401,26 @@ export const DashboardScorecard = ({
                     <TrendingUp className="w-2.5 h-2.5 text-success" />
                     <span className="text-[9px] font-semibold text-success uppercase">Top Strength</span>
                   </div>
-                  {scorecard.topStrengths.length > 0 ? (
-                    <InsightWithTooltip
-                      explanation={`Your ${scorecard.topStrengths[0]} section scores significantly above stage benchmarks.`}
-                      showUnderline={false}
-                    >
-                      <p className="text-[10px] text-foreground font-medium line-clamp-2">
-                        {getStrengthHeadline(
-                          scorecard.topStrengths[0],
-                          scorecard.sections.find(s => s.section === scorecard.topStrengths[0])?.score || 0,
-                          scorecard.sections.find(s => s.section === scorecard.topStrengths[0])?.benchmark || 60
-                        )}
-                      </p>
-                    </InsightWithTooltip>
-                  ) : (
+                  {scorecard.topStrengths.length > 0 ? (() => {
+                    const strengthSection = scorecard.topStrengths[0];
+                    const strengthInsight = companyInsightContext?.sectionInsights[strengthSection];
+                    return (
+                      <InsightWithTooltip
+                        explanation={`Your ${strengthSection} section scores significantly above stage benchmarks.`}
+                        companyContext={strengthInsight?.topInsight || strengthInsight?.whatThisTellsVC}
+                        evidence={strengthInsight?.evidencePoints?.slice(0, 2)}
+                        showUnderline={false}
+                      >
+                        <p className="text-[10px] text-foreground font-medium line-clamp-2">
+                          {getStrengthHeadline(
+                            strengthSection,
+                            scorecard.sections.find(s => s.section === strengthSection)?.score || 0,
+                            scorecard.sections.find(s => s.section === strengthSection)?.benchmark || 60
+                          )}
+                        </p>
+                      </InsightWithTooltip>
+                    );
+                  })() : (
                     <InsightWithTooltip
                       explanation="No sections scoring significantly above benchmark yet."
                       showUnderline={false}
@@ -425,20 +434,26 @@ export const DashboardScorecard = ({
                     <AlertTriangle className="w-2.5 h-2.5 text-warning" />
                     <span className="text-[9px] font-semibold text-warning uppercase">Critical Gap</span>
                   </div>
-                  {scorecard.criticalWeaknesses.length > 0 ? (
-                    <InsightWithTooltip
-                      explanation={`Your ${scorecard.criticalWeaknesses[0]} section is below stage benchmarks — VCs will push back here.`}
-                      showUnderline={false}
-                    >
-                      <p className="text-[10px] text-foreground font-medium line-clamp-2">
-                        {getWeaknessHeadline(
-                          scorecard.criticalWeaknesses[0],
-                          scorecard.sections.find(s => s.section === scorecard.criticalWeaknesses[0])?.score || 0,
-                          scorecard.sections.find(s => s.section === scorecard.criticalWeaknesses[0])?.benchmark || 60
-                        )}
-                      </p>
-                    </InsightWithTooltip>
-                  ) : (
+                  {scorecard.criticalWeaknesses.length > 0 ? (() => {
+                    const weakSection = scorecard.criticalWeaknesses[0];
+                    const weakInsight = companyInsightContext?.sectionInsights[weakSection];
+                    return (
+                      <InsightWithTooltip
+                        explanation={`Your ${weakSection} section is below stage benchmarks — VCs will push back here.`}
+                        companyContext={weakInsight?.reasoning || weakInsight?.fundabilityImpact}
+                        evidence={weakInsight?.assumptions?.slice(0, 2)}
+                        showUnderline={false}
+                      >
+                        <p className="text-[10px] text-foreground font-medium line-clamp-2">
+                          {getWeaknessHeadline(
+                            weakSection,
+                            scorecard.sections.find(s => s.section === weakSection)?.score || 0,
+                            scorecard.sections.find(s => s.section === weakSection)?.benchmark || 60
+                          )}
+                        </p>
+                      </InsightWithTooltip>
+                    );
+                  })() : (
                     <InsightWithTooltip
                       explanation="All sections meet or exceed benchmark — you're in good shape."
                       showUnderline={false}

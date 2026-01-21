@@ -5,13 +5,18 @@ import { safeText, safeNumber, isValidAssessment } from "@/lib/toolDataUtils";
 import { ConditionalAssessmentBadge } from "@/components/memo/ConditionalAssessmentBadge";
 import { InsightWithTooltip } from "@/components/memo/InsightWithTooltip";
 import { getScoreInterpretation, generateInsightExplanation } from "@/lib/insightExplanations";
+import { 
+  getCompanyContextForInsight, 
+  type CompanyInsightContext 
+} from "@/lib/companyInsightContext";
 
 interface SectionScoreCardProps {
   score: SectionScore;
   sectionName: string;
+  companyInsightContext?: CompanyInsightContext | null;
 }
 
-export const SectionScoreCard = ({ score, sectionName }: SectionScoreCardProps) => {
+export const SectionScoreCard = ({ score, sectionName, companyInsightContext }: SectionScoreCardProps) => {
   // Early return if data is invalid
   if (!score || typeof score !== 'object') {
     return null;
@@ -20,6 +25,20 @@ export const SectionScoreCard = ({ score, sectionName }: SectionScoreCardProps) 
   const scoreValue = safeNumber(score?.score, 0);
   const vcBenchmark = safeNumber(score?.vcBenchmark, 60);
   const hasAssessment = isValidAssessment(score?.assessment);
+
+  // Get company-specific context for the insights
+  const whatThisTellsVCText = safeText(score?.whatThisTellsVC);
+  const fundabilityImpactText = safeText(score?.fundabilityImpact);
+  
+  const vcContext = companyInsightContext 
+    ? getCompanyContextForInsight(whatThisTellsVCText, companyInsightContext)
+    : null;
+  const fundabilityContext = companyInsightContext 
+    ? getCompanyContextForInsight(fundabilityImpactText, companyInsightContext)
+    : null;
+
+  // Also get section-specific insight directly
+  const sectionInsight = companyInsightContext?.sectionInsights[sectionName];
 
   const getScoreColor = (s: number) => {
     if (s >= 80) return "text-emerald-500";
@@ -104,19 +123,23 @@ export const SectionScoreCard = ({ score, sectionName }: SectionScoreCardProps) 
         <div className="p-3 rounded-lg bg-muted/50">
           <p className="text-xs font-medium text-muted-foreground mb-1">What This Tells a VC</p>
           <InsightWithTooltip
-            explanation={generateInsightExplanation(safeText(score?.whatThisTellsVC))}
+            explanation={generateInsightExplanation(whatThisTellsVCText)}
+            companyContext={vcContext?.companyContext || sectionInsight?.reasoning}
+            evidence={vcContext?.evidence || sectionInsight?.assumptions?.slice(0, 2)}
             className="text-sm text-foreground"
           >
-            {safeText(score?.whatThisTellsVC)}
+            {whatThisTellsVCText}
           </InsightWithTooltip>
         </div>
         <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
           <p className="text-xs font-medium text-primary mb-1">Fundability Impact</p>
           <InsightWithTooltip
             explanation={`Score interpretation: ${getScoreInterpretation(scoreValue).meaning}. ${getScoreInterpretation(scoreValue).vcReaction}`}
+            companyContext={fundabilityContext?.companyContext || sectionInsight?.fundabilityImpact}
+            evidence={fundabilityContext?.evidence}
             className="text-sm text-foreground"
           >
-            {safeText(score?.fundabilityImpact)}
+            {fundabilityImpactText}
           </InsightWithTooltip>
         </div>
       </div>

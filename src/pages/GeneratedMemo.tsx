@@ -1221,6 +1221,7 @@ export default function GeneratedMemo() {
                     <SectionScoreCard
                       sectionName={section.title}
                       score={currentSectionTools.sectionScore}
+                      companyInsightContext={companyInsightContext}
                     />
                   )}
 
@@ -1443,7 +1444,7 @@ export default function GeneratedMemo() {
                           <MemoBenchmarking text={section.vcReflection.benchmarking} />
                         )}
                         
-                        <MemoAIConclusion text={section.vcReflection.conclusion} />
+                        <MemoAIConclusion text={section.vcReflection.conclusion} companyInsightContext={companyInsightContext} />
                       </div>
                     ) : (
                       <MemoCollapsibleVC vcReflection={section.vcReflection} defaultOpen={true} />

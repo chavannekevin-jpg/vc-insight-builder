@@ -3,9 +3,14 @@ import { renderMarkdownText } from "@/lib/markdownParser";
 import { safeLower } from "@/lib/stringUtils";
 import { InsightWithTooltip } from "./InsightWithTooltip";
 import { generateInsightExplanation } from "@/lib/insightExplanations";
+import { 
+  getCompanyContextForInsight, 
+  type CompanyInsightContext 
+} from "@/lib/companyInsightContext";
 
 interface MemoAIConclusionProps {
   text: string;
+  companyInsightContext?: CompanyInsightContext | null;
 }
 
 // Parse the conclusion text to extract structured sections
@@ -73,11 +78,17 @@ const parseConclusion = (text: string) => {
   return sections;
 };
 
-export const MemoAIConclusion = ({ text }: MemoAIConclusionProps) => {
+export const MemoAIConclusion = ({ text, companyInsightContext }: MemoAIConclusionProps) => {
   // Guard against objects being passed instead of strings
   const safeText = typeof text === 'string' ? text : String(text || '');
   const parsed = parseConclusion(safeText);
   const hasStructuredContent = parsed.merits.length > 0 || parsed.considerations.length > 0 || parsed.recommendation;
+
+  // Helper to get company context for a specific insight
+  const getContext = (insightText: string) => {
+    if (!companyInsightContext) return null;
+    return getCompanyContextForInsight(insightText, companyInsightContext);
+  };
 
   return (
     <div className="relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-background mt-8 shadow-xl">
@@ -125,19 +136,24 @@ export const MemoAIConclusion = ({ text }: MemoAIConclusionProps) => {
               <h4 className="font-semibold text-foreground uppercase tracking-wide text-sm">Key Investment Merits</h4>
             </div>
             <div className="pl-10 space-y-2">
-              {parsed.merits.map((merit, index) => (
-                <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/10">
-                  <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-success">{index + 1}</span>
+              {parsed.merits.map((merit, index) => {
+                const context = getContext(merit);
+                return (
+                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/10">
+                    <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-bold text-success">{index + 1}</span>
+                    </div>
+                    <InsightWithTooltip
+                      explanation={generateInsightExplanation(merit)}
+                      companyContext={context?.companyContext}
+                      evidence={context?.evidence}
+                      className="text-foreground text-sm leading-relaxed"
+                    >
+                      {merit}
+                    </InsightWithTooltip>
                   </div>
-                  <InsightWithTooltip
-                    explanation={generateInsightExplanation(merit)}
-                    className="text-foreground text-sm leading-relaxed"
-                  >
-                    {merit}
-                  </InsightWithTooltip>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -152,19 +168,24 @@ export const MemoAIConclusion = ({ text }: MemoAIConclusionProps) => {
               <h4 className="font-semibold text-foreground uppercase tracking-wide text-sm">Critical Considerations</h4>
             </div>
             <div className="pl-10 space-y-2">
-              {parsed.considerations.map((consideration, index) => (
-                <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-warning/5 border border-warning/10">
-                  <div className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-warning">!</span>
+              {parsed.considerations.map((consideration, index) => {
+                const context = getContext(consideration);
+                return (
+                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-warning/5 border border-warning/10">
+                    <div className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-bold text-warning">!</span>
+                    </div>
+                    <InsightWithTooltip
+                      explanation={generateInsightExplanation(consideration)}
+                      companyContext={context?.companyContext}
+                      evidence={context?.evidence}
+                      className="text-foreground text-sm leading-relaxed"
+                    >
+                      {consideration}
+                    </InsightWithTooltip>
                   </div>
-                  <InsightWithTooltip
-                    explanation={generateInsightExplanation(consideration)}
-                    className="text-foreground text-sm leading-relaxed"
-                  >
-                    {consideration}
-                  </InsightWithTooltip>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -185,8 +206,6 @@ export const MemoAIConclusion = ({ text }: MemoAIConclusionProps) => {
             </div>
           </div>
         )}
-
-        {/* Removed premium version fallback message - users seeing this are already premium */}
       </div>
     </div>
   );
