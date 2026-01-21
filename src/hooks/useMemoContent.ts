@@ -10,6 +10,10 @@ import {
   getFallbackMetricValue,
   type AnchoredAssumptions 
 } from "@/lib/anchoredAssumptions";
+import { 
+  extractCompanyInsightContext, 
+  type CompanyInsightContext 
+} from "@/lib/companyInsightContext";
 
 export interface MemoContentData {
   memoContent: MemoStructuredContent | null;
@@ -20,6 +24,7 @@ export interface MemoContentData {
   anchoredAssumptions: AnchoredAssumptions | null;
   holisticVerdicts: Record<string, { verdict: string; stageContext?: string }>;
   holisticStage: any | null;
+  companyInsightContext: CompanyInsightContext | null;
 }
 
 // Helper to find section tools with flexible matching
@@ -191,6 +196,16 @@ async function fetchMemoContent(companyId: string): Promise<MemoContentData> {
     anchoredAssumptions = assumptions;
   }
 
+  // Extract company-specific insight context from tool data
+  const companyInsightContext = Object.keys(toolsMap).length > 0 && companyData
+    ? extractCompanyInsightContext(
+        toolsMap,
+        companyData.name || 'Your Company',
+        companyData.stage || 'seed',
+        companyData.category
+      )
+    : null;
+
   console.log('[useMemoContent] Memo content loaded successfully');
 
   return {
@@ -201,7 +216,8 @@ async function fetchMemoContent(companyId: string): Promise<MemoContentData> {
     memoResponses: responsesMap,
     anchoredAssumptions,
     holisticVerdicts: verdictsMap,
-    holisticStage
+    holisticStage,
+    companyInsightContext
   };
 }
 

@@ -4,14 +4,19 @@ import { Button } from "@/components/ui/button";
 import { safeLower } from "@/lib/stringUtils";
 import { InsightWithTooltip } from "./InsightWithTooltip";
 import { generateInsightExplanation } from "@/lib/insightExplanations";
+import { 
+  getCompanyContextForInsight, 
+  type CompanyInsightContext 
+} from "@/lib/companyInsightContext";
 
 interface MemoVCQuickTakeProps {
   quickTake: MemoVCQuickTakeType;
   showTeaser?: boolean;
   onUnlock?: () => void;
+  companyInsightContext?: CompanyInsightContext | null;
 }
 
-export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: MemoVCQuickTakeProps) => {
+export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock, companyInsightContext }: MemoVCQuickTakeProps) => {
   // Helper to safely render text
   const safeText = (text: unknown) => typeof text === 'string' ? text : String(text || '');
   
@@ -248,22 +253,31 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
                 <h3 className="font-semibold text-foreground">Top Concerns</h3>
               </div>
               <div className="space-y-2">
-                {concerns.map((concern, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-destructive/5 border border-destructive/20"
-                  >
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 text-destructive text-xs font-bold flex items-center justify-center mt-0.5">
-                      {index + 1}
-                    </span>
-                    <InsightWithTooltip
-                      explanation={generateInsightExplanation(getConcernText(concern))}
-                      className="text-sm text-foreground leading-relaxed"
+                {concerns.map((concern, index) => {
+                  const concernText = getConcernText(concern);
+                  const companyContext = companyInsightContext 
+                    ? getCompanyContextForInsight(concernText, companyInsightContext)
+                    : null;
+                  
+                  return (
+                    <div 
+                      key={index}
+                      className="flex items-start gap-3 p-3 rounded-lg bg-destructive/5 border border-destructive/20"
                     >
-                      {getConcernText(concern)}
-                    </InsightWithTooltip>
-                  </div>
-                ))}
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 text-destructive text-xs font-bold flex items-center justify-center mt-0.5">
+                        {index + 1}
+                      </span>
+                      <InsightWithTooltip
+                        explanation={generateInsightExplanation(concernText)}
+                        companyContext={companyContext?.companyContext}
+                        evidence={companyContext?.evidence}
+                        className="text-sm text-foreground leading-relaxed"
+                      >
+                        {concernText}
+                      </InsightWithTooltip>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -275,22 +289,31 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
                 <h3 className="font-semibold text-foreground">Top Strengths</h3>
               </div>
               <div className="space-y-2">
-                {strengths.map((strength, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/20"
-                  >
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-success/20 text-success text-xs font-bold flex items-center justify-center mt-0.5">
-                      {index + 1}
-                    </span>
-                    <InsightWithTooltip
-                      explanation={generateInsightExplanation(safeText(strength))}
-                      className="text-sm text-foreground leading-relaxed"
+                {strengths.map((strength, index) => {
+                  const strengthText = safeText(strength);
+                  const companyContext = companyInsightContext 
+                    ? getCompanyContextForInsight(strengthText, companyInsightContext)
+                    : null;
+                  
+                  return (
+                    <div 
+                      key={index}
+                      className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/20"
                     >
-                      {safeText(strength)}
-                    </InsightWithTooltip>
-                  </div>
-                ))}
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-success/20 text-success text-xs font-bold flex items-center justify-center mt-0.5">
+                        {index + 1}
+                      </span>
+                      <InsightWithTooltip
+                        explanation={generateInsightExplanation(strengthText)}
+                        companyContext={companyContext?.companyContext}
+                        evidence={companyContext?.evidence}
+                        className="text-sm text-foreground leading-relaxed"
+                      >
+                        {strengthText}
+                      </InsightWithTooltip>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
