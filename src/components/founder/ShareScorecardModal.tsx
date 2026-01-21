@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -122,6 +122,9 @@ export const ShareScorecardModal = ({
             <Zap className="w-5 h-5 text-primary" />
             Share Your Scorecard
           </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Share your investment readiness score and earn free regeneration credits
+          </DialogDescription>
         </DialogHeader>
         
         {/* Value Proposition Banner */}

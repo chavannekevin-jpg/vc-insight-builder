@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { 
   Copy, 
@@ -99,6 +99,9 @@ export const InviteFounderModal = ({
             <Gift className="w-5 h-5 text-primary" />
             Invite Fellow Founders
           </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Earn credits and give friends 20% off their first analysis
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-5 py-2">
