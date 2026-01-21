@@ -4,6 +4,13 @@
  * Creates a single source of truth for key financial assumptions like ACV/ARPU,
  * extracted from company model, memo responses, or AI estimation.
  * This prevents inconsistencies where different components extract different values.
+ * 
+ * NEW: Includes intelligent metric classification that distinguishes between:
+ * - actual: Current, verified values from real data
+ * - calculated: Derived from formulas (e.g., ARR ÷ customers = ACV)
+ * - projected: Future targets mentioned in plans
+ * - minimum: Stated floor/minimum values
+ * - assumed: Values used for modeling when real data is missing
  */
 
 import type { Currency } from './memoDataExtractor';
@@ -14,6 +21,85 @@ import {
   type BusinessModelType,
   type MetricFramework 
 } from './businessModelFramework';
+
+// =============================================================================
+// CLASSIFIED METRIC TYPES (mirror of backend types for frontend use)
+// =============================================================================
+
+export type MetricClassification = 
+  | 'actual'
+  | 'calculated'
+  | 'projected'
+  | 'target'
+  | 'assumed'
+  | 'minimum'
+  | 'benchmark';
+
+export type MetricTemporality = 
+  | 'current'
+  | 'historical'
+  | 'future_12m'
+  | 'future_24m'
+  | 'at_exit'
+  | 'unspecified';
+
+export interface ClassifiedMetric {
+  value: number;
+  currency: Currency;
+  classification: MetricClassification;
+  temporality: MetricTemporality;
+  asOfDate?: string;
+  confidence: 'verified' | 'extracted' | 'inferred' | 'estimated';
+  sourceText?: string;
+  calculationMethod?: string;
+}
+
+export interface FinancialMetricSet {
+  arr: {
+    actual?: ClassifiedMetric;
+    historical?: ClassifiedMetric[];
+    projected?: ClassifiedMetric;
+    target?: ClassifiedMetric;
+  };
+  mrr: {
+    actual?: ClassifiedMetric;
+    historical?: ClassifiedMetric[];
+  };
+  acv: {
+    actual?: ClassifiedMetric;
+    minimum?: ClassifiedMetric;
+    target?: ClassifiedMetric;
+    benchmark?: ClassifiedMetric;
+  };
+  customers: {
+    actual?: ClassifiedMetric;
+    historical?: ClassifiedMetric[];
+    target?: ClassifiedMetric;
+  };
+  revenue: {
+    actual?: ClassifiedMetric;
+    projected?: ClassifiedMetric;
+  };
+  growth: {
+    monthlyRate?: ClassifiedMetric;
+    yearlyRate?: ClassifiedMetric;
+  };
+}
+
+export interface MetricDiscrepancy {
+  metricType: 'arr' | 'mrr' | 'acv' | 'customers' | 'growth';
+  classification1: MetricClassification;
+  value1: number;
+  classification2: MetricClassification;
+  value2: number;
+  severity: 'info' | 'warning' | 'error';
+  explanation: string;
+  recommendation?: string;
+}
+
+// =============================================================================
+// ORIGINAL TYPES (maintained for backward compatibility)
+// =============================================================================
 
 export interface CompanyModelData {
   financial?: {
@@ -69,6 +155,10 @@ export interface AnchoredAssumptions {
     feasibilityAssessment: 'highly_feasible' | 'feasible' | 'challenging' | 'very_challenging';
     context: string;
   };
+  
+  // NEW: Classified metric set for intelligent analysis
+  classifiedMetrics?: FinancialMetricSet;
+  metricDiscrepancies?: MetricDiscrepancy[];
   
   // Legacy compatibility
   acv?: number;
@@ -445,4 +535,267 @@ export function detectCurrencyFromResponses(memoResponses: Record<string, string
   if (eurCount > usdCount && eurCount > gbpCount) return 'EUR';
   if (gbpCount > usdCount && gbpCount > eurCount) return 'GBP';
   return 'USD';
+}
+
+// =============================================================================
+// INTELLIGENT METRIC CLASSIFICATION - Frontend extraction utilities
+// =============================================================================
+
+const TEMPORAL_PATTERNS = {
+  current: [
+    /(?:currently|now|as of|today|at present)/i,
+    /(?:in\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+202[4-9]/i,
+  ],
+  historical: [
+    /(?:was|were|had|grew\s+from|increased\s+from)/i,
+    /(?:in\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+202[0-3]/i,
+  ],
+  projected: [
+    /(?:targeting|projecting|aiming\s+for|expecting|goal\s+of)/i,
+  ],
+  minimum: [
+    /(?:minimum|at\s+least|starting\s+at|floor|base\s+price)/i,
+    /(?:minimum\s+annual\s+(?:consumption|commitment|contract))/i,
+  ],
+};
+
+/**
+ * Detect temporality from surrounding text
+ */
+function detectTemporality(text: string): MetricTemporality {
+  for (const pattern of TEMPORAL_PATTERNS.historical) {
+    if (pattern.test(text)) return 'historical';
+  }
+  for (const pattern of TEMPORAL_PATTERNS.projected) {
+    if (pattern.test(text)) return 'future_12m';
+  }
+  for (const pattern of TEMPORAL_PATTERNS.current) {
+    if (pattern.test(text)) return 'current';
+  }
+  return 'unspecified';
+}
+
+/**
+ * Detect classification from surrounding text
+ */
+function detectClassification(text: string): MetricClassification {
+  for (const pattern of TEMPORAL_PATTERNS.minimum) {
+    if (pattern.test(text)) return 'minimum';
+  }
+  for (const pattern of TEMPORAL_PATTERNS.projected) {
+    if (pattern.test(text)) return 'projected';
+  }
+  return 'actual';
+}
+
+/**
+ * Extract date reference from text
+ */
+function extractDateReference(text: string): string | undefined {
+  const match = text.match(/(?:in\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4}/i);
+  return match ? match[0].replace(/^in\s+/i, '') : undefined;
+}
+
+/**
+ * Build a complete classified metric set from memo responses (frontend version)
+ */
+export function buildClassifiedMetricSet(
+  memoResponses: Record<string, string>,
+  currency: Currency = 'EUR'
+): { metricSet: FinancialMetricSet; discrepancies: MetricDiscrepancy[] } {
+  const metricSet: FinancialMetricSet = {
+    arr: {},
+    mrr: {},
+    acv: {},
+    customers: {},
+    revenue: {},
+    growth: {},
+  };
+  const discrepancies: MetricDiscrepancy[] = [];
+  
+  const tractionText = memoResponses['traction'] || '';
+  const businessModelText = memoResponses['business_model'] || '';
+  const pricingText = memoResponses['pricing'] || '';
+  const combinedText = `${tractionText} ${businessModelText} ${pricingText}`;
+  const lowerText = combinedText.toLowerCase();
+  
+  // 1. Extract MRR with growth pattern
+  const mrrGrowthMatch = combinedText.match(
+    /mrr\s+(?:grew|increased|went)\s+from\s+[€$£]?([\d,.]+)\s*k?\s*(?:in\s+)?((?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4})\s+to\s+[€$£]?([\d,.]+)\s*k?\s*(?:in\s+)?((?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4})/i
+  );
+  
+  if (mrrGrowthMatch) {
+    const historicalValue = parseNumericValueWithSuffix(mrrGrowthMatch[1], mrrGrowthMatch[0]);
+    const currentValue = parseNumericValueWithSuffix(mrrGrowthMatch[3], mrrGrowthMatch[0]);
+    
+    metricSet.mrr.historical = [{
+      value: historicalValue,
+      currency,
+      classification: 'actual',
+      temporality: 'historical',
+      asOfDate: mrrGrowthMatch[2],
+      confidence: 'extracted',
+      sourceText: mrrGrowthMatch[0],
+    }];
+    
+    metricSet.mrr.actual = {
+      value: currentValue,
+      currency,
+      classification: 'actual',
+      temporality: 'current',
+      asOfDate: mrrGrowthMatch[4],
+      confidence: 'extracted',
+      sourceText: mrrGrowthMatch[0],
+    };
+    
+    // Calculate YoY growth
+    if (historicalValue > 0) {
+      metricSet.growth.yearlyRate = {
+        value: Math.round(((currentValue - historicalValue) / historicalValue) * 100),
+        currency,
+        classification: 'calculated',
+        temporality: 'current',
+        confidence: 'extracted',
+        calculationMethod: 'YoY MRR growth',
+      };
+    }
+  }
+  
+  // 2. Calculate ARR from MRR
+  if (metricSet.mrr.actual) {
+    metricSet.arr.actual = {
+      value: metricSet.mrr.actual.value * 12,
+      currency,
+      classification: 'calculated',
+      temporality: 'current',
+      confidence: 'inferred',
+      calculationMethod: 'MRR × 12',
+      sourceText: metricSet.mrr.actual.sourceText,
+    };
+  } else {
+    // Try direct ARR extraction
+    const arrMatch = lowerText.match(/[€$£]([\d,.]+)\s*k?\s*(?:carr|arr)/i);
+    if (arrMatch) {
+      const value = parseNumericValueWithSuffix(arrMatch[1], arrMatch[0]);
+      metricSet.arr.actual = {
+        value,
+        currency,
+        classification: 'actual',
+        temporality: detectTemporality(arrMatch[0]),
+        asOfDate: extractDateReference(arrMatch[0]),
+        confidence: 'extracted',
+        sourceText: arrMatch[0],
+      };
+    }
+  }
+  
+  // 3. Extract customer count
+  const customerMatch = combinedText.match(/(\d+)\+?\s*(?:paying\s*)?(?:customer|client|account|enterprise\s*client)s?/i);
+  if (customerMatch) {
+    metricSet.customers.actual = {
+      value: parseInt(customerMatch[1]),
+      currency,
+      classification: 'actual',
+      temporality: detectTemporality(customerMatch[0]),
+      asOfDate: extractDateReference(customerMatch[0]),
+      confidence: 'extracted',
+      sourceText: customerMatch[0],
+    };
+  }
+  
+  // 4. Extract minimum pricing
+  const minMatch = combinedText.match(/minimum\s*(?:annual\s*)?(?:consumption|commitment|contract)(?:\s*of)?\s*[€$£]?([\d,.]+)\s*k?/i);
+  if (minMatch) {
+    const value = parseNumericValueWithSuffix(minMatch[1], minMatch[0]);
+    metricSet.acv.minimum = {
+      value,
+      currency,
+      classification: 'minimum',
+      temporality: 'current',
+      confidence: 'extracted',
+      sourceText: minMatch[0],
+    };
+  }
+  
+  // 5. Calculate actual ACV from ARR ÷ Customers
+  if (metricSet.arr.actual && metricSet.customers.actual && metricSet.customers.actual.value > 0) {
+    const calculatedACV = Math.round(metricSet.arr.actual.value / metricSet.customers.actual.value);
+    metricSet.acv.actual = {
+      value: calculatedACV,
+      currency,
+      classification: 'calculated',
+      temporality: 'current',
+      confidence: 'inferred',
+      calculationMethod: `ARR (${formatCurrencyValue(metricSet.arr.actual.value, currency)}) ÷ Customers (${metricSet.customers.actual.value})`,
+    };
+    
+    // Check for discrepancy with minimum
+    if (metricSet.acv.minimum && calculatedACV < metricSet.acv.minimum.value) {
+      discrepancies.push({
+        metricType: 'acv',
+        classification1: 'actual',
+        value1: calculatedACV,
+        classification2: 'minimum',
+        value2: metricSet.acv.minimum.value,
+        severity: 'warning',
+        explanation: `Your actual average ACV (${formatCurrencyValue(calculatedACV, currency)}) is below your stated minimum (${formatCurrencyValue(metricSet.acv.minimum.value, currency)}). This suggests SMB customers may be pulling down the average, or the minimum isn't being enforced.`,
+        recommendation: 'Review your customer mix and pricing enforcement.',
+      });
+    }
+  }
+  
+  // 6. Add $100M target
+  metricSet.arr.target = {
+    value: 100000000,
+    currency: 'USD',
+    classification: 'target',
+    temporality: 'at_exit',
+    confidence: 'verified',
+    sourceText: 'VC scale benchmark',
+  };
+  
+  return { metricSet, discrepancies };
+}
+
+/**
+ * Select the appropriate metric for a given context
+ */
+export function selectMetricForContext(
+  metricSet: FinancialMetricSet,
+  context: 'traction_analysis' | 'unit_economics' | 'scale_test' | 'valuation' | 'benchmark_comparison'
+): ClassifiedMetric | null {
+  switch (context) {
+    case 'traction_analysis':
+      return metricSet.arr.actual || metricSet.mrr.actual || null;
+    case 'unit_economics':
+    case 'scale_test':
+      return metricSet.acv.actual || null;
+    case 'valuation':
+      return metricSet.arr.actual || null;
+    case 'benchmark_comparison':
+      return metricSet.acv.actual || metricSet.acv.benchmark || null;
+    default:
+      return metricSet.acv.actual || null;
+  }
+}
+
+/**
+ * Helper to parse numeric values with k/m suffixes
+ */
+function parseNumericValueWithSuffix(str: string, fullMatch: string): number {
+  const clean = str.replace(/,/g, '').toLowerCase();
+  const num = parseFloat(clean);
+  const fullLower = fullMatch.toLowerCase();
+  
+  if (fullLower.includes('m') && !fullLower.includes('mrr') && num < 1000) {
+    return num * 1000000;
+  }
+  if (fullLower.match(/\dk/) || (num < 1000 && fullLower.includes('k'))) {
+    return num * 1000;
+  }
+  if (num < 1000 && fullLower.match(/[€$£][\d,.]+\s*k/)) {
+    return num * 1000;
+  }
+  
+  return num;
 }
