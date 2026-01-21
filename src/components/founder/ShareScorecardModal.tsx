@@ -116,7 +116,7 @@ export const ShareScorecardModal = ({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl w-[95vw] max-h-[90vh] overflow-y-auto bg-gradient-to-br from-card via-card to-primary/5 border-primary/30 p-0">
+      <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-gradient-to-br from-card via-card to-primary/5 border-primary/30 p-0">
         <DialogHeader className="p-5 pb-4 border-b border-border/30">
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary" />
@@ -127,7 +127,7 @@ export const ShareScorecardModal = ({
           </DialogDescription>
         </DialogHeader>
         
-        <div className="p-5 space-y-4">
+        <div className="p-5 space-y-4 overflow-x-hidden">
         
         {/* Scorecard Preview */}
         <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 p-5">
@@ -150,7 +150,7 @@ export const ShareScorecardModal = ({
           </div>
           
           {/* Score + Radar */}
-          <div className="relative z-10 grid grid-cols-2 gap-4 items-center mt-4">
+          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-4 items-center mt-4">
             {/* Score Circle */}
             <div className="flex flex-col items-center">
               <div className={cn(
@@ -203,7 +203,7 @@ export const ShareScorecardModal = ({
           </div>
           
           {/* Section Grid */}
-          <div className="relative z-10 mt-4 grid grid-cols-4 gap-2">
+          <div className="relative z-10 mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
             {scorecard.sections.slice(0, 8).map((section) => {
               const Icon = STATUS_ICONS[section.status];
               return (
@@ -228,11 +228,11 @@ export const ShareScorecardModal = ({
         {/* Share Link */}
         <div className="space-y-3">
           <label className="text-sm font-medium text-foreground">Share link</label>
-          <div className="flex gap-2">
-            <div className="flex-1 bg-muted/50 border rounded-lg px-3 py-2 text-sm truncate font-mono">
+          <div className="flex min-w-0 gap-2">
+            <div className="min-w-0 flex-1 bg-muted/50 border rounded-lg px-3 py-2 text-sm font-mono break-all">
               {shareUrl}
             </div>
-            <Button onClick={handleCopy} variant="outline" size="default" className="gap-2">
+            <Button onClick={handleCopy} variant="outline" size="default" className="gap-2 shrink-0">
               {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
               {copied ? 'Copied!' : 'Copy'}
             </Button>
