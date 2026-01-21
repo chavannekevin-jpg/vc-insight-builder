@@ -259,20 +259,20 @@ export const DashboardScorecard = ({
                 <span className="font-semibold text-sm text-foreground cursor-help border-b border-dashed border-primary/50">
                   Share & Unlock VC Intros
                 </span>
-                {/* Tooltip on hover */}
+                {/* Tooltip on hover - fully opaque */}
                 <div className="absolute left-0 top-full mt-2 z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
-                  <div className="bg-card border-2 border-primary/40 rounded-xl p-4 shadow-2xl max-w-sm">
-                    <div className="space-y-3 text-xs">
+                  <div className="bg-background border-2 border-primary/50 rounded-xl p-4 shadow-2xl max-w-sm">
+                    <div className="space-y-3 text-sm">
                       <div className="flex items-start gap-3">
-                        <span className="w-6 h-6 rounded-full bg-primary/30 flex items-center justify-center shrink-0 text-xs font-bold text-primary">1</span>
+                        <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">1</span>
                         <span className="text-foreground"><strong className="text-primary">Share</strong> your scorecard → Earn free regeneration credits</span>
                       </div>
                       <div className="flex items-start gap-3">
-                        <span className="w-6 h-6 rounded-full bg-primary/30 flex items-center justify-center shrink-0 text-xs font-bold text-primary">2</span>
+                        <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">2</span>
                         <span className="text-foreground"><strong className="text-primary">Regenerate</strong> → Improve your score with better data</span>
                       </div>
                       <div className="flex items-start gap-3">
-                        <span className="w-6 h-6 rounded-full bg-success/30 flex items-center justify-center shrink-0 text-xs font-bold text-success">3</span>
+                        <span className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center shrink-0 text-xs font-bold text-success">3</span>
                         <span className="text-foreground"><strong className="text-success">Score 60+</strong> → Get a free intro to any VC in our network</span>
                       </div>
                     </div>

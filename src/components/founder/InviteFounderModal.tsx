@@ -93,8 +93,8 @@ export const InviteFounderModal = ({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-gradient-to-br from-card via-card to-primary/5 border-primary/30">
-        <DialogHeader className="pb-4 border-b border-border/30">
+      <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] overflow-y-auto bg-gradient-to-br from-card via-card to-primary/5 border-primary/30 p-0">
+        <DialogHeader className="p-6 pb-4 border-b border-border/30">
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <Gift className="w-5 h-5 text-primary" />
             Invite Fellow Founders
@@ -104,15 +104,15 @@ export const InviteFounderModal = ({
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-5 py-2">
+        <div className="p-6 space-y-5">
           {/* Value Proposition */}
           <div className="p-5 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/5 border border-primary/20 space-y-4">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              <span className="font-bold">Here's what you get:</span>
+              <span className="font-bold text-base">Here's what you get:</span>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                   <span className="text-sm font-bold text-primary">1</span>
@@ -152,11 +152,11 @@ export const InviteFounderModal = ({
           </div>
           
           {/* What they get */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-success/5 border border-success/20">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-success/5 border border-success/20">
             <Users className="w-5 h-5 text-success shrink-0" />
             <div>
-              <p className="font-medium text-foreground text-sm">They get 20% off</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-medium text-foreground">They get 20% off</p>
+              <p className="text-sm text-muted-foreground">
                 Your friends receive a discount on their first analysis
               </p>
             </div>
@@ -164,7 +164,7 @@ export const InviteFounderModal = ({
           
           {/* Referral Link */}
           {loading ? (
-            <div className="flex items-center justify-center py-4 gap-2 text-muted-foreground">
+            <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground">
               <RefreshCw className="w-4 h-4 animate-spin" />
               <span className="text-sm">Generating your link...</span>
             </div>
@@ -182,7 +182,7 @@ export const InviteFounderModal = ({
               </div>
             </div>
           ) : (
-            <div className="text-center py-4 text-muted-foreground text-sm">
+            <div className="text-center py-6 text-muted-foreground text-sm">
               Failed to generate link. Please try again.
             </div>
           )}
