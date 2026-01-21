@@ -670,6 +670,222 @@ function sanitizeJsonString(str: string): string {
     });
 }
 
+// =============================================================================
+// CLASSIFIED METRIC EXTRACTION - Intelligent metric categorization for edge function
+// =============================================================================
+
+interface ClassifiedMetricForExtraction {
+  value: number;
+  classification: 'actual' | 'calculated' | 'projected' | 'minimum' | 'target' | 'assumed' | 'benchmark';
+  temporality: 'current' | 'historical' | 'future_12m' | 'at_exit' | 'unspecified';
+  asOfDate?: string;
+  confidence: 'verified' | 'extracted' | 'inferred' | 'estimated';
+  sourceText?: string;
+  calculationMethod?: string;
+}
+
+interface MetricDiscrepancyForExtraction {
+  metricType: string;
+  classification1: string;
+  value1: number;
+  classification2: string;
+  value2: number;
+  severity: 'info' | 'warning' | 'error';
+  explanation: string;
+  recommendation?: string;
+}
+
+interface FinancialMetricSetForExtraction {
+  arr: { actual?: ClassifiedMetricForExtraction; projected?: ClassifiedMetricForExtraction };
+  mrr: { actual?: ClassifiedMetricForExtraction; historical?: ClassifiedMetricForExtraction[] };
+  acv: { actual?: ClassifiedMetricForExtraction; minimum?: ClassifiedMetricForExtraction; target?: ClassifiedMetricForExtraction };
+  customers: { actual?: ClassifiedMetricForExtraction };
+  growth: { yearlyRate?: ClassifiedMetricForExtraction };
+}
+
+// Detect currency from text
+function detectCurrencyFromText(text: string): string {
+  const eurCount = (text.match(/€|eur\b/gi) || []).length;
+  const gbpCount = (text.match(/£|gbp\b/gi) || []).length;
+  const usdCount = (text.match(/\$|usd\b/gi) || []).length;
+  
+  if (eurCount > usdCount && eurCount > gbpCount) return 'EUR';
+  if (gbpCount > usdCount && gbpCount > eurCount) return 'GBP';
+  return 'USD';
+}
+
+// Parse numeric value with k/m suffixes
+function parseNumericValueForClassification(str: string, fullMatch: string): number {
+  const clean = str.replace(/,/g, '').toLowerCase();
+  const num = parseFloat(clean);
+  const fullLower = fullMatch.toLowerCase();
+  
+  if (fullLower.includes('m') && !fullLower.includes('mrr') && num < 1000) {
+    return num * 1000000;
+  }
+  if (fullLower.match(/\dk/) || (num < 1000 && fullLower.includes('k'))) {
+    return num * 1000;
+  }
+  if (num < 1000 && fullLower.match(/[€$£][\d,.]+\s*k/)) {
+    return num * 1000;
+  }
+  
+  return num;
+}
+
+// Format currency for display
+function formatValueForClassification(value: number, currency: string): string {
+  const symbols: Record<string, string> = { USD: '$', EUR: '€', GBP: '£' };
+  const symbol = symbols[currency] || '€';
+  if (value >= 1000000) return `${symbol}${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `${symbol}${Math.round(value / 1000)}k`;
+  return `${symbol}${value.toLocaleString()}`;
+}
+
+// Extract date reference
+function extractDateReferenceForClassification(text: string): string | undefined {
+  const match = text.match(/(?:in\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4}/i);
+  return match ? match[0].replace(/^in\s+/i, '') : undefined;
+}
+
+// Build classified metric set from responses
+function buildClassifiedMetricSetFromResponses(
+  responses: Record<string, string>,
+  currency: string = 'EUR'
+): { metricSet: FinancialMetricSetForExtraction; discrepancies: MetricDiscrepancyForExtraction[] } {
+  const metricSet: FinancialMetricSetForExtraction = {
+    arr: {},
+    mrr: {},
+    acv: {},
+    customers: {},
+    growth: {},
+  };
+  const discrepancies: MetricDiscrepancyForExtraction[] = [];
+  
+  const tractionText = responses['traction'] || '';
+  const businessModelText = responses['business_model'] || '';
+  const pricingText = responses['pricing'] || '';
+  const combinedText = `${tractionText} ${businessModelText} ${pricingText}`;
+  const lowerText = combinedText.toLowerCase();
+  
+  // 1. Extract MRR with growth pattern
+  const mrrGrowthMatch = combinedText.match(
+    /mrr\s+(?:grew|increased|went)\s+from\s+[€$£]?([\d,.]+)\s*k?\s*(?:in\s+)?((?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4})\s+to\s+[€$£]?([\d,.]+)\s*k?\s*(?:in\s+)?((?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4})/i
+  );
+  
+  if (mrrGrowthMatch) {
+    const historicalValue = parseNumericValueForClassification(mrrGrowthMatch[1], mrrGrowthMatch[0]);
+    const currentValue = parseNumericValueForClassification(mrrGrowthMatch[3], mrrGrowthMatch[0]);
+    
+    metricSet.mrr.historical = [{
+      value: historicalValue,
+      classification: 'actual',
+      temporality: 'historical',
+      asOfDate: mrrGrowthMatch[2],
+      confidence: 'extracted',
+      sourceText: mrrGrowthMatch[0],
+    }];
+    
+    metricSet.mrr.actual = {
+      value: currentValue,
+      classification: 'actual',
+      temporality: 'current',
+      asOfDate: mrrGrowthMatch[4],
+      confidence: 'extracted',
+      sourceText: mrrGrowthMatch[0],
+    };
+    
+    // Calculate YoY growth
+    if (historicalValue > 0) {
+      metricSet.growth.yearlyRate = {
+        value: Math.round(((currentValue - historicalValue) / historicalValue) * 100),
+        classification: 'calculated',
+        temporality: 'current',
+        confidence: 'extracted',
+        calculationMethod: 'YoY MRR growth',
+      };
+    }
+  }
+  
+  // 2. Calculate ARR from MRR
+  if (metricSet.mrr.actual) {
+    metricSet.arr.actual = {
+      value: metricSet.mrr.actual.value * 12,
+      classification: 'calculated',
+      temporality: 'current',
+      confidence: 'inferred',
+      calculationMethod: 'MRR × 12',
+      sourceText: metricSet.mrr.actual.sourceText,
+    };
+  } else {
+    // Try direct ARR extraction
+    const arrMatch = lowerText.match(/[€$£]([\d,.]+)\s*k?\s*(?:carr|arr)/i);
+    if (arrMatch) {
+      const value = parseNumericValueForClassification(arrMatch[1], arrMatch[0]);
+      metricSet.arr.actual = {
+        value,
+        classification: 'actual',
+        temporality: 'current',
+        confidence: 'extracted',
+        sourceText: arrMatch[0],
+      };
+    }
+  }
+  
+  // 3. Extract customer count
+  const customerMatch = combinedText.match(/(\d+)\+?\s*(?:paying\s*)?(?:customer|client|account|enterprise\s*client)s?/i);
+  if (customerMatch) {
+    metricSet.customers.actual = {
+      value: parseInt(customerMatch[1]),
+      classification: 'actual',
+      temporality: 'current',
+      confidence: 'extracted',
+      sourceText: customerMatch[0],
+    };
+  }
+  
+  // 4. Extract minimum pricing
+  const minMatch = combinedText.match(/minimum\s*(?:annual\s*)?(?:consumption|commitment|contract)(?:\s*of)?\s*[€$£]?([\d,.]+)\s*k?/i);
+  if (minMatch) {
+    const value = parseNumericValueForClassification(minMatch[1], minMatch[0]);
+    metricSet.acv.minimum = {
+      value,
+      classification: 'minimum',
+      temporality: 'current',
+      confidence: 'extracted',
+      sourceText: minMatch[0],
+    };
+  }
+  
+  // 5. Calculate actual ACV from ARR ÷ Customers
+  if (metricSet.arr.actual && metricSet.customers.actual && metricSet.customers.actual.value > 0) {
+    const calculatedACV = Math.round(metricSet.arr.actual.value / metricSet.customers.actual.value);
+    metricSet.acv.actual = {
+      value: calculatedACV,
+      classification: 'calculated',
+      temporality: 'current',
+      confidence: 'inferred',
+      calculationMethod: `ARR (${formatValueForClassification(metricSet.arr.actual.value, currency)}) ÷ Customers (${metricSet.customers.actual.value})`,
+    };
+    
+    // Check for discrepancy with minimum
+    if (metricSet.acv.minimum && calculatedACV < metricSet.acv.minimum.value) {
+      discrepancies.push({
+        metricType: 'acv',
+        classification1: 'actual',
+        value1: calculatedACV,
+        classification2: 'minimum',
+        value2: metricSet.acv.minimum.value,
+        severity: 'warning',
+        explanation: `Actual average ACV (${formatValueForClassification(calculatedACV, currency)}) is below stated minimum (${formatValueForClassification(metricSet.acv.minimum.value, currency)}). SMB customers may be pulling down the average, or the minimum isn't being enforced.`,
+        recommendation: 'Review customer mix and pricing enforcement.',
+      });
+    }
+  }
+  
+  return { metricSet, discrepancies };
+}
+
 // Safe string helpers (AI output sometimes returns objects)
 function safeStr(val: unknown, context?: string): string {
   if (typeof val === "string") return val;
@@ -837,6 +1053,37 @@ interface MetricFrameworkContext {
   anchoredValue?: number;
   anchoredValueSource?: string;
   currency?: string;
+  
+  // NEW: Classified metrics for intelligent usage
+  classifiedMetrics?: {
+    arr?: { actual?: ClassifiedMetricInfo; projected?: ClassifiedMetricInfo };
+    mrr?: { actual?: ClassifiedMetricInfo; historical?: ClassifiedMetricInfo[] };
+    acv?: { actual?: ClassifiedMetricInfo; minimum?: ClassifiedMetricInfo; target?: ClassifiedMetricInfo };
+    customers?: { actual?: ClassifiedMetricInfo };
+    growth?: { yearlyRate?: ClassifiedMetricInfo };
+  };
+  metricDiscrepancies?: MetricDiscrepancyInfo[];
+}
+
+interface ClassifiedMetricInfo {
+  value: number;
+  classification: 'actual' | 'calculated' | 'projected' | 'minimum' | 'target' | 'assumed' | 'benchmark';
+  temporality: 'current' | 'historical' | 'future_12m' | 'at_exit' | 'unspecified';
+  asOfDate?: string;
+  confidence: 'verified' | 'extracted' | 'inferred' | 'estimated';
+  sourceText?: string;
+  calculationMethod?: string;
+}
+
+interface MetricDiscrepancyInfo {
+  metricType: string;
+  classification1: string;
+  value1: number;
+  classification2: string;
+  value2: number;
+  severity: 'info' | 'warning' | 'error';
+  explanation: string;
+  recommendation?: string;
 }
 
 interface ToolGenerationContext {
@@ -850,8 +1097,8 @@ interface ToolGenerationContext {
   responses: any[];
   competitorResearch: any;
   marketContext: any;
-  companyModel?: CompanyModel | null;  // Full Company Model for relational reasoning
-  metricFramework?: MetricFrameworkContext | null;  // Unified metric terminology
+  companyModel?: CompanyModel | null;
+  metricFramework?: MetricFrameworkContext | null;
 }
 
 async function generateSectionToolData(
@@ -926,6 +1173,38 @@ CRITICAL TERMINOLOGY RULES:
 - When calculating scale requirements, use the correct formula for this business model
 - If this is B2C, use monthly metrics (ARPU × users × 12 = ARR)
 - If this is Enterprise, use annual metrics (ACV × accounts = ARR)
+
+${metricFramework.classifiedMetrics ? `
+=== CLASSIFIED FINANCIAL METRICS (CRITICAL - USE THESE VALUES!) ===
+The following metrics are CLASSIFIED by type. You MUST use the appropriate metric for each context:
+
+** ACTUAL METRICS (verified from real data - use for traction/unit economics): **
+${metricFramework.classifiedMetrics.arr?.actual ? `- ARR (Actual): ${metricFramework.classifiedMetrics.arr.actual.value} ${metricFramework.currency || 'EUR'}${metricFramework.classifiedMetrics.arr.actual.asOfDate ? ` as of ${metricFramework.classifiedMetrics.arr.actual.asOfDate}` : ''} [${metricFramework.classifiedMetrics.arr.actual.classification}, ${metricFramework.classifiedMetrics.arr.actual.confidence}]${metricFramework.classifiedMetrics.arr.actual.calculationMethod ? ` (${metricFramework.classifiedMetrics.arr.actual.calculationMethod})` : ''}` : '- ARR (Actual): Not available'}
+${metricFramework.classifiedMetrics.mrr?.actual ? `- MRR (Actual): ${metricFramework.classifiedMetrics.mrr.actual.value} ${metricFramework.currency || 'EUR'}${metricFramework.classifiedMetrics.mrr.actual.asOfDate ? ` as of ${metricFramework.classifiedMetrics.mrr.actual.asOfDate}` : ''} [${metricFramework.classifiedMetrics.mrr.actual.classification}]` : '- MRR (Actual): Not available'}
+${metricFramework.classifiedMetrics.acv?.actual ? `- ${metricFramework.primaryMetricLabel} (Actual): ${metricFramework.classifiedMetrics.acv.actual.value} ${metricFramework.currency || 'EUR'} [${metricFramework.classifiedMetrics.acv.actual.classification}]${metricFramework.classifiedMetrics.acv.actual.calculationMethod ? ` (${metricFramework.classifiedMetrics.acv.actual.calculationMethod})` : ''}` : `- ${metricFramework.primaryMetricLabel} (Actual): Not available`}
+${metricFramework.classifiedMetrics.customers?.actual ? `- ${metricFramework.customerTermPlural} (Actual): ${metricFramework.classifiedMetrics.customers.actual.value} [${metricFramework.classifiedMetrics.customers.actual.classification}]` : `- ${metricFramework.customerTermPlural} (Actual): Not available`}
+${metricFramework.classifiedMetrics.growth?.yearlyRate ? `- YoY Growth (Actual): ${metricFramework.classifiedMetrics.growth.yearlyRate.value}% [${metricFramework.classifiedMetrics.growth.yearlyRate.classification}]` : ''}
+
+** STATED PRICING (from founder, may differ from actual): **
+${metricFramework.classifiedMetrics.acv?.minimum ? `- Minimum ${metricFramework.primaryMetricLabel}: ${metricFramework.classifiedMetrics.acv.minimum.value} ${metricFramework.currency || 'EUR'} [${metricFramework.classifiedMetrics.acv.minimum.classification}] - This is the STATED floor, not the actual average` : '- No minimum pricing stated'}
+${metricFramework.classifiedMetrics.acv?.target ? `- Target ${metricFramework.primaryMetricLabel}: ${metricFramework.classifiedMetrics.acv.target.value} ${metricFramework.currency || 'EUR'} [${metricFramework.classifiedMetrics.acv.target.classification}]` : ''}
+
+** HISTORICAL (for growth analysis): **
+${metricFramework.classifiedMetrics.mrr?.historical?.length ? metricFramework.classifiedMetrics.mrr.historical.map((h: ClassifiedMetricInfo) => `- MRR (${h.asOfDate || 'historical'}): ${h.value} ${metricFramework.currency || 'EUR'}`).join('\n') : '- No historical MRR data'}
+
+** METRIC USAGE RULES: **
+- For TRACTION analysis: Use ACTUAL ARR/MRR/customers only
+- For UNIT ECONOMICS: Use ACTUAL ${metricFramework.primaryMetricLabel} (calculated from ARR ÷ customers)
+- For SCALE TEST (path to $100M): Use ACTUAL ${metricFramework.primaryMetricLabel}, NOT minimum or target
+- For PRICING DISCUSSION: You may reference MINIMUM pricing but clarify it differs from actual average
+- NEVER confuse "minimum pricing" with "average ${metricFramework.primaryMetricLabel}" - they are different!
+
+${metricFramework.metricDiscrepancies?.length ? `
+⚠️ DISCREPANCIES DETECTED (address these in your analysis):
+${metricFramework.metricDiscrepancies.map((d: MetricDiscrepancyInfo) => `- ${d.explanation}${d.recommendation ? ` → ${d.recommendation}` : ''}`).join('\n')}
+` : ''}
+=== END CLASSIFIED METRICS ===
+` : ''}
 === END METRIC FRAMEWORK ===
 ` : ''}
 
@@ -2676,6 +2955,24 @@ Return EXACTLY this JSON structure with your content filled in:
     }
 
     // ============================================
+    // Build Classified Financial Metric Set BEFORE generating tools
+    // This ensures consistent metric usage across ALL sections
+    // ============================================
+    console.log("Building classified financial metric set...");
+    
+    const responsesMap: Record<string, string> = {};
+    for (const r of (responses || [])) {
+      if (r.question_key && r.answer) {
+        responsesMap[r.question_key] = r.answer;
+      }
+    }
+    
+    // Build classified metrics from responses
+    const classifiedMetricSet = buildClassifiedMetricSetFromResponses(responsesMap, 'EUR');
+    console.log(`Classified metrics built: ARR=${classifiedMetricSet.metricSet.arr?.actual?.value || 'N/A'}, ACV=${classifiedMetricSet.metricSet.acv?.actual?.value || 'N/A'}, Customers=${classifiedMetricSet.metricSet.customers?.actual?.value || 'N/A'}`);
+    console.log(`Discrepancies found: ${classifiedMetricSet.discrepancies.length}`);
+    
+    // ============================================
     // Generate tool data for each section
     // ============================================
     console.log("=== Generating section tool data ===");
@@ -2683,7 +2980,10 @@ Return EXACTLY this JSON structure with your content filled in:
     for (const [sectionName, sectionContent] of Object.entries(enhancedSections)) {
       if (sectionName === "Investment Thesis") continue; // Skip thesis for now
       
-      // Build metric framework context from company model
+      // Detect currency from responses
+      const detectedCurrency = detectCurrencyFromText(Object.values(responsesMap).join(' '));
+      
+      // Build metric framework context with classified metrics
       const metricFramework: MetricFrameworkContext | null = companyModel ? {
         businessModelType: companyModel.financial?.pricing?.model || 'saas',
         primaryMetricLabel: companyModel.financial?.pricing?.acvBand === 'micro' ? 'ARPU' : 'ACV',
@@ -2691,9 +2991,32 @@ Return EXACTLY this JSON structure with your content filled in:
         periodicity: companyModel.financial?.pricing?.acvBand === 'micro' ? 'monthly' : 'annual',
         customerTermPlural: companyModel.customer?.icp?.segment === 'consumer' ? 'users' : 'customers',
         customerTermSingular: companyModel.customer?.icp?.segment === 'consumer' ? 'user' : 'customer',
-        anchoredValue: companyModel.financial?.pricing?.acv || undefined,
-        anchoredValueSource: companyModel.financial?.pricing?.acv ? 'company_model' : undefined,
-        currency: 'USD'
+        anchoredValue: classifiedMetricSet.metricSet.acv?.actual?.value || companyModel.financial?.pricing?.acv || undefined,
+        anchoredValueSource: classifiedMetricSet.metricSet.acv?.actual?.value ? 'calculated' : (companyModel.financial?.pricing?.acv ? 'company_model' : undefined),
+        currency: detectedCurrency,
+        // NEW: Include full classified metric set
+        classifiedMetrics: {
+          arr: {
+            actual: classifiedMetricSet.metricSet.arr?.actual,
+            projected: classifiedMetricSet.metricSet.arr?.projected,
+          },
+          mrr: {
+            actual: classifiedMetricSet.metricSet.mrr?.actual,
+            historical: classifiedMetricSet.metricSet.mrr?.historical,
+          },
+          acv: {
+            actual: classifiedMetricSet.metricSet.acv?.actual,
+            minimum: classifiedMetricSet.metricSet.acv?.minimum,
+            target: classifiedMetricSet.metricSet.acv?.target,
+          },
+          customers: {
+            actual: classifiedMetricSet.metricSet.customers?.actual,
+          },
+          growth: {
+            yearlyRate: classifiedMetricSet.metricSet.growth?.yearlyRate,
+          },
+        },
+        metricDiscrepancies: classifiedMetricSet.discrepancies,
       } : null;
       
       await generateSectionToolData(
