@@ -166,6 +166,78 @@ function extractSectionInsight(
  * Get company-specific context for a concern or insight
  * Matches the insight text to relevant section data and finds the MOST RELEVANT sentence
  */
+/**
+ * Split text into complete sentences, handling abbreviations and edge cases
+ */
+function splitIntoSentences(text: string): string[] {
+  if (!text) return [];
+  
+  // Protect common abbreviations and patterns from being split
+  const protectedText = text
+    .replace(/(\d+)\/(\d+)\./g, '$1/$2##PROTECTED##') // Protect ratios like "20/100."
+    .replace(/\b(e\.g|i\.e|etc|vs|Dr|Mr|Mrs|Ms|Inc|Ltd|Corp)\./gi, '$1##PROTECTED##')
+    .replace(/\b([A-Z]{2,})\./g, '$1##PROTECTED##'); // Protect acronyms like "ACV."
+  
+  // Split on sentence boundaries (period/!/? followed by space and capital letter)
+  const rawSentences = protectedText.split(/(?<=[.!?])\s+(?=[A-Z])/);
+  
+  // Restore protected patterns and clean up
+  return rawSentences
+    .map(s => s.replace(/##PROTECTED##/g, '.').trim())
+    .filter(s => s.length > 10); // Filter out very short fragments
+}
+
+/**
+ * Ensure a sentence is complete - find natural ending point if truncated
+ */
+function ensureCompleteSentence(text: string, maxLength: number = 400): string {
+  if (!text) return '';
+  
+  let result = text.trim();
+  
+  // If already ends with proper punctuation and is short enough, return as is
+  if (result.length <= maxLength && /[.!?]$/.test(result)) {
+    return result;
+  }
+  
+  // If too long, find a good cut point
+  if (result.length > maxLength) {
+    // Try to find the last complete sentence within the limit
+    const lastSentenceEnd = Math.max(
+      result.lastIndexOf('. ', maxLength),
+      result.lastIndexOf('! ', maxLength),
+      result.lastIndexOf('? ', maxLength)
+    );
+    
+    if (lastSentenceEnd > maxLength * 0.5) {
+      // Found a good sentence boundary
+      result = result.substring(0, lastSentenceEnd + 1);
+    } else {
+      // No good boundary, find last clause boundary
+      const lastClauseEnd = Math.max(
+        result.lastIndexOf(', ', maxLength),
+        result.lastIndexOf('; ', maxLength),
+        result.lastIndexOf(' - ', maxLength)
+      );
+      
+      if (lastClauseEnd > maxLength * 0.6) {
+        result = result.substring(0, lastClauseEnd) + '.';
+      } else {
+        // Last resort: cut at word boundary
+        const lastSpace = result.lastIndexOf(' ', maxLength - 3);
+        result = result.substring(0, lastSpace > 0 ? lastSpace : maxLength - 3) + '...';
+      }
+    }
+  }
+  
+  // Ensure it ends with punctuation
+  if (!/[.!?]$/.test(result) && !result.endsWith('...')) {
+    result += '.';
+  }
+  
+  return result;
+}
+
 export function getCompanyContextForInsight(
   insightText: string,
   context: CompanyInsightContext
@@ -186,8 +258,8 @@ export function getCompanyContextForInsight(
   for (const [sectionName, insight] of Object.entries(context.sectionInsights)) {
     if (!insight.reasoning) continue;
     
-    // Split reasoning into sentences
-    const sentences = insight.reasoning.split(/(?<=[.!?])\s+(?=[A-Z])/);
+    // Split reasoning into proper sentences
+    const sentences = splitIntoSentences(insight.reasoning);
     
     for (const sentence of sentences) {
       const sentenceLower = sentence.toLowerCase();
@@ -242,10 +314,11 @@ export function getCompanyContextForInsight(
       if (keywords.some(kw => lower.includes(kw))) {
         const insight = context.sectionInsights[section];
         if (insight?.reasoning) {
+          const sentences = splitIntoSentences(insight.reasoning);
           bestMatch = { 
             section, 
             score: 5, 
-            sentence: insight.reasoning.split(/(?<=[.!?])\s+/)[0] || insight.reasoning.substring(0, 200)
+            sentence: sentences[0] || ensureCompleteSentence(insight.reasoning, 200)
           };
           break;
         }
@@ -258,16 +331,8 @@ export function getCompanyContextForInsight(
   const sectionInsight = context.sectionInsights[bestMatch.section];
   if (!sectionInsight) return null;
   
-  // Clean up the matched sentence
-  let companyContext = bestMatch.sentence;
-  if (!companyContext.endsWith('.') && !companyContext.endsWith('!') && !companyContext.endsWith('?')) {
-    companyContext += '.';
-  }
-  
-  // Truncate if too long
-  if (companyContext.length > 400) {
-    companyContext = companyContext.substring(0, 397) + '...';
-  }
+  // Clean up and ensure complete sentence
+  const companyContext = ensureCompleteSentence(bestMatch.sentence, 400);
   
   // Collect evidence
   const evidence: string[] = [];
