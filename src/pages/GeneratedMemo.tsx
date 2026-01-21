@@ -121,6 +121,7 @@ export default function GeneratedMemo() {
   const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | undefined>(undefined);
   const [holisticStage, setHolisticStage] = useState<any>(null);
   const [holisticVerdicts, setHolisticVerdicts] = useState<Record<string, { verdict: string; stageContext?: string }>>({});
+  const [companyInsightContext, setCompanyInsightContext] = useState<any>(null);
   // Smart fill state
   const [showSmartFill, setShowSmartFill] = useState(false);
   const [smartQuestions, setSmartQuestions] = useState<SmartQuestion[]>([]);
@@ -144,6 +145,7 @@ export default function GeneratedMemo() {
         setAnchoredAssumptions(cachedMemoData.anchoredAssumptions || undefined);
         setHolisticStage(cachedMemoData.holisticStage);
         setHolisticVerdicts(cachedMemoData.holisticVerdicts);
+        setCompanyInsightContext(cachedMemoData.companyInsightContext);
         setLoading(false);
         
         // Check if we should redirect to wizard mode
@@ -1091,7 +1093,11 @@ export default function GeneratedMemo() {
         {/* VC Quick Take - Always visible for all users, with teaser for free users */}
         {memoContent.vcQuickTake && (
           <div data-section="quick-take">
-            <MemoVCQuickTake quickTake={memoContent.vcQuickTake} showTeaser={!hasPremium} />
+            <MemoVCQuickTake 
+              quickTake={memoContent.vcQuickTake} 
+              showTeaser={!hasPremium} 
+              companyInsightContext={companyInsightContext}
+            />
           </div>
         )}
 
@@ -1104,6 +1110,7 @@ export default function GeneratedMemo() {
               stage={holisticStage?.benchmarkingStage || companyInfo.stage}
               category={companyInfo.category}
               holisticVerdicts={holisticVerdicts}
+              companyInsightContext={companyInsightContext}
               onSectionClick={(sectionName) => {
                 const sectionElement = document.querySelector(`[data-section="${sectionName.toLowerCase()}"]`);
                 if (sectionElement) {
