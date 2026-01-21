@@ -32,6 +32,7 @@ import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptio
 import { extractActionPlan } from "@/lib/actionPlanExtractor";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import ShareScoreButton from "@/components/founder/ShareScoreButton";
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Grid, BookOpen, Zap, AlertTriangle, Eye, Lock, FileText, Target, Users, TrendingUp, Swords, DollarSign, Rocket, Lightbulb, Trophy, BarChart } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
@@ -535,6 +536,21 @@ export default function MemoSectionView() {
                   <BookOpen className="w-4 h-4 mr-2" />
                   View Full Memo
                 </Button>
+                {sectionTools && Object.keys(sectionTools).length > 0 && companyInfo && (
+                  <ShareScoreButton
+                    companyId={companyId || ""}
+                    companyName={companyInfo.name}
+                    score={(() => {
+                      const scores = Object.values(sectionTools)
+                        .map(t => t.sectionScore?.score)
+                        .filter((s): s is number => typeof s === 'number');
+                      return scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+                    })()}
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                  />
+                )}
               </div>
             </div>
           </div>

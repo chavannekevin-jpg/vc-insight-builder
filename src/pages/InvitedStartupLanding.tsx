@@ -17,9 +17,11 @@ import {
   Target,
   TrendingUp,
   Shield,
-  Loader2
+  Loader2,
+  UserPlus
 } from "lucide-react";
 import { useStartupReferral } from "@/hooks/useStartupReferral";
+import { useFounderReferral, processFounderReferral } from "@/hooks/useFounderReferral";
 
 // Condensed perks for the invited landing page
 const INVITED_PERKS = [
@@ -67,17 +69,37 @@ export default function InvitedStartupLanding() {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
 
-  const inviteCode = searchParams.get('code');
+  // Support both investor invite (?code=) and founder referral (?founder=)
+  const investorInviteCode = searchParams.get('code');
+  const founderReferralCode = searchParams.get('founder');
   
-  // Validate startup invite code
-  const { inviteInfo, isLoading: isValidatingInvite } = useStartupReferral(inviteCode);
+  // Determine which type of referral we're dealing with
+  const isFounderReferral = !!founderReferralCode;
+  const referralCode = founderReferralCode || investorInviteCode;
+  
+  // Validate startup invite code (investor referral)
+  const { inviteInfo: investorInviteInfo, isLoading: isValidatingInvestorInvite } = useStartupReferral(investorInviteCode);
+  
+  // Validate founder referral code
+  const { referralInfo: founderReferralInfo, isLoading: isValidatingFounderReferral } = useFounderReferral(founderReferralCode);
+  
+  // Unified invite info
+  const inviteInfo = isFounderReferral 
+    ? { isValid: founderReferralInfo?.isValid || false, discountPercent: founderReferralInfo?.discountPercent || 20 }
+    : investorInviteInfo;
+  
+  const isValidatingInvite = isFounderReferral ? isValidatingFounderReferral : isValidatingInvestorInvite;
 
   // Store invite code in sessionStorage for use in Intake
   useEffect(() => {
-    if (inviteCode && inviteInfo?.isValid) {
-      sessionStorage.setItem('startup_invite_code', inviteCode);
+    if (referralCode && inviteInfo?.isValid) {
+      if (isFounderReferral) {
+        sessionStorage.setItem('founder_referral_code', founderReferralCode!);
+      } else {
+        sessionStorage.setItem('startup_invite_code', investorInviteCode!);
+      }
     }
-  }, [inviteCode, inviteInfo]);
+  }, [referralCode, inviteInfo, isFounderReferral, founderReferralCode, investorInviteCode]);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -231,7 +253,7 @@ export default function InvitedStartupLanding() {
   }
 
   // Invalid or missing invite code - redirect to regular auth
-  if (!inviteCode || !inviteInfo?.isValid) {
+  if (!referralCode || !inviteInfo?.isValid) {
     return (
       <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
         <div className="text-center max-w-md">
@@ -260,13 +282,23 @@ export default function InvitedStartupLanding() {
       <div className="container mx-auto px-4 py-8 lg:py-16 relative z-10">
         {/* Top invitation banner */}
         <div className="text-center mb-8 lg:mb-12 animate-fade-in">
+          {/* Referrer type indicator */}
+          {isFounderReferral && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
+              <UserPlus className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Referred by a fellow founder</span>
+            </div>
+          )}
+          
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
             <span className="text-foreground">You've Been Invited to Join </span>
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">UglyBaby</span>
           </h1>
           
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Get your professional VC analysis and access 800+ investors — with an exclusive discount from your network.
+            {isFounderReferral 
+              ? "Another founder thought you'd benefit from our VC analysis tools — and you get a discount!"
+              : "Get your professional VC analysis and access 800+ investors — with an exclusive discount from your network."}
           </p>
         </div>
 
@@ -324,9 +356,9 @@ export default function InvitedStartupLanding() {
                     const referralDiscount = inviteInfo.discountPercent || 0;
                     const totalDiscount = Math.min(baseDiscount + referralDiscount, 90);
                     return (
-                      <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                        <Gift className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        <span className="text-sm text-green-500 font-medium">
+                      <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 border border-success/20">
+                        <Gift className="w-4 h-4 text-success flex-shrink-0" />
+                        <span className="text-sm text-success font-medium">
                           Your {totalDiscount}% discount will be applied at checkout
                         </span>
                       </div>

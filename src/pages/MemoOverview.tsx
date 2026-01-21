@@ -6,6 +6,7 @@ import { MemoLoadingScreen } from "@/components/MemoLoadingScreen";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import ShareScoreButton from "@/components/founder/ShareScoreButton";
 import { 
   ArrowLeft, ArrowRight, Printer, RefreshCw, BookOpen, 
   AlertTriangle, Target, Lightbulb, Users, TrendingUp, 
@@ -74,6 +75,7 @@ export default function MemoOverview() {
   const [memoContent, setMemoContent] = useState<MemoStructuredContent | null>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
   const [hasPremium, setHasPremium] = useState(false);
+  const [overallScore, setOverallScore] = useState(0);
 
   useEffect(() => {
     const loadMemo = async () => {
@@ -118,6 +120,21 @@ export default function MemoOverview() {
           // No memo exists, redirect to generate
           navigate(`/analysis?companyId=${companyId}`);
           return;
+        }
+        
+        // Fetch section scores for share button
+        const { data: toolData } = await supabase
+          .from("memo_tool_data")
+          .select("tool_data")
+          .eq("company_id", companyId);
+        
+        if (toolData && toolData.length > 0) {
+          const scores = toolData
+            .map((t: any) => (t.tool_data as any)?.sectionScore?.score)
+            .filter((s: any): s is number => typeof s === 'number');
+          if (scores.length > 0) {
+            setOverallScore(Math.round(scores.reduce((a: number, b: number) => a + b, 0) / scores.length));
+          }
         }
       } catch (error) {
         console.error("Error loading memo:", error);
@@ -281,7 +298,7 @@ export default function MemoOverview() {
         {/* Quick Actions */}
         <div className="bg-card/50 border border-border/50 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Button 
               variant="default" 
               className="h-auto py-4 flex-col gap-2"
@@ -306,6 +323,19 @@ export default function MemoOverview() {
               <Printer className="w-5 h-5" />
               <span>Print / Export PDF</span>
             </Button>
+            {hasPremium && companyInfo && overallScore > 0 && (
+              <div className="h-auto py-4 flex flex-col items-center justify-center gap-2 border border-border rounded-lg bg-card hover:bg-accent/50 transition-colors">
+                <ShareScoreButton
+                  companyId={companyId || ""}
+                  companyName={companyInfo.name}
+                  score={overallScore}
+                  variant="ghost"
+                  size="default"
+                  className="w-full h-full flex-col gap-2"
+                  showLabel={true}
+                />
+              </div>
+            )}
             {!hasPremium && (
               <Button 
                 variant="default" 

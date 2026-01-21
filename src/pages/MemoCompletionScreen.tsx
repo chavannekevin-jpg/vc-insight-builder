@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
+import ShareScoreButton from "@/components/founder/ShareScoreButton";
 import { 
   CheckCircle, BookOpen, Printer, ArrowRight, 
   Target, Lightbulb, Users, TrendingUp, Rocket 
@@ -14,6 +15,8 @@ export default function MemoCompletionScreen() {
   const companyId = searchParams.get("companyId");
   const [loading, setLoading] = useState(true);
   const [hasPremium, setHasPremium] = useState(false);
+  const [companyName, setCompanyName] = useState("");
+  const [overallScore, setOverallScore] = useState(0);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -32,7 +35,7 @@ export default function MemoCompletionScreen() {
       // Check premium status
       const { data: company } = await supabase
         .from("companies")
-        .select("has_premium, founder_id")
+        .select("has_premium, founder_id, name")
         .eq("id", companyId)
         .maybeSingle();
 
@@ -48,7 +51,24 @@ export default function MemoCompletionScreen() {
         return;
       }
 
+      setCompanyName(company.name);
       setHasPremium(true);
+      
+      // Fetch score for share button
+      const { data: toolData } = await supabase
+        .from("memo_tool_data")
+        .select("tool_data")
+        .eq("company_id", companyId);
+      
+      if (toolData && toolData.length > 0) {
+        const scores = toolData
+          .map((t: any) => (t.tool_data as any)?.sectionScore?.score)
+          .filter((s: any): s is number => typeof s === 'number');
+        if (scores.length > 0) {
+          setOverallScore(Math.round(scores.reduce((a: number, b: number) => a + b, 0) / scores.length));
+        }
+      }
+      
       setLoading(false);
     };
 
@@ -134,15 +154,26 @@ export default function MemoCompletionScreen() {
               <Printer className="w-4 h-4" />
               Print / PDF
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => navigate(`/analysis/overview?companyId=${companyId}`)}
-              className="gap-2"
-            >
-              Overview
-              <ArrowRight className="w-4 h-4" />
-            </Button>
+            {overallScore > 0 && companyId && companyName ? (
+              <ShareScoreButton
+                companyId={companyId}
+                companyName={companyName}
+                score={overallScore}
+                variant="outline"
+                size="lg"
+                className="gap-2"
+              />
+            ) : (
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => navigate(`/analysis/overview?companyId=${companyId}`)}
+                className="gap-2"
+              >
+                Overview
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            )}
           </div>
           
           <Button 
