@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Header } from "@/components/Header";
+import { FounderLayout } from "@/components/founder/FounderLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -635,8 +635,8 @@ export default function CompanyProfile() {
   const isProfileEmpty = responses.length === 0 || !responses.some(r => r.answer?.trim());
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <FounderLayout>
+      <div className="bg-background">
 
       {company && (
         <QuickFillWizard
@@ -877,6 +877,7 @@ export default function CompanyProfile() {
           onImportComplete={handleDeckImportComplete}
         />
       )}
-    </div>
+      </div>
+    </FounderLayout>
   );
 }

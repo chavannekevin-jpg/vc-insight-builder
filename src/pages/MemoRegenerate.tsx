@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Header } from "@/components/Header";
+import { FounderLayout } from "@/components/founder/FounderLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { 
   ArrowLeft, ChevronDown, ChevronUp, Loader2, RotateCcw, Pencil, Check, 
   Sparkles, User, AlertCircle, Target, Lightbulb, Users, Shield, 
-  UserCircle, Wallet, TrendingUp, Rocket, LucideIcon, CreditCard
+  UserCircle, Wallet, TrendingUp, Rocket, LucideIcon, CreditCard, Gift
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -289,9 +289,7 @@ export default function MemoRegenerate() {
   const changedCount = getChangedSections().length;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
+    <FounderLayout>
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
@@ -390,6 +388,22 @@ export default function MemoRegenerate() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Free Credits Tip - only show for non-admins */}
+          {!isAdmin && (
+            <Card className="bg-gradient-to-r from-secondary/10 to-primary/10 border-secondary/30">
+              <CardContent className="py-4 flex gap-3">
+                <Gift className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium">Earn Free Credits</p>
+                  <p className="text-sm text-muted-foreground">
+                    Invite other founders to get <span className="font-semibold text-primary">free regeneration credits</span>. 
+                    Each signup from your referral link gives you +1 credit. Click "Invite a Founder" in the sidebar to get started.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Sections */}
           <div className="space-y-3">
@@ -540,6 +554,6 @@ export default function MemoRegenerate() {
           </div>
         </div>
       </div>
-    </div>
+    </FounderLayout>
   );
 }
