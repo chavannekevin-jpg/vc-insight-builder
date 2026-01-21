@@ -3,6 +3,8 @@ import { SectionScore } from "@/types/memo";
 import { cn } from "@/lib/utils";
 import { safeText, safeNumber, isValidAssessment } from "@/lib/toolDataUtils";
 import { ConditionalAssessmentBadge } from "@/components/memo/ConditionalAssessmentBadge";
+import { InsightWithTooltip } from "@/components/memo/InsightWithTooltip";
+import { getScoreInterpretation, generateInsightExplanation } from "@/lib/insightExplanations";
 
 interface SectionScoreCardProps {
   score: SectionScore;
@@ -101,11 +103,21 @@ export const SectionScoreCard = ({ score, sectionName }: SectionScoreCardProps) 
       <div className="space-y-3">
         <div className="p-3 rounded-lg bg-muted/50">
           <p className="text-xs font-medium text-muted-foreground mb-1">What This Tells a VC</p>
-          <p className="text-sm text-foreground">{safeText(score?.whatThisTellsVC)}</p>
+          <InsightWithTooltip
+            explanation={generateInsightExplanation(safeText(score?.whatThisTellsVC))}
+            className="text-sm text-foreground"
+          >
+            {safeText(score?.whatThisTellsVC)}
+          </InsightWithTooltip>
         </div>
         <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
           <p className="text-xs font-medium text-primary mb-1">Fundability Impact</p>
-          <p className="text-sm text-foreground">{safeText(score?.fundabilityImpact)}</p>
+          <InsightWithTooltip
+            explanation={`Score interpretation: ${getScoreInterpretation(scoreValue).meaning}. ${getScoreInterpretation(scoreValue).vcReaction}`}
+            className="text-sm text-foreground"
+          >
+            {safeText(score?.fundabilityImpact)}
+          </InsightWithTooltip>
         </div>
       </div>
 

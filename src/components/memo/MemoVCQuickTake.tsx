@@ -2,6 +2,8 @@ import { AlertCircle, CheckCircle2, AlertTriangle, Lock, ChevronRight, Scale, Ta
 import { MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
 import { Button } from "@/components/ui/button";
 import { safeLower } from "@/lib/stringUtils";
+import { InsightWithTooltip } from "./InsightWithTooltip";
+import { generateInsightExplanation } from "@/lib/insightExplanations";
 
 interface MemoVCQuickTakeProps {
   quickTake: MemoVCQuickTakeType;
@@ -254,7 +256,12 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
                     <span className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 text-destructive text-xs font-bold flex items-center justify-center mt-0.5">
                       {index + 1}
                     </span>
-                    <p className="text-sm text-foreground leading-relaxed">{getConcernText(concern)}</p>
+                    <InsightWithTooltip
+                      explanation={generateInsightExplanation(getConcernText(concern))}
+                      className="text-sm text-foreground leading-relaxed"
+                    >
+                      {getConcernText(concern)}
+                    </InsightWithTooltip>
                   </div>
                 ))}
               </div>
@@ -276,7 +283,12 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock }: Mem
                     <span className="flex-shrink-0 w-5 h-5 rounded-full bg-success/20 text-success text-xs font-bold flex items-center justify-center mt-0.5">
                       {index + 1}
                     </span>
-                    <p className="text-sm text-foreground leading-relaxed">{safeText(strength)}</p>
+                    <InsightWithTooltip
+                      explanation={generateInsightExplanation(safeText(strength))}
+                      className="text-sm text-foreground leading-relaxed"
+                    >
+                      {safeText(strength)}
+                    </InsightWithTooltip>
                   </div>
                 ))}
               </div>

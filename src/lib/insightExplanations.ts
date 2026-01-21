@@ -1,5 +1,5 @@
 // Explanations for strategic concerns and insights
-// Used by InsightWithTooltip to provide hover context
+// Used by InsightWithTooltip to provide hover context throughout the memo
 
 export interface InsightExplanation {
   statement: string;
@@ -55,6 +55,91 @@ export const STRATEGIC_CONCERN_EXPLANATIONS: Record<string, InsightExplanation> 
 };
 
 /**
+ * VC term explanations - for common VC vocabulary used in the memo
+ */
+export const VC_TERM_EXPLANATIONS: Record<string, string> = {
+  // Metrics & Economics
+  "unit economics": "The direct revenues and costs associated with a single customer or transaction. VCs use this to assess whether your business can scale profitably.",
+  "cac": "Customer Acquisition Cost — the total cost to acquire one customer, including marketing, sales, and overhead. Should be recovered within 12-18 months.",
+  "ltv": "Lifetime Value — the total revenue expected from a customer over their entire relationship with your company. Healthy businesses have LTV:CAC ratios of 3:1 or better.",
+  "acv": "Annual Contract Value — the average yearly revenue per customer contract. Higher ACVs typically mean longer sales cycles but better unit economics.",
+  "arr": "Annual Recurring Revenue — the normalized yearly value of your subscription revenue. The primary metric VCs use to value SaaS companies.",
+  "mrr": "Monthly Recurring Revenue — your subscription revenue normalized to a monthly value. Used to track month-over-month growth.",
+  "burn rate": "How much cash your company spends per month beyond what it earns. VCs want to see this decreasing relative to growth.",
+  "runway": "How many months your company can operate with current cash reserves at current burn rate. Typically want 18+ months.",
+  "gross margin": "Revenue minus the direct costs of delivering your product, expressed as a percentage. Software typically targets 70-80%+.",
+  
+  // Market & Competition
+  "tam": "Total Addressable Market — the entire potential market if you captured 100%. VCs want to see $1B+ for venture-scale returns.",
+  "sam": "Serviceable Addressable Market — the portion of TAM you can realistically target with your current product and go-to-market.",
+  "som": "Serviceable Obtainable Market — the realistic market share you can capture in 3-5 years given competition and resources.",
+  "moat": "Sustainable competitive advantage that protects your business from competitors. Can be technical, regulatory, network effects, or brand.",
+  "defensibility": "The ability to protect your market position from competitors over time. Stronger with switching costs, data network effects, or regulatory barriers.",
+  "wedge": "Your initial entry point into a market — the specific, narrow problem you solve exceptionally well to gain a foothold.",
+  
+  // Traction & Growth
+  "product-market fit": "When you have a product that satisfies strong market demand. Evidenced by organic growth, low churn, and customers actively pulling the product.",
+  "pmf": "Product-Market Fit — same as above. The inflection point where growth becomes organic rather than forced.",
+  "churn": "The rate at which customers cancel or don't renew. Enterprise SaaS should target <5% annual; consumer products vary widely.",
+  "retention": "The opposite of churn — how well you keep customers over time. Net dollar retention above 100% means existing customers grow.",
+  "cohort analysis": "Tracking customer behavior by when they joined. Shows whether your product is improving and if early customers still engage.",
+  
+  // Team & Execution
+  "founder-market fit": "When founders have unique insight, experience, or unfair advantages to solve the specific problem they're tackling.",
+  "domain expertise": "Deep knowledge of the industry or problem space, usually from years of direct experience. Reduces execution risk.",
+  "execution risk": "The risk that the team can't actually build and sell what they're proposing. Mitigated by relevant experience and early traction.",
+  
+  // Fundraising & Investment
+  "pre-seed": "The earliest institutional funding stage, typically $500K-$2M. Expected: strong team, clear problem, early product or prototype.",
+  "seed": "First significant funding round, typically $1-4M. Expected: some traction, product-market fit signals, clear go-to-market.",
+  "series a": "Growth funding round, typically $10-25M. Expected: proven PMF, repeatable sales, clear path to scale.",
+  "dilution": "The reduction in ownership percentage when new shares are issued. Each round typically dilutes founders by 15-25%.",
+  "valuation": "The price investors pay for equity, implying a total company worth. Early-stage valuations are more art than science.",
+  "term sheet": "A non-binding agreement outlining the key terms of an investment. The starting point for negotiations.",
+  "ic": "Investment Committee — the internal meeting where VC partners decide whether to make an investment. Your pitch is evaluated here.",
+  "lead investor": "The VC who sets the terms and leads the round. They do the most due diligence and typically take a board seat.",
+  
+  // Business Model
+  "saas": "Software as a Service — subscription-based software delivered over the internet. The dominant model for B2B startups.",
+  "b2b": "Business-to-Business — selling to other companies rather than consumers. Typically higher ACVs, longer sales cycles.",
+  "b2c": "Business-to-Consumer — selling directly to individual consumers. Higher volume, lower prices, marketing-driven.",
+  "gtm": "Go-to-Market — your strategy for reaching and acquiring customers. Includes sales model, channels, and positioning.",
+  "sales motion": "How you sell your product — self-serve, inside sales, field sales, etc. Must match your ACV and customer type.",
+  "land and expand": "Starting with a small deal and growing within the account over time. Common in enterprise sales.",
+};
+
+/**
+ * Score interpretation explanations
+ */
+export const SCORE_INTERPRETATIONS: Record<string, { range: string; meaning: string; vcReaction: string }> = {
+  "exceptional": {
+    range: "80-100",
+    meaning: "Significantly above stage expectations",
+    vcReaction: "This is a clear strength that could differentiate the deal. Will be highlighted in IC discussions."
+  },
+  "strong": {
+    range: "65-79",
+    meaning: "Above benchmark for this stage",
+    vcReaction: "Meets the bar for competitive deals. Won't raise concerns but also won't be a standout."
+  },
+  "adequate": {
+    range: "50-64",
+    meaning: "Meeting minimum expectations",
+    vcReaction: "Acceptable for early stage, but needs to improve for later rounds. May generate follow-up questions."
+  },
+  "concerning": {
+    range: "35-49",
+    meaning: "Below stage expectations",
+    vcReaction: "Will likely come up in IC as a risk factor. Needs addressing with a clear improvement plan."
+  },
+  "critical": {
+    range: "0-34",
+    meaning: "Significantly below expectations",
+    vcReaction: "Potential deal-breaker. VCs will want to see evidence this can be fixed before proceeding."
+  }
+};
+
+/**
  * Maps the actual concern string to its explanation key
  */
 export function findConcernExplanation(concernText: string): InsightExplanation | null {
@@ -84,6 +169,43 @@ export function findConcernExplanation(concernText: string): InsightExplanation 
   }
   
   return null;
+}
+
+/**
+ * Find VC term explanation from text - returns the term and its explanation
+ */
+export function findVCTermInText(text: string): { term: string; explanation: string } | null {
+  const lowerText = text.toLowerCase();
+  
+  // Check each term (longest first to avoid partial matches)
+  const sortedTerms = Object.keys(VC_TERM_EXPLANATIONS).sort((a, b) => b.length - a.length);
+  
+  for (const term of sortedTerms) {
+    if (lowerText.includes(term.toLowerCase())) {
+      return { term, explanation: VC_TERM_EXPLANATIONS[term] };
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Get explanation for a specific VC term
+ */
+export function getVCTermExplanation(term: string): string | null {
+  const lowerTerm = term.toLowerCase().trim();
+  return VC_TERM_EXPLANATIONS[lowerTerm] || null;
+}
+
+/**
+ * Get score interpretation
+ */
+export function getScoreInterpretation(score: number): typeof SCORE_INTERPRETATIONS[keyof typeof SCORE_INTERPRETATIONS] {
+  if (score >= 80) return SCORE_INTERPRETATIONS["exceptional"];
+  if (score >= 65) return SCORE_INTERPRETATIONS["strong"];
+  if (score >= 50) return SCORE_INTERPRETATIONS["adequate"];
+  if (score >= 35) return SCORE_INTERPRETATIONS["concerning"];
+  return SCORE_INTERPRETATIONS["critical"];
 }
 
 /**
@@ -170,4 +292,44 @@ export function getWeaknessHeadline(sectionName: string, score: number, benchmar
   const gap = benchmark - score;
   const generator = WEAKNESS_HEADLINES[sectionName];
   return generator ? generator(gap) : `${sectionName} needs improvement`;
+}
+
+/**
+ * Generate contextual explanation for any VC insight text
+ * Uses keyword matching to provide relevant context
+ */
+export function generateInsightExplanation(insightText: string): string {
+  const lower = insightText.toLowerCase();
+  
+  // Match common VC insight patterns
+  if (lower.includes("traction") && (lower.includes("weak") || lower.includes("low") || lower.includes("insufficient"))) {
+    return "Early traction is the strongest signal of product-market fit. Without it, VCs must rely on the team and market thesis alone, which increases perceived risk.";
+  }
+  if (lower.includes("team") && (lower.includes("gap") || lower.includes("missing") || lower.includes("lack"))) {
+    return "Team completeness matters because execution risk is the primary concern at early stages. Missing key roles (especially technical or commercial) raises questions about ability to execute.";
+  }
+  if (lower.includes("market") && (lower.includes("size") || lower.includes("tam") || lower.includes("small"))) {
+    return "VCs need large markets to generate fund-returning outcomes. A $100M market can't produce the 10-50x returns that venture math requires.";
+  }
+  if (lower.includes("competition") || lower.includes("competitor")) {
+    return "VCs aren't worried about competition existing — they're worried about whether you have sustainable advantages. 'Better product' is rarely enough.";
+  }
+  if (lower.includes("unit economics") || lower.includes("cac") || lower.includes("ltv")) {
+    return "Healthy unit economics (LTV:CAC > 3:1) prove the business can scale profitably. Without them, growth just accelerates losses.";
+  }
+  if (lower.includes("defensib") || lower.includes("moat")) {
+    return "Defensibility determines whether you can keep what you build. Without moats, success invites competition that erodes margins.";
+  }
+  if (lower.includes("burn") || lower.includes("runway")) {
+    return "Runway determines negotiating leverage. <12 months forces urgency; 18+ months allows patience to find the right partner and terms.";
+  }
+  if (lower.includes("valuation")) {
+    return "Valuation at early stages is more art than science. It's based on comparable deals, team pedigree, traction, and market size — not DCF models.";
+  }
+  if (lower.includes("product-market fit") || lower.includes("pmf")) {
+    return "PMF is the point where customers are actively pulling your product rather than you pushing it. Evidenced by organic growth, low churn, and customer referrals.";
+  }
+  
+  // Default for unmatched insights
+  return "This insight reflects how VCs evaluate early-stage companies. They're looking for patterns that predict success while identifying risks that could derail the investment.";
 }
