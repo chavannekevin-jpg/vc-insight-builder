@@ -115,12 +115,14 @@ async function fetchMemoContent(companyId: string): Promise<MemoContentData> {
     toolDataResult.data.forEach((tool) => {
       const sectionName = tool.section_name;
       
-      // Extract holistic verdicts separately
+      // Extract holistic verdicts separately - check both possible keys
       if (tool.tool_name === 'holisticVerdict') {
         const aiData = tool.ai_generated_data as Record<string, any> || {};
-        if (aiData.verdict) {
+        // Check both 'holisticVerdict' and 'verdict' keys (legacy support)
+        const verdictText = aiData.holisticVerdict || aiData.verdict;
+        if (verdictText) {
           verdictsMap[sectionName] = {
-            verdict: aiData.verdict,
+            verdict: verdictText,
             stageContext: aiData.stageContext
           };
         }
