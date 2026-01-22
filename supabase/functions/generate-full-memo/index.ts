@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.84.0";
 import { buildEvidencePacket } from "./evidence.ts";
+import { buildEvidenceLedgerV1, saveMemoArtifact } from "./artifacts.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -2663,6 +2664,36 @@ async function generateMemoInBackground(
             companyModel: companyModel ? { coherence: companyModel.coherence, discrepancies: companyModel.discrepancies } : null,
           })
         : "";
+
+      // Persist provenance artifacts (no schema changes)
+      if (useMethodologyV2) {
+        const manualQuestionKeys = new Set(manualResponses.map((r) => r.question_key));
+        await saveMemoArtifact({
+          supabaseClient,
+          companyId,
+          sectionName,
+          toolName: "__evidence_packet_v3",
+          data: {
+            version: 3,
+            section: sectionName,
+            packet: evidencePacketStr,
+            generatedAt: new Date().toISOString(),
+          },
+        });
+
+        await saveMemoArtifact({
+          supabaseClient,
+          companyId,
+          sectionName,
+          toolName: "__evidence_ledger_v1",
+          data: buildEvidenceLedgerV1({
+            sectionName,
+            sectionResponses,
+            manualQuestionKeys,
+            nonManualRows: nonManualResponses,
+          }),
+        });
+      }
       
       // Build AI-deduced market context string if available
       let marketContextStr = "";
@@ -4298,6 +4329,19 @@ CRITICAL: Each verdict must be SPECIFIC to ${company.name} and reference actual 
         }
       }
     }
+
+    // Persist pipeline QA report as a reserved artifact (not used by UI)
+    await saveMemoArtifact({
+      supabaseClient,
+      companyId,
+      sectionName: "__pipeline",
+      toolName: "__qa_report_v1",
+      data: {
+        version: 1,
+        generatedAt: new Date().toISOString(),
+        coherenceFlags,
+      },
+    });
 
     // Save memo to database with structured content including overallAssessment, coherenceFlags, and aiActionPlan
     const structuredContent = {

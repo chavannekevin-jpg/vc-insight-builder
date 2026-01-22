@@ -137,14 +137,16 @@ serve(async (req) => {
     md += section("1) End-to-end pipeline overview");
     md += `### 1.1 Data sources\n`;
     md += `- **Founder pitch deck** (PDF or images) → extracted via backend function **parse-pitch-deck**.\n`;
-    md += `- **Founder questionnaire answers** (manual + deck-import autofill) stored in **memo_responses**.\n`;
+    md += `- **Founder questionnaire answers** (manual) stored in **memo_responses**.\n`;
+    md += `- **Deck import output** is stored as **non-founder context** in **memo_tool_data** (it must not be treated as founder-asserted evidence).\n`;
     md += `- **Knowledge Library** (reports + frameworks) stored as sources + extracted rows in KB tables.\n`;
     md += `\n### 1.2 High-level flow\n`;
     md += `1. Upload deck → stored → signed URL produced\n`;
     md += `2. parse-pitch-deck → structured extraction + per-field confidence\n`;
-    md += `3. High-confidence extractedSections → upsert into memo_responses (source = deck_import)\n`;
+    md += `3. User review step → selected deck extraction is saved as non-founder context (memo_tool_data, source=deck_import)\n`;
     md += `4. generate-full-memo pipeline:\n`;
     md += `   - Load company + memo_responses\n`;
+    md += `   - Build provenance-aware evidence packet (manual evidence vs non-manual context)\n`;
     md += `   - Build CompanyModel (structured extraction + discrepancy tracking)\n`;
     md += `   - Select benchmark cohort (stage + motion signals)\n`;
     md += `   - Retrieve KB context (benchmarks + frameworks)\n`;
