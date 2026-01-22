@@ -254,6 +254,19 @@ export const DashboardScorecard = ({
     ) || null;
   };
 
+  // Find section tools from sectionTools prop
+  const findSectionTools = (sectionName: string) => {
+    if (!sectionTools) return null;
+    // Try direct match first
+    if (sectionTools[sectionName]) return sectionTools[sectionName];
+    // Try normalized matching
+    const normalizedName = sectionName.toLowerCase().replace(/\s+/g, '');
+    const key = Object.keys(sectionTools).find(k => 
+      k.toLowerCase().replace(/\s+/g, '') === normalizedName
+    );
+    return key ? sectionTools[key] : null;
+  };
+
   const handleSectionClick = (section: SectionVerdict) => {
     setSelectedSection(section);
     setSectionModalOpen(true);
@@ -579,6 +592,7 @@ export const DashboardScorecard = ({
         companyDescription={companyDescription}
         allSectionScores={allSectionScores}
         sectionNarrative={selectedSection ? findSectionNarrative(selectedSection.section) : null}
+        sectionTools={selectedSection ? findSectionTools(selectedSection.section) : null}
       />
       
       {/* Share Scorecard Modal */}
