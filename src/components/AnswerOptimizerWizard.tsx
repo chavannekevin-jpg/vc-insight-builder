@@ -78,7 +78,7 @@ export const AnswerOptimizerWizard = ({
       setLastAnalyzedAnswer(answer);
       
       // Auto-expand if there are suggestions
-      if (data.suggestions?.length > 0 && data.score < 80) {
+      if (data.suggestions?.length > 0 && data.missing?.length > 0) {
         setIsExpanded(true);
       }
     } catch (err) {
@@ -201,7 +201,7 @@ export const AnswerOptimizerWizard = ({
 
   return (
     <div className={cn('mt-3 rounded-lg border transition-all', className, 
-      analysis ? getScoreBg(analysis.score) : 'bg-muted/30 border-border/50'
+      analysis ? (analysis.missing.length === 0 ? 'bg-success/10 border-success/20' : 'bg-primary/5 border-primary/20') : 'bg-muted/30 border-border/50'
     )}>
       {/* Header - Always visible */}
       <button
@@ -217,20 +217,20 @@ export const AnswerOptimizerWizard = ({
             </>
           ) : analysis ? (
             <>
-              <div className={cn('text-lg font-semibold', getScoreColor(analysis.score))}>
-                {analysis.score}/100
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {analysis.score >= 80 
-                  ? 'Great answer!' 
-                  : analysis.score >= 60 
-                    ? 'Good, could be stronger' 
-                    : 'Add more detail for best results'}
-              </span>
-              {analysis.missing.length > 0 && (
-                <span className="text-xs bg-orange-500/20 text-orange-700 dark:text-orange-300 px-2 py-0.5 rounded-full">
-                  {analysis.missing.length} missing
-                </span>
+              {analysis.missing.length === 0 ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span className="text-sm font-medium text-success">
+                    Great answer!
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Lightbulb className="h-4 w-4 text-primary" />
+                  <span className="text-sm text-muted-foreground">
+                    {analysis.missing.length} suggestion{analysis.missing.length > 1 ? 's' : ''} to strengthen your answer
+                  </span>
+                </>
               )}
               {hasFlags && (
                 <span className="text-xs bg-amber-500/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full">
@@ -334,7 +334,7 @@ export const AnswerOptimizerWizard = ({
               )}
 
               {/* VC Context */}
-              {analysis.vcContext && analysis.score < 80 && (
+              {analysis.vcContext && analysis.missing.length > 0 && (
                 <div className="text-xs text-muted-foreground bg-background/30 rounded p-2 italic">
                   💡 {analysis.vcContext}
                 </div>

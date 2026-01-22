@@ -170,10 +170,19 @@ export function buildHolisticScorecard(
 ): HolisticScorecard {
   const sections: SectionVerdict[] = [];
   
+  console.log('[buildHolisticScorecard] Input sectionTools keys:', Object.keys(sectionTools));
+  
   // Process each section
   Object.entries(sectionTools).forEach(([sectionName, tools]) => {
+    // Skip internal/pipeline sections
+    if (sectionName.startsWith('__') || sectionName === 'Intake') {
+      return;
+    }
+    
     if (tools.sectionScore) {
       const { score, vcBenchmark } = tools.sectionScore;
+      
+      console.log(`[buildHolisticScorecard] Processing ${sectionName}: score=${score}, benchmark=${vcBenchmark}`);
       
       // Use dynamic verdict if available, otherwise use default
       const verdictData = dynamicVerdicts?.[sectionName];
@@ -186,8 +195,12 @@ export function buildHolisticScorecard(
         holisticVerdict: verdictData?.verdict || DEFAULT_VERDICT,
         stageContext: verdictData?.stageContext || DEFAULT_STAGE_CONTEXT
       });
+    } else {
+      console.log(`[buildHolisticScorecard] Section ${sectionName} has no sectionScore`);
     }
   });
+  
+  console.log('[buildHolisticScorecard] Final sections:', sections.map(s => s.section));
   
   // Sort by weight importance
   const sectionOrder = Object.keys(SECTION_WEIGHTS);
