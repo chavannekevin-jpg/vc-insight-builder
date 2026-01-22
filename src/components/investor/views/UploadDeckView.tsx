@@ -5,100 +5,17 @@ import {
   Upload, 
   FileText, 
   Loader2, 
-  ChevronDown, 
-  ChevronUp,
   FileSearch,
   Sparkles,
-  AlertTriangle,
   CheckCircle2,
-  LayoutGrid
+  LayoutGrid,
+  Eye
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { convertPDFToImages } from "@/lib/pdfToImages";
-
-// Import new enhanced components
-import { InvestorMemoHeader } from "../memo/InvestorMemoHeader";
-import { InvestorQuickTake } from "../memo/InvestorQuickTake";
-import { InvestorMatchCard } from "../memo/InvestorMatchCard";
-import { InvestorMiniRadar } from "../memo/InvestorMiniRadar";
-import { InvestorQuickFacts } from "../memo/InvestorQuickFacts";
-import { InvestorSectionCard } from "../memo/InvestorSectionCard";
-
-interface MemoSection {
-  title: string;
-  content: string;
-}
-
-interface QuickFacts {
-  headquarters: string;
-  founded: string;
-  employees: string;
-  funding_raised: string;
-  current_raise: string;
-  key_metrics: string[];
-}
-
-interface Concern {
-  category: string;
-  text: string;
-  severity: 'critical' | 'warning' | 'minor';
-}
-
-interface Strength {
-  category: string;
-  text: string;
-}
-
-interface QuickAnalysis {
-  overall_score: number;
-  readiness_level: 'LOW' | 'MEDIUM' | 'HIGH';
-  one_liner_verdict: string;
-  section_scores: {
-    team: number;
-    market: number;
-    traction: number;
-    product: number;
-    business_model: number;
-    competition: number;
-  };
-}
-
-interface MatchingSignals {
-  stage: string;
-  sector: string;
-  secondary_sectors?: string[];
-  keywords?: string[];
-  ask_amount?: number;
-  has_revenue?: boolean;
-  has_customers?: boolean;
-  geography?: string;
-}
-
-interface ParsedMemo {
-  company_name: string;
-  tagline: string;
-  stage: string;
-  sector: string;
-  quick_analysis?: QuickAnalysis;
-  concerns?: Concern[];
-  strengths?: Strength[];
-  matching_signals?: MatchingSignals;
-  sections: {
-    executive_summary: MemoSection;
-    problem: MemoSection;
-    solution: MemoSection;
-    market: MemoSection;
-    business_model: MemoSection;
-    traction: MemoSection;
-    competition: MemoSection;
-    team: MemoSection;
-    financials: MemoSection;
-    risks: MemoSection;
-    recommendation: MemoSection;
-  };
-  quick_facts: QuickFacts;
-}
+import { InvestorSnapshotModal } from "../snapshot/InvestorSnapshotModal";
+import type { InvestorSnapshot } from "@/types/investorSnapshot";
 
 // Processing steps for animated loading
 const PROCESSING_STEPS = [
@@ -113,8 +30,8 @@ const UploadDeckView = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState(0);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [parsedMemo, setParsedMemo] = useState<ParsedMemo | null>(null);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["executive_summary"]));
+  const [snapshot, setSnapshot] = useState<InvestorSnapshot | null>(null);
+  const [isSnapshotOpen, setIsSnapshotOpen] = useState(false);
   const [isSavingToDealflow, setIsSavingToDealflow] = useState(false);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -202,7 +119,7 @@ const UploadDeckView = () => {
 
       // Call the edge function with image URLs instead of PDF
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-investor-memo`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-investor-snapshot`,
         {
           method: "POST",
           headers: {
@@ -225,14 +142,15 @@ const UploadDeckView = () => {
 
       const data = await response.json();
       
-      if (data.success && data.memo) {
-        setParsedMemo(data.memo);
+      if (data.success && data.snapshot) {
+        setSnapshot(data.snapshot as InvestorSnapshot);
+        setIsSnapshotOpen(true);
         toast({ 
-          title: "Memo generated successfully!",
-          description: `Analyzed in ${Math.round(data.processingTime / 1000)}s`
+          title: "Snapshot ready",
+          description: "Your quick debrief is ready to review."
         });
       } else {
-        throw new Error("Invalid response from memo generator");
+        throw new Error("Invalid response from snapshot generator");
       }
 
     } catch (error) {
@@ -250,7 +168,7 @@ const UploadDeckView = () => {
   };
 
   const handleSaveToDealflow = async () => {
-    if (!parsedMemo) return;
+    if (!snapshot) return;
 
     setIsSavingToDealflow(true);
     try {
@@ -264,12 +182,12 @@ const UploadDeckView = () => {
         .insert([
           {
             investor_id: user.id,
-            name: parsedMemo.company_name || "Unknown",
-            stage: parsedMemo.stage || "Seed",
+            name: snapshot.company_name || "Unknown",
+            stage: snapshot.tags?.stage || "Seed",
             // One-liner shown on dealflow cards
-            description: parsedMemo.tagline || parsedMemo.sections?.executive_summary?.content || null,
-            category: parsedMemo.sector || null,
-            memo_json: parsedMemo as any,
+            description: snapshot.tagline || snapshot.debrief || null,
+            category: snapshot.tags?.sector || null,
+            memo_json: snapshot as any,
           } as any,
         ])
         .select("id")
@@ -291,8 +209,10 @@ const UploadDeckView = () => {
 
       toast({
         title: "Added to dealflow",
-        description: "Saved as a deal with the memo snapshot.",
+        description: "Saved as a deal with the snapshot.",
       });
+
+      setIsSnapshotOpen(false);
       
     } catch (error) {
       toast({
@@ -305,88 +225,28 @@ const UploadDeckView = () => {
     }
   };
 
-  const handleShare = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Share feature will be available soon",
-    });
-  };
-
   const resetUpload = () => {
     setUploadedFile(null);
-    setParsedMemo(null);
-    setExpandedSections(new Set(["executive_summary"]));
-  };
-
-  const toggleSection = (sectionKey: string) => {
-    setExpandedSections(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(sectionKey)) {
-        newSet.delete(sectionKey);
-      } else {
-        newSet.add(sectionKey);
-      }
-      return newSet;
-    });
-  };
-
-  const expandAll = () => {
-    if (parsedMemo) {
-      setExpandedSections(new Set(Object.keys(parsedMemo.sections)));
-    }
-  };
-
-  const collapseAll = () => {
-    setExpandedSections(new Set());
-  };
-
-  const getSectionIcon = (key: string) => {
-    switch (key) {
-      case "executive_summary": return <FileText className="w-4 h-4" />;
-      case "problem": return <AlertTriangle className="w-4 h-4" />;
-      case "solution": return <Sparkles className="w-4 h-4" />;
-      case "market": return <LayoutGrid className="w-4 h-4" />;
-      case "business_model": return <FileSearch className="w-4 h-4" />;
-      case "traction": return <CheckCircle2 className="w-4 h-4" />;
-      case "competition": return <AlertTriangle className="w-4 h-4" />;
-      case "team": return <FileText className="w-4 h-4" />;
-      case "financials": return <FileSearch className="w-4 h-4" />;
-      case "risks": return <AlertTriangle className="w-4 h-4" />;
-      case "recommendation": return <CheckCircle2 className="w-4 h-4" />;
-      default: return <FileText className="w-4 h-4" />;
-    }
-  };
-
-  const getSectionVariant = (key: string): 'default' | 'success' | 'warning' | 'danger' => {
-    if (key === "recommendation") return 'success';
-    if (key === "risks") return 'warning';
-    return 'default';
-  };
-
-  const getSectionScore = (key: string): number | undefined => {
-    if (!parsedMemo?.quick_analysis?.section_scores) return undefined;
-    
-    const scoreMap: Record<string, keyof typeof parsedMemo.quick_analysis.section_scores> = {
-      team: 'team',
-      market: 'market',
-      traction: 'traction',
-      solution: 'product',
-      business_model: 'business_model',
-      competition: 'competition',
-      problem: 'market', // Use market as proxy for problem
-    };
-    
-    const scoreKey = scoreMap[key];
-    return scoreKey ? parsedMemo.quick_analysis.section_scores[scoreKey] : undefined;
+    setSnapshot(null);
+    setIsSnapshotOpen(false);
   };
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
+      <InvestorSnapshotModal
+        isOpen={isSnapshotOpen}
+        onClose={() => setIsSnapshotOpen(false)}
+        snapshot={snapshot}
+        onSave={handleSaveToDealflow}
+        onUploadAnother={resetUpload}
+        isSaving={isSavingToDealflow}
+      />
+
       {/* Header */}
       <div className="p-5 border-b border-border/30 bg-gradient-to-r from-card/80 to-card/40 backdrop-blur-sm">
         <h2 className="text-xl font-bold tracking-tight">Upload Deck</h2>
         <p className="text-sm text-muted-foreground/80 mt-1">
-          Upload a pitch deck and get a fast investor snapshot (not a full diligence memo)
+          Upload a pitch deck and get a quick, easy-to-read debrief.
         </p>
       </div>
 
@@ -437,7 +297,7 @@ const UploadDeckView = () => {
               <div className="absolute -inset-4 rounded-full border-2 border-primary/20 animate-ping" />
             </div>
             
-            <h3 className="text-xl font-semibold mb-4">Generating Investment Memo...</h3>
+            <h3 className="text-xl font-semibold mb-4">Generating snapshot…</h3>
             
             {/* Processing Steps */}
             <div className="space-y-3 mb-6">
@@ -477,90 +337,32 @@ const UploadDeckView = () => {
               <span className="text-sm text-muted-foreground">{uploadedFile.name}</span>
             </div>
           </div>
-        ) : parsedMemo ? (
-          /* Enhanced Parsed Memo */
-          <div className="max-w-5xl mx-auto space-y-6">
-            {/* Header with Score Ring */}
-            <InvestorMemoHeader
-              companyName={parsedMemo.company_name}
-              tagline={parsedMemo.tagline}
-              stage={parsedMemo.stage}
-              sector={parsedMemo.sector}
-              quickAnalysis={parsedMemo.quick_analysis}
-              onSaveToDealflow={handleSaveToDealflow}
-              onShare={handleShare}
-              onUploadAnother={resetUpload}
-              isSaving={isSavingToDealflow}
-            />
-
-            {/* Quick Take: Concerns & Strengths */}
-            {(parsedMemo.concerns || parsedMemo.strengths) && (
-              <InvestorQuickTake
-                concerns={parsedMemo.concerns || []}
-                strengths={parsedMemo.strengths || []}
-              />
-            )}
-
-            {/* Analysis Grid: Radar + Match Card */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {parsedMemo.quick_analysis?.section_scores && (
-                <InvestorMiniRadar 
-                  sectionScores={parsedMemo.quick_analysis.section_scores}
-                />
-              )}
-              
-              {parsedMemo.matching_signals && (
-                <InvestorMatchCard
-                  matchingSignals={parsedMemo.matching_signals}
-                />
-              )}
-            </div>
-
-            {/* Quick Facts */}
-            {parsedMemo.quick_facts && (
-              <InvestorQuickFacts quickFacts={parsedMemo.quick_facts} />
-            )}
-
-            {/* Expand/Collapse Controls */}
-            <div className="flex items-center justify-between border-b border-border/50 pb-4">
-              <h3 className="text-lg font-semibold text-foreground">Detailed Analysis</h3>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={expandAll}>
-                  <ChevronDown className="w-4 h-4 mr-1" />
-                  Expand All
-                </Button>
-                <Button variant="ghost" size="sm" onClick={collapseAll}>
-                  <ChevronUp className="w-4 h-4 mr-1" />
-                  Collapse All
+        ) : snapshot ? (
+          <div className="max-w-2xl mx-auto space-y-4">
+            <div className="rounded-xl border bg-card p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">Snapshot ready</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {snapshot.company_name} — {snapshot.tagline}
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsSnapshotOpen(true)}>
+                  <Eye className="w-4 h-4" />
+                  View
                 </Button>
               </div>
-            </div>
-
-            {/* Memo Sections */}
-            <div className="space-y-3">
-              {Object.entries(parsedMemo.sections).map(([key, section]) => (
-                <InvestorSectionCard
-                  key={key}
-                  title={section.title}
-                  content={section.content}
-                  icon={getSectionIcon(key)}
-                  score={getSectionScore(key)}
-                  isExpanded={expandedSections.has(key)}
-                  onToggle={() => toggleSection(key)}
-                  variant={getSectionVariant(key)}
-                />
-              ))}
-            </div>
-
-            {/* Footer */}
-            <div className="text-center py-6 border-t border-border/50">
-              <p className="text-xs text-muted-foreground mb-3">
-                Generated by AI • Review and verify all information before making investment decisions
+              <div className="flex gap-2 mt-4">
+                <Button onClick={() => setIsSnapshotOpen(true)} className="flex-1">
+                  Open snapshot
+                </Button>
+                <Button variant="outline" onClick={resetUpload} className="flex-1">
+                  Upload another
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                Generated by AI • Verify details before making decisions.
               </p>
-              <Button variant="outline" onClick={resetUpload} className="gap-2">
-                <Upload className="w-4 h-4" />
-                Analyze Another Deck
-              </Button>
             </div>
           </div>
         ) : null}
