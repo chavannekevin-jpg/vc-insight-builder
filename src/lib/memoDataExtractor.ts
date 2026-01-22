@@ -45,11 +45,11 @@ export interface ExitPathData {
 
 // Moat keyword patterns for extraction
 const MOAT_PATTERNS = {
-  networkEffects: ['network effect', 'marketplace', 'community', 'viral', 'two-sided', 'platform effect', 'user-generated', 'flywheel'],
-  switchingCosts: ['switching cost', 'lock-in', 'integration', 'workflow', 'embedded', 'migration', 'dependency', 'sticky'],
-  dataAdvantage: ['proprietary data', 'dataset', 'ai training', 'machine learning', 'unique data', 'data moat', 'analytics', 'insights'],
-  brandTrust: ['brand', 'trust', 'certification', 'reputation', 'enterprise', 'compliance', 'soc2', 'iso', 'gdpr'],
-  costAdvantage: ['economies of scale', 'cost advantage', 'margin', 'efficiency', 'proprietary tech', 'patent', 'cheaper']
+  networkEffects: ['network effect', 'marketplace', 'community', 'viral', 'two-sided', 'platform effect', 'user-generated', 'flywheel', 'each new user', 'more users'],
+  switchingCosts: ['switching cost', 'lock-in', 'integration', 'workflow', 'embedded', 'migration', 'dependency', 'sticky', 'production go-live', 'deployment'],
+  dataAdvantage: ['proprietary data', 'dataset', 'ai training', 'machine learning', 'unique data', 'data moat', 'analytics', 'insights', 'ai model', 'improves our ai', 'user data improves', 'training data', 'data-driven', 'domain-specific model', 'agentic ai'],
+  brandTrust: ['brand', 'trust', 'certification', 'reputation', 'enterprise', 'compliance', 'soc2', 'iso', 'gdpr', 'fda', 'regulatory', 'audit', 'trusted by'],
+  costAdvantage: ['economies of scale', 'cost advantage', 'margin', 'efficiency', 'proprietary tech', 'patent', 'cheaper', 'efficiency gains', 'reducing manual labor']
 };
 
 export function extractMoatScores(competitiveMoatText: string): MoatScores {
@@ -920,23 +920,41 @@ export function extractPricingMetrics(
     }
   }
   
-  // Extract MRR from narrative
+  // Extract MRR from narrative - multiple patterns to catch various formats
   if (!defaults.currentMRR) {
-    const mrrMatch = combinedText.match(/[€£$]?([\d,]+(?:\.\d+)?)[k]?\s*mrr/i);
-    if (mrrMatch) {
-      defaults.currentMRR = parseCurrencyValue(mrrMatch[0]);
-      defaults.dataSource.currentMRR = 'narrative';
-      defaults.dataSource.rawMatches!.mrr = mrrMatch[0].trim();
+    // Pattern 1: "€45,000 MRR" or "$45k MRR" or "45,000 MRR"
+    const mrrPatterns = [
+      /[€£$]?\s*([\d,]+(?:\.\d+)?)\s*[km]?\s*mrr/i,
+      /mrr\s*(?:of|is|:)?\s*[€£$]?\s*([\d,]+(?:\.\d+)?)\s*[km]?/i,
+      /achieved\s*[€£$]?\s*([\d,]+(?:\.\d+)?)\s*[km]?\s*mrr/i,
+    ];
+    
+    for (const pattern of mrrPatterns) {
+      const mrrMatch = combinedText.match(pattern);
+      if (mrrMatch) {
+        defaults.currentMRR = parseCurrencyValue(mrrMatch[0]);
+        defaults.dataSource.currentMRR = 'narrative';
+        defaults.dataSource.rawMatches!.mrr = mrrMatch[0].trim();
+        break;
+      }
     }
     
     // Extract ARR or CARR and divide by 12
     if (!defaults.currentMRR) {
-      // Match both ARR and CARR (Contracted ARR)
-      const arrMatch = combinedText.match(/[€£$]?([\d,]+(?:\.\d+)?)\s*[kmb]?\s*c?arr/i);
-      if (arrMatch) {
-        defaults.currentMRR = Math.round(parseCurrencyValue(arrMatch[0]) / 12);
-        defaults.dataSource.currentMRR = 'narrative';
-        defaults.dataSource.rawMatches!.arr = arrMatch[0].trim();
+      // Match both ARR and CARR (Contracted ARR) - patterns like "€540k ARR" or "8.9M ARR"
+      const arrPatterns = [
+        /[€£$]?\s*([\d,]+(?:\.\d+)?)\s*[kmb]?\s*c?arr/i,
+        /c?arr\s*(?:of|is|:)?\s*[€£$]?\s*([\d,]+(?:\.\d+)?)\s*[kmb]?/i,
+      ];
+      
+      for (const pattern of arrPatterns) {
+        const arrMatch = combinedText.match(pattern);
+        if (arrMatch) {
+          defaults.currentMRR = Math.round(parseCurrencyValue(arrMatch[0]) / 12);
+          defaults.dataSource.currentMRR = 'narrative';
+          defaults.dataSource.rawMatches!.arr = arrMatch[0].trim();
+          break;
+        }
       }
     }
   }
