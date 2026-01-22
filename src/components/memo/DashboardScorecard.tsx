@@ -196,22 +196,22 @@ const MiniSectionCard = ({
           )}>
             <span className={config.color}>{sectionIcon}</span>
           </div>
-          <span className="text-sm font-semibold text-foreground tracking-tight">
+          <span className="text-base font-bold text-foreground tracking-tight">
             {section.section}
           </span>
         </div>
         
         {/* Score display */}
         <div className="flex items-end justify-between">
-          <div className="flex items-baseline gap-1.5">
+          <div className="flex items-baseline gap-1">
             <span className={cn(
-              "text-3xl font-bold tabular-nums tracking-tight",
+              "text-xl font-semibold tabular-nums",
               section.score >= section.benchmark ? "text-success" : 
               section.score >= section.benchmark - 15 ? "text-warning" : "text-destructive"
             )}>
               {section.score}
             </span>
-            <span className="text-sm text-muted-foreground font-medium">/100</span>
+            <span className="text-xs text-muted-foreground">/100</span>
           </div>
           
           {/* Status badge */}
@@ -225,11 +225,6 @@ const MiniSectionCard = ({
         </div>
         
         
-        {/* Hover indicator */}
-        <div className="absolute bottom-2 right-2 flex items-center gap-1 text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-          <span className="font-medium">Read Analysis</span>
-          <ArrowRight className="w-3 h-3" />
-        </div>
       </div>
     </button>
   );
@@ -514,8 +509,8 @@ export const DashboardScorecard = ({
               <Zap className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-foreground">Investment Readiness</h3>
-              <p className="text-xs text-muted-foreground">How VCs evaluate your pitch</p>
+              <h3 className="text-base font-bold text-foreground">Investment Analysis</h3>
+              <p className="text-xs text-muted-foreground">VC evaluation of your pitch</p>
             </div>
           </div>
           
@@ -833,7 +828,7 @@ export const DashboardScorecard = ({
             <CollapsibleTrigger asChild>
               <button className="w-full mt-5 pt-4 border-t border-border/30 flex items-center justify-between text-sm text-muted-foreground hover:text-foreground transition-colors">
                 <span className="font-semibold uppercase tracking-wide text-xs">
-                  Section Breakdown
+                  Section Breakdown <span className="text-muted-foreground font-normal">(click to read more)</span>
                 </span>
                 {isExpanded ? (
                   <ChevronUp className="w-4 h-4" />

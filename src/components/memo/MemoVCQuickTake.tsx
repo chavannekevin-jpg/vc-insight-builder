@@ -388,10 +388,10 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock, compa
   const lockedConcerns = Math.max(0, totalConcerns - 1);
 
   return (
-    <div className="relative animate-fade-in mb-8">
-      <div className="absolute inset-0 bg-gradient-to-r from-destructive/25 via-muted/30 to-destructive/20 rounded-3xl blur-xl opacity-60" />
+    <div className="relative animate-fade-in">
+      <div className="absolute inset-0 bg-gradient-to-r from-destructive/15 via-muted/20 to-destructive/10 rounded-2xl blur-xl opacity-40" />
       
-      <div className="relative bg-card/95 backdrop-blur-sm border border-border/50 rounded-3xl overflow-hidden">
+      <div className="relative bg-card/90 backdrop-blur-sm border border-primary/20 rounded-2xl overflow-hidden shadow-sm">
         {/* Header - The IC Room framing */}
         <div className="p-6 pb-4">
           <div className="flex items-center gap-4 mb-5">
