@@ -403,9 +403,9 @@ export default function Portal() {
   const handleGenerateMemo = () => {
     if (!companyId || !user) return;
     
-    // Navigate directly to analysis (legacy /memo redirects drop query params)
+    // Navigate to hub after memo generation
     setMemoSubmitted(true);
-    navigate(`/analysis?companyId=${companyId}`);
+    navigate(`/hub?companyId=${companyId}`);
   };
 
   const currentQuestion = allQuestions[currentStep];
