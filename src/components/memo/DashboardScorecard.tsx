@@ -29,7 +29,8 @@ import {
   Flame,
   Lock,
   Telescope,
-  ScrollText
+  ScrollText,
+  Boxes
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,9 @@ import { InsightWithTooltip } from "./InsightWithTooltip";
 import { getStrengthHeadline, getWeaknessHeadline } from "@/lib/insightExplanations";
 import { type CompanyInsightContext } from "@/lib/companyInsightContext";
 import { type MemoStructuredContent } from "@/types/memo";
+import { MiniToolCard } from "./MiniToolCard";
+import { ToolPopupModal } from "./ToolPopupModal";
+import { TOOL_CONFIGS, SECTION_TOOL_MAP, CROSS_SECTION_TOOLS } from "@/lib/toolConfig";
 
 export interface ARCClassification {
   type: "Hair on Fire" | "Hard Fact" | "Future Vision";
@@ -302,10 +306,13 @@ export const DashboardScorecard = ({
   const [isExpanded, setIsExpanded] = useState(true);
   const [isARCExpanded, setIsARCExpanded] = useState(false);
   const [isThesisExpanded, setIsThesisExpanded] = useState(false);
+  const [isToolsExpanded, setIsToolsExpanded] = useState(false);
   const [selectedSection, setSelectedSection] = useState<SectionVerdict | null>(null);
   const [sectionModalOpen, setSectionModalOpen] = useState(false);
   const [shareScorecardOpen, setShareScorecardOpen] = useState(false);
   const [inviteFounderOpen, setInviteFounderOpen] = useState(false);
+  const [selectedTool, setSelectedTool] = useState<{ id: string; toolType: string; data: any; sectionName: string } | null>(null);
+  const [toolModalOpen, setToolModalOpen] = useState(false);
   
   const scorecard = useMemo(() => {
     console.log('[DashboardScorecard] sectionTools received:', sectionTools ? Object.keys(sectionTools) : 'null');
@@ -403,9 +410,99 @@ export const DashboardScorecard = ({
     };
   }, [memoContent]);
 
+  // Build available tools from sectionTools data
+  const availableTools = useMemo(() => {
+    if (!sectionTools) return [];
+    
+    interface ToolCardData {
+      id: string;
+      toolType: string;
+      title: string;
+      shortTitle: string;
+      icon: React.ComponentType<any>;
+      section: string;
+      data: any;
+      quickStat?: string;
+      status?: 'good' | 'warning' | 'critical' | 'neutral';
+    }
+    
+    const tools: ToolCardData[] = [];
+    
+    // Iterate through all sections and collect tools
+    Object.entries(sectionTools).forEach(([sectionName, sectionData]) => {
+      if (!sectionData || typeof sectionData !== 'object') return;
+      
+      // Skip internal sections
+      if (sectionName.startsWith('__') || sectionName === 'Intake') return;
+      
+      Object.entries(sectionData).forEach(([toolName, toolData]) => {
+        // Skip sectionScore - it's already shown in the section cards
+        if (toolName === 'sectionScore' || !toolData) return;
+        
+        // Map tool names from sectionTools to our config
+        const toolConfigKey = getToolConfigKey(toolName);
+        const config = TOOL_CONFIGS[toolConfigKey];
+        
+        if (config) {
+          tools.push({
+            id: `${sectionName}_${toolName}`,
+            toolType: toolConfigKey,
+            title: config.title,
+            shortTitle: config.shortTitle,
+            icon: config.icon,
+            section: sectionName,
+            data: toolData,
+            quickStat: config.getQuickStat?.(toolData) || '—',
+            status: config.getStatus?.(toolData) || 'neutral'
+          });
+        }
+      });
+    });
+    
+    return tools;
+  }, [sectionTools]);
+
+  // Helper to map tool names from sectionTools to config keys
+  const getToolConfigKey = (toolName: string): string => {
+    const mapping: Record<string, string> = {
+      'evidenceThreshold': 'evidenceThreshold',
+      'founderBlindSpot': 'founderBlindSpot',
+      'technicalDefensibility': 'technicalDefensibility',
+      'commoditizationTeardown': 'commoditizationTeardown',
+      'competitorBuildAnalysis': 'competitorBuildAnalysis',
+      'bottomsUpTAM': 'bottomsUpTAM',
+      'marketReadinessIndex': 'marketReadinessIndex',
+      'vcMarketNarrative': 'vcMarketNarrative',
+      'competitorChessboard': 'competitorChessboard',
+      'moatDurability': 'moatDurability',
+      'credibilityGapAnalysis': 'credibilityGapAnalysis',
+      'modelStressTest': 'modelStressTest',
+      'tractionDepthTest': 'tractionDepthTest',
+      'vcMilestoneMap': 'vcMilestoneMap',
+      'scenarioPlanning': 'scenarioPlanning',
+      'exitNarrative': 'exitNarrative',
+      'vcInvestmentLogic': 'vcInvestmentLogic',
+      'actionPlan90Day': 'actionPlan90Day',
+      'caseStudy': 'caseStudy',
+      'leadInvestorRequirements': 'leadInvestorRequirements',
+      'benchmarks': 'benchmarks'
+    };
+    return mapping[toolName] || toolName;
+  };
+
   const handleSectionClick = (section: SectionVerdict) => {
     setSelectedSection(section);
     setSectionModalOpen(true);
+  };
+
+  const handleToolClick = (tool: { id: string; toolType: string; data: any; section: string }) => {
+    setSelectedTool({
+      id: tool.id,
+      toolType: tool.toolType,
+      data: tool.data,
+      sectionName: tool.section
+    });
+    setToolModalOpen(true);
   };
   
   return (
@@ -818,6 +915,55 @@ export const DashboardScorecard = ({
                   </div>
                 </Collapsible>
               )}
+              
+              {/* Strategic Analysis Tools - Collapsible */}
+              {availableTools.length > 0 && (
+                <Collapsible open={isToolsExpanded} onOpenChange={setIsToolsExpanded}>
+                  <CollapsibleTrigger asChild>
+                    <button className="w-full mt-4 pt-4 border-t border-border/30 flex items-center justify-between text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      <span className="font-semibold uppercase tracking-wide text-xs flex items-center gap-2">
+                        <Boxes className="w-4 h-4 text-primary/70" />
+                        Strategic Analysis Tools
+                        <Badge variant="secondary" className="text-[10px] font-medium">
+                          {availableTools.length} available
+                        </Badge>
+                      </span>
+                      {isToolsExpanded ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </button>
+                  </CollapsibleTrigger>
+                  
+                  <CollapsibleContent className="pt-4">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                      {availableTools.map(tool => (
+                        <MiniToolCard
+                          key={tool.id}
+                          id={tool.id}
+                          title={tool.title}
+                          shortTitle={tool.shortTitle}
+                          icon={tool.icon}
+                          quickStat={tool.quickStat}
+                          status={tool.status}
+                          onClick={() => handleToolClick({
+                            id: tool.id,
+                            toolType: tool.toolType,
+                            data: tool.data,
+                            section: tool.section
+                          })}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Helper text */}
+                    <p className="text-[10px] text-muted-foreground text-center mt-3">
+                      Click any tool to view detailed analysis
+                    </p>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
             </CollapsibleContent>
           </Collapsible>
           
@@ -892,6 +1038,15 @@ export const DashboardScorecard = ({
         onOpenChange={setInviteFounderOpen}
         companyId={companyId}
         companyName={companyName}
+      />
+      
+      {/* Tool Popup Modal */}
+      <ToolPopupModal
+        open={toolModalOpen}
+        onOpenChange={setToolModalOpen}
+        toolType={selectedTool?.toolType || ''}
+        toolData={selectedTool?.data}
+        sectionName={selectedTool?.sectionName || ''}
       />
     </>
   );
