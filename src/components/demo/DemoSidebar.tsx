@@ -50,19 +50,18 @@ import { cn } from "@/lib/utils";
 import { DEMO_COMPANY } from "@/data/demo/demoSignalFlow";
 
 interface DemoSidebarProps {
-  currentPage: 'dashboard' | 'market-lens' | 'fund-discovery' | 'profile';
+  currentPage: 'dashboard' | 'market-lens' | 'fund-discovery' | 'profile' | 'analysis';
 }
 
 // Define all menu items - matching real FounderSidebar structure
 const mainMenuItems = [
   { title: "Dashboard", path: "/demo", icon: LayoutDashboard, enabled: true },
   { title: "My Profile", path: "/demo/profile", icon: Edit, enabled: true },
-  { title: "Demo Analysis", path: "/demo", icon: FileText, enabled: true },
+  { title: "My Analysis", path: "/demo/analysis", icon: FileText, enabled: true },
 ];
 
 const premiumTools = [
-  { title: "My Analysis", path: "/analysis", icon: Zap, enabled: false },
-  { title: "VC Network", path: "/demo/fund-discovery", icon: Building2, enabled: true, badge: "12+" },
+  { title: "VC Network", path: "/demo/fund-discovery", icon: Building2, enabled: true, badge: "15" },
   { title: "Market Lens", path: "/demo/market-lens", icon: Telescope, enabled: true },
 ];
 

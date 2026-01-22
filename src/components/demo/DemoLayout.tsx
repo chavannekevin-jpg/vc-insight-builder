@@ -7,7 +7,7 @@ import { DEMO_COMPANY } from "@/data/demo/demoSignalFlow";
 
 interface DemoLayoutProps {
   children: ReactNode;
-  currentPage?: 'dashboard' | 'market-lens' | 'fund-discovery' | 'profile';
+  currentPage?: 'dashboard' | 'market-lens' | 'fund-discovery' | 'profile' | 'analysis';
 }
 
 export function DemoLayout({ children, currentPage = 'dashboard' }: DemoLayoutProps) {

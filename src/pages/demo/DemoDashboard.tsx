@@ -82,9 +82,9 @@ export default function DemoDashboard() {
       navigate('/demo/market-lens');
     } else if (path === '/fund-discovery') {
       navigate('/demo/fund-discovery');
-    } else if (path.includes('/analysis/section')) {
-      // For section views, stay on demo but could show modal in future
-      navigate('/demo');
+    } else if (path.includes('/analysis')) {
+      // Redirect all analysis links to demo analysis
+      navigate('/demo/analysis');
     } else {
       navigate(path);
     }
