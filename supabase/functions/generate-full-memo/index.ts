@@ -2647,6 +2647,24 @@ async function generateMemoInBackground(
       return `\n\n--- SUPPLEMENTARY CONTEXT ---\nThe following content provides additional context for analysis.\n\n${lines}\n--- END SUPPLEMENTARY CONTEXT ---`;
     };
 
+    // ============================================
+    // GLOBAL ADDITIONAL CONTEXT
+    // Extract the "additional_context" response to inject into ALL sections
+    // This allows users to provide a "dump all" of any extra information
+    // ============================================
+    const additionalContextResponse = responses?.find(r => r.question_key === "additional_context");
+    const globalAdditionalContext = additionalContextResponse?.answer?.trim()
+      ? `\n\n--- ADDITIONAL FOUNDER CONTEXT ---
+The founder provided the following supplementary information that may be relevant across all sections of this analysis. Use this context to enrich your understanding of the company:
+
+${additionalContextResponse.answer}
+--- END ADDITIONAL FOUNDER CONTEXT ---`
+      : "";
+
+    if (globalAdditionalContext) {
+      console.log("[additional_context] Founder provided global context, will inject into all sections");
+    }
+
     const twoPassGuidelines = useMethodologyV2
       ? `\n\n=== METHODOLOGY v2 (TWO-PASS ANALYSIS) ===\nYou are doing TWO distinct jobs and you must keep them separate:\nPASS 1 (Neutral baseline): Summarize what is known from the company evidence. Clearly separate Known vs Unknown vs Derived. Do not inject additional skepticism or verdict language.\nPASS 2 (Risk & diligence notes): List the 3-5 most decision-relevant risks or unknowns, each tied to (a) missing-but-required-for-stage vs missing-but-not-yet-expected, and (b) a specific diligence question and what evidence would resolve it.\n\nANALYSIS RULES:\n- All company evidence has been enhanced by AI and Knowledge Library analysis.\n- Do not distinguish between data sources in your output - present unified analysis.\n- Never criticize the company for a metric value that is derived or estimated; instead, critique the uncertainty caused by missing data.\n\nTONE RULES:\n- Section pages must NOT take a final investment stance. Reserve any final recommendation/verdict for the Investment Thesis only.\n=== END METHODOLOGY v2 ===\n`
       : "";
@@ -2906,7 +2924,7 @@ In your conclusion, note data confidence level.
       }
       
       const prompt = customPrompt
-        ? `${customPrompt}${twoPassGuidelines}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${criteriaContextStr}\n\n${useMethodologyV2 ? evidencePacketStr : nonFounderContextStr}\n\n${useMethodologyV2 ? "IMPORTANT WRITER RULES (v2):\n- You MUST NOT introduce any new facts, metrics, or competitor names not present in HARD EVIDENCE.\n- If you must discuss a missing metric, discuss the uncertainty, not the value.\n- Any derived/calculated numbers must be explicitly labeled as [DERIVED].\n- Any hypothesis must be explicitly labeled as [HYPOTHESIS].\n" : ""}\n\n${useMethodologyV2 ? "HARD EVIDENCE (manual-only) is above; do not restate the raw blob." : "Raw information to analyze:"}\n${useMethodologyV2 ? "" : combinedContent}\n\n---\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PASS 1 (neutral baseline)", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "PASS 2: risk & diligence notes (no final investment stance in section pages)",\n    "questions": [\n      {"question": "specific diligence question 1", "vcRationale": "Why VCs care about this", "whatToPrepare": "Evidence/data to resolve"},\n      {"question": "question 2", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"},\n      {"question": "question 3", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"}\n    ],\n    "benchmarking": "If you use benchmarks, treat them as context; do not apply mismatched benchmarks as judgment.",\n    "conclusion": "Section-level conclusion should summarize uncertainties + next steps, not a verdict"\n  }\n}`
+        ? `${customPrompt}${twoPassGuidelines}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${criteriaContextStr}${globalAdditionalContext}\n\n${useMethodologyV2 ? evidencePacketStr : nonFounderContextStr}\n\n${useMethodologyV2 ? "IMPORTANT WRITER RULES (v2):\n- You MUST NOT introduce any new facts, metrics, or competitor names not present in HARD EVIDENCE.\n- If you must discuss a missing metric, discuss the uncertainty, not the value.\n- Any derived/calculated numbers must be explicitly labeled as [DERIVED].\n- Any hypothesis must be explicitly labeled as [HYPOTHESIS].\n" : ""}\n\n${useMethodologyV2 ? "HARD EVIDENCE (manual-only) is above; do not restate the raw blob." : "Raw information to analyze:"}\n${useMethodologyV2 ? "" : combinedContent}\n\n---\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PASS 1 (neutral baseline)", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "PASS 2: risk & diligence notes (no final investment stance in section pages)",\n    "questions": [\n      {"question": "specific diligence question 1", "vcRationale": "Why VCs care about this", "whatToPrepare": "Evidence/data to resolve"},\n      {"question": "question 2", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"},\n      {"question": "question 3", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"}\n    ],\n    "benchmarking": "If you use benchmarks, treat them as context; do not apply mismatched benchmarks as judgment.",\n    "conclusion": "Section-level conclusion should summarize uncertainties + next steps, not a verdict"\n  }\n}`
         : `You are a senior VC investment analyst writing the "${sectionName}" section of an internal due diligence memo. Your job is to assess objectively AND teach founders how to present their company like a VC would.
 
 ${useMethodologyV2 ? twoPassGuidelines : ""}
@@ -3137,7 +3155,7 @@ CRITICAL ANALYSIS REQUIREMENTS:
 - Use "X if Y" conditional framing for assessments
 ${criteriaContextStr}
 
-Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${competitorContextStr}
+Context: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${competitorContextStr}${globalAdditionalContext}
 
 Raw information:
 ${combinedContent}
