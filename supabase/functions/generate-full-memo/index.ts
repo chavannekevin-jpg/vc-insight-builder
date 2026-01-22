@@ -1642,6 +1642,11 @@ SCORING LABELS (use these thresholds):
 
 Return JSON:
 {
+  "arcClassification": {
+    "type": "Hair on Fire|Hard Fact|Future Vision",
+    "reasoning": "Why ${companyName} fits this archetype based on evidence",
+    "implications": "Strategic GTM implications for this archetype"
+  },
   "sectionScore": {
     "score": 0-100,
     "label": "Weak|Developing|Strong|Exceptional",
@@ -2138,6 +2143,7 @@ function extractToolsFromResponse(sectionName: string, toolData: any): Array<{na
   // Problem section tools - saved as raw data
   if (toolData.evidenceThreshold) tools.push({ name: 'evidenceThreshold', data: toolData.evidenceThreshold });
   if (toolData.founderBlindSpot) tools.push({ name: 'founderBlindSpot', data: toolData.founderBlindSpot });
+  if (toolData.arcClassification) tools.push({ name: 'arcClassification', data: toolData.arcClassification });
   
   // Solution section tools - saved as raw data
   if (toolData.technicalDefensibility) tools.push({ name: 'technicalDefensibility', data: toolData.technicalDefensibility });

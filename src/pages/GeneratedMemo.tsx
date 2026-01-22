@@ -28,6 +28,7 @@ import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
 import { MemoMomentumCard } from "@/components/memo/MemoMomentumCard";
 import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCard";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
+import { ARCClassificationCard } from "@/components/memo/ARCClassificationCard";
 
 import { LowConfidenceWarning } from "@/components/memo/LowConfidenceWarning";
 import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptions";
@@ -122,6 +123,7 @@ export default function GeneratedMemo() {
   const [holisticStage, setHolisticStage] = useState<any>(null);
   const [holisticVerdicts, setHolisticVerdicts] = useState<Record<string, { verdict: string; stageContext?: string }>>({});
   const [companyInsightContext, setCompanyInsightContext] = useState<any>(null);
+  const [arcClassification, setArcClassification] = useState<any>(null);
   // Smart fill state
   const [showSmartFill, setShowSmartFill] = useState(false);
   const [smartQuestions, setSmartQuestions] = useState<SmartQuestion[]>([]);
@@ -148,6 +150,7 @@ export default function GeneratedMemo() {
         setHolisticStage(cachedMemoData.holisticStage);
         setHolisticVerdicts(cachedMemoData.holisticVerdicts);
         setCompanyInsightContext(cachedMemoData.companyInsightContext);
+        setArcClassification(cachedMemoData.arcClassification);
         setLoading(false);
         
         // Check if we should redirect to wizard mode
@@ -1124,6 +1127,14 @@ export default function GeneratedMemo() {
             assumptions={anchoredAssumptions}
             companyName={companyInfo.name}
             onEdit={() => navigate(`/company-profile-edit?companyId=${companyId}`)}
+          />
+        )}
+
+        {/* ARC Classification - Company Problem Archetype */}
+        {hasPremium && arcClassification && (
+          <ARCClassificationCard 
+            classification={arcClassification}
+            companyName={companyInfo.name}
           />
         )}
 
