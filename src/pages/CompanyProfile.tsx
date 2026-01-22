@@ -578,26 +578,55 @@ export default function CompanyProfile() {
         funding_ask: "vision_ask",
       };
 
+      // IMPORTANT (Methodology v2): Do NOT write deck-extracted content into memo_responses.
+      // memo_responses is reserved for founder/manual evidence. We store deck extraction
+      // as non-founder context in memo_tool_data for later use as hypotheses only.
+
       const newResponses: MemoResponse[] = [];
-      
-      for (const [extractedKey, section] of Object.entries(data.extractedSections)) {
+      const extractedSectionsForTool: Record<string, { question_key: string; content: string; confidence: number }> = {};
+
+      for (const [extractedKey, section] of Object.entries(data.extractedSections || {})) {
         const typedSection = section as { content: string | null; confidence: number };
         if (typedSection.content && typedSection.confidence > 0.3) {
           const questionKey = sectionKeyMappings[extractedKey] || extractedKey;
-          
-          const { error } = await supabase
-            .from("memo_responses")
-            .upsert({
-              company_id: company.id,
-              question_key: questionKey,
-              answer: typedSection.content,
-              source: "deck_import",
-              confidence_score: typedSection.confidence
-            }, { onConflict: "company_id,question_key" });
+          extractedSectionsForTool[extractedKey] = {
+            question_key: questionKey,
+            content: typedSection.content,
+            confidence: typedSection.confidence,
+          };
 
-          if (!error) {
-            newResponses.push({ question_key: questionKey, answer: typedSection.content, source: "deck_import" });
-          }
+          // Update local UI state (marked as deck_import) so the user can see/edit,
+          // but we do NOT persist it as founder evidence.
+          newResponses.push({ question_key: questionKey, answer: typedSection.content, source: "deck_import" });
+        }
+      }
+
+      if (Object.keys(extractedSectionsForTool).length > 0) {
+        const { error: toolError } = await supabase
+          .from("memo_tool_data")
+          .upsert(
+            {
+              company_id: company.id,
+              section_name: "Intake",
+              tool_name: "deck_extraction",
+              ai_generated_data: {
+                companyInfo: data.companyInfo ?? null,
+                extractedSections: extractedSectionsForTool,
+                summary: data.summary ?? null,
+                methodology: {
+                  provenance: "non_founder_context",
+                  notes:
+                    "Deck import output is stored as non-founder context. It must not be treated as founder-asserted evidence in scoring or narratives.",
+                },
+              },
+              data_source: "deck_import",
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "company_id,section_name,tool_name" },
+          );
+
+        if (toolError) {
+          console.warn("Failed to save deck extraction as tool data:", toolError);
         }
       }
 
@@ -611,7 +640,10 @@ export default function CompanyProfile() {
         return updated;
       });
 
-      toast({ title: "Deck imported!", description: `${newResponses.length} sections pre-filled.` });
+      toast({
+        title: "Deck imported!",
+        description: `${newResponses.length} sections pre-filled (saved as non-founder context).`,
+      });
     } catch (error: any) {
       toast({ title: "Import failed", description: error.message, variant: "destructive" });
     }
