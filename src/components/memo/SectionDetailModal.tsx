@@ -1,23 +1,27 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
   AlertTriangle, 
   CheckCircle2, 
   XCircle,
   TrendingUp,
   ExternalLink,
-  Target,
   Sparkles,
   Clock,
   Zap,
-  RefreshCw
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+  FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type SectionVerdict } from "@/lib/holisticVerdictGenerator";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { MemoStructuredSection } from "@/types/memo";
 
 interface SectionDetailModalProps {
   open: boolean;
@@ -27,6 +31,7 @@ interface SectionDetailModalProps {
   companyDescription?: string;
   allSectionScores?: Record<string, { score: number; benchmark: number }>;
   sectionIndex?: number;
+  sectionNarrative?: MemoStructuredSection | null;
 }
 
 interface Suggestion {
@@ -94,11 +99,13 @@ export const SectionDetailModal = ({
   companyId,
   companyDescription,
   allSectionScores,
-  sectionIndex 
+  sectionIndex,
+  sectionNarrative
 }: SectionDetailModalProps) => {
   const navigate = useNavigate();
   const [improvements, setImprovements] = useState<AIImprovements | null>(null);
   const [loadingImprovements, setLoadingImprovements] = useState(false);
+  const [showImprovements, setShowImprovements] = useState(false);
   
   useEffect(() => {
     if (open && section && !improvements) {
@@ -110,6 +117,7 @@ export const SectionDetailModal = ({
     // Reset when section changes
     if (!open) {
       setImprovements(null);
+      setShowImprovements(false);
     }
   }, [open]);
   
@@ -158,10 +166,13 @@ export const SectionDetailModal = ({
   
   const scoreDiff = section.score - section.benchmark;
   const diffLabel = scoreDiff >= 0 ? `+${scoreDiff}` : `${scoreDiff}`;
+
+  // Extract paragraphs from narrative (handle both legacy and new structures)
+  const paragraphs = sectionNarrative?.narrative?.paragraphs || sectionNarrative?.paragraphs || [];
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-card border-border/50">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border/50">
         <DialogHeader className="pb-4 border-b border-border/30">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold flex items-center gap-3">
@@ -208,74 +219,110 @@ export const SectionDetailModal = ({
               </div>
             </div>
           </div>
-          
-          {/* AI Improvement Suggestions */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
+
+          {/* Section Narrative Content */}
+          {paragraphs.length > 0 && (
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" />
+                <FileText className="w-4 h-4 text-primary" />
                 <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-                  How to Improve
+                  Analysis
                 </h4>
               </div>
-              {loadingImprovements && (
-                <RefreshCw className="w-4 h-4 animate-spin text-muted-foreground" />
-              )}
+              <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3 max-h-[300px] overflow-y-auto">
+                {paragraphs.map((paragraph, index) => (
+                  <p 
+                    key={index} 
+                    className={cn(
+                      "text-sm leading-relaxed",
+                      paragraph.emphasis === 'high' || paragraph.emphasis === 'hero' 
+                        ? "font-semibold text-foreground" 
+                        : "text-foreground/90"
+                    )}
+                  >
+                    {paragraph.text}
+                  </p>
+                ))}
+              </div>
             </div>
-            
-            {loadingImprovements ? (
-              <div className="p-6 rounded-lg bg-muted/30 border border-border/50 flex flex-col items-center justify-center gap-2">
-                <RefreshCw className="w-5 h-5 animate-spin text-primary" />
-                <p className="text-sm text-muted-foreground">Analyzing your data...</p>
-              </div>
-            ) : improvements ? (
-              <div className="space-y-3">
-                {/* Key Insight */}
-                {improvements.keyInsight && (
-                  <div className="p-3 rounded-lg bg-warning/5 border border-warning/20">
-                    <div className="flex items-start gap-2">
-                      <Zap className="w-4 h-4 text-warning mt-0.5 shrink-0" />
-                      <p className="text-sm text-foreground">{improvements.keyInsight}</p>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Suggestions */}
-                <div className="space-y-2">
-                  {improvements.suggestions.map((suggestion, i) => (
-                    <div 
-                      key={i}
-                      className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <h5 className="font-medium text-foreground text-sm">{suggestion.title}</h5>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {suggestion.impact === 'high' && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success uppercase">
-                              High Impact
-                            </span>
-                          )}
-                          <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                            <Clock className="w-3 h-3" />
-                            {suggestion.timeframe}
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {suggestion.description}
-                      </p>
-                    </div>
-                  ))}
+          )}
+          
+          {/* How to Improve - Collapsible */}
+          <Collapsible open={showImprovements} onOpenChange={setShowImprovements}>
+            <CollapsibleTrigger asChild>
+              <button className="w-full flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="font-semibold text-sm text-foreground">
+                    How to Improve
+                  </span>
+                  {loadingImprovements && (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+                  )}
                 </div>
-              </div>
-            ) : (
-              <div className="p-4 rounded-lg bg-muted/30 border border-border/50 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Suggestions unavailable. View full section for detailed analysis.
-                </p>
-              </div>
-            )}
-          </div>
+                {showImprovements ? (
+                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                )}
+              </button>
+            </CollapsibleTrigger>
+            
+            <CollapsibleContent className="pt-3">
+              {loadingImprovements ? (
+                <div className="p-6 rounded-lg bg-muted/30 border border-border/50 flex flex-col items-center justify-center gap-2">
+                  <RefreshCw className="w-5 h-5 animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">Analyzing your data...</p>
+                </div>
+              ) : improvements ? (
+                <div className="space-y-3">
+                  {/* Key Insight */}
+                  {improvements.keyInsight && (
+                    <div className="p-3 rounded-lg bg-warning/5 border border-warning/20">
+                      <div className="flex items-start gap-2">
+                        <Zap className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+                        <p className="text-sm text-foreground">{improvements.keyInsight}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Suggestions */}
+                  <div className="space-y-2">
+                    {improvements.suggestions.map((suggestion, i) => (
+                      <div 
+                        key={i}
+                        className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <h5 className="font-medium text-foreground text-sm">{suggestion.title}</h5>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {suggestion.impact === 'high' && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success uppercase">
+                                High Impact
+                              </span>
+                            )}
+                            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                              <Clock className="w-3 h-3" />
+                              {suggestion.timeframe}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {suggestion.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 rounded-lg bg-muted/30 border border-border/50 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Suggestions unavailable. View full section for detailed analysis.
+                  </p>
+                </div>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
         </div>
         
         {/* Action */}
