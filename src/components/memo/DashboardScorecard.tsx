@@ -31,7 +31,8 @@ import {
   Telescope,
   ScrollText,
   Boxes,
-  Globe
+  Globe,
+  Building2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -1058,6 +1059,38 @@ export const DashboardScorecard = ({
                   <div className="mt-3 pt-3 border-t border-blue-500/20">
                     <p className="text-xs text-foreground/70 leading-relaxed">
                       We've compiled 50+ industry reports, funding benchmarks, and market analyses. Market Lens filters them for your sector and stage — so you don't have to read them all.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* VC Network Card */}
+              <div className="mt-4 relative overflow-hidden rounded-xl border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-primary/5 transition-all duration-300 hover:border-emerald-500/60 group cursor-pointer"
+                onClick={() => onNavigate('/fund-discovery')}
+              >
+                {/* Decorative gradient */}
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-emerald-500/20 via-teal-500/20 to-transparent rounded-full blur-2xl opacity-60 group-hover:opacity-80 transition-opacity" />
+                
+                <div className="p-5 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30">
+                      <Building2 className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-base font-bold text-foreground">VC Network</h4>
+                        <Badge className="text-[9px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                          Discovery
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Find investors who match your stage & sector</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0" />
+                  </div>
+                  
+                  <div className="mt-3 pt-3 border-t border-emerald-500/20">
+                    <p className="text-xs text-foreground/70 leading-relaxed">
+                      Browse 800+ active investors filtered by geography, check size, and sector focus. See who's actually writing checks in your space.
                     </p>
                   </div>
                 </div>
