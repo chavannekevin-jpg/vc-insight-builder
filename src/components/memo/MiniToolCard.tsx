@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { ElementType } from "react";
+import { ChevronRight } from "lucide-react";
 
 export interface MiniToolCardProps {
   id: string;
@@ -20,17 +21,23 @@ export const MiniToolCard = ({
     <button
       onClick={onClick}
       className={cn(
-        "group relative flex items-center gap-2.5 px-3 py-2.5 rounded-lg",
-        "border border-primary/20 bg-primary/5",
-        "hover:border-primary/40 hover:bg-primary/10",
+        "group flex items-center justify-between gap-3 w-full",
+        "px-4 py-3 rounded-xl",
+        "bg-card/80 border border-border/50",
+        "hover:bg-muted/50 hover:border-primary/30",
         "transition-all duration-200",
-        "hover:scale-[1.02] active:scale-[0.98]"
+        "hover:shadow-sm"
       )}
     >
-      <Icon className="w-4 h-4 text-primary shrink-0" />
-      <span className="text-xs font-medium text-foreground truncate">
-        {shortTitle}
-      </span>
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Icon className="w-4 h-4 text-primary" />
+        </div>
+        <span className="text-sm font-medium text-foreground">
+          {shortTitle}
+        </span>
+      </div>
+      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
     </button>
   );
 };
