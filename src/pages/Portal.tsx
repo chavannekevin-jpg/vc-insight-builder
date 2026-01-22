@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { resolveIcon } from "@/lib/iconResolver";
 import { AIInsightCard } from "@/components/AIInsightCard";
 import { AnswerOptimizerWizard } from "@/components/AnswerOptimizerWizard";
 import { WelcomeDisclaimer } from "@/components/WelcomeDisclaimer";
+import { MemoLoadingScreen } from "@/components/MemoLoadingScreen";
 
 // Dynamic interfaces for database-driven questions
 interface Section {
@@ -63,6 +64,7 @@ export default function Portal() {
   const [isAdminViewing, setIsAdminViewing] = useState(false);
   const [showAIInsight, setShowAIInsight] = useState<string | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [isGeneratingMemo, setIsGeneratingMemo] = useState(false);
   
   // Dynamic data from database
   const [sections, setSections] = useState<Section[]>([]);
@@ -400,15 +402,118 @@ export default function Portal() {
     }
   };
 
-  const handleGenerateMemo = () => {
+  const handleGenerateMemo = async () => {
     if (!companyId || !user) return;
     
-    // Navigate to hub after memo generation
+    setIsGeneratingMemo(true);
     setMemoSubmitted(true);
+    
+    try {
+      console.log("Portal: Starting memo generation...");
+      
+      // Invoke the edge function to start memo generation
+      const { data: startData, error: startError } = await supabase.functions.invoke('generate-full-memo', {
+        body: { companyId, force: false }
+      });
+
+      if (startError) {
+        console.error("Portal: Edge function error:", startError);
+        throw new Error(
+          startError.message === "Not Found" || startError.status === 404
+            ? "Memo generation service is currently unavailable. Please try again in a moment."
+            : startError.message || "Failed to start memo generation"
+        );
+      }
+
+      if (!startData?.jobId) {
+        throw new Error("No job ID returned from generation");
+      }
+
+      const jobId = startData.jobId;
+      console.log(`Portal: Memo generation job started: ${jobId}`);
+
+      // Poll for job completion
+      await pollJobUntilComplete(jobId);
+      
+    } catch (error: any) {
+      console.error("Portal: Error generating memo:", error);
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to generate memo.",
+        variant: "destructive"
+      });
+      setIsGeneratingMemo(false);
+    }
+  };
+
+  const pollJobUntilComplete = useCallback(async (jobId: string) => {
+    const maxAttempts = 120; // 10 minutes max
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      try {
+        const { data: job, error } = await supabase
+          .from("memo_generation_jobs")
+          .select("status, error_message")
+          .eq("id", jobId)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Portal: Error polling job:", error);
+          attempts++;
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          continue;
+        }
+
+        if (job?.status === "completed") {
+          console.log("Portal: Memo generation completed!");
+          handleMemoReady();
+          return;
+        }
+
+        if (job?.status === "failed") {
+          throw new Error(job.error_message || "Memo generation failed");
+        }
+
+        // Still processing, wait and try again
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      } catch (error) {
+        console.error("Portal: Polling error:", error);
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+    }
+
+    // Timeout - but memo might still be ready
+    console.log("Portal: Polling timeout, checking database...");
+    handleMemoReady();
+  }, []);
+
+  const handleMemoReady = () => {
+    console.log("Portal: Memo ready, navigating to hub...");
+    setIsGeneratingMemo(false);
+    navigate(`/hub?companyId=${companyId}`);
+  };
+
+  const handleCheckStatus = async () => {
+    // Manual check - just navigate to hub which will show results if ready
     navigate(`/hub?companyId=${companyId}`);
   };
 
   const currentQuestion = allQuestions[currentStep];
+
+  // Show loading screen while generating memo
+  if (isGeneratingMemo) {
+    return (
+      <MemoLoadingScreen 
+        analyzing={false}
+        companyId={companyId || undefined}
+        onMemoReady={handleMemoReady}
+        onCheckStatus={handleCheckStatus}
+      />
+    );
+  }
 
   if (loading || !currentQuestion) {
     return (
