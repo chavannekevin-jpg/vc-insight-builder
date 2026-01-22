@@ -301,6 +301,7 @@ export const DashboardScorecard = ({
 }: DashboardScorecardProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isARCExpanded, setIsARCExpanded] = useState(false);
+  const [isThesisExpanded, setIsThesisExpanded] = useState(false);
   const [selectedSection, setSelectedSection] = useState<SectionVerdict | null>(null);
   const [sectionModalOpen, setSectionModalOpen] = useState(false);
   const [shareScorecardOpen, setShareScorecardOpen] = useState(false);
@@ -742,49 +743,80 @@ export const DashboardScorecard = ({
                 })}
               </div>
               
-              {/* Investment Thesis Card - Special final card */}
+              {/* Investment Thesis Card - Collapsible Toggle */}
               {investmentThesis && (
-                <button
-                  onClick={() => onNavigate(`/analysis/section?companyId=${companyId}&section=8`)}
-                  className="w-full mt-4 relative overflow-hidden rounded-xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-5 text-left transition-all duration-300 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10 group"
-                >
-                  {/* Decorative gradient */}
-                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-primary/20 via-secondary/20 to-transparent rounded-full blur-2xl opacity-60 group-hover:opacity-80 transition-opacity" />
-                  
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30">
-                        <ScrollText className="w-5 h-5 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-base font-bold text-foreground">Investment Thesis</h4>
-                          <Badge className="text-[9px] bg-primary/10 text-primary border-primary/20">
-                            Final Assessment
-                          </Badge>
+                <Collapsible open={isThesisExpanded} onOpenChange={setIsThesisExpanded}>
+                  <div className="mt-4 relative overflow-hidden rounded-xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 transition-all duration-300">
+                    {/* Decorative gradient */}
+                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-primary/20 via-secondary/20 to-transparent rounded-full blur-2xl opacity-60" />
+                    
+                    <CollapsibleTrigger asChild>
+                      <button className="w-full p-5 text-left hover:bg-background/10 transition-colors relative z-10">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30">
+                            <ScrollText className="w-5 h-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-base font-bold text-foreground">Investment Thesis</h4>
+                              <Badge className="text-[9px] bg-primary/10 text-primary border-primary/20">
+                                Final Assessment
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">VC decision synthesis</p>
+                          </div>
+                          {isThesisExpanded ? (
+                            <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                          )}
                         </div>
-                        <p className="text-xs text-muted-foreground">VC decision synthesis</p>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
+                      </button>
+                    </CollapsibleTrigger>
                     
-                    {investmentThesis.summary && (
-                      <p className="text-sm text-foreground/80 line-clamp-2 mb-3">
-                        {investmentThesis.summary.slice(0, 200)}...
-                      </p>
-                    )}
-                    
-                    {investmentThesis.keyPoints.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {investmentThesis.keyPoints.slice(0, 3).map((point, i) => (
-                          <span key={i} className="text-[10px] px-2 py-1 rounded-full bg-background/60 border border-border/40 text-muted-foreground line-clamp-1">
-                            {point.slice(0, 40)}{point.length > 40 ? '...' : ''}
-                          </span>
-                        ))}
+                    <CollapsibleContent>
+                      <div className="px-5 pb-5 pt-0 space-y-4 relative z-10">
+                        <div className="h-px bg-border/50" />
+                        
+                        {/* Main thesis narrative */}
+                        {investmentThesis.summary && (
+                          <div>
+                            <p className="text-sm text-foreground/90 leading-relaxed">
+                              {investmentThesis.summary}
+                            </p>
+                          </div>
+                        )}
+                        
+                        {/* Key Points */}
+                        {investmentThesis.keyPoints.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Key Takeaways</p>
+                            <div className="space-y-2">
+                              {investmentThesis.keyPoints.map((point, i) => (
+                                <div key={i} className="flex items-start gap-2">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                                  <p className="text-xs text-foreground/80 leading-relaxed">{point}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Additional paragraphs if available */}
+                        {investmentThesis.fullSection?.narrative?.paragraphs && 
+                         investmentThesis.fullSection.narrative.paragraphs.length > 1 && (
+                          <div className="space-y-3 pt-2 border-t border-border/30">
+                            {investmentThesis.fullSection.narrative.paragraphs.slice(1).map((p, i) => (
+                              <p key={i} className="text-sm text-foreground/80 leading-relaxed">
+                                {p.text}
+                              </p>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </CollapsibleContent>
                   </div>
-                </button>
+                </Collapsible>
               )}
             </CollapsibleContent>
           </Collapsible>
