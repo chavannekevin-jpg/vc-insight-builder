@@ -147,11 +147,11 @@ serve(async (req) => {
       : "";
 
     // Build the comprehensive memo generation prompt with enhanced structured analysis
-    const systemPrompt = `You are a senior VC investment analyst at a top-tier venture fund. Your task is to analyze this pitch deck and write a comprehensive investment memorandum with structured analysis.
+    const systemPrompt = `You are a senior VC investment analyst at a top-tier venture fund. Your task is to analyze this pitch deck and write a FAST investor snapshot (not a full diligence memo).
 
 CRITICAL INSTRUCTIONS:
 - Write a COMPLETE investment memo, not bullet points or summaries
-- Each section should be a well-crafted narrative paragraph (250-400 words)
+- Each section should be concise (60-120 words max)
 - Use professional VC language and terminology
 - Be analytical and critical - identify both strengths and concerns
 - Include specific numbers, metrics, and facts from the deck when available
@@ -284,7 +284,8 @@ IMPORTANT:
     ];
 
     // Add the document/images
-    for (const url of imagesToProcess.slice(0, 15)) {
+    // Speed optimization: fewer pages/images.
+    for (const url of imagesToProcess.slice(0, 8)) {
       if (url.startsWith('data:application/pdf;base64,')) {
         // PDF data URL - extract base64 and send as inline_data (Gemini format)
         const base64Data = url.replace('data:application/pdf;base64,', '');
@@ -320,13 +321,13 @@ IMPORTANT:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-pro',
+           model: 'google/gemini-3-flash-preview',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: contentParts }
           ],
           temperature: 0.3,
-          max_tokens: 10000,
+           max_tokens: 3000,
         }),
         signal: controller.signal
       });
