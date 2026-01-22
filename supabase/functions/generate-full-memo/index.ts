@@ -2347,6 +2347,8 @@ async function generateMemoInBackground(
     const unitEconomicsText = responses?.find(r => r.question_key === 'unit_economics')?.answer || "";
     const pricingInfo = responses?.find(r => r.question_key === 'pricing_model')?.answer || "";
     const revenueInfo = responses?.find(r => r.question_key === 'revenue_model')?.answer || "";
+    const tractionText = responses?.find(r => r.question_key === 'traction_proof')?.answer || "";
+    const businessModelText = responses?.find(r => r.question_key === 'business_model')?.answer || "";
     
     let financialMetrics: any = null;
     if (unitEconomicsJson) {
@@ -2356,6 +2358,79 @@ async function generateMemoInBackground(
       } catch (e) {
         console.warn("Could not parse unit_economics_json:", e);
       }
+    }
+    
+    // If no structured metrics, extract from traction and business model text
+    if (!financialMetrics) {
+      financialMetrics = {};
+      const combinedFinancialText = `${tractionText} ${businessModelText} ${unitEconomicsText}`.toLowerCase();
+      
+      // Extract MRR - patterns like "€45,000 MRR" or "45k MRR"
+      const mrrPatterns = [
+        /[€£$]?\s*([\d,]+(?:\.\d+)?)\s*[km]?\s*mrr/i,
+        /mrr\s*(?:of|is|:)?\s*[€£$]?\s*([\d,]+(?:\.\d+)?)\s*[km]?/i,
+        /achieved\s*[€£$]?\s*([\d,]+(?:\.\d+)?)\s*[km]?\s*mrr/i,
+      ];
+      for (const pattern of mrrPatterns) {
+        const match = combinedFinancialText.match(pattern);
+        if (match) {
+          let value = match[1].replace(/,/g, '');
+          if (match[0].toLowerCase().includes('k')) value = String(parseFloat(value) * 1000);
+          if (match[0].toLowerCase().includes('m')) value = String(parseFloat(value) * 1000000);
+          financialMetrics.mrr = parseFloat(value);
+          console.log("Extracted MRR from text:", financialMetrics.mrr);
+          break;
+        }
+      }
+      
+      // Extract ARR
+      const arrMatch = combinedFinancialText.match(/[€£$]?\s*([\d,]+(?:\.\d+)?)\s*[kmb]?\s*arr/i);
+      if (arrMatch) {
+        let value = arrMatch[1].replace(/,/g, '');
+        if (arrMatch[0].toLowerCase().includes('k')) value = String(parseFloat(value) * 1000);
+        if (arrMatch[0].toLowerCase().includes('m')) value = String(parseFloat(value) * 1000000);
+        financialMetrics.arr = parseFloat(value);
+        console.log("Extracted ARR from text:", financialMetrics.arr);
+      }
+      
+      // Extract customer count - "4 paying customers" or "4 customers"
+      const customerMatch = combinedFinancialText.match(/(\d+)\s*(?:paying\s*)?customers?/i);
+      if (customerMatch) {
+        financialMetrics.customers = parseInt(customerMatch[1]);
+        financialMetrics.totalCustomers = financialMetrics.customers;
+        console.log("Extracted customers from text:", financialMetrics.customers);
+      }
+      
+      // Extract ACV - "€200,000" or "200k ACV"
+      const acvMatch = combinedFinancialText.match(/(?:acv|average\s*contract\s*value)\s*(?:of|is|:)?\s*[€£$]?\s*([\d,]+(?:\.\d+)?)\s*[km]?/i) ||
+                       combinedFinancialText.match(/[€£$]?\s*([\d,]+(?:\.\d+)?)\s*[km]?\s*(?:acv|average\s*contract)/i);
+      if (acvMatch) {
+        let value = acvMatch[1].replace(/,/g, '');
+        if (acvMatch[0].toLowerCase().includes('k')) value = String(parseFloat(value) * 1000);
+        if (acvMatch[0].toLowerCase().includes('m')) value = String(parseFloat(value) * 1000000);
+        financialMetrics.acv = parseFloat(value);
+        console.log("Extracted ACV from text:", financialMetrics.acv);
+      }
+      
+      // Extract gross margin
+      const marginMatch = combinedFinancialText.match(/gross\s*margin\s*(?:of|is|:)?\s*(\d+(?:\.\d+)?)\s*%?/i) ||
+                          combinedFinancialText.match(/(\d+(?:\.\d+)?)\s*%?\s*gross\s*margin/i);
+      if (marginMatch) {
+        financialMetrics.grossMargin = parseFloat(marginMatch[1]);
+        console.log("Extracted gross margin from text:", financialMetrics.grossMargin);
+      }
+      
+      // Calculate ARR from MRR if missing
+      if (financialMetrics.mrr && !financialMetrics.arr) {
+        financialMetrics.arr = financialMetrics.mrr * 12;
+      }
+      
+      // Calculate ACV from ARR/customers if both exist
+      if (financialMetrics.arr && financialMetrics.customers && !financialMetrics.acv) {
+        financialMetrics.acv = Math.round(financialMetrics.arr / financialMetrics.customers);
+      }
+      
+      console.log("Extracted financial metrics from text:", financialMetrics);
     }
 
     // Build financial context string for injection into section prompts
