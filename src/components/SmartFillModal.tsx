@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,10 +39,21 @@ export function SmartFillModal({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [saveTimedOut, setSaveTimedOut] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const attemptRef = useRef(0);
 
   const currentQuestion = questions[currentIndex];
   const progress = ((currentIndex) / questions.length) * 100;
   const isLastQuestion = currentIndex === questions.length - 1;
+
+  // Reset per-open attempt state
+  useEffect(() => {
+    if (open) {
+      setSaveTimedOut(false);
+      setSaveError(null);
+    }
+  }, [open]);
 
   const handleNext = async () => {
     if (!currentQuestion) return;
@@ -67,43 +78,67 @@ export function SmartFillModal({
   };
 
   const saveAllAnswers = async () => {
+    // Bump attempt so late-resolving requests can't clobber newer retries
+    const attemptId = ++attemptRef.current;
     setSaving(true);
+    setSaveTimedOut(false);
+    setSaveError(null);
+
+    const timeoutMs = 20000;
+    const timeoutHandle = window.setTimeout(() => {
+      // Do not try to cancel the request (supabase-js doesn't expose abort here).
+      // Instead, surface a retry UI and ignore any late completion via attemptId.
+      if (attemptRef.current === attemptId) {
+        setSaveTimedOut(true);
+        setSaving(false);
+      }
+    }, timeoutMs);
+
     try {
       const answersToSave = Object.entries(answers).filter(([_, value]) => value?.trim());
       
       if (answersToSave.length > 0) {
-        for (const [questionKey, answer] of answersToSave) {
-          const { error } = await supabase
-            .from('memo_responses')
-            .upsert({
-              company_id: companyId,
-              question_key: questionKey,
-              answer: answer,
-              source: 'smart_fill'
-            }, {
-              onConflict: 'company_id,question_key'
-            });
+        const rows = answersToSave.map(([questionKey, answer]) => ({
+          company_id: companyId,
+          question_key: questionKey,
+          answer,
+          source: 'smart_fill' as const,
+        }));
 
-          if (error) {
-            console.error(`Error saving ${questionKey}:`, error);
-          }
+        const { error } = await supabase
+          .from('memo_responses')
+          .upsert(rows, { onConflict: 'company_id,question_key' });
+
+        if (error) {
+          throw error;
         }
 
-        toast({
-          title: "Data saved",
-          description: `${answersToSave.length} answers added to your profile.`
-        });
+        if (attemptRef.current === attemptId) {
+          toast({
+            title: "Data saved",
+            description: `${answersToSave.length} answers added to your profile.`,
+          });
+        }
       }
 
-      onComplete();
+      if (attemptRef.current === attemptId) {
+        onComplete();
+      }
     } catch (error: any) {
-      toast({
-        title: "Save failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      if (attemptRef.current === attemptId) {
+        const msg = error?.message || "Failed to save your answers.";
+        setSaveError(msg);
+        toast({
+          title: "Save failed",
+          description: msg,
+          variant: "destructive",
+        });
+      }
     } finally {
-      setSaving(false);
+      window.clearTimeout(timeoutHandle);
+      if (attemptRef.current === attemptId) {
+        setSaving(false);
+      }
     }
   };
 
@@ -168,6 +203,37 @@ export function SmartFillModal({
                 className="min-h-[100px] resize-none"
                 autoFocus
               />
+            </div>
+          )}
+
+          {(saveTimedOut || saveError) && (
+            <div className="rounded-lg border border-border bg-card p-3 text-sm">
+              <p className="font-medium text-foreground">Having trouble saving</p>
+              <p className="text-muted-foreground mt-1">
+                {saveTimedOut
+                  ? "Saving is taking longer than expected. You can retry, or continue and generate anyway."
+                  : saveError}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={saveAllAnswers}
+                  disabled={saving}
+                >
+                  Retry save
+                </Button>
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={onSkip}
+                  disabled={saving}
+                >
+                  Continue without saving
+                </Button>
+              </div>
             </div>
           )}
         </div>
