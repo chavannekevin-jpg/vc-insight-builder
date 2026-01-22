@@ -134,11 +134,11 @@ function RegenerationSuccessContent() {
 
         <div className="space-y-3">
           <Button 
-            onClick={() => navigate(`/portal?regenerate=true&companyId=${companyId}`)}
+            onClick={() => navigate(`/portal?companyId=${companyId}`)}
             className="w-full gap-2 gradient-primary shadow-glow"
           >
             <Sparkles className="w-4 h-4" />
-            Start Questionnaire
+            Complete Questionnaire
           </Button>
           
           <Button 
