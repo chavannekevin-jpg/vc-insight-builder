@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Shield,
   Network,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -61,6 +62,10 @@ const toolItems = [
   { title: "Analysis Builder", url: "/admin/analysis-builder", icon: Wrench },
 ];
 
+const templateItems = [
+  { title: "Simplified Memo", url: "/admin/templates/simplified-memo", icon: FileText },
+];
+
 export function AdminSidebar() {
   const location = useLocation();
   const { state } = useSidebar();
@@ -74,6 +79,9 @@ export function AdminSidebar() {
   );
   const [toolsOpen, setToolsOpen] = useState(
     toolItems.some((item) => location.pathname.startsWith(item.url))
+  );
+  const [templatesOpen, setTemplatesOpen] = useState(
+    location.pathname.startsWith("/admin/templates")
   );
 
   const isActive = (url: string, exact?: boolean) => {
@@ -185,6 +193,15 @@ export function AdminSidebar() {
           open={toolsOpen}
           onOpenChange={setToolsOpen}
           icon={Settings}
+        />
+
+        {/* Templates Section */}
+        <CollapsibleSection
+          title="Templates"
+          items={templateItems}
+          open={templatesOpen}
+          onOpenChange={setTemplatesOpen}
+          icon={Layers}
         />
       </SidebarContent>
     </Sidebar>
