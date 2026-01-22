@@ -1,4 +1,5 @@
-import { AlertCircle, CheckCircle2, AlertTriangle, Lock, ChevronRight, Scale, Target, Flame, Gavel } from "lucide-react";
+import { useState } from "react";
+import { AlertCircle, CheckCircle2, AlertTriangle, Lock, ChevronRight, Scale, Target, Flame, Gavel, ChevronDown, ChevronUp } from "lucide-react";
 import { MemoVCQuickTake as MemoVCQuickTakeType } from "@/types/memo";
 import { Button } from "@/components/ui/button";
 import { safeLower } from "@/lib/stringUtils";
@@ -17,6 +18,7 @@ interface MemoVCQuickTakeProps {
 }
 
 export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock, companyInsightContext }: MemoVCQuickTakeProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   // Helper to safely render text
   const safeText = (text: unknown) => typeof text === 'string' ? text : String(text || '');
   
@@ -415,9 +417,21 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock, compa
             <p className="text-sm text-muted-foreground mt-2">
               Based on evaluation across 8 investment criteria. Score: {frameworkScore}/100.
             </p>
+            
+            {/* Expand/Collapse toggle */}
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors text-sm font-medium text-muted-foreground"
+            >
+              <span>{isExpanded ? 'Hide Analysis Details' : 'Show Analysis Details'}</span>
+              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
           </div>
         </div>
 
+        {/* Collapsible content - starts after The Ruling */}
+        {isExpanded && (
+          <>
         {/* PRIMARY CONCERN - Full VC-style deep dive */}
         <div className="px-6 pb-4">
           <div className="p-5 rounded-xl bg-destructive/5 border border-destructive/20">
@@ -578,6 +592,8 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock, compa
             )}
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

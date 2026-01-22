@@ -109,7 +109,7 @@ export const ToolPopupModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 bg-background/95 backdrop-blur-xl border-border/50">
+      <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 bg-background/95 backdrop-blur-xl border-border/50 [&>button]:hidden">
         {/* Header */}
         <DialogHeader className="px-6 py-4 border-b border-border/30 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
           <div className="flex items-center justify-between">
@@ -123,8 +123,13 @@ export const ToolPopupModal = ({
                 <DialogTitle className="text-lg font-semibold">
                   {config?.title || toolType}
                 </DialogTitle>
+                {config?.description && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {config.description}
+                  </p>
+                )}
                 {sectionName && (
-                  <Badge variant="secondary" className="mt-1 text-[10px]">
+                  <Badge variant="secondary" className="mt-1.5 text-[10px]">
                     {sectionName}
                   </Badge>
                 )}

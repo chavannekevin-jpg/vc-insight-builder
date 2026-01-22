@@ -204,11 +204,7 @@ const MiniSectionCard = ({
         {/* Score display */}
         <div className="flex items-end justify-between">
           <div className="flex items-baseline gap-1">
-            <span className={cn(
-              "text-xl font-semibold tabular-nums",
-              section.score >= section.benchmark ? "text-success" : 
-              section.score >= section.benchmark - 15 ? "text-warning" : "text-destructive"
-            )}>
+            <span className="text-xl font-semibold tabular-nums text-foreground">
               {section.score}
             </span>
             <span className="text-xs text-muted-foreground">/100</span>
@@ -510,7 +506,7 @@ export const DashboardScorecard = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-foreground">Investment Analysis</h3>
-              <p className="text-xs text-muted-foreground">VC evaluation of your pitch</p>
+              <p className="text-xs text-muted-foreground">VC evaluation of your case</p>
             </div>
           </div>
           
