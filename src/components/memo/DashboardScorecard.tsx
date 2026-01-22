@@ -224,16 +224,6 @@ const MiniSectionCard = ({
           </div>
         </div>
         
-        {/* Benchmark comparison */}
-        <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">vs benchmark</span>
-          <span className={cn(
-            "text-xs font-semibold",
-            scoreDelta >= 0 ? "text-success" : "text-destructive"
-          )}>
-            {scoreDelta >= 0 ? '+' : ''}{scoreDelta} pts
-          </span>
-        </div>
         
         {/* Hover indicator */}
         <div className="absolute bottom-2 right-2 flex items-center gap-1 text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">
@@ -843,7 +833,7 @@ export const DashboardScorecard = ({
             <CollapsibleTrigger asChild>
               <button className="w-full mt-5 pt-4 border-t border-border/30 flex items-center justify-between text-sm text-muted-foreground hover:text-foreground transition-colors">
                 <span className="font-semibold uppercase tracking-wide text-xs">
-                  Section Breakdown <span className="text-muted-foreground font-normal">(click to see how to improve)</span>
+                  Section Breakdown
                 </span>
                 {isExpanded ? (
                   <ChevronUp className="w-4 h-4" />
@@ -954,9 +944,6 @@ export const DashboardScorecard = ({
                       <span className="font-semibold uppercase tracking-wide text-xs flex items-center gap-2">
                         <Boxes className="w-4 h-4 text-primary/70" />
                         Strategic Analysis Tools
-                        <Badge variant="secondary" className="text-[10px] font-medium">
-                          {availableTools.length} available
-                        </Badge>
                       </span>
                       {isToolsExpanded ? (
                         <ChevronUp className="w-4 h-4" />
