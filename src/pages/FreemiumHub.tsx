@@ -16,6 +16,7 @@ import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { DashboardScorecard } from "@/components/memo/DashboardScorecard";
 import { FounderSidebar } from "@/components/founder/FounderSidebar";
+import { StrategicToolsSpotlight } from "@/components/founder/StrategicToolsSpotlight";
 import { InviteFounderModal } from "@/components/founder/InviteFounderModal";
 import ScoreboardModal from "@/components/founder/ScoreboardModal";
 import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench, Trash2, Settings, Building2, Menu } from "lucide-react";
@@ -639,7 +640,14 @@ export default function FreemiumHub() {
                 </Card>
               )}
 
-              {/* VC Quick Take (IC Room) - below the scorecard */}
+              {/* Strategic Tools Spotlight - Market Lens & VC Network */}
+              <StrategicToolsSpotlight
+                matchingFunds={matchingFunds}
+                hasMarketLensBriefing={responses.some(r => r.question_key === 'market_lens_briefing' && r.answer)}
+                reportsAnalyzed={6}
+              />
+
+              {/* VC Quick Take (IC Room) - below the spotlight */}
               {vcQuickTake && (
                 <MemoVCQuickTake quickTake={vcQuickTake} showTeaser={false} />
               )}

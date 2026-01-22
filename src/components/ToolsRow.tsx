@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { Calculator, TrendingUp, Lock, Zap, Mail, Flame, FlaskConical, Building2, Telescope } from "lucide-react";
+import { Calculator, TrendingUp, Lock, Zap, Mail, Flame, FlaskConical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ModernCard } from "./ModernCard";
 import { Badge } from "./ui/badge";
@@ -77,28 +77,6 @@ export const ToolsRow = memo(({ memoGenerated = false }: ToolsRowProps) => {
       requiresMemo: true,
       path: "/dilution-lab",
       badge: "After Purchase",
-      lockedReason: "Unlock your full analysis first"
-    },
-    {
-      id: "fund-discovery",
-      icon: Building2,
-      title: "VC Network",
-      description: "Explore funds in our investor network",
-      available: memoGenerated,
-      requiresMemo: true,
-      path: "/fund-discovery",
-      badge: "After Purchase",
-      lockedReason: "Unlock your full analysis first"
-    },
-    {
-      id: "market-lens",
-      icon: Telescope,
-      title: "Market Lens",
-      description: "AI-powered market intelligence for your sector",
-      available: memoGenerated,
-      requiresMemo: true,
-      path: "/market-lens",
-      badge: "Premium",
       lockedReason: "Unlock your full analysis first"
     }
   ], [memoGenerated]);
