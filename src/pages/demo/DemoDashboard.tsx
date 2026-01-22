@@ -4,14 +4,13 @@ import { DashboardScorecard } from "@/components/memo/DashboardScorecard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DEMO_COMPANY } from "@/data/demo/demoCarbonPrint";
-import { DEMO_MEMOS } from "@/data/acceleratorDemo/demoMemos";
-import { SAMPLE_SECTION_TOOLS } from "@/data/sampleMemoTools";
+import { DEMO_COMPANY, DEMO_VC_QUICK_TAKE } from "@/data/demo/demoSignalFlow";
+import { DEMO_SECTION_TOOLS } from "@/data/demo/demoSignalFlowTools";
 import { TrendingUp, Users, Lightbulb, ArrowRight } from "lucide-react";
-import type { MemoStructuredContent } from "@/types/memo";
+import type { MemoStructuredContent, MemoVCQuickTake as VCQuickTakeType } from "@/types/memo";
 
-// Build FULL section tools structure for DashboardScorecard - including all tool data
-const buildFullSectionToolsFromSample = () => {
+// Build section tools structure for DashboardScorecard using SignalFlow tools
+const buildSectionToolsFromSignalFlow = () => {
   const result: Record<string, any> = {};
   
   const sectionMapping: Record<string, string> = {
@@ -25,10 +24,9 @@ const buildFullSectionToolsFromSample = () => {
     'Vision': 'Vision'
   };
 
-  Object.entries(sectionMapping).forEach(([key, sampleKey]) => {
-    const tools = SAMPLE_SECTION_TOOLS[sampleKey];
+  Object.entries(sectionMapping).forEach(([key, toolKey]) => {
+    const tools = DEMO_SECTION_TOOLS[toolKey];
     if (tools) {
-      // Copy all tool data for this section, not just sectionScore
       result[key] = { ...tools };
     }
   });
@@ -36,20 +34,43 @@ const buildFullSectionToolsFromSample = () => {
   return result;
 };
 
-export default function DemoDashboard() {
-  const navigate = useNavigate();
-  const demoMemo = DEMO_MEMOS["demo-carbonprint"];
-  const sectionTools = buildFullSectionToolsFromSample();
+// Convert demo VC quick take to the expected format
+const buildVCQuickTake = (): VCQuickTakeType => ({
+  verdict: DEMO_VC_QUICK_TAKE.verdictExplanation,
+  readinessLevel: "HIGH",
+  readinessRationale: `${DEMO_VC_QUICK_TAKE.verdict}: ${DEMO_VC_QUICK_TAKE.readinessLevel}`,
+  concerns: DEMO_VC_QUICK_TAKE.keyRisks,
+  strengths: DEMO_VC_QUICK_TAKE.keyStrengths
+});
 
-  // Build memo content structure
-  const memoContent: MemoStructuredContent = {
-    vcQuickTake: demoMemo.vcQuickTake,
-    sections: demoMemo.sections.map(section => ({
-      title: section.title,
-      paragraphs: [{ text: section.narrative, emphasis: "narrative" as const }],
-      keyPoints: section.keyPoints
+// Build memo content structure for VC Quick Take component
+const buildMemoContent = (): MemoStructuredContent => {
+  const sectionNarratives: Record<string, string> = {
+    'Problem': "Enterprise sales teams lose 67% of qualified deals to 'no decision' — not competitors. SignalFlow addresses the $2.1M annual revenue leakage per 50-person sales org with AI-powered prediction.",
+    'Solution': "SignalFlow analyzes CRM data, email patterns, and call transcripts to predict deal outcomes with 89% accuracy, surfacing the 3-5 signals that determine close probability.",
+    'Market': "The €2.5B revenue intelligence market is growing 25% YoY, with mid-market companies representing an underserved €630M SAM.",
+    'Competition': "While Gong ($7B valuation) and Clari ($2.6B) dominate enterprise, mid-market remains underserved. SignalFlow differentiates through prediction-first (vs. recording-first) approach.",
+    'Team': "CEO Elena Vasquez (8 years Salesforce) and CTO Marcus Chen (Datadog ML Lead, Stanford PhD) bring exceptional founder-market fit.",
+    'Business Model': "€14K ACV with 4.9x LTV:CAC, 82% gross margin, and 7-month payback. Unit economics are healthy for SaaS scale.",
+    'Traction': "€32K MRR with 28 customers, 15% MoM growth for 8 consecutive months. NPS of 74 and 94% cohort retention.",
+    'Vision': "Clear 18-month path to €150K MRR and 75 customers, positioning for €5M Series A."
+  };
+
+  return {
+    vcQuickTake: buildVCQuickTake(),
+    sections: Object.entries(sectionNarratives).map(([title, narrative]) => ({
+      title,
+      paragraphs: [{ text: narrative, emphasis: "narrative" as const }],
+      keyPoints: []
     }))
   };
+};
+
+export default function DemoDashboard() {
+  const navigate = useNavigate();
+  const sectionTools = buildSectionToolsFromSignalFlow();
+  const memoContent = buildMemoContent();
+  const vcQuickTake = buildVCQuickTake();
 
   // Custom navigation handler for demo - redirects internal links to demo versions
   const handleNavigate = (path: string) => {
@@ -86,7 +107,7 @@ export default function DemoDashboard() {
           {/* VC Quick Take (IC Room) */}
           <div className="-mt-4">
             <MemoVCQuickTake 
-              quickTake={demoMemo.vcQuickTake} 
+              quickTake={vcQuickTake} 
               showTeaser={false}
             />
           </div>
@@ -111,7 +132,7 @@ export default function DemoDashboard() {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mb-3">
-                      Real-time market intelligence tailored to climate tech pre-seed in Europe.
+                      Real-time market intelligence tailored to B2B SaaS AI at Seed stage.
                     </p>
                     <div className="flex items-center gap-1 text-xs text-primary font-medium group-hover:gap-2 transition-all">
                       Explore Market Intel
@@ -136,11 +157,11 @@ export default function DemoDashboard() {
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-sm">VC Network</h3>
                       <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-accent/20 text-accent-foreground">
-                        12 Matches
+                        15 Matches
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mb-3">
-                      Climate-focused investors matched to CarbonPrint's profile.
+                      B2B SaaS investors matched to SignalFlow's profile.
                     </p>
                     <div className="flex items-center gap-1 text-xs text-primary font-medium group-hover:gap-2 transition-all">
                       Browse Investors

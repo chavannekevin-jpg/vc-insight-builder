@@ -975,6 +975,6 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
 };
 
 // Helper to get tools for a specific section
-export const getSignalFlowToolsForSection = (sectionTitle: string): EnhancedSectionTools | undefined => {
+export const getSignalFlowToolsForSection = (sectionTitle: string) => {
   return DEMO_SECTION_TOOLS[sectionTitle];
 };
