@@ -310,82 +310,7 @@ export const SectionDetailModal = ({
         <ScrollArea className="flex-1">
           <div className="px-8 py-6 space-y-8">
             
-            {/* Main Narrative - Clean Typography */}
-            {paragraphs.length > 0 && (
-              <article className="prose prose-sm max-w-none">
-                <div className="space-y-4">
-                  {paragraphs.map((paragraph, index) => (
-                    <p 
-                      key={index} 
-                      className={cn(
-                        "leading-relaxed",
-                        paragraph.emphasis === 'high' || paragraph.emphasis === 'hero' 
-                          ? "text-lg font-medium text-foreground" 
-                          : paragraph.emphasis === 'quote'
-                          ? "italic border-l-2 border-primary/40 pl-4 text-muted-foreground py-1"
-                          : "text-base text-foreground/85"
-                      )}
-                    >
-                      {paragraph.text}
-                    </p>
-                  ))}
-                </div>
-              </article>
-            )}
-
-            {/* Key Metrics - Elegant Cards */}
-            {highlights.length > 0 && (
-              <section className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                  <h3 className="text-xs font-semibold text-primary uppercase tracking-wider">
-                    Key Metrics
-                  </h3>
-                </div>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                  {highlights.map((highlight, i) => (
-                    <div 
-                      key={i}
-                      className="relative overflow-hidden p-4 rounded-xl border border-primary/15 bg-gradient-to-br from-primary/5 via-transparent to-transparent"
-                    >
-                      <div className="text-2xl font-bold text-primary tracking-tight mb-1">
-                        {safeString(highlight.metric)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {safeString(highlight.label)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Key Takeaways */}
-            {keyPoints.length > 0 && (
-              <section className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success" />
-                  <h3 className="text-xs font-semibold text-success uppercase tracking-wider">
-                    Key Takeaways
-                  </h3>
-                </div>
-                <div className="space-y-2">
-                  {keyPoints.map((point, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/10"
-                    >
-                      <CheckCircle2 className="w-4 h-4 text-success mt-0.5 shrink-0" />
-                      <p className="text-sm text-foreground/90 leading-relaxed">
-                        {renderMarkdownText(safeString(point))}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* VC Perspective - Premium Card */}
+            {/* VC Perspective - Premium Card (First Section) */}
             {vcReflection && (
               <section className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -465,6 +390,81 @@ export const SectionDetailModal = ({
                       </p>
                     </div>
                   )}
+                </div>
+              </section>
+            )}
+            
+            {/* Main Narrative - Clean Typography */}
+            {paragraphs.length > 0 && (
+              <article className="prose prose-sm max-w-none">
+                <div className="space-y-4">
+                  {paragraphs.map((paragraph, index) => (
+                    <p 
+                      key={index} 
+                      className={cn(
+                        "leading-relaxed",
+                        paragraph.emphasis === 'high' || paragraph.emphasis === 'hero' 
+                          ? "text-lg font-medium text-foreground" 
+                          : paragraph.emphasis === 'quote'
+                          ? "italic border-l-2 border-primary/40 pl-4 text-muted-foreground py-1"
+                          : "text-base text-foreground/85"
+                      )}
+                    >
+                      {paragraph.text}
+                    </p>
+                  ))}
+                </div>
+              </article>
+            )}
+
+            {/* Key Metrics - Elegant Cards */}
+            {highlights.length > 0 && (
+              <section className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                  <h3 className="text-xs font-semibold text-primary uppercase tracking-wider">
+                    Key Metrics
+                  </h3>
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                  {highlights.map((highlight, i) => (
+                    <div 
+                      key={i}
+                      className="relative overflow-hidden p-4 rounded-xl border border-primary/15 bg-gradient-to-br from-primary/5 via-transparent to-transparent"
+                    >
+                      <div className="text-2xl font-bold text-primary tracking-tight mb-1">
+                        {safeString(highlight.metric)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {safeString(highlight.label)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Key Takeaways */}
+            {keyPoints.length > 0 && (
+              <section className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success" />
+                  <h3 className="text-xs font-semibold text-success uppercase tracking-wider">
+                    Key Takeaways
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  {keyPoints.map((point, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/10"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-success mt-0.5 shrink-0" />
+                      <p className="text-sm text-foreground/90 leading-relaxed">
+                        {renderMarkdownText(safeString(point))}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </section>
             )}
