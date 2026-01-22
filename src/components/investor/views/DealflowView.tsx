@@ -57,6 +57,8 @@ const DealflowView = ({ onUploadDeck, userId }: DealflowViewProps) => {
     const deckMemo = deal.deck_company?.memo_json as any;
     const deckScore = deckMemo?.quick_analysis?.overall_score;
     if (typeof deckScore === "number") return deckScore;
+    const snapshotScore = deckMemo?.deal_quality?.score_0_100;
+    if (typeof snapshotScore === "number") return snapshotScore;
     return null;
   };
 
