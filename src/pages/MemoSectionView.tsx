@@ -25,6 +25,7 @@ import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCa
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
 import { StageMismatchWarning } from "@/components/memo/StageMismatchWarning";
+import { ARCClassificationCard } from "@/components/memo/ARCClassificationCard";
 
 import { extractMoatScores, extractTeamMembers, extractUnitEconomics, extractPricingMetrics } from "@/lib/memoDataExtractor";
 import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptions";
@@ -90,6 +91,7 @@ export default function MemoSectionView() {
   const holisticVerdicts = memoData?.holisticVerdicts || {};
   const companyInsightContext = memoData?.companyInsightContext || null;
   const holisticStage = memoData?.holisticStage || null;
+  const arcClassification = memoData?.arcClassification || null;
 
   // Use companyInfo.id as source of truth for navigation (more reliable than URL params)
   const companyId = companyInfo?.id || companyIdFromUrl;
@@ -300,6 +302,14 @@ export default function MemoSectionView() {
                 companyName={companyInfo?.name}
               />
             </div>
+          )}
+
+          {/* ARC Classification - Company Problem Archetype */}
+          {arcClassification && (
+            <ARCClassificationCard 
+              classification={arcClassification}
+              companyName={companyInfo?.name || 'Company'}
+            />
           )}
 
           {/* VC Quick Take Content - Always show full version since user has paid */}

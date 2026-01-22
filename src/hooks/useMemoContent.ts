@@ -15,6 +15,13 @@ import {
   type CompanyInsightContext 
 } from "@/lib/companyInsightContext";
 
+export interface ARCClassification {
+  type: "Hair on Fire" | "Hard Fact" | "Future Vision";
+  reasoning: string;
+  implications: string;
+  confidence?: number;
+}
+
 export interface MemoContentData {
   memoContent: MemoStructuredContent | null;
   companyInfo: any | null;
@@ -25,6 +32,7 @@ export interface MemoContentData {
   holisticVerdicts: Record<string, { verdict: string; stageContext?: string }>;
   holisticStage: any | null;
   companyInsightContext: CompanyInsightContext | null;
+  arcClassification: ARCClassification | null;
 }
 
 // Helper to find section tools with flexible matching
@@ -206,6 +214,24 @@ async function fetchMemoContent(companyId: string): Promise<MemoContentData> {
       )
     : null;
 
+  // Extract ARC classification from Problem section tools
+  let arcClassification: { type: "Hair on Fire" | "Hard Fact" | "Future Vision"; reasoning: string; implications: string; confidence?: number } | null = null;
+  const problemTools = toolsMap['Problem'];
+  if (problemTools) {
+    const arcData = (problemTools as any).arcClassification;
+    if (arcData) {
+      const rawArc = arcData.aiGenerated || arcData;
+      if (rawArc?.type && ['Hair on Fire', 'Hard Fact', 'Future Vision'].includes(rawArc.type)) {
+        arcClassification = {
+          type: rawArc.type,
+          reasoning: rawArc.reasoning || '',
+          implications: rawArc.implications || '',
+          confidence: rawArc.confidence
+        };
+      }
+    }
+  }
+
   console.log('[useMemoContent] Memo content loaded successfully');
 
   return {
@@ -217,7 +243,8 @@ async function fetchMemoContent(companyId: string): Promise<MemoContentData> {
     anchoredAssumptions,
     holisticVerdicts: verdictsMap,
     holisticStage,
-    companyInsightContext
+    companyInsightContext,
+    arcClassification
   };
 }
 
