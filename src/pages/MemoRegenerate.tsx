@@ -11,9 +11,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { 
   ArrowLeft, ChevronDown, ChevronUp, Loader2, RotateCcw, Pencil, Check, 
   Sparkles, User, AlertCircle, Target, Lightbulb, Users, Shield, 
-  UserCircle, Wallet, TrendingUp, Rocket, LucideIcon, CreditCard, Gift
+  UserCircle, Wallet, TrendingUp, Rocket, LucideIcon, CreditCard, Gift,
+  ListChecks, Trash2, Zap
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useImprovementQueue } from "@/hooks/useImprovementQueue";
 
 interface SectionConfig {
   key: string;
@@ -33,6 +35,20 @@ const SECTIONS: SectionConfig[] = [
   { key: "vision_ask", title: "Vision & Ask", description: "Where are you going and what do you need?", icon: Rocket }
 ];
 
+// Map section display names to question keys
+const SECTION_TO_KEY: Record<string, string> = {
+  "Problem": "problem_core",
+  "Solution": "solution_core",
+  "Target Customer": "target_customer",
+  "Market": "market_size",
+  "Competition": "competitive_moat",
+  "Team": "team_story",
+  "Business Model": "business_model",
+  "Traction": "traction_proof",
+  "Vision": "vision_ask",
+  "Vision & Ask": "vision_ask"
+};
+
 interface ResponseData {
   id: string;
   question_key: string;
@@ -45,7 +61,18 @@ export default function MemoRegenerate() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const companyId = searchParams.get("companyId");
+  const mode = searchParams.get("mode"); // 'improvements' or null (classic)
   const { isAdmin } = useAuth();
+  
+  // Improvement queue
+  const { 
+    queue, 
+    isLoaded: queueLoaded, 
+    updateAnswer, 
+    removeQuestion, 
+    clearQueue, 
+    getSectionGroups 
+  } = useImprovementQueue(companyId);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -57,6 +84,10 @@ export default function MemoRegenerate() {
   const [editedData, setEditedData] = useState<Record<string, string>>({});
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [editingSections, setEditingSections] = useState<Set<string>>(new Set());
+  
+  // Improvement mode state
+  const isImprovementMode = mode === 'improvements' && queue.length > 0;
+  const sectionGroups = getSectionGroups();
 
   useEffect(() => {
     if (!companyId) {
@@ -175,27 +206,76 @@ export default function MemoRegenerate() {
     // TEMPORARY: Paywall removed - free regeneration for all users
     setSaving(true);
     try {
-      const changedSections = getChangedSections();
-      
-      // Save all changed sections
-      for (const section of changedSections) {
-        const answer = editedData[section.key]?.trim() || "";
-        const existing = responses[section.key];
+      // Handle improvement mode - save queued answers
+      if (isImprovementMode) {
+        // Group answers by section and append to existing responses
+        for (const sectionName of Object.keys(sectionGroups)) {
+          const questionKey = SECTION_TO_KEY[sectionName] || sectionName.toLowerCase().replace(/\s/g, '_');
+          const sectionQuestions = sectionGroups[sectionName];
+          
+          // Build additional context from answered questions
+          const answeredQuestions = sectionQuestions.filter(q => q.answer?.trim());
+          if (answeredQuestions.length === 0) continue;
+          
+          const additionalContext = answeredQuestions.map(q => 
+            `Q: ${q.question}\nA: ${q.answer}`
+          ).join('\n\n');
+          
+          // Get existing response
+          const { data: existing } = await supabase
+            .from("memo_responses")
+            .select("id, answer")
+            .eq("company_id", companyId!)
+            .eq("question_key", questionKey)
+            .single();
+          
+          const existingAnswer = existing?.answer || '';
+          const newAnswer = existingAnswer 
+            ? `${existingAnswer}\n\n--- Additional Context ---\n${additionalContext}`
+            : additionalContext;
+          
+          if (existing) {
+            await supabase
+              .from("memo_responses")
+              .update({ answer: newAnswer, updated_at: new Date().toISOString(), source: "manual" })
+              .eq("id", existing.id);
+          } else {
+            await supabase
+              .from("memo_responses")
+              .insert({
+                company_id: companyId,
+                question_key: questionKey,
+                answer: newAnswer,
+                source: "manual"
+              });
+          }
+        }
+        
+        // Clear the queue after saving
+        clearQueue();
+      } else {
+        // Classic mode - save changed sections
+        const changedSections = getChangedSections();
+        
+        for (const section of changedSections) {
+          const answer = editedData[section.key]?.trim() || "";
+          const existing = responses[section.key];
 
-        if (existing) {
-          await supabase
-            .from("memo_responses")
-            .update({ answer, updated_at: new Date().toISOString(), source: "manual" })
-            .eq("id", existing.id);
-        } else if (answer) {
-          await supabase
-            .from("memo_responses")
-            .insert({
-              company_id: companyId,
-              question_key: section.key,
-              answer,
-              source: "manual"
-            });
+          if (existing) {
+            await supabase
+              .from("memo_responses")
+              .update({ answer, updated_at: new Date().toISOString(), source: "manual" })
+              .eq("id", existing.id);
+          } else if (answer) {
+            await supabase
+              .from("memo_responses")
+              .insert({
+                company_id: companyId,
+                question_key: section.key,
+                answer,
+                source: "manual"
+              });
+          }
         }
       }
 
@@ -212,7 +292,9 @@ export default function MemoRegenerate() {
 
       toast({
         title: "Changes Saved",
-        description: `${changedSections.length} section(s) updated. Regenerating memo...`
+        description: isImprovementMode 
+          ? `${queue.filter(q => q.answer?.trim()).length} improvement(s) saved. Regenerating memo...`
+          : `${getChangedSections().length} section(s) updated. Regenerating memo...`
       });
 
       // Navigate to regenerate
@@ -302,10 +384,28 @@ export default function MemoRegenerate() {
         <div className="space-y-6">
           {/* Title Section */}
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold">Review & Regenerate</h1>
-            <p className="text-muted-foreground">
-              Review your answers below. Make any improvements, then regenerate your memo with updated context.
-            </p>
+            {isImprovementMode ? (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge className="bg-primary/10 text-primary border-primary/20 gap-1">
+                    <ListChecks className="w-3 h-3" />
+                    Improvement Mode
+                  </Badge>
+                </div>
+                <h1 className="text-3xl font-bold">Answer to Improve Your Score</h1>
+                <p className="text-muted-foreground">
+                  You've queued {queue.length} question{queue.length !== 1 ? 's' : ''} from your analysis. 
+                  Answer them below to provide more context for your next regeneration.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-3xl font-bold">Review & Regenerate</h1>
+                <p className="text-muted-foreground">
+                  Review your answers below. Make any improvements, then regenerate your memo with updated context.
+                </p>
+              </>
+            )}
           </div>
 
           {/* Company Name */}
@@ -405,9 +505,87 @@ export default function MemoRegenerate() {
             </Card>
           )}
 
-          {/* Sections */}
-          <div className="space-y-3">
-            {SECTIONS.map((section) => {
+          {/* Sections - Classic Mode vs Improvement Mode */}
+          {isImprovementMode ? (
+            /* Improvement Mode: Show queued questions grouped by section */
+            <div className="space-y-6">
+              {Object.entries(sectionGroups).map(([sectionName, questions]) => (
+                <Card key={sectionName} className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                          <Zap className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">{sectionName}</CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            {questions.length} question{questions.length !== 1 ? 's' : ''} to answer
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {questions.map((q) => (
+                      <div key={q.id} className="rounded-lg border border-border/50 bg-background p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-foreground mb-1">
+                              {q.question}
+                            </p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Lightbulb className="w-3 h-3" />
+                              From: {q.suggestionTitle}
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeQuestion(q.id)}
+                            className="text-muted-foreground hover:text-destructive shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <Textarea
+                          value={q.answer || ''}
+                          onChange={(e) => updateAnswer(q.id, e.target.value)}
+                          placeholder={q.placeholder || "Type your answer here..."}
+                          className="min-h-[100px] text-sm"
+                        />
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            {(q.answer || '').length} / 1000 characters
+                          </span>
+                          {q.impact === 'high' && (
+                            <Badge className="bg-success/10 text-success border-success/20 text-xs">
+                              High Impact
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {/* Switch to Classic Mode */}
+              <div className="text-center py-4">
+                <Button
+                  variant="link"
+                  onClick={() => navigate(`/analysis/regenerate?companyId=${companyId}`)}
+                  className="text-muted-foreground"
+                >
+                  Switch to Classic Mode
+                  <ArrowLeft className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            /* Classic Mode: Show all sections */
+            <div className="space-y-3">
+              {SECTIONS.map((section) => {
               const response = responses[section.key];
               const isExpanded = expandedSections.has(section.key);
               const isEditing = editingSections.has(section.key);
@@ -518,7 +696,8 @@ export default function MemoRegenerate() {
                 </Collapsible>
               );
             })}
-          </div>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="sticky bottom-6 flex items-center justify-between gap-4 bg-background/95 backdrop-blur-sm p-4 rounded-lg border shadow-lg">
