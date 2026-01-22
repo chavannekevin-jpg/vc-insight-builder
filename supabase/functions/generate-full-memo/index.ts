@@ -6,6 +6,71 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Keep edge-function typing loose (Supabase types are not available in Deno runtime).
+async function fetchKBContext(
+  supabaseClient: any,
+  opts: { geography?: string; stage?: string; sector?: string | null },
+) {
+  const geography = opts.geography ?? "Europe";
+  const stage = opts.stage;
+
+  const { data: sources } = await supabaseClient
+    .from("kb_sources")
+    .select("id,title,publisher,publication_date")
+    .eq("status", "active")
+    .eq("geography_scope", geography)
+    .order("publication_date", { ascending: false, nullsFirst: false })
+    .limit(5);
+
+  const sourceIds = (sources || []).map((s: any) => s.id).filter(Boolean);
+  if (sourceIds.length === 0) return "";
+
+  let benchQuery = supabaseClient
+    .from("kb_benchmarks")
+    .select(
+      "geography_scope,region,stage,sector,business_model,timeframe_label,sample_size,currency,metric_key,metric_label,median_value,p25_value,p75_value,unit,notes,source_id",
+    )
+    .in("source_id", sourceIds)
+    .eq("geography_scope", geography)
+    .order("updated_at", { ascending: false })
+    .limit(40);
+
+  if (stage) benchQuery = benchQuery.eq("stage", stage);
+  const { data: benchmarks } = await benchQuery;
+
+  const { data: marketNotes } = await supabaseClient
+    .from("kb_market_notes")
+    .select("geography_scope,region,sector,timeframe_label,headline,summary,key_points,source_id")
+    .in("source_id", sourceIds)
+    .eq("geography_scope", geography)
+    .order("updated_at", { ascending: false })
+    .limit(15);
+
+  const sourcesStr = (sources || [])
+    .map((s: any) =>
+      `- ${s.publisher ?? "Unknown publisher"} — ${s.title ?? "Untitled"}${s.publication_date ? ` (${s.publication_date})` : ""} [${s.id}]`,
+    )
+    .join("\n");
+
+  const benchStr = (benchmarks || [])
+    .slice(0, 30)
+    .map((b: any) => {
+      const range =
+        b.p25_value != null || b.p75_value != null
+          ? ` (p25 ${b.p25_value ?? "?"}, p75 ${b.p75_value ?? "?"})`
+          : "";
+      return `- [${b.source_id}] ${b.stage}${b.sector ? ` / ${b.sector}` : ""}: ${b.metric_key}${b.metric_label ? ` (${b.metric_label})` : ""} = median ${b.median_value ?? "?"}${range}${b.unit ? ` ${b.unit}` : ""}${b.currency ? ` (${b.currency})` : ""}`;
+    })
+    .join("\n");
+
+  const notesStr = (marketNotes || [])
+    .slice(0, 10)
+    .map((n: any) => `- [${n.source_id}] ${n.headline ?? "Market note"}: ${n.summary}`)
+    .join("\n");
+
+  return `\n\n=== EUROPE KNOWLEDGE BASE (benchmarks + market notes) ===\nUse these to calibrate stage-appropriate expectations and to add Europe-specific market context where relevant. Cite sources by publisher/title/date when you use a benchmark.\n\nSOURCES:\n${sourcesStr}\n\nBENCHMARK ROWS (filtered):\n${benchStr || "(none matched)"}\n\nMARKET NOTES (sample):\n${notesStr || "(none)"}\n=== END EUROPE KNOWLEDGE BASE ===`;
+}
+
 // =============================================================================
 // COMPANY MODEL TYPE IMPORTS (inline for edge function)
 // =============================================================================
@@ -2307,6 +2372,12 @@ async function generateMemoInBackground(
     const benchmarkContext = formatBenchmarkContext(benchmarkCohortMatch);
     console.log(`✓ Selected benchmark cohort: ${benchmarkCohortMatch.cohort.name} (Match: ${benchmarkCohortMatch.matchScore}, Criteria: ${benchmarkCohortMatch.matchedCriteria.join(', ')})`);
 
+    const kbContext = await fetchKBContext(supabaseClient, {
+      geography: "Europe",
+      stage: company.stage,
+      sector: company.category,
+    });
+
     // Check if memo already exists - get the most recent one
     const { data: existingMemo } = await supabaseClient
       .from("memos")
@@ -2722,6 +2793,8 @@ ${companyModelContext}
 
 ${benchmarkContext}
 
+${kbContext}
+
 === END RELATIONAL CONTEXT ===
 
 WRITING STYLE:
@@ -3080,6 +3153,8 @@ Confidence Level: ${marketContext.confidence || "N/A"}
 **Context:** ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${thesisMarketContextStr}
 
 **Company Description:** ${company.description || "N/A"}
+
+${kbContext}
 
 ${companyModel ? `
 === COMPANY MODEL (RELATIONAL REASONING CONTEXT) ===
