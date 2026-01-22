@@ -16,7 +16,6 @@ import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { DashboardScorecard } from "@/components/memo/DashboardScorecard";
 import { FounderSidebar } from "@/components/founder/FounderSidebar";
-import { StrategicToolsSpotlight } from "@/components/founder/StrategicToolsSpotlight";
 import { InviteFounderModal } from "@/components/founder/InviteFounderModal";
 import ScoreboardModal from "@/components/founder/ScoreboardModal";
 import { MemoLoadingScreen } from "@/components/MemoLoadingScreen";
@@ -785,13 +784,6 @@ export default function FreemiumHub() {
                 </Card>
               )}
 
-              {/* Strategic Tools Spotlight - Market Lens & VC Network */}
-              <StrategicToolsSpotlight
-                matchingFunds={matchingFunds}
-                hasMarketLensBriefing={responses.some(r => r.question_key === 'market_lens_briefing' && r.answer)}
-                reportsAnalyzed={6}
-                hasPaid={company?.has_premium ?? false}
-              />
 
               {/* VC Quick Take (IC Room) - below the spotlight */}
               {vcQuickTake && (
