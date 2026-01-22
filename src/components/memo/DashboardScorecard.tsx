@@ -337,7 +337,7 @@ export const DashboardScorecard = ({
   
   const radarData = useMemo(() => 
     scorecard.sections.map(s => ({
-      section: s.section.substring(0, 3).toUpperCase(),
+      section: s.section === 'Business Model' ? 'Biz Model' : s.section,
       fullSection: s.section,
       score: s.score,
       benchmark: s.benchmark,
@@ -593,75 +593,73 @@ export const DashboardScorecard = ({
         <div className="relative z-10 p-5">
           <div className="grid grid-cols-12 gap-5 items-start">
             
-            {/* Left: Radar Chart */}
-            <div className="col-span-4 h-44">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData} margin={{ top: 15, right: 15, bottom: 15, left: 15 }}>
-                  <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.4} />
-                  <PolarAngleAxis 
-                    dataKey="section" 
-                    tick={{ 
-                      fill: 'hsl(var(--muted-foreground))', 
-                      fontSize: 9,
-                      fontWeight: 500
-                    }}
-                  />
-                  <Radar
-                    name="Benchmark"
-                    dataKey="benchmark"
-                    stroke="hsl(var(--muted-foreground))"
-                    strokeWidth={1}
-                    strokeDasharray="4 4"
-                    fill="transparent"
-                  />
-                  <Radar
-                    name="Score"
-                    dataKey="score"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={2}
-                    fill="hsl(var(--primary))"
-                    fillOpacity={0.3}
-                    style={{
-                      filter: 'drop-shadow(0 0 6px hsl(var(--primary) / 0.4))'
-                    }}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-            
-            {/* Center: Score Circle + Readiness */}
-            <div className="col-span-4 flex flex-col items-center justify-center">
-              <div className="relative mb-3">
+            {/* Left: Radar Chart with Score Overlay */}
+            <div className="col-span-5 relative">
+              {/* Score circle overlaid on radar */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                 <div className={cn(
-                  "w-24 h-24 rounded-full flex items-center justify-center",
-                  "bg-gradient-to-br from-card to-muted border-2",
+                  "w-20 h-20 rounded-full flex items-center justify-center",
+                  "bg-card/95 backdrop-blur-sm border-2",
                   scoreColor, scoreGlow
                 )}>
                   <div className="text-center">
-                    <span className="text-3xl font-bold text-foreground">{scorecard.overallScore}</span>
-                    <span className="text-xs text-muted-foreground block -mt-0.5">/100</span>
+                    <span className="text-2xl font-bold text-foreground">{scorecard.overallScore}</span>
+                    <span className="text-[10px] text-muted-foreground block -mt-0.5">/100</span>
                   </div>
                 </div>
-                <div className={cn(
-                  "absolute inset-0 rounded-full opacity-20 animate-ping",
-                  scorecard.overallScore >= 65 ? "bg-success" :
-                  scorecard.overallScore >= 50 ? "bg-warning" : "bg-destructive"
-                )} style={{ animationDuration: '3s' }} />
               </div>
               
-              <div className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold",
-                readinessConfig.bg,
-                readinessConfig.color
-              )}>
-                <Shield className="w-3.5 h-3.5" />
-                {readinessConfig.label}
+              <div className="h-52">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={radarData} margin={{ top: 25, right: 35, bottom: 25, left: 35 }}>
+                    <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.4} />
+                    <PolarAngleAxis 
+                      dataKey="section" 
+                      tick={{ 
+                        fill: 'hsl(var(--muted-foreground))', 
+                        fontSize: 10,
+                        fontWeight: 500
+                      }}
+                    />
+                    <Radar
+                      name="Benchmark"
+                      dataKey="benchmark"
+                      stroke="hsl(var(--muted-foreground))"
+                      strokeWidth={1}
+                      strokeDasharray="4 4"
+                      fill="transparent"
+                    />
+                    <Radar
+                      name="Score"
+                      dataKey="score"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      fill="hsl(var(--primary))"
+                      fillOpacity={0.3}
+                      style={{
+                        filter: 'drop-shadow(0 0 6px hsl(var(--primary) / 0.4))'
+                      }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+              
+              {/* Readiness badge below chart */}
+              <div className="flex justify-center mt-2">
+                <div className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold",
+                  readinessConfig.bg,
+                  readinessConfig.color
+                )}>
+                  <Shield className="w-3.5 h-3.5" />
+                  {readinessConfig.label}
+                </div>
               </div>
             </div>
             
             {/* Right: Verdict + Stats */}
-            <div className="col-span-4 space-y-3">
+            <div className="col-span-7 space-y-3">
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Target className="w-3 h-3 text-primary" />
