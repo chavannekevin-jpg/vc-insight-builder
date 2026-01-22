@@ -17,11 +17,11 @@ export function TailwindCard({ items }: TailwindCardProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
 
   return (
-    <div className="rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-transparent overflow-hidden h-full">
+    <div className="rounded-xl border border-success/20 bg-gradient-to-br from-success/5 to-transparent overflow-hidden h-full">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-emerald-500/20 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/30 to-emerald-600/20 flex items-center justify-center shadow-lg shadow-emerald-500/10">
-          <TrendingUp className="w-5 h-5 text-emerald-500" />
+      <div className="px-5 py-4 border-b border-success/10 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+          <TrendingUp className="w-5 h-5 text-success" />
         </div>
         <div>
           <h3 className="font-semibold text-foreground">Market Tailwinds</h3>
@@ -32,13 +32,13 @@ export function TailwindCard({ items }: TailwindCardProps) {
       </div>
 
       {/* Items - Accordion Style */}
-      <div className="divide-y divide-border/50">
+      <div className="divide-y divide-border/30">
         {items.map((item, index) => (
           <div 
             key={index} 
             className={cn(
               "transition-all duration-300 cursor-pointer",
-              expandedIndex === index ? "bg-emerald-500/5" : "hover:bg-emerald-500/5"
+              expandedIndex === index ? "bg-success/5" : "hover:bg-muted/30"
             )}
             onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
           >
@@ -46,8 +46,8 @@ export function TailwindCard({ items }: TailwindCardProps) {
               <div className={cn(
                 "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors",
                 expandedIndex === index 
-                  ? "bg-emerald-500 text-white" 
-                  : "bg-emerald-500/20 text-emerald-600"
+                  ? "bg-success text-success-foreground" 
+                  : "bg-success/20 text-success"
               )}>
                 {index + 1}
               </div>
@@ -61,8 +61,8 @@ export function TailwindCard({ items }: TailwindCardProps) {
             {expandedIndex === index && (
               <div className="px-5 pb-4 space-y-3 animate-fade-in">
                 <p className="text-sm text-muted-foreground pl-9">{item.insight}</p>
-                <div className="pl-9 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+                <div className="pl-9 p-3 rounded-lg bg-success/5 border border-success/10">
+                  <p className="text-xs text-success font-semibold flex items-center gap-1.5">
                     <Sparkles className="w-3 h-3" />
                     Why this matters for you
                   </p>

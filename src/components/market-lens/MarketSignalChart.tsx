@@ -7,24 +7,24 @@ interface MarketSignalChartProps {
 
 export function MarketSignalChart({ tailwindsCount, headwindsCount }: MarketSignalChartProps) {
   const total = tailwindsCount + headwindsCount;
-  const tailwindPercent = Math.round((tailwindsCount / total) * 100);
+  const tailwindPercent = total > 0 ? Math.round((tailwindsCount / total) * 100) : 50;
   
   const data = [
-    { name: "Tailwinds", value: tailwindsCount, color: "hsl(160, 84%, 39%)" },
-    { name: "Headwinds", value: headwindsCount, color: "hsl(38, 92%, 50%)" },
+    { name: "Tailwinds", value: tailwindsCount, color: "hsl(var(--success))" },
+    { name: "Headwinds", value: headwindsCount, color: "hsl(var(--warning))" },
   ];
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 flex items-center gap-6">
-      <div className="relative w-32 h-32 flex-shrink-0">
+    <div className="rounded-xl border border-border bg-card/50 p-6 flex items-center gap-6">
+      <div className="relative w-28 h-28 flex-shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius={35}
-              outerRadius={55}
+              innerRadius={30}
+              outerRadius={50}
               paddingAngle={4}
               dataKey="value"
               strokeWidth={0}
@@ -48,7 +48,7 @@ export function MarketSignalChart({ tailwindsCount, headwindsCount }: MarketSign
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-bold text-foreground">{tailwindPercent}%</span>
+          <span className="text-xl font-bold text-foreground">{tailwindPercent}%</span>
         </div>
       </div>
       
@@ -56,13 +56,13 @@ export function MarketSignalChart({ tailwindsCount, headwindsCount }: MarketSign
         <h3 className="font-semibold text-foreground">Market Sentiment</h3>
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-emerald-500" />
+            <div className="w-3 h-3 rounded-full bg-success" />
             <span className="text-sm text-muted-foreground">
               {tailwindsCount} Tailwind{tailwindsCount !== 1 ? "s" : ""} in your favor
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-amber-500" />
+            <div className="w-3 h-3 rounded-full bg-warning" />
             <span className="text-sm text-muted-foreground">
               {headwindsCount} Headwind{headwindsCount !== 1 ? "s" : ""} to navigate
             </span>

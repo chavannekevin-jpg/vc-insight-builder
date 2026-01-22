@@ -13,10 +13,10 @@ interface NarrativeAlignmentCardProps {
 
 export function NarrativeAlignmentCard({ data, companyName }: NarrativeAlignmentCardProps) {
   return (
-    <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 via-card to-muted/20 overflow-hidden">
+    <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-muted/10 overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-primary/20 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center shadow-lg shadow-primary/10">
+      <div className="px-5 py-4 border-b border-primary/10 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
           <MessageSquare className="w-5 h-5 text-primary" />
         </div>
         <div>

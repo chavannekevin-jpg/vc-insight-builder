@@ -1,5 +1,4 @@
 import { DollarSign, TrendingUp, BarChart3 } from "lucide-react";
-import { FundingRadarChart } from "./FundingRadarChart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
 
 interface FundingLandscapeData {
@@ -17,7 +16,7 @@ interface FundingLandscapeCardProps {
 
 export function FundingLandscapeCard({ data }: FundingLandscapeCardProps) {
   // Create bar chart data from data points
-  const barData = data.dataPoints.slice(0, 4).map((dp, index) => {
+  const barData = data.dataPoints.slice(0, 4).map((dp) => {
     const numMatch = dp.value.match(/[\d.]+/);
     const numValue = numMatch ? parseFloat(numMatch[0]) : 50;
     return {
@@ -29,19 +28,12 @@ export function FundingLandscapeCard({ data }: FundingLandscapeCardProps) {
     };
   });
 
-  const colors = [
-    "hsl(var(--primary))",
-    "hsl(328, 100%, 54%)",
-    "hsl(280, 100%, 60%)",
-    "hsl(200, 100%, 50%)",
-  ];
-
   return (
-    <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent overflow-hidden">
+    <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-primary/20 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-          <DollarSign className="w-4 h-4 text-primary" />
+      <div className="px-5 py-4 border-b border-primary/10 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+          <DollarSign className="w-5 h-5 text-primary" />
         </div>
         <div>
           <h3 className="font-semibold text-foreground">Funding Landscape</h3>
@@ -50,13 +42,13 @@ export function FundingLandscapeCard({ data }: FundingLandscapeCardProps) {
       </div>
 
       {/* Summary */}
-      <div className="px-5 py-4 border-b border-border/50">
+      <div className="px-5 py-4 border-b border-border/30">
         <p className="text-sm text-muted-foreground">{data.summary}</p>
       </div>
 
       {/* Chart Section */}
       {data.dataPoints.length >= 3 && (
-        <div className="px-5 py-4 border-b border-border/50">
+        <div className="px-5 py-4 border-b border-border/30">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="w-4 h-4 text-primary" />
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -92,7 +84,10 @@ export function FundingLandscapeCard({ data }: FundingLandscapeCardProps) {
                 />
                 <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={24}>
                   {barData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={`hsl(var(--primary) / ${0.9 - index * 0.15})`} 
+                    />
                   ))}
                 </Bar>
               </BarChart>
@@ -102,9 +97,9 @@ export function FundingLandscapeCard({ data }: FundingLandscapeCardProps) {
       )}
 
       {/* Data Points Grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border/50">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border/30">
         {data.dataPoints.map((point, index) => (
-          <div key={index} className="bg-background px-5 py-4 space-y-1 group hover:bg-muted/30 transition-colors">
+          <div key={index} className="bg-background px-5 py-4 space-y-1 group hover:bg-muted/20 transition-colors">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

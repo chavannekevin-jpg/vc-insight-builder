@@ -91,10 +91,12 @@ serve(async (req) => {
       .eq("company_id", companyId);
 
     // Fetch all active KB sources
-    const { data: kbSources } = await supabase
+    const { data: kbSources, error: kbError } = await supabase
       .from("kb_sources")
-      .select("id, title, source_type, geography_scope, sector")
+      .select("id, title, source_type, geography_scope, content_kind")
       .eq("status", "active");
+
+    console.log("KB Sources found:", kbSources?.length || 0, kbError);
 
     // Fetch benchmarks
     const { data: benchmarks } = await supabase
