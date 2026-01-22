@@ -5,6 +5,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -49,6 +51,7 @@ export function KnowledgeBaseSourceList() {
   const [openSourceId, setOpenSourceId] = useState<string | null>(null);
   const [deleteSourceId, setDeleteSourceId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const rows = useMemo(() => {
     const items = data ?? [];
@@ -99,6 +102,35 @@ export function KnowledgeBaseSourceList() {
     }
   };
 
+  const handleToggleActive = async (source: KnowledgeBaseSourceWithCounts, nextActive: boolean) => {
+    setTogglingId(source.id);
+    try {
+      const nextStatus: KnowledgeBaseSourceWithCounts["status"] = nextActive ? "active" : "archived";
+      const { error: updErr } = await supabase
+        .from("kb_sources")
+        .update({ status: nextStatus, updated_at: new Date().toISOString() })
+        .eq("id", source.id);
+      if (updErr) throw updErr;
+
+      toast({
+        title: nextActive ? "Activated" : "Deactivated",
+        description: nextActive
+          ? "This source will be used by the AI."
+          : "This source will no longer be used by the AI.",
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ["kb-sources"] });
+    } catch (e) {
+      toast({
+        title: "Update failed",
+        description: e instanceof Error ? e.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
   return (
     <ModernCard>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -142,8 +174,9 @@ export function KnowledgeBaseSourceList() {
         ) : rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">No sources yet.</p>
         ) : (
-          <div className="space-y-3">
-            {rows.map((s) => (
+          <TooltipProvider>
+            <div className="space-y-3">
+              {rows.map((s) => (
               <div
                 key={s.id}
                 className="rounded-xl border border-border/60 bg-card/60 p-4"
@@ -168,6 +201,24 @@ export function KnowledgeBaseSourceList() {
                     >
                       <Eye />
                     </Button>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-2 rounded-full border border-border/60 bg-background/40 px-3 py-1">
+                          <span className="text-xs font-medium text-muted-foreground">Use</span>
+                          <Switch
+                            checked={s.status === "active"}
+                            disabled={togglingId === s.id || isDeleting}
+                            onCheckedChange={(checked) => void handleToggleActive(s, checked)}
+                            aria-label="Toggle source active"
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {s.status === "active" ? "Active (used by AI)" : "Off (not used by AI)"}
+                      </TooltipContent>
+                    </Tooltip>
+
                     <Button
                       type="button"
                       size="icon"
@@ -194,8 +245,9 @@ export function KnowledgeBaseSourceList() {
                   Updated {formatDistanceToNow(new Date(s.updated_at), { addSuffix: true })}
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </TooltipProvider>
         )}
       </div>
 
