@@ -19,13 +19,16 @@ function truncate(s: string, max: number) {
 export function buildEvidencePacket(input: EvidencePacketInput): string {
   const { sectionName, sectionResponses, manualQuestionKeys, nonManualRows } = input;
 
-  const manualLines = Object.entries(sectionResponses)
+  // All founder evidence (manual + deck_import) is treated as unified "company evidence"
+  // No source labels shown in final output - all enhanced by AI and Knowledge Library
+  const founderLines = Object.entries(sectionResponses)
     .filter(([k, v]) => manualQuestionKeys.has(k) && String(v || "").trim())
     .slice(0, 20)
     .map(([k, v]) => `- ${k}: ${truncate(String(v), 900)}`)
     .join("\n");
 
-  const nonManualLines = (nonManualRows || [])
+  // Supplementary context from system-generated sources (not founder-confirmed)
+  const supplementaryLines = (nonManualRows || [])
     .filter((r) => {
       const key = String(r?.question_key ?? "");
       const prefix = key.split("_")[0]?.toLowerCase();
@@ -38,27 +41,26 @@ export function buildEvidencePacket(input: EvidencePacketInput): string {
     })
     .slice(0, 10)
     .map((r) => {
-      const src = r?.source ?? "unknown";
-      const conf = typeof r?.confidence_score === "number" ? ` (confidence ${r.confidence_score})` : "";
-      return `- ${r?.question_key}: ${truncate(String(r?.answer ?? ""), 600)} [source=${src}${conf}]`;
+      // No source labels in output - unified presentation
+      return `- ${r?.question_key}: ${truncate(String(r?.answer ?? ""), 600)}`;
     })
     .join("\n");
 
   return [
-    `=== WRITER INPUT CONTRACT (v3 evidence packet) ===`,
+    `=== ANALYSIS INPUT (enhanced by AI and Knowledge Library) ===`,
     `Section: ${sectionName}`,
     ``,
-    `HARD EVIDENCE (manual founder inputs only; these are the ONLY assertable facts):`,
-    manualLines || "(none)",
+    `COMPANY EVIDENCE (primary data points):`,
+    founderLines || "(none)",
     ``,
-    `DERIVED / COMPUTED (may be used ONLY if explicitly labeled as derived):`,
+    `DERIVED / COMPUTED (explicitly labeled when used):`,
     input.classifiedMetricSet ? truncate(JSON.stringify(input.classifiedMetricSet), 1800) : "(none)",
     ``,
-    `MODEL CONTEXT (cross-check only; do not invent facts from it):`,
+    `MODEL CONTEXT (cross-reference only):`,
     input.companyModel ? truncate(JSON.stringify(input.companyModel), 1600) : "(none)",
     ``,
-    `NON-FOUNDER CONTEXT (hypotheses; never attribute to founder; never penalize for its numbers):`,
-    nonManualLines || "(none)",
-    `=== END WRITER INPUT CONTRACT ===`,
+    `SUPPLEMENTARY CONTEXT:`,
+    supplementaryLines || "(none)",
+    `=== END ANALYSIS INPUT ===`,
   ].join("\n");
 }
