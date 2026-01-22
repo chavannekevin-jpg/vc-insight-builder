@@ -48,7 +48,7 @@ function PaymentSuccessContent() {
           if (isMountedRef.current && !navigatedRef.current) {
             navigatedRef.current = true;
             try {
-              navigate(`/hub?companyId=${companyId}`);
+              navigate(`/portal?companyId=${companyId}`);
             } catch (navError) {
               console.error("Navigation error:", navError);
             }
@@ -94,7 +94,7 @@ function PaymentSuccessContent() {
     if (!navigatedRef.current) {
       navigatedRef.current = true;
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      navigate(`/hub?companyId=${companyId}`);
+      navigate(`/portal?companyId=${companyId}`);
     }
   };
 
@@ -183,7 +183,7 @@ function PaymentSuccessContent() {
               Payment Successful!
             </h1>
             <p className="text-muted-foreground">
-              Thank you for your purchase. Your investment analysis is ready!
+              Thank you for your purchase. Let's complete your profile to generate your analysis.
             </p>
           </div>
 
@@ -198,7 +198,7 @@ function PaymentSuccessContent() {
               size="lg"
               className="w-full gradient-primary shadow-glow hover-neon-pulse font-bold"
             >
-              View Your Analysis
+              Complete Your Profile
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
             
