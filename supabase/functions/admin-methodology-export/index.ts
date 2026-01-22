@@ -108,8 +108,11 @@ serve(async (req) => {
     ] = await Promise.all([
       supabaseAdmin.from("memo_prompts").select("section_name,prompt,updated_at").order("section_name"),
       supabaseAdmin.from("questionnaire_sections").select("id,name,display_title,sort_order").order("sort_order"),
-      supabaseAdmin.from("questionnaire_questions").select("id,section_id,question_key,question_text,helper_text,required,sort_order").order("sort_order"),
-      supabaseAdmin.from("kb_sources").select("id,content_kind,source_type,title,publisher,publication_date,geography_scope,region,status").order("updated_at", { ascending: false }),
+      supabaseAdmin
+        .from("questionnaire_questions")
+        .select("id,section_id,question_key,title,tldr,question,placeholder,sort_order,is_required,is_active")
+        .order("sort_order"),
+      supabaseAdmin.from("kb_sources").select("id,content_kind,source_type,title,publisher,publication_date,geography_scope,status").order("updated_at", { ascending: false }),
       supabaseAdmin.from("kb_frameworks").select("source_id,geography_scope,region,sector,title,summary,key_points,tags").order("updated_at", { ascending: false }),
       supabaseAdmin.from("kb_benchmarks").select("source_id,geography_scope,region,stage,sector,business_model,timeframe_label,sample_size,currency,metric_key,metric_label,median_value,p25_value,p75_value,unit,notes").order("updated_at", { ascending: false }),
       supabaseAdmin.from("kb_market_notes").select("source_id,geography_scope,region,sector,timeframe_label,headline,summary,key_points").order("updated_at", { ascending: false }),
@@ -171,9 +174,12 @@ serve(async (req) => {
       md += `\n#### Section: ${mdEscape(s.display_title ?? s.name)} (id=${s.id})\n`;
       const qs = qQuestions.filter((q: any) => q.section_id === s.id);
       for (const q of qs) {
-        md += `- **${mdEscape(q.question_key)}** (${q.required ? "required" : "optional"})\n`;
-        md += `  - question: ${mdEscape(q.question_text)}\n`;
-        if (q.helper_text) md += `  - helper: ${mdEscape(q.helper_text)}\n`;
+        if (q.is_active === false) continue;
+        md += `- **${mdEscape(q.question_key)}** (${q.is_required ? "required" : "optional"})\n`;
+        if (q.title) md += `  - title: ${mdEscape(q.title)}\n`;
+        md += `  - question: ${mdEscape(q.question)}\n`;
+        if (q.tldr) md += `  - tldr: ${mdEscape(q.tldr)}\n`;
+        if (q.placeholder) md += `  - placeholder: ${mdEscape(q.placeholder)}\n`;
       }
     }
 
