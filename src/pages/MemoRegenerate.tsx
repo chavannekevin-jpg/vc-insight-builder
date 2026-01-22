@@ -12,10 +12,29 @@ import {
   ArrowLeft, ChevronDown, ChevronUp, Loader2, RotateCcw, Pencil, Check, 
   Sparkles, User, AlertCircle, Target, Lightbulb, Users, Shield, 
   UserCircle, Wallet, TrendingUp, Rocket, LucideIcon, CreditCard, Gift,
-  ListChecks, Trash2, Zap
+  ListChecks, Trash2, Zap, Clock, Plus, RefreshCw
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useImprovementQueue } from "@/hooks/useImprovementQueue";
+import { useImprovementQueue, type QueuedQuestion } from "@/hooks/useImprovementQueue";
+
+interface ImprovementQuestion {
+  id: string;
+  question: string;
+  placeholder?: string;
+}
+
+interface Suggestion {
+  title: string;
+  description: string;
+  impact: 'high' | 'medium';
+  timeframe: string;
+  questions?: ImprovementQuestion[];
+}
+
+interface AIImprovements {
+  suggestions: Suggestion[];
+  keyInsight: string;
+}
 
 interface SectionConfig {
   key: string;
@@ -71,13 +90,16 @@ export default function MemoRegenerate() {
     updateAnswer, 
     removeQuestion, 
     clearQueue, 
-    getSectionGroups 
+    getSectionGroups,
+    addQuestion,
+    isInQueue
   } = useImprovementQueue(companyId);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
   const [companyName, setCompanyName] = useState("");
+  const [companyDescription, setCompanyDescription] = useState("");
   const [generationsAvailable, setGenerationsAvailable] = useState(0);
   const [generationsUsed, setGenerationsUsed] = useState(0);
   const [responses, setResponses] = useState<Record<string, ResponseData>>({});
@@ -85,10 +107,16 @@ export default function MemoRegenerate() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [editingSections, setEditingSections] = useState<Set<string>>(new Set());
   
+  // AI Improvements per section
+  const [sectionImprovements, setSectionImprovements] = useState<Record<string, AIImprovements | null>>({});
+  const [loadingImprovements, setLoadingImprovements] = useState<Record<string, boolean>>({});
+  
   // Improvement mode state
   const isImprovementMode = mode === 'improvements' && queue.length > 0;
   const sectionGroups = getSectionGroups();
-
+  
+  // All section scores for context (placeholder - would come from memo data)
+  const allSectionScores: Record<string, { score: number; benchmark: number }> = {};
   useEffect(() => {
     if (!companyId) {
       navigate("/hub");
@@ -108,7 +136,7 @@ export default function MemoRegenerate() {
       // Load company
       const { data: company, error: companyError } = await supabase
         .from("companies")
-        .select("id, name, has_premium, generations_available, generations_used")
+        .select("id, name, description, has_premium, generations_available, generations_used")
         .eq("id", companyId)
         .eq("founder_id", session.user.id)
         .single();
@@ -126,6 +154,7 @@ export default function MemoRegenerate() {
       }
 
       setCompanyName(company.name);
+      setCompanyDescription(company.description || "");
       setGenerationsAvailable((company as any).generations_available || 0);
       setGenerationsUsed((company as any).generations_used || 0);
 
@@ -155,6 +184,56 @@ export default function MemoRegenerate() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Load AI improvements for a section
+  const loadSectionImprovements = async (sectionTitle: string) => {
+    if (sectionImprovements[sectionTitle] || loadingImprovements[sectionTitle]) return;
+    
+    setLoadingImprovements(prev => ({ ...prev, [sectionTitle]: true }));
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('suggest-section-improvements', {
+        body: {
+          sectionName: sectionTitle,
+          sectionScore: { score: 50, benchmark: 65 },
+          sectionVerdict: "Analysis pending",
+          companyContext: companyDescription,
+          allSectionScores
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.suggestions) {
+        setSectionImprovements(prev => ({ ...prev, [sectionTitle]: data }));
+      }
+    } catch (err) {
+      console.error(`Failed to load improvements for ${sectionTitle}:`, err);
+    } finally {
+      setLoadingImprovements(prev => ({ ...prev, [sectionTitle]: false }));
+    }
+  };
+
+  // Load improvements for all sections on mount
+  useEffect(() => {
+    if (!loading && companyId && !isImprovementMode) {
+      SECTIONS.forEach(section => {
+        loadSectionImprovements(section.title);
+      });
+    }
+  }, [loading, companyId, isImprovementMode]);
+
+  // Add question to queue handler
+  const handleAddToQueue = (question: ImprovementQuestion, sectionTitle: string, suggestionTitle: string, impact: 'high' | 'medium') => {
+    addQuestion({
+      id: `${sectionTitle.toLowerCase().replace(/\s/g, '_')}_${question.id}`,
+      section: sectionTitle,
+      question: question.question,
+      placeholder: question.placeholder,
+      suggestionTitle,
+      impact
+    });
   };
 
   const toggleSection = (key: string) => {
@@ -690,6 +769,98 @@ export default function MemoRegenerate() {
                             )}
                           </div>
                         )}
+                        
+                        {/* AI Improvement Suggestions */}
+                        {sectionImprovements[section.title] && (
+                          <div className="mt-4 pt-4 border-t border-border/50">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Sparkles className="w-4 h-4 text-primary" />
+                              <span className="text-sm font-medium text-primary">
+                                How to Improve This Section
+                              </span>
+                            </div>
+                            
+                            {sectionImprovements[section.title]?.keyInsight && (
+                              <div className="p-3 rounded-lg bg-warning/5 border border-warning/20 mb-3">
+                                <div className="flex items-start gap-2">
+                                  <Zap className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+                                  <p className="text-xs text-foreground">
+                                    <span className="font-semibold text-warning">Key Insight: </span>
+                                    {sectionImprovements[section.title]?.keyInsight}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                            
+                            <div className="space-y-3">
+                              {sectionImprovements[section.title]?.suggestions.map((suggestion, i) => (
+                                <div key={i} className="rounded-lg border border-border/40 overflow-hidden">
+                                  <div className="p-3 bg-muted/20">
+                                    <div className="flex items-start justify-between gap-2 mb-1">
+                                      <h5 className="text-sm font-medium text-foreground">{suggestion.title}</h5>
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        {suggestion.impact === 'high' && (
+                                          <Badge className="text-[10px] bg-success/10 text-success border-success/20">
+                                            High Impact
+                                          </Badge>
+                                        )}
+                                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                          <Clock className="w-3 h-3" />
+                                          {suggestion.timeframe}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">{suggestion.description}</p>
+                                  </div>
+                                  
+                                  {suggestion.questions && suggestion.questions.length > 0 && (
+                                    <div className="p-3 pt-2 bg-background/50 space-y-2">
+                                      <p className="text-xs font-medium text-primary flex items-center gap-1">
+                                        <Sparkles className="w-3 h-3" />
+                                        Answer to improve
+                                      </p>
+                                      {suggestion.questions.map((q) => {
+                                        const fullId = `${section.title.toLowerCase().replace(/\s/g, '_')}_${q.id}`;
+                                        const inQueue = isInQueue(fullId);
+                                        return (
+                                          <div key={q.id} className={`p-2 rounded border ${inQueue ? 'border-primary/30 bg-primary/5' : 'border-border/30'}`}>
+                                            <p className="text-xs text-foreground mb-2">{q.question}</p>
+                                            <Button
+                                              variant={inQueue ? "secondary" : "outline"}
+                                              size="sm"
+                                              className="text-xs h-7 gap-1"
+                                              onClick={() => handleAddToQueue(q, section.title, suggestion.title, suggestion.impact)}
+                                              disabled={inQueue}
+                                            >
+                                              {inQueue ? (
+                                                <>
+                                                  <Check className="w-3 h-3" />
+                                                  Added to Queue
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <Plus className="w-3 h-3" />
+                                                  Add to Queue
+                                                </>
+                                              )}
+                                            </Button>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {loadingImprovements[section.title] && (
+                          <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-center gap-2 py-4">
+                            <RefreshCw className="w-4 h-4 animate-spin text-primary" />
+                            <span className="text-xs text-muted-foreground">Loading suggestions...</span>
+                          </div>
+                        )}
                       </CardContent>
                     </CollapsibleContent>
                   </Card>
@@ -699,10 +870,42 @@ export default function MemoRegenerate() {
             </div>
           )}
 
+          {/* Queue Status Banner */}
+          {!isImprovementMode && queue.length > 0 && (
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="py-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <ListChecks className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">
+                      {queue.length} improvement question{queue.length !== 1 ? 's' : ''} queued
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Answer them to improve your analysis
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => navigate(`/analysis/regenerate?companyId=${companyId}&mode=improvements`)}
+                  className="gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Answer Questions
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Action Buttons */}
           <div className="sticky bottom-6 flex items-center justify-between gap-4 bg-background/95 backdrop-blur-sm p-4 rounded-lg border shadow-lg">
             <div className="text-sm text-muted-foreground">
-              {changedCount > 0 ? (
+              {isImprovementMode ? (
+                <span className="text-primary font-medium">
+                  {queue.filter(q => q.answer?.trim()).length} of {queue.length} answered
+                </span>
+              ) : changedCount > 0 ? (
                 <span className="text-primary font-medium">{changedCount} section(s) modified</span>
               ) : (
                 "No changes made"

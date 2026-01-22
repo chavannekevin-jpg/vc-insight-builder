@@ -126,7 +126,7 @@ export const SectionDetailModal = ({
   const navigate = useNavigate();
   const [improvements, setImprovements] = useState<AIImprovements | null>(null);
   const [loadingImprovements, setLoadingImprovements] = useState(false);
-  const [showImprovements, setShowImprovements] = useState(false);
+  const [showImprovements, setShowImprovements] = useState(true); // Pre-loaded by default
   const [showVCQuestions, setShowVCQuestions] = useState(false);
   const [inlineAnswers, setInlineAnswers] = useState<Record<string, string>>({});
   
