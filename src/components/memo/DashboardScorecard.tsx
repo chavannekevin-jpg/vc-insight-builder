@@ -307,10 +307,10 @@ export const DashboardScorecard = ({
   const [shareScorecardOpen, setShareScorecardOpen] = useState(false);
   const [inviteFounderOpen, setInviteFounderOpen] = useState(false);
   
-  const scorecard = useMemo(() =>
-    buildHolisticScorecard(sectionTools, companyName, stage, category),
-    [sectionTools, companyName, stage, category]
-  );
+  const scorecard = useMemo(() => {
+    console.log('[DashboardScorecard] sectionTools received:', sectionTools ? Object.keys(sectionTools) : 'null');
+    return buildHolisticScorecard(sectionTools, companyName, stage, category);
+  }, [sectionTools, companyName, stage, category]);
 
   const bestStrengthCandidate = useMemo(() => {
     if (scorecard.topStrengths.length > 0) {
