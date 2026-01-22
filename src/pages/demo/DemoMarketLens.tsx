@@ -1,0 +1,113 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { DemoLayout } from "@/components/demo/DemoLayout";
+import { MarketLensBriefing } from "@/components/market-lens/MarketLensBriefing";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { DEMO_COMPANY, DEMO_MARKET_LENS_BRIEFING } from "@/data/demo/demoCarbonPrint";
+import { DemoUpsellModal } from "@/components/demo/DemoUpsellModal";
+import { RefreshCw, Settings, ArrowLeft, Sparkles } from "lucide-react";
+
+export default function DemoMarketLens() {
+  const navigate = useNavigate();
+  const [showUpsell, setShowUpsell] = useState(false);
+  const [upsellContext, setUpsellContext] = useState({ feature: "", description: "" });
+
+  const handleRefresh = () => {
+    setUpsellContext({
+      feature: "Regenerating market intelligence",
+      description: "Create your own analysis to generate real-time market briefings tailored to your startup."
+    });
+    setShowUpsell(true);
+  };
+
+  const handleEditPreferences = () => {
+    setUpsellContext({
+      feature: "Customizing preferences",
+      description: "Your own analysis lets you set region, market focus, and specific concerns for personalized insights."
+    });
+    setShowUpsell(true);
+  };
+
+  return (
+    <DemoLayout currentPage="market-lens">
+      <div className="px-6 py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+          
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/demo')}
+                  className="gap-1 -ml-2 text-muted-foreground hover:text-foreground"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Dashboard
+                </Button>
+              </div>
+              <h1 className="text-2xl font-serif font-bold">Market Intelligence</h1>
+              <p className="text-sm text-muted-foreground">
+                Real-time market insights for <span className="font-medium text-foreground">{DEMO_COMPANY.name}</span> in {DEMO_COMPANY.category}
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleEditPreferences}
+                className="gap-1.5"
+              >
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">Edit Preferences</span>
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleRefresh}
+                className="gap-1.5"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Refresh
+              </Button>
+            </div>
+          </div>
+
+          {/* Demo Notice */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">This is a sample Market Lens briefing</p>
+                  <p className="text-xs text-muted-foreground">
+                    The real tool synthesizes 50+ industry reports and benchmarks, filtered through your specific company context. 
+                    Get your own analysis to receive personalized market intelligence updated in real-time.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Market Lens Briefing */}
+          <MarketLensBriefing 
+            briefing={DEMO_MARKET_LENS_BRIEFING}
+            companyName={DEMO_COMPANY.name}
+          />
+
+        </div>
+      </div>
+
+      <DemoUpsellModal
+        open={showUpsell}
+        onOpenChange={setShowUpsell}
+        feature={upsellContext.feature}
+        description={upsellContext.description}
+      />
+    </DemoLayout>
+  );
+}
