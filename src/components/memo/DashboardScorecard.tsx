@@ -25,10 +25,15 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Flame,
+  Lock,
+  Telescope,
+  ScrollText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   Collapsible,
   CollapsibleContent,
@@ -43,6 +48,13 @@ import { getStrengthHeadline, getWeaknessHeadline } from "@/lib/insightExplanati
 import { type CompanyInsightContext } from "@/lib/companyInsightContext";
 import { type MemoStructuredContent } from "@/types/memo";
 
+export interface ARCClassification {
+  type: "Hair on Fire" | "Hard Fact" | "Future Vision";
+  reasoning: string;
+  implications: string;
+  confidence?: number;
+}
+
 interface DashboardScorecardProps {
   sectionTools: Record<string, { sectionScore?: { score: number; vcBenchmark: number } }>;
   companyName: string;
@@ -53,6 +65,7 @@ interface DashboardScorecardProps {
   onNavigate: (path: string) => void;
   companyInsightContext?: CompanyInsightContext | null;
   memoContent?: MemoStructuredContent | null;
+  arcClassification?: ARCClassification | null;
 }
 
 const STATUS_CONFIG = {
@@ -243,6 +256,31 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
+// ARC type config for inline display
+const ARC_CONFIG = {
+  "Hair on Fire": {
+    icon: Flame,
+    accentColor: "text-orange-400",
+    bgColor: "bg-orange-500/10",
+    borderColor: "border-orange-500/30",
+    description: "Urgent problem customers actively seek solutions for"
+  },
+  "Hard Fact": {
+    icon: Lock,
+    accentColor: "text-blue-400",
+    bgColor: "bg-blue-500/10",
+    borderColor: "border-blue-500/30",
+    description: "Hidden problem customers underestimate"
+  },
+  "Future Vision": {
+    icon: Telescope,
+    accentColor: "text-violet-400",
+    bgColor: "bg-violet-500/10",
+    borderColor: "border-violet-500/30",
+    description: "New category being created"
+  }
+};
+
 export const DashboardScorecard = ({ 
   sectionTools, 
   companyName,
@@ -252,7 +290,8 @@ export const DashboardScorecard = ({
   companyId,
   onNavigate,
   companyInsightContext,
-  memoContent
+  memoContent,
+  arcClassification
 }: DashboardScorecardProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedSection, setSelectedSection] = useState<SectionVerdict | null>(null);
@@ -332,6 +371,29 @@ export const DashboardScorecard = ({
     );
     return key ? sectionTools[key] : null;
   };
+
+  // Extract investment thesis from memo content
+  const investmentThesis = useMemo(() => {
+    if (!memoContent?.sections) return null;
+    const thesisSection = memoContent.sections.find(s => 
+      s.title?.toLowerCase().includes('thesis') || 
+      s.title?.toLowerCase().includes('investment')
+    );
+    if (!thesisSection) return null;
+    
+    // Extract first paragraph as summary
+    const paragraphs = thesisSection.narrative?.paragraphs || thesisSection.paragraphs || [];
+    const firstParagraph = paragraphs[0]?.text || '';
+    
+    // Extract key points
+    const keyPoints = thesisSection.narrative?.keyPoints || thesisSection.keyPoints || [];
+    
+    return {
+      summary: firstParagraph,
+      keyPoints: keyPoints.slice(0, 3),
+      fullSection: thesisSection
+    };
+  }, [memoContent]);
 
   const handleSectionClick = (section: SectionVerdict) => {
     setSelectedSection(section);
@@ -580,6 +642,46 @@ export const DashboardScorecard = ({
             </div>
           </div>
           
+          {/* ARC Classification - Problem Archetype */}
+          {arcClassification && (
+            <div className="mt-5 pt-4 border-t border-border/30">
+              <div className={cn(
+                "rounded-xl p-4 border",
+                ARC_CONFIG[arcClassification.type].bgColor,
+                ARC_CONFIG[arcClassification.type].borderColor
+              )}>
+                <div className="flex items-center gap-3 mb-2">
+                  {(() => {
+                    const ArcIcon = ARC_CONFIG[arcClassification.type].icon;
+                    return (
+                      <div className={cn("p-2 rounded-lg bg-background/60", ARC_CONFIG[arcClassification.type].bgColor)}>
+                        <ArcIcon className={cn("w-4 h-4", ARC_CONFIG[arcClassification.type].accentColor)} />
+                      </div>
+                    );
+                  })()}
+                  <div className="flex-1">
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Problem Archetype</p>
+                    <h4 className={cn("text-sm font-semibold", ARC_CONFIG[arcClassification.type].accentColor)}>
+                      {arcClassification.type}
+                    </h4>
+                  </div>
+                  <Badge variant="outline" className="text-[9px] font-medium text-muted-foreground border-border/50 bg-background/40">
+                    <Sparkles className="w-2.5 h-2.5 mr-1 opacity-60" />
+                    Sequoia ARC
+                  </Badge>
+                </div>
+                <p className="text-xs text-foreground/80 leading-relaxed">
+                  {arcClassification.reasoning}
+                </p>
+                {arcClassification.implications && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    <span className="font-medium text-foreground/70">→ Strategy:</span> {arcClassification.implications}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+          
           {/* Collapsible Section Breakdown */}
           <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
             <CollapsibleTrigger asChild>
@@ -595,7 +697,8 @@ export const DashboardScorecard = ({
               </button>
             </CollapsibleTrigger>
             
-            <CollapsibleContent className="pt-4">
+            <CollapsibleContent className="pt-4 space-y-4">
+              {/* Section Cards Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {MEMO_SECTION_ORDER.map((sectionName, index) => {
                   const section = scorecard.sections.find(s => s.section === sectionName);
@@ -610,6 +713,51 @@ export const DashboardScorecard = ({
                   );
                 })}
               </div>
+              
+              {/* Investment Thesis Card - Special final card */}
+              {investmentThesis && (
+                <button
+                  onClick={() => onNavigate(`/analysis/section?companyId=${companyId}&section=8`)}
+                  className="w-full mt-4 relative overflow-hidden rounded-xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-5 text-left transition-all duration-300 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10 group"
+                >
+                  {/* Decorative gradient */}
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-primary/20 via-secondary/20 to-transparent rounded-full blur-2xl opacity-60 group-hover:opacity-80 transition-opacity" />
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30">
+                        <ScrollText className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-base font-bold text-foreground">Investment Thesis</h4>
+                          <Badge className="text-[9px] bg-primary/10 text-primary border-primary/20">
+                            Final Assessment
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">VC decision synthesis</p>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    
+                    {investmentThesis.summary && (
+                      <p className="text-sm text-foreground/80 line-clamp-2 mb-3">
+                        {investmentThesis.summary.slice(0, 200)}...
+                      </p>
+                    )}
+                    
+                    {investmentThesis.keyPoints.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {investmentThesis.keyPoints.slice(0, 3).map((point, i) => (
+                          <span key={i} className="text-[10px] px-2 py-1 rounded-full bg-background/60 border border-border/40 text-muted-foreground line-clamp-1">
+                            {point.slice(0, 40)}{point.length > 40 ? '...' : ''}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              )}
             </CollapsibleContent>
           </Collapsible>
           
