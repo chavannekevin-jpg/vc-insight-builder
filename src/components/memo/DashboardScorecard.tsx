@@ -195,6 +195,22 @@ export const DashboardScorecard = ({
     buildHolisticScorecard(sectionTools, companyName, stage, category),
     [sectionTools, companyName, stage, category]
   );
+
+  const bestStrengthCandidate = useMemo(() => {
+    if (scorecard.topStrengths.length > 0) {
+      return { sectionName: scorecard.topStrengths[0], isTrueStrength: true };
+    }
+
+    const best = scorecard.sections
+      .map((s) => ({
+        sectionName: s.section,
+        delta: s.score - s.benchmark,
+      }))
+      .sort((a, b) => b.delta - a.delta)[0];
+
+    if (!best) return null;
+    return { sectionName: best.sectionName, isTrueStrength: best.delta >= 0 };
+  }, [scorecard.sections, scorecard.topStrengths]);
   
   const radarData = useMemo(() => 
     scorecard.sections.map(s => ({
@@ -399,14 +415,21 @@ export const DashboardScorecard = ({
                 <div className="p-2 rounded-lg bg-success/5 border border-success/20">
                   <div className="flex items-center gap-1 mb-0.5">
                     <TrendingUp className="w-2.5 h-2.5 text-success" />
-                    <span className="text-[9px] font-semibold text-success uppercase">Top Strength</span>
+                    <span className="text-[9px] font-semibold text-success uppercase">
+                      {bestStrengthCandidate?.isTrueStrength ? "Top Strength" : "Best Area"}
+                    </span>
                   </div>
-                  {scorecard.topStrengths.length > 0 ? (() => {
-                    const strengthSection = scorecard.topStrengths[0];
+                  {bestStrengthCandidate ? (() => {
+                    const strengthSection = bestStrengthCandidate.sectionName;
                     const strengthInsight = companyInsightContext?.sectionInsights[strengthSection];
+                    const sectionRow = scorecard.sections.find(s => s.section === strengthSection);
+                    const score = sectionRow?.score ?? 0;
+                    const benchmark = sectionRow?.benchmark ?? 60;
                     return (
                       <InsightWithTooltip
-                        explanation={`Your ${strengthSection} section scores significantly above stage benchmarks.`}
+                        explanation={bestStrengthCandidate.isTrueStrength
+                          ? `Your ${strengthSection} section scores above stage benchmarks.`
+                          : `This is your strongest area relative to stage benchmarks.`}
                         companyContext={strengthInsight?.topInsight || strengthInsight?.whatThisTellsVC}
                         evidence={strengthInsight?.evidencePoints?.slice(0, 2)}
                         showUnderline={false}
@@ -414,8 +437,8 @@ export const DashboardScorecard = ({
                         <p className="text-[10px] text-foreground font-medium line-clamp-2">
                           {getStrengthHeadline(
                             strengthSection,
-                            scorecard.sections.find(s => s.section === strengthSection)?.score || 0,
-                            scorecard.sections.find(s => s.section === strengthSection)?.benchmark || 60
+                            score,
+                            benchmark
                           )}
                         </p>
                       </InsightWithTooltip>
@@ -425,7 +448,7 @@ export const DashboardScorecard = ({
                       explanation="No sections scoring significantly above benchmark yet."
                       showUnderline={false}
                     >
-                      <p className="text-[10px] text-muted-foreground">Build evidence</p>
+                      <p className="text-[10px] text-muted-foreground">Building…</p>
                     </InsightWithTooltip>
                   )}
                 </div>

@@ -50,8 +50,9 @@ const SECTION_WEIGHTS: Record<string, number> = {
 };
 
 // Default fallback verdicts when no dynamic data is available
-const DEFAULT_VERDICT = "VC analysis pending — regenerate memo for detailed insights";
-const DEFAULT_STAGE_CONTEXT = "Stage-specific context will be generated with the memo";
+// Exported so UI can hide placeholder text instead of showing it on paid memos.
+export const DEFAULT_VERDICT = "VC analysis pending — regenerate memo for detailed insights";
+export const DEFAULT_STAGE_CONTEXT = "Stage-specific context will be generated with the memo";
 
 // Cross-section strategic concerns based on score combinations
 export function generateStrategicConcerns(sections: SectionVerdict[]): string[] {

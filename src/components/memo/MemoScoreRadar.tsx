@@ -22,7 +22,8 @@ import {
   buildHolisticScorecard, 
   type HolisticScorecard,
   type SectionVerdict,
-  type DynamicHolisticVerdict
+  type DynamicHolisticVerdict,
+  DEFAULT_VERDICT
 } from "@/lib/holisticVerdictGenerator";
 import { InsightWithTooltip } from "./InsightWithTooltip";
 import { 
@@ -106,6 +107,7 @@ const SectionScoreCard = ({ section, onClick }: { section: SectionVerdict; onCli
   const config = STATUS_CONFIG[section.status];
   const isClickable = !!onClick;
   const Icon = config.icon;
+  const showHolisticVerdict = !!section.holisticVerdict && section.holisticVerdict !== DEFAULT_VERDICT;
   
   return (
     <button
@@ -158,10 +160,12 @@ const SectionScoreCard = ({ section, onClick }: { section: SectionVerdict; onCli
           </span>
         </div>
         
-        {/* Holistic verdict */}
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          "{section.holisticVerdict}"
-        </p>
+        {/* Holistic verdict (hide placeholder fallbacks on paid memos) */}
+        {showHolisticVerdict && (
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            "{section.holisticVerdict}"
+          </p>
+        )}
         {/* Click hint for clickable cards */}
         {isClickable && (
           <div className="absolute bottom-2 right-2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
@@ -207,6 +211,25 @@ export const MemoScoreRadar = ({
     buildHolisticScorecard(sectionTools, companyName, stage, category, holisticVerdicts),
     [sectionTools, companyName, stage, category, holisticVerdicts]
   );
+
+  const bestStrengthCandidate = useMemo(() => {
+    if (scorecard.topStrengths.length > 0) {
+      return { sectionName: scorecard.topStrengths[0], isTrueStrength: true };
+    }
+
+    // If nothing is above benchmark, still surface a meaningful “best performing area”.
+    const best = scorecard.sections
+      .map((s) => ({
+        sectionName: s.section,
+        delta: s.score - s.benchmark,
+        score: s.score,
+        benchmark: s.benchmark,
+      }))
+      .sort((a, b) => b.delta - a.delta)[0];
+
+    if (!best) return null;
+    return { sectionName: best.sectionName, isTrueStrength: best.delta >= 0 };
+  }, [scorecard.sections, scorecard.topStrengths]);
   
   // Prepare radar chart data
   const radarData = useMemo(() => 
@@ -414,14 +437,22 @@ export const MemoScoreRadar = ({
                 <div className="p-4 rounded-xl bg-success/5 border border-success/20">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="w-4 h-4 text-success" />
-                    <span className="text-xs font-semibold text-success uppercase">Top Strength</span>
+                      <span className="text-xs font-semibold text-success uppercase">
+                        {bestStrengthCandidate?.isTrueStrength ? "Top Strength" : "Best Performing Area"}
+                      </span>
                   </div>
-                  {scorecard.topStrengths.length > 0 ? (() => {
-                    const strengthSection = scorecard.topStrengths[0];
+                  {bestStrengthCandidate ? (() => {
+                    const strengthSection = bestStrengthCandidate.sectionName;
                     const strengthInsight = companyInsightContext?.sectionInsights[strengthSection];
+                    const sectionRow = scorecard.sections.find(s => s.section === strengthSection);
+                    const score = sectionRow?.score ?? 0;
+                    const benchmark = sectionRow?.benchmark ?? 60;
+
                     return (
                       <InsightWithTooltip
-                        explanation={`Your ${strengthSection} section scores significantly above stage benchmarks, making it a standout area that will impress investors.`}
+                        explanation={bestStrengthCandidate.isTrueStrength
+                          ? `Your ${strengthSection} section scores above stage benchmarks, making it a standout area that will impress investors.`
+                          : `This is your strongest area relative to stage benchmarks — even if you’re still below the bar overall.`}
                         companyContext={strengthInsight?.topInsight || strengthInsight?.whatThisTellsVC}
                         evidence={strengthInsight?.evidencePoints?.slice(0, 2)}
                         showUnderline={false}
@@ -429,8 +460,8 @@ export const MemoScoreRadar = ({
                         <p className="text-sm text-foreground font-medium">
                           {getStrengthHeadline(
                             strengthSection, 
-                            scorecard.sections.find(s => s.section === strengthSection)?.score || 0,
-                            scorecard.sections.find(s => s.section === strengthSection)?.benchmark || 60
+                            score,
+                            benchmark
                           )}
                         </p>
                       </InsightWithTooltip>

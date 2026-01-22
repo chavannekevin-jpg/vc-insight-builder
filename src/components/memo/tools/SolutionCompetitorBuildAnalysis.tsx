@@ -11,12 +11,12 @@ interface SolutionCompetitorBuildAnalysisProps {
 }
 
 export const SolutionCompetitorBuildAnalysis = ({ data, onUpdate }: SolutionCompetitorBuildAnalysisProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+
   // Early return if data is invalid
   if (!isValidEditableTool<CompetitorBuildAnalysis>(data)) {
     return null;
   }
-
-  const [isEditing, setIsEditing] = useState(false);
   const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
 
   const couldBeBuilt = currentData?.couldBeBuilt ?? true;
@@ -60,7 +60,7 @@ export const SolutionCompetitorBuildAnalysis = ({ data, onUpdate }: SolutionComp
             "text-lg font-bold",
             couldBeBuilt ? "text-red-600" : "text-emerald-600"
           )}>
-            {couldBeBuilt ? "YES - High Risk" : "NO - Defensible"}
+            {couldBeBuilt ? "Replicable by well-funded incumbents" : "Hard to replicate quickly"}
           </span>
         </div>
       </div>

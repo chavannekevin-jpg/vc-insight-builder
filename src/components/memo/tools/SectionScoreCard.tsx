@@ -123,7 +123,7 @@ export const SectionScoreCard = ({ score, sectionName, companyInsightContext }: 
         <div className="p-3 rounded-lg bg-muted/50">
           <p className="text-xs font-medium text-muted-foreground mb-1">What This Tells a VC</p>
           <InsightWithTooltip
-            explanation={generateInsightExplanation(whatThisTellsVCText)}
+            explanation={generateInsightExplanation({ sectionName, insightText: whatThisTellsVCText })}
             companyContext={vcContext?.companyContext || sectionInsight?.reasoning}
             evidence={vcContext?.evidence || sectionInsight?.assumptions?.slice(0, 2)}
             className="text-sm text-foreground"
