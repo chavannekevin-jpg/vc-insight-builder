@@ -298,7 +298,41 @@ export function getWeaknessHeadline(sectionName: string, score: number, benchmar
  * Generate contextual explanation for any VC insight text
  * Uses keyword matching to provide relevant context
  */
-export function generateInsightExplanation(insightText: string): string {
+type InsightExplanationInput =
+  | string
+  | {
+      sectionName?: string;
+      insightText: string;
+    };
+
+export function generateInsightExplanation(input: InsightExplanationInput): string {
+  const sectionName = typeof input === "string" ? undefined : input.sectionName;
+  const insightText = typeof input === "string" ? input : input.insightText;
+
+  // Prefer section-aware explanations to avoid mismatched tooltips (e.g. Solution showing unit economics).
+  if (sectionName) {
+    switch (sectionName) {
+      case "Solution":
+        return "For Solution, VCs look for clear differentiation and a wedge that’s hard to copy — not just a feature list. They want proof the product creates measurable value and is defensible enough to build a venture-scale outcome.";
+      case "Team":
+        return "For Team, VCs evaluate whether the founders have the domain insight and execution ability to ship and sell the product. Gaps in technical or commercial leadership increase execution risk and slow fundraising.";
+      case "Business Model":
+        return "For Business Model, VCs care whether the economics can work at scale: pricing power, CAC vs LTV, margins, payback period, and whether growth improves (not worsens) profitability.";
+      case "Traction":
+        return "For Traction, VCs want evidence of pull from the market: repeatable acquisition, retention, and early signs of product-market fit. Weak or inconsistent traction increases perceived risk dramatically.";
+      case "Market":
+        return "For Market, VCs want a believable wedge into a large enough opportunity. The story must connect TAM/SAM/SOM to a realistic go-to-market path and credible assumptions.";
+      case "Competition":
+        return "For Competition, VCs want to know why you win despite incumbents and fast followers — through moats like switching costs, distribution, data advantages, or regulatory barriers.";
+      case "Problem":
+        return "For Problem, VCs look for urgency and clear customer pain with evidence. A well-defined, expensive problem is the foundation for strong positioning and willingness to pay.";
+      case "Vision":
+        return "For Vision, VCs assess whether the long-term ambition is venture-scale and whether the execution path (milestones, strategy, timing) is credible given the team and traction.";
+      default:
+        break;
+    }
+  }
+
   const lower = insightText.toLowerCase();
   
   // Match common VC insight patterns
