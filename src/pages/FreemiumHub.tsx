@@ -19,13 +19,14 @@ import { FounderSidebar } from "@/components/founder/FounderSidebar";
 import { StrategicToolsSpotlight } from "@/components/founder/StrategicToolsSpotlight";
 import { InviteFounderModal } from "@/components/founder/InviteFounderModal";
 import ScoreboardModal from "@/components/founder/ScoreboardModal";
+import { MemoLoadingScreen } from "@/components/MemoLoadingScreen";
 import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench, Trash2, Settings, Building2, Menu } from "lucide-react";
 import { FundDiscoveryPremiumModal } from "@/components/FundDiscoveryPremiumModal";
 import { useMatchingFundsCount } from "@/hooks/useMatchingFundsCount";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/hooks/useCompany";
-import { usePrefetchMemoContent, useMemoContent } from "@/hooks/useMemoContent";
+import { usePrefetchMemoContent, useMemoContent, useInvalidateMemoContent } from "@/hooks/useMemoContent";
 import { useVcQuickTake, useSectionTools, useDashboardResponses } from "@/hooks/useDashboardData";
 
 // Insider articles for daily rotation
@@ -97,9 +98,11 @@ export default function FreemiumHub() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const adminView = searchParams.get("admin") === "true";
   const freshCompany = (location.state as any)?.freshCompany === true;
+  const shouldRegenerate = searchParams.get("regenerate") === "true";
+  const companyIdFromParams = searchParams.get("companyId");
   
   // Use cached hooks instead of manual data loading
   const { user, isAuthenticated, isAdmin, isLoading: authLoading } = useAuth();
@@ -126,6 +129,10 @@ export default function FreemiumHub() {
   const [fundDiscoveryModalOpen, setFundDiscoveryModalOpen] = useState(false);
   const [inviteFounderOpen, setInviteFounderOpen] = useState(false);
   const [scoreboardOpen, setScoreboardOpen] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
+  // Cache invalidation for after regeneration
+  const invalidateMemoCache = useInvalidateMemoContent();
 
   // Map companyData to Company type for compatibility
   const company: Company | null = companyData ? {
@@ -240,6 +247,126 @@ export default function FreemiumHub() {
       generateTagline(company);
     }
   }, [company?.name, tagline, generatingTagline, taglineAttempted]);
+
+  // Handle regeneration flow - trigger when coming from MemoRegenerate
+  useEffect(() => {
+    if (shouldRegenerate && company?.id && hasPaidData && !isRegenerating) {
+      console.log("Hub: Auto-regenerating memo due to regenerate URL param...");
+      // Clear the regenerate param from URL to prevent re-triggering
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("regenerate");
+      setSearchParams(newParams, { replace: true });
+      // Start regeneration
+      handleRegeneration(company.id);
+    }
+  }, [shouldRegenerate, company?.id, hasPaidData, isRegenerating]);
+
+  const handleRegeneration = async (companyIdToRegenerate: string) => {
+    setIsRegenerating(true);
+    
+    try {
+      console.log("Hub: Starting memo regeneration...");
+      
+      const { data: startData, error: startError } = await supabase.functions.invoke('generate-full-memo', {
+        body: { companyId: companyIdToRegenerate, force: true }
+      });
+
+      if (startError) {
+        console.error("Hub: Regeneration error:", startError);
+        throw new Error(startError.message || "Failed to start regeneration");
+      }
+
+      if (!startData?.jobId) {
+        throw new Error("No job ID returned from regeneration");
+      }
+
+      const jobId = startData.jobId;
+      console.log(`Hub: Regeneration job started: ${jobId}`);
+
+      // Poll for completion
+      await pollRegenerationJob(jobId, companyIdToRegenerate);
+      
+    } catch (error: any) {
+      console.error("Hub: Regeneration error:", error);
+      toast({
+        title: "Regeneration Error",
+        description: error?.message || "Failed to regenerate memo.",
+        variant: "destructive"
+      });
+      setIsRegenerating(false);
+    }
+  };
+
+  const pollRegenerationJob = async (jobId: string, companyIdToRegenerate: string) => {
+    const maxAttempts = 120; // 10 minutes max
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      try {
+        const { data: job, error } = await supabase
+          .from("memo_generation_jobs")
+          .select("status, error_message")
+          .eq("id", jobId)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Hub: Error polling job:", error);
+          attempts++;
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          continue;
+        }
+
+        if (job?.status === "completed") {
+          console.log("Hub: Regeneration completed!");
+          handleRegenerationComplete(companyIdToRegenerate);
+          return;
+        }
+
+        if (job?.status === "failed") {
+          throw new Error(job.error_message || "Regeneration failed");
+        }
+
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      } catch (error) {
+        console.error("Hub: Polling error:", error);
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+    }
+
+    // Timeout - complete anyway and let user see results
+    console.log("Hub: Polling timeout, completing...");
+    handleRegenerationComplete(companyIdToRegenerate);
+  };
+
+  const handleRegenerationComplete = async (companyIdToRegenerate: string) => {
+    console.log("Hub: Regeneration complete, refreshing data...");
+    
+    // Invalidate all caches to get fresh data
+    await invalidateMemoCache(companyIdToRegenerate);
+    queryClient.invalidateQueries({ queryKey: ["company"] });
+    queryClient.invalidateQueries({ queryKey: ["memoContent", companyIdToRegenerate] });
+    queryClient.invalidateQueries({ queryKey: ["vcQuickTake", companyIdToRegenerate] });
+    queryClient.invalidateQueries({ queryKey: ["sectionTools", companyIdToRegenerate] });
+    
+    toast({
+      title: "Success",
+      description: "Your analysis has been regenerated with the latest data."
+    });
+    
+    setIsRegenerating(false);
+  };
+
+  const handleMemoReady = () => {
+    handleRegenerationComplete(company?.id || "");
+  };
+
+  const handleCheckStatus = () => {
+    // Manual check - refresh the page data
+    queryClient.invalidateQueries({ queryKey: ["company"] });
+    setIsRegenerating(false);
+  };
   const autoGenerateProfile = async (companyData: Company) => {
     try {
       console.log("Auto-generating profile from description...");
@@ -507,6 +634,19 @@ export default function FreemiumHub() {
   const deckParsed = !!company?.deck_parsed_at;
 
   const loading = authLoading || companyLoading;
+
+  // Show regeneration loading screen
+  if (isRegenerating) {
+    return (
+      <MemoLoadingScreen 
+        analyzing={false}
+        progressMessage="Regenerating your analysis with updated data..."
+        companyId={company?.id || undefined}
+        onMemoReady={handleMemoReady}
+        onCheckStatus={handleCheckStatus}
+      />
+    );
+  }
 
   if (loading) {
     return (

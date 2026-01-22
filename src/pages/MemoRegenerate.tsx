@@ -351,7 +351,7 @@ export default function MemoRegenerate() {
         description: `${changedSections.length} section(s) updated${improvementCount > 0 ? `, ${improvementCount} improvement answer(s) added` : ''}. Regenerating memo...`
       });
 
-      navigate(`/analysis?companyId=${companyId}&regenerate=true`);
+      navigate(`/hub?companyId=${companyId}&regenerate=true`);
     } catch (error) {
       console.error("Error saving:", error);
       toast({ title: "Error", description: "Failed to save changes", variant: "destructive" });
