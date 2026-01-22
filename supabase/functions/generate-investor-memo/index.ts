@@ -146,7 +146,7 @@ serve(async (req) => {
           .join("\n")}`
       : "";
 
-    // Build the comprehensive memo generation prompt with enhanced structured analysis
+    // Build the memo generation prompt. We will use tool-calling to guarantee valid JSON output.
     const systemPrompt = `You are a senior VC investment analyst at a top-tier venture fund. Your task is to analyze this pitch deck and write a FAST investor snapshot (not a full diligence memo).
 
 CRITICAL INSTRUCTIONS:
@@ -158,7 +158,9 @@ CRITICAL INSTRUCTIONS:
 - If information is missing, note it as a gap
 - Provide numerical scores (0-100) for key areas based on VC evaluation criteria
 
-Return a JSON object with this EXACT structure:
+You MUST return the result ONLY via the provided function tool call. Do NOT wrap anything in markdown. Do NOT output raw JSON in the message content.
+
+The tool schema matches this structure:
 
 {
   "company_name": "Company Name",
@@ -313,8 +315,216 @@ IMPORTANT:
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
-    try {
-      const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+     // Use tool calling to avoid fragile JSON parsing.
+     const snapshotTool = {
+       type: "function",
+       function: {
+         name: "create_investor_snapshot",
+         description: "Return the investor deck snapshot in a strict JSON structure.",
+         parameters: {
+           type: "object",
+           additionalProperties: false,
+           required: [
+             "company_name",
+             "tagline",
+             "stage",
+             "sector",
+             "quick_analysis",
+             "concerns",
+             "strengths",
+             "matching_signals",
+             "sections",
+             "quick_facts",
+           ],
+           properties: {
+             company_name: { type: "string" },
+             tagline: { type: "string" },
+             stage: { type: "string" },
+             sector: { type: "string" },
+             quick_analysis: {
+               type: "object",
+               additionalProperties: false,
+               required: ["overall_score", "readiness_level", "one_liner_verdict", "section_scores"],
+               properties: {
+                 overall_score: { type: "number" },
+                 readiness_level: { type: "string", enum: ["LOW", "MEDIUM", "HIGH"] },
+                 one_liner_verdict: { type: "string" },
+                 section_scores: {
+                   type: "object",
+                   additionalProperties: false,
+                   required: ["team", "market", "traction", "product", "business_model", "competition"],
+                   properties: {
+                     team: { type: "number" },
+                     market: { type: "number" },
+                     traction: { type: "number" },
+                     product: { type: "number" },
+                     business_model: { type: "number" },
+                     competition: { type: "number" },
+                   },
+                 },
+               },
+             },
+             concerns: {
+               type: "array",
+               items: {
+                 type: "object",
+                 additionalProperties: false,
+                 required: ["category", "text", "severity"],
+                 properties: {
+                   category: { type: "string" },
+                   text: { type: "string" },
+                   severity: { type: "string", enum: ["critical", "warning", "minor"] },
+                 },
+               },
+             },
+             strengths: {
+               type: "array",
+               items: {
+                 type: "object",
+                 additionalProperties: false,
+                 required: ["category", "text"],
+                 properties: {
+                   category: { type: "string" },
+                   text: { type: "string" },
+                 },
+               },
+             },
+             matching_signals: {
+               type: "object",
+               additionalProperties: false,
+               required: [
+                 "stage",
+                 "sector",
+                 "secondary_sectors",
+                 "keywords",
+                 "ask_amount",
+                 "has_revenue",
+                 "has_customers",
+                 "geography",
+               ],
+               properties: {
+                 stage: { type: "string" },
+                 sector: { type: "string" },
+                 secondary_sectors: { type: "array", items: { type: "string" } },
+                 keywords: { type: "array", items: { type: "string" } },
+                 ask_amount: { type: "number" },
+                 has_revenue: { type: "boolean" },
+                 has_customers: { type: "boolean" },
+                 geography: { type: "string" },
+               },
+             },
+             sections: {
+               type: "object",
+               additionalProperties: false,
+               required: [
+                 "executive_summary",
+                 "problem",
+                 "solution",
+                 "market",
+                 "business_model",
+                 "traction",
+                 "competition",
+                 "team",
+                 "financials",
+                 "risks",
+                 "recommendation",
+               ],
+               properties: {
+                 executive_summary: {
+                   type: "object",
+                   additionalProperties: false,
+                   required: ["title", "content"],
+                   properties: { title: { type: "string" }, content: { type: "string" } },
+                 },
+                 problem: {
+                   type: "object",
+                   additionalProperties: false,
+                   required: ["title", "content"],
+                   properties: { title: { type: "string" }, content: { type: "string" } },
+                 },
+                 solution: {
+                   type: "object",
+                   additionalProperties: false,
+                   required: ["title", "content"],
+                   properties: { title: { type: "string" }, content: { type: "string" } },
+                 },
+                 market: {
+                   type: "object",
+                   additionalProperties: false,
+                   required: ["title", "content"],
+                   properties: { title: { type: "string" }, content: { type: "string" } },
+                 },
+                 business_model: {
+                   type: "object",
+                   additionalProperties: false,
+                   required: ["title", "content"],
+                   properties: { title: { type: "string" }, content: { type: "string" } },
+                 },
+                 traction: {
+                   type: "object",
+                   additionalProperties: false,
+                   required: ["title", "content"],
+                   properties: { title: { type: "string" }, content: { type: "string" } },
+                 },
+                 competition: {
+                   type: "object",
+                   additionalProperties: false,
+                   required: ["title", "content"],
+                   properties: { title: { type: "string" }, content: { type: "string" } },
+                 },
+                 team: {
+                   type: "object",
+                   additionalProperties: false,
+                   required: ["title", "content"],
+                   properties: { title: { type: "string" }, content: { type: "string" } },
+                 },
+                 financials: {
+                   type: "object",
+                   additionalProperties: false,
+                   required: ["title", "content"],
+                   properties: { title: { type: "string" }, content: { type: "string" } },
+                 },
+                 risks: {
+                   type: "object",
+                   additionalProperties: false,
+                   required: ["title", "content"],
+                   properties: { title: { type: "string" }, content: { type: "string" } },
+                 },
+                 recommendation: {
+                   type: "object",
+                   additionalProperties: false,
+                   required: ["title", "content"],
+                   properties: { title: { type: "string" }, content: { type: "string" } },
+                 },
+               },
+             },
+             quick_facts: {
+               type: "object",
+               additionalProperties: false,
+               required: [
+                 "headquarters",
+                 "founded",
+                 "employees",
+                 "funding_raised",
+                 "current_raise",
+                 "key_metrics",
+               ],
+               properties: {
+                 headquarters: { type: "string" },
+                 founded: { type: "string" },
+                 employees: { type: "string" },
+                 funding_raised: { type: "string" },
+                 current_raise: { type: "string" },
+                 key_metrics: { type: "array", items: { type: "string" } },
+               },
+             },
+           },
+         },
+       },
+     };
+
+     try {
+       const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${LOVABLE_API_KEY}`,
@@ -326,6 +536,8 @@ IMPORTANT:
             { role: 'system', content: systemPrompt },
             { role: 'user', content: contentParts }
           ],
+           tools: [snapshotTool],
+           tool_choice: { type: "function", function: { name: "create_investor_snapshot" } },
           temperature: 0.3,
            max_tokens: 3000,
         }),
@@ -354,60 +566,42 @@ IMPORTANT:
         throw new Error(`AI API error: ${aiResponse.status}`);
       }
 
-      const aiData = await aiResponse.json();
+       const aiData = await aiResponse.json();
       console.log('AI response received in', Date.now() - startTime, 'ms');
 
-      const responseContent = aiData.choices?.[0]?.message?.content;
-      if (!responseContent) {
-        throw new Error('No content in AI response');
-      }
+       // Prefer tool-call output (guarantees JSON); fall back to prior parsing for safety.
+       let memo: any;
+       const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+       const toolArgs = toolCall?.function?.arguments;
+       if (toolCall?.function?.name === "create_investor_snapshot" && typeof toolArgs === "string") {
+         try {
+           memo = JSON.parse(toolArgs);
+         } catch (e) {
+           console.error("Failed to parse tool arguments JSON:", e);
+           throw new Error("Failed to parse memo structure");
+         }
+       } else {
+         const responseContent = aiData.choices?.[0]?.message?.content;
+         if (!responseContent) {
+           throw new Error('No content in AI response');
+         }
 
-      // Parse the JSON response
-      let memo;
-      try {
-        // Extract JSON from the response (handle markdown code blocks)
-        let jsonStr = responseContent;
-        
-        // Try to find JSON in code blocks first (greedy match for the content)
-        const jsonMatch = responseContent.match(/```(?:json)?\s*([\s\S]*?)```/);
-        if (jsonMatch) {
-          jsonStr = jsonMatch[1].trim();
-        } else {
-          // Try to find raw JSON object
-          const objectMatch = responseContent.match(/\{[\s\S]*\}/);
-          if (objectMatch) {
-            jsonStr = objectMatch[0];
-          }
-        }
-        
-        // Clean up common issues
-        jsonStr = jsonStr.trim();
-        
-        // Sometimes the AI adds trailing content after the JSON
-        // Find the last closing brace that balances the first opening brace
-        let braceCount = 0;
-        let jsonEndIndex = -1;
-        for (let i = 0; i < jsonStr.length; i++) {
-          if (jsonStr[i] === '{') braceCount++;
-          if (jsonStr[i] === '}') {
-            braceCount--;
-            if (braceCount === 0) {
-              jsonEndIndex = i + 1;
-              break;
-            }
-          }
-        }
-        
-        if (jsonEndIndex > 0) {
-          jsonStr = jsonStr.substring(0, jsonEndIndex);
-        }
-        
-        memo = JSON.parse(jsonStr);
-      } catch (parseError) {
-        console.error('Failed to parse AI response as JSON:', parseError);
-        console.log('Raw response:', responseContent.substring(0, 1000));
-        throw new Error('Failed to parse memo structure');
-      }
+         try {
+           let jsonStr = responseContent;
+           const jsonMatch = responseContent.match(/```(?:json)?\s*([\s\S]*?)```/);
+           if (jsonMatch) jsonStr = jsonMatch[1].trim();
+           else {
+             const objectMatch = responseContent.match(/\{[\s\S]*\}/);
+             if (objectMatch) jsonStr = objectMatch[0];
+           }
+           jsonStr = jsonStr.trim();
+           memo = JSON.parse(jsonStr);
+         } catch (parseError) {
+           console.error('Failed to parse AI response as JSON:', parseError);
+           console.log('Raw response:', String(responseContent).substring(0, 1000));
+           throw new Error('Failed to parse memo structure');
+         }
+       }
 
       console.log('Memo generated successfully for:', memo.company_name);
 
