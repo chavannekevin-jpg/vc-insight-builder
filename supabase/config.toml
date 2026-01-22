@@ -131,3 +131,6 @@ verify_jwt = false
 
 [functions.create-booking]
 verify_jwt = false
+
+[functions.market-lens-generate]
+verify_jwt = false
