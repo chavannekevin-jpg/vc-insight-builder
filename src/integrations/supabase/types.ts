@@ -1151,6 +1151,184 @@ export type Database = {
           },
         ]
       }
+      kb_benchmarks: {
+        Row: {
+          business_model: string | null
+          created_at: string
+          currency: string
+          geography_scope: string
+          id: string
+          median_value: number | null
+          metric_key: string
+          metric_label: string | null
+          notes: string | null
+          p25_value: number | null
+          p75_value: number | null
+          region: string | null
+          sample_size: number | null
+          sector: string | null
+          source_id: string
+          stage: string
+          timeframe_label: string | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          business_model?: string | null
+          created_at?: string
+          currency?: string
+          geography_scope?: string
+          id?: string
+          median_value?: number | null
+          metric_key: string
+          metric_label?: string | null
+          notes?: string | null
+          p25_value?: number | null
+          p75_value?: number | null
+          region?: string | null
+          sample_size?: number | null
+          sector?: string | null
+          source_id: string
+          stage: string
+          timeframe_label?: string | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          business_model?: string | null
+          created_at?: string
+          currency?: string
+          geography_scope?: string
+          id?: string
+          median_value?: number | null
+          metric_key?: string
+          metric_label?: string | null
+          notes?: string | null
+          p25_value?: number | null
+          p75_value?: number | null
+          region?: string | null
+          sample_size?: number | null
+          sector?: string | null
+          source_id?: string
+          stage?: string
+          timeframe_label?: string | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kb_benchmarks_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "kb_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kb_market_notes: {
+        Row: {
+          created_at: string
+          geography_scope: string
+          headline: string | null
+          id: string
+          key_points: Json | null
+          region: string | null
+          sector: string | null
+          source_id: string
+          summary: string
+          timeframe_label: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          geography_scope?: string
+          headline?: string | null
+          id?: string
+          key_points?: Json | null
+          region?: string | null
+          sector?: string | null
+          source_id: string
+          summary: string
+          timeframe_label?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          geography_scope?: string
+          headline?: string | null
+          id?: string
+          key_points?: Json | null
+          region?: string | null
+          sector?: string | null
+          source_id?: string
+          summary?: string
+          timeframe_label?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kb_market_notes_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "kb_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kb_sources: {
+        Row: {
+          created_at: string
+          data_period_end: string | null
+          data_period_start: string | null
+          extracted_json: Json | null
+          extraction_confidence: string | null
+          geography_scope: string
+          id: string
+          publication_date: string | null
+          publisher: string | null
+          source_type: string
+          source_url: string | null
+          status: string
+          storage_path: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_period_end?: string | null
+          data_period_start?: string | null
+          extracted_json?: Json | null
+          extraction_confidence?: string | null
+          geography_scope?: string
+          id?: string
+          publication_date?: string | null
+          publisher?: string | null
+          source_type: string
+          source_url?: string | null
+          status?: string
+          storage_path?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_period_end?: string | null
+          data_period_start?: string | null
+          extracted_json?: Json | null
+          extraction_confidence?: string | null
+          geography_scope?: string
+          id?: string
+          publication_date?: string | null
+          publisher?: string | null
+          source_type?: string
+          source_url?: string | null
+          status?: string
+          storage_path?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       linked_calendars: {
         Row: {
           access_token: string
