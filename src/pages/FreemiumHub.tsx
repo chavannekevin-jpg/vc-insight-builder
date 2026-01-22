@@ -785,9 +785,11 @@ export default function FreemiumHub() {
               )}
 
 
-              {/* VC Quick Take (IC Room) - below the spotlight */}
+              {/* VC Quick Take (IC Room) - seamless continuation */}
               {vcQuickTake && (
-                <MemoVCQuickTake quickTake={vcQuickTake} showTeaser={false} />
+                <div className="-mt-4">
+                  <MemoVCQuickTake quickTake={vcQuickTake} showTeaser={false} />
+                </div>
               )}
 
               {/* Insider Take of the Day */}
