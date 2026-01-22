@@ -1,12 +1,25 @@
 import { useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Eye } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
 import { useKnowledgeBaseSources, type KnowledgeBaseSourceWithCounts } from "@/hooks/useKnowledgeBaseSources";
 import { KnowledgeBaseSourceDetailsDialog } from "@/components/admin/kb/KnowledgeBaseSourceDetailsDialog";
+import { useToast } from "@/hooks/use-toast";
 
 function statusBadgeVariant(status: KnowledgeBaseSourceWithCounts["status"]) {
   if (status === "active") return "default" as const;
@@ -30,14 +43,61 @@ function sourceLabel(source: KnowledgeBaseSourceWithCounts) {
 
 export function KnowledgeBaseSourceList() {
   const { data, isLoading, error, refetch, isFetching } = useKnowledgeBaseSources({ limit: 50 });
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [view, setView] = useState<"active" | "all">("active");
   const [openSourceId, setOpenSourceId] = useState<string | null>(null);
+  const [deleteSourceId, setDeleteSourceId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const rows = useMemo(() => {
     const items = data ?? [];
     if (view === "active") return items.filter((s) => s.status === "active");
     return items;
   }, [data, view]);
+
+  const pendingDelete = useMemo(() => {
+    if (!deleteSourceId) return null;
+    return (data ?? []).find((s) => s.id === deleteSourceId) ?? null;
+  }, [data, deleteSourceId]);
+
+  const handleDelete = async () => {
+    if (!pendingDelete) return;
+
+    setIsDeleting(true);
+    try {
+      // Best-effort: remove stored PDF first (if present) to avoid orphaned storage.
+      if (pendingDelete.storage_path) {
+        const { error: storageErr } = await supabase.storage
+          .from("kb-reports")
+          .remove([pendingDelete.storage_path]);
+        if (storageErr) throw storageErr;
+      }
+
+      // Benchmarks/market notes are ON DELETE CASCADE.
+      const { error: deleteErr } = await supabase.from("kb_sources").delete().eq("id", pendingDelete.id);
+      if (deleteErr) throw deleteErr;
+
+      toast({
+        title: "Deleted",
+        description: "The source (and extracted items) were removed.",
+      });
+
+      // Close details dialog if we just deleted the open source.
+      if (openSourceId === pendingDelete.id) setOpenSourceId(null);
+
+      await queryClient.invalidateQueries({ queryKey: ["kb-sources"] });
+    } catch (e) {
+      toast({
+        title: "Delete failed",
+        description: e instanceof Error ? e.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteSourceId(null);
+    }
+  };
 
   return (
     <ModernCard>
@@ -108,6 +168,15 @@ export function KnowledgeBaseSourceList() {
                     >
                       <Eye />
                     </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="destructive"
+                      onClick={() => setDeleteSourceId(s.id)}
+                      title="Delete source"
+                    >
+                      <Trash2 />
+                    </Button>
                     <Badge variant={statusBadgeVariant(s.status)}>{s.status.toUpperCase()}</Badge>
                     <Badge
                       variant={confidenceBadgeVariant(s.extraction_confidence)}
@@ -135,6 +204,35 @@ export function KnowledgeBaseSourceList() {
         open={Boolean(openSourceId)}
         onOpenChange={(open) => setOpenSourceId(open ? openSourceId : null)}
       />
+
+      <AlertDialog
+        open={Boolean(deleteSourceId)}
+        onOpenChange={(open) => {
+          if (!open) setDeleteSourceId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this source?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the source and any extracted benchmarks/market notes.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={cn("bg-destructive text-destructive-foreground hover:bg-destructive/90")}
+              onClick={(e) => {
+                e.preventDefault();
+                void handleDelete();
+              }}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ModernCard>
   );
 }
