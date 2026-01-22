@@ -36,7 +36,16 @@ type KBMetricKey =
   | "burn_multiple"
   | "gross_margin"
   | "net_revenue_retention"
-  | "gross_churn";
+  | "gross_churn"
+  | "funding_volume"
+  | "deal_count"
+  | "mega_round_count"
+  | "down_round_rate"
+  | "exit_value"
+  | "exit_count"
+  | "ipo_count"
+  | "time_to_next_round_months"
+  | "vc_fundraising_volume";
 
 type KBBenchmarkRow = {
   geography_scope?: string;
@@ -207,21 +216,33 @@ serve(async (req) => {
       "gross_margin",
       "net_revenue_retention",
       "gross_churn",
+      "funding_volume",
+      "deal_count",
+      "mega_round_count",
+      "down_round_rate",
+      "exit_value",
+      "exit_count",
+      "ipo_count",
+      "time_to_next_round_months",
+      "vc_fundraising_volume",
     ];
 
-    const systemPrompt = `You extract structured European venture benchmark data from PDF reports.
+    const systemPrompt = `You extract structured venture benchmark data AND market insights from PDF reports.
 
 Return ONLY via the provided tool call.
 
 Rules:
-- If the report doesn't contain a metric, omit it.
+    - Be exhaustive: extract as MANY relevant benchmarks/insights as the report supports (don't be minimal).
+    - If the report doesn't contain a metric, omit it.
 - Prefer numeric medians and (p25,p75) when available.
 - Use ISO dates (YYYY-MM-DD) when known.
-- Stages must be one of: Pre-Seed, Seed, Series A, Series B, Later.
-- geography_scope should default to "Europe" unless the report is clearly narrower.
+    - Stages must be one of: Pre-Seed, Seed, Series A, Series B, Later, All Stages.
+    - geography_scope should default to "Europe" unless the report is clearly global or clearly narrower.
 - metric_key MUST be one of: ${metricKeyOptions.join(", ")}
 - Units examples: EUR, %, months, x, (or null).
-- Keep market notes factual and grounded in report text.`;
+    - Market notes MUST be grounded in report text and written as clear, VC-usable bullets.
+    - Aim for 25-60 market_notes on long reports. Prefer many short notes over a few long ones.
+    - Use key_points to capture the most important supporting bullets for each note when present.`;
 
     const pdfBase64 = base64Encode(pdfBytes);
 
@@ -253,7 +274,7 @@ Rules:
           },
         ],
         temperature: 0.2,
-        max_tokens: 6000,
+         max_tokens: 9000,
         tools: [
           {
             type: "function",

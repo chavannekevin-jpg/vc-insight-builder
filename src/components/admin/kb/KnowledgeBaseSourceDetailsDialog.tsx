@@ -1,7 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import { useKnowledgeBaseSourceDetails } from "@/hooks/useKnowledgeBaseSourceDetails";
+import { useToast } from "@/hooks/use-toast";
 
 function safeNumber(n: unknown) {
   if (typeof n === "number") return n;
@@ -57,6 +61,9 @@ export function KnowledgeBaseSourceDetailsDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isReExtracting, setIsReExtracting] = useState(false);
   const { data, isLoading, error } = useKnowledgeBaseSourceDetails(sourceId, { enabled: open });
 
   const bulletPoints = useMemo(() => {
@@ -76,12 +83,21 @@ export function KnowledgeBaseSourceDetailsDialog({
     bullets.push(`Extracted benchmarks: ${data.benchmarks.length}`);
     bullets.push(`Extracted market notes: ${data.marketNotes.length}`);
 
-    const topBenchmarks = data.benchmarks.slice(0, 12).map(formatMetricRow);
-    const topNotes = data.marketNotes.slice(0, 10).map((n) => {
+    const topBenchmarks = data.benchmarks.slice(0, 30).map(formatMetricRow);
+    const topNotes = data.marketNotes.slice(0, 30).flatMap((n) => {
       const head = n.headline?.trim() ? n.headline.trim() : n.summary.slice(0, 80) + (n.summary.length > 80 ? "…" : "");
       const sector = n.sector ? ` · ${n.sector}` : "";
       const tf = n.timeframe_label ? ` · ${n.timeframe_label}` : "";
-      return `${head}${sector}${tf}`;
+      const primary = `${head}${sector}${tf}`;
+      const kps = Array.isArray(n.key_points)
+        ? (n.key_points as unknown[])
+            .map((kp) => (typeof kp === "string" ? kp.trim() : ""))
+            .filter(Boolean)
+            .slice(0, 6)
+            .map((kp) => `• ${kp}`)
+        : [];
+
+      return [primary, ...kps];
     });
 
     return [
@@ -94,6 +110,38 @@ export function KnowledgeBaseSourceDetailsDialog({
   const title = data?.source.title || "Extracted report overview";
   const publisher = data?.source.publisher;
 
+  const canReExtract = Boolean(sourceId) && data?.source.source_type === "pdf_upload";
+
+  const handleReExtract = async () => {
+    if (!sourceId) return;
+    setIsReExtracting(true);
+    try {
+      const { data: resp, error: fnErr } = await supabase.functions.invoke("kb-parse-report", {
+        body: { sourceId },
+      });
+      if (fnErr) throw fnErr;
+      if (!resp?.success) throw new Error(resp?.error || "Re-extraction failed");
+
+      toast({
+        title: "Re-extracted",
+        description: `Updated extraction (${resp?.inserted?.benchmarks ?? 0} benchmarks, ${resp?.inserted?.market_notes ?? 0} notes).`,
+      });
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["kb-sources"] }),
+        queryClient.invalidateQueries({ queryKey: ["kb-source-details", sourceId] }),
+      ]);
+    } catch (e) {
+      toast({
+        title: "Re-extraction failed",
+        description: e instanceof Error ? e.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setIsReExtracting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
@@ -101,6 +149,18 @@ export function KnowledgeBaseSourceDetailsDialog({
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <DialogTitle className="text-foreground">{title}</DialogTitle>
             <div className="flex flex-wrap items-center gap-2">
+              {canReExtract && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleReExtract}
+                  disabled={isReExtracting}
+                  title="Run extraction again using the latest extraction settings"
+                >
+                  {isReExtracting ? "Re-extracting…" : "Re-extract"}
+                </Button>
+              )}
               {data?.source.status && <Badge variant={data.source.status === "active" ? "default" : "secondary"}>{data.source.status.toUpperCase()}</Badge>}
               <Badge variant={data?.source.extraction_confidence === "low" ? "destructive" : data?.source.extraction_confidence ? "secondary" : "outline"}>
                 CONF: {data?.source.extraction_confidence ? data.source.extraction_confidence.toUpperCase() : "—"}
