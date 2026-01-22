@@ -256,28 +256,34 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-// ARC type config for inline display
+// ARC type config for inline display - simplified user-friendly explanations
 const ARC_CONFIG = {
   "Hair on Fire": {
     icon: Flame,
     accentColor: "text-orange-400",
     bgColor: "bg-orange-500/10",
     borderColor: "border-orange-500/30",
-    description: "Urgent problem customers actively seek solutions for"
+    headline: "Your customers have a burning problem",
+    explanation: "People are actively searching for a solution right now. They feel the pain daily and will pay to make it stop. This is the easiest type of startup to sell — your job is to be found when they're looking.",
+    strategy: "Focus on being discoverable. SEO, paid ads, and sales outreach work well because customers are already hunting for you."
   },
   "Hard Fact": {
     icon: Lock,
     accentColor: "text-blue-400",
     bgColor: "bg-blue-500/10",
     borderColor: "border-blue-500/30",
-    description: "Hidden problem customers underestimate"
+    headline: "Your customers don't realize their problem yet",
+    explanation: "There's a real issue, but people have accepted it as 'just the way things are.' You need to wake them up and show them a better way exists. Think of it like selling vitamins — they help, but people don't feel the urgency.",
+    strategy: "Invest in education and thought leadership. Show customers what they're missing before they'll buy."
   },
   "Future Vision": {
     icon: Telescope,
     accentColor: "text-violet-400",
     bgColor: "bg-violet-500/10",
     borderColor: "border-violet-500/30",
-    description: "New category being created"
+    headline: "You're creating something new",
+    explanation: "You're betting on a future that doesn't exist yet. Customers may not understand what you're building or why they'd want it. This is the hardest path — but also how category-defining companies are built.",
+    strategy: "Find early believers who share your vision. Build community and prove your concept before scaling."
   }
 };
 
@@ -294,6 +300,7 @@ export const DashboardScorecard = ({
   arcClassification
 }: DashboardScorecardProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isARCExpanded, setIsARCExpanded] = useState(false);
   const [selectedSection, setSelectedSection] = useState<SectionVerdict | null>(null);
   const [sectionModalOpen, setSectionModalOpen] = useState(false);
   const [shareScorecardOpen, setShareScorecardOpen] = useState(false);
@@ -642,43 +649,64 @@ export const DashboardScorecard = ({
             </div>
           </div>
           
-          {/* ARC Classification - Problem Archetype */}
+          {/* ARC Classification - Simplified User-Friendly Toggle Card */}
           {arcClassification && (
             <div className="mt-5 pt-4 border-t border-border/30">
-              <div className={cn(
-                "rounded-xl p-4 border",
-                ARC_CONFIG[arcClassification.type].bgColor,
-                ARC_CONFIG[arcClassification.type].borderColor
-              )}>
-                <div className="flex items-center gap-3 mb-2">
-                  {(() => {
-                    const ArcIcon = ARC_CONFIG[arcClassification.type].icon;
-                    return (
-                      <div className={cn("p-2 rounded-lg bg-background/60", ARC_CONFIG[arcClassification.type].bgColor)}>
-                        <ArcIcon className={cn("w-4 h-4", ARC_CONFIG[arcClassification.type].accentColor)} />
+              <Collapsible open={isARCExpanded} onOpenChange={setIsARCExpanded}>
+                <div className={cn(
+                  "rounded-xl border transition-all",
+                  ARC_CONFIG[arcClassification.type].bgColor,
+                  ARC_CONFIG[arcClassification.type].borderColor
+                )}>
+                  <CollapsibleTrigger asChild>
+                    <button className="w-full p-4 flex items-center gap-3 text-left hover:bg-background/20 rounded-xl transition-colors">
+                      {(() => {
+                        const ArcIcon = ARC_CONFIG[arcClassification.type].icon;
+                        return (
+                          <div className={cn("p-2 rounded-lg bg-background/60", ARC_CONFIG[arcClassification.type].bgColor)}>
+                            <ArcIcon className={cn("w-5 h-5", ARC_CONFIG[arcClassification.type].accentColor)} />
+                          </div>
+                        );
+                      })()}
+                      <div className="flex-1">
+                        <p className={cn("text-sm font-semibold", ARC_CONFIG[arcClassification.type].accentColor)}>
+                          {ARC_CONFIG[arcClassification.type].headline}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          You're a "<span className="font-medium text-foreground/80">{arcClassification.type}</span>" case
+                        </p>
                       </div>
-                    );
-                  })()}
-                  <div className="flex-1">
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Problem Archetype</p>
-                    <h4 className={cn("text-sm font-semibold", ARC_CONFIG[arcClassification.type].accentColor)}>
-                      {arcClassification.type}
-                    </h4>
-                  </div>
-                  <Badge variant="outline" className="text-[9px] font-medium text-muted-foreground border-border/50 bg-background/40">
-                    <Sparkles className="w-2.5 h-2.5 mr-1 opacity-60" />
-                    Sequoia ARC
-                  </Badge>
+                      {isARCExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                      )}
+                    </button>
+                  </CollapsibleTrigger>
+                  
+                  <CollapsibleContent>
+                    <div className="px-4 pb-4 pt-0 space-y-3">
+                      <div className="h-px bg-border/50" />
+                      
+                      {/* What this means */}
+                      <div>
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">What this means</p>
+                        <p className="text-xs text-foreground/80 leading-relaxed">
+                          {ARC_CONFIG[arcClassification.type].explanation}
+                        </p>
+                      </div>
+                      
+                      {/* Your go-to-market strategy */}
+                      <div className="p-3 rounded-lg bg-background/40">
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">💡 Your Strategy</p>
+                        <p className="text-xs text-foreground leading-relaxed">
+                          {ARC_CONFIG[arcClassification.type].strategy}
+                        </p>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
                 </div>
-                <p className="text-xs text-foreground/80 leading-relaxed">
-                  {arcClassification.reasoning}
-                </p>
-                {arcClassification.implications && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    <span className="font-medium text-foreground/70">→ Strategy:</span> {arcClassification.implications}
-                  </p>
-                )}
-              </div>
+              </Collapsible>
             </div>
           )}
           
