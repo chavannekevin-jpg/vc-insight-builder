@@ -257,10 +257,41 @@ const UploadDeckView = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // For now, show a toast indicating the feature
+      // 1) Persist the deck snapshot as an investor-owned record
+      const { data: deckCompany, error: deckCompanyError } = await supabase
+        .from("investor_deck_companies")
+        // Supabase TS typings often model insert as array-only; insert a single row as a 1-item array.
+        .insert([
+          {
+            investor_id: user.id,
+            name: parsedMemo.company_name || "Unknown",
+            stage: parsedMemo.stage || "Seed",
+            // One-liner shown on dealflow cards
+            description: parsedMemo.tagline || parsedMemo.sections?.executive_summary?.content || null,
+            category: parsedMemo.sector || null,
+            memo_json: parsedMemo as any,
+          } as any,
+        ])
+        .select("id")
+        .single();
+
+      if (deckCompanyError) throw deckCompanyError;
+      if (!deckCompany?.id) throw new Error("Failed to create deck company");
+
+      // 2) Add to dealflow
+      const { error: dealflowError } = await supabase.from("investor_dealflow").insert({
+        investor_id: user.id,
+        deck_company_id: deckCompany.id,
+        company_id: null,
+        source: "deck_upload",
+        status: "reviewing",
+      } as any);
+
+      if (dealflowError) throw dealflowError;
+
       toast({
-        title: "Coming Soon",
-        description: "Save to Dealflow feature will be available soon",
+        title: "Added to dealflow",
+        description: "Saved as a deal with the memo snapshot.",
       });
       
     } catch (error) {

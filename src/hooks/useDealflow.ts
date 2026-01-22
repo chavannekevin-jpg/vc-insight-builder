@@ -27,6 +27,16 @@ export interface DealflowItem {
     memo_content_generated: boolean | null;
     created_at: string;
   } | null;
+  deck_company?: {
+    id: string;
+    investor_id: string;
+    name: string;
+    stage: string;
+    description: string | null;
+    category: string | null;
+    memo_json: any;
+    created_at: string;
+  } | null;
   shared_by?: {
     id: string;
     full_name: string;
@@ -53,6 +63,16 @@ export function useDealflow(investorId: string | null) {
             has_premium,
             vc_verdict_json,
             memo_content_generated,
+            created_at
+          ),
+          deck_company:investor_deck_companies!deck_company_id (
+            id,
+            investor_id,
+            name,
+            stage,
+            description,
+            category,
+            memo_json,
             created_at
           ),
           shared_by:investor_profiles!shared_by_investor_id (

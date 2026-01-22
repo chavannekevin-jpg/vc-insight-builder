@@ -36,8 +36,8 @@ const DealflowView = ({ onUploadDeck, userId }: DealflowViewProps) => {
 
   const filteredDeals = useMemo(() => {
     return deals.filter((deal) =>
-      deal.company?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      deal.company?.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      (deal.company?.name || deal.deck_company?.name)?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (deal.company?.description || deal.deck_company?.description)?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [deals, searchQuery]);
 
@@ -54,6 +54,9 @@ const DealflowView = ({ onUploadDeck, userId }: DealflowViewProps) => {
       const verdict = deal.company.vc_verdict_json as any;
       return verdict?.overall_score || verdict?.score || null;
     }
+    const deckMemo = deal.deck_company?.memo_json as any;
+    const deckScore = deckMemo?.quick_analysis?.overall_score;
+    if (typeof deckScore === "number") return deckScore;
     return null;
   };
 
@@ -169,6 +172,8 @@ const DealflowView = ({ onUploadDeck, userId }: DealflowViewProps) => {
                         const score = getVerdictScore(deal);
                         const isShared = !!deal.shared_by_investor_id;
 
+                        const displayCompany = deal.company || deal.deck_company;
+
                         return (
                           <div 
                             key={deal.id}
@@ -177,7 +182,7 @@ const DealflowView = ({ onUploadDeck, userId }: DealflowViewProps) => {
                           >
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <p className="font-medium text-sm line-clamp-1">
-                                {deal.company?.name || "Unknown"}
+                                {displayCompany?.name || "Unknown"}
                               </p>
                               <Badge 
                                 variant="outline" 
@@ -188,12 +193,12 @@ const DealflowView = ({ onUploadDeck, userId }: DealflowViewProps) => {
                               </Badge>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                              {deal.company?.stage || "Unknown stage"}
-                              {deal.company?.category && ` • ${deal.company.category}`}
+                              {displayCompany?.stage || "Unknown stage"}
+                              {displayCompany?.category && ` • ${displayCompany.category}`}
                             </p>
-                            {deal.company?.description && (
+                            {(displayCompany as any)?.description && (
                               <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                {deal.company.description}
+                                {(displayCompany as any).description}
                               </p>
                             )}
                             
@@ -219,7 +224,7 @@ const DealflowView = ({ onUploadDeck, userId }: DealflowViewProps) => {
                                   <span className="font-medium">{score}/100</span>
                                 </div>
                               )}
-                              {deal.company?.memo_content_generated && (
+                              {(deal.company?.memo_content_generated || !!deal.deck_company?.memo_json) && (
                                 <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
                                   <FileText className="w-3 h-3 mr-1" />
                                   Memo
