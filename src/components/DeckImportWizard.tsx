@@ -422,12 +422,35 @@ export const DeckImportWizard = ({
         }, {} as Record<string, Array<{ key: string; section: ExtractedSection; label: string }>>)
     : {};
 
+  // Prevent accidental dismissal during processing or review
+  const preventAccidentalClose = step === 'processing' || step === 'review';
+
+  const handleOpenChange = (newOpen: boolean) => {
+    // If trying to close and we should prevent it, ignore
+    if (!newOpen && preventAccidentalClose) {
+      return;
+    }
+    if (!newOpen) resetWizard();
+    onOpenChange(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(open) => {
-      if (!open) resetWizard();
-      onOpenChange(open);
-    }}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+        onInteractOutside={(e) => {
+          // Prevent closing when clicking outside during processing or review
+          if (preventAccidentalClose) {
+            e.preventDefault();
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          // Prevent closing on escape during processing or review
+          if (preventAccidentalClose) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
