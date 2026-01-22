@@ -96,29 +96,33 @@ export default function Intake() {
         sessionStorage.removeItem('startup_invite_code');
       }
 
-      // Save high-confidence responses
-      const highConfidenceResponses = Object.entries(data.extractedSections)
-        .filter(([_, section]) => section.confidence >= 0.6 && section.content)
+      // Save ALL sections that have content (user edits should always be saved)
+      // User-edited sections get a boosted confidence score to ensure they persist
+      const allResponses = Object.entries(data.extractedSections)
+        .filter(([_, section]) => section.content && section.content.trim().length > 0)
         .map(([key, section]) => ({
           company_id: newCompany.id,
           question_key: key,
           answer: section.content,
           source: 'deck_import',
-          confidence_score: section.confidence
+          // Boost confidence for all saved sections to ensure they show in questionnaire
+          confidence_score: Math.max(section.confidence, 0.7)
         }));
 
-      if (highConfidenceResponses.length > 0) {
+      if (allResponses.length > 0) {
         // Small delay to ensure company insert is fully committed
         await new Promise(resolve => setTimeout(resolve, 500));
         
         const { error: insertError } = await supabase
           .from("memo_responses")
-          .insert(highConfidenceResponses);
+          .insert(allResponses);
 
         if (insertError) {
           // Log but don't fail - responses can be regenerated later
           console.error("Error saving responses (non-critical):", insertError);
         }
+        
+        console.log(`Saved ${allResponses.length} deck-extracted responses`);
       }
 
       // Invalidate company query cache before navigation
