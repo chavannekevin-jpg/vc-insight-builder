@@ -22,7 +22,10 @@ import {
   ArrowRight,
   BookOpen,
   Lightbulb,
-  ListChecks
+  ListChecks,
+  Briefcase,
+  FileText,
+  Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type SectionVerdict } from "@/lib/holisticVerdictGenerator";
@@ -32,6 +35,11 @@ import { MemoStructuredSection } from "@/types/memo";
 import { renderMarkdownText } from "@/lib/markdownParser";
 import { ImprovementQuestionCard } from "./ImprovementQuestionCard";
 import { useImprovementQueue } from "@/hooks/useImprovementQueue";
+import { 
+  VCInvestmentLogicCard, 
+  Section90DayPlan, 
+  MicroCaseStudyCard 
+} from "./tools";
 
 interface SectionDetailModalProps {
   open: boolean;
@@ -128,6 +136,7 @@ export const SectionDetailModal = ({
   const [loadingImprovements, setLoadingImprovements] = useState(false);
   const [showImprovements, setShowImprovements] = useState(true); // Pre-loaded by default
   const [showVCQuestions, setShowVCQuestions] = useState(false);
+  const [showSectionTools, setShowSectionTools] = useState(false);
   const [inlineAnswers, setInlineAnswers] = useState<Record<string, string>>({});
   
   const { 
@@ -458,6 +467,54 @@ export const SectionDetailModal = ({
                   )}
                 </div>
               </section>
+            )}
+            
+            {/* Section-Specific Strategic Tools - Collapsible */}
+            {sectionTools && (sectionTools.vcInvestmentLogic || sectionTools.actionPlan90Day || sectionTools.caseStudy) && (
+              <Collapsible open={showSectionTools} onOpenChange={setShowSectionTools}>
+                <CollapsibleTrigger asChild>
+                  <button className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Briefcase className="w-4 h-4 text-primary" />
+                      <span className="font-medium text-sm text-foreground">
+                        Section Strategic Tools
+                      </span>
+                      <Badge variant="secondary" className="text-[10px]">
+                        {[sectionTools.vcInvestmentLogic, sectionTools.actionPlan90Day, sectionTools.caseStudy].filter(Boolean).length}
+                      </Badge>
+                    </div>
+                    {showSectionTools ? (
+                      <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-4 space-y-4">
+                  {/* VC Investment Logic */}
+                  {sectionTools.vcInvestmentLogic && (
+                    <VCInvestmentLogicCard 
+                      logic={sectionTools.vcInvestmentLogic as any} 
+                      sectionName={section?.section || ''} 
+                    />
+                  )}
+                  
+                  {/* 90-Day Action Plan */}
+                  {sectionTools.actionPlan90Day && (
+                    <Section90DayPlan 
+                      plan={sectionTools.actionPlan90Day as any} 
+                      sectionName={section?.section || ''} 
+                    />
+                  )}
+                  
+                  {/* Case Study */}
+                  {sectionTools.caseStudy && (
+                    <MicroCaseStudyCard 
+                      caseStudy={sectionTools.caseStudy as any} 
+                    />
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
             )}
             
             {/* How to Improve - Collapsible */}

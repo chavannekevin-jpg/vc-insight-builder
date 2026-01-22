@@ -11,14 +11,19 @@ interface CompetitionChessboardCardProps {
 }
 
 export const CompetitionChessboardCard = ({ data, onUpdate }: CompetitionChessboardCardProps) => {
-  // Early return if data is invalid
+  const [isEditing, setIsEditing] = useState(false);
+  
+  // Early return if data is invalid - after hooks
   if (!isValidEditableTool<CompetitorChessboard>(data)) {
-    return null;
+    return (
+      <div className="p-4 rounded-lg border border-border/50 bg-muted/20 text-center">
+        <Swords className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">Competitor data not available</p>
+      </div>
+    );
   }
 
-  const [isEditing, setIsEditing] = useState(false);
   const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
-
   const marketDynamics = safeText(currentData?.marketDynamics);
   const competitors = safeArray<CompetitorMove>(currentData?.competitors);
 

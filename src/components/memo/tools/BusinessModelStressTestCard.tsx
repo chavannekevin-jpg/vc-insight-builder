@@ -13,9 +13,14 @@ interface BusinessModelStressTestProps {
 export const BusinessModelStressTestCard = ({ data, onUpdate }: BusinessModelStressTestProps) => {
   const [isEditing, setIsEditing] = useState(false);
   
-  // Early return if data is invalid
+  // Early return if data is invalid - after hooks
   if (!data?.aiGenerated) {
-    return null;
+    return (
+      <div className="p-4 rounded-lg border border-border/50 bg-muted/20 text-center">
+        <FlaskConical className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">Stress test data not available</p>
+      </div>
+    );
   }
   
   const currentData = mergeToolData(data.aiGenerated, data.userOverrides);

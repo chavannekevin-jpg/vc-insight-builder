@@ -12,17 +12,31 @@ interface MarketTAMCalculatorProps {
 }
 
 export const MarketTAMCalculator = ({ data, onUpdate }: MarketTAMCalculatorProps) => {
-  // Early return if data is invalid
-  if (!isValidEditableTool<BottomsUpTAM>(data)) {
-    return null;
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<BottomsUpTAM | null>(null);
+  
+  // Initialize editData when data changes
+  const aiData = data?.aiGenerated;
+  const hasValidData = isValidEditableTool<BottomsUpTAM>(data);
+  
+  // Set editData once we have valid data
+  if (hasValidData && editData === null) {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setEditData(mergeToolData(aiData, data.userOverrides));
   }
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState<BottomsUpTAM>(
-    mergeToolData(data.aiGenerated, data.userOverrides)
-  );
+  // Early return if data is invalid
+  if (!hasValidData || !aiData) {
+    return (
+      <div className="p-4 rounded-lg border border-border/50 bg-muted/20 text-center">
+        <Calculator className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">TAM data not available</p>
+      </div>
+    );
+  }
 
-  const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
+  const currentData = mergeToolData(aiData, data.userOverrides);
+  const localEditData = editData || currentData;
   const targetSegments = safeArray<TAMSegment>(currentData?.targetSegments);
   const assumptions = safeArray<string>(currentData?.assumptions);
 
@@ -35,33 +49,36 @@ export const MarketTAMCalculator = ({ data, onUpdate }: MarketTAMCalculatorProps
   };
 
   const handleSegmentChange = (idx: number, field: keyof TAMSegment, value: string | number) => {
-    const newSegments = [...safeArray<TAMSegment>(editData?.targetSegments)];
+    if (!localEditData) return;
+    const newSegments = [...safeArray<TAMSegment>(localEditData?.targetSegments)];
     newSegments[idx] = { ...newSegments[idx], [field]: value };
     newSegments[idx].tam = safeNumber(newSegments[idx].count) * safeNumber(newSegments[idx].acv);
     
     const totalTAM = newSegments.reduce((sum, s) => sum + safeNumber(s?.tam), 0);
     setEditData({ 
-      ...editData, 
+      ...localEditData, 
       targetSegments: newSegments,
       totalTAM 
     });
   };
 
   const addSegment = () => {
+    if (!localEditData) return;
     setEditData({
-      ...editData,
-      targetSegments: [...safeArray<TAMSegment>(editData?.targetSegments), { segment: "", count: 0, acv: 0, tam: 0 }]
+      ...localEditData,
+      targetSegments: [...safeArray<TAMSegment>(localEditData?.targetSegments), { segment: "", count: 0, acv: 0, tam: 0 }]
     });
   };
 
   const removeSegment = (idx: number) => {
-    const newSegments = safeArray<TAMSegment>(editData?.targetSegments).filter((_, i) => i !== idx);
+    if (!localEditData) return;
+    const newSegments = safeArray<TAMSegment>(localEditData?.targetSegments).filter((_, i) => i !== idx);
     const totalTAM = newSegments.reduce((sum, s) => sum + safeNumber(s?.tam), 0);
-    setEditData({ ...editData, targetSegments: newSegments, totalTAM });
+    setEditData({ ...localEditData, targetSegments: newSegments, totalTAM });
   };
 
   const handleSave = () => {
-    onUpdate?.(editData);
+    if (localEditData) onUpdate?.(localEditData);
     setIsEditing(false);
   };
 
@@ -79,7 +96,7 @@ export const MarketTAMCalculator = ({ data, onUpdate }: MarketTAMCalculatorProps
       onEditToggle={() => setIsEditing(true)}
       onSave={handleSave}
       onReset={() => {
-        setEditData(data.aiGenerated);
+        if (aiData) setEditData(aiData);
         onUpdate?.({});
       }}
       accentColor="emerald"
@@ -103,7 +120,7 @@ export const MarketTAMCalculator = ({ data, onUpdate }: MarketTAMCalculatorProps
       {/* Segment Breakdown */}
       <div className="space-y-3 mb-4">
         <p className="text-sm font-medium text-foreground">Segment Breakdown</p>
-        {(isEditing ? safeArray<TAMSegment>(editData?.targetSegments) : targetSegments).map((segment, idx) => (
+        {(isEditing ? safeArray<TAMSegment>(localEditData?.targetSegments) : targetSegments).map((segment, idx) => (
           <div key={idx} className="p-3 rounded-lg bg-muted/30 border border-border/50">
             {isEditing ? (
               <div className="space-y-2">
