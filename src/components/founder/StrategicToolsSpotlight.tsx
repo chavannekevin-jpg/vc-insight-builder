@@ -1,21 +1,33 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Telescope, Building2, ArrowRight, Sparkles, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { MarketLensUpsellDialog } from "@/components/market-lens/MarketLensUpsellDialog";
 
 interface StrategicToolsSpotlightProps {
   matchingFunds: number;
   hasMarketLensBriefing?: boolean;
   reportsAnalyzed?: number;
+  hasPaid?: boolean;
 }
 
 export const StrategicToolsSpotlight = memo(({ 
   matchingFunds, 
   hasMarketLensBriefing = false,
-  reportsAnalyzed = 0 
+  reportsAnalyzed = 0,
+  hasPaid = false
 }: StrategicToolsSpotlightProps) => {
   const navigate = useNavigate();
+  const [showMarketLensUpsell, setShowMarketLensUpsell] = useState(false);
+
+  const handleMarketLensClick = () => {
+    if (hasPaid) {
+      navigate("/market-lens");
+    } else {
+      setShowMarketLensUpsell(true);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -30,7 +42,7 @@ export const StrategicToolsSpotlight = memo(({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Market Lens Card */}
         <div 
-          onClick={() => navigate("/market-lens")}
+          onClick={handleMarketLensClick}
           className="group relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-primary/5 via-primary/10 to-transparent p-6 cursor-pointer transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10"
         >
           {/* Decorative glow */}
@@ -107,6 +119,11 @@ export const StrategicToolsSpotlight = memo(({
           </div>
         </div>
       </div>
+      {/* Market Lens Upsell Dialog */}
+      <MarketLensUpsellDialog 
+        open={showMarketLensUpsell} 
+        onOpenChange={setShowMarketLensUpsell} 
+      />
     </div>
   );
 });

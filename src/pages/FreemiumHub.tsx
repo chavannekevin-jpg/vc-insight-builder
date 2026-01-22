@@ -650,6 +650,7 @@ export default function FreemiumHub() {
                 matchingFunds={matchingFunds}
                 hasMarketLensBriefing={responses.some(r => r.question_key === 'market_lens_briefing' && r.answer)}
                 reportsAnalyzed={6}
+                hasPaid={company?.has_premium ?? false}
               />
 
               {/* VC Quick Take (IC Room) - below the spotlight */}
