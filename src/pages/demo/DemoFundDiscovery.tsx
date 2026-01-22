@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { DEMO_COMPANY, DEMO_MATCHING_FUNDS } from "@/data/demo/demoCarbonPrint";
+import { DEMO_COMPANY, DEMO_MATCHING_FUNDS } from "@/data/demo/demoSignalFlow";
 import { 
   Search, 
   ArrowLeft, 

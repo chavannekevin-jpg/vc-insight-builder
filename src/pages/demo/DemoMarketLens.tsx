@@ -4,7 +4,7 @@ import { DemoLayout } from "@/components/demo/DemoLayout";
 import { MarketLensBriefing } from "@/components/market-lens/MarketLensBriefing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { DEMO_COMPANY, DEMO_MARKET_LENS_BRIEFING } from "@/data/demo/demoCarbonPrint";
+import { DEMO_COMPANY, DEMO_MARKET_LENS_BRIEFING } from "@/data/demo/demoSignalFlow";
 import { DemoUpsellModal } from "@/components/demo/DemoUpsellModal";
 import { RefreshCw, Settings, ArrowLeft, Sparkles } from "lucide-react";
 

@@ -3,11 +3,11 @@ import { DemoBanner } from "./DemoBanner";
 import { DemoFloatingCTA } from "./DemoFloatingCTA";
 import { DemoSidebar } from "./DemoSidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { DEMO_COMPANY } from "@/data/demo/demoCarbonPrint";
+import { DEMO_COMPANY } from "@/data/demo/demoSignalFlow";
 
 interface DemoLayoutProps {
   children: ReactNode;
-  currentPage?: 'dashboard' | 'market-lens' | 'fund-discovery';
+  currentPage?: 'dashboard' | 'market-lens' | 'fund-discovery' | 'profile';
 }
 
 export function DemoLayout({ children, currentPage = 'dashboard' }: DemoLayoutProps) {

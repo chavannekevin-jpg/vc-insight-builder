@@ -47,16 +47,16 @@ import {
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { DEMO_COMPANY } from "@/data/demo/demoCarbonPrint";
+import { DEMO_COMPANY } from "@/data/demo/demoSignalFlow";
 
 interface DemoSidebarProps {
-  currentPage: 'dashboard' | 'market-lens' | 'fund-discovery';
+  currentPage: 'dashboard' | 'market-lens' | 'fund-discovery' | 'profile';
 }
 
 // Define all menu items - matching real FounderSidebar structure
 const mainMenuItems = [
   { title: "Dashboard", path: "/demo", icon: LayoutDashboard, enabled: true },
-  { title: "My Profile", path: "/company-profile", icon: Edit, enabled: false },
+  { title: "My Profile", path: "/demo/profile", icon: Edit, enabled: true },
   { title: "Demo Analysis", path: "/demo", icon: FileText, enabled: true },
 ];
 
