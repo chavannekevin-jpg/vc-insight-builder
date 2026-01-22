@@ -1,13 +1,49 @@
 // Full section tools for SignalFlow demo
 // Comprehensive analysis data for all 8 sections
 
+// Holistic verdicts for each section - used in MemoScoreRadar
+export const DEMO_HOLISTIC_VERDICTS: Record<string, { verdict: string; stageContext: string }> = {
+  "Problem": {
+    verdict: "SignalFlow has done exceptional customer discovery work, interviewing 85 sales leaders to validate the 'no decision' problem. The $2.1M revenue leakage quantification gives VCs a clear ROI story. This is well above what we typically see at Seed stage.",
+    stageContext: "At Seed, VCs expect at least 30 customer interviews with documented pain. SignalFlow exceeds this benchmark significantly."
+  },
+  "Solution": {
+    verdict: "Working product with 28 paying customers and 89% prediction accuracy demonstrates execution ability. The 'prediction' vs. 'recording' positioning is smart differentiation, though technical moat needs reinforcement through patents.",
+    stageContext: "For Seed stage, having a live product with paying customers substantially de-risks execution. Focus on building defensible IP."
+  },
+  "Market": {
+    verdict: "The €2.5B TAM is supported by credible bottom-up methodology. Mid-market focus is a smart wedge strategy in a category validated by Gong's $7B valuation. Market timing is favorable with AI adoption surge.",
+    stageContext: "Seed investors want to see a market large enough to support €100M+ outcomes. SignalFlow's TAM clears this bar comfortably."
+  },
+  "Competition": {
+    verdict: "Competitive landscape is well-understood, but moat articulation needs work. Gong's mid-market push is a real risk. The 'prediction vs. recording' differentiation is good but needs sustained execution to become a defensible position.",
+    stageContext: "At Seed, VCs accept competitive risk if the team can execute faster than incumbents. Need to demonstrate velocity."
+  },
+  "Team": {
+    verdict: "Exceptional founder-market fit. CEO's 8 years at Salesforce provides deep domain expertise, while CTO's Datadog ML experience and Stanford PhD brings technical credibility. This team can execute on the vision.",
+    stageContext: "Team is the primary bet at Seed. SignalFlow's founders have rare combination of domain expertise and technical depth."
+  },
+  "Business Model": {
+    verdict: "Unit economics are healthy with 4.9x LTV:CAC and 7-month payback. The seat-based SaaS model is proven and predictable. Key is maintaining these metrics as the customer base scales beyond early adopters.",
+    stageContext: "Seed benchmarks require 3x+ LTV:CAC and <18 month payback. SignalFlow exceeds both thresholds."
+  },
+  "Traction": {
+    verdict: "€32K MRR with 15% MoM growth for 8 consecutive months demonstrates product-market fit. NPS of 74 and 94% retention are strong engagement signals. Ready for acceleration with capital.",
+    stageContext: "For Seed, VCs want to see early revenue traction. SignalFlow's €384K ARR run-rate is solid for the stage."
+  },
+  "Vision": {
+    verdict: "Clear 18-month roadmap to €150K MRR and Series A. Use of funds is specific and realistic. Exit scenarios through strategic acquisition or IPO path are well-mapped with comparable precedents.",
+    stageContext: "Series A typically requires €100K+ MRR for B2B SaaS. SignalFlow's milestones are calibrated appropriately."
+  }
+};
+
 export const DEMO_SECTION_TOOLS: Record<string, any> = {
   "Problem": {
     sectionScore: {
       score: 72,
       label: "Strong",
       percentile: "Top 25%",
-      vcBenchmark: "Above average for Seed stage",
+      vcBenchmark: 65,
       whatThisTellsVC: "The problem is clearly articulated with quantified customer pain. Evidence from 85 customer interviews demonstrates systematic validation. The $2.1M revenue leakage framing gives VCs a clear ROI story to understand.",
       fundabilityImpact: "Strong problem definition reduces perceived market risk. VCs can easily explain this investment to their partners.",
       assessment: "above_bar"
@@ -133,7 +169,7 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
       score: 68,
       label: "Solid",
       percentile: "Top 35%",
-      vcBenchmark: "At benchmark for Seed stage with live product",
+      vcBenchmark: 62,
       whatThisTellsVC: "Working product with paying customers demonstrates execution ability. The prediction focus (vs. recording) is a clear differentiator. Integration depth creates switching costs.",
       fundabilityImpact: "Product risk is largely de-risked. Remaining questions are around scalability and competitive moat durability.",
       assessment: "at_bar"
@@ -274,7 +310,7 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
       score: 75,
       label: "Strong",
       percentile: "Top 20%",
-      vcBenchmark: "Above average market articulation",
+      vcBenchmark: 65,
       whatThisTellsVC: "Clear bottom-up TAM methodology shows analytical rigor. The €2.5B market is large enough for venture returns. Mid-market focus is a credible wedge strategy.",
       fundabilityImpact: "Market size supports the investment thesis. VCs can model a path to €100M+ outcome.",
       assessment: "above_bar"
@@ -381,7 +417,7 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
       score: 58,
       label: "Developing",
       percentile: "Top 45%",
-      vcBenchmark: "Below average competitive positioning",
+      vcBenchmark: 62,
       whatThisTellsVC: "Competitive landscape is well-mapped, but moat articulation is underdeveloped. Gong's mid-market expansion is a real risk. Need clearer defensibility story.",
       fundabilityImpact: "Competitive risk is the primary concern. Needs better articulation of sustainable advantage.",
       assessment: "at_bar"
@@ -503,7 +539,7 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
       score: 78,
       label: "Strong",
       percentile: "Top 15%",
-      vcBenchmark: "Well above average for Seed stage",
+      vcBenchmark: 68,
       whatThisTellsVC: "CEO has 8 years at Salesforce with direct domain expertise. CTO led ML at Datadog and has PhD from Stanford. This is an exceptional founder-market fit.",
       fundabilityImpact: "Team significantly de-risks execution. VCs can bet on founders with confidence.",
       assessment: "above_bar"
@@ -616,7 +652,7 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
       score: 65,
       label: "Solid",
       percentile: "Top 30%",
-      vcBenchmark: "At benchmark for Seed SaaS",
+      vcBenchmark: 62,
       whatThisTellsVC: "Unit economics are healthy (4.9x LTV:CAC, 82% gross margin). Pricing is clear. Model is proven SaaS with predictable revenue.",
       fundabilityImpact: "Business model risk is low. Focus is on scaling what works.",
       assessment: "at_bar"
@@ -732,7 +768,7 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
       score: 62,
       label: "Solid",
       percentile: "Top 35%",
-      vcBenchmark: "At benchmark for Seed stage",
+      vcBenchmark: 58,
       whatThisTellsVC: "€32K MRR with 28 customers shows product-market fit. 15% MoM growth is healthy. 94% cohort retention and NPS 74 are strong engagement signals.",
       fundabilityImpact: "Traction reduces market risk. Ready for acceleration with capital.",
       assessment: "at_bar"
@@ -838,7 +874,7 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
       score: 72,
       label: "Strong",
       percentile: "Top 25%",
-      vcBenchmark: "Above average vision articulation",
+      vcBenchmark: 65,
       whatThisTellsVC: "Clear path from €32K MRR to €150K MRR within 18 months. Realistic milestones with defined metrics. Exit scenarios are well-mapped.",
       fundabilityImpact: "Vision supports return expectations. Path to Series A is credible.",
       assessment: "above_bar"
