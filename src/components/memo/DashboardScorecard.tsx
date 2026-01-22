@@ -750,17 +750,17 @@ export const DashboardScorecard = ({
             </div>
           </div>
           
-          {/* ARC Classification - Simplified User-Friendly Toggle Card */}
+          {/* ARC Classification - Educational Framework Card */}
           {arcClassification && (
             <div className="mt-5 pt-4 border-t border-border/30">
               <Collapsible open={isARCExpanded} onOpenChange={setIsARCExpanded}>
                 <div className={cn(
-                  "rounded-xl border transition-all",
+                  "rounded-xl border transition-all overflow-hidden",
                   ARC_CONFIG[arcClassification.type].bgColor,
                   ARC_CONFIG[arcClassification.type].borderColor
                 )}>
                   <CollapsibleTrigger asChild>
-                    <button className="w-full p-4 flex items-center gap-3 text-left hover:bg-background/20 rounded-xl transition-colors">
+                    <button className="w-full p-4 flex items-center gap-3 text-left hover:bg-background/20 transition-colors">
                       {(() => {
                         const ArcIcon = ARC_CONFIG[arcClassification.type].icon;
                         return (
@@ -774,7 +774,7 @@ export const DashboardScorecard = ({
                           {ARC_CONFIG[arcClassification.type].headline}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          You're a "<span className="font-medium text-foreground/80">{arcClassification.type}</span>" case
+                          Based on Sequoia's ARC Framework
                         </p>
                       </div>
                       {isARCExpanded ? (
@@ -786,20 +786,82 @@ export const DashboardScorecard = ({
                   </CollapsibleTrigger>
                   
                   <CollapsibleContent>
-                    <div className="px-4 pb-4 pt-0 space-y-3">
+                    <div className="px-4 pb-4 pt-0 space-y-4">
                       <div className="h-px bg-border/50" />
                       
-                      {/* What this means */}
+                      {/* Educational Intro */}
+                      <div className="p-3 rounded-lg bg-background/30 border border-border/30">
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Understanding ARC</p>
+                        <p className="text-xs text-foreground/70 leading-relaxed mb-3">
+                          Sequoia Capital's ARC framework identifies <span className="font-semibold text-foreground">three types of product-market fit</span>. Each requires a different go-to-market strategy:
+                        </p>
+                        
+                        {/* Three Archetypes Grid */}
+                        <div className="space-y-2">
+                          {(Object.keys(ARC_CONFIG) as Array<keyof typeof ARC_CONFIG>).map((type) => {
+                            const config = ARC_CONFIG[type];
+                            const Icon = config.icon;
+                            const isActive = type === arcClassification.type;
+                            return (
+                              <div 
+                                key={type}
+                                className={cn(
+                                  "flex items-start gap-2 p-2 rounded-lg transition-all",
+                                  isActive 
+                                    ? `${config.bgColor} border ${config.borderColor}` 
+                                    : "bg-muted/20 opacity-60"
+                                )}
+                              >
+                                <Icon className={cn("w-4 h-4 mt-0.5 shrink-0", isActive ? config.accentColor : "text-muted-foreground")} />
+                                <div className="min-w-0">
+                                  <p className={cn(
+                                    "text-xs font-semibold",
+                                    isActive ? config.accentColor : "text-muted-foreground"
+                                  )}>
+                                    {type}
+                                    {isActive && <span className="ml-1.5 text-[10px] font-medium text-foreground/60">← You</span>}
+                                  </p>
+                                  <p className="text-[11px] text-foreground/60 leading-snug">
+                                    {type === "Hair on Fire" && "Urgent pain. Customers actively searching for solutions."}
+                                    {type === "Hard Fact" && "Hidden pain. Customers don't realize there's a better way."}
+                                    {type === "Future Vision" && "New paradigm. Creating something that didn't exist before."}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      
+                      {/* Deep Dive - Your Classification */}
                       <div>
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">What this means</p>
+                        <div className="flex items-center gap-2 mb-2">
+                          {(() => {
+                            const ArcIcon = ARC_CONFIG[arcClassification.type].icon;
+                            return <ArcIcon className={cn("w-4 h-4", ARC_CONFIG[arcClassification.type].accentColor)} />;
+                          })()}
+                          <p className={cn("text-xs font-semibold uppercase tracking-wide", ARC_CONFIG[arcClassification.type].accentColor)}>
+                            Your Classification: {arcClassification.type}
+                          </p>
+                        </div>
                         <p className="text-xs text-foreground/80 leading-relaxed">
                           {ARC_CONFIG[arcClassification.type].explanation}
                         </p>
                       </div>
                       
+                      {/* AI Reasoning if available */}
+                      {arcClassification.reasoning && (
+                        <div className="p-3 rounded-lg bg-muted/30 border border-border/30">
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Why we classified you here</p>
+                          <p className="text-xs text-foreground/70 leading-relaxed italic">
+                            "{arcClassification.reasoning}"
+                          </p>
+                        </div>
+                      )}
+                      
                       {/* Your go-to-market strategy */}
-                      <div className="p-3 rounded-lg bg-background/40">
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">💡 Your Strategy</p>
+                      <div className="p-3 rounded-lg bg-background/40 border border-primary/20">
+                        <p className="text-[10px] font-semibold text-primary uppercase tracking-wide mb-1">💡 Your Recommended Strategy</p>
                         <p className="text-xs text-foreground leading-relaxed">
                           {ARC_CONFIG[arcClassification.type].strategy}
                         </p>
