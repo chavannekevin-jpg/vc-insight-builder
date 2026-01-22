@@ -55,12 +55,19 @@ export const TOOL_CONFIGS: Record<string, ToolConfig> = {
     description: 'Potential assumptions and biases',
     getQuickStat: (data) => {
       const ai = data?.aiGenerated || data;
-      const count = countItems(ai?.exaggerations) + countItems(ai?.misdiagnoses) + countItems(ai?.assumptions);
+      // Support both field naming conventions
+      const count = countItems(ai?.potentialExaggerations || ai?.exaggerations) + 
+                    countItems(ai?.misdiagnoses) + 
+                    countItems(ai?.assumptions) +
+                    countItems(ai?.commonMistakes);
       return count > 0 ? `${count} found` : '—';
     },
     getStatus: (data) => {
       const ai = data?.aiGenerated || data;
-      const count = countItems(ai?.exaggerations) + countItems(ai?.misdiagnoses) + countItems(ai?.assumptions);
+      const count = countItems(ai?.potentialExaggerations || ai?.exaggerations) + 
+                    countItems(ai?.misdiagnoses) + 
+                    countItems(ai?.assumptions) +
+                    countItems(ai?.commonMistakes);
       if (count === 0) return 'good';
       if (count <= 3) return 'warning';
       return 'critical';
@@ -204,12 +211,24 @@ export const TOOL_CONFIGS: Record<string, ToolConfig> = {
     icon: Building,
     section: 'Competition',
     description: 'Defensive moat longevity',
-    getQuickStat: (data) => safeText(data?.aiGenerated?.moatStrength || data?.moatStrength),
+    getQuickStat: (data) => {
+      // Support both field naming conventions
+      const strength = data?.aiGenerated?.currentMoatStrength ?? data?.currentMoatStrength ?? data?.aiGenerated?.moatStrength ?? data?.moatStrength;
+      if (typeof strength === 'number') return `${strength}/100`;
+      if (typeof strength === 'string') return strength;
+      return '—';
+    },
     getStatus: (data) => {
-      const strength = (data?.aiGenerated?.moatStrength || data?.moatStrength || '').toLowerCase();
-      if (strength.includes('strong')) return 'good';
-      if (strength.includes('moderate')) return 'warning';
-      if (strength.includes('weak')) return 'critical';
+      const strength = data?.aiGenerated?.currentMoatStrength ?? data?.currentMoatStrength ?? data?.aiGenerated?.moatStrength ?? data?.moatStrength;
+      if (typeof strength === 'number') {
+        if (strength >= 70) return 'good';
+        if (strength >= 40) return 'warning';
+        return 'critical';
+      }
+      const strVal = (strength || '').toString().toLowerCase();
+      if (strVal.includes('strong') || strVal.includes('high')) return 'good';
+      if (strVal.includes('moderate') || strVal.includes('medium')) return 'warning';
+      if (strVal.includes('weak') || strVal.includes('low')) return 'critical';
       return 'neutral';
     }
   },

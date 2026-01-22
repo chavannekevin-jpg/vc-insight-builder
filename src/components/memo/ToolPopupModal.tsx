@@ -38,29 +38,50 @@ interface ToolPopupModalProps {
   sectionName: string;
 }
 
+// Helper to wrap raw data in EditableTool shape if needed
+const wrapInEditableToolShape = (data: any): any => {
+  if (!data) return null;
+  
+  // If it already has aiGenerated, return as-is
+  if (data.aiGenerated !== undefined) {
+    return data;
+  }
+  
+  // Wrap raw data in EditableTool shape
+  return {
+    aiGenerated: data,
+    userOverrides: null,
+    dataSource: 'ai-complete' as const
+  };
+};
+
 // Map tool IDs to their component renderers
+// Some tools need EditableTool shape, others take raw data
 const TOOL_COMPONENTS: Record<string, (data: any, sectionName: string) => React.ReactNode> = {
-  evidenceThreshold: (data) => <ProblemEvidenceThreshold data={data} />,
-  founderBlindSpot: (data) => <ProblemFounderBlindSpot data={data} />,
-  technicalDefensibility: (data) => <SolutionTechnicalDefensibility data={data} />,
-  commoditizationTeardown: (data) => <SolutionCommoditizationTeardown data={data} />,
-  competitorBuildAnalysis: (data) => <SolutionCompetitorBuildAnalysis data={data} />,
-  bottomsUpTAM: (data) => <MarketTAMCalculator data={data} />,
-  marketReadinessIndex: (data) => <MarketReadinessIndexCard data={data} />,
-  vcMarketNarrative: (data) => <MarketVCNarrativeCard data={data} />,
-  competitorChessboard: (data) => <CompetitionChessboardCard data={data} />,
-  moatDurability: (data) => <CompetitionMoatDurabilityCard data={data} />,
-  credibilityGapAnalysis: (data) => <TeamCredibilityGapCard data={data} />,
-  modelStressTest: (data) => <BusinessModelStressTestCard data={data} />,
-  tractionDepthTest: (data) => <TractionDepthTestCard data={data} />,
-  vcMilestoneMap: (data) => <VisionMilestoneMapCard data={data} />,
-  scenarioPlanning: (data) => <VisionScenarioPlanningCard data={data} />,
-  exitNarrative: (data) => <VisionExitNarrativeCard data={data} />,
+  // EditableTool components - need wrapping
+  evidenceThreshold: (data) => <ProblemEvidenceThreshold data={wrapInEditableToolShape(data)} />,
+  founderBlindSpot: (data) => <ProblemFounderBlindSpot data={wrapInEditableToolShape(data)} />,
+  technicalDefensibility: (data) => <SolutionTechnicalDefensibility data={wrapInEditableToolShape(data)} />,
+  commoditizationTeardown: (data) => <SolutionCommoditizationTeardown data={wrapInEditableToolShape(data)} />,
+  competitorBuildAnalysis: (data) => <SolutionCompetitorBuildAnalysis data={wrapInEditableToolShape(data)} />,
+  bottomsUpTAM: (data) => <MarketTAMCalculator data={wrapInEditableToolShape(data)} />,
+  marketReadinessIndex: (data) => <MarketReadinessIndexCard data={wrapInEditableToolShape(data)} />,
+  vcMarketNarrative: (data) => <MarketVCNarrativeCard data={wrapInEditableToolShape(data)} />,
+  competitorChessboard: (data) => <CompetitionChessboardCard data={wrapInEditableToolShape(data)} />,
+  moatDurability: (data) => <CompetitionMoatDurabilityCard data={wrapInEditableToolShape(data)} />,
+  credibilityGapAnalysis: (data) => <TeamCredibilityGapCard data={wrapInEditableToolShape(data)} />,
+  modelStressTest: (data) => <BusinessModelStressTestCard data={wrapInEditableToolShape(data)} />,
+  tractionDepthTest: (data) => <TractionDepthTestCard data={wrapInEditableToolShape(data)} />,
+  vcMilestoneMap: (data) => <VisionMilestoneMapCard data={wrapInEditableToolShape(data)} />,
+  scenarioPlanning: (data) => <VisionScenarioPlanningCard data={wrapInEditableToolShape(data)} />,
+  exitNarrative: (data) => <VisionExitNarrativeCard data={wrapInEditableToolShape(data)} />,
+  
+  // Non-EditableTool components - pass data directly
   vcInvestmentLogic: (data, sectionName) => <VCInvestmentLogicCard logic={data} sectionName={sectionName} />,
   actionPlan90Day: (data, sectionName) => <Section90DayPlan plan={data} sectionName={sectionName} />,
   caseStudy: (data) => <MicroCaseStudyCard caseStudy={data} />,
   leadInvestorRequirements: (data, sectionName) => <LeadInvestorCard requirements={data} sectionName={sectionName} />,
-  benchmarks: (data, sectionName) => <SectionBenchmarks benchmarks={data} sectionName={sectionName} />
+  benchmarks: (data, sectionName) => <SectionBenchmarks benchmarks={Array.isArray(data) ? data : []} sectionName={sectionName} />
 };
 
 export const ToolPopupModal = ({
@@ -79,6 +100,7 @@ export const ToolPopupModal = ({
       return (
         <div className="text-center py-8 text-muted-foreground">
           <p>Tool data not available</p>
+          <p className="text-xs mt-2">Tool: {toolType}</p>
         </div>
       );
     }

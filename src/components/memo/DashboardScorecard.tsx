@@ -436,6 +436,9 @@ export const DashboardScorecard = ({
   };
 
   // Build available tools from sectionTools data
+  // Filter out cross-section tools (they go in section modals instead)
+  const CROSS_SECTION_TOOL_NAMES = ['vcInvestmentLogic', 'actionPlan90Day', 'caseStudy', 'leadInvestorRequirements', 'benchmarks', 'vcMarketNarrative'];
+  
   const availableTools = useMemo(() => {
     if (!sectionTools) return [];
     
@@ -463,6 +466,9 @@ export const DashboardScorecard = ({
       Object.entries(sectionData).forEach(([toolName, toolData]) => {
         // Skip sectionScore - it's already shown in the section cards
         if (toolName === 'sectionScore' || !toolData) return;
+        
+        // Skip cross-section tools - they go in section modals
+        if (CROSS_SECTION_TOOL_NAMES.includes(toolName)) return;
         
         // Map tool names from sectionTools to our config
         const toolConfigKey = toolNameMapping[toolName] || toolName;
