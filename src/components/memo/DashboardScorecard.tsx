@@ -30,7 +30,8 @@ import {
   Lock,
   Telescope,
   ScrollText,
-  Boxes
+  Boxes,
+  Globe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -1029,6 +1030,38 @@ export const DashboardScorecard = ({
                   </CollapsibleContent>
                 </Collapsible>
               )}
+              
+              {/* Market Lens Card */}
+              <div className="mt-4 relative overflow-hidden rounded-xl border-2 border-blue-500/40 bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-primary/5 transition-all duration-300 hover:border-blue-500/60 group cursor-pointer"
+                onClick={() => onNavigate('/market-lens')}
+              >
+                {/* Decorative gradient */}
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-500/20 via-cyan-500/20 to-transparent rounded-full blur-2xl opacity-60 group-hover:opacity-80 transition-opacity" />
+                
+                <div className="p-5 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
+                      <Globe className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-base font-bold text-foreground">Market Lens</h4>
+                        <Badge className="text-[9px] bg-blue-500/10 text-blue-400 border-blue-500/20">
+                          Intelligence
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Personalized market briefing for your sector</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-blue-400 group-hover:translate-x-1 transition-all shrink-0" />
+                  </div>
+                  
+                  <div className="mt-3 pt-3 border-t border-blue-500/20">
+                    <p className="text-xs text-foreground/70 leading-relaxed">
+                      Get AI-synthesized insights on funding trends, market dynamics, and exit precedents tailored to your specific company context.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </CollapsibleContent>
           </Collapsible>
           
