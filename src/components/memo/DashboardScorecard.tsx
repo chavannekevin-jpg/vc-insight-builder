@@ -1050,14 +1050,14 @@ export const DashboardScorecard = ({
                           Intelligence
                         </Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground">Personalized market briefing for your sector</p>
+                      <p className="text-xs text-muted-foreground">VC reports & market data, filtered for you</p>
                     </div>
                     <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-blue-400 group-hover:translate-x-1 transition-all shrink-0" />
                   </div>
                   
                   <div className="mt-3 pt-3 border-t border-blue-500/20">
                     <p className="text-xs text-foreground/70 leading-relaxed">
-                      Get AI-synthesized insights on funding trends, market dynamics, and exit precedents tailored to your specific company context.
+                      We've compiled 50+ industry reports, funding benchmarks, and market analyses. Market Lens filters them for your sector and stage — so you don't have to read them all.
                     </p>
                   </div>
                 </div>
