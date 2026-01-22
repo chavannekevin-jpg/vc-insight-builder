@@ -13,6 +13,7 @@ async function fetchKBContext(
 ) {
   const geography = opts.geography ?? "Europe";
   const stage = opts.stage;
+  const sector = opts.sector ?? null;
 
   const { data: sources } = await supabaseClient
     .from("kb_sources")
@@ -25,26 +26,52 @@ async function fetchKBContext(
   const sourceIds = (sources || []).map((s: any) => s.id).filter(Boolean);
   if (sourceIds.length === 0) return "";
 
-  let benchQuery = supabaseClient
-    .from("kb_benchmarks")
-    .select(
-      "geography_scope,region,stage,sector,business_model,timeframe_label,sample_size,currency,metric_key,metric_label,median_value,p25_value,p75_value,unit,notes,source_id",
-    )
-    .in("source_id", sourceIds)
-    .eq("geography_scope", geography)
-    .order("updated_at", { ascending: false })
-    .limit(40);
+  // Balanced matching strategy:
+  // 1) Try stage+sector
+  // 2) Fallback to stage
+  // 3) Fallback to sector
+  // 4) Fallback to anything in geography
+  async function fetchBenchmarks(filters: { stage?: string; sector?: string | null }) {
+    let q = supabaseClient
+      .from("kb_benchmarks")
+      .select(
+        "geography_scope,region,stage,sector,business_model,timeframe_label,sample_size,currency,metric_key,metric_label,median_value,p25_value,p75_value,unit,notes,source_id",
+      )
+      .in("source_id", sourceIds)
+      .eq("geography_scope", geography)
+      .order("updated_at", { ascending: false })
+      .limit(60);
 
-  if (stage) benchQuery = benchQuery.eq("stage", stage);
-  const { data: benchmarks } = await benchQuery;
+    if (filters.stage) q = q.eq("stage", filters.stage);
+    if (filters.sector) q = q.eq("sector", filters.sector);
+    const { data } = await q;
+    return (data || []) as any[];
+  }
 
-  const { data: marketNotes } = await supabaseClient
-    .from("kb_market_notes")
-    .select("geography_scope,region,sector,timeframe_label,headline,summary,key_points,source_id")
-    .in("source_id", sourceIds)
-    .eq("geography_scope", geography)
-    .order("updated_at", { ascending: false })
-    .limit(15);
+  async function fetchMarketNotes(filters: { sector?: string | null }) {
+    let q = supabaseClient
+      .from("kb_market_notes")
+      .select(
+        "geography_scope,region,sector,timeframe_label,headline,summary,key_points,source_id",
+      )
+      .in("source_id", sourceIds)
+      .eq("geography_scope", geography)
+      .order("updated_at", { ascending: false })
+      .limit(25);
+    if (filters.sector) q = q.eq("sector", filters.sector);
+    const { data } = await q;
+    return (data || []) as any[];
+  }
+
+  let benchmarks: any[] = [];
+  if (stage && sector) benchmarks = await fetchBenchmarks({ stage, sector });
+  if (benchmarks.length === 0 && stage) benchmarks = await fetchBenchmarks({ stage });
+  if (benchmarks.length === 0 && sector) benchmarks = await fetchBenchmarks({ sector });
+  if (benchmarks.length === 0) benchmarks = await fetchBenchmarks({});
+
+  let marketNotes: any[] = [];
+  if (sector) marketNotes = await fetchMarketNotes({ sector });
+  if (marketNotes.length === 0) marketNotes = await fetchMarketNotes({});
 
   const sourcesStr = (sources || [])
     .map((s: any) =>

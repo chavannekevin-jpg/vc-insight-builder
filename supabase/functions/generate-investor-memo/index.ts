@@ -13,13 +13,24 @@ const AI_TIMEOUT_MS = 120000;
 const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024;
 
 // Keep edge-function typing loose (Supabase types are not available in Deno runtime).
-async function fetchKBContext(serviceClient: any) {
-  // Keep this intentionally small: a few of the most recent Europe-wide benchmarks + notes.
-  // The memo model decides which are applicable based on the deck.
+async function fetchKBContext(
+  serviceClient: any,
+  opts: { geography?: string; stage?: string; sector?: string | null },
+) {
+  // Balanced matching strategy:
+  // 1) Try stage+sector
+  // 2) Fallback to stage
+  // 3) Fallback to sector
+  // 4) Fallback to anything in geography
+  const geography = opts.geography ?? "Europe";
+  const stage = opts.stage;
+  const sector = opts.sector ?? null;
+
   const { data: sources } = await serviceClient
     .from("kb_sources")
     .select("id,title,publisher,publication_date")
     .eq("status", "active")
+    .eq("geography_scope", geography)
     .order("publication_date", { ascending: false, nullsFirst: false })
     .limit(5);
 
@@ -28,29 +39,129 @@ async function fetchKBContext(serviceClient: any) {
     return { sources: [], benchmarks: [], notes: [] };
   }
 
-  const { data: benchmarks } = await serviceClient
-    .from("kb_benchmarks")
-    .select(
-      "geography_scope,region,stage,sector,business_model,timeframe_label,sample_size,currency,metric_key,metric_label,median_value,p25_value,p75_value,unit,notes,source_id",
-    )
-    .in("source_id", sourceIds)
-    .eq("geography_scope", "Europe")
-    .order("updated_at", { ascending: false })
-    .limit(30);
+  async function fetchBenchmarks(filters: { stage?: string; sector?: string | null }) {
+    let q = serviceClient
+      .from("kb_benchmarks")
+      .select(
+        "geography_scope,region,stage,sector,business_model,timeframe_label,sample_size,currency,metric_key,metric_label,median_value,p25_value,p75_value,unit,notes,source_id",
+      )
+      .in("source_id", sourceIds)
+      .eq("geography_scope", geography)
+      .order("updated_at", { ascending: false })
+      .limit(60);
+    if (filters.stage) q = q.eq("stage", filters.stage);
+    if (filters.sector) q = q.eq("sector", filters.sector);
+    const { data } = await q;
+    return (data || []) as any[];
+  }
 
-  const { data: marketNotes } = await serviceClient
-    .from("kb_market_notes")
-    .select("geography_scope,region,sector,timeframe_label,headline,summary,key_points,source_id")
-    .in("source_id", sourceIds)
-    .eq("geography_scope", "Europe")
-    .order("updated_at", { ascending: false })
-    .limit(15);
+  async function fetchMarketNotes(filters: { sector?: string | null }) {
+    let q = serviceClient
+      .from("kb_market_notes")
+      .select(
+        "geography_scope,region,sector,timeframe_label,headline,summary,key_points,source_id",
+      )
+      .in("source_id", sourceIds)
+      .eq("geography_scope", geography)
+      .order("updated_at", { ascending: false })
+      .limit(25);
+    if (filters.sector) q = q.eq("sector", filters.sector);
+    const { data } = await q;
+    return (data || []) as any[];
+  }
+
+  let benchmarks: any[] = [];
+  if (stage && sector) benchmarks = await fetchBenchmarks({ stage, sector });
+  if (benchmarks.length === 0 && stage) benchmarks = await fetchBenchmarks({ stage });
+  if (benchmarks.length === 0 && sector) benchmarks = await fetchBenchmarks({ sector });
+  if (benchmarks.length === 0) benchmarks = await fetchBenchmarks({});
+
+  let marketNotes: any[] = [];
+  if (sector) marketNotes = await fetchMarketNotes({ sector });
+  if (marketNotes.length === 0) marketNotes = await fetchMarketNotes({});
 
   return {
     sources: sources || [],
     benchmarks: benchmarks || [],
     notes: marketNotes || [],
   };
+}
+
+async function inferDeckMatchingSignals(params: {
+  imagesToProcess: string[];
+  lovableApiKey: string;
+}) {
+  const tool = {
+    type: "function",
+    function: {
+      name: "infer_kb_signals",
+      description: "Infer stage and sector from the deck for knowledge-base matching.",
+      parameters: {
+        type: "object",
+        additionalProperties: false,
+        required: ["stage", "sector"],
+        properties: {
+          stage: { type: "string" },
+          sector: { type: "string" },
+        },
+      },
+    },
+  };
+
+  const contentParts: any[] = [
+    {
+      type: "text",
+      text:
+        "Look at this pitch deck and infer ONLY (1) venture stage (Pre-Seed|Seed|Series A|Series B|Later) and (2) primary sector. Be conservative; pick the closest fit.",
+    },
+  ];
+
+  // Keep this fast: first few pages only.
+  for (const url of params.imagesToProcess.slice(0, 4)) {
+    contentParts.push({
+      type: "image_url",
+      image_url: { url, detail: "low" },
+    });
+  }
+
+  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${params.lovableApiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-3-flash-preview",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a VC analyst. Return output ONLY via the tool call. No extra text.",
+        },
+        { role: "user", content: contentParts },
+      ],
+      tools: [tool],
+      tool_choice: { type: "function", function: { name: "infer_kb_signals" } },
+      temperature: 0.2,
+    }),
+  });
+
+  if (!resp.ok) {
+    return { stage: undefined as string | undefined, sector: undefined as string | undefined };
+  }
+
+  const json = await resp.json();
+  const toolCall = json?.choices?.[0]?.message?.tool_calls?.[0];
+  const args = toolCall?.function?.arguments;
+  try {
+    const parsed = typeof args === "string" ? JSON.parse(args) : args;
+    return {
+      stage: parsed?.stage as string | undefined,
+      sector: parsed?.sector as string | undefined,
+    };
+  } catch {
+    return { stage: undefined, sector: undefined };
+  }
 }
 
 serve(async (req) => {
@@ -128,7 +239,16 @@ serve(async (req) => {
 
     console.log('Generating investor memo from deck');
 
-    const kbContext = await fetchKBContext(serviceClient);
+    const inferred = await inferDeckMatchingSignals({
+      imagesToProcess,
+      lovableApiKey: LOVABLE_API_KEY,
+    });
+
+    const kbContext = await fetchKBContext(serviceClient, {
+      geography: "Europe",
+      stage: inferred.stage,
+      sector: inferred.sector,
+    });
 
     const kbContextBlock = kbContext.sources.length
       ? `\n\n=== EUROPE KNOWLEDGE BASE (benchmarks + market notes) ===\nUse these to calibrate expectations (round sizes, valuations, dilution norms, traction-at-raise) and to add Europe-specific market context where relevant. Cite sources by publisher/title/date in your narrative when you use a benchmark.\n\nSOURCES:\n${kbContext.sources
