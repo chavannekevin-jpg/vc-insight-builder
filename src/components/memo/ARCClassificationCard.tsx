@@ -1,8 +1,6 @@
-import { Flame, Lock, Telescope, HelpCircle, ChevronDown } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Flame, Lock, Telescope, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState } from "react";
 
 export interface ARCClassification {
@@ -20,30 +18,30 @@ interface ARCClassificationCardProps {
 const ARC_CONFIG = {
   "Hair on Fire": {
     icon: Flame,
-    color: "from-orange-500/20 to-red-500/20",
-    borderColor: "border-orange-500/30",
-    badgeClass: "bg-orange-500/10 text-orange-600 border-orange-500/30",
-    iconColor: "text-orange-500",
+    accentColor: "text-orange-400",
+    glowColor: "shadow-orange-500/20",
+    borderAccent: "border-l-orange-500",
+    bgGlow: "from-orange-500/5 via-transparent to-transparent",
     gtmImplication: "Speed wins. Out-execute competitors with superior distribution.",
-    description: "Customers have an urgent, painful problem they're actively seeking solutions for. They know they have a problem and are spending money on suboptimal alternatives."
+    description: "Customers have an urgent, painful problem they're actively seeking solutions for."
   },
   "Hard Fact": {
     icon: Lock,
-    color: "from-blue-500/20 to-purple-500/20",
-    borderColor: "border-blue-500/30",
-    badgeClass: "bg-blue-500/10 text-blue-600 border-blue-500/30",
-    iconColor: "text-blue-500",
+    accentColor: "text-blue-400",
+    glowColor: "shadow-blue-500/20",
+    borderAccent: "border-l-blue-500",
+    bgGlow: "from-blue-500/5 via-transparent to-transparent",
     gtmImplication: "Educate the market. Create 'epiphany' moments that reveal hidden costs.",
-    description: "The problem is real but customers don't realize they have it or underestimate its impact. Success requires revealing an uncomfortable truth they've been ignoring."
+    description: "The problem is real but customers don't realize they have it or underestimate its impact."
   },
   "Future Vision": {
     icon: Telescope,
-    color: "from-indigo-500/20 to-violet-500/20",
-    borderColor: "border-indigo-500/30",
-    badgeClass: "bg-indigo-500/10 text-indigo-600 border-indigo-500/30",
-    iconColor: "text-indigo-500",
+    accentColor: "text-violet-400",
+    glowColor: "shadow-violet-500/20",
+    borderAccent: "border-l-violet-500",
+    bgGlow: "from-violet-500/5 via-transparent to-transparent",
     gtmImplication: "Build conviction. Find commercial pit-stops on the journey to the vision.",
-    description: "The product enables something that wasn't possible before. Customers don't know they want it yet because the category is being created."
+    description: "The product enables something that wasn't possible before. A new category is being created."
   }
 };
 
@@ -54,101 +52,89 @@ export function ARCClassificationCard({ classification, companyName }: ARCClassi
   const Icon = config.icon;
   
   return (
-    <Card className={`mb-8 border ${config.borderColor} bg-gradient-to-br ${config.color} overflow-hidden`}>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-4">
+    <div className={`relative mb-8 rounded-xl border border-border/40 bg-gradient-to-r ${config.bgGlow} backdrop-blur-sm overflow-hidden`}>
+      {/* Subtle left accent bar */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${config.borderAccent}`} />
+      
+      <div className="p-5 pl-6">
+        {/* Header row */}
+        <div className="flex items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl bg-background/80 backdrop-blur-sm shadow-sm`}>
-              <Icon className={`w-6 h-6 ${config.iconColor}`} />
+            <div className={`p-2 rounded-lg bg-background/60 ${config.glowColor} shadow-lg`}>
+              <Icon className={`w-5 h-5 ${config.accentColor}`} />
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Problem Archetype
-                </span>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="w-3.5 h-3.5 text-muted-foreground/60 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs">
-                      <p className="text-sm">
-                        Based on Sequoia's "Archetypes of Successful Companies" framework. 
-                        This classification helps determine the right go-to-market strategy.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              <h3 className="text-xl font-semibold text-foreground">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-0.5">
+                Problem Archetype
+              </p>
+              <h3 className={`text-lg font-semibold ${config.accentColor}`}>
                 {classification.type}
               </h3>
             </div>
           </div>
-          <Badge variant="outline" className={config.badgeClass}>
-            Sequoia ARC Framework
+          <Badge 
+            variant="outline" 
+            className="text-[10px] font-medium text-muted-foreground border-border/50 bg-background/40"
+          >
+            <Sparkles className="w-3 h-3 mr-1.5 opacity-60" />
+            Sequoia ARC
           </Badge>
         </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
+        
         {/* Reasoning */}
-        <div className="bg-background/60 backdrop-blur-sm rounded-lg p-4 border border-border/50">
-          <p className="text-sm text-foreground leading-relaxed">
-            <span className="font-medium">{companyName}</span> {classification.reasoning}
+        <p className="text-sm text-foreground/80 leading-relaxed mb-4">
+          <span className="font-medium text-foreground">{companyName}</span> {classification.reasoning}
+        </p>
+        
+        {/* Strategic Implication - subtle inline */}
+        <div className="flex items-start gap-2.5 text-sm">
+          <span className="text-muted-foreground shrink-0">→</span>
+          <p className="text-muted-foreground">
+            <span className="font-medium text-foreground/70">Strategy:</span>{" "}
+            {classification.implications || config.gtmImplication}
           </p>
         </div>
         
-        {/* GTM Implication */}
-        <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
-          <div className="mt-0.5">
-            <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-primary mb-0.5">Strategic Implication</p>
-            <p className="text-sm text-foreground">{classification.implications || config.gtmImplication}</p>
-          </div>
-        </div>
-        
-        {/* Collapsible Explanation */}
+        {/* Collapsible Learn More */}
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full justify-center py-2">
-            <span>What does "{classification.type}" mean?</span>
-            <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <CollapsibleTrigger className="mt-4 text-xs text-muted-foreground/70 hover:text-muted-foreground transition-colors flex items-center gap-1">
+            {isOpen ? "Hide" : "Learn more"} about archetypes
           </CollapsibleTrigger>
-          <CollapsibleContent className="pt-2">
-            <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground leading-relaxed">
-              <p className="mb-3">{config.description}</p>
-              <div className="grid gap-2 mt-4">
-                {Object.entries(ARC_CONFIG).map(([type, cfg]) => {
-                  const TypeIcon = cfg.icon;
-                  const isActive = type === classification.type;
-                  return (
-                    <div 
-                      key={type} 
-                      className={`flex items-center gap-3 p-2 rounded-md transition-colors ${
-                        isActive ? 'bg-background/80 border border-border/50' : 'opacity-60'
-                      }`}
-                    >
-                      <TypeIcon className={`w-4 h-4 ${cfg.iconColor}`} />
-                      <span className={`text-sm ${isActive ? 'font-medium text-foreground' : ''}`}>
+          <CollapsibleContent className="pt-3">
+            <div className="grid gap-2 pl-1">
+              {Object.entries(ARC_CONFIG).map(([type, cfg]) => {
+                const TypeIcon = cfg.icon;
+                const isActive = type === classification.type;
+                return (
+                  <div 
+                    key={type} 
+                    className={`flex items-center gap-3 py-1.5 px-2 rounded-md transition-all ${
+                      isActive 
+                        ? 'bg-background/50 border border-border/30' 
+                        : 'opacity-50'
+                    }`}
+                  >
+                    <TypeIcon className={`w-3.5 h-3.5 ${cfg.accentColor}`} />
+                    <div className="flex-1 min-w-0">
+                      <span className={`text-xs ${isActive ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
                         {type}
                       </span>
-                      {isActive && (
-                        <Badge variant="secondary" className="ml-auto text-xs">
-                          This company
-                        </Badge>
-                      )}
+                      <p className="text-[10px] text-muted-foreground/70 truncate">
+                        {cfg.description}
+                      </p>
                     </div>
-                  );
-                })}
-              </div>
+                    {isActive && (
+                      <span className="text-[9px] font-medium text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
+                        Current
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </CollapsibleContent>
         </Collapsible>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
