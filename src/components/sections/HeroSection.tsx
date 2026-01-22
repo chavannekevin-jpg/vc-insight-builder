@@ -68,10 +68,10 @@ export const HeroSection = () => {
               Get Your Analysis Before They Write It →
             </button>
             <button
-              onClick={() => navigate('/sample-analysis')}
+              onClick={() => navigate('/demo')}
               className="px-8 py-4 rounded-lg bg-muted border border-border text-foreground font-semibold text-lg hover:bg-muted/80 transition-all"
             >
-              Preview Sample Analysis
+              Explore Demo
             </button>
           </div>
 

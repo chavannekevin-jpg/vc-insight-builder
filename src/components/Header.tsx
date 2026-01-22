@@ -239,7 +239,7 @@ export const Header = () => {
       category: "Resources",
       items: [
         { label: "Outreach Lab", path: "/investor-email-generator", description: "Craft cold email templates" },
-        { label: "Sample Analysis", path: "/sample-analysis", description: "Preview a full investment analysis", public: true }
+        { label: "Demo Ecosystem", path: "/demo", description: "Explore the full analysis experience", public: true }
       ]
     }
   ];
