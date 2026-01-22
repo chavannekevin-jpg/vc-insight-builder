@@ -594,6 +594,7 @@ export default function FreemiumHub() {
                   companyId={company.id}
                   onNavigate={navigate}
                   memoContent={memoContentData?.memoContent}
+                  arcClassification={memoContentData?.arcClassification}
                 />
               ) : (
                 // Fallback card when sectionTools not available
