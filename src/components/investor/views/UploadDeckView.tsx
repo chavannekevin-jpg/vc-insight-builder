@@ -174,11 +174,12 @@ const UploadDeckView = () => {
 
       setProcessingStep(0); // Converting PDF
       
-      // Convert PDF to images client-side (Gemini works better with images)
+      // Convert PDF to images client-side.
+      // Speed optimization: fewer pages + smaller images are usually enough for an investor snapshot.
       const result = await convertPDFToImages(file, undefined, {
-        maxPages: 12,
-        maxDimension: 1600,
-        quality: 0.85
+        maxPages: 6,
+        maxDimension: 1200,
+        quality: 0.65,
       });
 
       if (result.images.length === 0) {
@@ -354,7 +355,7 @@ const UploadDeckView = () => {
       <div className="p-5 border-b border-border/30 bg-gradient-to-r from-card/80 to-card/40 backdrop-blur-sm">
         <h2 className="text-xl font-bold tracking-tight">Upload Deck</h2>
         <p className="text-sm text-muted-foreground/80 mt-1">
-          Upload a pitch deck and get an instant AI-generated investment memo with VC analysis
+          Upload a pitch deck and get a fast investor snapshot (not a full diligence memo)
         </p>
       </div>
 
@@ -377,7 +378,7 @@ const UploadDeckView = () => {
             </div>
             <h3 className="text-xl font-semibold mb-2">Drop your pitch deck here</h3>
             <p className="text-muted-foreground mb-6 text-center max-w-md px-4">
-              Upload a PDF pitch deck and our AI will generate a comprehensive VC-style investment memo with scoring, red flags, and profile matching
+              Upload a PDF pitch deck and our AI will generate a lightweight snapshot: what it is, why it might win, biggest risks, and a quick score.
             </p>
             <label>
               <input
@@ -437,7 +438,7 @@ const UploadDeckView = () => {
             </div>
             
             <p className="text-xs text-muted-foreground text-center max-w-sm">
-              This may take 30-60 seconds for detailed VC analysis
+              This is optimized for speed (typically 10-25 seconds). Larger decks can take longer.
             </p>
             
             <div className="flex items-center gap-2 mt-6 px-4 py-2 rounded-lg bg-muted/30">
