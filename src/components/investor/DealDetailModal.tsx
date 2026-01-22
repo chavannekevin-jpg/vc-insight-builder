@@ -110,18 +110,26 @@ export function DealDetailModal({
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState("");
 
-  const { data: memoData, isLoading: isMemoLoading } = useCompanyMemoData(deal?.company?.id || null);
+  const isDeckUpload = !!deal?.deck_company && !deal?.company;
+  const { data: memoData, isLoading: isMemoLoading } = useCompanyMemoData(
+    !isDeckUpload ? deal?.company?.id || null : null
+  );
   const { data: shares = [] } = useDealShares(deal?.company?.id || null, currentInvestorId);
   const updateStatus = useUpdateDealStatus(currentInvestorId);
   const updateNotes = useUpdateDealNotes(currentInvestorId);
   const removeDeal = useRemoveFromDealflow(currentInvestorId);
 
-  if (!deal || !deal.company) return null;
+  if (!deal) return null;
 
-  const company = deal.company;
-  const vcVerdict = company.vc_verdict_json as any;
+  const company = deal.company || deal.deck_company;
+  if (!company) return null;
+
+  const vcVerdict = (deal.company?.vc_verdict_json ?? null) as any;
   const overallScore = vcVerdict?.overallScore || vcVerdict?.overall_score;
   const sharedBy = deal.shared_by;
+
+  const deckMemo = (deal.deck_company?.memo_json ?? null) as any;
+  const deckOverallScore = deckMemo?.quick_analysis?.overall_score;
 
   const handleStatusChange = async (status: DealStatus) => {
     await updateStatus.mutateAsync({ dealId: deal.id, status });
@@ -158,17 +166,17 @@ export function DealDetailModal({
               <div className="space-y-2 flex-1">
                 <div className="flex items-center gap-3">
                   <DialogTitle className="text-xl">{company.name}</DialogTitle>
-                  {overallScore && (
+                  {(overallScore || deckOverallScore) && (
                     <Badge variant="outline" className="gap-1 font-semibold">
                       <Sparkles className="h-3 w-3" />
-                      {overallScore}/100
+                      {(overallScore || deckOverallScore)}/100
                     </Badge>
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                   <Badge variant="secondary">{company.stage}</Badge>
                   {company.category && <Badge variant="outline">{company.category}</Badge>}
-                  {company.has_premium && (
+                  {deal.company?.has_premium && (
                     <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
                       Premium Memo
                     </Badge>
@@ -246,100 +254,108 @@ export function DealDetailModal({
               <SectionCard
                 icon={<Sparkles className="h-4 w-4 text-primary" />}
                 title="Executive Summary"
-                content={memoData?.summary}
-                isLoading={isMemoLoading}
+                content={isDeckUpload ? deckMemo?.sections?.executive_summary?.content ?? null : memoData?.summary}
+                isLoading={!isDeckUpload ? isMemoLoading : false}
               />
 
               {/* Problem */}
               <SectionCard
                 icon={<Target className="h-4 w-4 text-red-500" />}
                 title="Problem"
-                content={memoData?.problem}
-                isLoading={isMemoLoading}
+                content={isDeckUpload ? deckMemo?.sections?.problem?.content ?? null : memoData?.problem}
+                isLoading={!isDeckUpload ? isMemoLoading : false}
               />
 
               {/* Solution */}
               <SectionCard
                 icon={<Lightbulb className="h-4 w-4 text-yellow-500" />}
                 title="Solution"
-                content={memoData?.solution}
-                isLoading={isMemoLoading}
+                content={isDeckUpload ? deckMemo?.sections?.solution?.content ?? null : memoData?.solution}
+                isLoading={!isDeckUpload ? isMemoLoading : false}
               />
 
               {/* Market */}
               <SectionCard
                 icon={<Globe className="h-4 w-4 text-cyan-500" />}
                 title="Market Opportunity"
-                content={memoData?.market}
-                isLoading={isMemoLoading}
+                content={isDeckUpload ? deckMemo?.sections?.market?.content ?? null : memoData?.market}
+                isLoading={!isDeckUpload ? isMemoLoading : false}
               />
 
               {/* Traction */}
               <SectionCard
                 icon={<TrendingUp className="h-4 w-4 text-green-500" />}
                 title="Traction"
-                content={memoData?.traction}
-                isLoading={isMemoLoading}
+                content={isDeckUpload ? deckMemo?.sections?.traction?.content ?? null : memoData?.traction}
+                isLoading={!isDeckUpload ? isMemoLoading : false}
               />
 
               {/* Business Model */}
               <SectionCard
                 icon={<Building2 className="h-4 w-4 text-blue-500" />}
                 title="Business Model"
-                content={memoData?.businessModel}
-                isLoading={isMemoLoading}
+                content={isDeckUpload ? deckMemo?.sections?.business_model?.content ?? null : memoData?.businessModel}
+                isLoading={!isDeckUpload ? isMemoLoading : false}
               />
 
               {/* Competition */}
               <SectionCard
                 icon={<Swords className="h-4 w-4 text-orange-500" />}
                 title="Competition"
-                content={memoData?.competition}
-                isLoading={isMemoLoading}
+                content={isDeckUpload ? deckMemo?.sections?.competition?.content ?? null : memoData?.competition}
+                isLoading={!isDeckUpload ? isMemoLoading : false}
               />
 
               {/* Team */}
               <SectionCard
                 icon={<Users className="h-4 w-4 text-purple-500" />}
                 title="Team"
-                content={memoData?.team}
-                isLoading={isMemoLoading}
+                content={isDeckUpload ? deckMemo?.sections?.team?.content ?? null : memoData?.team}
+                isLoading={!isDeckUpload ? isMemoLoading : false}
               />
 
               {/* Financials */}
               <SectionCard
                 icon={<DollarSign className="h-4 w-4 text-emerald-500" />}
                 title="Financials & Unit Economics"
-                content={memoData?.financials}
-                isLoading={isMemoLoading}
+                content={isDeckUpload ? deckMemo?.sections?.financials?.content ?? null : memoData?.financials}
+                isLoading={!isDeckUpload ? isMemoLoading : false}
               />
 
               {/* Vision */}
               <SectionCard
                 icon={<Rocket className="h-4 w-4 text-indigo-500" />}
                 title="Vision"
-                content={memoData?.vision}
-                isLoading={isMemoLoading}
+                content={isDeckUpload ? null : memoData?.vision}
+                isLoading={!isDeckUpload ? isMemoLoading : false}
               />
 
               {/* Ask & Use of Funds */}
               <SectionCard
                 icon={<DollarSign className="h-4 w-4 text-pink-500" />}
                 title="The Ask & Use of Funds"
-                content={memoData?.askUse}
-                isLoading={isMemoLoading}
+                content={isDeckUpload ? null : memoData?.askUse}
+                isLoading={!isDeckUpload ? isMemoLoading : false}
               />
 
               {/* Risks */}
               <SectionCard
                 icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
                 title="Risks & Challenges"
-                content={memoData?.risks}
-                isLoading={isMemoLoading}
+                content={isDeckUpload ? deckMemo?.sections?.risks?.content ?? null : memoData?.risks}
+                isLoading={!isDeckUpload ? isMemoLoading : false}
               />
 
+              {isDeckUpload && (
+                <SectionCard
+                  icon={<CheckCircle className="h-4 w-4 text-green-500" />}
+                  title="Recommendation"
+                  content={deckMemo?.sections?.recommendation?.content ?? null}
+                />
+              )}
+
               {/* No Data State */}
-              {!isMemoLoading && !hasAnyMemoData && (
+              {!isDeckUpload && !isMemoLoading && !hasAnyMemoData && (
                 <div className="text-center py-8 text-muted-foreground">
                   <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
                   <p className="font-medium">No analysis data available yet</p>
@@ -402,10 +418,10 @@ export function DealDetailModal({
                   <Clock className="h-3 w-3" />
                   Added {formatDistanceToNow(new Date(deal.added_at), { addSuffix: true })}
                 </span>
-                {company.created_at && (
+                {(company as any).created_at && (
                   <span>
                     Company created{" "}
-                    {formatDistanceToNow(new Date(company.created_at), { addSuffix: true })}
+                    {formatDistanceToNow(new Date((company as any).created_at), { addSuffix: true })}
                   </span>
                 )}
               </div>
@@ -470,7 +486,7 @@ export function DealDetailModal({
               </AlertDialogContent>
             </AlertDialog>
 
-            {company.memo_content_generated && (
+            {deal.company?.memo_content_generated && (
               <Button variant="ghost" className="gap-2 ml-auto" asChild>
                 <a href={`/memo/${company.id}/overview`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4" />

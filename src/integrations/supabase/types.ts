@@ -920,7 +920,8 @@ export type Database = {
       investor_dealflow: {
         Row: {
           added_at: string | null
-          company_id: string
+          company_id: string | null
+          deck_company_id: string | null
           id: string
           investor_id: string
           invited_via_code: string | null
@@ -933,7 +934,8 @@ export type Database = {
         }
         Insert: {
           added_at?: string | null
-          company_id: string
+          company_id?: string | null
+          deck_company_id?: string | null
           id?: string
           investor_id: string
           invited_via_code?: string | null
@@ -946,7 +948,8 @@ export type Database = {
         }
         Update: {
           added_at?: string | null
-          company_id?: string
+          company_id?: string | null
+          deck_company_id?: string | null
           id?: string
           investor_id?: string
           invited_via_code?: string | null
@@ -966,6 +969,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "investor_dealflow_deck_company_fk"
+            columns: ["deck_company_id"]
+            isOneToOne: false
+            referencedRelation: "investor_deck_companies"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "investor_dealflow_investor_id_fkey"
             columns: ["investor_id"]
             isOneToOne: false
@@ -980,6 +990,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      investor_deck_companies: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          investor_id: string
+          memo_json: Json | null
+          name: string
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          investor_id: string
+          memo_json?: Json | null
+          name: string
+          stage: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          investor_id?: string
+          memo_json?: Json | null
+          name?: string
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       investor_invites: {
         Row: {
