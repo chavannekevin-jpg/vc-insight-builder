@@ -56,6 +56,7 @@ const commerceItems = [
 
 const toolItems = [
   { title: "Email Center", url: "/admin/emails", icon: Mail },
+  { title: "Knowledge Base", url: "/admin/knowledge-base", icon: BookOpen },
   { title: "Analysis Builder", url: "/admin/analysis-builder", icon: Wrench },
 ];
 
