@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { Eye } from "lucide-react";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useKnowledgeBaseSources, type KnowledgeBaseSourceWithCounts } from "@/hooks/useKnowledgeBaseSources";
+import { KnowledgeBaseSourceDetailsDialog } from "@/components/admin/kb/KnowledgeBaseSourceDetailsDialog";
 
 function statusBadgeVariant(status: KnowledgeBaseSourceWithCounts["status"]) {
   if (status === "active") return "default" as const;
@@ -29,6 +31,7 @@ function sourceLabel(source: KnowledgeBaseSourceWithCounts) {
 export function KnowledgeBaseSourceList() {
   const { data, isLoading, error, refetch, isFetching } = useKnowledgeBaseSources({ limit: 50 });
   const [view, setView] = useState<"active" | "all">("active");
+  const [openSourceId, setOpenSourceId] = useState<string | null>(null);
 
   const rows = useMemo(() => {
     const items = data ?? [];
@@ -96,6 +99,15 @@ export function KnowledgeBaseSourceList() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="secondary"
+                      onClick={() => setOpenSourceId(s.id)}
+                      title="View extracted bullets"
+                    >
+                      <Eye />
+                    </Button>
                     <Badge variant={statusBadgeVariant(s.status)}>{s.status.toUpperCase()}</Badge>
                     <Badge
                       variant={confidenceBadgeVariant(s.extraction_confidence)}
@@ -117,6 +129,12 @@ export function KnowledgeBaseSourceList() {
           </div>
         )}
       </div>
+
+      <KnowledgeBaseSourceDetailsDialog
+        sourceId={openSourceId}
+        open={Boolean(openSourceId)}
+        onOpenChange={(open) => setOpenSourceId(open ? openSourceId : null)}
+      />
     </ModernCard>
   );
 }
