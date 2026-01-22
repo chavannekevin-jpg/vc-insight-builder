@@ -523,14 +523,27 @@ export default function Portal() {
                       disabled={isAdminViewing}
                     />
                     
-                    {/* Answer Quality Optimizer */}
-                    {!isAdminViewing && (
+                    {/* Answer Quality Optimizer with AI Co-Pilot */}
+                    {!isAdminViewing && companyId && (
                       <AnswerOptimizerWizard
                         answer={responses[currentQuestion.question_key] || ""}
                         questionKey={currentQuestion.question_key}
+                        companyId={companyId}
+                        allResponses={responses}
                         onSuggestionApply={(addition) => {
                           const currentAnswer = responses[currentQuestion.question_key] || "";
                           handleAnswerChange(currentQuestion.question_key, currentAnswer + addition);
+                        }}
+                        onNavigateToField={(field) => {
+                          // Find the question index for this field and navigate to it
+                          const targetIndex = allQuestions.findIndex(q => q.question_key === field);
+                          if (targetIndex >= 0) {
+                            setIsAnimating(true);
+                            setTimeout(() => {
+                              setCurrentStep(targetIndex);
+                              setIsAnimating(false);
+                            }, 150);
+                          }
                         }}
                       />
                     )}
