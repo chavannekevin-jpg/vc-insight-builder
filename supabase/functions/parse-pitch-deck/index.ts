@@ -339,6 +339,7 @@ EXTRACTION RULES:
       } else if (isPDF) {
         console.log('Processing as PDF document');
 
+        // Gemini requires PDFs to be sent as 'file' type, not 'image_url'
         messages = [
           { role: 'system', content: systemPrompt },
           {
@@ -349,8 +350,10 @@ EXTRACTION RULES:
                 text: `Analyze this pitch deck PDF and extract all relevant startup information. ${companyName ? `The company is called "${companyName}".` : ''} ${companyDescription ? `Context: ${companyDescription}` : ''}`
               },
               {
-                type: 'image_url',
-                image_url: { url: `data:application/pdf;base64,${base64Content}` }
+                type: 'file',
+                file: { 
+                  url: `data:application/pdf;base64,${base64Content}` 
+                }
               }
             ]
           }
