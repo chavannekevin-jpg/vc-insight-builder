@@ -170,16 +170,23 @@ IMPORTANT:
 
     // Add the document/images
     for (const url of imagesToProcess.slice(0, 15)) {
-      if (url.startsWith('data:application/pdf')) {
-        // PDF data URL - send as file
+      if (url.startsWith('data:application/pdf;base64,')) {
+        // PDF data URL - extract base64 and send as inline_data (Gemini format)
+        const base64Data = url.replace('data:application/pdf;base64,', '');
         contentParts.push({
-          type: "file",
-          file: {
-            url: url,
+          type: "image_url",
+          image_url: { 
+            url: `data:application/pdf;base64,${base64Data}` 
           }
         });
+      } else if (url.startsWith('data:image/')) {
+        // Base64 image - send as image_url with data URL
+        contentParts.push({
+          type: "image_url",
+          image_url: { url, detail: "high" }
+        });
       } else {
-        // Image URL
+        // Regular image URL
         contentParts.push({
           type: "image_url",
           image_url: { url, detail: "high" }

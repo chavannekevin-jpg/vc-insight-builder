@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
-
+import { convertPDFToImages } from "@/lib/pdfToImages";
 interface MemoSection {
   title: string;
   content: string;
@@ -81,20 +81,6 @@ const UploadDeckView = () => {
     }
   };
 
-  // Convert file to base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const result = reader.result as string;
-        // Remove the data URL prefix to get just the base64 string
-        const base64 = result.split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-    });
-  };
 
   const handleFileUpload = async (file: File) => {
     // Check file size (max 15MB)
@@ -118,12 +104,32 @@ const UploadDeckView = () => {
         throw new Error("You must be logged in to upload decks");
       }
 
-      setProcessingStatus("Uploading and analyzing deck with AI...");
+      setProcessingStatus("Converting PDF to images...");
       
-      // Convert file to base64
-      const fileBase64 = await fileToBase64(file);
+      // Convert PDF to images client-side (Gemini works better with images)
+      const result = await convertPDFToImages(file, undefined, {
+        maxPages: 12,
+        maxDimension: 1600,
+        quality: 0.85
+      });
 
-      // Call the edge function to generate the memo
+      if (result.images.length === 0) {
+        throw new Error("Could not extract any pages from the PDF");
+      }
+
+      // Convert blobs to base64 data URLs
+      const imageDataUrls: string[] = await Promise.all(
+        result.images.map(blob => new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        }))
+      );
+
+      setProcessingStatus(`Analyzing ${imageDataUrls.length} pages with AI...`);
+
+      // Call the edge function with image URLs instead of PDF
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-investor-memo`,
         {
@@ -133,9 +139,8 @@ const UploadDeckView = () => {
             "Authorization": `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
-            fileBase64,
+            imageUrls: imageDataUrls,
             fileName: file.name,
-            fileType: file.type,
           }),
         }
       );
