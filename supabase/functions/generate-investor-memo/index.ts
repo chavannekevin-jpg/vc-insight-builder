@@ -251,14 +251,45 @@ IMPORTANT:
       try {
         // Extract JSON from the response (handle markdown code blocks)
         let jsonStr = responseContent;
-        const jsonMatch = responseContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        
+        // Try to find JSON in code blocks first (greedy match for the content)
+        const jsonMatch = responseContent.match(/```(?:json)?\s*([\s\S]*?)```/);
         if (jsonMatch) {
-          jsonStr = jsonMatch[1];
+          jsonStr = jsonMatch[1].trim();
+        } else {
+          // Try to find raw JSON object
+          const objectMatch = responseContent.match(/\{[\s\S]*\}/);
+          if (objectMatch) {
+            jsonStr = objectMatch[0];
+          }
         }
+        
+        // Clean up common issues
+        jsonStr = jsonStr.trim();
+        
+        // Sometimes the AI adds trailing content after the JSON
+        // Find the last closing brace that balances the first opening brace
+        let braceCount = 0;
+        let jsonEndIndex = -1;
+        for (let i = 0; i < jsonStr.length; i++) {
+          if (jsonStr[i] === '{') braceCount++;
+          if (jsonStr[i] === '}') {
+            braceCount--;
+            if (braceCount === 0) {
+              jsonEndIndex = i + 1;
+              break;
+            }
+          }
+        }
+        
+        if (jsonEndIndex > 0) {
+          jsonStr = jsonStr.substring(0, jsonEndIndex);
+        }
+        
         memo = JSON.parse(jsonStr);
       } catch (parseError) {
         console.error('Failed to parse AI response as JSON:', parseError);
-        console.log('Raw response:', responseContent.substring(0, 500));
+        console.log('Raw response:', responseContent.substring(0, 1000));
         throw new Error('Failed to parse memo structure');
       }
 
