@@ -4,8 +4,9 @@ import { DashboardScorecard } from "@/components/memo/DashboardScorecard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DEMO_COMPANY, DEMO_VC_QUICK_TAKE } from "@/data/demo/demoSignalFlow";
-import { DEMO_SECTION_TOOLS } from "@/data/demo/demoSignalFlowTools";
+import { DEMO_COMPANY } from "@/data/demo/demoSignalFlow";
+import { DEMO_SECTION_TOOLS, DEMO_HOLISTIC_VERDICTS } from "@/data/demo/demoSignalFlowTools";
+import { getDemoMemo } from "@/data/acceleratorDemo/demoMemos";
 import { TrendingUp, Users, Lightbulb, ArrowRight } from "lucide-react";
 import type { MemoStructuredContent, MemoVCQuickTake as VCQuickTakeType } from "@/types/memo";
 
@@ -34,35 +35,37 @@ const buildSectionToolsFromSignalFlow = () => {
   return result;
 };
 
-// Convert demo VC quick take to the expected format
-const buildVCQuickTake = (): VCQuickTakeType => ({
-  verdict: DEMO_VC_QUICK_TAKE.verdictExplanation,
-  readinessLevel: "HIGH",
-  readinessRationale: `${DEMO_VC_QUICK_TAKE.verdict}: ${DEMO_VC_QUICK_TAKE.readinessLevel}`,
-  concerns: DEMO_VC_QUICK_TAKE.keyRisks,
-  strengths: DEMO_VC_QUICK_TAKE.keyStrengths
-});
+// Get VC Quick Take from the memo data
+const getVCQuickTake = (): VCQuickTakeType | null => {
+  const memo = getDemoMemo("demo-signalflow");
+  return memo?.vcQuickTake || null;
+};
 
 // Build memo content structure for VC Quick Take component
 const buildMemoContent = (): MemoStructuredContent => {
-  const sectionNarratives: Record<string, string> = {
-    'Problem': "Enterprise sales teams lose 67% of qualified deals to 'no decision' — not competitors. SignalFlow addresses the $2.1M annual revenue leakage per 50-person sales org with AI-powered prediction.",
-    'Solution': "SignalFlow analyzes CRM data, email patterns, and call transcripts to predict deal outcomes with 89% accuracy, surfacing the 3-5 signals that determine close probability.",
-    'Market': "The €2.5B revenue intelligence market is growing 25% YoY, with mid-market companies representing an underserved €630M SAM.",
-    'Competition': "While Gong ($7B valuation) and Clari ($2.6B) dominate enterprise, mid-market remains underserved. SignalFlow differentiates through prediction-first (vs. recording-first) approach.",
-    'Team': "CEO Elena Vasquez (8 years Salesforce) and CTO Marcus Chen (Datadog ML Lead, Stanford PhD) bring exceptional founder-market fit.",
-    'Business Model': "€14K ACV with 4.9x LTV:CAC, 82% gross margin, and 7-month payback. Unit economics are healthy for SaaS scale.",
-    'Traction': "€32K MRR with 28 customers, 15% MoM growth for 8 consecutive months. NPS of 74 and 94% cohort retention.",
-    'Vision': "Clear 18-month path to €150K MRR and 75 customers, positioning for €5M Series A."
-  };
+  const memo = getDemoMemo("demo-signalflow");
+  
+  if (memo) {
+    return {
+      vcQuickTake: memo.vcQuickTake,
+      sections: memo.sections.map(section => ({
+        title: section.title,
+        paragraphs: [{ text: section.narrative, emphasis: "narrative" as const }],
+        keyPoints: section.keyPoints
+      }))
+    };
+  }
 
+  // Fallback - should not happen
   return {
-    vcQuickTake: buildVCQuickTake(),
-    sections: Object.entries(sectionNarratives).map(([title, narrative]) => ({
-      title,
-      paragraphs: [{ text: narrative, emphasis: "narrative" as const }],
-      keyPoints: []
-    }))
+    vcQuickTake: {
+      verdict: "",
+      readinessLevel: "MEDIUM",
+      readinessRationale: "",
+      concerns: [],
+      strengths: []
+    },
+    sections: []
   };
 };
 
@@ -70,7 +73,7 @@ export default function DemoDashboard() {
   const navigate = useNavigate();
   const sectionTools = buildSectionToolsFromSignalFlow();
   const memoContent = buildMemoContent();
-  const vcQuickTake = buildVCQuickTake();
+  const vcQuickTake = getVCQuickTake();
 
   // Custom navigation handler for demo - redirects internal links to demo versions
   const handleNavigate = (path: string) => {

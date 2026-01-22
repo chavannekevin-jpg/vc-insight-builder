@@ -669,6 +669,126 @@ export const DEMO_MEMOS: Record<string, DemoMemoData> = {
         keyPoints: ["$1M for 15 months; 40% product, 40% GTM, 20% ops", "Milestones: 10 paying customers, $50K ARR, published case study", "Concern: plan assumes current approach works; traction suggests otherwise"] 
       }
     ]
+  },
+  "demo-signalflow": {
+    vcQuickTake: {
+      verdict: "SignalFlow demonstrates strong fundamentals with exceptional founder-market fit and validated product-market fit signals. The €32K MRR with 15% MoM growth and 4.9x LTV:CAC shows efficient economics. Competition from Gong is the primary concern, but the 'prediction vs. recording' positioning creates differentiation runway.",
+      readinessLevel: "MEDIUM",
+      readinessRationale: "Strong team and healthy unit economics, but needs to strengthen competitive moat and scale beyond founder-led sales before Series A readiness.",
+      concerns: [
+        "Gong's announced mid-market expansion with 'Essentials' tier",
+        "Early traction base (28 customers) limits pattern confidence",
+        "Founder-led sales motion may not scale predictably"
+      ],
+      strengths: [
+        "Exceptional founder-market fit (Salesforce + Datadog pedigree)",
+        "Strong unit economics (4.9x LTV:CAC, 7-month payback)",
+        "Clear differentiation on prediction vs. recording",
+        "High NPS (74) indicates organic growth potential"
+      ],
+      frameworkScore: 70,
+      criteriaCleared: 6,
+      rulingStatement: "Conditional pass — fundable with right investor who understands competitive dynamics"
+    },
+    heroStatement: "SignalFlow is building the AI intelligence layer for mid-market sales teams — predicting which deals will close and why, not just recording what happened.",
+    aiActionPlan: {
+      items: [
+        {
+          id: "action-1",
+          priority: 1,
+          category: "competition",
+          problem: "Gong announced 'Essentials' tier targeting mid-market at $99/seat — direct competitive threat",
+          impact: "Gong has $7B+ valuation, $200M+ ARR, and deep enterprise relationships. Their mid-market push could pressure pricing and positioning. VCs will ask: 'What happens when Gong comes down-market?'",
+          howToFix: "Double down on the 'prediction' vs. 'recording' differentiation. Build competitive win documentation — every deal you win against Gong should be documented with specific reasons. Create a moat through data network effects and integration depth.",
+          badExample: "Gong is focused on enterprise, they won't come after us.",
+          goodExample: "We've won 8 competitive deals against Gong in the last quarter. Key differentiator: customers chose us for outcome prediction, not call recording. Our 89% accuracy on deal outcomes is the moat — Gong would need 18+ months to build comparable models."
+        },
+        {
+          id: "action-2",
+          priority: 2,
+          category: "traction",
+          problem: "€32K MRR with 28 customers is promising but founder-led — need to prove scalable GTM",
+          impact: "VCs see founder-led sales as market validation, not product-market fit. Without evidence that non-founders can close deals, you're asking investors to bet on founders' hustle, not a repeatable business. This caps valuation and makes Series A conditional.",
+          howToFix: "Hire 2 AEs in next 90 days. Document the sales playbook explicitly. Target: 3+ deals closed by non-founders within 6 months. Build pipeline visibility so you can show sales velocity, not just closed deals.",
+          badExample: "Our founders are great at closing — we just need more of them.",
+          goodExample: "Our first AE closed 2 deals in Month 2 using our documented playbook — 40% faster than founder average. We now have proof the motion transfers."
+        },
+        {
+          id: "action-3",
+          priority: 3,
+          category: "team",
+          problem: "Missing VP Marketing / demand generation leadership",
+          impact: "Current growth is organic and founder-networked. Without systematic demand generation, scaling will hit a ceiling. VCs will ask: 'How do you get from €32K to €150K MRR without a marketing engine?'",
+          howToFix: "Hire VP Marketing with B2B SaaS demand gen track record within 60 days. Priority: someone who has built lead generation at €10-50M ARR stage. Consider fractional initially if full-time hiring is slow.",
+          badExample: "We'll figure out marketing once we have more revenue.",
+          goodExample: "We're in final rounds with a VP Marketing candidate from Outreach. She built their mid-market lead gen engine from €20M to €80M ARR. Expected start date: Week 6."
+        },
+        {
+          id: "action-4",
+          priority: 4,
+          category: "competition",
+          problem: "No patents filed on core prediction algorithms — IP moat is informal",
+          impact: "Without formal IP protection, your technical advantage is just execution speed. Well-funded competitors can hire ML talent and replicate. VCs investing in AI companies want to see IP strategy.",
+          howToFix: "File provisional patent on the 'why' prediction methodology within 30 days. Document the trade secrets around your training data curation. Build the narrative: 'Our 2M+ deal outcomes dataset would take competitors 18+ months to replicate.'",
+          badExample: "Our algorithms are proprietary — we don't need patents.",
+          goodExample: "We filed a provisional patent on our outcome prediction methodology last month. Our 2M deal dataset is growing at 100K outcomes/quarter — this data moat compounds and is our real defensibility."
+        },
+        {
+          id: "action-5",
+          priority: 5,
+          category: "narrative",
+          problem: "Need stronger proof that 'prediction' is meaningfully different from 'conversation intelligence'",
+          impact: "Investors hear 'AI sales tool' and think 'Gong competitor.' Your differentiation is subtle — predicting outcomes vs. analyzing calls. Without clear articulation, you blend into a crowded category.",
+          howToFix: "Create side-by-side comparison content: 'What Gong tells you vs. what SignalFlow tells you.' Get 5 customers to testimonial specifically on the prediction value. Build the 'outcome intelligence' category narrative.",
+          badExample: "We're like Gong but we predict outcomes.",
+          goodExample: "Gong tells you what was said on a call. We tell you whether the deal will close and why — 45 days before the outcome. Three customers have quoted saving $500K+ by reallocating rep time from doomed deals."
+        }
+      ],
+      overallUrgency: "high",
+      summaryLine: "SignalFlow has strong fundamentals but needs to strengthen competitive moat, scale GTM beyond founders, and formalize IP protection before Series A."
+    },
+    sections: [
+      {
+        title: "Problem",
+        narrative: "Enterprise sales teams lose 67% of qualified deals to 'no decision' — not competitors. After interviewing 85 sales leaders across the mid-market, SignalFlow found a consistent pattern: reps spend 40% of their time on deals that will never close, while neglecting the ones that could. The financial impact is staggering: $2.1M average annual revenue leakage per 50-person sales org. This isn't a productivity problem — it's a prediction problem. Current solutions (Salesforce reports, manager intuition, spreadsheet forecasting) catch problems far too late, after deals have already stalled. The insight comes in the post-mortem, not the moment of truth.",
+        keyPoints: ["67% of deals lost to 'no decision' — not competitors", "$2.1M average revenue leakage per 50-person sales org", "Current tools catch problems too late — post-mortem vs. real-time"]
+      },
+      {
+        title: "Solution",
+        narrative: "SignalFlow analyzes CRM data, email patterns, call transcripts, and calendar activity to predict deal outcomes with 89% accuracy. Unlike tools that tell you what happened, SignalFlow tells you WHY deals will close or stall — so reps know exactly what to fix. The ML models identify the 3-5 signals that determine close probability for each deal, surfacing them as actionable coaching insights. A rep doesn't just see 'this deal is at risk' — they see 'this deal lacks technical champion engagement and has 40% less email velocity than won deals at this stage.' Key differentiators: prediction focus (vs. recording), mid-market optimization (20-100 person teams), 5-minute integration, and action-oriented insights.",
+        keyPoints: ["89% accuracy on deal outcome prediction", "Identifies 'why' not just 'if' — actionable coaching", "5-minute integration with 12 CRM/email/calendar tools"]
+      },
+      {
+        title: "Market",
+        narrative: "The ICP is mid-market B2B companies (100-1000 employees) with 20-100 person sales teams selling $50K+ ACV products. At €14K ACV, the TAM is €2.5B (180K mid-market companies × €14K). SAM filters to tech-forward industries in US + Western Europe (€630M), with SOM of €112M based on reachable accounts through current channels. The category is validated by Gong's $7.25B valuation and Clari's $2.6B — combined $10B+ in value proves market appetite. Timing is favorable: 85% of sales organizations plan to increase AI tool spending in 2025, and the mid-market segment is underserved by enterprise-focused incumbents.",
+        keyPoints: ["€2.5B TAM with bottom-up methodology", "Category validated by $10B+ in Gong + Clari value", "85% of sales orgs increasing AI spend in 2025"]
+      },
+      {
+        title: "Competition",
+        narrative: "The competitive landscape breaks into three archetypes: conversation intelligence leaders (Gong at $70M+ ARR, Chorus acquired for $575M), revenue platforms (Clari at $40M+ ARR, 6sense), and point solutions (activity capture, forecasting tools). Gong's announced 'Essentials' tier at $99/seat is a direct mid-market threat. SignalFlow's differentiation is the 'prediction' vs. 'recording' axis — rather than analyzing what happened on calls, SignalFlow predicts what will happen with deals and prescribes specific actions. The 2M+ deal outcomes training dataset creates a data moat that would take competitors 18+ months to replicate. Integration depth with 12 tools creates switching costs.",
+        keyPoints: ["Primary threat: Gong's mid-market expansion", "Differentiation: prediction vs. recording", "Data moat: 2M+ deal outcomes in training set"]
+      },
+      {
+        title: "Team",
+        narrative: "The founding team has earned the right to build this company. Elena Vasquez (CEO, 52% equity) spent 8 years at Salesforce leading enterprise sales strategy — she's seen the deal intelligence problem from the inside and brings relationships with major sales tech buyers. Marcus Chen (CTO, 48% equity) led ML engineering at Datadog and holds a PhD from Stanford, giving him direct experience building production ML systems at scale. The combination of sales domain expertise and technical depth is rare. The team has hired 3 engineers from Stripe and Twilio, plus a VP Sales from Outreach. Gap: VP Marketing hire in progress, expected close in 6-8 weeks. Advisors include a Gong board member and former Clari CRO.",
+        keyPoints: ["CEO: 8 years Salesforce enterprise sales strategy", "CTO: Datadog ML Lead, Stanford PhD", "Advisory: Gong board member, former Clari CRO"]
+      },
+      {
+        title: "Business Model",
+        narrative: "SignalFlow sells SaaS subscriptions at €1,200/month per team (average 15 seats = €14K ACV). Gross margin is 82%. Current unit economics are healthy: CAC of €8,500, LTV of €42,000, LTV:CAC ratio of 4.9x. Payback period is 7 months. Monthly churn is 2.1%, with Net Revenue Retention of 108% driven by seat expansion. Annual contracts at 15% discount are driving 45% of new ARR, improving cash efficiency. Expansion revenue comes from two vectors: seat growth as customers add teams, and enterprise tier upsell at €50K+ ACV (in development for Q2).",
+        keyPoints: ["€14K ACV, 82% gross margin", "4.9x LTV:CAC, 7-month payback", "108% NRR from seat expansion"]
+      },
+      {
+        title: "Traction",
+        narrative: "SignalFlow has €32K MRR with 28 paying customers, growing 15% month-over-month for 8 consecutive months. Started charging 10 months ago. Customer quality is strong: 3 YC-backed companies, 2 publicly traded companies under NDA. Product engagement is healthy: NPS of 74, cohort retention of 94% at Month 6. Pipeline shows €180K in qualified opportunities. Forward indicators: 5 deals in final negotiation (€65K potential ACV), enterprise tier pilots with 2 customers, and inbound interest accelerating from content marketing. Series A trigger: €150K MRR with 75+ customers and proven non-founder sales motion.",
+        keyPoints: ["€32K MRR, 28 customers, 15% MoM growth", "NPS 74, 94% retention at Month 6", "€180K in qualified pipeline"]
+      },
+      {
+        title: "Vision",
+        narrative: "Raising €2M Seed at €10M pre-money. Use of funds: 55% R&D (hire 4 engineers for enterprise features and model improvements), 25% sales (hire 2 AEs plus 1 SDR), 15% marketing (VP Marketing hire, content, events), 5% ops. 18-month runway to key milestones: €150K MRR, 75 customers, enterprise tier launched, US presence established. Series A unlock requires proving sales velocity (3-month cycles vs. current 4.5) and demonstrating non-founder-led closes. Exit potential: strategic acquisition by CRM platforms (Salesforce, HubSpot) or revenue intelligence consolidation (ZoomInfo pattern). Comparable exits: Chorus.ai ($575M), InsideSales.com (~$100M). Realistic outcome: €500M-1B exit at Series B/C stage.",
+        keyPoints: ["€2M raise for 18 months runway", "Milestones: €150K MRR, 75 customers, enterprise tier", "Exit comps: Chorus.ai ($575M), category consolidation"]
+      }
+    ]
   }
 };
 
