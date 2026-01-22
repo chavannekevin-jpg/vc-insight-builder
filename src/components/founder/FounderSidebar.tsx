@@ -26,6 +26,7 @@ import {
   Flame,
   Users,
   Trophy,
+  Telescope,
 } from "lucide-react";
 import {
   Sidebar,
@@ -225,6 +226,33 @@ export const FounderSidebar = ({
                           {matchingFunds}+
                         </span>
                       )}
+                    </span>
+                  )}
+                </SidebarMenuButton>
+                </SidebarMenuItem>
+              
+              {/* Market Lens - premium tool */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => {
+                    if (hasPaid && hasMemo) {
+                      navigate("/market-lens");
+                    } else {
+                      navigate("/pricing");
+                    }
+                  }}
+                  className={cn(
+                    "w-full transition-all",
+                    isActive("/market-lens")
+                      ? "bg-primary/20 text-primary border-l-2 border-primary"
+                      : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Telescope className="w-4 h-4 shrink-0" />
+                  {!collapsed && (
+                    <span className="flex items-center gap-2">
+                      Market Lens
+                      {!(hasPaid && hasMemo) && <Lock className="w-3 h-3 text-muted-foreground" />}
                     </span>
                   )}
                 </SidebarMenuButton>
