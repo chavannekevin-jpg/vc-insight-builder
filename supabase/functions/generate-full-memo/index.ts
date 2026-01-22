@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.84.0";
+import { buildEvidencePacket } from "./evidence.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -2649,6 +2650,19 @@ async function generateMemoInBackground(
       const nonManualContextStr = useMethodologyV2
         ? buildNonManualContext(nonManualResponses, sectionName)
         : "";
+
+      // Build a contract-style evidence packet for the writer (v2 only)
+      // This reduces hallucinations by forcing the model to write only from explicit artifacts.
+      const evidencePacketStr = useMethodologyV2
+        ? buildEvidencePacket({
+            sectionName,
+            sectionResponses,
+            manualQuestionKeys: new Set(manualResponses.map((r) => r.question_key)),
+            nonManualRows: nonManualResponses,
+            classifiedMetricSet: undefined, // kept small here; full classified metrics injected later for tools
+            companyModel: companyModel ? { coherence: companyModel.coherence, discrepancies: companyModel.discrepancies } : null,
+          })
+        : "";
       
       // Build AI-deduced market context string if available
       let marketContextStr = "";
@@ -2755,8 +2769,12 @@ In your conclusion, note data confidence level.
       }
       
       const prompt = customPrompt 
-        ? `${customPrompt}${twoPassGuidelines}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${criteriaContextStr}${nonManualContextStr}\n\n${useMethodologyV2 ? "MANUAL FOUNDER EVIDENCE (only this can be treated as asserted facts):" : "Raw information to analyze:"}\n${combinedContent}\n\n---\n\nIMPORTANT: Follow the PART 1 and PART 2 structure detailed above in your custom instructions. Generate the complete narrative and reflection content first, then format your response as JSON.\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PASS 1 (neutral baseline)", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "PASS 2: risk & diligence notes (no final investment stance in section pages)",\n    "questions": [\n      {"question": "specific diligence question 1", "vcRationale": "Why VCs care about this", "whatToPrepare": "Evidence/data to resolve"},\n      {"question": "question 2", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"},\n      {"question": "question 3", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"}\n    ],\n    "benchmarking": "If you use benchmarks, treat them as context; do not apply mismatched benchmarks as judgment.",\n    "conclusion": "Section-level conclusion should summarize uncertainties + next steps, not a verdict"\n  }\n}`
+        ? `${customPrompt}${twoPassGuidelines}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${criteriaContextStr}\n\n${useMethodologyV2 ? evidencePacketStr : nonManualContextStr}\n\n${useMethodologyV2 ? "IMPORTANT WRITER RULES (v2):\n- You MUST NOT introduce any new facts, metrics, or competitor names not present in HARD EVIDENCE.\n- If you must discuss a missing metric, discuss the uncertainty, not the value.\n- Any derived/calculated numbers must be explicitly labeled as [DERIVED].\n- Any hypothesis must be explicitly labeled as [HYPOTHESIS].\n" : ""}\n\n${useMethodologyV2 ? "HARD EVIDENCE (manual-only) is above; do not restate the raw blob." : "Raw information to analyze:"}\n${useMethodologyV2 ? "" : combinedContent}\n\n---\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PASS 1 (neutral baseline)", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "PASS 2: risk & diligence notes (no final investment stance in section pages)",\n    "questions": [\n      {"question": "specific diligence question 1", "vcRationale": "Why VCs care about this", "whatToPrepare": "Evidence/data to resolve"},\n      {"question": "question 2", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"},\n      {"question": "question 3", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"}\n    ],\n    "benchmarking": "If you use benchmarks, treat them as context; do not apply mismatched benchmarks as judgment.",\n    "conclusion": "Section-level conclusion should summarize uncertainties + next steps, not a verdict"\n  }\n}`
         : `You are a senior VC investment analyst writing the "${sectionName}" section of an internal due diligence memo. Your job is to assess objectively AND teach founders how to present their company like a VC would.
+
+${useMethodologyV2 ? twoPassGuidelines : ""}
+
+${useMethodologyV2 ? evidencePacketStr : ""}
 
 === SECTION-SPECIFIC REQUIREMENTS ===
 ${sectionName === "Problem" ? `
