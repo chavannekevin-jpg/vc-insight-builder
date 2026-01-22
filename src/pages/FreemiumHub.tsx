@@ -25,6 +25,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/hooks/useCompany";
 import { usePrefetchMemoContent } from "@/hooks/useMemoContent";
+import { useVcQuickTake, useSectionTools, useDashboardResponses } from "@/hooks/useDashboardData";
 
 // Insider articles for daily rotation
 const insiderArticles = [
@@ -113,7 +114,6 @@ export default function FreemiumHub() {
   } = useCompany(user?.id);
 
   const [memo, setMemo] = useState<Memo | null>(null);
-  const [responses, setResponses] = useState<MemoResponse[]>([]);
   const [generatingTagline, setGeneratingTagline] = useState(false);
   const [tagline, setTagline] = useState<string>("");
   const [taglineAttempted, setTaglineAttempted] = useState(false);
@@ -122,10 +122,6 @@ export default function FreemiumHub() {
   const [isResetting, setIsResetting] = useState(false);
   const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-  const [responsesLoaded, setResponsesLoaded] = useState(false);
-  const [cachedVerdict, setCachedVerdict] = useState<any>(null);
-  const [vcQuickTake, setVcQuickTake] = useState<any>(null);
-  const [sectionTools, setSectionTools] = useState<Record<string, any> | null>(null);
   const [fundDiscoveryModalOpen, setFundDiscoveryModalOpen] = useState(false);
   const [inviteFounderOpen, setInviteFounderOpen] = useState(false);
   const [scoreboardOpen, setScoreboardOpen] = useState(false);
@@ -148,65 +144,13 @@ export default function FreemiumHub() {
     company ? { stage: company.stage, category: company.category || undefined } : null
   );
 
-  // Load cached verdict and VC Quick Take from company data
-  useEffect(() => {
-    if (company?.vc_verdict_json) {
-      setCachedVerdict(company.vc_verdict_json);
-    }
-  }, [company?.vc_verdict_json]);
+  // Use React Query cached hooks for dashboard data (prevents reload on navigation)
+  const { data: vcQuickTake } = useVcQuickTake(company?.id || null, hasPaidData);
+  const { data: sectionTools } = useSectionTools(company?.id || null, hasPaidData, memoHasContent);
+  const { data: responses = [] } = useDashboardResponses(company?.id || null);
 
-  // Load VC Quick Take for paid users
-  useEffect(() => {
-    const loadQuickTake = async () => {
-      if (!company?.id || !hasPaidData) return;
-      
-      const { data: memoData } = await supabase
-        .from("memos")
-        .select("structured_content")
-        .eq("company_id", company.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
-      if (memoData?.structured_content) {
-        const content = memoData.structured_content as any;
-        if (content.vcQuickTake) {
-          setVcQuickTake(content.vcQuickTake);
-        }
-      }
-    };
-    loadQuickTake();
-  }, [company?.id, hasPaidData]);
-
-  // Load sectionTools for paid users with generated memo
-  useEffect(() => {
-    const loadSectionTools = async () => {
-      if (!company?.id || !hasPaidData || !memoHasContent) return;
-      
-      const { data: toolData } = await supabase
-        .from("memo_tool_data")
-        .select("section_name, tool_name, ai_generated_data, user_overrides")
-        .eq("company_id", company.id);
-      
-      if (toolData && toolData.length > 0) {
-        // Transform to sectionTools format
-        const tools: Record<string, any> = {};
-        toolData.forEach((row: any) => {
-          if (!tools[row.section_name]) {
-            tools[row.section_name] = {};
-          }
-          const data = row.user_overrides || row.ai_generated_data;
-          if (row.tool_name === 'sectionScore') {
-            tools[row.section_name].sectionScore = data;
-          } else {
-            tools[row.section_name][row.tool_name] = data;
-          }
-        });
-        setSectionTools(tools);
-      }
-    };
-    loadSectionTools();
-  }, [company?.id, hasPaidData, memoHasContent]);
+  // Cached verdict from company data (already cached by useCompany)
+  const cachedVerdict = company?.vc_verdict_json || null;
 
   // Prefetch memo content for instant navigation (paid users with generated memo)
   const prefetchMemo = usePrefetchMemoContent();
@@ -263,12 +207,28 @@ export default function FreemiumHub() {
     return () => clearTimeout(timeout);
   }, [authLoading, companyLoading]);
 
-  // Load memo details and responses when company is available
+  // Load memo details when company is available (responses now handled by useDashboardResponses hook)
   useEffect(() => {
-    if (companyData?.id && !responsesLoaded) {
-      loadMemoAndResponses(companyData.id);
-    }
-  }, [companyData?.id, responsesLoaded]);
+    const loadMemo = async () => {
+      if (!companyData?.id) return;
+      
+      const { data: memoResult } = await supabase
+        .from("memos")
+        .select("*")
+        .eq("company_id", companyData.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      setMemo(memoResult);
+      
+      // Auto-generate profile if description exists but no responses
+      if (companyData?.description && (!responses || responses.length === 0) && company) {
+        await autoGenerateProfile(company);
+      }
+    };
+    loadMemo();
+  }, [companyData?.id, responses?.length]);
 
   // Generate tagline when company loads - only attempt once
   useEffect(() => {
@@ -276,38 +236,6 @@ export default function FreemiumHub() {
       generateTagline(company);
     }
   }, [company?.name, tagline, generatingTagline, taglineAttempted]);
-
-  const loadMemoAndResponses = useCallback(async (companyId: string) => {
-    try {
-      // Load in parallel for speed
-      const [responsesResult, memoResult] = await Promise.all([
-        supabase
-          .from("memo_responses")
-          .select("question_key, answer")
-          .eq("company_id", companyId),
-        supabase
-          .from("memos")
-          .select("*")
-          .eq("company_id", companyId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle()
-      ]);
-
-      setResponses(responsesResult.data || []);
-      setMemo(memoResult.data);
-      setResponsesLoaded(true);
-
-      // Auto-generate profile if description exists but no responses
-      if (companyData?.description && (!responsesResult.data || responsesResult.data.length === 0) && company) {
-        await autoGenerateProfile(company);
-      }
-    } catch (error) {
-      console.error("Error loading memo and responses:", error);
-      setResponsesLoaded(true);
-    }
-  }, [companyData]);
-
   const autoGenerateProfile = async (companyData: Company) => {
     try {
       console.log("Auto-generating profile from description...");
@@ -341,7 +269,8 @@ export default function FreemiumHub() {
           console.error("Error saving pre-filled responses:", insertError);
         } else {
           console.log("Successfully pre-filled questionnaire");
-          setResponses(responsesToInsert);
+          // Invalidate responses cache to trigger refetch
+          queryClient.invalidateQueries({ queryKey: ["dashboard-responses", company?.id] });
           toast({
             title: "Profile pre-filled!",
             description: "We've used your description to start your questionnaire. Review and refine the answers.",
@@ -435,19 +364,12 @@ export default function FreemiumHub() {
           }
         }
 
-        // Reload responses to update UI
-        const { data: updatedResponses } = await supabase
-          .from("memo_responses")
-          .select("question_key, answer")
-          .eq("company_id", company.id);
-
-        if (updatedResponses) {
-          setResponses(updatedResponses);
-        }
+        // Invalidate responses cache to trigger refetch with new data
+        queryClient.invalidateQueries({ queryKey: ["dashboard-responses", company.id] });
       }
 
-      // Clear cached verdict to trigger regeneration with new data
-      setCachedVerdict(null);
+      // Invalidate company cache to clear cached verdict and trigger regeneration
+      queryClient.invalidateQueries({ queryKey: ["company", user?.id] });
       
       toast({
         title: "Deck imported successfully!",
@@ -569,8 +491,10 @@ export default function FreemiumHub() {
   };
 
   const handleVerdictGenerated = useCallback((verdict: any) => {
-    setCachedVerdict(verdict);
-  }, []);
+    // Verdict is persisted to company.vc_verdict_json by VCVerdictCard
+    // Invalidate company cache so cachedVerdict updates from React Query
+    queryClient.invalidateQueries({ queryKey: ["company", user?.id] });
+  }, [queryClient, user?.id]);
 
   const completedQuestions = responses.filter(r => r.answer && r.answer.trim()).length;
   const totalQuestions = cachedTotalQuestions;
