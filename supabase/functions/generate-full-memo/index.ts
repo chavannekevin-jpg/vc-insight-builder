@@ -15,16 +15,28 @@ async function fetchKBContext(
   const stage = opts.stage;
   const sector = opts.sector ?? null;
 
-  const { data: sources } = await supabaseClient
+  const { data: reportSources } = await supabaseClient
     .from("kb_sources")
     .select("id,title,publisher,publication_date")
     .eq("status", "active")
+    .eq("content_kind", "report")
     .eq("geography_scope", geography)
     .order("publication_date", { ascending: false, nullsFirst: false })
     .limit(5);
 
-  const sourceIds = (sources || []).map((s: any) => s.id).filter(Boolean);
-  if (sourceIds.length === 0) return "";
+  const { data: frameworkSources } = await supabaseClient
+    .from("kb_sources")
+    .select("id,title,publisher,publication_date")
+    .eq("status", "active")
+    .eq("content_kind", "framework")
+    .eq("geography_scope", geography)
+    .order("publication_date", { ascending: false, nullsFirst: false })
+    .limit(10);
+
+  const reportSourceIds = (reportSources || []).map((s: any) => s.id).filter(Boolean);
+  const frameworkSourceIds = (frameworkSources || []).map((s: any) => s.id).filter(Boolean);
+
+  if (reportSourceIds.length === 0 && frameworkSourceIds.length === 0) return "";
 
   // Balanced matching strategy:
   // 1) Try stage+sector
@@ -37,7 +49,7 @@ async function fetchKBContext(
       .select(
         "geography_scope,region,stage,sector,business_model,timeframe_label,sample_size,currency,metric_key,metric_label,median_value,p25_value,p75_value,unit,notes,source_id",
       )
-      .in("source_id", sourceIds)
+      .in("source_id", reportSourceIds)
       .eq("geography_scope", geography)
       .order("updated_at", { ascending: false })
       .limit(60);
@@ -54,7 +66,7 @@ async function fetchKBContext(
       .select(
         "geography_scope,region,sector,timeframe_label,headline,summary,key_points,source_id",
       )
-      .in("source_id", sourceIds)
+      .in("source_id", reportSourceIds)
       .eq("geography_scope", geography)
       .order("updated_at", { ascending: false })
       .limit(25);
@@ -63,17 +75,48 @@ async function fetchKBContext(
     return (data || []) as any[];
   }
 
+  async function fetchFrameworks(filters: { sector?: string | null }) {
+    let q = supabaseClient
+      .from("kb_frameworks")
+      .select("geography_scope,region,sector,title,summary,key_points,tags,source_id")
+      .in("source_id", frameworkSourceIds)
+      .eq("geography_scope", geography)
+      .order("updated_at", { ascending: false })
+      .limit(20);
+
+    // Global frameworks (sector IS NULL) should always be available alongside sector-matched ones.
+    if (filters.sector) q = q.or(`sector.eq.${filters.sector},sector.is.null`);
+    const { data } = await q;
+    return (data || []) as any[];
+  }
+
   let benchmarks: any[] = [];
-  if (stage && sector) benchmarks = await fetchBenchmarks({ stage, sector });
-  if (benchmarks.length === 0 && stage) benchmarks = await fetchBenchmarks({ stage });
-  if (benchmarks.length === 0 && sector) benchmarks = await fetchBenchmarks({ sector });
-  if (benchmarks.length === 0) benchmarks = await fetchBenchmarks({});
+  if (reportSourceIds.length > 0) {
+    if (stage && sector) benchmarks = await fetchBenchmarks({ stage, sector });
+    if (benchmarks.length === 0 && stage) benchmarks = await fetchBenchmarks({ stage });
+    if (benchmarks.length === 0 && sector) benchmarks = await fetchBenchmarks({ sector });
+    if (benchmarks.length === 0) benchmarks = await fetchBenchmarks({});
+  }
 
   let marketNotes: any[] = [];
-  if (sector) marketNotes = await fetchMarketNotes({ sector });
-  if (marketNotes.length === 0) marketNotes = await fetchMarketNotes({});
+  if (reportSourceIds.length > 0) {
+    if (sector) marketNotes = await fetchMarketNotes({ sector });
+    if (marketNotes.length === 0) marketNotes = await fetchMarketNotes({});
+  }
 
-  const sourcesStr = (sources || [])
+  let frameworks: any[] = [];
+  if (frameworkSourceIds.length > 0) {
+    if (sector) frameworks = await fetchFrameworks({ sector });
+    if (frameworks.length === 0) frameworks = await fetchFrameworks({});
+  }
+
+  const reportSourcesStr = (reportSources || [])
+    .map((s: any) =>
+      `- ${s.publisher ?? "Unknown publisher"} — ${s.title ?? "Untitled"}${s.publication_date ? ` (${s.publication_date})` : ""} [${s.id}]`,
+    )
+    .join("\n");
+
+  const frameworkSourcesStr = (frameworkSources || [])
     .map((s: any) =>
       `- ${s.publisher ?? "Unknown publisher"} — ${s.title ?? "Untitled"}${s.publication_date ? ` (${s.publication_date})` : ""} [${s.id}]`,
     )
@@ -95,7 +138,32 @@ async function fetchKBContext(
     .map((n: any) => `- [${n.source_id}] ${n.headline ?? "Market note"}: ${n.summary}`)
     .join("\n");
 
-  return `\n\n=== EUROPE KNOWLEDGE BASE (benchmarks + market notes) ===\nUse these to calibrate stage-appropriate expectations and to add Europe-specific market context where relevant. Cite sources by publisher/title/date when you use a benchmark.\n\nSOURCES:\n${sourcesStr}\n\nBENCHMARK ROWS (filtered):\n${benchStr || "(none matched)"}\n\nMARKET NOTES (sample):\n${notesStr || "(none)"}\n=== END EUROPE KNOWLEDGE BASE ===`;
+  const frameworksStr = (frameworks || [])
+    .slice(0, 10)
+    .map((f: any) => {
+      const title = f.title ? `${f.title}` : "Framework";
+      const sectorLabel = f.sector ? ` / ${f.sector}` : "";
+      return `- [${f.source_id}] ${title}${sectorLabel}: ${String(f.summary ?? "").slice(0, 1200)}`;
+    })
+    .join("\n");
+
+  const reportBlock = reportSourceIds.length
+    ? `\n\n=== EUROPE KNOWLEDGE BASE (benchmarks + market notes) ===\nUse these to calibrate stage-appropriate expectations and to add Europe-specific market context where relevant. Cite sources by publisher/title/date when you use a benchmark.\n\nSOURCES:\n${reportSourcesStr}\n\nBENCHMARK ROWS (filtered):\n${benchStr || "(none matched)"}\n\nMARKET NOTES (sample):\n${notesStr || "(none)"}\n=== END EUROPE KNOWLEDGE BASE ===`
+    : "";
+
+  const frameworkBlock = frameworkSourceIds.length
+    ? `\n\n=== EUROPE FRAMEWORKS (methodology) ===\nUse these as methodological guidance and evaluation heuristics (not as quantitative benchmarks). Prefer sector-matched frameworks, but ALWAYS also consider global frameworks.\nIMPORTANT: Do NOT mention frameworks, publishers, source IDs, or citations in the final memo. Use them implicitly to structure your reasoning.\n\nSOURCES (internal only):\n${frameworkSourcesStr}\n\nFRAMEWORK SUMMARIES (sample):\n${frameworksStr || "(none)"}\n=== END EUROPE FRAMEWORKS ===`
+    : "";
+
+  if (frameworks?.length) {
+    console.log(
+      `[kb] frameworks_selected count=${frameworks.length} sector=${sector ?? "(none)"} sources=${[
+        ...new Set((frameworks || []).map((f: any) => f.source_id).filter(Boolean)),
+      ].join(",")}`,
+    );
+  }
+
+  return `${reportBlock}${frameworkBlock}`;
 }
 
 // =============================================================================
