@@ -109,6 +109,7 @@ const AdminCommerce = lazy(() => import("./pages/AdminCommerce"));
 const AdminEmails = lazy(() => import("./pages/AdminEmails"));
 const AdminKnowledgeBase = lazy(() => import("./pages/AdminKnowledgeBase"));
 const AdminMemoView = lazy(() => import("./pages/AdminMemoView"));
+const AdminMethodologyExport = lazy(() => import("./pages/AdminMethodologyExport"));
 const CheckoutMemo = lazy(() => import("./pages/CheckoutMemo"));
 const SampleMemo = lazy(() => import("./pages/SampleMemo"));
 const SampleMemoSectionView = lazy(() => import("./pages/SampleMemoSectionView"));
@@ -325,6 +326,7 @@ const App = () => (
             <Route path="/admin/commerce/discounts" element={<AdminCommerce />} />
             <Route path="/admin/emails" element={<AdminEmails />} />
             <Route path="/admin/knowledge-base" element={<AdminKnowledgeBase />} />
+            <Route path="/admin/methodology-export" element={<AdminMethodologyExport />} />
             <Route path="/admin/analysis-builder" element={<MemoBuilder />} />
             <Route path="/admin/memos/:companyId" element={<AdminMemoView />} />
             <Route path="/admin/company/:companyId" element={<AdminCompanyDetail />} />
