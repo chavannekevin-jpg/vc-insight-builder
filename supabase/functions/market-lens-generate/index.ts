@@ -42,6 +42,7 @@ interface MarketLensBriefing {
   };
   generatedAt: string;
   sourcesUsed: number;
+  sourcesList: string[];
 }
 
 serve(async (req) => {
@@ -301,6 +302,7 @@ Return ONLY valid JSON, no markdown.`;
       briefing = JSON.parse(cleanedContent);
       briefing.generatedAt = new Date().toISOString();
       briefing.sourcesUsed = kbSources?.length || 0;
+      briefing.sourcesList = kbSources?.map(s => s.title).filter(Boolean) as string[] || [];
     } catch (parseError) {
       console.error("Failed to parse AI response:", parseError, content);
       return new Response(
