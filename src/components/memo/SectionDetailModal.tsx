@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,14 +17,17 @@ import {
   ChevronUp,
   Eye,
   HelpCircle,
-  Target
+  Target,
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Lightbulb
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type SectionVerdict } from "@/lib/holisticVerdictGenerator";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
-import { MemoStructuredSection, EnhancedSectionTools } from "@/types/memo";
+import { MemoStructuredSection } from "@/types/memo";
 import { renderMarkdownText } from "@/lib/markdownParser";
 
 interface SectionDetailModalProps {
@@ -55,34 +58,34 @@ const STATUS_CONFIG = {
   critical: {
     color: 'text-destructive',
     bg: 'bg-destructive/10',
-    border: 'border-destructive/30',
+    border: 'border-destructive/20',
     icon: XCircle,
-    label: 'CRITICAL',
-    gradient: 'from-destructive/20 via-destructive/10 to-transparent'
+    label: 'Critical',
+    accentColor: 'hsl(var(--destructive))'
   },
   weak: {
     color: 'text-warning',
     bg: 'bg-warning/10',
-    border: 'border-warning/30',
+    border: 'border-warning/20',
     icon: AlertTriangle,
-    label: 'NEEDS WORK',
-    gradient: 'from-warning/20 via-warning/10 to-transparent'
+    label: 'Needs Work',
+    accentColor: 'hsl(var(--warning))'
   },
   passing: {
     color: 'text-success',
     bg: 'bg-success/10',
-    border: 'border-success/30',
+    border: 'border-success/20',
     icon: CheckCircle2,
-    label: 'PASSING',
-    gradient: 'from-success/20 via-success/10 to-transparent'
+    label: 'Passing',
+    accentColor: 'hsl(var(--success))'
   },
   strong: {
     color: 'text-success',
     bg: 'bg-success/15',
-    border: 'border-success/40',
+    border: 'border-success/30',
     icon: TrendingUp,
-    label: 'STRONG',
-    gradient: 'from-success/25 via-success/15 to-transparent'
+    label: 'Strong',
+    accentColor: 'hsl(var(--success))'
   }
 };
 
@@ -97,7 +100,6 @@ const SECTION_INDEX_MAP: Record<string, number> = {
   'Vision': 7
 };
 
-// Helper to safely convert to string
 const safeString = (text: unknown) => typeof text === 'string' ? text : String(text || '');
 
 export const SectionDetailModal = ({ 
@@ -172,7 +174,7 @@ export const SectionDetailModal = ({
   const scoreDiff = section.score - section.benchmark;
   const diffLabel = scoreDiff >= 0 ? `+${scoreDiff}` : `${scoreDiff}`;
 
-  // Extract content from narrative (handle both legacy and new structures)
+  // Extract content from narrative
   const paragraphs = sectionNarrative?.narrative?.paragraphs || sectionNarrative?.paragraphs || [];
   const highlights = sectionNarrative?.narrative?.highlights || sectionNarrative?.highlights || [];
   const keyPoints = sectionNarrative?.narrative?.keyPoints || sectionNarrative?.keyPoints || [];
@@ -180,93 +182,108 @@ export const SectionDetailModal = ({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl h-[85vh] p-0 bg-card border-border/50 flex flex-col overflow-hidden">
-        {/* Header with gradient */}
-        <div className={cn(
-          "relative px-6 py-5 border-b border-border/30",
-          `bg-gradient-to-r ${config.gradient}`
-        )}>
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-2xl font-display font-bold flex items-center gap-3">
-                {section.section}
-                <div className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold",
-                  config.bg,
-                  config.color
-                )}>
-                  <Icon className="w-3.5 h-3.5" />
-                  {config.label}
-                </div>
-              </DialogTitle>
-            </div>
-          </DialogHeader>
+      <DialogContent className="max-w-4xl h-[90vh] p-0 bg-background border-border/30 flex flex-col overflow-hidden gap-0">
+        
+        {/* Elegant Header */}
+        <div className="relative px-8 py-6 border-b border-border/20 bg-gradient-to-b from-muted/30 to-transparent">
+          {/* Section Number Badge */}
+          <div className="absolute top-6 left-8 w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <span className="text-sm font-semibold text-primary">{navIndex + 1}</span>
+          </div>
           
-          {/* Score Display - integrated into header */}
-          <div className="flex items-center gap-6 mt-4">
-            <div className="flex items-baseline gap-2">
-              <span className={cn(
-                "text-4xl font-bold tabular-nums",
-                section.score >= section.benchmark ? "text-success" : 
-                section.score >= section.benchmark - 15 ? "text-warning" : "text-destructive"
-              )}>
-                {section.score}
-              </span>
-              <span className="text-lg text-muted-foreground">/100</span>
-            </div>
-            <div className="h-8 w-px bg-border/50" />
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">VC Benchmark:</span>
-              <span className="text-lg font-semibold text-muted-foreground">{section.benchmark}</span>
-              <span className={cn(
-                "px-2 py-0.5 rounded text-xs font-bold",
-                scoreDiff >= 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-              )}>
-                {diffLabel}
-              </span>
+          <div className="pl-12">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                  {section.section}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Investment analysis section
+                </p>
+              </div>
+              
+              {/* Score Display */}
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <div className="flex items-baseline gap-1.5 justify-end">
+                    <span className={cn(
+                      "text-4xl font-bold tabular-nums tracking-tight",
+                      section.score >= section.benchmark ? "text-success" : 
+                      section.score >= section.benchmark - 15 ? "text-warning" : "text-destructive"
+                    )}>
+                      {section.score}
+                    </span>
+                    <span className="text-lg text-muted-foreground font-medium">/100</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1 justify-end">
+                    <span className="text-xs text-muted-foreground">Benchmark: {section.benchmark}</span>
+                    <span className={cn(
+                      "px-1.5 py-0.5 rounded text-[10px] font-bold",
+                      scoreDiff >= 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
+                    )}>
+                      {diffLabel}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Status Badge */}
+                <div className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-xl",
+                  config.bg, config.border, "border"
+                )}>
+                  <Icon className={cn("w-5 h-5", config.color)} />
+                  <span className={cn("font-semibold text-sm", config.color)}>
+                    {config.label}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
         
         {/* Scrollable Content */}
-        <ScrollArea className="flex-1 px-6">
-          <div className="py-6 space-y-6">
+        <ScrollArea className="flex-1">
+          <div className="px-8 py-6 space-y-8">
             
-            {/* Narrative Section */}
+            {/* Main Narrative - Clean Typography */}
             {paragraphs.length > 0 && (
-              <div className="space-y-4">
-                {paragraphs.map((paragraph, index) => (
-                  <p 
-                    key={index} 
-                    className={cn(
-                      "text-base leading-relaxed",
-                      paragraph.emphasis === 'high' || paragraph.emphasis === 'hero' 
-                        ? "font-semibold text-foreground text-lg" 
-                        : paragraph.emphasis === 'quote'
-                        ? "italic border-l-2 border-primary/50 pl-4 text-muted-foreground"
-                        : "text-foreground/90"
-                    )}
-                  >
-                    {paragraph.text}
-                  </p>
-                ))}
-              </div>
+              <article className="prose prose-sm max-w-none">
+                <div className="space-y-4">
+                  {paragraphs.map((paragraph, index) => (
+                    <p 
+                      key={index} 
+                      className={cn(
+                        "leading-relaxed",
+                        paragraph.emphasis === 'high' || paragraph.emphasis === 'hero' 
+                          ? "text-lg font-medium text-foreground" 
+                          : paragraph.emphasis === 'quote'
+                          ? "italic border-l-2 border-primary/40 pl-4 text-muted-foreground py-1"
+                          : "text-base text-foreground/85"
+                      )}
+                    >
+                      {paragraph.text}
+                    </p>
+                  ))}
+                </div>
+              </article>
             )}
 
-            {/* Key Metrics */}
+            {/* Key Metrics - Elegant Cards */}
             {highlights.length > 0 && (
-              <div className="pt-4 border-t border-border/30">
-                <h4 className="text-xs font-semibold text-primary mb-4 uppercase tracking-wider flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  Key Metrics
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
+              <section className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                  <h3 className="text-xs font-semibold text-primary uppercase tracking-wider">
+                    Key Metrics
+                  </h3>
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                   {highlights.map((highlight, i) => (
                     <div 
                       key={i}
-                      className="p-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent"
+                      className="relative overflow-hidden p-4 rounded-xl border border-primary/15 bg-gradient-to-br from-primary/5 via-transparent to-transparent"
                     >
-                      <div className="text-2xl font-bold text-primary mb-1">
+                      <div className="text-2xl font-bold text-primary tracking-tight mb-1">
                         {safeString(highlight.metric)}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -275,125 +292,133 @@ export const SectionDetailModal = ({
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
             )}
 
             {/* Key Takeaways */}
             {keyPoints.length > 0 && (
-              <div className="pt-4 border-t border-border/30">
-                <h4 className="text-xs font-semibold text-primary mb-4 uppercase tracking-wider flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Key Takeaways
-                </h4>
+              <section className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success" />
+                  <h3 className="text-xs font-semibold text-success uppercase tracking-wider">
+                    Key Takeaways
+                  </h3>
+                </div>
                 <div className="space-y-2">
                   {keyPoints.map((point, index) => (
                     <div 
                       key={index} 
-                      className="flex items-start gap-3 p-3 rounded-lg bg-muted/30"
+                      className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/10"
                     >
-                      <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                      <p className="text-sm text-foreground leading-relaxed">
+                      <CheckCircle2 className="w-4 h-4 text-success mt-0.5 shrink-0" />
+                      <p className="text-sm text-foreground/90 leading-relaxed">
                         {renderMarkdownText(safeString(point))}
                       </p>
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
             )}
 
-            {/* VC Reflection */}
+            {/* VC Perspective - Premium Card */}
             {vcReflection && (
-              <div className="pt-4 border-t border-border/30 space-y-4">
-                {/* VC Analysis */}
-                {vcReflection.analysis && (
-                  <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-5">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Eye className="w-4 h-4 text-primary" />
-                      <h4 className="text-sm font-semibold text-foreground">VC Perspective</h4>
+              <section className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-accent" />
+                  <h3 className="text-xs font-semibold text-accent uppercase tracking-wider">
+                    VC Perspective
+                  </h3>
+                </div>
+                
+                <div className="space-y-4">
+                  {/* Analysis Quote */}
+                  {vcReflection.analysis && (
+                    <div className="relative overflow-hidden rounded-xl border border-accent/20 bg-gradient-to-br from-accent/5 via-background to-background p-5">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-accent/50" />
+                      <p className="text-base text-foreground/90 leading-relaxed italic pl-4">
+                        "{safeString(vcReflection.analysis)}"
+                      </p>
                     </div>
-                    <p className="text-sm text-foreground/90 leading-relaxed italic">
-                      "{safeString(vcReflection.analysis)}"
-                    </p>
-                  </div>
-                )}
+                  )}
 
-                {/* VC Questions - Collapsible */}
-                {vcReflection.questions && vcReflection.questions.length > 0 && (
-                  <Collapsible open={showVCQuestions} onOpenChange={setShowVCQuestions}>
-                    <CollapsibleTrigger asChild>
-                      <button className="w-full flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/20 hover:bg-accent/10 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <HelpCircle className="w-4 h-4 text-accent" />
-                          <span className="font-semibold text-sm text-foreground">
-                            Key Investor Questions
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            ({vcReflection.questions.length})
-                          </span>
-                        </div>
-                        {showVCQuestions ? (
-                          <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                        )}
-                      </button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="pt-3 space-y-2">
-                      {vcReflection.questions.map((q, i) => {
-                        const isEnhanced = typeof q === 'object' && 'question' in q;
-                        const questionText = isEnhanced ? q.question : q;
-                        return (
-                          <div 
-                            key={i}
-                            className="p-3 rounded-lg bg-accent/5 border border-accent/20"
-                          >
-                            <p className="text-sm font-medium text-foreground">
-                              {safeString(questionText)}
-                            </p>
-                            {isEnhanced && q.vcRationale && (
-                              <p className="text-xs text-muted-foreground mt-2">
-                                <span className="font-semibold">Why VCs ask:</span> {safeString(q.vcRationale)}
-                              </p>
-                            )}
+                  {/* VC Questions - Collapsible */}
+                  {vcReflection.questions && vcReflection.questions.length > 0 && (
+                    <Collapsible open={showVCQuestions} onOpenChange={setShowVCQuestions}>
+                      <CollapsibleTrigger asChild>
+                        <button className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                            <span className="font-medium text-sm text-foreground">
+                              Questions VCs Will Ask
+                            </span>
+                            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                              {vcReflection.questions.length}
+                            </span>
                           </div>
-                        );
-                      })}
-                    </CollapsibleContent>
-                  </Collapsible>
-                )}
+                          {showVCQuestions ? (
+                            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="pt-3 space-y-2">
+                        {vcReflection.questions.map((q, i) => {
+                          const isEnhanced = typeof q === 'object' && 'question' in q;
+                          const questionText = isEnhanced ? q.question : q;
+                          return (
+                            <div 
+                              key={i}
+                              className="p-4 rounded-lg bg-muted/20 border border-border/30"
+                            >
+                              <p className="text-sm font-medium text-foreground">
+                                {safeString(questionText)}
+                              </p>
+                              {isEnhanced && q.vcRationale && (
+                                <p className="text-xs text-muted-foreground mt-2 pl-3 border-l border-muted">
+                                  <span className="font-medium">Why VCs ask:</span> {safeString(q.vcRationale)}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )}
 
-                {/* Conclusion */}
-                {vcReflection.conclusion && (
-                  <div className="p-4 rounded-lg bg-muted/30 border border-border/50">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Target className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        Bottom Line
-                      </span>
+                  {/* Bottom Line */}
+                  {vcReflection.conclusion && (
+                    <div className="p-4 rounded-xl bg-muted/20 border border-border/30">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Target className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          Bottom Line
+                        </span>
+                      </div>
+                      <p className="text-sm text-foreground leading-relaxed">
+                        {safeString(vcReflection.conclusion)}
+                      </p>
                     </div>
-                    <p className="text-sm text-foreground leading-relaxed">
-                      {safeString(vcReflection.conclusion)}
-                    </p>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              </section>
             )}
             
             {/* How to Improve - Collapsible */}
-            <div className="pt-4 border-t border-border/30">
+            <section className="space-y-4">
               <Collapsible open={showImprovements} onOpenChange={setShowImprovements}>
                 <CollapsibleTrigger asChild>
-                  <button className="w-full flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 hover:from-primary/15 hover:to-primary/10 transition-all">
+                  <button className="w-full flex items-center justify-between p-5 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 hover:from-primary/15 hover:via-primary/10 transition-all">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-primary/10">
-                        <Sparkles className="w-5 h-5 text-primary" />
+                        <Lightbulb className="w-5 h-5 text-primary" />
                       </div>
                       <div className="text-left">
                         <span className="font-semibold text-foreground block">
                           How to Improve This Score
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          AI-powered suggestions based on your analysis
+                          AI-powered recommendations
                         </span>
                       </div>
                       {loadingImprovements && (
@@ -410,7 +435,7 @@ export const SectionDetailModal = ({
                 
                 <CollapsibleContent className="pt-4">
                   {loadingImprovements ? (
-                    <div className="p-8 rounded-xl bg-muted/30 border border-border/50 flex flex-col items-center justify-center gap-3">
+                    <div className="p-8 rounded-xl bg-muted/20 border border-border/30 flex flex-col items-center justify-center gap-3">
                       <RefreshCw className="w-6 h-6 animate-spin text-primary" />
                       <p className="text-sm text-muted-foreground">Analyzing your data...</p>
                     </div>
@@ -434,13 +459,13 @@ export const SectionDetailModal = ({
                         {improvements.suggestions.map((suggestion, i) => (
                           <div 
                             key={i}
-                            className="p-4 rounded-xl bg-muted/30 border border-border/50"
+                            className="p-4 rounded-xl bg-muted/20 border border-border/30 hover:bg-muted/30 transition-colors"
                           >
                             <div className="flex items-start justify-between gap-3 mb-2">
-                              <h5 className="font-semibold text-foreground">{suggestion.title}</h5>
+                              <h5 className="font-medium text-foreground">{suggestion.title}</h5>
                               <div className="flex items-center gap-2 shrink-0">
                                 {suggestion.impact === 'high' && (
-                                  <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-success/10 text-success uppercase">
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success/10 text-success uppercase">
                                     High Impact
                                   </span>
                                 )}
@@ -458,7 +483,7 @@ export const SectionDetailModal = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="p-6 rounded-xl bg-muted/30 border border-border/50 text-center">
+                    <div className="p-6 rounded-xl bg-muted/20 border border-border/30 text-center">
                       <p className="text-sm text-muted-foreground">
                         Suggestions unavailable. View full section for detailed analysis.
                       </p>
@@ -466,19 +491,30 @@ export const SectionDetailModal = ({
                   )}
                 </CollapsibleContent>
               </Collapsible>
-            </div>
+            </section>
           </div>
         </ScrollArea>
         
-        {/* Footer Action */}
-        <div className="px-6 py-4 border-t border-border/30 bg-muted/20">
+        {/* Footer */}
+        <div className="px-8 py-4 border-t border-border/20 bg-muted/10 flex items-center justify-between gap-4">
+          <Button 
+            variant="ghost"
+            size="sm"
+            onClick={() => onOpenChange(false)}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          
           <Button 
             onClick={handleViewFullSection}
-            variant="outline"
-            className="w-full border-primary/30 hover:bg-primary/10"
+            size="sm"
+            className="gradient-primary shadow-glow"
           >
-            <ExternalLink className="w-4 h-4 mr-2" />
-            Open in Full Page View
+            <BookOpen className="w-4 h-4 mr-2" />
+            Full Page View
+            <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
       </DialogContent>
