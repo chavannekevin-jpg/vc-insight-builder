@@ -10,9 +10,9 @@ import { SAMPLE_SECTION_TOOLS } from "@/data/sampleMemoTools";
 import { TrendingUp, Users, Lightbulb, ArrowRight } from "lucide-react";
 import type { MemoStructuredContent } from "@/types/memo";
 
-// Build section tools structure for DashboardScorecard
-const buildSectionToolsFromSample = () => {
-  const result: Record<string, { sectionScore?: { score: number; vcBenchmark: number } }> = {};
+// Build FULL section tools structure for DashboardScorecard - including all tool data
+const buildFullSectionToolsFromSample = () => {
+  const result: Record<string, any> = {};
   
   const sectionMapping: Record<string, string> = {
     'Problem': 'Problem',
@@ -27,13 +27,9 @@ const buildSectionToolsFromSample = () => {
 
   Object.entries(sectionMapping).forEach(([key, sampleKey]) => {
     const tools = SAMPLE_SECTION_TOOLS[sampleKey];
-    if (tools?.sectionScore) {
-      result[key] = {
-        sectionScore: {
-          score: tools.sectionScore.score,
-          vcBenchmark: tools.sectionScore.vcBenchmark
-        }
-      };
+    if (tools) {
+      // Copy all tool data for this section, not just sectionScore
+      result[key] = { ...tools };
     }
   });
 
@@ -43,7 +39,7 @@ const buildSectionToolsFromSample = () => {
 export default function DemoDashboard() {
   const navigate = useNavigate();
   const demoMemo = DEMO_MEMOS["demo-carbonprint"];
-  const sectionTools = buildSectionToolsFromSample();
+  const sectionTools = buildFullSectionToolsFromSample();
 
   // Build memo content structure
   const memoContent: MemoStructuredContent = {
@@ -55,9 +51,15 @@ export default function DemoDashboard() {
     }))
   };
 
+  // Custom navigation handler for demo - redirects internal links to demo versions
   const handleNavigate = (path: string) => {
-    // For demo, redirect section views to a simplified version or show upsell
-    if (path.includes('/analysis/section')) {
+    // Redirect Market Lens and Fund Discovery to demo versions
+    if (path === '/market-lens') {
+      navigate('/demo/market-lens');
+    } else if (path === '/fund-discovery') {
+      navigate('/demo/fund-discovery');
+    } else if (path.includes('/analysis/section')) {
+      // For section views, stay on demo but could show modal in future
       navigate('/demo');
     } else {
       navigate(path);
@@ -69,7 +71,7 @@ export default function DemoDashboard() {
       <div className="px-6 py-8">
         <div className="max-w-4xl mx-auto space-y-8">
           
-          {/* Investment Readiness Scorecard */}
+          {/* Investment Readiness Scorecard - with FULL tool data */}
           <DashboardScorecard
             sectionTools={sectionTools}
             companyName={DEMO_COMPANY.name}
@@ -88,6 +90,7 @@ export default function DemoDashboard() {
               showTeaser={false}
             />
           </div>
+
           {/* Premium Tools Showcase */}
           <div className="grid md:grid-cols-2 gap-4">
             {/* Market Lens Card */}
