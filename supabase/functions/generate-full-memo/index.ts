@@ -3,6 +3,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.84.0";
 import { buildEvidencePacket } from "./evidence.ts";
 import { buildEvidenceLedgerV1, saveMemoArtifact } from "./artifacts.ts";
 import { runReconciliation, type ReconciliationReport } from "./reconciliation.ts";
+import {
+  buildFrameworkPromptForSection,
+  createFrameworkUsageLog,
+  type FrameworkUsageLog,
+} from "./frameworkInstructions.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,13 +15,32 @@ const corsHeaders = {
 };
 
 // Keep edge-function typing loose (Supabase types are not available in Deno runtime).
+
+// Structured KB context return type for enhanced framework integration
+interface KBContextResult {
+  contextString: string;
+  frameworks: Array<{
+    title?: string;
+    summary?: string;
+    key_points?: string[];
+    tags?: string[];
+    source_id?: string;
+    sector?: string | null;
+    section_relevance?: string[];
+  }>;
+  benchmarks: any[];
+  reportSources: any[];
+  frameworkSources: any[];
+}
+
 async function fetchKBContext(
   supabaseClient: any,
-  opts: { geography?: string; stage?: string; sector?: string | null },
-) {
+  opts: { geography?: string; stage?: string; sector?: string | null; sectionName?: string },
+): Promise<KBContextResult> {
   const geography = opts.geography ?? "Europe";
   const stage = opts.stage;
   const sector = opts.sector ?? null;
+  const sectionName = opts.sectionName ?? null;
 
   const { data: reportSources } = await supabaseClient
     .from("kb_sources")
@@ -39,7 +63,9 @@ async function fetchKBContext(
   const reportSourceIds = (reportSources || []).map((s: any) => s.id).filter(Boolean);
   const frameworkSourceIds = (frameworkSources || []).map((s: any) => s.id).filter(Boolean);
 
-  if (reportSourceIds.length === 0 && frameworkSourceIds.length === 0) return "";
+  if (reportSourceIds.length === 0 && frameworkSourceIds.length === 0) {
+    return { contextString: "", frameworks: [], benchmarks: [], reportSources: [], frameworkSources: [] };
+  }
 
   // Balanced matching strategy:
   // 1) Try stage+sector
@@ -78,19 +104,45 @@ async function fetchKBContext(
     return (data || []) as any[];
   }
 
-  async function fetchFrameworks(filters: { sector?: string | null }) {
+  async function fetchFrameworks(filters: { sector?: string | null; sectionName?: string | null }) {
+    // Now includes section_relevance for section-specific routing
     let q = supabaseClient
       .from("kb_frameworks")
-      .select("geography_scope,region,sector,title,summary,key_points,tags,source_id")
+      .select("geography_scope,region,sector,title,summary,key_points,tags,source_id,section_relevance")
       .in("source_id", frameworkSourceIds)
       .eq("geography_scope", geography)
       .order("updated_at", { ascending: false })
-      .limit(20);
+      .limit(30);
 
     // Global frameworks (sector IS NULL) should always be available alongside sector-matched ones.
     if (filters.sector) q = q.or(`sector.eq.${filters.sector},sector.is.null`);
     const { data } = await q;
-    return (data || []) as any[];
+    
+    let frameworks = (data || []) as any[];
+    
+    // Section-specific filtering: if sectionName provided, prioritize frameworks with matching section_relevance
+    // but still include general frameworks (empty or null section_relevance)
+    if (filters.sectionName && frameworks.length > 0) {
+      const sectionRelevant = frameworks.filter((f: any) => {
+        const relevance = f.section_relevance;
+        if (!relevance || !Array.isArray(relevance) || relevance.length === 0) {
+          // General framework - include in all sections
+          return true;
+        }
+        // Section-specific framework - only include if matches
+        return relevance.some((r: string) => 
+          r.toLowerCase() === filters.sectionName!.toLowerCase() ||
+          filters.sectionName!.toLowerCase().includes(r.toLowerCase())
+        );
+      });
+      
+      if (sectionRelevant.length > 0) {
+        frameworks = sectionRelevant;
+        console.log(`[kb] section-filtered frameworks for ${filters.sectionName}: ${frameworks.length} (from ${data?.length || 0} total)`);
+      }
+    }
+    
+    return frameworks;
   }
 
   let benchmarks: any[] = [];
@@ -109,7 +161,7 @@ async function fetchKBContext(
 
   let frameworks: any[] = [];
   if (frameworkSourceIds.length > 0) {
-    if (sector) frameworks = await fetchFrameworks({ sector });
+    frameworks = await fetchFrameworks({ sector, sectionName });
     if (frameworks.length === 0) frameworks = await fetchFrameworks({});
   }
 
@@ -146,7 +198,8 @@ async function fetchKBContext(
     .map((f: any) => {
       const title = f.title ? `${f.title}` : "Framework";
       const sectorLabel = f.sector ? ` / ${f.sector}` : "";
-      return `- [${f.source_id}] ${title}${sectorLabel}: ${String(f.summary ?? "").slice(0, 1200)}`;
+      const relevanceLabel = f.section_relevance?.length ? ` [for: ${f.section_relevance.join(", ")}]` : "";
+      return `- [${f.source_id}] ${title}${sectorLabel}${relevanceLabel}: ${String(f.summary ?? "").slice(0, 1200)}`;
     })
     .join("\n");
 
@@ -160,13 +213,19 @@ async function fetchKBContext(
 
   if (frameworks?.length) {
     console.log(
-      `[kb] frameworks_selected count=${frameworks.length} sector=${sector ?? "(none)"} sources=${[
+      `[kb] frameworks_selected count=${frameworks.length} sector=${sector ?? "(none)"} section=${sectionName ?? "(all)"} sources=${[
         ...new Set((frameworks || []).map((f: any) => f.source_id).filter(Boolean)),
       ].join(",")}`,
     );
   }
 
-  return `${reportBlock}${frameworkBlock}`;
+  return {
+    contextString: `${reportBlock}${frameworkBlock}`,
+    frameworks: frameworks || [],
+    benchmarks: benchmarks || [],
+    reportSources: reportSources || [],
+    frameworkSources: frameworkSources || [],
+  };
 }
 
 // =============================================================================
@@ -2470,11 +2529,16 @@ async function generateMemoInBackground(
     const benchmarkContext = formatBenchmarkContext(benchmarkCohortMatch);
     console.log(`✓ Selected benchmark cohort: ${benchmarkCohortMatch.cohort.name} (Match: ${benchmarkCohortMatch.matchScore}, Criteria: ${benchmarkCohortMatch.matchedCriteria.join(', ')})`);
 
-    const kbContext = await fetchKBContext(supabaseClient, {
+    // Fetch KB context (benchmarks + frameworks) - returns structured data now
+    const kbContextResult = await fetchKBContext(supabaseClient, {
       geography: "Europe",
       stage: company.stage,
       sector: company.category,
     });
+    const kbContext = kbContextResult.contextString;
+    
+    // Track framework usage across all sections
+    const frameworkUsageLogs: FrameworkUsageLog[] = [];
 
     // Check if memo already exists - get the most recent one
     const { data: existingMemo } = await supabaseClient
@@ -2800,7 +2864,47 @@ In your conclusion, note data confidence level.
 --- END EXPECTED DATA ---`;
       }
       
-      const prompt = customPrompt 
+      // ============================================
+      // SECTION-SPECIFIC FRAMEWORK INTEGRATION
+      // Fetch frameworks filtered for this specific section and build application instructions
+      // ============================================
+      let sectionFrameworkInstructionsStr = "";
+      let sectionKBFrameworks: Array<{ title?: string; source_id?: string }> = [];
+      
+      try {
+        // Get section-specific KB frameworks
+        const sectionKBContext = await fetchKBContext(supabaseClient, {
+          geography: "Europe",
+          stage: company.stage,
+          sector: company.category,
+          sectionName: sectionName,
+        });
+        sectionKBFrameworks = sectionKBContext.frameworks;
+        
+        // Build the static framework application instructions for this section
+        const staticFrameworkPrompt = buildFrameworkPromptForSection(sectionName);
+        
+        // Combine KB frameworks with static instructions
+        if (staticFrameworkPrompt || sectionKBFrameworks.length > 0) {
+          const kbFrameworksSummary = sectionKBFrameworks.length > 0
+            ? `\n\n--- KNOWLEDGE BASE FRAMEWORKS FOR ${sectionName.toUpperCase()} ---\n${sectionKBFrameworks.slice(0, 5).map(f => 
+                `• ${f.title || "Framework"}: ${String((f as any).summary ?? "").slice(0, 400)}`
+              ).join("\n")}\n--- END KB FRAMEWORKS ---`
+            : "";
+          
+          sectionFrameworkInstructionsStr = `${staticFrameworkPrompt}${kbFrameworksSummary}`;
+        }
+        
+        // Log framework usage for this section
+        const usageLog = createFrameworkUsageLog(sectionName, sectionKBFrameworks);
+        frameworkUsageLogs.push(usageLog);
+        
+        console.log(`[frameworks] ${sectionName}: static=${usageLog.frameworksApplied.length} kb=${sectionKBFrameworks.length}`);
+      } catch (frameworkError) {
+        console.warn(`[frameworks] Error fetching frameworks for ${sectionName}:`, frameworkError);
+      }
+      
+      const prompt = customPrompt
         ? `${customPrompt}${twoPassGuidelines}\n\n---\n\nContext: ${company.name} is a ${company.stage} stage ${company.category || "startup"}.${marketContextStr}${sectionFinancialStr}${criteriaContextStr}\n\n${useMethodologyV2 ? evidencePacketStr : nonManualContextStr}\n\n${useMethodologyV2 ? "IMPORTANT WRITER RULES (v2):\n- You MUST NOT introduce any new facts, metrics, or competitor names not present in HARD EVIDENCE.\n- If you must discuss a missing metric, discuss the uncertainty, not the value.\n- Any derived/calculated numbers must be explicitly labeled as [DERIVED].\n- Any hypothesis must be explicitly labeled as [HYPOTHESIS].\n" : ""}\n\n${useMethodologyV2 ? "HARD EVIDENCE (manual-only) is above; do not restate the raw blob." : "Raw information to analyze:"}\n${useMethodologyV2 ? "" : combinedContent}\n\n---\n\nReturn ONLY valid JSON with this structure (no markdown, no code blocks):\n{\n  "narrative": {\n    "paragraphs": [{"text": "each paragraph from PASS 1 (neutral baseline)", "emphasis": "high|medium|normal"}],\n    "highlights": [{"metric": "90%", "label": "key metric"}],\n    "keyPoints": ["key takeaway 1", "key takeaway 2"]\n  },\n  "vcReflection": {\n    "analysis": "PASS 2: risk & diligence notes (no final investment stance in section pages)",\n    "questions": [\n      {"question": "specific diligence question 1", "vcRationale": "Why VCs care about this", "whatToPrepare": "Evidence/data to resolve"},\n      {"question": "question 2", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"},\n      {"question": "question 3", "vcRationale": "Economic reasoning", "whatToPrepare": "Preparation guidance"}\n    ],\n    "benchmarking": "If you use benchmarks, treat them as context; do not apply mismatched benchmarks as judgment.",\n    "conclusion": "Section-level conclusion should summarize uncertainties + next steps, not a verdict"\n  }\n}`
         : `You are a senior VC investment analyst writing the "${sectionName}" section of an internal due diligence memo. Your job is to assess objectively AND teach founders how to present their company like a VC would.
 
@@ -3004,6 +3108,8 @@ ${companyModelContext}
 ${benchmarkContext}
 
 ${kbContext}
+
+${sectionFrameworkInstructionsStr}
 
 === END RELATIONAL CONTEXT ===
 

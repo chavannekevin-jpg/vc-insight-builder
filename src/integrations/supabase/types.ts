@@ -1278,6 +1278,7 @@ export type Database = {
           id: string
           key_points: Json | null
           region: string | null
+          section_relevance: Json | null
           sector: string | null
           source_id: string
           summary: string
@@ -1291,6 +1292,7 @@ export type Database = {
           id?: string
           key_points?: Json | null
           region?: string | null
+          section_relevance?: Json | null
           sector?: string | null
           source_id: string
           summary: string
@@ -1304,6 +1306,7 @@ export type Database = {
           id?: string
           key_points?: Json | null
           region?: string | null
+          section_relevance?: Json | null
           sector?: string | null
           source_id?: string
           summary?: string
