@@ -18,7 +18,7 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are a VC analyst providing actionable improvement advice for startup founders. 
+const systemPrompt = `You are a VC analyst providing actionable improvement advice for startup founders. 
 Your job is to analyze a specific section of their investment readiness analysis and provide 2-3 concrete, actionable suggestions to improve their score.
 
 Guidelines:
@@ -28,6 +28,7 @@ Guidelines:
 - Suggest things that can be done in 30-90 days
 - Prioritize suggestions by impact on VC perception
 - Use the context from other sections to make cross-references where relevant
+- For EACH suggestion, provide 1-2 specific questions the founder can answer to provide more context
 
 Respond in JSON format:
 {
@@ -36,7 +37,14 @@ Respond in JSON format:
       "title": "Short actionable title (5-8 words)",
       "description": "2-3 sentences explaining what to do specifically and why it matters to VCs",
       "impact": "high" | "medium",
-      "timeframe": "30 days" | "60 days" | "90 days"
+      "timeframe": "30 days" | "60 days" | "90 days",
+      "questions": [
+        {
+          "id": "unique_snake_case_id",
+          "question": "A specific question the founder can answer to provide more context",
+          "placeholder": "Example: e.g., We have 500 paying customers with 15% MoM growth..."
+        }
+      ]
     }
   ],
   "keyInsight": "One sentence explaining the #1 thing holding this section back"
@@ -55,7 +63,7 @@ ${allSectionScores ? Object.entries(allSectionScores).map(([name, data]: [string
   `- ${name}: ${data.score}/${data.benchmark}`
 ).join('\n') : 'Not available'}
 
-Provide 2-3 specific, actionable suggestions to improve this section's score. Focus on what will most impress VCs.`;
+Provide 2-3 specific, actionable suggestions to improve this section's score. Focus on what will most impress VCs. For each suggestion, include 1-2 specific questions the founder can answer to provide more detailed context for their next analysis.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

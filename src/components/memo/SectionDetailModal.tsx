@@ -3,12 +3,12 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { 
   AlertTriangle, 
   CheckCircle2, 
   XCircle,
   TrendingUp,
-  ExternalLink,
   Sparkles,
   Clock,
   Zap,
@@ -21,7 +21,8 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
-  Lightbulb
+  Lightbulb,
+  ListChecks
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type SectionVerdict } from "@/lib/holisticVerdictGenerator";
@@ -29,6 +30,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { MemoStructuredSection } from "@/types/memo";
 import { renderMarkdownText } from "@/lib/markdownParser";
+import { ImprovementQuestionCard } from "./ImprovementQuestionCard";
+import { useImprovementQueue } from "@/hooks/useImprovementQueue";
 
 interface SectionDetailModalProps {
   open: boolean;
@@ -42,11 +45,18 @@ interface SectionDetailModalProps {
   sectionTools?: Record<string, unknown> | null;
 }
 
+interface ImprovementQuestion {
+  id: string;
+  question: string;
+  placeholder?: string;
+}
+
 interface Suggestion {
   title: string;
   description: string;
   impact: 'high' | 'medium';
   timeframe: string;
+  questions?: ImprovementQuestion[];
 }
 
 interface AIImprovements {
@@ -118,6 +128,14 @@ export const SectionDetailModal = ({
   const [loadingImprovements, setLoadingImprovements] = useState(false);
   const [showImprovements, setShowImprovements] = useState(false);
   const [showVCQuestions, setShowVCQuestions] = useState(false);
+  const [inlineAnswers, setInlineAnswers] = useState<Record<string, string>>({});
+  
+  const { 
+    queue, 
+    addQuestion, 
+    isInQueue, 
+    queueCount 
+  } = useImprovementQueue(companyId);
   
   useEffect(() => {
     if (open && section && !improvements) {
@@ -130,6 +148,7 @@ export const SectionDetailModal = ({
       setImprovements(null);
       setShowImprovements(false);
       setShowVCQuestions(false);
+      setInlineAnswers({});
     }
   }, [open]);
   
@@ -169,6 +188,43 @@ export const SectionDetailModal = ({
   const handleViewFullSection = () => {
     onOpenChange(false);
     navigate(`/analysis/section?companyId=${companyId}&section=${navIndex}`);
+  };
+
+  const handleGoToRegenerate = () => {
+    onOpenChange(false);
+    navigate(`/analysis/regenerate?companyId=${companyId}&mode=improvements`);
+  };
+
+  const handleAddQuestionToQueue = (question: ImprovementQuestion, suggestionTitle: string, impact: 'high' | 'medium') => {
+    addQuestion({
+      id: `${section.section.toLowerCase().replace(/\s/g, '_')}_${question.id}`,
+      section: section.section,
+      question: question.question,
+      placeholder: question.placeholder,
+      suggestionTitle,
+      impact
+    });
+  };
+
+  const handleAnswerInline = (questionId: string, answer: string) => {
+    setInlineAnswers(prev => ({ ...prev, [questionId]: answer }));
+    // Also add to queue with the answer
+    const fullId = `${section.section.toLowerCase().replace(/\s/g, '_')}_${questionId}`;
+    // Find the question in improvements
+    improvements?.suggestions.forEach(suggestion => {
+      suggestion.questions?.forEach(q => {
+        if (q.id === questionId) {
+          addQuestion({
+            id: fullId,
+            section: section.section,
+            question: q.question,
+            placeholder: q.placeholder,
+            suggestionTitle: suggestion.title,
+            impact: suggestion.impact
+          });
+        }
+      });
+    });
   };
   
   const scoreDiff = section.score - section.benchmark;
@@ -455,29 +511,58 @@ export const SectionDetailModal = ({
                         </div>
                       )}
                       
-                      <div className="space-y-3">
+                      <div className="space-y-5">
                         {improvements.suggestions.map((suggestion, i) => (
                           <div 
                             key={i}
-                            className="p-4 rounded-xl bg-muted/20 border border-border/30 hover:bg-muted/30 transition-colors"
+                            className="rounded-xl border border-border/40 overflow-hidden"
                           >
-                            <div className="flex items-start justify-between gap-3 mb-2">
-                              <h5 className="font-medium text-foreground">{suggestion.title}</h5>
-                              <div className="flex items-center gap-2 shrink-0">
-                                {suggestion.impact === 'high' && (
-                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success/10 text-success uppercase">
-                                    High Impact
+                            {/* Suggestion Header */}
+                            <div className="p-4 bg-muted/20">
+                              <div className="flex items-start justify-between gap-3 mb-2">
+                                <h5 className="font-medium text-foreground">{suggestion.title}</h5>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {suggestion.impact === 'high' && (
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success/10 text-success uppercase">
+                                      High Impact
+                                    </span>
+                                  )}
+                                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <Clock className="w-3 h-3" />
+                                    {suggestion.timeframe}
                                   </span>
-                                )}
-                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <Clock className="w-3 h-3" />
-                                  {suggestion.timeframe}
-                                </span>
+                                </div>
                               </div>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {suggestion.description}
+                              </p>
                             </div>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                              {suggestion.description}
-                            </p>
+                            
+                            {/* Actionable Questions */}
+                            {suggestion.questions && suggestion.questions.length > 0 && (
+                              <div className="p-4 pt-2 space-y-2 bg-background/50">
+                                <p className="text-xs font-medium text-primary flex items-center gap-1.5 mb-3">
+                                  <Sparkles className="w-3 h-3" />
+                                  Answer to improve your score
+                                </p>
+                                {suggestion.questions.map((question) => {
+                                  const fullId = `${section.section.toLowerCase().replace(/\s/g, '_')}_${question.id}`;
+                                  return (
+                                    <ImprovementQuestionCard
+                                      key={question.id}
+                                      question={question}
+                                      section={section.section}
+                                      suggestionTitle={suggestion.title}
+                                      impact={suggestion.impact}
+                                      isInQueue={isInQueue(fullId)}
+                                      onAddToQueue={(q) => handleAddQuestionToQueue(q, suggestion.title, suggestion.impact)}
+                                      onAnswerInline={handleAnswerInline}
+                                      inlineAnswer={inlineAnswers[question.id]}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -495,27 +580,56 @@ export const SectionDetailModal = ({
           </div>
         </ScrollArea>
         
-        {/* Footer */}
-        <div className="px-8 py-4 border-t border-border/20 bg-muted/10 flex items-center justify-between gap-4">
-          <Button 
-            variant="ghost"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Button>
+        {/* Footer with Queue CTA */}
+        <div className="px-8 py-4 border-t border-border/20 bg-muted/10">
+          {/* Queue Status Bar */}
+          {queueCount > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <ListChecks className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {queueCount} question{queueCount !== 1 ? 's' : ''} queued for regeneration
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Answer them to improve your analysis score
+                  </p>
+                </div>
+              </div>
+              <Button 
+                onClick={handleGoToRegenerate}
+                size="sm"
+                className="gradient-primary shadow-glow gap-2"
+              >
+                Review & Regenerate
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
           
-          <Button 
-            onClick={handleViewFullSection}
-            size="sm"
-            className="gradient-primary shadow-glow"
-          >
-            <BookOpen className="w-4 h-4 mr-2" />
-            Full Page View
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
+          <div className="flex items-center justify-between gap-4">
+            <Button 
+              variant="ghost"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            
+            <Button 
+              onClick={handleViewFullSection}
+              size="sm"
+              variant="outline"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Full Page View
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
