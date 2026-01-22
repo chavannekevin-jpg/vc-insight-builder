@@ -91,7 +91,9 @@ async function fetchKBContext(
       .eq("geography_scope", geography)
       .order("updated_at", { ascending: false })
       .limit(20);
-    if (filters.sector) q = q.eq("sector", filters.sector);
+    // Global frameworks (sector IS NULL) should always be available alongside sector-matched ones.
+    // If sector is provided: include (sector == inferredSector OR sector IS NULL)
+    if (filters.sector) q = q.or(`sector.eq.${filters.sector},sector.is.null`);
     const { data } = await q;
     return (data || []) as any[];
   }
@@ -304,8 +306,10 @@ serve(async (req) => {
           .join("\n")}`
       : "";
 
+    // Note: Frameworks are *not* to be explicitly shown/cited in the user-facing memo.
+    // They are provided to shape reasoning (heuristics + checkpoints), not to be referenced.
     const frameworkKbBlock = kbContext.frameworkSources.length
-      ? `\n\n=== EUROPE FRAMEWORKS (methodology) ===\nUse these as methodological guidance and evaluation heuristics (not as quantitative benchmarks). Prefer frameworks that match the inferred sector; cite sources when you apply a framework.\n\nSOURCES:\n${kbContext.frameworkSources
+      ? `\n\n=== EUROPE FRAMEWORKS (methodology) ===\nUse these as methodological guidance and evaluation heuristics (not as quantitative benchmarks). Prefer sector-matched frameworks, but ALWAYS also consider global frameworks.\nIMPORTANT: Do NOT mention frameworks, publishers, source IDs, or citations in the final memo. Use them implicitly to structure your reasoning.\n\nSOURCES (internal only):\n${kbContext.frameworkSources
           .map((s: any) => `- ${s.publisher ?? "Unknown publisher"} — ${s.title ?? "Untitled"}${s.publication_date ? ` (${s.publication_date})` : ""} [${s.id}]`)
           .join("\n")}\n\nFRAMEWORK SUMMARIES (sample):\n${kbContext.frameworks
           .slice(0, 10)
@@ -318,6 +322,15 @@ serve(async (req) => {
       : "";
 
     const kbContextBlock = `${reportKbBlock}${frameworkKbBlock}`;
+
+    // Internal-only visibility for QA: which frameworks were retrieved.
+    if (kbContext.frameworks?.length) {
+      console.log(
+        `[kb] frameworks_selected count=${kbContext.frameworks.length} sector=${inferred.sector ?? "(none)"} sources=${[
+          ...new Set((kbContext.frameworks || []).map((f: any) => f.source_id).filter(Boolean)),
+        ].join(",")}`,
+      );
+    }
 
     // Build the memo generation prompt. We will use tool-calling to guarantee valid JSON output.
     const systemPrompt = `You are a senior VC investment analyst at a top-tier venture fund. Your task is to analyze this pitch deck and write a FAST investor snapshot (not a full diligence memo).
