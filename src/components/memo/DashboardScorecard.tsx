@@ -534,61 +534,24 @@ export const DashboardScorecard = ({
           </span>
         </div>
         
-        {/* Prominent Share CTA Banner */}
-        <div className="relative z-10 mx-5 mt-5 p-4 rounded-xl bg-gradient-to-r from-primary/15 via-secondary/10 to-primary/5 border border-primary/30">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1 space-y-1">
-              <div className="flex items-center gap-2 group relative">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-sm text-foreground cursor-help border-b border-dashed border-primary/50">
-                  Share & Unlock VC Intros
-                </span>
-                {/* Tooltip on hover - fully opaque */}
-                <div className="absolute left-0 top-full mt-2 z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
-                  <div className="bg-background border-2 border-primary/50 rounded-xl p-4 shadow-2xl max-w-sm">
-                    <div className="space-y-3 text-sm">
-                      <div className="flex items-start gap-3">
-                        <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">1</span>
-                        <span className="text-foreground"><strong className="text-primary">Share</strong> your scorecard → Earn free regeneration credits</span>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">2</span>
-                        <span className="text-foreground"><strong className="text-primary">Regenerate</strong> → Improve your score with better data</span>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <span className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center shrink-0 text-xs font-bold text-success">3</span>
-                        <span className="text-foreground"><strong className="text-success">Score 60+</strong> → Get a free intro to any VC in our network</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {isEligibleForIntro && (
-                <p className="text-xs text-success font-medium">
-                  ✓ You're eligible for a free VC intro with your score of {scorecard.overallScore}!
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setInviteFounderOpen(true)}
-                className="gap-1.5 h-9 px-4 border-primary/40 bg-card hover:bg-primary/10 hover:border-primary/60 text-foreground font-medium shadow-sm transition-all"
-              >
-                <Gift className="w-4 h-4 text-primary" />
-                Invite
-              </Button>
-              <Button 
-                size="sm" 
-                onClick={() => setShareScorecardOpen(true)}
-                className="gap-1.5 h-9 px-4 gradient-primary shadow-glow font-medium"
-              >
-                <Share2 className="w-4 h-4" />
-                Share Score
-              </Button>
-            </div>
+        {/* Invite Banner */}
+        <div className="relative z-10 mx-5 mt-4 p-3 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Gift className="w-4 h-4 text-primary" />
+            <span className="text-sm text-foreground">
+              <span className="font-medium">Invite a friend</span>
+              <span className="text-muted-foreground"> — earn free regeneration credits</span>
+            </span>
           </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setInviteFounderOpen(true)}
+            className="gap-1.5 h-8 px-3 border-primary/40 hover:bg-primary/10 hover:border-primary/60 text-foreground font-medium transition-all"
+          >
+            <Gift className="w-3.5 h-3.5 text-primary" />
+            Invite
+          </Button>
         </div>
         
         {/* Main content */}
@@ -1032,66 +995,39 @@ export const DashboardScorecard = ({
                 </Collapsible>
               )}
               
-              {/* Market Lens Card */}
-              <div className="mt-4 relative overflow-hidden rounded-xl border-2 border-blue-500/40 bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-primary/5 transition-all duration-300 hover:border-blue-500/60 group cursor-pointer"
-                onClick={() => onNavigate('/market-lens')}
-              >
-                {/* Decorative gradient */}
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-500/20 via-cyan-500/20 to-transparent rounded-full blur-2xl opacity-60 group-hover:opacity-80 transition-opacity" />
-                
-                <div className="p-5 relative z-10">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
-                      <Globe className="w-5 h-5 text-blue-400" />
+              {/* Premium Tools Row */}
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                {/* Market Lens Card */}
+                <div 
+                  className="relative overflow-hidden rounded-lg border border-blue-500/30 bg-blue-500/5 p-3 transition-all duration-200 hover:border-blue-500/50 hover:bg-blue-500/10 group cursor-pointer"
+                  onClick={() => onNavigate('/market-lens')}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-lg bg-blue-500/10">
+                      <Globe className="w-4 h-4 text-blue-400" />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-base font-bold text-foreground">Market Lens</h4>
-                        <Badge className="text-[9px] bg-blue-500/10 text-blue-400 border-blue-500/20">
-                          Intelligence
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">VC reports & market data, filtered for you</p>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold text-foreground">Market Lens</h4>
+                      <p className="text-[10px] text-muted-foreground truncate">50+ reports filtered for you</p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-blue-400 group-hover:translate-x-1 transition-all shrink-0" />
-                  </div>
-                  
-                  <div className="mt-3 pt-3 border-t border-blue-500/20">
-                    <p className="text-xs text-foreground/70 leading-relaxed">
-                      We've compiled 50+ industry reports, funding benchmarks, and market analyses. Market Lens filters them for your sector and stage — so you don't have to read them all.
-                    </p>
+                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all shrink-0" />
                   </div>
                 </div>
-              </div>
-              
-              {/* VC Network Card */}
-              <div className="mt-4 relative overflow-hidden rounded-xl border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-primary/5 transition-all duration-300 hover:border-emerald-500/60 group cursor-pointer"
-                onClick={() => onNavigate('/fund-discovery')}
-              >
-                {/* Decorative gradient */}
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-emerald-500/20 via-teal-500/20 to-transparent rounded-full blur-2xl opacity-60 group-hover:opacity-80 transition-opacity" />
                 
-                <div className="p-5 relative z-10">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30">
-                      <Building2 className="w-5 h-5 text-emerald-400" />
+                {/* VC Network Card */}
+                <div 
+                  className="relative overflow-hidden rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 transition-all duration-200 hover:border-emerald-500/50 hover:bg-emerald-500/10 group cursor-pointer"
+                  onClick={() => onNavigate('/fund-discovery')}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-lg bg-emerald-500/10">
+                      <Building2 className="w-4 h-4 text-emerald-400" />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-base font-bold text-foreground">VC Network</h4>
-                        <Badge className="text-[9px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                          Discovery
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Find investors who match your stage & sector</p>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold text-foreground">VC Network</h4>
+                      <p className="text-[10px] text-muted-foreground truncate">800+ investors by stage & sector</p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0" />
-                  </div>
-                  
-                  <div className="mt-3 pt-3 border-t border-emerald-500/20">
-                    <p className="text-xs text-foreground/70 leading-relaxed">
-                      Browse 800+ active investors filtered by geography, check size, and sector focus. See who's actually writing checks in your space.
-                    </p>
+                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all shrink-0" />
                   </div>
                 </div>
               </div>
