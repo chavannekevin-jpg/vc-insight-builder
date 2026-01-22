@@ -202,6 +202,10 @@ const AdminDashboard = () => {
     navigate(`/hub?viewCompanyId=${companyId}`);
   };
 
+  const handleGoToKnowledgeBase = () => {
+    navigate("/admin/knowledge-base");
+  };
+
   const filteredCompanies = companies.filter((company) => {
     const searchLower = safeLower(searchTerm, "Admin.search");
     const matchesSearch = safeLower(company.name, "Admin.name").includes(searchLower) ||
@@ -217,6 +221,21 @@ const AdminDashboard = () => {
         <AdminStatsCard />
         <AdminRevenueCard />
         <AdminFunnelCard />
+
+        {/* Quick Actions */}
+        <ModernCard>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Industry reports (Knowledge Base)</h2>
+              <p className="text-sm text-muted-foreground">
+                Upload Europe reports to extract benchmarks + market notes used in memo generation.
+              </p>
+            </div>
+            <Button onClick={handleGoToKnowledgeBase}>
+              Upload report PDF
+            </Button>
+          </div>
+        </ModernCard>
 
         {/* Orphaned Data Cleanup */}
         {orphanedCount > 0 && (
