@@ -68,7 +68,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'File or image URLs are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    );
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -82,8 +82,8 @@ serve(async (req) => {
 
     console.log('Generating investor memo from deck');
 
-    // Build the comprehensive memo generation prompt
-    const systemPrompt = `You are a senior VC investment analyst at a top-tier venture fund. Your task is to analyze this pitch deck and write a comprehensive investment memorandum.
+    // Build the comprehensive memo generation prompt with enhanced structured analysis
+    const systemPrompt = `You are a senior VC investment analyst at a top-tier venture fund. Your task is to analyze this pitch deck and write a comprehensive investment memorandum with structured analysis.
 
 CRITICAL INSTRUCTIONS:
 - Write a COMPLETE investment memo, not bullet points or summaries
@@ -92,6 +92,7 @@ CRITICAL INSTRUCTIONS:
 - Be analytical and critical - identify both strengths and concerns
 - Include specific numbers, metrics, and facts from the deck when available
 - If information is missing, note it as a gap
+- Provide numerical scores (0-100) for key areas based on VC evaluation criteria
 
 Return a JSON object with this EXACT structure:
 
@@ -100,6 +101,44 @@ Return a JSON object with this EXACT structure:
   "tagline": "One-line description of what the company does",
   "stage": "Pre-Seed|Seed|Series A|Series B|Later",
   "sector": "Primary sector/industry",
+  
+  "quick_analysis": {
+    "overall_score": 65,
+    "readiness_level": "LOW|MEDIUM|HIGH",
+    "one_liner_verdict": "A single sentence VC gut reaction to this opportunity",
+    "section_scores": {
+      "team": 70,
+      "market": 65,
+      "traction": 55,
+      "product": 72,
+      "business_model": 60,
+      "competition": 58
+    }
+  },
+  
+  "concerns": [
+    { "category": "traction", "text": "Specific concern about traction", "severity": "critical" },
+    { "category": "team", "text": "Team gap identified", "severity": "warning" },
+    { "category": "market", "text": "Market concern", "severity": "minor" }
+  ],
+  
+  "strengths": [
+    { "category": "Product", "text": "Strong product differentiation" },
+    { "category": "Team", "text": "Experienced founding team" },
+    { "category": "Market", "text": "Large addressable market" }
+  ],
+  
+  "matching_signals": {
+    "stage": "Seed",
+    "sector": "SaaS",
+    "secondary_sectors": ["AI", "B2B"],
+    "keywords": ["automation", "enterprise", "workflow"],
+    "ask_amount": 2000000,
+    "has_revenue": true,
+    "has_customers": true,
+    "geography": "USA"
+  },
+  
   "sections": {
     "executive_summary": {
       "title": "Executive Summary",
@@ -156,16 +195,28 @@ Return a JSON object with this EXACT structure:
   }
 }
 
+SCORING GUIDELINES:
+- 80-100: Exceptional, fund-worthy on this dimension
+- 60-79: Solid, meets bar with minor concerns
+- 40-59: Below bar, significant gaps but not disqualifying
+- 0-39: Critical weakness, likely deal-breaker
+
+CONCERNS SEVERITY:
+- "critical": Likely deal-breaker, needs immediate resolution
+- "warning": Significant concern that needs addressing
+- "minor": Worth noting but not blocking
+
 IMPORTANT: 
 - Write in complete sentences and paragraphs, not bullet points
 - Be analytical, not just descriptive
 - Include specific numbers and facts from the deck
 - Note when information is missing or unclear
-- Each section should flow as professional prose`;
+- Each section should flow as professional prose
+- Generate 3-5 concerns and 3-5 strengths based on actual deck content`;
 
     // Prepare content for the API
     const contentParts: any[] = [
-      { type: 'text', text: 'Please analyze this pitch deck and generate a comprehensive VC investment memorandum. Extract all relevant information and write detailed narrative sections.' }
+      { type: 'text', text: 'Please analyze this pitch deck and generate a comprehensive VC investment memorandum with structured scoring and analysis. Extract all relevant information and write detailed narrative sections.' }
     ];
 
     // Add the document/images
@@ -211,7 +262,7 @@ IMPORTANT:
             { role: 'user', content: contentParts }
           ],
           temperature: 0.3,
-          max_tokens: 8000,
+          max_tokens: 10000,
         }),
         signal: controller.signal
       });
