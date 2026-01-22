@@ -6,9 +6,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { FounderLayout } from "@/components/founder/FounderLayout";
 import { MarketLensBriefing } from "@/components/market-lens/MarketLensBriefing";
 import { MarketLensEmpty } from "@/components/market-lens/MarketLensEmpty";
+import { MarketLensOnboarding } from "@/components/market-lens/MarketLensOnboarding";
 import { Button } from "@/components/ui/button";
 import { Telescope, RefreshCw, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
+
+interface MarketLensPreferences {
+  region: "europe" | "us" | "other";
+  targetMarket: "same" | "different_us" | "different_eu" | "global";
+  fundraisingTimeline: "active" | "6months" | "exploring";
+  keyConcerns: string;
+}
 
 interface Briefing {
   tailwinds: Array<{
@@ -46,6 +54,7 @@ interface Briefing {
   };
   generatedAt: string;
   sourcesUsed: number;
+  sourcesList?: string[];
 }
 
 export default function MarketLens() {
@@ -56,43 +65,88 @@ export default function MarketLens() {
   const [briefing, setBriefing] = useState<Briefing | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [preferences, setPreferences] = useState<MarketLensPreferences | null>(null);
 
   const canAccess = hasPaid && hasMemo;
 
-  // Load cached briefing on mount
+  // Load cached briefing and preferences on mount
   useEffect(() => {
-    const loadCachedBriefing = async () => {
+    const loadCachedData = async () => {
       if (!company?.id || !canAccess) return;
 
       try {
-        const { data } = await supabase
+        // Check for existing preferences
+        const { data: prefsData } = await supabase
           .from("memo_responses")
-          .select("answer, updated_at")
+          .select("answer")
+          .eq("company_id", company.id)
+          .eq("question_key", "market_lens_preferences")
+          .single();
+
+        if (prefsData?.answer) {
+          setPreferences(JSON.parse(prefsData.answer));
+        }
+
+        // Check for existing briefing
+        const { data: briefingData } = await supabase
+          .from("memo_responses")
+          .select("answer")
           .eq("company_id", company.id)
           .eq("question_key", "market_lens_briefing")
           .single();
 
-        if (data?.answer) {
-          const parsed = JSON.parse(data.answer);
-          setBriefing(parsed);
+        if (briefingData?.answer) {
+          setBriefing(JSON.parse(briefingData.answer));
+        } else if (!prefsData?.answer) {
+          // No preferences and no briefing = first time, show onboarding
+          setShowOnboarding(true);
         }
       } catch (error) {
-        // No cached briefing, that's fine
+        // No cached data, check if we should show onboarding
+        setShowOnboarding(true);
       } finally {
         setHasLoaded(true);
       }
     };
 
-    loadCachedBriefing();
+    loadCachedData();
   }, [company?.id, canAccess]);
 
-  const generateBriefing = async () => {
+  const handleOnboardingComplete = async (newPreferences: MarketLensPreferences) => {
     if (!company?.id) return;
 
+    setPreferences(newPreferences);
+    setShowOnboarding(false);
+
+    // Save preferences
+    await supabase
+      .from("memo_responses")
+      .upsert({
+        company_id: company.id,
+        question_key: "market_lens_preferences",
+        answer: JSON.stringify(newPreferences),
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: "company_id,question_key"
+      });
+
+    // Auto-generate briefing after onboarding
+    generateBriefing(newPreferences);
+  };
+
+  const generateBriefing = async (prefsOverride?: MarketLensPreferences) => {
+    if (!company?.id) return;
+
+    const prefsToUse = prefsOverride || preferences;
+    
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("market-lens-generate", {
-        body: { companyId: company.id }
+        body: { 
+          companyId: company.id,
+          preferences: prefsToUse
+        }
       });
 
       if (error) throw error;
@@ -146,43 +200,62 @@ export default function MarketLens() {
 
   return (
     <FounderLayout>
-      <div className="max-w-5xl mx-auto py-8 px-4 space-y-8">
+      {/* Onboarding Modal */}
+      <MarketLensOnboarding 
+        open={showOnboarding}
+        onComplete={handleOnboardingComplete}
+        companyName={company?.name || "Your Company"}
+      />
+
+      <div className="max-w-5xl mx-auto py-8 px-4 space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
               <Telescope className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-display font-bold">Market Lens</h1>
-              <p className="text-muted-foreground">
-                Personalized market intelligence based on your analysis
+              <h1 className="text-2xl font-display font-bold">Market Lens</h1>
+              <p className="text-sm text-muted-foreground">
+                Personalized market intelligence for {company?.name}
               </p>
             </div>
           </div>
           
-          <Button
-            onClick={generateBriefing}
-            disabled={isGenerating}
-            variant={briefing ? "outline" : "default"}
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Analyzing Markets...
-              </>
-            ) : briefing ? (
-              <>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh Briefing
-              </>
-            ) : (
-              <>
-                <Telescope className="w-4 h-4 mr-2" />
-                Generate My Briefing
-              </>
+          <div className="flex items-center gap-2">
+            {preferences && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowOnboarding(true)}
+                className="text-muted-foreground"
+              >
+                Edit Preferences
+              </Button>
             )}
-          </Button>
+            <Button
+              onClick={() => generateBriefing()}
+              disabled={isGenerating || !preferences}
+              variant={briefing ? "outline" : "default"}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Analyzing Markets...
+                </>
+              ) : briefing ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh Briefing
+                </>
+              ) : (
+                <>
+                  <Telescope className="w-4 h-4 mr-2" />
+                  Generate Briefing
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Content */}
@@ -192,9 +265,9 @@ export default function MarketLens() {
           </div>
         ) : briefing ? (
           <MarketLensBriefing briefing={briefing} companyName={company?.name || "Your Company"} />
-        ) : (
-          <MarketLensEmpty onGenerate={generateBriefing} isGenerating={isGenerating} />
-        )}
+        ) : !showOnboarding ? (
+          <MarketLensEmpty onGenerate={() => generateBriefing()} isGenerating={isGenerating} />
+        ) : null}
       </div>
     </FounderLayout>
   );
