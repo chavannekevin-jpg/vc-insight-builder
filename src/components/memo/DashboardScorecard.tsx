@@ -110,50 +110,116 @@ const READINESS_CONFIG = {
   }
 };
 
-// Mini section card for the grid
+// Memo section order - follows the investment analysis structure
+const MEMO_SECTION_ORDER = [
+  "Problem",
+  "Solution", 
+  "Market",
+  "Competition",
+  "Team",
+  "Business Model",
+  "Traction",
+  "Vision"
+];
+
+// Section icons mapping
+const SECTION_ICONS: Record<string, React.ReactNode> = {
+  'Problem': <AlertTriangle className="w-4 h-4" />,
+  'Solution': <Zap className="w-4 h-4" />,
+  'Market': <TrendingUp className="w-4 h-4" />,
+  'Competition': <Users className="w-4 h-4" />,
+  'Team': <Users className="w-4 h-4" />,
+  'Business Model': <Target className="w-4 h-4" />,
+  'Traction': <TrendingUp className="w-4 h-4" />,
+  'Vision': <Sparkles className="w-4 h-4" />
+};
+
+// Mini section card for the grid - premium design
 const MiniSectionCard = ({ 
   section, 
-  onClick 
+  onClick,
+  index
 }: { 
   section: SectionVerdict; 
   onClick: () => void;
+  index: number;
 }) => {
   const config = STATUS_CONFIG[section.status];
-  const Icon = config.icon;
+  const StatusIcon = config.icon;
+  const sectionIcon = SECTION_ICONS[section.section] || <FileText className="w-4 h-4" />;
+  const scoreDelta = section.score - section.benchmark;
   
   return (
     <button
       onClick={onClick}
       className={cn(
-        "relative p-3 rounded-xl border transition-all duration-300 text-left w-full",
-        "bg-card/50 backdrop-blur-sm hover:bg-card/80",
+        "relative overflow-hidden rounded-xl border transition-all duration-300 text-left w-full",
+        "bg-gradient-to-br from-card via-card to-muted/20",
+        "hover:from-card hover:via-muted/10 hover:to-primary/5",
         config.border,
-        "group hover:scale-[1.02] cursor-pointer hover:shadow-md"
+        "group hover:scale-[1.01] cursor-pointer hover:shadow-lg hover:border-primary/40"
       )}
     >
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-foreground uppercase tracking-wide truncate">
+      {/* Subtle gradient overlay on hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-transparent transition-all duration-300" />
+      
+      {/* Section number indicator */}
+      <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-muted/50 flex items-center justify-center">
+        <span className="text-[10px] font-medium text-muted-foreground">{index + 1}</span>
+      </div>
+      
+      <div className="relative z-10 p-4 pt-8">
+        {/* Section header with icon */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className={cn(
+            "p-1.5 rounded-lg",
+            config.bg
+          )}>
+            <span className={config.color}>{sectionIcon}</span>
+          </div>
+          <span className="text-sm font-semibold text-foreground tracking-tight">
             {section.section}
           </span>
-          <Icon className={cn("w-3.5 h-3.5 shrink-0", config.color)} />
         </div>
         
-        <div className="flex items-baseline gap-1">
-          <span className={cn(
-            "text-2xl font-bold tabular-nums",
-            section.score >= section.benchmark ? "text-success" : 
-            section.score >= section.benchmark - 15 ? "text-warning" : "text-destructive"
+        {/* Score display */}
+        <div className="flex items-end justify-between">
+          <div className="flex items-baseline gap-1.5">
+            <span className={cn(
+              "text-3xl font-bold tabular-nums tracking-tight",
+              section.score >= section.benchmark ? "text-success" : 
+              section.score >= section.benchmark - 15 ? "text-warning" : "text-destructive"
+            )}>
+              {section.score}
+            </span>
+            <span className="text-sm text-muted-foreground font-medium">/100</span>
+          </div>
+          
+          {/* Status badge */}
+          <div className={cn(
+            "flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase",
+            config.bg, config.color
           )}>
-            {section.score}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            /{section.benchmark}
+            <StatusIcon className="w-3 h-3" />
+            {config.label}
+          </div>
+        </div>
+        
+        {/* Benchmark comparison */}
+        <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">vs benchmark</span>
+          <span className={cn(
+            "text-xs font-semibold",
+            scoreDelta >= 0 ? "text-success" : "text-destructive"
+          )}>
+            {scoreDelta >= 0 ? '+' : ''}{scoreDelta} pts
           </span>
         </div>
         
-        <div className="absolute bottom-1.5 right-1.5 text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-          View →
+        {/* Hover indicator */}
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="font-medium">Read Analysis</span>
+          <ArrowRight className="w-3 h-3" />
         </div>
       </div>
     </button>
@@ -530,14 +596,19 @@ export const DashboardScorecard = ({
             </CollapsibleTrigger>
             
             <CollapsibleContent className="pt-4">
-              <div className="grid grid-cols-4 gap-3">
-                {scorecard.sections.slice(0, 8).map((section) => (
-                  <MiniSectionCard 
-                    key={section.section} 
-                    section={section} 
-                    onClick={() => handleSectionClick(section)}
-                  />
-                ))}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {MEMO_SECTION_ORDER.map((sectionName, index) => {
+                  const section = scorecard.sections.find(s => s.section === sectionName);
+                  if (!section) return null;
+                  return (
+                    <MiniSectionCard 
+                      key={section.section} 
+                      section={section} 
+                      index={index}
+                      onClick={() => handleSectionClick(section)}
+                    />
+                  );
+                })}
               </div>
             </CollapsibleContent>
           </Collapsible>
