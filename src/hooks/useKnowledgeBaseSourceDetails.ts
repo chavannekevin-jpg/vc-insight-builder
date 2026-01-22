@@ -7,6 +7,7 @@ export interface KnowledgeBaseSourceDetails {
     title: string | null;
     publisher: string | null;
     source_type: "web" | "pdf_upload";
+    content_kind: "report" | "framework";
     source_url: string | null;
     storage_path: string | null;
     geography_scope: string;
@@ -40,6 +41,17 @@ export interface KnowledgeBaseSourceDetails {
     timeframe_label: string | null;
     key_points: any;
   }>;
+
+  frameworks: Array<{
+    id: string;
+    geography_scope: string;
+    region: string | null;
+    sector: string | null;
+    title: string | null;
+    summary: string;
+    key_points: any;
+    tags: any;
+  }>;
 }
 
 export function useKnowledgeBaseSourceDetails(sourceId: string | null, opts?: { enabled?: boolean }) {
@@ -54,14 +66,14 @@ export function useKnowledgeBaseSourceDetails(sourceId: string | null, opts?: { 
       const { data: source, error: sourceErr } = await supabase
         .from("kb_sources")
         .select(
-          "id,title,publisher,source_type,source_url,storage_path,geography_scope,status,extraction_confidence,publication_date,extracted_json,updated_at",
+          "id,title,publisher,source_type,content_kind,source_url,storage_path,geography_scope,status,extraction_confidence,publication_date,extracted_json,updated_at",
         )
         .eq("id", sourceId)
         .single();
 
       if (sourceErr) throw sourceErr;
 
-      const [benchRes, notesRes] = await Promise.all([
+      const [benchRes, notesRes, frameworksRes] = await Promise.all([
         supabase
           .from("kb_benchmarks")
           .select(
@@ -76,16 +88,24 @@ export function useKnowledgeBaseSourceDetails(sourceId: string | null, opts?: { 
           .eq("source_id", sourceId)
           .order("updated_at", { ascending: false })
           .limit(50),
+        supabase
+          .from("kb_frameworks")
+          .select("id,geography_scope,region,sector,title,summary,key_points,tags")
+          .eq("source_id", sourceId)
+          .order("updated_at", { ascending: false })
+          .limit(50),
       ]);
 
       if (benchRes.error) throw benchRes.error;
       if (notesRes.error) throw notesRes.error;
+      if (frameworksRes.error) throw frameworksRes.error;
 
       const normalizedSource: KnowledgeBaseSourceDetails["source"] = {
         id: source.id,
         title: source.title,
         publisher: source.publisher,
         source_type: source.source_type as KnowledgeBaseSourceDetails["source"]["source_type"],
+        content_kind: (source as any).content_kind as KnowledgeBaseSourceDetails["source"]["content_kind"],
         source_url: source.source_url,
         storage_path: source.storage_path,
         geography_scope: source.geography_scope,
@@ -101,6 +121,7 @@ export function useKnowledgeBaseSourceDetails(sourceId: string | null, opts?: { 
         source: normalizedSource,
         benchmarks: benchRes.data ?? [],
         marketNotes: notesRes.data ?? [],
+        frameworks: frameworksRes.data ?? [],
       };
     },
     staleTime: 10_000,

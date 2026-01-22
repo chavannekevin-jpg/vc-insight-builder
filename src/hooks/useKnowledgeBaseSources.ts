@@ -3,11 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type KnowledgeBaseSourceStatus = "draft" | "active" | "archived";
 export type KnowledgeBaseSourceType = "web" | "pdf_upload";
+export type KnowledgeBaseContentKind = "report" | "framework";
 export type ExtractionConfidence = "high" | "medium" | "low" | null;
 
 export interface KnowledgeBaseSourceWithCounts {
   id: string;
   source_type: KnowledgeBaseSourceType;
+  content_kind: KnowledgeBaseContentKind;
   title: string | null;
   publisher: string | null;
   source_url: string | null;
@@ -49,7 +51,7 @@ export function useKnowledgeBaseSources(opts?: { limit?: number }) {
       const { data, error } = await supabase
         .from("kb_sources")
         .select(
-          "id, source_type, title, publisher, source_url, storage_path, geography_scope, status, extraction_confidence, publication_date, created_at, updated_at",
+          "id, source_type, content_kind, title, publisher, source_url, storage_path, geography_scope, status, extraction_confidence, publication_date, created_at, updated_at",
         )
         .order("updated_at", { ascending: false })
         .limit(limit);

@@ -80,8 +80,39 @@ export function KnowledgeBaseSourceDetailsDialog({
       );
     }
 
-    bullets.push(`Extracted benchmarks: ${data.benchmarks.length}`);
-    bullets.push(`Extracted market notes: ${data.marketNotes.length}`);
+    const kind = data.source.content_kind;
+    if (kind === "framework") {
+      bullets.push(`Extracted framework entries: ${data.frameworks.length}`);
+    } else {
+      bullets.push(`Extracted benchmarks: ${data.benchmarks.length}`);
+      bullets.push(`Extracted market notes: ${data.marketNotes.length}`);
+    }
+
+    if (kind === "framework") {
+      const topFrameworks = data.frameworks.slice(0, 15).flatMap((f) => {
+        const title = f.title?.trim() ? f.title.trim() : "Framework";
+        const sector = f.sector ? ` · ${f.sector}` : "";
+        const head = `${title}${sector}`;
+        const summaryLines = f.summary
+          .split(/\n+/)
+          .map((l) => l.trim())
+          .filter(Boolean)
+          .slice(0, 6)
+          .map((l) => `• ${l}`);
+
+        const kps = Array.isArray(f.key_points)
+          ? (f.key_points as unknown[])
+              .map((kp) => (typeof kp === "string" ? kp.trim() : ""))
+              .filter(Boolean)
+              .slice(0, 6)
+              .map((kp) => `• ${kp}`)
+          : [];
+
+        return [head, ...summaryLines, ...(kps.length ? ["• (key points)", ...kps] : [])];
+      });
+
+      return [...bullets, ...(topFrameworks.length ? ["— Framework summaries (sample)", ...topFrameworks] : [])];
+    }
 
     const topBenchmarks = data.benchmarks.slice(0, 30).map(formatMetricRow);
     const topNotes = data.marketNotes.slice(0, 30).flatMap((n) => {
@@ -116,15 +147,17 @@ export function KnowledgeBaseSourceDetailsDialog({
     if (!sourceId) return;
     setIsReExtracting(true);
     try {
-      const { data: resp, error: fnErr } = await supabase.functions.invoke("kb-parse-report", {
-        body: { sourceId },
-      });
+      const fnName = data?.source.content_kind === "framework" ? "kb-parse-framework" : "kb-parse-report";
+      const { data: resp, error: fnErr } = await supabase.functions.invoke(fnName, { body: { sourceId } });
       if (fnErr) throw fnErr;
       if (!resp?.success) throw new Error(resp?.error || "Re-extraction failed");
 
       toast({
         title: "Re-extracted",
-        description: `Updated extraction (${resp?.inserted?.benchmarks ?? 0} benchmarks, ${resp?.inserted?.market_notes ?? 0} notes).`,
+        description:
+          data?.source.content_kind === "framework"
+            ? `Updated extraction (${resp?.inserted?.frameworks ?? 0} frameworks).`
+            : `Updated extraction (${resp?.inserted?.benchmarks ?? 0} benchmarks, ${resp?.inserted?.market_notes ?? 0} notes).`,
       });
 
       await Promise.all([

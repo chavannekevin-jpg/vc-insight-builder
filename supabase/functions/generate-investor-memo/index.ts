@@ -26,17 +26,30 @@ async function fetchKBContext(
   const stage = opts.stage;
   const sector = opts.sector ?? null;
 
-  const { data: sources } = await serviceClient
+  const { data: reportSources } = await serviceClient
     .from("kb_sources")
     .select("id,title,publisher,publication_date")
     .eq("status", "active")
+    .eq("content_kind", "report")
     .eq("geography_scope", geography)
     .order("publication_date", { ascending: false, nullsFirst: false })
     .limit(5);
 
-  const sourceIds = (sources || []).map((s: any) => s.id).filter(Boolean);
-  if (sourceIds.length === 0) {
-    return { sources: [], benchmarks: [], notes: [] };
+  const reportSourceIds = (reportSources || []).map((s: any) => s.id).filter(Boolean);
+
+  const { data: frameworkSources } = await serviceClient
+    .from("kb_sources")
+    .select("id,title,publisher,publication_date")
+    .eq("status", "active")
+    .eq("content_kind", "framework")
+    .eq("geography_scope", geography)
+    .order("publication_date", { ascending: false, nullsFirst: false })
+    .limit(10);
+
+  const frameworkSourceIds = (frameworkSources || []).map((s: any) => s.id).filter(Boolean);
+
+  if (reportSourceIds.length === 0 && frameworkSourceIds.length === 0) {
+    return { reportSources: [], benchmarks: [], notes: [], frameworkSources: [], frameworks: [] };
   }
 
   async function fetchBenchmarks(filters: { stage?: string; sector?: string | null }) {
@@ -45,7 +58,7 @@ async function fetchKBContext(
       .select(
         "geography_scope,region,stage,sector,business_model,timeframe_label,sample_size,currency,metric_key,metric_label,median_value,p25_value,p75_value,unit,notes,source_id",
       )
-      .in("source_id", sourceIds)
+      .in("source_id", reportSourceIds)
       .eq("geography_scope", geography)
       .order("updated_at", { ascending: false })
       .limit(60);
@@ -61,7 +74,7 @@ async function fetchKBContext(
       .select(
         "geography_scope,region,sector,timeframe_label,headline,summary,key_points,source_id",
       )
-      .in("source_id", sourceIds)
+      .in("source_id", reportSourceIds)
       .eq("geography_scope", geography)
       .order("updated_at", { ascending: false })
       .limit(25);
@@ -70,20 +83,45 @@ async function fetchKBContext(
     return (data || []) as any[];
   }
 
+  async function fetchFrameworks(filters: { sector?: string | null }) {
+    let q = serviceClient
+      .from("kb_frameworks")
+      .select("geography_scope,region,sector,title,summary,key_points,tags,source_id")
+      .in("source_id", frameworkSourceIds)
+      .eq("geography_scope", geography)
+      .order("updated_at", { ascending: false })
+      .limit(20);
+    if (filters.sector) q = q.eq("sector", filters.sector);
+    const { data } = await q;
+    return (data || []) as any[];
+  }
+
   let benchmarks: any[] = [];
-  if (stage && sector) benchmarks = await fetchBenchmarks({ stage, sector });
-  if (benchmarks.length === 0 && stage) benchmarks = await fetchBenchmarks({ stage });
-  if (benchmarks.length === 0 && sector) benchmarks = await fetchBenchmarks({ sector });
-  if (benchmarks.length === 0) benchmarks = await fetchBenchmarks({});
+  if (reportSourceIds.length > 0) {
+    if (stage && sector) benchmarks = await fetchBenchmarks({ stage, sector });
+    if (benchmarks.length === 0 && stage) benchmarks = await fetchBenchmarks({ stage });
+    if (benchmarks.length === 0 && sector) benchmarks = await fetchBenchmarks({ sector });
+    if (benchmarks.length === 0) benchmarks = await fetchBenchmarks({});
+  }
 
   let marketNotes: any[] = [];
-  if (sector) marketNotes = await fetchMarketNotes({ sector });
-  if (marketNotes.length === 0) marketNotes = await fetchMarketNotes({});
+  if (reportSourceIds.length > 0) {
+    if (sector) marketNotes = await fetchMarketNotes({ sector });
+    if (marketNotes.length === 0) marketNotes = await fetchMarketNotes({});
+  }
+
+  let frameworks: any[] = [];
+  if (frameworkSourceIds.length > 0) {
+    if (sector) frameworks = await fetchFrameworks({ sector });
+    if (frameworks.length === 0) frameworks = await fetchFrameworks({});
+  }
 
   return {
-    sources: sources || [],
+    reportSources: reportSources || [],
     benchmarks: benchmarks || [],
     notes: marketNotes || [],
+    frameworkSources: frameworkSources || [],
+    frameworks: frameworks || [],
   };
 }
 
@@ -250,8 +288,8 @@ serve(async (req) => {
       sector: inferred.sector,
     });
 
-    const kbContextBlock = kbContext.sources.length
-      ? `\n\n=== EUROPE KNOWLEDGE BASE (benchmarks + market notes) ===\nUse these to calibrate expectations (round sizes, valuations, dilution norms, traction-at-raise) and to add Europe-specific market context where relevant. Cite sources by publisher/title/date in your narrative when you use a benchmark.\n\nSOURCES:\n${kbContext.sources
+    const reportKbBlock = kbContext.reportSources.length
+      ? `\n\n=== EUROPE KNOWLEDGE BASE (benchmarks + market notes) ===\nUse these to calibrate expectations (round sizes, valuations, dilution norms, traction-at-raise) and to add Europe-specific market context where relevant. Cite sources by publisher/title/date in your narrative when you use a benchmark.\n\nSOURCES:\n${kbContext.reportSources
           .map((s: any) => `- ${s.publisher ?? "Unknown publisher"} — ${s.title ?? "Untitled"}${s.publication_date ? ` (${s.publication_date})` : ""} [${s.id}]`)
           .join("\n")}\n\nBENCHMARK ROWS (sample):\n${kbContext.benchmarks
           .map((b: any) => {
@@ -265,6 +303,21 @@ serve(async (req) => {
           .map((n: any) => `- [${n.source_id}] ${n.headline ?? "Market note"}: ${n.summary}`)
           .join("\n")}`
       : "";
+
+    const frameworkKbBlock = kbContext.frameworkSources.length
+      ? `\n\n=== EUROPE FRAMEWORKS (methodology) ===\nUse these as methodological guidance and evaluation heuristics (not as quantitative benchmarks). Prefer frameworks that match the inferred sector; cite sources when you apply a framework.\n\nSOURCES:\n${kbContext.frameworkSources
+          .map((s: any) => `- ${s.publisher ?? "Unknown publisher"} — ${s.title ?? "Untitled"}${s.publication_date ? ` (${s.publication_date})` : ""} [${s.id}]`)
+          .join("\n")}\n\nFRAMEWORK SUMMARIES (sample):\n${kbContext.frameworks
+          .slice(0, 10)
+          .map((f: any) => {
+            const title = f.title ? `${f.title}` : "Framework";
+            const sector = f.sector ? ` / ${f.sector}` : "";
+            return `- [${f.source_id}] ${title}${sector}: ${String(f.summary ?? "").slice(0, 1200)}`;
+          })
+          .join("\n")}\n=== END EUROPE FRAMEWORKS ===`
+      : "";
+
+    const kbContextBlock = `${reportKbBlock}${frameworkKbBlock}`;
 
     // Build the memo generation prompt. We will use tool-calling to guarantee valid JSON output.
     const systemPrompt = `You are a senior VC investment analyst at a top-tier venture fund. Your task is to analyze this pitch deck and write a FAST investor snapshot (not a full diligence memo).
