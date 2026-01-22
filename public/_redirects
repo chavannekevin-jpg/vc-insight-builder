@@ -1,5 +1,6 @@
 # Serve static HTML for exact sample-memo path (for social media crawlers)
 /sample-memo /sample-memo.html 200!
+/demo /sample-memo.html 200!
 
 # SPA fallback - all other routes go to index.html
 /* /index.html 200
