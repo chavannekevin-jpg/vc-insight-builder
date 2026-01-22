@@ -51,7 +51,7 @@ serve(async (req) => {
   }
 
   try {
-    const { companyId } = await req.json();
+    const { companyId, preferences } = await req.json();
 
     if (!companyId) {
       return new Response(
@@ -59,6 +59,13 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Extract preferences with defaults
+    const region = preferences?.region || "europe";
+    const targetMarket = preferences?.targetMarket || "same";
+    const fundraisingTimeline = preferences?.fundraisingTimeline || "exploring";
+    const keyConcerns = preferences?.keyConcerns || "";
+    const currency = region === "europe" ? "EUR" : "USD";
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -181,6 +188,13 @@ Stage: ${companyContext.stage}
 Sector: ${companyContext.category || "Not specified"}
 Description: ${companyContext.description || "Not provided"}
 
+## Founder Preferences
+- Region: ${region === "europe" ? "Europe" : region === "us" ? "United States" : "Global"}
+- Target Market: ${targetMarket === "same" ? "Same as HQ region" : targetMarket === "global" ? "Global/Multi-region" : targetMarket === "different_us" ? "European company targeting US" : "US company targeting Europe"}
+- Fundraising Timeline: ${fundraisingTimeline === "active" ? "Actively raising now" : fundraisingTimeline === "6months" ? "Planning in next 6 months" : "Exploring"}
+- Currency: ${currency}
+${keyConcerns ? `- Specific Concerns: ${keyConcerns}` : ""}
+
 ## Key Responses from Their Analysis
 ${Object.entries(companyContext.responses).slice(0, 10).map(([k, v]) => `- ${k}: ${v}`).join("\n")}
 
@@ -196,6 +210,12 @@ ${JSON.stringify(kbContext.marketNotes.slice(0, 20), null, 2)}
 ${JSON.stringify(kbContext.frameworks, null, 2)}
 
 ---
+
+IMPORTANT: 
+- Use ${currency} for all monetary values (e.g., "${currency === "EUR" ? "€2.5M" : "$2.5M"}")
+- Focus on ${region === "europe" ? "European" : region === "us" ? "US" : "global"} market dynamics and benchmarks
+- If the founder has specific concerns, prioritize addressing those
+- Tailor urgency of insights to their fundraising timeline (${fundraisingTimeline})
 
 Generate a personalized Market Lens briefing with exactly this JSON structure:
 
@@ -217,23 +237,23 @@ Generate a personalized Market Lens briefing with exactly this JSON structure:
     }
   ],
   "fundingLandscape": {
-    "summary": "2-3 sentence overview of funding environment for their stage/sector",
+    "summary": "2-3 sentence overview of funding environment for their stage/sector in ${currency}",
     "dataPoints": [
       {
         "metric": "Metric name",
-        "value": "The value with units",
+        "value": "The value in ${currency} with units",
         "context": "What this means for them"
       }
     ]
   },
   "geographicContext": {
-    "summary": "Overview of their regional ecosystem",
+    "summary": "Overview of their ${region === "europe" ? "European" : region === "us" ? "US" : "target"} ecosystem",
     "insights": ["Specific regional insight 1", "Insight 2"]
   },
   "exitPrecedents": [
     {
       "company": "Company name",
-      "outcome": "What happened (acquisition, IPO, etc.)",
+      "outcome": "What happened (acquisition, IPO, etc.) with value in ${currency}",
       "relevance": "Why this is relevant to them"
     }
   ],
