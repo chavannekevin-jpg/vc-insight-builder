@@ -209,21 +209,6 @@ export const SectionDetailModal = ({
             </div>
           </div>
           
-          {/* VC Verdict */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-primary" />
-              <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-                VC Assessment
-              </h4>
-            </div>
-            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-              <p className="text-sm text-foreground leading-relaxed">
-                "{section.holisticVerdict}"
-              </p>
-            </div>
-          </div>
-          
           {/* AI Improvement Suggestions */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
