@@ -48,6 +48,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { MarketLensUpsellDialog } from "@/components/market-lens/MarketLensUpsellDialog";
 
 interface FounderSidebarProps {
   isAdmin: boolean;
@@ -99,13 +100,22 @@ export const FounderSidebar = ({
 }: FounderSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { state, setOpen } = useSidebar();
-  const collapsed = state === "collapsed";
+  const { state: sidebarState, setOpen } = useSidebar();
+  const collapsed = sidebarState === "collapsed";
   
-  const [toolsOpen, setToolsOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
-
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [showMarketLensUpsell, setShowMarketLensUpsell] = useState(false);
+  
   const isActive = (path: string) => location.pathname === path;
+
+  const handleMarketLensClick = () => {
+    if (hasPaid && hasMemo) {
+      navigate("/market-lens");
+    } else {
+      setShowMarketLensUpsell(true);
+    }
+  };
 
   // Determine where "My Analysis" should link
   const handleMyAnalysisClick = () => {
@@ -234,13 +244,7 @@ export const FounderSidebar = ({
               {/* Market Lens - premium tool */}
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  onClick={() => {
-                    if (hasPaid && hasMemo) {
-                      navigate("/market-lens");
-                    } else {
-                      navigate("/pricing");
-                    }
-                  }}
+                  onClick={handleMarketLensClick}
                   className={cn(
                     "w-full transition-all",
                     isActive("/market-lens")
@@ -475,6 +479,12 @@ export const FounderSidebar = ({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      
+      {/* Market Lens Upsell Dialog */}
+      <MarketLensUpsellDialog 
+        open={showMarketLensUpsell} 
+        onOpenChange={setShowMarketLensUpsell} 
+      />
     </Sidebar>
   );
 };
