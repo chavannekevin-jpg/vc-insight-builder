@@ -12,6 +12,47 @@ const AI_TIMEOUT_MS = 120000;
 // Max file size for upload (15MB)
 const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024;
 
+// Keep edge-function typing loose (Supabase types are not available in Deno runtime).
+async function fetchKBContext(serviceClient: any) {
+  // Keep this intentionally small: a few of the most recent Europe-wide benchmarks + notes.
+  // The memo model decides which are applicable based on the deck.
+  const { data: sources } = await serviceClient
+    .from("kb_sources")
+    .select("id,title,publisher,publication_date")
+    .eq("status", "active")
+    .order("publication_date", { ascending: false, nullsFirst: false })
+    .limit(5);
+
+  const sourceIds = (sources || []).map((s: any) => s.id).filter(Boolean);
+  if (sourceIds.length === 0) {
+    return { sources: [], benchmarks: [], notes: [] };
+  }
+
+  const { data: benchmarks } = await serviceClient
+    .from("kb_benchmarks")
+    .select(
+      "geography_scope,region,stage,sector,business_model,timeframe_label,sample_size,currency,metric_key,metric_label,median_value,p25_value,p75_value,unit,notes,source_id",
+    )
+    .in("source_id", sourceIds)
+    .eq("geography_scope", "Europe")
+    .order("updated_at", { ascending: false })
+    .limit(30);
+
+  const { data: marketNotes } = await serviceClient
+    .from("kb_market_notes")
+    .select("geography_scope,region,sector,timeframe_label,headline,summary,key_points,source_id")
+    .in("source_id", sourceIds)
+    .eq("geography_scope", "Europe")
+    .order("updated_at", { ascending: false })
+    .limit(15);
+
+  return {
+    sources: sources || [],
+    benchmarks: benchmarks || [],
+    notes: marketNotes || [],
+  };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -35,6 +76,11 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
+
+     const serviceClient = createClient(
+       Deno.env.get("SUPABASE_URL") ?? "",
+       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+     );
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: authError } = await anonClient.auth.getUser(token);
@@ -81,6 +127,24 @@ serve(async (req) => {
     }
 
     console.log('Generating investor memo from deck');
+
+    const kbContext = await fetchKBContext(serviceClient);
+
+    const kbContextBlock = kbContext.sources.length
+      ? `\n\n=== EUROPE KNOWLEDGE BASE (benchmarks + market notes) ===\nUse these to calibrate expectations (round sizes, valuations, dilution norms, traction-at-raise) and to add Europe-specific market context where relevant. Cite sources by publisher/title/date in your narrative when you use a benchmark.\n\nSOURCES:\n${kbContext.sources
+          .map((s: any) => `- ${s.publisher ?? "Unknown publisher"} — ${s.title ?? "Untitled"}${s.publication_date ? ` (${s.publication_date})` : ""} [${s.id}]`)
+          .join("\n")}\n\nBENCHMARK ROWS (sample):\n${kbContext.benchmarks
+          .map((b: any) => {
+            const range =
+              b.p25_value != null || b.p75_value != null
+                ? ` (p25 ${b.p25_value ?? "?"}, p75 ${b.p75_value ?? "?"})`
+                : "";
+            return `- [${b.source_id}] ${b.stage}${b.sector ? ` / ${b.sector}` : ""}: ${b.metric_key}${b.metric_label ? ` (${b.metric_label})` : ""} = median ${b.median_value ?? "?"}${range}${b.unit ? ` ${b.unit}` : ""}${b.currency ? ` (${b.currency})` : ""}`;
+          })
+          .join("\n")}\n\nMARKET NOTES (sample):\n${kbContext.notes
+          .map((n: any) => `- [${n.source_id}] ${n.headline ?? "Market note"}: ${n.summary}`)
+          .join("\n")}`
+      : "";
 
     // Build the comprehensive memo generation prompt with enhanced structured analysis
     const systemPrompt = `You are a senior VC investment analyst at a top-tier venture fund. Your task is to analyze this pitch deck and write a comprehensive investment memorandum with structured analysis.
@@ -212,7 +276,7 @@ IMPORTANT:
 - Include specific numbers and facts from the deck
 - Note when information is missing or unclear
 - Each section should flow as professional prose
-- Generate 3-5 concerns and 3-5 strengths based on actual deck content`;
+ - Generate 3-5 concerns and 3-5 strengths based on actual deck content${kbContextBlock}`;
 
     // Prepare content for the API
     const contentParts: any[] = [
