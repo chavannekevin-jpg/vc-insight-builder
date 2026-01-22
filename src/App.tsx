@@ -146,6 +146,11 @@ const StartupMemo = lazy(() => import("./pages/acceleratorDemo/StartupMemo"));
 const CohortAnalytics = lazy(() => import("./pages/acceleratorDemo/CohortAnalytics"));
 const CompareStartups = lazy(() => import("./pages/acceleratorDemo/CompareStartups"));
 
+// Demo Ecosystem Pages
+const DemoDashboard = lazy(() => import("./pages/demo/DemoDashboard"));
+const DemoMarketLens = lazy(() => import("./pages/demo/DemoMarketLens"));
+const DemoFundDiscovery = lazy(() => import("./pages/demo/DemoFundDiscovery"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -200,6 +205,10 @@ const App = () => (
             <Route path="/accelerator-demo/startup/:id/analysis" element={<StartupMemo />} />
             <Route path="/accelerator-demo/analytics" element={<CohortAnalytics />} />
             <Route path="/accelerator-demo/compare" element={<CompareStartups />} />
+            {/* Demo Ecosystem Routes */}
+            <Route path="/demo" element={<DemoDashboard />} />
+            <Route path="/demo/market-lens" element={<DemoMarketLens />} />
+            <Route path="/demo/fund-discovery" element={<DemoFundDiscovery />} />
             <Route path="/hub/:slug" element={<EducationalContent />} />
             <Route path="/vcbrain" element={<VCBrainHub />}>
               <Route index element={<VCBrainHome />} />
@@ -342,8 +351,8 @@ const App = () => (
             <Route path="/memo/complete" element={<RedirectPreserveSearch to="/analysis/complete" />} />
             <Route path="/memo" element={<RedirectPreserveSearch to="/analysis" />} />
             <Route path="/memo/*" element={<RedirectPreserveSearch to="/analysis" />} />
-            <Route path="/sample-memo" element={<Navigate to="/sample-analysis" replace />} />
-            <Route path="/sample-memo/*" element={<Navigate to="/sample-analysis" replace />} />
+            <Route path="/sample-memo" element={<Navigate to="/demo" replace />} />
+            <Route path="/sample-memo/*" element={<Navigate to="/demo" replace />} />
             <Route path="/checkout-memo" element={<RedirectPreserveSearch to="/checkout-analysis" />} />
             <Route path="/memo-regenerate" element={<Navigate to="/analysis-regenerate" replace />} />
             <Route path="/admin/memo-builder" element={<Navigate to="/admin/analysis-builder" replace />} />
