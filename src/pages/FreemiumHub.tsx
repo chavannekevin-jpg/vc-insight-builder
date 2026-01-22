@@ -25,7 +25,7 @@ import { useMatchingFundsCount } from "@/hooks/useMatchingFundsCount";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/hooks/useCompany";
-import { usePrefetchMemoContent } from "@/hooks/useMemoContent";
+import { usePrefetchMemoContent, useMemoContent } from "@/hooks/useMemoContent";
 import { useVcQuickTake, useSectionTools, useDashboardResponses } from "@/hooks/useDashboardData";
 
 // Insider articles for daily rotation
@@ -149,6 +149,9 @@ export default function FreemiumHub() {
   const { data: vcQuickTake } = useVcQuickTake(company?.id || null, hasPaidData);
   const { data: sectionTools } = useSectionTools(company?.id || null, hasPaidData, memoHasContent);
   const { data: responses = [] } = useDashboardResponses(company?.id || null);
+  
+  // Fetch full memo content for section narratives
+  const { data: memoContentData } = useMemoContent(hasPaidData && memoHasContent ? company?.id : null);
 
   // Cached verdict from company data (already cached by useCompany)
   const cachedVerdict = company?.vc_verdict_json || null;
@@ -590,6 +593,7 @@ export default function FreemiumHub() {
                   category={company.category || undefined}
                   companyId={company.id}
                   onNavigate={navigate}
+                  memoContent={memoContentData?.memoContent}
                 />
               ) : (
                 // Fallback card when sectionTools not available

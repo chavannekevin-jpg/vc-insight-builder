@@ -41,6 +41,7 @@ import { InviteFounderModal } from "@/components/founder/InviteFounderModal";
 import { InsightWithTooltip } from "./InsightWithTooltip";
 import { getStrengthHeadline, getWeaknessHeadline } from "@/lib/insightExplanations";
 import { type CompanyInsightContext } from "@/lib/companyInsightContext";
+import { type MemoStructuredContent } from "@/types/memo";
 
 interface DashboardScorecardProps {
   sectionTools: Record<string, { sectionScore?: { score: number; vcBenchmark: number } }>;
@@ -51,6 +52,7 @@ interface DashboardScorecardProps {
   companyId: string;
   onNavigate: (path: string) => void;
   companyInsightContext?: CompanyInsightContext | null;
+  memoContent?: MemoStructuredContent | null;
 }
 
 const STATUS_CONFIG = {
@@ -123,34 +125,34 @@ const MiniSectionCard = ({
     <button
       onClick={onClick}
       className={cn(
-        "relative p-4 rounded-xl border transition-all duration-300 text-left w-full",
+        "relative p-3 rounded-xl border transition-all duration-300 text-left w-full",
         "bg-card/50 backdrop-blur-sm hover:bg-card/80",
         config.border,
         "group hover:scale-[1.02] cursor-pointer hover:shadow-md"
       )}
     >
       <div className="relative z-10">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-semibold text-foreground uppercase tracking-wide truncate">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-semibold text-foreground uppercase tracking-wide truncate">
             {section.section}
           </span>
-          <Icon className={cn("w-4 h-4 shrink-0", config.color)} />
+          <Icon className={cn("w-3.5 h-3.5 shrink-0", config.color)} />
         </div>
         
-        <div className="flex items-baseline gap-1.5">
+        <div className="flex items-baseline gap-1">
           <span className={cn(
-            "text-3xl font-bold tabular-nums",
+            "text-2xl font-bold tabular-nums",
             section.score >= section.benchmark ? "text-success" : 
             section.score >= section.benchmark - 15 ? "text-warning" : "text-destructive"
           )}>
             {section.score}
           </span>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             /{section.benchmark}
           </span>
         </div>
         
-        <div className="absolute bottom-2 right-2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute bottom-1.5 right-1.5 text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
           View →
         </div>
       </div>
@@ -183,7 +185,8 @@ export const DashboardScorecard = ({
   category,
   companyId,
   onNavigate,
-  companyInsightContext
+  companyInsightContext,
+  memoContent
 }: DashboardScorecardProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedSection, setSelectedSection] = useState<SectionVerdict | null>(null);
@@ -242,6 +245,15 @@ export const DashboardScorecard = ({
                     scorecard.overallScore >= 50 ? 'shadow-[0_0_25px_rgba(234,179,8,0.25)]' : 
                     'shadow-[0_0_25px_rgba(239,68,68,0.25)]';
   
+  // Find section narrative from memo content
+  const findSectionNarrative = (sectionName: string) => {
+    if (!memoContent?.sections) return null;
+    return memoContent.sections.find(s => 
+      s.title?.toLowerCase().includes(sectionName.toLowerCase()) ||
+      sectionName.toLowerCase().includes(s.title?.toLowerCase() || '')
+    ) || null;
+  };
+
   const handleSectionClick = (section: SectionVerdict) => {
     setSelectedSection(section);
     setSectionModalOpen(true);
@@ -566,6 +578,7 @@ export const DashboardScorecard = ({
         companyId={companyId}
         companyDescription={companyDescription}
         allSectionScores={allSectionScores}
+        sectionNarrative={selectedSection ? findSectionNarrative(selectedSection.section) : null}
       />
       
       {/* Share Scorecard Modal */}
