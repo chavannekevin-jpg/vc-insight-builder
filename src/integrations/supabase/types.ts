@@ -1271,6 +1271,56 @@ export type Database = {
           },
         ]
       }
+      kb_frameworks: {
+        Row: {
+          created_at: string
+          geography_scope: string
+          id: string
+          key_points: Json | null
+          region: string | null
+          sector: string | null
+          source_id: string
+          summary: string
+          tags: Json | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          geography_scope?: string
+          id?: string
+          key_points?: Json | null
+          region?: string | null
+          sector?: string | null
+          source_id: string
+          summary: string
+          tags?: Json | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          geography_scope?: string
+          id?: string
+          key_points?: Json | null
+          region?: string | null
+          sector?: string | null
+          source_id?: string
+          summary?: string
+          tags?: Json | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kb_frameworks_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "kb_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kb_market_notes: {
         Row: {
           created_at: string
@@ -1323,6 +1373,7 @@ export type Database = {
       }
       kb_sources: {
         Row: {
+          content_kind: string
           created_at: string
           data_period_end: string | null
           data_period_start: string | null
@@ -1340,6 +1391,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          content_kind?: string
           created_at?: string
           data_period_end?: string | null
           data_period_start?: string | null
@@ -1357,6 +1409,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          content_kind?: string
           created_at?: string
           data_period_end?: string | null
           data_period_start?: string | null

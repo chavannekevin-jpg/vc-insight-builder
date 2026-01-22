@@ -43,6 +43,10 @@ function sourceLabel(source: KnowledgeBaseSourceWithCounts) {
   return "Untitled source";
 }
 
+function contentKindLabel(kind: KnowledgeBaseSourceWithCounts["content_kind"]) {
+  return kind === "framework" ? "Framework" : "Report";
+}
+
 export function KnowledgeBaseSourceList() {
   const { data, isLoading, error, refetch, isFetching } = useKnowledgeBaseSources({ limit: 50 });
   const queryClient = useQueryClient();
@@ -228,6 +232,8 @@ export function KnowledgeBaseSourceList() {
                     >
                       <Trash2 />
                     </Button>
+
+                    <Badge variant="outline">{contentKindLabel(s.content_kind)}</Badge>
                     <Badge variant={statusBadgeVariant(s.status)}>{s.status.toUpperCase()}</Badge>
                     <Badge
                       variant={confidenceBadgeVariant(s.extraction_confidence)}

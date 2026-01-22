@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { KnowledgeBaseIntro } from "@/components/admin/kb/KnowledgeBaseIntro";
 import { KnowledgeBaseUploadPdfCard } from "@/components/admin/kb/KnowledgeBaseUploadPdfCard";
+import { KnowledgeBaseUploadFrameworkPdfCard } from "@/components/admin/kb/KnowledgeBaseUploadFrameworkPdfCard";
 import { KnowledgeBaseAddUrlCard } from "@/components/admin/kb/KnowledgeBaseAddUrlCard";
 import { KnowledgeBaseSourceList } from "@/components/admin/kb/KnowledgeBaseSourceList";
 
@@ -39,6 +40,7 @@ export default function AdminKnowledgeBase() {
       <div className="space-y-6">
         <KnowledgeBaseIntro />
         <KnowledgeBaseUploadPdfCard />
+        <KnowledgeBaseUploadFrameworkPdfCard />
         <KnowledgeBaseAddUrlCard />
         <KnowledgeBaseSourceList />
       </div>
