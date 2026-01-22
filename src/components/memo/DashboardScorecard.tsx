@@ -410,6 +410,31 @@ export const DashboardScorecard = ({
     };
   }, [memoContent]);
 
+  // Helper to map tool names from sectionTools to config keys
+  const toolNameMapping: Record<string, string> = {
+    'evidenceThreshold': 'evidenceThreshold',
+    'founderBlindSpot': 'founderBlindSpot',
+    'technicalDefensibility': 'technicalDefensibility',
+    'commoditizationTeardown': 'commoditizationTeardown',
+    'competitorBuildAnalysis': 'competitorBuildAnalysis',
+    'bottomsUpTAM': 'bottomsUpTAM',
+    'marketReadinessIndex': 'marketReadinessIndex',
+    'vcMarketNarrative': 'vcMarketNarrative',
+    'competitorChessboard': 'competitorChessboard',
+    'moatDurability': 'moatDurability',
+    'credibilityGapAnalysis': 'credibilityGapAnalysis',
+    'modelStressTest': 'modelStressTest',
+    'tractionDepthTest': 'tractionDepthTest',
+    'vcMilestoneMap': 'vcMilestoneMap',
+    'scenarioPlanning': 'scenarioPlanning',
+    'exitNarrative': 'exitNarrative',
+    'vcInvestmentLogic': 'vcInvestmentLogic',
+    'actionPlan90Day': 'actionPlan90Day',
+    'caseStudy': 'caseStudy',
+    'leadInvestorRequirements': 'leadInvestorRequirements',
+    'benchmarks': 'benchmarks'
+  };
+
   // Build available tools from sectionTools data
   const availableTools = useMemo(() => {
     if (!sectionTools) return [];
@@ -440,7 +465,7 @@ export const DashboardScorecard = ({
         if (toolName === 'sectionScore' || !toolData) return;
         
         // Map tool names from sectionTools to our config
-        const toolConfigKey = getToolConfigKey(toolName);
+        const toolConfigKey = toolNameMapping[toolName] || toolName;
         const config = TOOL_CONFIGS[toolConfigKey];
         
         if (config) {
@@ -460,35 +485,7 @@ export const DashboardScorecard = ({
     });
     
     return tools;
-  }, [sectionTools]);
-
-  // Helper to map tool names from sectionTools to config keys
-  const getToolConfigKey = (toolName: string): string => {
-    const mapping: Record<string, string> = {
-      'evidenceThreshold': 'evidenceThreshold',
-      'founderBlindSpot': 'founderBlindSpot',
-      'technicalDefensibility': 'technicalDefensibility',
-      'commoditizationTeardown': 'commoditizationTeardown',
-      'competitorBuildAnalysis': 'competitorBuildAnalysis',
-      'bottomsUpTAM': 'bottomsUpTAM',
-      'marketReadinessIndex': 'marketReadinessIndex',
-      'vcMarketNarrative': 'vcMarketNarrative',
-      'competitorChessboard': 'competitorChessboard',
-      'moatDurability': 'moatDurability',
-      'credibilityGapAnalysis': 'credibilityGapAnalysis',
-      'modelStressTest': 'modelStressTest',
-      'tractionDepthTest': 'tractionDepthTest',
-      'vcMilestoneMap': 'vcMilestoneMap',
-      'scenarioPlanning': 'scenarioPlanning',
-      'exitNarrative': 'exitNarrative',
-      'vcInvestmentLogic': 'vcInvestmentLogic',
-      'actionPlan90Day': 'actionPlan90Day',
-      'caseStudy': 'caseStudy',
-      'leadInvestorRequirements': 'leadInvestorRequirements',
-      'benchmarks': 'benchmarks'
-    };
-    return mapping[toolName] || toolName;
-  };
+  }, [sectionTools, toolNameMapping]);
 
   const handleSectionClick = (section: SectionVerdict) => {
     setSelectedSection(section);
