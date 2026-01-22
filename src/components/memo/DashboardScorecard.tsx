@@ -123,34 +123,34 @@ const MiniSectionCard = ({
     <button
       onClick={onClick}
       className={cn(
-        "relative p-3 rounded-xl border transition-all duration-300 text-left w-full",
+        "relative p-4 rounded-xl border transition-all duration-300 text-left w-full",
         "bg-card/50 backdrop-blur-sm hover:bg-card/80",
         config.border,
         "group hover:scale-[1.02] cursor-pointer hover:shadow-md"
       )}
     >
       <div className="relative z-10">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-foreground uppercase tracking-wide truncate">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-semibold text-foreground uppercase tracking-wide truncate">
             {section.section}
           </span>
-          <Icon className={cn("w-3.5 h-3.5 shrink-0", config.color)} />
+          <Icon className={cn("w-4 h-4 shrink-0", config.color)} />
         </div>
         
-        <div className="flex items-baseline gap-1">
+        <div className="flex items-baseline gap-1.5">
           <span className={cn(
-            "text-2xl font-bold tabular-nums",
+            "text-3xl font-bold tabular-nums",
             section.score >= section.benchmark ? "text-success" : 
             section.score >= section.benchmark - 15 ? "text-warning" : "text-destructive"
           )}>
             {section.score}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-sm text-muted-foreground">
             /{section.benchmark}
           </span>
         </div>
         
-        <div className="absolute bottom-1.5 right-1.5 text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute bottom-2 right-2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
           View →
         </div>
       </div>
