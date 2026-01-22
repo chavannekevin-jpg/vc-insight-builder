@@ -151,6 +151,7 @@ const DemoDashboard = lazy(() => import("./pages/demo/DemoDashboard"));
 const DemoMarketLens = lazy(() => import("./pages/demo/DemoMarketLens"));
 const DemoFundDiscovery = lazy(() => import("./pages/demo/DemoFundDiscovery"));
 const DemoProfile = lazy(() => import("./pages/demo/DemoProfile"));
+const DemoAnalysis = lazy(() => import("./pages/demo/DemoAnalysis"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -209,6 +210,7 @@ const App = () => (
             {/* Demo Ecosystem Routes */}
             <Route path="/demo" element={<DemoDashboard />} />
             <Route path="/demo/profile" element={<DemoProfile />} />
+            <Route path="/demo/analysis" element={<DemoAnalysis />} />
             <Route path="/demo/market-lens" element={<DemoMarketLens />} />
             <Route path="/demo/fund-discovery" element={<DemoFundDiscovery />} />
             <Route path="/hub/:slug" element={<EducationalContent />} />
