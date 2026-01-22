@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.84.0";
 import { buildEvidencePacket } from "./evidence.ts";
 import { buildEvidenceLedgerV1, saveMemoArtifact } from "./artifacts.ts";
+import { runReconciliation, type ReconciliationReport } from "./reconciliation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -4330,7 +4331,52 @@ CRITICAL: Each verdict must be SPECIFIC to ${company.name} and reference actual 
       }
     }
 
-    // Persist pipeline QA report as a reserved artifact (not used by UI)
+    // === RECONCILIATION PASS ===
+    // Run document-level review for narrative/score alignment, tone calibration, and cross-section consistency
+    console.log("=== Running reconciliation pass ===");
+    
+    // Build section scores map from tool data
+    const sectionScoresMap: Record<string, { score: number; verdict?: string }> = {};
+    if (toolDataRecords) {
+      for (const record of toolDataRecords) {
+        if (record.tool_name === 'sectionScore') {
+          const aiData = record.ai_generated_data as any;
+          if (aiData?.score !== undefined) {
+            sectionScoresMap[record.section_name] = {
+              score: aiData.score,
+              verdict: aiData.verdict
+            };
+          }
+        }
+      }
+    }
+    
+    const reconciliationInput = {
+      sections: Object.entries(enhancedSections).map(([title, content]) => ({
+        title,
+        paragraphs: typeof content === 'string' 
+          ? [{ text: content }] 
+          : (content as any).paragraphs || []
+      })),
+      vcQuickTake: vcQuickTake,
+      sectionScores: sectionScoresMap,
+      coherenceFlags: coherenceFlags,
+    };
+    
+    const reconciliationReport = runReconciliation(reconciliationInput);
+    
+    console.log(`✓ Reconciliation complete: ${reconciliationReport.passed ? 'PASSED' : 'ISSUES FOUND'}`);
+    console.log(`  - Quality: ${reconciliationReport.overallQuality}`);
+    console.log(`  - Tone: ${reconciliationReport.toneCalibration}`);
+    console.log(`  - Alignment: ${reconciliationReport.narrativeScoreAlignment}`);
+    if (reconciliationReport.issues.length > 0) {
+      console.log(`  - Issues (${reconciliationReport.issues.length}):`);
+      for (const issue of reconciliationReport.issues) {
+        console.log(`    [${issue.severity.toUpperCase()}] ${issue.type}: ${issue.description}`);
+      }
+    }
+
+    // Persist pipeline QA report with reconciliation data
     await saveMemoArtifact({
       supabaseClient,
       companyId,
@@ -4340,10 +4386,20 @@ CRITICAL: Each verdict must be SPECIFIC to ${company.name} and reference actual 
         version: 1,
         generatedAt: new Date().toISOString(),
         coherenceFlags,
+        reconciliation: reconciliationReport,
       },
     });
+    
+    // Persist reconciliation report separately for easy access
+    await saveMemoArtifact({
+      supabaseClient,
+      companyId,
+      sectionName: "__pipeline",
+      toolName: "__reconciliation_report_v1",
+      data: reconciliationReport,
+    });
 
-    // Save memo to database with structured content including overallAssessment, coherenceFlags, and aiActionPlan
+    // Save memo to database with structured content including overallAssessment, coherenceFlags, reconciliation, and aiActionPlan
     const structuredContent = {
       sections: Object.entries(enhancedSections).map(([title, content]) => ({
         title,
@@ -4353,6 +4409,11 @@ CRITICAL: Each verdict must be SPECIFIC to ${company.name} and reference actual 
       aiActionPlan: aiActionPlan,
       overallAssessment: overallAssessment,
       coherenceFlags: coherenceFlags.length > 0 ? coherenceFlags : undefined,
+      reconciliation: {
+        passed: reconciliationReport.passed,
+        quality: reconciliationReport.overallQuality,
+        issueCount: reconciliationReport.issues.length,
+      },
       generatedAt: new Date().toISOString()
     };
 
