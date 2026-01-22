@@ -175,7 +175,7 @@ const MiniSectionCard = ({
         "relative overflow-hidden rounded-xl border transition-all duration-300 text-left w-full",
         "bg-gradient-to-br from-card via-card to-muted/20",
         "hover:from-card hover:via-muted/10 hover:to-primary/5",
-        config.border,
+        "border-border/50",
         "group hover:scale-[1.01] cursor-pointer hover:shadow-lg hover:border-primary/40"
       )}
     >
@@ -190,11 +190,8 @@ const MiniSectionCard = ({
       <div className="relative z-10 p-4 pt-8">
         {/* Section header with icon */}
         <div className="flex items-center gap-2 mb-3">
-          <div className={cn(
-            "p-1.5 rounded-lg",
-            config.bg
-          )}>
-            <span className={config.color}>{sectionIcon}</span>
+          <div className="p-1.5 rounded-lg bg-muted/50">
+            <span className="text-muted-foreground">{sectionIcon}</span>
           </div>
           <span className="text-base font-bold text-foreground tracking-tight">
             {section.section}
@@ -211,10 +208,7 @@ const MiniSectionCard = ({
           </div>
           
           {/* Status badge */}
-          <div className={cn(
-            "flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase",
-            config.bg, config.color
-          )}>
+          <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-muted/50 text-muted-foreground">
             <StatusIcon className="w-3 h-3" />
             {config.label}
           </div>
@@ -886,7 +880,7 @@ export const DashboardScorecard = ({
                       <div className="px-5 pb-5 pt-0 space-y-4 relative z-10">
                         <div className="h-px bg-border/50" />
                         
-                        {/* Main thesis narrative */}
+                        {/* Main thesis narrative - always visible when expanded */}
                         {investmentThesis.summary && (
                           <div>
                             <p className="text-sm text-foreground/90 leading-relaxed">
@@ -895,31 +889,45 @@ export const DashboardScorecard = ({
                           </div>
                         )}
                         
-                        {/* Key Points */}
-                        {investmentThesis.keyPoints.length > 0 && (
-                          <div className="space-y-2">
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Key Takeaways</p>
-                            <div className="space-y-2">
-                              {investmentThesis.keyPoints.map((point, i) => (
-                                <div key={i} className="flex items-start gap-2">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                                  <p className="text-xs text-foreground/80 leading-relaxed">{point}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Additional paragraphs if available */}
-                        {investmentThesis.fullSection?.narrative?.paragraphs && 
-                         investmentThesis.fullSection.narrative.paragraphs.length > 1 && (
-                          <div className="space-y-3 pt-2 border-t border-border/30">
-                            {investmentThesis.fullSection.narrative.paragraphs.slice(1).map((p, i) => (
-                              <p key={i} className="text-sm text-foreground/80 leading-relaxed">
-                                {p.text}
-                              </p>
-                            ))}
-                          </div>
+                        {/* Key Takeaways - collapsible section */}
+                        {(investmentThesis.keyPoints.length > 0 || 
+                          (investmentThesis.fullSection?.narrative?.paragraphs && 
+                           investmentThesis.fullSection.narrative.paragraphs.length > 1)) && (
+                          <Collapsible>
+                            <CollapsibleTrigger asChild>
+                              <button className="w-full flex items-center justify-between py-2 text-left hover:bg-muted/30 rounded-lg px-2 -mx-2 transition-colors">
+                                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Key Takeaways</span>
+                                <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                              </button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <div className="space-y-3 pt-2">
+                                {/* Key Points */}
+                                {investmentThesis.keyPoints.length > 0 && (
+                                  <div className="space-y-2">
+                                    {investmentThesis.keyPoints.map((point, i) => (
+                                      <div key={i} className="flex items-start gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                                        <p className="text-xs text-foreground/80 leading-relaxed">{point}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                
+                                {/* Additional paragraphs if available */}
+                                {investmentThesis.fullSection?.narrative?.paragraphs && 
+                                 investmentThesis.fullSection.narrative.paragraphs.length > 1 && (
+                                  <div className="space-y-3 pt-2 border-t border-border/30">
+                                    {investmentThesis.fullSection.narrative.paragraphs.slice(1).map((p, i) => (
+                                      <p key={i} className="text-sm text-foreground/80 leading-relaxed">
+                                        {p.text}
+                                      </p>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
                         )}
                       </div>
                     </CollapsibleContent>

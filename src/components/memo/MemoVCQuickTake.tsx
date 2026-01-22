@@ -417,16 +417,16 @@ export const MemoVCQuickTake = ({ quickTake, showTeaser = false, onUnlock, compa
             <p className="text-sm text-muted-foreground mt-2">
               Based on evaluation across 8 investment criteria. Score: {frameworkScore}/100.
             </p>
-            
-            {/* Expand/Collapse toggle */}
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors text-sm font-medium text-muted-foreground"
-            >
-              <span>{isExpanded ? 'Hide Analysis Details' : 'Show Analysis Details'}</span>
-              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
           </div>
+          
+          {/* Expand/Collapse toggle - placed outside the ruling card */}
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors text-sm font-medium text-muted-foreground border border-border/30"
+          >
+            <span>{isExpanded ? 'Hide Analysis Details' : 'Show Analysis Details'}</span>
+            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
         </div>
 
         {/* Collapsible content - starts after The Ruling */}
