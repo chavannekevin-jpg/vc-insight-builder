@@ -44,7 +44,7 @@ export function ProductTourSpotlight({
   const calculatePositions = useCallback(() => {
     if (!currentStep) return;
 
-    const targetElement = document.querySelector(`[data-tour-step="${currentStep.target}"]`);
+    const targetElement = document.querySelector(`[data-tour-step="${currentStep.target}"]`) as HTMLElement;
     
     if (!targetElement) {
       console.warn(`Tour target not found: ${currentStep.target}`);
@@ -54,17 +54,20 @@ export function ProductTourSpotlight({
     // First scroll element into view, then calculate positions
     targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-    // Use a small delay to let scroll complete before calculating
+    // Use a longer delay to let scroll complete before calculating
     setTimeout(() => {
+      // Get fresh rect after scroll completes
       const rect = targetElement.getBoundingClientRect();
       
-      const padding = 8;
-      // Use viewport-relative positions (fixed positioning)
+      // Use smaller padding for tighter fit
+      const padding = 4;
+      
+      // Calculate spotlight position using exact element bounds
       const spotlight: SpotlightPosition = {
-        top: rect.top - padding,
-        left: rect.left - padding,
-        width: rect.width + padding * 2,
-        height: rect.height + padding * 2
+        top: Math.round(rect.top - padding),
+        left: Math.round(rect.left - padding),
+        width: Math.round(rect.width + padding * 2),
+        height: Math.round(rect.height + padding * 2)
       };
 
       setSpotlightPos(spotlight);
@@ -72,7 +75,7 @@ export function ProductTourSpotlight({
       // Calculate tooltip position based on available space
       const tooltipWidth = 320;
       const tooltipHeight = 200;
-      const gap = 16;
+      const gap = 12;
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
@@ -82,7 +85,7 @@ export function ProductTourSpotlight({
         placement: currentStep.placement || 'bottom'
       };
 
-      // Calculate available space in each direction
+      // Calculate available space in each direction using fresh rect
       const spaceAbove = rect.top;
       const spaceBelow = viewportHeight - rect.bottom;
       const spaceLeft = rect.left;
@@ -110,38 +113,45 @@ export function ProductTourSpotlight({
         else if (spaceAbove >= tooltipHeight + gap) bestPlacement = 'top';
       }
 
+      // Position tooltip relative to the spotlight (not rect) for consistency
+      const spotlightCenter = {
+        x: spotlight.left + spotlight.width / 2,
+        y: spotlight.top + spotlight.height / 2
+      };
+
       switch (bestPlacement) {
         case 'top':
-          tooltip.top = rect.top - tooltipHeight - gap;
-          tooltip.left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+          tooltip.top = spotlight.top - tooltipHeight - gap;
+          tooltip.left = spotlightCenter.x - (tooltipWidth / 2);
           break;
         case 'bottom':
-          tooltip.top = rect.bottom + gap;
-          tooltip.left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+          tooltip.top = spotlight.top + spotlight.height + gap;
+          tooltip.left = spotlightCenter.x - (tooltipWidth / 2);
           break;
         case 'left':
-          tooltip.top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
-          tooltip.left = rect.left - tooltipWidth - gap;
+          tooltip.top = spotlightCenter.y - (tooltipHeight / 2);
+          tooltip.left = spotlight.left - tooltipWidth - gap;
           break;
         case 'right':
-          tooltip.top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
-          tooltip.left = rect.right + gap;
+          tooltip.top = spotlightCenter.y - (tooltipHeight / 2);
+          tooltip.left = spotlight.left + spotlight.width + gap;
           break;
       }
 
-      // Ensure tooltip stays within viewport bounds
-      if (tooltip.left < 16) tooltip.left = 16;
-      if (tooltip.left + tooltipWidth > viewportWidth - 16) {
-        tooltip.left = viewportWidth - tooltipWidth - 16;
+      // Ensure tooltip stays within viewport bounds with padding
+      const viewportPadding = 16;
+      if (tooltip.left < viewportPadding) tooltip.left = viewportPadding;
+      if (tooltip.left + tooltipWidth > viewportWidth - viewportPadding) {
+        tooltip.left = viewportWidth - tooltipWidth - viewportPadding;
       }
-      if (tooltip.top < 16) tooltip.top = 16;
-      if (tooltip.top + tooltipHeight > viewportHeight - 16) {
-        tooltip.top = viewportHeight - tooltipHeight - 16;
+      if (tooltip.top < viewportPadding) tooltip.top = viewportPadding;
+      if (tooltip.top + tooltipHeight > viewportHeight - viewportPadding) {
+        tooltip.top = viewportHeight - tooltipHeight - viewportPadding;
       }
 
       tooltip.placement = bestPlacement;
       setTooltipPos(tooltip);
-    }, 100);
+    }, 250); // Longer delay for scroll to complete
   }, [currentStep]);
 
   useEffect(() => {
@@ -149,11 +159,11 @@ export function ProductTourSpotlight({
 
     setIsAnimating(true);
     
-    // Small delay to allow for scroll and animation
+    // Delay to allow for scroll and animation - must be shorter than calculatePositions timeout
     const timer = setTimeout(() => {
       calculatePositions();
       setIsAnimating(false);
-    }, 300);
+    }, 100);
 
     return () => clearTimeout(timer);
   }, [isActive, currentStep, calculatePositions]);
