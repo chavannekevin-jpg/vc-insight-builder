@@ -91,6 +91,14 @@ serve(async (req) => {
 
 CRITICAL: Extract ALL details you can find - numbers, names, percentages, dates, claims. VCs need specifics, not vague summaries.
 
+VISUAL OCR PRIORITY - TEAM SLIDES: 
+- Team slides typically show founder PHOTOS with their NAME and TITLE next to them
+- READ the text overlaid on or next to each photo: "John Smith, CEO & Co-Founder"
+- Extract YEARS OF EXPERIENCE mentioned (e.g., "18+ years", "10+ years")
+- Extract SPECIALIZATIONS/EXPERTISE areas mentioned in their bio text
+- CRITICALLY: Team slides often show COMPANY LOGOS at the bottom representing where founders previously worked (e.g., Novartis, Google, McKinsey, Goldman Sachs). NAME EVERY LOGO you can identify.
+- DO NOT just summarize with "industry veterans" - extract the ACTUAL NAMES and DETAILS shown
+
 Return a JSON object with this EXACT structure:
 
 {
@@ -123,13 +131,14 @@ Return a JSON object with this EXACT structure:
       "confidence": 0.0-1.0
     }
   },
-  "team": {
+    "team": {
     "founders": [
-      { "name": "full name", "role": "title", "background": "relevant experience, previous companies, education" }
+      { "name": "full name (READ FROM IMAGE - look for names next to photos)", "role": "title (CEO, CTO, Co-Founder, etc.)", "background": "years of experience, specializations, previous companies they worked at (extract ALL company logos visible), countries/regions of experience" }
     ],
     "teamSize": "total employees or null",
     "keyHires": "notable team members beyond founders",
     "advisors": "advisory board members if mentioned",
+    "previousCompanyLogos": ["list ALL company/brand logos visible on team slides - these indicate where founders worked (e.g., 'Novartis', 'GSK', 'Pfizer', 'SAP', 'Google', etc.)"],
     "confidence": 0.0-1.0
   },
   "extractedSections": {
@@ -158,7 +167,7 @@ Return a JSON object with this EXACT structure:
       "confidence": 0.0-1.0 
     },
     "team_story": { 
-      "content": "DETAILED extraction: Each founder's full background - previous companies (especially if acquired/IPO'd), years of experience, domain expertise, education. Why this team for this problem. Team gaps being addressed.", 
+      "content": "CRITICAL - MUST EXTRACT FROM IMAGES: Look at EVERY slide for team/founder photos with names next to them. Extract: (1) Each founder's FULL NAME as shown in the image, (2) Their exact title (CEO, CTO, COO, Co-Founder), (3) Years of experience mentioned, (4) Their specialization/expertise, (5) Countries/regions they've worked in, (6) ALL company logos shown on team slides (these are previous employers - name every logo you can identify like 'Novartis', 'Google', 'McKinsey', etc.). This is a VISUAL extraction task - read the text overlaid on founder photos.", 
       "confidence": 0.0-1.0 
     },
     "vision_ask": { 
