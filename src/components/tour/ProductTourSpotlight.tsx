@@ -51,70 +51,97 @@ export function ProductTourSpotlight({
       return;
     }
 
-    const rect = targetElement.getBoundingClientRect();
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
-    
-    const padding = 8;
-    const spotlight: SpotlightPosition = {
-      top: rect.top + scrollTop - padding,
-      left: rect.left + scrollLeft - padding,
-      width: rect.width + padding * 2,
-      height: rect.height + padding * 2
-    };
-
-    setSpotlightPos(spotlight);
-
-    // Calculate tooltip position based on placement
-    const tooltipWidth = 320;
-    const tooltipHeight = 180;
-    const gap = 16;
-
-    let tooltip: TooltipPosition = {
-      top: 0,
-      left: 0,
-      placement: currentStep.placement || 'bottom'
-    };
-
-    const placement = currentStep.placement || 'bottom';
-
-    switch (placement) {
-      case 'top':
-        tooltip.top = spotlight.top - tooltipHeight - gap;
-        tooltip.left = spotlight.left + (spotlight.width / 2) - (tooltipWidth / 2);
-        break;
-      case 'bottom':
-        tooltip.top = spotlight.top + spotlight.height + gap;
-        tooltip.left = spotlight.left + (spotlight.width / 2) - (tooltipWidth / 2);
-        break;
-      case 'left':
-        tooltip.top = spotlight.top + (spotlight.height / 2) - (tooltipHeight / 2);
-        tooltip.left = spotlight.left - tooltipWidth - gap;
-        break;
-      case 'right':
-        tooltip.top = spotlight.top + (spotlight.height / 2) - (tooltipHeight / 2);
-        tooltip.left = spotlight.left + spotlight.width + gap;
-        break;
-    }
-
-    // Ensure tooltip stays within viewport
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight + scrollTop;
-
-    if (tooltip.left < 16) tooltip.left = 16;
-    if (tooltip.left + tooltipWidth > viewportWidth - 16) {
-      tooltip.left = viewportWidth - tooltipWidth - 16;
-    }
-    if (tooltip.top < scrollTop + 16) tooltip.top = scrollTop + 16;
-    if (tooltip.top + tooltipHeight > viewportHeight - 16) {
-      tooltip.top = viewportHeight - tooltipHeight - 16;
-    }
-
-    tooltip.placement = placement;
-    setTooltipPos(tooltip);
-
-    // Scroll element into view if needed
+    // First scroll element into view, then calculate positions
     targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Use a small delay to let scroll complete before calculating
+    setTimeout(() => {
+      const rect = targetElement.getBoundingClientRect();
+      
+      const padding = 8;
+      // Use viewport-relative positions (fixed positioning)
+      const spotlight: SpotlightPosition = {
+        top: rect.top - padding,
+        left: rect.left - padding,
+        width: rect.width + padding * 2,
+        height: rect.height + padding * 2
+      };
+
+      setSpotlightPos(spotlight);
+
+      // Calculate tooltip position based on available space
+      const tooltipWidth = 320;
+      const tooltipHeight = 200;
+      const gap = 16;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let tooltip: TooltipPosition = {
+        top: 0,
+        left: 0,
+        placement: currentStep.placement || 'bottom'
+      };
+
+      // Calculate available space in each direction
+      const spaceAbove = rect.top;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceLeft = rect.left;
+      const spaceRight = viewportWidth - rect.right;
+
+      // Determine best placement based on available space
+      let bestPlacement = currentStep.placement || 'bottom';
+      
+      // If preferred placement doesn't have enough space, find better one
+      if (bestPlacement === 'bottom' && spaceBelow < tooltipHeight + gap) {
+        if (spaceAbove >= tooltipHeight + gap) bestPlacement = 'top';
+        else if (spaceRight >= tooltipWidth + gap) bestPlacement = 'right';
+        else if (spaceLeft >= tooltipWidth + gap) bestPlacement = 'left';
+      } else if (bestPlacement === 'top' && spaceAbove < tooltipHeight + gap) {
+        if (spaceBelow >= tooltipHeight + gap) bestPlacement = 'bottom';
+        else if (spaceRight >= tooltipWidth + gap) bestPlacement = 'right';
+        else if (spaceLeft >= tooltipWidth + gap) bestPlacement = 'left';
+      } else if (bestPlacement === 'right' && spaceRight < tooltipWidth + gap) {
+        if (spaceLeft >= tooltipWidth + gap) bestPlacement = 'left';
+        else if (spaceBelow >= tooltipHeight + gap) bestPlacement = 'bottom';
+        else if (spaceAbove >= tooltipHeight + gap) bestPlacement = 'top';
+      } else if (bestPlacement === 'left' && spaceLeft < tooltipWidth + gap) {
+        if (spaceRight >= tooltipWidth + gap) bestPlacement = 'right';
+        else if (spaceBelow >= tooltipHeight + gap) bestPlacement = 'bottom';
+        else if (spaceAbove >= tooltipHeight + gap) bestPlacement = 'top';
+      }
+
+      switch (bestPlacement) {
+        case 'top':
+          tooltip.top = rect.top - tooltipHeight - gap;
+          tooltip.left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+          break;
+        case 'bottom':
+          tooltip.top = rect.bottom + gap;
+          tooltip.left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+          break;
+        case 'left':
+          tooltip.top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+          tooltip.left = rect.left - tooltipWidth - gap;
+          break;
+        case 'right':
+          tooltip.top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+          tooltip.left = rect.right + gap;
+          break;
+      }
+
+      // Ensure tooltip stays within viewport bounds
+      if (tooltip.left < 16) tooltip.left = 16;
+      if (tooltip.left + tooltipWidth > viewportWidth - 16) {
+        tooltip.left = viewportWidth - tooltipWidth - 16;
+      }
+      if (tooltip.top < 16) tooltip.top = 16;
+      if (tooltip.top + tooltipHeight > viewportHeight - 16) {
+        tooltip.top = viewportHeight - tooltipHeight - 16;
+      }
+
+      tooltip.placement = bestPlacement;
+      setTooltipPos(tooltip);
+    }, 100);
   }, [currentStep]);
 
   useEffect(() => {
@@ -170,7 +197,7 @@ export function ProductTourSpotlight({
     <div className="fixed inset-0 z-[9999]" style={{ pointerEvents: 'none' }}>
       {/* Dark overlay with spotlight cutout */}
       <svg 
-        className="absolute inset-0 w-full h-full" 
+        className="fixed inset-0 w-full h-full" 
         style={{ pointerEvents: 'auto' }}
         onClick={onSkip}
       >
@@ -204,7 +231,7 @@ export function ProductTourSpotlight({
       {/* Spotlight ring animation */}
       <div
         className={cn(
-          "absolute rounded-xl border-2 border-primary shadow-[0_0_0_4px_hsl(var(--primary)/0.2)] transition-all duration-300 ease-out",
+          "fixed rounded-xl border-2 border-primary shadow-[0_0_0_4px_hsl(var(--primary)/0.2)] transition-all duration-300 ease-out",
           isAnimating && "opacity-0"
         )}
         style={{
@@ -220,7 +247,7 @@ export function ProductTourSpotlight({
       {/* Tooltip */}
       <div
         className={cn(
-          "absolute z-10 w-80 transition-all duration-300 ease-out",
+          "fixed z-10 w-80 transition-all duration-300 ease-out",
           isAnimating && "opacity-0 scale-95"
         )}
         style={{
