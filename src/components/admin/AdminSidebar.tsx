@@ -42,6 +42,7 @@ const mainNavItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard, exact: true },
   { title: "Users Hub", url: "/admin/users", icon: Users },
   { title: "Investor Ecosystem", url: "/admin/investors", icon: Network },
+  { title: "Accelerators", url: "/admin/accelerators", icon: Layers },
   { title: "Accelerator Invites", url: "/admin/accelerator-invites", icon: Rocket },
 ];
 
