@@ -48,6 +48,9 @@ interface Question {
   sort_order: number;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const isUuid = (value: string | null) => !!value && UUID_RE.test(value);
+
 export default function Portal() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -133,6 +136,8 @@ export default function Portal() {
 
       // Check if viewing as admin
       const viewCompanyId = searchParams.get('viewCompanyId');
+      const companyIdParam = searchParams.get('companyId');
+      const preferredCompanyId = isUuid(companyIdParam) ? companyIdParam : null;
       
       if (viewCompanyId) {
         // Check if user is admin
@@ -158,46 +163,78 @@ export default function Portal() {
         console.log("Portal: Detected pre-triggered generation, starting poll for job:", jobIdParam);
         setIsGeneratingMemo(true);
         // Load company data first, then start polling
-        await loadCompanyData(session.user.id);
+        await loadCompanyData(session.user.id, preferredCompanyId);
         pollJobUntilComplete(jobIdParam);
         return;
       }
 
       // Load company and responses from database
-      loadCompanyData(session.user.id);
+      loadCompanyData(session.user.id, preferredCompanyId);
     });
 
     return () => subscription.unsubscribe();
   }, [navigate, toast, searchParams]);
 
 
-  const loadCompanyData = async (userId: string) => {
+  const loadCompanyData = async (userId: string, preferredCompanyId?: string | null) => {
     try {
-      // Get company - get most recent if multiple exist
-      const { data: companiesArray, error: companyError } = await supabase
-        .from("companies")
-        .select("id, name, stage")
-        .eq("founder_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(1);
+      // IMPORTANT: If a companyId is provided in the URL (e.g., after checkout),
+      // we MUST load that specific company (or we'll show the wrong dashboard later).
+      let selectedCompany: { id: string; name: string; stage: string } | null = null;
 
-      if (companyError) throw companyError;
+      if (preferredCompanyId) {
+        const { data: explicitCompany, error: explicitError } = await supabase
+          .from("companies")
+          .select("id, name, stage, founder_id")
+          .eq("id", preferredCompanyId)
+          .maybeSingle();
 
-      // If no company exists, keep companyId null and show creation UI
-      if (!companiesArray || companiesArray.length === 0) {
+        if (explicitError) {
+          console.warn("Portal: Failed to load companyId from URL, falling back to latest:", explicitError);
+        }
+
+        if (explicitCompany && explicitCompany.founder_id === userId) {
+          selectedCompany = {
+            id: explicitCompany.id,
+            name: explicitCompany.name,
+            stage: explicitCompany.stage,
+          };
+        }
+      }
+
+      // Fallback: get user's most recent company
+      if (!selectedCompany) {
+        const { data: companiesArray, error: companyError } = await supabase
+          .from("companies")
+          .select("id, name, stage")
+          .eq("founder_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        if (companyError) throw companyError;
+
+        // If no company exists, keep companyId null and show creation UI
+        if (!companiesArray || companiesArray.length === 0) {
+          setLoading(false);
+          return;
+        }
+
+        selectedCompany = companiesArray[0];
+      }
+
+      if (!selectedCompany) {
         setLoading(false);
         return;
       }
 
-      const companies = companiesArray[0];
-      setCompanyId(companies.id);
-      setCompanyName(companies.name);
+      setCompanyId(selectedCompany.id);
+      setCompanyName(selectedCompany.name);
 
       // Load existing responses
       const { data: existingResponses, error: responsesError } = await supabase
         .from("memo_responses")
         .select("question_key, answer")
-        .eq("company_id", companies.id);
+        .eq("company_id", selectedCompany.id);
 
       if (responsesError) throw responsesError;
 
