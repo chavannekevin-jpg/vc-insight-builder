@@ -5,13 +5,13 @@ export const HowItWorksSection = () => {
     {
       number: "01",
       title: "Build Your Profile",
-      description: "Complete the structured questionnaire covering the 8 dimensions VCs actually evaluate—problem, solution, market, competition, team, traction, business model, and vision.",
+      description: "Create your profile in 30 seconds. Upload your deck and answer a few key questions—we extract the rest automatically.",
       icon: ClipboardList
     },
     {
       number: "02",
       title: "Receive Your Full Audit",
-      description: "Get a comprehensive investment memo with scores across 8 dimensions, benchmark comparisons, red flags surfaced, and a prioritized action plan—all in VC framing.",
+      description: "Get a comprehensive investment audit with scores across 8 dimensions, benchmark comparisons, red flags surfaced, and a prioritized action plan—all in VC framing.",
       icon: FileSearch
     },
     {
