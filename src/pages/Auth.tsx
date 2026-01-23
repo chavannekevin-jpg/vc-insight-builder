@@ -198,16 +198,22 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen gradient-hero flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute top-20 left-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse opacity-30" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse opacity-30" style={{ animationDelay: '1s' }} />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+      {/* Animated mesh gradient background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 -left-1/4 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-0 -right-1/4 w-[600px] h-[600px] bg-secondary/15 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/10 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: '4s' }} />
+      </div>
+
+      {/* Subtle grid pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--primary)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
       
-      <div className="w-full max-w-lg relative z-10">
-        {/* Back button */}
+      <div className="w-full max-w-md relative z-10">
+        {/* Back button - floating pill style */}
         <Button
           variant="ghost"
-          className="mb-6 text-muted-foreground hover:text-foreground"
+          className="mb-8 text-muted-foreground hover:text-foreground backdrop-blur-sm bg-card/30 border border-border/30 rounded-full px-5 hover:bg-card/50 transition-all duration-300"
           onClick={() => navigate('/')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -215,25 +221,26 @@ export default function Auth() {
         </Button>
 
         {/* Header */}
-        <div className="text-center mb-8 animate-fade-in">
+        <div className="text-center mb-10 animate-fade-in">
           {/* Referral badge */}
           {inviteInfo?.isValid && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/30 backdrop-blur-xl mb-3">
-              <Gift className="w-4 h-4 text-green-500" />
-              <span className="text-sm font-semibold text-green-500">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 border border-success/30 backdrop-blur-xl mb-4">
+              <Gift className="w-4 h-4 text-success" />
+              <span className="text-sm font-semibold text-success">
                 {inviteInfo.discountPercent}% discount from {inviteInfo.investorName || 'an investor'}
               </span>
             </div>
           )}
           
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 backdrop-blur-xl mb-4">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-primary">
+          {/* Floating badge */}
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-xl mb-6 shadow-lg shadow-primary/5">
+            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+            <span className="text-sm font-medium text-primary">
               {selectedPlan ? selectedPlan.replace('_', ' ') : 'Get Started'}
             </span>
           </div>
           
-          <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent bg-[length:200%_auto] animate-[shimmer_3s_linear_infinite]">
             {isSignUp ? "Create Your Account" : "Welcome Back"}
           </h1>
           
@@ -243,63 +250,71 @@ export default function Auth() {
             </p>
           )}
           
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm max-w-xs mx-auto">
             {isSignUp ? "Join the revolution of transparent startup feedback" : "Sign in to continue your journey"}
           </p>
         </div>
 
-        {/* Form Card - Glassmorphism */}
+        {/* Form Card - Modern Glassmorphism */}
         <div className="relative group">
-          {/* Outer glow */}
-          <div className="absolute -inset-1 bg-primary/20 blur-2xl group-hover:bg-primary/30 transition-all duration-500 rounded-3xl opacity-50" />
+          {/* Animated border glow */}
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/50 via-secondary/50 to-primary/50 rounded-3xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-3xl opacity-50" />
           
           {/* Glass card */}
-          <div className="relative bg-card/5 backdrop-blur-2xl border border-primary/10 rounded-2xl p-8 shadow-2xl ring-1 ring-inset ring-primary/5 overflow-hidden">
-            {/* Inner glass highlights */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-            <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-6">
-              
+          <div className="relative bg-card/40 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-border/50 overflow-hidden">
+            {/* Top highlight */}
+            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+            
+            {/* Corner accents */}
+            <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-primary/10 to-transparent rounded-tl-3xl" />
+            <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-secondary/10 to-transparent rounded-br-3xl" />
+
+            <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="relative space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-bold text-foreground">
-                  Email Address *
+                <Label htmlFor="email" className="text-sm font-medium text-foreground/80">
+                  Email Address
                 </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="founder@startup.com"
-                  className="h-12 bg-background/50 border-border/50 focus:border-primary transition-colors"
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="founder@startup.com"
+                    className="h-12 bg-background/60 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 placeholder:text-muted-foreground/50"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-bold text-foreground">
-                  Password *
+                <Label htmlFor="password" className="text-sm font-medium text-foreground/80">
+                  Password
                 </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••"
-                  className="h-12 bg-background/50 border-border/50 focus:border-primary transition-colors"
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••"
+                    className="h-12 bg-background/60 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 placeholder:text-muted-foreground/50"
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-3">
                 <Button
                   type="submit"
                   disabled={loading}
                   size="lg"
-                  className="w-full h-12 gradient-primary shadow-glow hover:shadow-glow-strong transition-all duration-300 font-bold uppercase tracking-wider"
+                  className="w-full h-13 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground rounded-xl font-semibold text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5"
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 animate-pulse" />
+                      <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                       <span>Processing...</span>
                     </div>
                   ) : (
@@ -308,24 +323,41 @@ export default function Auth() {
                 </Button>
               </div>
 
-              <div className="flex items-center justify-center gap-2 p-4 rounded-xl bg-muted/30 border border-border/30">
-                <Lock className="w-4 h-4 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">
-                  Your information is secure and encrypted
+              {/* Security badge */}
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <Lock className="w-3.5 h-3.5 text-muted-foreground/60" />
+                <p className="text-xs text-muted-foreground/60">
+                  Secure & encrypted
                 </p>
               </div>
             </form>
 
-            <div className="relative mt-6 text-center">
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border/30" />
+              </div>
+            </div>
+
+            {/* Toggle auth mode */}
+            <div className="text-center">
               <button
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300"
               >
                 {isSignUp
-                  ? "Already have an account? Sign in"
-                  : "Don't have an account? Sign up"}
+                  ? <>Already have an account? <span className="font-semibold text-primary">Sign in</span></>
+                  : <>Don't have an account? <span className="font-semibold text-primary">Sign up</span></>}
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* Bottom floating indicator */}
+        <div className="flex justify-center mt-8">
+          <div className="flex gap-1.5">
+            <div className={`w-8 h-1 rounded-full transition-colors duration-300 ${isSignUp ? 'bg-primary' : 'bg-border'}`} />
+            <div className={`w-8 h-1 rounded-full transition-colors duration-300 ${!isSignUp ? 'bg-primary' : 'bg-border'}`} />
           </div>
         </div>
       </div>
