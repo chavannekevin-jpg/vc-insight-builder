@@ -10,6 +10,7 @@ import { getSignalFlowFullMemo, type FullFidelityMemoSection } from "@/data/demo
 import { TrendingUp, Users, Lightbulb, ArrowRight } from "lucide-react";
 import type { MemoStructuredContent, MemoStructuredSection } from "@/types/memo";
 import type { ARCClassification } from "@/components/memo/DashboardScorecard";
+import { DemoWelcomeModal, useDemoWelcome } from "@/components/demo/DemoWelcomeModal";
 
 // ARC Classification for SignalFlow - matches the demo analysis
 const DEMO_ARC_CLASSIFICATION: ARCClassification = {
@@ -156,6 +157,7 @@ const buildMemoContent = (): MemoStructuredContent => {
 
 export default function DemoDashboard() {
   const navigate = useNavigate();
+  const { showWelcome, isChecked, completeWelcome } = useDemoWelcome();
   const sectionTools = buildSectionToolsFromSignalFlow();
   const memoContent = buildMemoContent();
 
@@ -176,6 +178,9 @@ export default function DemoDashboard() {
 
   return (
     <DemoLayout currentPage="dashboard">
+      {/* Welcome modal for first-time visitors */}
+      {isChecked && <DemoWelcomeModal open={showWelcome} onComplete={completeWelcome} />}
+      
       <div className="px-6 py-8">
         <div className="max-w-4xl mx-auto space-y-8">
           
