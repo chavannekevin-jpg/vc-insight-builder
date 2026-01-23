@@ -90,10 +90,11 @@ export const ToolsRow = memo(({ memoGenerated = false }: ToolsRowProps) => {
         hover={tool.available}
         onClick={tool.available ? () => navigate(tool.path) : undefined}
         className={isLocked ? "opacity-60 cursor-not-allowed" : ""}
+        variant="glass"
       >
         <div className="flex items-start gap-4">
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-            isLocked ? "bg-muted" : "bg-primary/10"
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm ${
+            isLocked ? "bg-muted/40" : "bg-primary/15"
           }`}>
             {isLocked ? (
               <Lock className="w-6 h-6 text-muted-foreground" />
@@ -107,8 +108,8 @@ export const ToolsRow = memo(({ memoGenerated = false }: ToolsRowProps) => {
               {tool.badge && (
                 <Badge className={`text-xs ${
                   isLocked 
-                    ? "bg-muted text-muted-foreground border-muted" 
-                    : "bg-primary/20 text-primary border-primary/40"
+                    ? "bg-muted/40 text-muted-foreground border-muted/50" 
+                    : "bg-primary/15 text-primary border-primary/30"
                 }`}>
                   {tool.badge}
                 </Badge>

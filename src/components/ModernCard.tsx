@@ -6,22 +6,32 @@ interface ModernCardProps {
   className?: string;
   hover?: boolean;
   onClick?: () => void;
+  variant?: "default" | "glass" | "elevated";
 }
 
-export const ModernCard = ({ children, className, hover = false, onClick }: ModernCardProps) => {
+export const ModernCard = ({ 
+  children, 
+  className, 
+  hover = false, 
+  onClick,
+  variant = "default"
+}: ModernCardProps) => {
+  const variants = {
+    default: "bg-card/80 backdrop-blur-xl border border-border/40",
+    glass: "bg-card/60 backdrop-blur-2xl border border-border/30",
+    elevated: "bg-card/90 backdrop-blur-xl border border-border/50 shadow-xl",
+  };
+
   return (
     <div 
       onClick={onClick}
       className={cn(
-        "bg-card/95 backdrop-blur-sm border border-border/50 p-6 rounded-2xl transition-all duration-300",
-        hover && "cursor-pointer hover:border-primary/50 hover:shadow-lg hover:-translate-y-1",
+        variants[variant],
+        "p-6 rounded-2xl transition-all duration-300",
+        hover && "cursor-pointer hover:border-primary/40 hover:bg-card/90 hover:-translate-y-0.5",
+        hover && "hover:shadow-[0_20px_50px_-12px_hsl(var(--primary)/0.25)]",
         className
       )}
-      style={{ 
-        boxShadow: hover 
-          ? '0 10px 40px -10px hsl(var(--primary) / 0.3), 0 0 0 1px hsl(var(--border) / 0.1)' 
-          : '0 4px 20px -4px hsl(var(--muted) / 0.3), 0 0 0 1px hsl(var(--border) / 0.1)' 
-      }}
     >
       {children}
     </div>

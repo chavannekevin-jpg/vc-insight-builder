@@ -173,25 +173,25 @@ const MiniSectionCard = ({
     <button
       onClick={onClick}
       className={cn(
-        "relative overflow-hidden rounded-xl border transition-all duration-300 text-left w-full",
-        "bg-gradient-to-br from-card via-card to-muted/20",
-        "hover:from-card hover:via-muted/10 hover:to-primary/5",
-        "border-border/50",
-        "group hover:scale-[1.01] cursor-pointer hover:shadow-lg hover:border-primary/40"
+        "relative overflow-hidden rounded-2xl border transition-all duration-300 text-left w-full",
+        "bg-card/60 backdrop-blur-xl",
+        "hover:bg-card/80",
+        "border-border/40",
+        "group hover:scale-[1.01] cursor-pointer hover:shadow-[0_20px_50px_-12px_hsl(var(--primary)/0.2)] hover:border-primary/30"
       )}
     >
       {/* Subtle gradient overlay on hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-transparent transition-all duration-300" />
       
       {/* Section number indicator */}
-      <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-muted/50 flex items-center justify-center">
+      <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-muted/40 backdrop-blur-sm flex items-center justify-center">
         <span className="text-[10px] font-medium text-muted-foreground">{index + 1}</span>
       </div>
       
       <div className="relative z-10 p-4 pt-8">
         {/* Section header with icon */}
         <div className="flex items-center gap-2 mb-3">
-          <div className="p-1.5 rounded-lg bg-muted/50">
+          <div className="p-1.5 rounded-xl bg-muted/40 backdrop-blur-sm">
             <span className="text-muted-foreground">{sectionIcon}</span>
           </div>
           <span className="text-base font-bold text-foreground tracking-tight">
@@ -209,7 +209,7 @@ const MiniSectionCard = ({
           </div>
           
           {/* Status badge */}
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-muted/50 text-muted-foreground">
+          <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-muted/40 backdrop-blur-sm text-muted-foreground">
             <StatusIcon className="w-3 h-3" />
             {config.label}
           </div>
@@ -226,7 +226,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-card/95 backdrop-blur-sm border border-border rounded-lg p-2 shadow-lg text-xs">
+      <div className="bg-card/90 backdrop-blur-xl border border-border/40 rounded-xl p-3 shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.2)] text-xs">
         <p className="font-semibold text-foreground">{data.fullSection || data.section}</p>
         <div className="flex items-center gap-3 mt-1">
           <span>Score: <span className="font-bold text-primary">{data.score}</span></span>
@@ -489,15 +489,15 @@ export const DashboardScorecard = ({
   
   return (
     <>
-      <div className="relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 shadow-glow">
+      <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-card/60 backdrop-blur-2xl shadow-[0_20px_50px_-12px_hsl(var(--primary)/0.2)]">
         {/* Background effects */}
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-secondary/10 rounded-full blur-3xl" />
         
         {/* Header */}
-        <div className="relative z-10 px-5 py-4 border-b border-border/30 flex items-center justify-between">
+        <div className="relative z-10 px-5 py-4 border-b border-border/20 flex items-center justify-between bg-gradient-to-r from-primary/5 to-transparent">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-primary/15 backdrop-blur-sm border border-primary/20 flex items-center justify-center">
               <Zap className="w-4 h-4 text-primary" />
             </div>
             <div>
@@ -506,13 +506,13 @@ export const DashboardScorecard = ({
             </div>
           </div>
           
-          <span className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
+          <span className="px-2.5 py-1 rounded-full bg-muted/40 backdrop-blur-sm text-muted-foreground text-xs font-medium">
             {stage}
           </span>
         </div>
         
         {/* Invite Banner */}
-        <div className="relative z-10 mx-5 mt-4 p-3 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between gap-3">
+        <div className="relative z-10 mx-5 mt-4 p-3 rounded-xl bg-muted/20 backdrop-blur-sm border border-border/30 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Gift className="w-4 h-4 text-primary" />
             <span className="text-sm text-foreground">
@@ -524,7 +524,7 @@ export const DashboardScorecard = ({
             variant="outline" 
             size="sm" 
             onClick={() => setInviteFounderOpen(true)}
-            className="gap-1.5 h-8 px-3 border-primary/40 hover:bg-primary/10 hover:border-primary/60 text-foreground font-medium transition-all"
+            className="gap-1.5 h-8 px-3 border-primary/30 hover:bg-primary/10 hover:border-primary/40 text-foreground font-medium transition-all rounded-xl"
           >
             <Gift className="w-3.5 h-3.5 text-primary" />
             Invite
@@ -540,7 +540,7 @@ export const DashboardScorecard = ({
               <div className="relative mb-3">
                 <div className={cn(
                   "w-24 h-24 rounded-full flex items-center justify-center",
-                  "bg-gradient-to-br from-card to-muted border-2",
+                  "bg-card/80 backdrop-blur-xl border",
                   scoreColor, scoreGlow
                 )}>
                   <div className="text-center">
@@ -556,7 +556,7 @@ export const DashboardScorecard = ({
               </div>
               
               <div className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold",
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm",
                 readinessConfig.bg,
                 readinessConfig.color
               )}>

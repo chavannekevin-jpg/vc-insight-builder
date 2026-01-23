@@ -259,14 +259,14 @@ export default function VCBrainHub() {
   }
   return <div className="min-h-screen bg-background flex flex-col">
       {/* Top Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-border/30 bg-background/80 backdrop-blur-2xl">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
               size="icon"
               onClick={() => navigate('/hub')}
-              className="border-primary/30 hover:bg-primary/10 hover:border-primary transition-all"
+              className="border-border/40 hover:bg-primary/10 hover:border-primary/40 transition-all rounded-xl bg-card/50 backdrop-blur-sm"
               title="Back to Hub"
             >
               <Home className="w-5 h-5 text-primary" />
@@ -276,21 +276,21 @@ export default function VCBrainHub() {
               <p className="text-sm text-muted-foreground">The Brutally Honest Founder Roadmap</p>
             </div>
           </div>
-          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => navigate('/pricing')}>Get Your VC Analysis</Button>
+          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-[0_0_20px_-5px_hsl(var(--primary)/0.4)]" onClick={() => navigate('/pricing')}>Get Your VC Analysis</Button>
         </div>
       </header>
 
       <div className="flex flex-1">
         {/* Left Sidebar */}
-        <aside className="w-72 border-r border-border bg-card/50 backdrop-blur-sm overflow-y-auto sticky top-[73px] h-[calc(100vh-73px)]">
+        <aside className="w-72 border-r border-border/30 bg-card/50 backdrop-blur-2xl overflow-y-auto sticky top-[73px] h-[calc(100vh-73px)]">
           <div className="p-4 space-y-6">
             {navigationSections.map(section => <div key={section.title}>
-                <button onClick={() => toggleSection(section.title)} className="w-full flex items-center justify-between text-sm font-semibold text-foreground hover:text-primary transition-colors mb-2">
+                <button onClick={() => toggleSection(section.title)} className="w-full flex items-center justify-between text-sm font-semibold text-foreground hover:text-primary transition-colors mb-2 px-2 py-1 rounded-lg hover:bg-muted/30">
                   <span>{section.title}</span>
                   {expandedSections.includes(section.title) ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                 </button>
                 {expandedSections.includes(section.title) && <div className="space-y-1 ml-2">
-                    {section.items.map(item => <button key={item.path} onClick={() => navigate(item.path)} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-all ${isActive(item.path) ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}>
+                    {section.items.map(item => <button key={item.path} onClick={() => navigate(item.path)} className={`w-full text-left px-3 py-2 text-sm rounded-xl transition-all ${isActive(item.path) ? "bg-primary/15 text-primary font-medium border border-primary/30" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"}`}>
                         {item.label}
                       </button>)}
                   </div>}
@@ -299,20 +299,20 @@ export default function VCBrainHub() {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 flex">
+        <main className="flex-1 flex bg-gradient-to-b from-transparent to-muted/10">
           <div className="flex-1 max-w-4xl mx-auto p-8">
             {/* Search Bar */}
             <div className="mb-8">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input type="text" placeholder="What startup truth do you want to face today?" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10 h-12 text-base bg-card border-border" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input type="text" placeholder="What startup truth do you want to face today?" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-12 h-12 text-base bg-card/60 backdrop-blur-xl border-border/40 rounded-xl focus:border-primary/40 transition-all" />
               </div>
             </div>
 
             {/* Article of the Day - Only show on hub root */}
             {location.pathname === '/vcbrain' && (
-              <div className="mb-8 p-6 rounded-xl bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent border border-amber-500/30 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <div className="mb-8 p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent border border-amber-500/20 relative overflow-hidden backdrop-blur-xl">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-3">
                     <Sparkles className="w-4 h-4 text-amber-500" />
@@ -322,7 +322,7 @@ export default function VCBrainHub() {
                   <p className="text-muted-foreground text-sm mb-4">{getDailyArticle().teaser}</p>
                   <Button 
                     variant="outline" 
-                    className="border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500 text-foreground"
+                    className="border-amber-500/40 hover:bg-amber-500/10 hover:border-amber-500/60 text-foreground rounded-xl"
                     onClick={() => navigate(getDailyArticle().path)}
                   >
                     Read Now <ArrowRight className="w-4 h-4 ml-2" />
@@ -337,7 +337,7 @@ export default function VCBrainHub() {
 
           {/* Right Sticky Conversion Card */}
           <aside className="w-80 p-6 sticky top-[73px] h-[calc(100vh-73px)] hidden xl:block">
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30 rounded-xl p-6 space-y-4">
+            <div className="bg-card/60 backdrop-blur-2xl border border-primary/20 rounded-2xl p-6 space-y-4 shadow-[0_20px_50px_-12px_hsl(var(--primary)/0.15)]">
               <div className="text-sm font-bold text-primary uppercase tracking-wider">
                 Stop Guessing
               </div>
@@ -362,7 +362,7 @@ export default function VCBrainHub() {
                   <span className="text-foreground">Real examples of what works</span>
                 </li>
               </ul>
-              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => navigate('/pricing')}>
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl" onClick={() => navigate('/pricing')}>
                 Get Your Analysis
               </Button>
               <p className="text-xs text-muted-foreground text-center">
