@@ -107,12 +107,12 @@ export function DemoSidebar({ currentPage }: DemoSidebarProps) {
   };
 
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b">
+    <Sidebar className="border-r border-border/30 bg-card/60 backdrop-blur-2xl">
+      <SidebarHeader className="border-b border-border/20 bg-gradient-to-r from-primary/5 to-transparent">
         {/* Back to Homepage link */}
         <div 
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 px-3 py-2 mx-2 mt-2 rounded-lg cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all group"
+          className="flex items-center gap-2 px-3 py-2 mx-2 mt-2 rounded-xl cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all group"
         >
           <Home className="w-4 h-4" />
           {!collapsed && (
@@ -122,7 +122,7 @@ export function DemoSidebar({ currentPage }: DemoSidebarProps) {
         
         {/* Company info */}
         <div className="flex items-center gap-3 px-2 py-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-primary/15 backdrop-blur-sm flex items-center justify-center border border-primary/20">
             <Building2 className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
@@ -130,7 +130,7 @@ export function DemoSidebar({ currentPage }: DemoSidebarProps) {
               <span className="font-semibold text-sm truncate">
                 {DEMO_COMPANY.name}
               </span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary">
+              <span className="px-1.5 py-0.5 rounded-lg text-[10px] font-medium bg-primary/15 text-primary backdrop-blur-sm">
                 DEMO
               </span>
             </div>
@@ -333,9 +333,9 @@ export function DemoSidebar({ currentPage }: DemoSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t p-4">
+      <SidebarFooter className="border-t border-border/20 p-4 bg-gradient-to-t from-muted/20 to-transparent">
         <div className="space-y-3">
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
+          <div className="flex items-start gap-2 p-3 rounded-xl bg-primary/10 backdrop-blur-sm border border-primary/20">
             <Sparkles className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
             <div className="space-y-1">
               <p className="text-xs font-medium text-foreground">Ready for your own?</p>
@@ -346,7 +346,7 @@ export function DemoSidebar({ currentPage }: DemoSidebarProps) {
           </div>
           <Button
             onClick={() => navigate('/checkout')}
-            className="w-full gap-2"
+            className="w-full gap-2 rounded-xl"
             size="sm"
           >
             Get Started

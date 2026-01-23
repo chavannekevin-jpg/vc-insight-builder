@@ -42,22 +42,22 @@ const formatCurrency = (value: number) => {
 export default function DemoProfile() {
   return (
     <DemoLayout currentPage="profile">
-      <div className="px-6 py-8">
+      <div className="px-6 py-8 bg-gradient-to-b from-transparent to-muted/10">
         <div className="max-w-4xl mx-auto space-y-6">
           
           {/* Header */}
           <div className="space-y-2">
-            <h1 className="text-2xl font-serif font-bold">Company Profile</h1>
+            <h1 className="text-2xl font-display font-bold">Company Profile</h1>
             <p className="text-sm text-muted-foreground">
               Complete profile inputs for <span className="font-medium text-foreground">{DEMO_COMPANY.name}</span>
             </p>
           </div>
 
           {/* Demo Notice */}
-          <Card className="border-primary/20 bg-primary/5">
+          <Card className="border-primary/20 bg-card/60 backdrop-blur-2xl">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-primary/15 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-primary/20">
                   <Sparkles className="w-4 h-4 text-primary" />
                 </div>
                 <div className="space-y-1">
@@ -72,11 +72,11 @@ export default function DemoProfile() {
           </Card>
 
           {/* Completion Status */}
-          <Card>
+          <Card className="bg-card/60 backdrop-blur-xl border-border/40">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-medium">Profile Completion</CardTitle>
-              <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+              <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-500 border-emerald-500/30 backdrop-blur-sm">
                 <CheckCircle className="w-3 h-3 mr-1" />
                 {DEMO_PROFILE_COMPLETION.overall}% Complete
               </Badge>
@@ -90,7 +90,7 @@ export default function DemoProfile() {
                     <div className="text-xs text-muted-foreground truncate capitalize">
                       {section.replace(/([A-Z])/g, ' $1').trim()}
                     </div>
-                    <div className="text-sm font-medium text-emerald-600">{value}%</div>
+                    <div className="text-sm font-medium text-emerald-500">{value}%</div>
                   </div>
                 ))}
               </div>
@@ -98,7 +98,7 @@ export default function DemoProfile() {
           </Card>
 
           {/* Unit Economics Dashboard */}
-          <Card>
+          <Card className="bg-card/60 backdrop-blur-xl border-border/40">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-medium flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-primary" />
@@ -107,28 +107,28 @@ export default function DemoProfile() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-3 rounded-lg bg-muted/50">
+                <div className="p-3 rounded-xl bg-muted/40 backdrop-blur-sm">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                     <DollarSign className="w-3 h-3" />
                     MRR
                   </div>
                   <div className="text-lg font-semibold">{formatCurrency(DEMO_UNIT_ECONOMICS.mrr)}</div>
                 </div>
-                <div className="p-3 rounded-lg bg-muted/50">
+                <div className="p-3 rounded-xl bg-muted/40 backdrop-blur-sm">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                     <Users className="w-3 h-3" />
                     Customers
                   </div>
                   <div className="text-lg font-semibold">{DEMO_UNIT_ECONOMICS.customers}</div>
                 </div>
-                <div className="p-3 rounded-lg bg-muted/50">
+                <div className="p-3 rounded-xl bg-muted/40 backdrop-blur-sm">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                     <TrendingUp className="w-3 h-3" />
                     LTV:CAC
                   </div>
                   <div className="text-lg font-semibold">{DEMO_UNIT_ECONOMICS.ltvCacRatio}x</div>
                 </div>
-                <div className="p-3 rounded-lg bg-muted/50">
+                <div className="p-3 rounded-xl bg-muted/40 backdrop-blur-sm">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                     <Clock className="w-3 h-3" />
                     Runway
@@ -172,7 +172,7 @@ export default function DemoProfile() {
           {DEMO_PROFILE_SECTIONS.map((section) => {
             const IconComponent = iconMap[section.icon];
             return (
-              <Card key={section.id}>
+              <Card key={section.id} className="bg-card/60 backdrop-blur-xl border-border/40">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg font-medium flex items-center gap-2">
                     {IconComponent && <IconComponent className="w-5 h-5 text-primary" />}
@@ -189,14 +189,14 @@ export default function DemoProfile() {
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-foreground">{field.label}</span>
                           {field.type === 'badge' && (
-                            <Badge variant="secondary" className="text-xs">{value as string}</Badge>
+                            <Badge variant="secondary" className="text-xs bg-muted/40 backdrop-blur-sm">{value as string}</Badge>
                           )}
                         </div>
                         {field.type === 'text' && (
                           <p className="text-sm text-muted-foreground">{value as string}</p>
                         )}
                         {field.type === 'longtext' && (
-                          <div className="text-sm text-muted-foreground bg-muted/30 rounded-lg p-3 whitespace-pre-wrap">
+                          <div className="text-sm text-muted-foreground bg-muted/30 backdrop-blur-sm rounded-xl p-3 whitespace-pre-wrap">
                             {value as string}
                           </div>
                         )}

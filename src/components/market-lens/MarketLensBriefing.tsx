@@ -65,9 +65,9 @@ export function MarketLensBriefing({ briefing, companyName }: MarketLensBriefing
   return (
     <div className="space-y-6">
       {/* Hero Section with Meta */}
-      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+      <div className="rounded-2xl border border-border/40 bg-card/60 backdrop-blur-2xl p-5 space-y-4 shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.1)]">
         <div className="flex flex-wrap items-center gap-3">
-          <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 border-primary/20">
+          <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1 bg-primary/15 border-primary/30 backdrop-blur-sm">
             <Sparkles className="w-3 h-3 text-primary" />
             AI-Powered Analysis
           </Badge>
@@ -80,18 +80,18 @@ export function MarketLensBriefing({ briefing, companyName }: MarketLensBriefing
         {/* Compact Market Signal Summary */}
         <div className="flex items-center gap-6 pt-2">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muted/40 backdrop-blur-sm">
               <TrendingUp className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-foreground">{briefing.tailwinds.length}</span>
               <span className="text-xs text-muted-foreground">Tailwinds</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muted/40 backdrop-blur-sm">
               <Wind className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm font-medium text-foreground">{briefing.headwinds.length}</span>
               <span className="text-xs text-muted-foreground">Headwinds</span>
             </div>
           </div>
-          <div className="flex-1 h-2 bg-muted/50 rounded-full overflow-hidden">
+          <div className="flex-1 h-2 bg-muted/40 rounded-full overflow-hidden backdrop-blur-sm">
             <div 
               className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all"
               style={{ width: `${tailwindPercent}%` }}

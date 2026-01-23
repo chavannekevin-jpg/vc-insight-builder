@@ -211,7 +211,7 @@ export default function MarketLens() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-primary/15 backdrop-blur-sm flex items-center justify-center border border-primary/20">
               <Telescope className="w-6 h-6 text-primary" />
             </div>
             <div>
@@ -228,7 +228,7 @@ export default function MarketLens() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowOnboarding(true)}
-                className="text-muted-foreground"
+                className="text-muted-foreground rounded-xl hover:bg-muted/50"
               >
                 Edit Preferences
               </Button>
@@ -237,6 +237,7 @@ export default function MarketLens() {
               onClick={() => generateBriefing()}
               disabled={isGenerating || !preferences}
               variant={briefing ? "outline" : "default"}
+              className="rounded-xl"
             >
               {isGenerating ? (
                 <>
