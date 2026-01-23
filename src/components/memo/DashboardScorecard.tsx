@@ -73,6 +73,7 @@ interface DashboardScorecardProps {
   memoContent?: MemoStructuredContent | null;
   arcClassification?: ARCClassification | null;
   isDemo?: boolean;
+  onSectionClick?: () => void;
 }
 
 const STATUS_CONFIG = {
@@ -280,7 +281,8 @@ export const DashboardScorecard = ({
   companyInsightContext,
   memoContent,
   arcClassification,
-  isDemo = false
+  isDemo = false,
+  onSectionClick
 }: DashboardScorecardProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isARCExpanded, setIsARCExpanded] = useState(false);
@@ -475,6 +477,8 @@ export const DashboardScorecard = ({
   const handleSectionClick = (section: SectionVerdict) => {
     setSelectedSection(section);
     setSectionModalOpen(true);
+    // Call external callback if provided (e.g., to dismiss demo helper)
+    onSectionClick?.();
   };
 
   const handleToolClick = (tool: { id: string; toolType: string; data: any; section: string }) => {
