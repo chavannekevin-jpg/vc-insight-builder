@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      accelerator_invites: {
+        Row: {
+          accelerator_name: string
+          accelerator_slug: string
+          code: string
+          created_at: string | null
+          created_by: string | null
+          discount_percent: number
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          uses: number | null
+        }
+        Insert: {
+          accelerator_name: string
+          accelerator_slug: string
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          discount_percent?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          uses?: number | null
+        }
+        Update: {
+          accelerator_name?: string
+          accelerator_slug?: string
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          discount_percent?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          uses?: number | null
+        }
+        Relationships: []
+      }
       answer_quality_criteria: {
         Row: {
           created_at: string
