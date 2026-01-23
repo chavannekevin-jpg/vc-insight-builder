@@ -103,25 +103,25 @@ const sectionIcons: Record<string, React.ElementType> = {
 };
 
 export const getScoreColor = (score: number): string => {
-  if (score >= 70) return "text-emerald-600";
-  if (score >= 55) return "text-amber-600";
-  return "text-red-600";
+  if (score >= 70) return "text-primary";
+  if (score >= 55) return "text-amber-500";
+  return "text-destructive";
 };
 
 export const getScoreBg = (score: number): string => {
-  if (score >= 70) return "bg-emerald-50 border-emerald-200";
-  if (score >= 55) return "bg-amber-50 border-amber-200";
-  return "bg-red-50 border-red-200";
+  if (score >= 70) return "bg-primary/10 border-primary/30";
+  if (score >= 55) return "bg-amber-500/10 border-amber-500/30";
+  return "bg-destructive/10 border-destructive/30";
 };
 
 const getPriorityColor = (priority: string): string => {
   switch (priority) {
     case "critical":
-      return "bg-red-100 text-red-700 border-red-200";
+      return "bg-destructive/10 text-destructive border-destructive/30";
     case "high":
-      return "bg-amber-100 text-amber-700 border-amber-200";
+      return "bg-amber-500/10 text-amber-500 border-amber-500/30";
     case "medium":
-      return "bg-blue-100 text-blue-700 border-blue-200";
+      return "bg-primary/10 text-primary border-primary/30";
     default:
       return "bg-muted text-muted-foreground";
   }
@@ -214,7 +214,7 @@ const ExpandableTools = ({ title, tools, expanded, onToggle }: ExpandableToolsPr
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm mt-2">
               <div>
-                <p className="text-red-600 mb-1">Red Flags:</p>
+                <p className="text-destructive mb-1">Red Flags:</p>
                 <ul className="list-disc list-inside space-y-1">
                   {tools.vcInvestmentLogic.redFlags.map((f, i) => (
                     <li key={i} className="text-foreground/80">{f}</li>
@@ -222,7 +222,7 @@ const ExpandableTools = ({ title, tools, expanded, onToggle }: ExpandableToolsPr
                 </ul>
               </div>
               <div>
-                <p className="text-emerald-600 mb-1">Green Flags:</p>
+                <p className="text-primary mb-1">Green Flags:</p>
                 <ul className="list-disc list-inside space-y-1">
                   {tools.vcInvestmentLogic.greenFlags.map((f, i) => (
                     <li key={i} className="text-foreground/80">{f}</li>
@@ -244,9 +244,9 @@ const ExpandableTools = ({ title, tools, expanded, onToggle }: ExpandableToolsPr
                     variant="outline"
                     className={cn(
                       "text-xs shrink-0",
-                      milestone.priority === "high" && "border-red-300 text-red-700",
-                      milestone.priority === "medium" && "border-amber-300 text-amber-700",
-                      milestone.priority === "low" && "border-blue-300 text-blue-700"
+                      milestone.priority === "high" && "border-destructive/30 text-destructive",
+                      milestone.priority === "medium" && "border-amber-500/30 text-amber-500",
+                      milestone.priority === "low" && "border-primary/30 text-primary"
                     )}
                   >
                     {milestone.priority}
@@ -276,9 +276,9 @@ const ExpandableTools = ({ title, tools, expanded, onToggle }: ExpandableToolsPr
                       variant="outline"
                       className={cn(
                         "text-xs",
-                        metric.status === "above" && "border-emerald-300 text-emerald-700",
-                        metric.status === "at" && "border-amber-300 text-amber-700",
-                        metric.status === "below" && "border-red-300 text-red-700"
+                        metric.status === "above" && "border-primary/30 text-primary",
+                        metric.status === "at" && "border-amber-500/30 text-amber-500",
+                        metric.status === "below" && "border-destructive/30 text-destructive"
                       )}
                     >
                       {metric.status}
@@ -299,7 +299,8 @@ interface ActionPlanSectionProps {
 }
 
 const ActionPlanSection = ({ actionPlan }: ActionPlanSectionProps) => {
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  // Start with all items expanded by default
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(actionPlan.items.map(item => item.id)));
 
   const toggleItem = (id: string) => {
     setExpandedItems((prev) => {
@@ -351,13 +352,13 @@ const ActionPlanSection = ({ actionPlan }: ActionPlanSectionProps) => {
               </div>
 
               {expandedItems.has(item.id) && (
-                <div className="mt-4 pt-4 border-t space-y-3">
+                <div className="mt-4 pt-4 border-t border-border space-y-3">
                   <div>
-                    <p className="text-sm font-medium text-amber-700">Impact</p>
+                    <p className="text-sm font-medium text-amber-500">Impact</p>
                     <p className="text-sm text-muted-foreground">{item.impact}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-emerald-700">How to Fix</p>
+                    <p className="text-sm font-medium text-primary">How to Fix</p>
                     <p className="text-sm text-muted-foreground">{item.howToFix}</p>
                   </div>
                 </div>
@@ -385,7 +386,8 @@ export function SimplifiedMemoViewer({
   onBack,
   showBackButton = true,
 }: SimplifiedMemoViewerProps) {
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  // Start with all sections expanded by default
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(sections.map(s => s.title)));
 
   const toggleSection = (title: string) => {
     setExpandedSections((prev) => {
@@ -474,10 +476,10 @@ export function SimplifiedMemoViewer({
               {/* Section Header */}
               <CardHeader
                 className={cn(
-                  "border-b",
-                  score && score >= 70 && "bg-emerald-50/50",
-                  score && score >= 55 && score < 70 && "bg-amber-50/50",
-                  score && score < 55 && "bg-red-50/50"
+                  "border-b border-border",
+                  score && score >= 70 && "bg-primary/5",
+                  score && score >= 55 && score < 70 && "bg-amber-500/5",
+                  score && score < 55 && "bg-destructive/5"
                 )}
               >
                 <div className="flex items-center justify-between">
