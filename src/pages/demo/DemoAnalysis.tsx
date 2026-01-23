@@ -60,7 +60,7 @@ import {
 // Demo data
 import { DEMO_COMPANY } from "@/data/demo/demoSignalFlow";
 import { DEMO_SECTION_TOOLS, DEMO_HOLISTIC_VERDICTS } from "@/data/demo/demoSignalFlowTools";
-import { getDemoMemo } from "@/data/acceleratorDemo/demoMemos";
+import { getSignalFlowFullMemo } from "@/data/demo/demoSignalFlowMemo";
 
 // Types
 import type { MemoStructuredSection } from "@/types/memo";
@@ -243,7 +243,7 @@ function wrapInEditableToolShape<T>(data: T): { aiGenerated: T; userOverrides: P
 
 export default function DemoAnalysis() {
   const navigate = useNavigate();
-  const memoData = getDemoMemo("demo-signalflow");
+  const memoData = getSignalFlowFullMemo();
 
   if (!memoData) {
     return (
