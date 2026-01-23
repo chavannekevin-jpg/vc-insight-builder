@@ -36,6 +36,9 @@ export default function Intake() {
   // Referral tracking
   const startupInviteCode = sessionStorage.getItem('startup_invite_code');
   const { inviteInfo } = useStartupReferral(startupInviteCode);
+  
+  // Accelerator tracking
+  const acceleratorInviteId = sessionStorage.getItem('accelerator_invite_id');
 
   useEffect(() => {
     // Skip auth check if entrance animation is about to show
@@ -94,6 +97,10 @@ export default function Intake() {
             referred_by_investor: inviteInfo.investorId,
             referral_code: startupInviteCode,
           }),
+          // Add accelerator invite tracking if present
+          ...(acceleratorInviteId && {
+            accelerator_invite_id: acceleratorInviteId,
+          }),
         })
         .select()
         .single();
@@ -104,6 +111,13 @@ export default function Intake() {
       if (inviteInfo?.isValid && startupInviteCode) {
         await processStartupReferral(newCompany.id, startupInviteCode);
         sessionStorage.removeItem('startup_invite_code');
+      }
+      
+      // Clear accelerator invite from session after use
+      if (acceleratorInviteId) {
+        sessionStorage.removeItem('accelerator_invite_id');
+        sessionStorage.removeItem('accelerator_invite_code');
+        sessionStorage.removeItem('accelerator_discount_percent');
       }
 
       // Save ALL sections that have content (user edits should always be saved)
@@ -186,6 +200,10 @@ export default function Intake() {
             referred_by_investor: inviteInfo.investorId,
             referral_code: startupInviteCode,
           }),
+          // Add accelerator invite tracking if present
+          ...(acceleratorInviteId && {
+            accelerator_invite_id: acceleratorInviteId,
+          }),
         })
         .select()
         .single();
@@ -196,6 +214,13 @@ export default function Intake() {
       if (inviteInfo?.isValid && startupInviteCode) {
         await processStartupReferral(newCompany.id, startupInviteCode);
         sessionStorage.removeItem('startup_invite_code');
+      }
+
+      // Clear accelerator invite from session after use
+      if (acceleratorInviteId) {
+        sessionStorage.removeItem('accelerator_invite_id');
+        sessionStorage.removeItem('accelerator_invite_code');
+        sessionStorage.removeItem('accelerator_discount_percent');
       }
 
       // Invalidate company query cache before navigation
