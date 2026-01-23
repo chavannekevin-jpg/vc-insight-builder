@@ -131,6 +131,7 @@ const InvitedStartupLanding = lazy(() => import("./pages/InvitedStartupLanding")
 const Scoreboard = lazy(() => import("./pages/Scoreboard"));
 const PublicScorecard = lazy(() => import("./pages/PublicScorecard"));
 const AdminAcceleratorInvites = lazy(() => import("./pages/AdminAcceleratorInvites"));
+const AdminAccelerators = lazy(() => import("./pages/AdminAccelerators"));
 
 // Investor Pages
 const InvestorLanding = lazy(() => import("./pages/investor/InvestorLanding"));
@@ -372,6 +373,7 @@ const App = () => (
             <Route path="/admin/articles" element={<AdminArticles />} />
             <Route path="/admin/investors" element={<AdminInvestors />} />
             <Route path="/admin/accelerator-invites" element={<AdminAcceleratorInvites />} />
+            <Route path="/admin/accelerators" element={<AdminAccelerators />} />
             <Route path="/admin/commerce" element={<AdminCommerce />} />
             <Route path="/admin/commerce/discounts" element={<AdminCommerce />} />
             <Route path="/admin/emails" element={<AdminEmails />} />
