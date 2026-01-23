@@ -137,7 +137,7 @@ interface SectionNavBarProps {
 }
 
 const SectionNavBar = ({ sections, sectionTools }: SectionNavBarProps) => (
-  <div className="flex flex-wrap gap-2 mb-8">
+  <div className="flex flex-wrap gap-3 mb-10 p-4 rounded-2xl bg-card/40 backdrop-blur-xl border border-border/20">
     {sections.map((section) => {
       const score = sectionTools?.[section.title]?.sectionScore;
       return (
@@ -145,8 +145,11 @@ const SectionNavBar = ({ sections, sectionTools }: SectionNavBarProps) => (
           key={section.title}
           variant="outline"
           className={cn(
-            "cursor-pointer hover:bg-accent transition-colors",
-            score && getScoreBg(score)
+            "cursor-pointer transition-all duration-200 hover:scale-105 px-4 py-2 text-sm rounded-xl backdrop-blur-sm",
+            score && score >= 70 && "border-primary/40 bg-primary/10 hover:bg-primary/20",
+            score && score >= 55 && score < 70 && "border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20",
+            score && score < 55 && "border-destructive/40 bg-destructive/10 hover:bg-destructive/20",
+            !score && "border-border/40 hover:bg-muted/50"
           )}
           onClick={() => {
             document
@@ -156,7 +159,7 @@ const SectionNavBar = ({ sections, sectionTools }: SectionNavBarProps) => (
         >
           {section.title}
           {score && (
-            <span className={cn("ml-1 font-bold", getScoreColor(score))}>
+            <span className={cn("ml-2 font-bold", getScoreColor(score))}>
               {score}
             </span>
           )}
@@ -179,56 +182,70 @@ const ExpandableTools = ({ title, tools, expanded, onToggle }: ExpandableToolsPr
       variant="ghost"
       size="sm"
       onClick={onToggle}
-      className="w-full justify-between text-muted-foreground hover:text-foreground"
+      className="w-full justify-between text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-xl py-3"
     >
       <span className="flex items-center gap-2">
-        <Zap className="h-4 w-4" />
-        Strategic Analysis Tools
+        <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Zap className="h-3.5 w-3.5 text-primary" />
+        </div>
+        <span className="font-medium">Strategic Analysis Tools</span>
       </span>
       {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
     </Button>
 
     {expanded && (
-      <div className="mt-4 space-y-6 pl-4 border-l-2 border-muted">
+      <div className="mt-6 space-y-8 pl-5 border-l-2 border-primary/20">
         {/* VC Investment Logic */}
         {tools.vcInvestmentLogic && (
-          <div className="space-y-3">
-            <h5 className="font-medium text-sm">VC Investment Logic</h5>
-            <p className="text-xs text-muted-foreground bg-muted/30 rounded-md p-3 italic">
+          <div className="space-y-4">
+            <h5 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">VC Investment Logic</h5>
+            <p className="text-sm text-muted-foreground bg-muted/20 backdrop-blur-sm rounded-xl p-4 italic border border-border/20">
               This tool reveals how venture capitalists evaluate this specific section. It highlights the key questions investors ask, the metrics they track, and the signals (both positive and negative) that influence their investment decisions.
             </p>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground mb-1">Primary Questions:</p>
-                <ul className="list-disc list-inside space-y-1">
+            <div className="grid grid-cols-2 gap-6 text-sm">
+              <div className="p-4 rounded-xl bg-muted/20 border border-border/20">
+                <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Primary Questions</p>
+                <ul className="space-y-2">
                   {tools.vcInvestmentLogic.primaryQuestions.map((q, i) => (
-                    <li key={i} className="text-foreground/80">{q}</li>
+                    <li key={i} className="flex items-start gap-2 text-foreground/80">
+                      <span className="text-primary">•</span>
+                      {q}
+                    </li>
                   ))}
                 </ul>
               </div>
-              <div>
-                <p className="text-muted-foreground mb-1">Key Metrics:</p>
-                <ul className="list-disc list-inside space-y-1">
+              <div className="p-4 rounded-xl bg-muted/20 border border-border/20">
+                <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Key Metrics</p>
+                <ul className="space-y-2">
                   {tools.vcInvestmentLogic.keyMetrics.map((m, i) => (
-                    <li key={i} className="text-foreground/80">{m}</li>
+                    <li key={i} className="flex items-start gap-2 text-foreground/80">
+                      <span className="text-primary">•</span>
+                      {m}
+                    </li>
                   ))}
                 </ul>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 text-sm mt-2">
-              <div>
-                <p className="text-destructive mb-1">Red Flags:</p>
-                <ul className="list-disc list-inside space-y-1">
+            <div className="grid grid-cols-2 gap-6 text-sm">
+              <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+                <p className="text-xs font-semibold text-destructive mb-3 uppercase tracking-wider">Red Flags</p>
+                <ul className="space-y-2">
                   {tools.vcInvestmentLogic.redFlags.map((f, i) => (
-                    <li key={i} className="text-foreground/80">{f}</li>
+                    <li key={i} className="flex items-start gap-2 text-foreground/80">
+                      <span className="text-destructive">×</span>
+                      {f}
+                    </li>
                   ))}
                 </ul>
               </div>
-              <div>
-                <p className="text-primary mb-1">Green Flags:</p>
-                <ul className="list-disc list-inside space-y-1">
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+                <p className="text-xs font-semibold text-primary mb-3 uppercase tracking-wider">Green Flags</p>
+                <ul className="space-y-2">
                   {tools.vcInvestmentLogic.greenFlags.map((f, i) => (
-                    <li key={i} className="text-foreground/80">{f}</li>
+                    <li key={i} className="flex items-start gap-2 text-foreground/80">
+                      <span className="text-primary">✓</span>
+                      {f}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -238,28 +255,28 @@ const ExpandableTools = ({ title, tools, expanded, onToggle }: ExpandableToolsPr
 
         {/* 90-Day Action Plan */}
         {tools.actionPlan90Day && (
-          <div className="space-y-3">
-            <h5 className="font-medium text-sm">90-Day Action Plan</h5>
-            <p className="text-xs text-muted-foreground bg-muted/30 rounded-md p-3 italic">
+          <div className="space-y-4">
+            <h5 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">90-Day Action Plan</h5>
+            <p className="text-sm text-muted-foreground bg-muted/20 backdrop-blur-sm rounded-xl p-4 italic border border-border/20">
               A prioritized roadmap of immediate actions to strengthen your position. These milestones are designed to address the most critical gaps identified in this section and demonstrate tangible progress to investors.
             </p>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {tools.actionPlan90Day.milestones.map((milestone, i) => (
-                <div key={i} className="flex items-start gap-2 text-sm">
+                <div key={i} className="flex items-start gap-4 p-4 rounded-xl bg-muted/20 border border-border/20">
                   <Badge
                     variant="outline"
                     className={cn(
-                      "text-xs shrink-0",
-                      milestone.priority === "high" && "border-destructive/30 text-destructive",
-                      milestone.priority === "medium" && "border-amber-500/30 text-amber-500",
-                      milestone.priority === "low" && "border-primary/30 text-primary"
+                      "text-xs shrink-0 rounded-lg px-3 py-1",
+                      milestone.priority === "high" && "border-destructive/40 bg-destructive/10 text-destructive",
+                      milestone.priority === "medium" && "border-amber-500/40 bg-amber-500/10 text-amber-500",
+                      milestone.priority === "low" && "border-primary/40 bg-primary/10 text-primary"
                     )}
                   >
                     {milestone.priority}
                   </Badge>
                   <div>
-                    <p className="font-medium">{milestone.title}</p>
-                    <p className="text-muted-foreground">{milestone.description}</p>
+                    <p className="font-medium text-foreground">{milestone.title}</p>
+                    <p className="text-muted-foreground text-sm mt-1">{milestone.description}</p>
                   </div>
                 </div>
               ))}
@@ -269,25 +286,25 @@ const ExpandableTools = ({ title, tools, expanded, onToggle }: ExpandableToolsPr
 
         {/* Benchmarks */}
         {tools.benchmarks && (
-          <div className="space-y-3">
-            <h5 className="font-medium text-sm">Industry Benchmarks</h5>
-            <p className="text-xs text-muted-foreground bg-muted/30 rounded-md p-3 italic">
+          <div className="space-y-4">
+            <h5 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Industry Benchmarks</h5>
+            <p className="text-sm text-muted-foreground bg-muted/20 backdrop-blur-sm rounded-xl p-4 italic border border-border/20">
               Compare your metrics against industry standards for companies at your stage. This helps you understand where you excel and where you may need to improve to meet investor expectations.
             </p>
-            <div className="grid gap-2">
+            <div className="grid gap-3">
               {tools.benchmarks.metrics.map((metric, i) => (
-                <div key={i} className="flex items-center justify-between text-sm bg-muted/30 rounded px-3 py-2">
-                  <span className="text-muted-foreground">{metric.label}</span>
-                  <div className="flex items-center gap-4">
-                    <span className="font-medium">{metric.yourValue}</span>
-                    <span className="text-muted-foreground">vs {metric.benchmark}</span>
+                <div key={i} className="flex items-center justify-between text-sm bg-muted/20 backdrop-blur-sm rounded-xl px-5 py-4 border border-border/20">
+                  <span className="text-foreground font-medium">{metric.label}</span>
+                  <div className="flex items-center gap-6">
+                    <span className="font-bold text-foreground">{metric.yourValue}</span>
+                    <span className="text-muted-foreground text-xs">vs {metric.benchmark}</span>
                     <Badge
                       variant="outline"
                       className={cn(
-                        "text-xs",
-                        metric.status === "above" && "border-primary/30 text-primary",
-                        metric.status === "at" && "border-amber-500/30 text-amber-500",
-                        metric.status === "below" && "border-destructive/30 text-destructive"
+                        "text-xs rounded-lg px-3",
+                        metric.status === "above" && "border-primary/40 bg-primary/10 text-primary",
+                        metric.status === "at" && "border-amber-500/40 bg-amber-500/10 text-amber-500",
+                        metric.status === "below" && "border-destructive/40 bg-destructive/10 text-destructive"
                       )}
                     >
                       {metric.status}
@@ -324,51 +341,55 @@ const ActionPlanSection = ({ actionPlan }: ActionPlanSectionProps) => {
   };
 
   return (
-    <Card className="mb-8 border-primary/20">
-      <CardHeader className="bg-primary/5">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <CheckCircle2 className="h-5 w-5 text-primary" />
-          AI Action Plan
+    <Card className="mb-10 border-primary/20 bg-card/60 backdrop-blur-2xl shadow-lg overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/30">
+        <CardTitle className="flex items-center gap-3 text-lg">
+          <div className="w-10 h-10 rounded-xl bg-primary/15 backdrop-blur-sm border border-primary/20 flex items-center justify-center">
+            <CheckCircle2 className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <span className="font-bold">AI Action Plan</span>
+            <p className="text-sm text-muted-foreground font-normal mt-0.5">{actionPlan.summaryLine}</p>
+          </div>
         </CardTitle>
-        <p className="text-sm text-muted-foreground mt-1">{actionPlan.summaryLine}</p>
       </CardHeader>
-      <CardContent className="pt-4">
-        <div className="space-y-3">
+      <CardContent className="pt-6 pb-8">
+        <div className="space-y-4">
           {actionPlan.items.map((item) => (
             <div
               key={item.id}
               className={cn(
-                "border rounded-lg p-4 cursor-pointer transition-colors hover:bg-muted/30",
-                expandedItems.has(item.id) && "bg-muted/20"
+                "border border-border/30 rounded-xl p-5 cursor-pointer transition-all duration-200 hover:bg-muted/30 hover:shadow-md backdrop-blur-sm",
+                expandedItems.has(item.id) && "bg-muted/20 border-primary/30"
               )}
               onClick={() => toggleItem(item.id)}
             >
               <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <Badge className={cn("shrink-0", getPriorityColor(item.priority))}>
+                <div className="flex items-start gap-4">
+                  <Badge className={cn("shrink-0 rounded-lg px-3 py-1", getPriorityColor(item.priority))}>
                     {item.priority}
                   </Badge>
                   <div>
-                    <p className="font-medium">{item.category}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{item.problem}</p>
+                    <p className="font-semibold text-foreground">{item.category}</p>
+                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{item.problem}</p>
                   </div>
                 </div>
                 {expandedItems.has(item.id) ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
                 )}
               </div>
 
               {expandedItems.has(item.id) && (
-                <div className="mt-4 pt-4 border-t border-border space-y-3">
-                  <div>
-                    <p className="text-sm font-medium text-amber-500">Impact</p>
-                    <p className="text-sm text-muted-foreground">{item.impact}</p>
+                <div className="mt-5 pt-5 border-t border-border/30 grid grid-cols-2 gap-6">
+                  <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                    <p className="text-xs font-semibold text-amber-500 mb-2 uppercase tracking-wider">Impact</p>
+                    <p className="text-sm text-foreground/80 leading-relaxed">{item.impact}</p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-primary">How to Fix</p>
-                    <p className="text-sm text-muted-foreground">{item.howToFix}</p>
+                  <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+                    <p className="text-xs font-semibold text-primary mb-2 uppercase tracking-wider">How to Fix</p>
+                    <p className="text-sm text-foreground/80 leading-relaxed">{item.howToFix}</p>
                   </div>
                 </div>
               )}
@@ -420,33 +441,39 @@ export function SimplifiedMemoViewer({
       : null;
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4">
+    <div className="max-w-4xl mx-auto py-12 px-6">
       {/* Back Button */}
       {showBackButton && onBack && (
-        <Button variant="ghost" onClick={onBack} className="mb-6">
+        <Button 
+          variant="ghost" 
+          onClick={onBack} 
+          className="mb-8 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl"
+        >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          Back to Analysis
         </Button>
       )}
 
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">{companyName}</h1>
+      <div className="mb-10">
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+              {companyName}
+            </h1>
             {companyDescription && (
-              <p className="text-muted-foreground mt-2">{companyDescription}</p>
+              <p className="text-muted-foreground mt-3 text-lg leading-relaxed">{companyDescription}</p>
             )}
           </div>
           {overallScore !== null && (
             <div
               className={cn(
-                "text-center px-6 py-4 rounded-xl border-2",
+                "text-center px-8 py-5 rounded-2xl border-2 bg-card/60 backdrop-blur-xl shadow-lg",
                 getScoreBg(overallScore)
               )}
             >
-              <p className="text-sm text-muted-foreground mb-1">Overall Score</p>
-              <p className={cn("text-4xl font-bold", getScoreColor(overallScore))}>
+              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Overall Score</p>
+              <p className={cn("text-5xl font-bold", getScoreColor(overallScore))}>
                 {overallScore}
               </p>
             </div>
@@ -454,9 +481,15 @@ export function SimplifiedMemoViewer({
         </div>
 
         {heroStatement && (
-          <Card className="mt-6 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-            <CardContent className="pt-6">
-              <p className="text-lg font-medium italic text-center">"{heroStatement}"</p>
+          <Card className="mt-8 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20 backdrop-blur-xl shadow-lg">
+            <CardContent className="py-8 px-6">
+              <div className="flex items-start gap-4">
+                <div className="text-4xl text-primary/40 font-serif leading-none">"</div>
+                <p className="text-lg font-medium italic text-foreground/90 leading-relaxed flex-1">
+                  {heroStatement}
+                </p>
+                <div className="text-4xl text-primary/40 font-serif leading-none self-end">"</div>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -469,7 +502,7 @@ export function SimplifiedMemoViewer({
       {aiActionPlan && <ActionPlanSection actionPlan={aiActionPlan} />}
 
       {/* Sections */}
-      <div className="space-y-6">
+      <div className="space-y-8">
         {sections.map((section, index) => {
           const Icon = sectionIcons[section.title] || Target;
           const tools = sectionTools[section.title];
@@ -480,73 +513,78 @@ export function SimplifiedMemoViewer({
             <Card
               key={section.title}
               id={`section-${section.title}`}
-              className="overflow-hidden"
+              className="overflow-hidden bg-card/60 backdrop-blur-2xl border-border/30 shadow-lg hover:shadow-xl transition-shadow duration-300"
             >
               {/* Section Header */}
               <CardHeader
                 className={cn(
-                  "border-b border-border",
-                  score && score >= 70 && "bg-primary/5",
-                  score && score >= 55 && score < 70 && "bg-amber-500/5",
-                  score && score < 55 && "bg-destructive/5"
+                  "border-b border-border/30 py-6",
+                  score && score >= 70 && "bg-gradient-to-r from-primary/10 to-transparent",
+                  score && score >= 55 && score < 70 && "bg-gradient-to-r from-amber-500/10 to-transparent",
+                  score && score < 55 && "bg-gradient-to-r from-destructive/10 to-transparent"
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Icon className="h-5 w-5 text-primary" />
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-primary/15 backdrop-blur-sm border border-primary/20 flex items-center justify-center">
+                      <Icon className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl">{section.title}</CardTitle>
+                      <CardTitle className="text-2xl font-bold">{section.title}</CardTitle>
                       {verdict && (
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-sm text-muted-foreground mt-1 leading-relaxed max-w-xl">
                           {verdict.verdict}
                         </p>
                       )}
                     </div>
                   </div>
                   {score !== undefined && (
-                    <div className={cn("text-3xl font-bold", getScoreColor(score))}>
+                    <div className={cn(
+                      "text-4xl font-bold px-4 py-2 rounded-xl",
+                      score >= 70 && "bg-primary/10 text-primary",
+                      score >= 55 && score < 70 && "bg-amber-500/10 text-amber-500",
+                      score < 55 && "bg-destructive/10 text-destructive"
+                    )}>
                       {score}
                     </div>
                   )}
                 </div>
               </CardHeader>
 
-              <CardContent className="pt-6">
+              <CardContent className="pt-6 pb-8">
                 {/* VC Perspective */}
-                {verdict && (
-                  <div className="bg-muted/30 rounded-lg p-4 mb-4">
-                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                {verdict && verdict.stageContext && (
+                  <div className="bg-muted/30 backdrop-blur-sm rounded-xl p-5 mb-6 border border-border/30">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">
                       VC Perspective
                     </p>
-                    <p className="italic text-sm">{verdict.stageContext}</p>
+                    <p className="italic text-foreground/80 leading-relaxed">{verdict.stageContext}</p>
                   </div>
                 )}
 
                 {/* Narrative */}
                 {section.narrative && (
-                  <p className="text-muted-foreground leading-relaxed mb-4">
+                  <p className="text-muted-foreground leading-relaxed mb-6 text-base">
                     {section.narrative}
                   </p>
                 )}
 
                 {/* Key Points */}
                 {section.keyPoints && section.keyPoints.length > 0 && (
-                  <div className="space-y-2 mb-4">
-                    <p className="font-medium text-sm">Key Takeaways</p>
-                    <ul className="space-y-2">
+                  <div className="space-y-3 mb-6">
+                    <p className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Key Takeaways</p>
+                    <ul className="space-y-3">
                       {section.keyPoints.map((point, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                          <span>{point}</span>
+                        <li key={i} className="flex items-start gap-3 p-3 rounded-xl bg-muted/20 border border-border/20">
+                          <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                          <span className="text-foreground/90">{point}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                 )}
 
-                <Separator className="my-4" />
+                <Separator className="my-6 bg-border/30" />
 
                 {/* Expandable Tools */}
                 {tools && (

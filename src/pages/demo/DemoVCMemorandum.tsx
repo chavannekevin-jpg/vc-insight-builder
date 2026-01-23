@@ -4,6 +4,8 @@ import { DemoSidebar } from "@/components/demo/DemoSidebar";
 import { SimplifiedMemoViewer } from "@/components/templates/SimplifiedMemoViewer";
 import type { SectionToolData } from "@/components/templates/SimplifiedMemoViewer";
 import { VCMemoExplainerModal, useVCMemoExplainer } from "@/components/memo/VCMemoExplainerModal";
+import { DemoBanner } from "@/components/demo/DemoBanner";
+import { DemoFloatingCTA } from "@/components/demo/DemoFloatingCTA";
 
 // Import demo data
 import { DEMO_COMPANY } from "@/data/demo/demoSignalFlow";
@@ -81,17 +83,31 @@ export default function DemoVCMemorandum() {
           <DemoSidebar currentPage="analysis" />
           
           <main className="flex-1 overflow-auto">
-            <SimplifiedMemoViewer
-              companyName={DEMO_COMPANY.name}
-              companyDescription={DEMO_COMPANY.description}
-              heroStatement={memoData?.heroStatement || ""}
-              sections={memoData?.sections || []}
-              sectionTools={transformedTools}
-              holisticVerdicts={DEMO_HOLISTIC_VERDICTS}
-              aiActionPlan={aiActionPlan}
-              onBack={() => navigate('/demo')}
-              showBackButton={true}
-            />
+            <DemoBanner companyName={DEMO_COMPANY.name} />
+            
+            {/* Upgraded design wrapper */}
+            <div className="relative overflow-hidden">
+              {/* Background effects */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
+              <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
+              
+              <div className="relative">
+                <SimplifiedMemoViewer
+                  companyName={DEMO_COMPANY.name}
+                  companyDescription={DEMO_COMPANY.description}
+                  heroStatement={memoData?.heroStatement || ""}
+                  sections={memoData?.sections || []}
+                  sectionTools={transformedTools}
+                  holisticVerdicts={DEMO_HOLISTIC_VERDICTS}
+                  aiActionPlan={aiActionPlan}
+                  onBack={() => navigate('/demo')}
+                  showBackButton={true}
+                />
+              </div>
+            </div>
+            
+            <DemoFloatingCTA />
           </main>
         </div>
       </SidebarProvider>
