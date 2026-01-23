@@ -92,7 +92,7 @@ const socialItems = [
 export function DemoSidebar({ currentPage }: DemoSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { state } = useSidebar();
+  const { state, setOpen } = useSidebar();
   const collapsed = state === "collapsed";
   
   const [knowledgeOpen, setKnowledgeOpen] = useState(false);
@@ -106,13 +106,37 @@ export function DemoSidebar({ currentPage }: DemoSidebarProps) {
     }
   };
 
+  const handleMouseEnter = () => {
+    if (collapsed) {
+      setOpen(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setOpen(false);
+  };
+
   return (
-    <Sidebar className="border-r border-border/30 bg-card/60 backdrop-blur-2xl">
-      <SidebarHeader className="border-b border-border/20 bg-gradient-to-r from-primary/5 to-transparent">
+    <Sidebar 
+      className={cn(
+        "border-r border-border/30 bg-card/60 backdrop-blur-2xl transition-all duration-300",
+        collapsed ? "w-16" : "w-64"
+      )}
+      collapsible="icon"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <SidebarHeader className={cn(
+        "border-b border-border/20 bg-gradient-to-r from-primary/5 to-transparent",
+        collapsed && "items-center"
+      )}>
         {/* Back to Homepage link */}
         <div 
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 px-3 py-2 mx-2 mt-2 rounded-xl cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all group"
+          className={cn(
+            "flex items-center gap-2 rounded-xl cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all group",
+            collapsed ? "justify-center px-2 py-2 mx-auto mt-2" : "px-3 py-2 mx-2 mt-2"
+          )}
         >
           <Home className="w-4 h-4" />
           {!collapsed && (
@@ -121,23 +145,28 @@ export function DemoSidebar({ currentPage }: DemoSidebarProps) {
         </div>
         
         {/* Company info */}
-        <div className="flex items-center gap-3 px-2 py-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/15 backdrop-blur-sm flex items-center justify-center border border-primary/20">
+        <div className={cn(
+          "flex items-center gap-3 py-3",
+          collapsed ? "justify-center px-0" : "px-2"
+        )}>
+          <div className="w-10 h-10 rounded-xl bg-primary/15 backdrop-blur-sm flex items-center justify-center border border-primary/20 flex-shrink-0">
             <Building2 className="w-5 h-5 text-primary" />
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm truncate">
-                {DEMO_COMPANY.name}
-              </span>
-              <span className="px-1.5 py-0.5 rounded-lg text-[10px] font-medium bg-primary/15 text-primary backdrop-blur-sm">
-                DEMO
-              </span>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sm truncate">
+                  {DEMO_COMPANY.name}
+                </span>
+                <span className="px-1.5 py-0.5 rounded-lg text-[10px] font-medium bg-primary/15 text-primary backdrop-blur-sm">
+                  DEMO
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground truncate">
+                {DEMO_COMPANY.stage} · {DEMO_COMPANY.category}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground truncate">
-              {DEMO_COMPANY.stage} · {DEMO_COMPANY.category}
-            </p>
-          </div>
+          )}
         </div>
       </SidebarHeader>
 
@@ -333,26 +362,40 @@ export function DemoSidebar({ currentPage }: DemoSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border/20 p-4 bg-gradient-to-t from-muted/20 to-transparent">
-        <div className="space-y-3">
-          <div className="flex items-start gap-2 p-3 rounded-xl bg-primary/10 backdrop-blur-sm border border-primary/20">
-            <Sparkles className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-foreground">Ready for your own?</p>
-              <p className="text-[10px] text-muted-foreground leading-relaxed">
-                Get personalized analysis tailored to your startup.
-              </p>
-            </div>
-          </div>
+      <SidebarFooter className={cn(
+        "border-t border-border/20 bg-gradient-to-t from-muted/20 to-transparent",
+        collapsed ? "p-2" : "p-4"
+      )}>
+        {collapsed ? (
           <Button
             onClick={() => navigate('/checkout')}
-            className="w-full gap-2 rounded-xl"
-            size="sm"
+            className="w-full rounded-xl p-2"
+            size="icon"
+            variant="default"
           >
-            Get Started
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-4 h-4" />
           </Button>
-        </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-primary/10 backdrop-blur-sm border border-primary/20">
+              <Sparkles className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-foreground">Ready for your own?</p>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  Get personalized analysis tailored to your startup.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => navigate('/checkout')}
+              className="w-full gap-2 rounded-xl"
+              size="sm"
+            >
+              Get Started
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
