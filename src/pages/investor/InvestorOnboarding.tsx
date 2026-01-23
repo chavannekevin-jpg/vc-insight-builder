@@ -14,7 +14,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import InviterContactsStep from "@/components/investor/onboarding/InviterContactsStep";
+import { InvestorEntranceAnimation } from "@/components/investor/InvestorEntranceAnimation";
 
+// Session key to indicate fresh onboarding completion
+const ONBOARDING_ENTRANCE_KEY = "investor_onboarding_entrance";
 const INVESTOR_TYPES = [
   { value: "vc", label: "Venture Capital" },
   { value: "family_office", label: "Family Office" },
@@ -391,6 +394,8 @@ const InvestorOnboarding = () => {
     }
   };
 
+  const [showEntranceAnimation, setShowEntranceAnimation] = useState(false);
+
   const handleComplete = async () => {
     if (!userId) return;
 
@@ -403,11 +408,11 @@ const InvestorOnboarding = () => {
       // Clear the invite code from session storage
       sessionStorage.removeItem("investor_invite_code");
 
-      toast({
-        title: "Welcome to the network!",
-        description: "Your profile is complete.",
-      });
-      navigate("/investor/dashboard");
+      // Mark that we're coming from onboarding for the dashboard entrance
+      sessionStorage.setItem(ONBOARDING_ENTRANCE_KEY, "true");
+
+      // Show the cinematic entrance animation
+      setShowEntranceAnimation(true);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -416,6 +421,24 @@ const InvestorOnboarding = () => {
       });
     }
   };
+
+  const handleEntranceComplete = () => {
+    toast({
+      title: "Welcome to the network!",
+      description: "Your profile is complete.",
+    });
+    navigate("/investor/dashboard");
+  };
+
+  // Show entrance animation when onboarding completes
+  if (showEntranceAnimation) {
+    return (
+      <InvestorEntranceAnimation
+        onComplete={handleEntranceComplete}
+        companyName={fullName?.split(" ")[0]}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
