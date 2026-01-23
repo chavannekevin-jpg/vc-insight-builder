@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DemoLayout } from "@/components/demo/DemoLayout";
 import { DemoUpsellModal } from "@/components/demo/DemoUpsellModal";
@@ -45,8 +45,20 @@ export default function DemoFundDiscovery() {
   const [showUpsell, setShowUpsell] = useState(false);
   const [upsellContext, setUpsellContext] = useState({ feature: "", description: "" });
   
-  // Fund discovery explainer modal
-  const { showExplainer, isChecked: explainerChecked, completeExplainer } = useFundDiscoveryExplainer();
+  // Fund discovery explainer modal - use demo-specific key
+  const [showExplainer, setShowExplainer] = useState(false);
+  const [explainerChecked, setExplainerChecked] = useState(false);
+  
+  useEffect(() => {
+    const seen = localStorage.getItem("demo_fund_discovery_explainer_seen");
+    setShowExplainer(!seen);
+    setExplainerChecked(true);
+  }, []);
+  
+  const completeExplainer = () => {
+    localStorage.setItem("demo_fund_discovery_explainer_seen", "true");
+    setShowExplainer(false);
+  };
 
   // Filter and sort funds
   const filteredFunds = useMemo(() => {

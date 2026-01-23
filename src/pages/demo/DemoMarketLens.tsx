@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DemoLayout } from "@/components/demo/DemoLayout";
 import { MarketLensBriefing } from "@/components/market-lens/MarketLensBriefing";
@@ -14,8 +14,20 @@ export default function DemoMarketLens() {
   const [showUpsell, setShowUpsell] = useState(false);
   const [upsellContext, setUpsellContext] = useState({ feature: "", description: "" });
   
-  // Market lens explainer modal
-  const { showExplainer, isChecked: explainerChecked, completeExplainer } = useMarketLensExplainer();
+  // Market lens explainer modal - use demo-specific key
+  const [showExplainer, setShowExplainer] = useState(false);
+  const [explainerChecked, setExplainerChecked] = useState(false);
+  
+  useEffect(() => {
+    const seen = localStorage.getItem("demo_market_lens_explainer_seen");
+    setShowExplainer(!seen);
+    setExplainerChecked(true);
+  }, []);
+  
+  const completeExplainer = () => {
+    localStorage.setItem("demo_market_lens_explainer_seen", "true");
+    setShowExplainer(false);
+  };
 
   const handleRefresh = () => {
     setUpsellContext({
