@@ -150,6 +150,7 @@ const CohortAnalytics = lazy(() => import("./pages/acceleratorDemo/CohortAnalyti
 const CompareStartups = lazy(() => import("./pages/acceleratorDemo/CompareStartups"));
 
 // Production Accelerator Pages
+const AcceleratorAuth = lazy(() => import("./pages/accelerator/AcceleratorAuth"));
 const AcceleratorSignup = lazy(() => import("./pages/accelerator/AcceleratorSignup"));
 const AcceleratorOnboarding = lazy(() => import("./pages/accelerator/AcceleratorOnboarding"));
 const AcceleratorDashboard = lazy(() => import("./pages/accelerator/AcceleratorDashboard"));
@@ -206,9 +207,10 @@ const App = () => (
             <Route path="/accelerators" element={<AcceleratorLanding />} />
             <Route path="/accelerator/invite" element={<AcceleratorInviteLanding />} />
             {/* Production Accelerator Routes */}
+            <Route path="/accelerator/auth" element={<AcceleratorAuth />} />
             <Route path="/accelerator/signup" element={<AcceleratorSignup />} />
             <Route path="/accelerator/onboarding" element={<AcceleratorOnboarding />} />
-            <Route path="/accelerator" element={<AcceleratorDashboard />} />
+            <Route path="/accelerator/dashboard" element={<AcceleratorDashboard />} />
             <Route path="/accelerator/startup/:id" element={<AcceleratorStartupDetail />} />
             <Route path="/accelerator/analytics" element={<AcceleratorAnalytics />} />
             {/* Investor Routes */}
