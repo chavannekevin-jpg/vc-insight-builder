@@ -20,7 +20,7 @@ const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 // Max number of images to process (to avoid CPU limits)
-const MAX_IMAGES_TO_PROCESS = 12;
+const MAX_IMAGES_TO_PROCESS = 25; // Process full decks for better extraction quality
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {

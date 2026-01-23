@@ -18,7 +18,7 @@ import pdfWorkerSrc from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
 export const PDF_SIZE_THRESHOLD_BYTES = 5 * 1024 * 1024;
 
 // Sensible defaults to keep uploads fast + memory safe
-const DEFAULT_MAX_PAGES = 8;
+const DEFAULT_MAX_PAGES = 25; // Process ALL slides for most decks (95% are ≤25 pages)
 const DEFAULT_SCALE = 1.15;
 const DEFAULT_QUALITY = 0.68;
 const DEFAULT_MAX_DIMENSION = 1600; // px (max width/height)
