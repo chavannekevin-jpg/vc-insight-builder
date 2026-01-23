@@ -1,21 +1,33 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/sections/Footer";
-import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { Calculator, TrendingUp, ArrowRight, Lock, Sparkles, Zap, Mail, Flame, FlaskConical } from "lucide-react";
+import { 
+  Calculator, 
+  TrendingUp, 
+  ArrowRight, 
+  Lock, 
+  Sparkles, 
+  Zap, 
+  Mail, 
+  Flame, 
+  FlaskConical,
+  FileSearch,
+  Users,
+  Telescope,
+  Brain
+} from "lucide-react";
 
 export default function ToolsHub() {
   const navigate = useNavigate();
 
-  const tools = [
+  const freeTools = [
     {
       name: "Raise Calculator",
-      description: "Stop guessing. Calculate exactly how much cash you need before you run out of runway—because \"we'll figure it out\" isn't a strategy.",
+      description: "Calculate exactly how much cash you need before you run out of runway—because \"we'll figure it out\" isn't a strategy.",
       icon: Calculator,
       path: "/raise-calculator",
-      available: true,
       color: "primary"
     },
     {
@@ -23,7 +35,6 @@ export default function ToolsHub() {
       description: "Find out what your startup is actually worth. Not your inflated dreams, not your competitor's fake valuation. Real numbers.",
       icon: TrendingUp,
       path: "/valuation-calculator",
-      available: true,
       color: "secondary"
     },
     {
@@ -31,162 +42,200 @@ export default function ToolsHub() {
       description: "Think you're VC-scale? This brutal reality check will tell you if you're building a unicorn or just another lifestyle business.",
       icon: Zap,
       path: "/venture-scale-diagnostic",
-      available: true,
       color: "primary"
-    },
-    {
-      name: "Outreach Lab",
-      description: "Cold email templates that don't sound like a robot wrote them. Requires your memo—because context matters more than your inbox spam tactics.",
-      icon: Mail,
-      path: "/investor-email-generator",
-      available: true,
-      color: "secondary"
-    },
-    {
-      name: "Roast Your Baby",
-      description: "Survive 10 brutal VC questions in a live-fire simulation. Premium feature—because real preparation costs more than your fragile ego.",
-      icon: Flame,
-      path: "/roast-your-baby",
-      available: true,
-      color: "primary",
-      badge: "Premium"
-    },
-    {
-      name: "Dilution Lab",
-      description: "Build your cap table, simulate funding rounds with SAFE/CLA/Equity, and watch your ownership dissolve in real-time. Premium feature.",
-      icon: FlaskConical,
-      path: "/dilution-lab",
-      available: true,
-      color: "secondary",
-      badge: "Premium"
     }
   ];
 
-  const comingSoon = [
+  const premiumTools = [
     {
-      name: "Pitch Deck Analyzer",
-      description: "AI-powered feedback on your investor presentation",
-      icon: Lock
+      name: "8-Dimension Investment Audit",
+      description: "The exact analysis VCs run behind closed doors—scores across Team, Market, Product, Traction, and 4 more dimensions.",
+      icon: FileSearch
     },
     {
-      name: "Market Size Validator",
-      description: "Verify your TAM/SAM/SOM calculations with real data",
-      icon: Lock
+      name: "23+ Strategic Tools",
+      description: "TAM calculators, moat assessments, unit economics models, competitive matrices—all auto-populated with your data.",
+      icon: Brain
+    },
+    {
+      name: "Market Intelligence",
+      description: "50+ industry reports synthesized into a personalized briefing. Tailwinds, headwinds, and funding trends for your sector.",
+      icon: Telescope
+    },
+    {
+      name: "800+ Investor Database",
+      description: "AI-powered matching scores each fund by stage, sector, and thesis fit. No more spray-and-pray outreach.",
+      icon: Users
+    },
+    {
+      name: "Outreach Lab",
+      description: "Generate personalized investor emails that don't sound like a robot wrote them. Context-aware, not inbox spam.",
+      icon: Mail
+    },
+    {
+      name: "Roast Your Baby",
+      description: "Survive brutal VC questions in a live-fire simulation. Practice the tough questions before they cost you the deal.",
+      icon: Flame
+    },
+    {
+      name: "Dilution Lab",
+      description: "Build your cap table, simulate funding rounds with SAFE/CLA/Equity, and watch your ownership evolve in real-time.",
+      icon: FlaskConical
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+    <div className="min-h-screen bg-background relative overflow-hidden">
       <Header />
       
-      <div className="max-w-6xl mx-auto px-4 py-16">
+      {/* Fixed animated mesh gradient background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 -left-1/4 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-0 -right-1/4 w-[600px] h-[600px] bg-secondary/15 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/10 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: '4s' }} />
+      </div>
+
+      {/* Subtle grid pattern */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,hsl(var(--primary)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.03)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
+      
+      <main className="relative z-10 max-w-6xl mx-auto px-4 py-16">
         {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-5xl md:text-6xl font-serif mb-6">
-            Stop <span className="neon-pink">Guessing</span>. Start Calculating.
+        <div className="text-center mb-16 pt-8">
+          <Badge className="mb-6 px-5 py-2 bg-primary/10 border-primary/20 text-primary backdrop-blur-sm">
+            <Zap className="w-3.5 h-3.5 mr-1.5" />
+            Free Founder Tools
+          </Badge>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
+            <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
+              Stop
+            </span>{" "}
+            <span className="text-primary" style={{ textShadow: '0 0 30px hsl(var(--primary) / 0.5)' }}>
+              Guessing
+            </span>
+            <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
+              . Start Calculating.
+            </span>
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            The tools VCs wish you'd use before wasting their time. <span className="text-primary font-semibold">Free, brutal, and better than your napkin math.</span>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            The tools VCs wish you'd use before wasting their time.{" "}
+            <span className="text-primary font-semibold">Free, brutal, and better than your napkin math.</span>
           </p>
         </div>
 
-        {/* Available Tools */}
+        {/* Free Tools */}
         <div className="mb-16">
-          <h2 className="text-2xl font-serif mb-6 text-neon">Your Reality Check Toolkit</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            {tools.map((tool) => {
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+            <span className="text-primary">Your Reality Check Toolkit</span>
+            <Badge variant="outline" className="border-primary/30 text-primary">Free</Badge>
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {freeTools.map((tool) => {
               const Icon = tool.icon;
               return (
-                <ModernCard 
-                  key={tool.name} 
-                  className="hover:shadow-glow hover:border-primary/60 transition-all duration-300 group"
+                <div 
+                  key={tool.name}
+                  className="group relative rounded-2xl p-6 bg-card/40 backdrop-blur-sm border border-border/30 hover:border-primary/40 hover:bg-card/60 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5"
                 >
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-14 h-14 rounded-xl gradient-${tool.color} flex items-center justify-center flex-shrink-0 shadow-glow group-hover:shadow-glow-strong transition-all duration-300`}>
-                        <Icon className="w-7 h-7 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-serif mb-2 group-hover:text-primary transition-colors flex items-center gap-2">
-                          {tool.name}
-                          {tool.badge && (
-                            <Badge className="bg-primary/20 text-primary border-primary/40 text-xs">
-                              {tool.badge}
-                            </Badge>
-                          )}
-                        </h3>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {tool.description}
-                        </p>
-                      </div>
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  <div className="relative z-10 space-y-4">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center group-hover:scale-105 group-hover:border-primary/40 transition-all duration-300">
+                      <Icon className="w-7 h-7 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
+                        {tool.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {tool.description}
+                      </p>
                     </div>
                     <Button 
                       onClick={() => navigate(tool.path)}
-                      className="w-full gradient-primary shadow-glow hover:shadow-glow-strong border-0"
+                      className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground rounded-xl font-semibold shadow-lg shadow-primary/20"
                     >
                       Use Tool
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </div>
-                </ModernCard>
+                </div>
               );
             })}
           </div>
         </div>
 
-        {/* Coming Soon */}
+        {/* Premium Tools Preview */}
         <div className="mb-16">
-          <h2 className="text-2xl font-serif mb-6 text-muted-foreground">Coming Soon</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {comingSoon.map((tool) => {
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+            <span className="text-foreground">The Full Arsenal</span>
+            <Badge className="bg-primary/20 text-primary border-primary/40">Premium</Badge>
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {premiumTools.map((tool) => {
               const Icon = tool.icon;
               return (
-                <ModernCard key={tool.name} className="opacity-50 hover:opacity-70 transition-opacity">
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-muted/50 border border-border flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-5 h-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-serif mb-1">{tool.name}</h3>
-                        <p className="text-xs text-muted-foreground">
-                          {tool.description}
-                        </p>
-                      </div>
+                <div 
+                  key={tool.name}
+                  className="group p-5 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/30 hover:border-primary/30 hover:bg-card/50 transition-all"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                      <Icon className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
+                        {tool.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {tool.description}
+                      </p>
                     </div>
                   </div>
-                </ModernCard>
+                </div>
               );
             })}
           </div>
         </div>
 
         {/* CTA Section */}
-        <ModernCard className="border-2 border-primary/40 shadow-glow hover:shadow-glow-strong transition-all duration-300">
-          <div className="text-center space-y-6 py-8">
-            <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center mx-auto shadow-glow pulse-glow">
-              <Sparkles className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h2 className="text-3xl font-serif mb-4">
-                Done Playing with <span className="text-neon">Calculators</span>?
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                These tools get you started. But VCs don't invest in spreadsheets—they invest in <span className="text-primary font-semibold">stories</span>. 
-                Build the investment memo that makes them say "tell me more" instead of "next."
+        <div className="relative group">
+          <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-[40px] blur-2xl opacity-50 group-hover:opacity-75 transition-opacity" />
+          
+          <div className="relative bg-card/50 backdrop-blur-2xl rounded-3xl p-10 md:p-14 border border-border/50 shadow-2xl">
+            <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+            
+            <div className="text-center space-y-6">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto shadow-lg shadow-primary/30">
+                <Sparkles className="w-8 h-8 text-primary-foreground" />
+              </div>
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  Done Playing with{" "}
+                  <span className="text-primary" style={{ textShadow: '0 0 20px hsl(var(--primary) / 0.4)' }}>
+                    Calculators
+                  </span>?
+                </h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+                  These tools get you started. But VCs don't invest in spreadsheets—they invest in{" "}
+                  <span className="text-primary font-semibold">conviction</span>. 
+                  Get the full investment analysis that shows you exactly what they see.
+                </p>
+              </div>
+              <Button 
+                size="lg"
+                onClick={() => navigate('/pricing')}
+                className="h-14 px-10 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground rounded-2xl font-bold text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5"
+              >
+                Get Your Full Analysis
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                One payment • Full platform access • No subscription
               </p>
             </div>
-            <Button 
-              size="lg"
-              className="gradient-primary shadow-glow hover:shadow-glow-strong border-0 text-lg px-8"
-              onClick={() => navigate('/pricing')}
-            >
-              Get Your Investment Memo
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
           </div>
-        </ModernCard>
-      </div>
+        </div>
+      </main>
       
       <Footer />
     </div>
