@@ -25,6 +25,7 @@ interface AcceleratorInvite {
   expires_at: string | null;
   created_at: string;
   custom_message: string | null;
+  cohort_name: string | null;
 }
 
 export default function AdminAcceleratorInvites() {
@@ -41,6 +42,7 @@ export default function AdminAcceleratorInvites() {
   const [maxUses, setMaxUses] = useState<string>("15");
   const [expiresAt, setExpiresAt] = useState("");
   const [customMessage, setCustomMessage] = useState("");
+  const [cohortName, setCohortName] = useState("");
 
   useEffect(() => {
     fetchInvites();
@@ -110,6 +112,7 @@ export default function AdminAcceleratorInvites() {
         expires_at: expiresAt || null,
         is_active: true,
         custom_message: customMessage.trim() || null,
+        cohort_name: cohortName.trim() || null,
       }) as any);
 
       if (error) throw error;
@@ -126,6 +129,7 @@ export default function AdminAcceleratorInvites() {
       setMaxUses("15");
       setExpiresAt("");
       setCustomMessage("");
+      setCohortName("");
       setDialogOpen(false);
       fetchInvites();
     } catch (error: any) {
@@ -302,7 +306,7 @@ export default function AdminAcceleratorInvites() {
                     className="font-mono text-sm"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Used in the invite code: {acceleratorSlug.toUpperCase().slice(0, 6) || 'XXX'}-XXXXXX
+                    Used in the invite code: {acceleratorSlug.toUpperCase().slice(0, 6) || 'XXX'}-XXXXXX. This code is permanent and can be used to link this cohort to the accelerator ecosystem later.
                   </p>
                 </div>
 
@@ -347,6 +351,19 @@ export default function AdminAcceleratorInvites() {
                   />
                   <p className="text-xs text-muted-foreground">
                     Number of startups that can use this link
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cohortName">Cohort Name (optional)</Label>
+                  <Input
+                    id="cohortName"
+                    placeholder="e.g., Winter 2025 Cohort, Batch 15, AI Track"
+                    value={cohortName}
+                    onChange={(e) => setCohortName(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Group startups for easy identification when the accelerator ecosystem launches
                   </p>
                 </div>
 
@@ -426,7 +443,12 @@ export default function AdminAcceleratorInvites() {
                 {invites.map((invite) => (
                   <TableRow key={invite.id}>
                     <TableCell className="font-medium">
-                      {invite.accelerator_name}
+                      <div>
+                        {invite.accelerator_name}
+                        {invite.cohort_name && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{invite.cohort_name}</p>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <code className="text-xs bg-muted px-2 py-1 rounded">

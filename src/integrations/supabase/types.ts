@@ -19,6 +19,7 @@ export type Database = {
           accelerator_name: string
           accelerator_slug: string
           code: string
+          cohort_name: string | null
           created_at: string | null
           created_by: string | null
           custom_message: string | null
@@ -33,6 +34,7 @@ export type Database = {
           accelerator_name: string
           accelerator_slug: string
           code: string
+          cohort_name?: string | null
           created_at?: string | null
           created_by?: string | null
           custom_message?: string | null
@@ -47,6 +49,7 @@ export type Database = {
           accelerator_name?: string
           accelerator_slug?: string
           code?: string
+          cohort_name?: string | null
           created_at?: string | null
           created_by?: string | null
           custom_message?: string | null
@@ -360,6 +363,7 @@ export type Database = {
       }
       companies: {
         Row: {
+          accelerator_invite_id: string | null
           biggest_challenge: string | null
           category: string | null
           created_at: string
@@ -389,6 +393,7 @@ export type Database = {
           verdict_generated_at: string | null
         }
         Insert: {
+          accelerator_invite_id?: string | null
           biggest_challenge?: string | null
           category?: string | null
           created_at?: string
@@ -418,6 +423,7 @@ export type Database = {
           verdict_generated_at?: string | null
         }
         Update: {
+          accelerator_invite_id?: string | null
           biggest_challenge?: string | null
           category?: string | null
           created_at?: string
@@ -447,6 +453,13 @@ export type Database = {
           verdict_generated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "companies_accelerator_invite_id_fkey"
+            columns: ["accelerator_invite_id"]
+            isOneToOne: false
+            referencedRelation: "accelerator_invites"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "companies_founder_id_fkey"
             columns: ["founder_id"]

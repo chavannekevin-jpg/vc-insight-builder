@@ -79,10 +79,11 @@ export default function AcceleratorInviteLanding() {
   const inviteCode = searchParams.get('code');
   const { inviteInfo, isLoading: isValidatingInvite } = useAcceleratorInvite(inviteCode);
 
-  // Store invite code in sessionStorage for use in Intake/Checkout
+  // Store invite code and ID in sessionStorage for use in Intake/Checkout
   useEffect(() => {
     if (inviteCode && inviteInfo?.isValid) {
       sessionStorage.setItem('accelerator_invite_code', inviteCode);
+      sessionStorage.setItem('accelerator_invite_id', inviteInfo.id);
       sessionStorage.setItem('accelerator_discount_percent', String(inviteInfo.discountPercent));
     }
   }, [inviteCode, inviteInfo]);

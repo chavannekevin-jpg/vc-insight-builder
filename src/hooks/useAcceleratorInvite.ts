@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AcceleratorInviteInfo {
+  id: string;
   code: string;
   acceleratorName: string;
   acceleratorSlug: string;
@@ -9,6 +10,7 @@ interface AcceleratorInviteInfo {
   isValid: boolean;
   remainingUses: number | null;
   customMessage: string | null;
+  cohortName: string | null;
 }
 
 export function useAcceleratorInvite(inviteCode: string | null) {
@@ -51,6 +53,7 @@ export function useAcceleratorInvite(inviteCode: string | null) {
         const remainingUses = invite.max_uses ? invite.max_uses - invite.uses : null;
 
         setInviteInfo({
+          id: invite.id,
           code: invite.code,
           acceleratorName: invite.accelerator_name,
           acceleratorSlug: invite.accelerator_slug,
@@ -58,6 +61,7 @@ export function useAcceleratorInvite(inviteCode: string | null) {
           isValid: true,
           remainingUses,
           customMessage: invite.custom_message || null,
+          cohortName: invite.cohort_name || null,
         });
       } catch (error) {
         console.error("Error validating accelerator invite:", error);
