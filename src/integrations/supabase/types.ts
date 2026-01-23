@@ -2095,6 +2095,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_investor_role_with_invite: {
+        Args: { p_invite_code: string; p_user_id: string }
+        Returns: Json
+      }
       award_founder_referral_credit: {
         Args: { p_referral_code: string; p_referred_company_id: string }
         Returns: boolean

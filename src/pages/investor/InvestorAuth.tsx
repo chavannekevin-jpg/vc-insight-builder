@@ -110,25 +110,20 @@ const InvestorAuth = () => {
     return () => clearTimeout(debounce);
   }, [inviteCode]);
 
-  // Retry helper for critical operations
-  const retryOperation = async <T,>(
-    operation: () => Promise<{ data: T | null; error: any }>,
-    maxRetries: number = 3,
-    delayMs: number = 500
-  ): Promise<{ data: T | null; error: any }> => {
-    let lastError: any = null;
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      const result = await operation();
-      if (!result.error) {
-        return result;
-      }
-      lastError = result.error;
-      console.warn(`Attempt ${attempt}/${maxRetries} failed:`, result.error);
-      if (attempt < maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
-      }
+  // Add investor role using secure database function
+  const addInvestorRoleWithInvite = async (userId: string, code: string): Promise<{ success: boolean; message: string; inviter_id?: string }> => {
+    const { data, error } = await supabase
+      .rpc('add_investor_role_with_invite', {
+        p_user_id: userId,
+        p_invite_code: code
+      });
+    
+    if (error) {
+      console.error('Failed to add investor role:', error);
+      return { success: false, message: error.message };
     }
-    return { data: null, error: lastError };
+    
+    return data as { success: boolean; message: string; inviter_id?: string };
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -209,43 +204,24 @@ const InvestorAuth = () => {
               return;
             }
 
-            // Add investor role
-            const roleResult = await retryOperation(async () => {
-              const result = await supabase
-                .from("user_roles")
-                .insert({ user_id: signInData.user!.id, role: "investor" });
-              return { data: result.data, error: result.error };
-            });
+            // Add investor role using secure database function
+            const roleResult = await addInvestorRoleWithInvite(signInData.user.id, inviteCode);
 
-            if (roleResult.error) {
-              console.error("Failed to add investor role:", roleResult.error);
+            if (!roleResult.success) {
+              console.error("Failed to add investor role:", roleResult.message);
               toast({
                 title: "Failed to join investor network",
-                description: "Please try again or contact support.",
+                description: roleResult.message || "Please try again or contact support.",
                 variant: "destructive",
               });
               return;
-            }
-
-            // Increment the invite code usage
-            const { data: currentInvite } = await (supabase
-              .from("investor_invites") as any)
-              .select("uses")
-              .eq("code", inviteCode.toUpperCase())
-              .single();
-            
-            if (currentInvite) {
-              await (supabase
-                .from("investor_invites") as any)
-                .update({ uses: currentInvite.uses + 1 })
-                .eq("code", inviteCode.toUpperCase());
             }
 
             sessionStorage.setItem("investor_invite_code", inviteCode.toUpperCase());
 
             toast({
               title: "Welcome to the Investor Network!",
-              description: `You've been added by ${codeValidation.inviterName}. Complete your investor profile.`,
+              description: `You've been added by ${codeValidation?.inviterName || "an investor"}. Complete your investor profile.`,
             });
             navigate("/investor/onboarding");
           }
@@ -256,41 +232,22 @@ const InvestorAuth = () => {
       }
 
       if (data.user) {
-        // CRITICAL: Add investor role with retry logic
-        const roleResult = await retryOperation(async () => {
-          const result = await supabase
-            .from("user_roles")
-            .insert({ user_id: data.user!.id, role: "investor" });
-          return { data: result.data, error: result.error };
-        });
+        // CRITICAL: Add investor role using secure database function
+        const roleResult = await addInvestorRoleWithInvite(data.user.id, inviteCode);
 
-        if (roleResult.error) {
-          // Role insertion failed after all retries - this is critical
-          console.error("Critical error: Failed to add investor role after retries:", roleResult.error);
+        if (!roleResult.success) {
+          // Role insertion failed - this is critical
+          console.error("Critical error: Failed to add investor role:", roleResult.message);
           
           // Sign out the user to prevent orphaned account
           await supabase.auth.signOut();
           
           toast({
             title: "Account setup failed",
-            description: "We couldn't complete your registration. Please try again or contact support if the issue persists.",
+            description: roleResult.message || "We couldn't complete your registration. Please try again or contact support.",
             variant: "destructive",
           });
           return;
-        }
-
-        // Increment the invite code usage - fetch current uses first and increment
-        const { data: currentInvite } = await (supabase
-          .from("investor_invites") as any)
-          .select("uses")
-          .eq("code", inviteCode.toUpperCase())
-          .single();
-        
-        if (currentInvite) {
-          await (supabase
-            .from("investor_invites") as any)
-            .update({ uses: currentInvite.uses + 1 })
-            .eq("code", inviteCode.toUpperCase());
         }
 
         // Store the invite code in session storage for onboarding
@@ -298,7 +255,7 @@ const InvestorAuth = () => {
 
         toast({
           title: "Welcome to the network!",
-          description: `You've been invited by ${codeValidation.inviterName}.`,
+          description: `You've been invited by ${codeValidation?.inviterName || "an investor"}.`,
         });
         navigate("/investor/onboarding");
       }
@@ -342,37 +299,18 @@ const InvestorAuth = () => {
           // User doesn't have investor role yet
           // Check if they have a valid invite code to add the role
           if (inviteCode && codeValidation?.valid) {
-            // Add investor role to existing user
-            const roleResult = await retryOperation(async () => {
-              const result = await supabase
-                .from("user_roles")
-                .insert({ user_id: data.user!.id, role: "investor" });
-              return { data: result.data, error: result.error };
-            });
+            // Add investor role using secure database function
+            const roleResult = await addInvestorRoleWithInvite(data.user.id, inviteCode);
 
-            if (roleResult.error) {
-              console.error("Failed to add investor role:", roleResult.error);
+            if (!roleResult.success) {
+              console.error("Failed to add investor role:", roleResult.message);
               await supabase.auth.signOut();
               toast({
                 title: "Failed to join investor network",
-                description: "Please try again or contact support.",
+                description: roleResult.message || "Please try again or contact support.",
                 variant: "destructive",
               });
               return;
-            }
-
-            // Increment the invite code usage
-            const { data: currentInvite } = await (supabase
-              .from("investor_invites") as any)
-              .select("uses")
-              .eq("code", inviteCode.toUpperCase())
-              .single();
-            
-            if (currentInvite) {
-              await (supabase
-                .from("investor_invites") as any)
-                .update({ uses: currentInvite.uses + 1 })
-                .eq("code", inviteCode.toUpperCase());
             }
 
             // Store the invite code in session storage for onboarding
@@ -380,7 +318,7 @@ const InvestorAuth = () => {
 
             toast({
               title: "Welcome to the Investor Network!",
-              description: `You've been added by ${codeValidation.inviterName}. Complete your investor profile to continue.`,
+              description: `You've been added by ${codeValidation?.inviterName || "an investor"}. Complete your investor profile to continue.`,
             });
             navigate("/investor/onboarding");
             return;
