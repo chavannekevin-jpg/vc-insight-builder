@@ -27,7 +27,7 @@ import { useFounderReferral, processFounderReferral } from "@/hooks/useFounderRe
 const INVITED_PERKS = [
   {
     icon: FileText,
-    title: "Full VC Due Diligence Simulation",
+    title: "Full VC Audit",
     description: "The internal memo partners use to pass or pursue — see what VCs will say before you pitch"
   },
   {
