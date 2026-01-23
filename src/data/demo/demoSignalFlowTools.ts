@@ -100,66 +100,88 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
       }
     ],
     evidenceThreshold: {
-      grade: "B+",
-      verifiedPainPoints: [
-        "67% of deals lost to 'no decision' (validated across 85 interviews)",
-        "40% of rep time spent on deals that won't close (CRM data from 12 companies)",
-        "$2.1M average revenue leakage per 50-person team (calculated from pilot data)"
+      // Correct field names matching TypeScript interface EvidenceThreshold
+      evidenceGrade: "B",
+      verifiedPain: [
+        "67% of deals lost to 'no decision' — validated across 85 structured customer interviews with sales leaders at companies ranging from 100 to 1,000 employees",
+        "40% of sales rep time spent pursuing deals that ultimately won't close — quantified through CRM activity analysis across 12 pilot companies with combined 450 sales reps",
+        "$2.1M average annual revenue leakage per 50-person sales team — calculated using closed-lost deal data, win rates, and opportunity-to-close ratios from SignalFlow's pilot customer base",
+        "3-4 week average deal slip before eventual loss — measured through calendar pattern analysis showing declining meeting frequency as leading indicator",
+        "Current forecasting tools achieve only 45% accuracy at 90-day horizon — compared against actual outcomes across 15 quarters of historical data from pilot customers"
       ],
-      unverifiedClaims: [
-        "Claim that current tools 'catch problems too late' - would benefit from timing data",
-        "Pattern detection at 45 days before loss - needs larger sample validation"
+      unverifiedPain: [
+        "Claim that AI prediction can identify at-risk deals 45 days before outcome — early data is promising but needs validation across larger sample sizes and more industry verticals",
+        "Assumption that mid-market sales teams have same problem intensity as enterprise — may need more segmented evidence by company size and deal complexity",
+        "Pattern detection accuracy improvement from 82% to 91% over 6 months — based on small cohort of early customers, needs replication",
+        "Claim that managers currently spend 15+ hours/week on deal reviews — based on self-reported data, would benefit from time-tracking validation"
       ],
       whatVCsConsiderVerified: [
-        "Third-party validation (analyst reports, industry surveys)",
-        "Customer interviews (especially with specific quotes)",
-        "Quantified impact with clear methodology"
+        "Third-party validation from industry analysts (Gartner, Forrester) — SignalFlow has had 2 analyst briefings but no formal coverage yet",
+        "Customer interviews with specific, quotable pain points and quantified impact — SignalFlow has 85 documented interviews, exceeding Seed benchmarks",
+        "Pilot data with measurable outcomes before/after implementation — SignalFlow has 12 companies with 3+ months of usage data",
+        "Competitive loss data showing why customers chose you over alternatives — needs more systematic win/loss analysis documentation",
+        "Industry survey data from reputable third-party sources — would strengthen the '67% no decision' statistic with external validation"
       ],
-      evidenceYoureMissing: [
-        "External validation from industry analysts",
-        "Competitive loss data from target customers (why they didn't choose alternatives)"
+      missingEvidence: [
+        "External validation from Gartner or Forrester analysts confirming the 'no decision' problem scale",
+        "Systematic competitive win/loss analysis showing differentiation from Gong and Clari",
+        "Longitudinal data showing prediction accuracy holds across different industries and deal types",
+        "Customer churn data from competitors showing dissatisfaction with current solutions",
+        "ROI case studies with named logos and specific before/after metrics"
       ]
     },
     founderBlindSpot: {
-      exaggerations: [
-        "The 89% prediction accuracy claim needs context - what's the baseline? Random guess? Current manager intuition?"
+      // Correct field names matching TypeScript interface FounderBlindSpot  
+      potentialExaggerations: [
+        "The 89% prediction accuracy claim is compelling but may be overstated without clear baseline comparison — random chance in deal outcomes is around 50%, manager intuition is typically 60-70%, so 89% needs context to understand the actual improvement magnitude",
+        "The '45 days before outcome' prediction window may be optimistic — early data shows wide variance (20-60 days) depending on deal complexity and sales cycle length",
+        "Claiming to save '$2.1M per organization' is powerful but assumes every organization has 50-person sales team and similar deal economics — actual savings likely vary significantly by company profile"
       ],
       misdiagnoses: [
-        "Framing this as a 'prediction problem' when some VCs may see it as a 'sales execution problem' that doesn't need AI"
+        "Framing this as a 'prediction problem' when some VCs may see it as a 'sales execution problem' that doesn't require AI — the counterargument is that better sales management, coaching, or process discipline could address the symptoms without technology investment",
+        "Positioning the product as 'complementary to Gong' may be strategic mistake — if Gong adds prediction features, the 'complementary' positioning collapses. May need to more aggressively position as 'alternative to' rather than 'addition to'",
+        "Assuming the mid-market segment has unique needs that justify a focused solution — enterprise solutions often move downmarket, and the feature gap may not be sustainable"
       ],
       assumptions: [
-        "Assumes mid-market has same problem as enterprise - may need more segmented evidence",
-        "Assumes sales leaders will trust AI recommendations - adoption risk"
+        "Assumes mid-market sales organizations have budget authority for €14K ACV tools — economic pressures may push decision-making up to enterprise or down to self-serve price points",
+        "Assumes sales leaders will trust AI recommendations enough to change behavior — adoption risk is real, and 'prediction tools' have historically faced skepticism",
+        "Assumes 5-minute integration is sufficient for enterprise-grade security and compliance requirements — mid-market companies with enterprise aspirations may have stricter IT requirements",
+        "Assumes 85% WAU will translate to renewals — engagement doesn't always equal perceived value, especially if predictions don't visibly improve outcomes"
       ],
       commonMistakes: [
-        "Over-indexing on the technical solution vs. the business outcome",
-        "Not addressing the 'do nothing' competitor clearly enough"
+        "Over-indexing on technical accuracy metrics (89% prediction) vs. business outcome metrics (deals saved, revenue recovered) — VCs invest in business outcomes, not model performance",
+        "Not addressing the 'do nothing' competitor clearly enough — for many sales orgs, the status quo (manager gut + Salesforce reports) is 'good enough'",
+        "Underestimating Gong's ability to add prediction features — Gong has more data, more customers, and more resources. The 'recording vs. prediction' differentiation may not be durable",
+        "Focusing on product features over distribution advantage — in competitive markets, go-to-market velocity often matters more than product differentiation"
       ]
     },
     caseStudy: {
       company: "Gong",
       sector: "Sales Tech / Revenue Intelligence",
-      problem: "Enterprise sales teams lacked visibility into what was actually happening on calls and why deals were won or lost",
-      fix: "Built AI-powered conversation intelligence that records, transcribes, and analyzes sales calls to surface winning patterns",
-      outcome: "Grew to $200M+ ARR and $7.25B valuation by owning 'reality capture' in enterprise sales",
-      timeframe: "5 years from founding to category leadership"
+      problem: "Enterprise sales teams lacked visibility into what was actually happening on customer calls. Win/loss reasons were based on rep self-reporting, which was often inaccurate or incomplete. Managers couldn't coach effectively without objective data on conversation patterns.",
+      fix: "Built AI-powered conversation intelligence platform that records, transcribes, and analyzes every sales call. Surfaced patterns from winning deals (talk-to-listen ratios, competitive mentions, pricing discussions) and made them coachable. Created 'reality capture' — objective truth about sales conversations vs. subjective CRM notes.",
+      outcome: "Grew to $200M+ ARR and $7.25B valuation, becoming the dominant player in 'conversation intelligence.' Achieved 95%+ retention rates and industry-leading NPS. Created an entirely new category and forced Salesforce, Microsoft, and others to respond with competitive offerings.",
+      timeframe: "7 years from founding (2015) to $7B+ valuation (2022), with hypergrowth during 2020-2021 as remote selling created urgent demand for call visibility"
     },
     leadInvestorRequirements: {
-      investorParagraph: "A strong lead investor for SignalFlow needs to believe that AI-native sales intelligence represents a generational shift from legacy tools. They should have pattern recognition in B2B SaaS and comfort with competitive markets where execution determines winners.",
+      investorParagraph: "The ideal lead investor for SignalFlow has deep conviction in the 'AI-native sales intelligence' thesis and believes that prediction will become the new battleground after recording. They should have pattern recognition from investing in competitive B2B SaaS markets where execution speed determined winners — companies like Datadog, Figma, or Notion that won through product excellence rather than incumbent distribution. Critical: they need to be comfortable with the competitive dynamics of Gong's mid-market expansion and believe a focused player can win segment ownership.",
       requirements: [
-        "Track record investing in competitive B2B SaaS markets",
-        "Ability to help with enterprise sales motion",
-        "Network in sales/RevOps leadership community"
+        "Track record investing in competitive B2B SaaS categories where a focused player beat well-funded incumbents",
+        "Ability to help with enterprise sales motion — network of sales leaders, CROs, and RevOps executives for customer intros and hiring",
+        "Understanding of ML/AI company dynamics — data flywheel effects, model improvement curves, and technical moat building",
+        "Pattern recognition in 'category creation' vs. 'feature addition' — believing SignalFlow can own 'deal prediction' as Gong owns 'conversation intelligence'"
       ],
       dealbreakers: [
-        "Concern that Gong will inevitably dominate mid-market",
-        "Belief that AI in sales is overhyped",
-        "Requirement for €100K+ MRR before investing"
+        "Belief that Gong will inevitably dominate mid-market — if investor thinks the outcome is predetermined, they won't be helpful during competitive battles",
+        "Requirement for €100K+ MRR before investing — SignalFlow is at €32K and needs investors who believe in the team and market, not just metrics",
+        "Expectation of consumer-style viral growth — B2B sales tools sell through relationships and demonstrations, not viral loops",
+        "Discomfort with AI/ML infrastructure investment — building accurate prediction models requires significant upfront investment in data and engineering"
       ],
       wantToSee: [
-        "Evidence of product-led growth potential",
-        "Clear differentiation from conversation intelligence tools",
-        "Founder domain expertise in sales operations"
+        "Evidence of product-led growth potential — self-serve or bottom-up adoption signals that reduce CAC dependency",
+        "Clear competitive win documentation — specific deals won against Gong/Clari with reasons and customer quotes",
+        "Founder domain expertise validation — references from Salesforce and Datadog colleagues confirming depth of experience",
+        "Customer concentration analysis — ensuring early traction isn't dependent on a small number of relationships"
       ]
     }
   },
@@ -228,79 +250,111 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
     technicalDefensibility: {
       defensibilityScore: 65,
       proofPoints: [
-        "2M+ deal outcomes in training dataset",
-        "12 integration connectors built",
-        "Proprietary 'why' layer vs. commodity transcription"
+        "2M+ historical deal outcomes in proprietary training dataset — accumulated through partnerships with sales analytics platforms and early customer integrations. This dataset includes structured outcome labels (won, lost, no-decision) with associated conversation patterns, email velocity metrics, and calendar signals",
+        "12 production-grade integration connectors built and maintained — covering major CRMs (Salesforce, HubSpot, Pipedrive), email systems (Gmail, Outlook, Exchange), calendar platforms, and conversation intelligence tools (including Gong integration for complementary use cases)",
+        "Proprietary 'why' prediction layer that identifies causal factors, not just probability — while competitors focus on 'what' and 'when,' SignalFlow surfaces the 3-5 specific factors driving each deal's trajectory (champion engagement, multi-threading depth, procurement timing, competitive mentions, etc.)",
+        "89% prediction accuracy at 45-day horizon — validated across 28 customer deployments with combined 2,400+ deal outcomes. Accuracy improves to 91% for customers with 6+ months of historical data",
+        "5-minute integration architecture — developed custom OAuth and API integration patterns that allow enterprise-grade security without enterprise-grade implementation complexity. Enables product-led growth motion uncommon in B2B sales tools"
       ],
       expectedProofs: [
-        "Patent filings or trade secret documentation",
-        "Independent validation of accuracy claims",
-        "Published research or technical blog posts"
+        "Patent filings or trade secret documentation — VCs expect formal IP protection for AI companies. Provisional patents on core prediction methodology would significantly strengthen the moat narrative",
+        "Independent validation of accuracy claims — third-party audit or academic partnership validating the 89% accuracy claim would de-risk the core product promise",
+        "Published research, whitepapers, or technical blog posts — demonstrating thought leadership and creating talent attraction in competitive ML hiring market",
+        "Security certifications (SOC 2 Type II, ISO 27001) — mid-market companies increasingly require compliance before procurement, especially for tools touching CRM and email data",
+        "Customer data contribution agreements — formalizing how customer usage data improves the model creates explicit data moat with legal protection"
       ],
       gaps: [
-        "No patents filed yet",
-        "Accuracy claims not independently validated",
-        "Data moat could be replicated with sufficient capital"
+        "No patents filed yet — the provisional patent strategy has been discussed but not executed. Window for novel claims may narrow as competitors file in adjacent areas",
+        "Accuracy claims not independently validated — all accuracy metrics are internal. External validation would significantly strengthen investor confidence and customer sales process",
+        "Data moat could theoretically be replicated with sufficient capital — Gong has 4,000+ customers generating training data. The moat is execution speed, not absolute defensibility",
+        "CTO-dependent architecture — significant technical decisions still require CTO involvement. Need to build engineering team depth for scalability",
+        "Limited published content — no research papers, technical blogs, or conference talks establishing thought leadership in deal prediction domain"
       ],
-      vcEvaluation: "Solid technical foundation but moat is more about execution speed than defensible IP. Recommend accelerating patent strategy."
+      vcEvaluation: "SignalFlow's technical defensibility is moderate — stronger than average for Seed but not yet 'durable moat' territory. The 2M deal outcomes dataset is genuinely valuable, and the prediction accuracy is impressive. However, the moat is primarily about execution velocity rather than defensible IP. Gong could build similar features with their existing data advantage; the question is whether they will, and how fast. My recommendation: accelerate patent filings in the next 30 days, pursue SOC 2 certification to unlock enterprise pipeline, and begin building public technical content to establish category authority. Score: 65/100 — at bar for Seed, but needs strengthening for Series A."
     },
     commoditizationTeardown: {
+      // Correct field names matching TypeScript interface CommoditizationTeardown
       overallRisk: "Medium",
       features: [
         {
-          name: "CRM Integration",
-          riskLevel: "High",
-          timeToClone: "2-3 months",
-          defensibility: "Commodity - all competitors have this"
+          feature: "CRM Integration Layer",
+          commoditizationRisk: "High",
+          timeToClone: "2-3 months for any competent engineering team",
+          defensibility: "Commodity feature — Salesforce, HubSpot, and Pipedrive APIs are well-documented. Every sales tool has CRM integration. This is table stakes, not differentiation. SignalFlow's advantage is speed (5-minute setup) but this is easily replicable."
         },
         {
-          name: "Deal Scoring",
-          riskLevel: "Medium",
-          timeToClone: "6-9 months",
-          defensibility: "Moderate - requires training data and iteration"
+          feature: "Basic Deal Scoring (Win Probability)",
+          commoditizationRisk: "High",
+          timeToClone: "3-4 months with available ML frameworks",
+          defensibility: "Low — basic deal scoring using standard features (deal size, stage, age, activity count) is available in Salesforce Einstein and HubSpot. SignalFlow's differentiation is NOT basic scoring but the 'why' layer. However, basic scoring alone is easily commoditized."
         },
         {
-          name: "Predictive 'Why' Analysis",
-          riskLevel: "Low",
-          timeToClone: "12-18 months",
-          defensibility: "Strong - requires deep ML expertise and proprietary data"
+          feature: "Email and Calendar Pattern Analysis",
+          commoditizationRisk: "Medium",
+          timeToClone: "6-8 months including data pipeline development",
+          defensibility: "Moderate — requires OAuth integrations, data normalization, and pattern extraction. People.ai and Outreach have similar capabilities. The moat is in how the data is used for prediction, not the data collection itself."
+        },
+        {
+          feature: "Conversation Intelligence (Call Transcription + Analysis)",
+          commoditizationRisk: "Medium-High",
+          timeToClone: "4-6 months using commercial transcription APIs",
+          defensibility: "Low for transcription (commodity via Deepgram, AssemblyAI). Higher for analysis patterns, but Gong has 5+ years of head start. SignalFlow wisely positions as 'complementary' rather than competing on this axis."
+        },
+        {
+          feature: "Predictive 'Why' Analysis (Causal Factor Identification)",
+          commoditizationRisk: "Low",
+          timeToClone: "12-18 months for accurate replication",
+          defensibility: "Strong — this is SignalFlow's core IP. Identifying the 3-5 specific factors driving deal outcomes (champion engagement level, multi-threading depth, competitive positioning, procurement timing signals) requires: (1) large labeled outcome dataset, (2) domain-specific feature engineering, (3) extensive iteration on what signals matter. Competitors would need to replicate not just the model, but the learnings from 2M+ deal outcomes."
+        },
+        {
+          feature: "45-Day Advance Prediction with 89% Accuracy",
+          commoditizationRisk: "Low",
+          timeToClone: "18-24 months to match claimed accuracy",
+          defensibility: "Strong — the accuracy claim at this prediction horizon is the core product promise. Achieving it requires: (1) sufficient training data, (2) correct feature engineering, (3) extensive backtesting and iteration. Even with resources, this takes time. The data network effect also means early movers compound their advantage."
         }
       ]
     },
     competitorBuildAnalysis: {
       couldBeBuilt: true,
-      estimatedTime: "12-18 months",
-      requiredResources: "10-15 engineers, $5M+ investment",
+      estimatedTime: "12-18 months for feature parity, longer for accuracy match",
+      requiredResources: "10-15 senior engineers with ML expertise, $5M+ engineering investment, 12+ months of data accumulation, domain experts from sales operations",
       barriers: [
-        "Training data accumulation takes time regardless of resources",
-        "Domain expertise in sales ops is specialized",
-        "Gong/Clari would need to restructure core product architecture"
+        "Training data accumulation takes time regardless of resources — Gong has more data, but their data is structured for conversation analysis, not deal outcome prediction. Restructuring would take 6-12 months minimum.",
+        "Domain expertise in sales operations is specialized — you can't just hire ML engineers; you need people who deeply understand enterprise sales processes, forecasting methodologies, and buyer behavior patterns. SignalFlow's CEO's 8 years at Salesforce is hard to replicate.",
+        "Gong/Clari would need to restructure core product architecture — their products are built around different primary use cases (conversation intelligence / revenue forecasting). Adding prediction as a bolt-on is easier than prediction-first architecture.",
+        "Mid-market focus requires different GTM motion — enterprise sales companies don't naturally sell to mid-market. The product, pricing, and go-to-market all need adjustment, which creates organizational friction.",
+        "Existing customers may resist product pivots — Gong's customers pay for conversation intelligence. Bundling prediction features may not align with existing buyer expectations and could create confusion."
       ],
-      verdict: "Buildable by well-funded competitor, but execution window is 12-18 months. Key is to establish market position and customer density before competitive response."
+      verdict: "SignalFlow's core technology is absolutely buildable by a well-funded competitor with 12-18 months of focused effort. The key question is not 'can they build it?' but 'will they prioritize it?' Gong is focused on enterprise expansion and potential IPO. Clari is focused on revenue platform positioning. Neither has announced mid-market + prediction focus. SignalFlow's window is 12-18 months to establish market position, customer density, and brand recognition. If they reach €150K+ MRR and 75+ customers in that window, they become acquisition target rather than competitive afterthought. The race is on."
     },
     caseStudy: {
       company: "Clari",
-      sector: "Revenue Operations",
-      problem: "Sales leaders couldn't forecast revenue accurately, leading to missed targets and board surprises",
-      fix: "Built revenue platform that uses AI to analyze pipeline and predict quarterly outcomes",
-      outcome: "Scaled to $40M+ ARR and $2.6B valuation by owning forecasting workflow",
-      timeframe: "7 years from founding to unicorn status"
+      sector: "Revenue Operations / Sales Forecasting",
+      problem: "Sales leaders couldn't forecast revenue accurately, leading to missed quarterly targets, board surprises, and loss of credibility. The root cause: CRM data was garbage-in-garbage-out, reps didn't update deals accurately, and managers made gut-feel adjustments that were often wrong. The result: average forecast accuracy of 40-50%, meaning companies frequently missed or overshot targets by 20%+ — devastating for public companies and board relationships.",
+      fix: "Built a revenue platform that uses AI to analyze pipeline independently of rep self-reporting. Clari captures signals from email, calendar, and activity patterns to 'call the call' on deals — identifying which opportunities are real vs. sandbagged or overstated. The platform provides CROs with a single source of truth for revenue forecasting, replacing spreadsheet chaos with automated, data-driven predictions. Key insight: don't ask reps to change behavior, observe their actual behavior and infer deal health.",
+      outcome: "Scaled to $100M+ ARR and $2.6B valuation by owning the forecasting workflow. Clari is now embedded in the quarterly close process at hundreds of enterprises. Key customers include Cisco, Zoom, and Dropbox. The product has expanded from forecasting into full 'revenue platform' positioning, competing with Salesforce Revenue Cloud. Clari proved that sales leaders will pay significantly for forecast accuracy — it's not a nice-to-have when your job depends on hitting the number.",
+      timeframe: "9 years from founding (2013) to unicorn status (2022). Growth accelerated dramatically during 2020-2021 as remote work made pipeline visibility even more critical. Raised $500M+ in total funding with most recent round at $2.6B valuation."
     },
     leadInvestorRequirements: {
-      investorParagraph: "Ideal investor has deep pattern recognition in developer tools and infrastructure, appreciating the technical moat being built. Should have helped B2B companies navigate competitive markets.",
+      investorParagraph: "The ideal Solution-focused investor for SignalFlow has deep pattern recognition in developer tools, infrastructure, and AI/ML companies. They should appreciate that technical moats take time to build and compound with usage. Critical: they need to understand the difference between 'buildable' and 'will be built' — many things are technically possible that never get prioritized by incumbents. The best investors have seen focused players beat well-resourced incumbents through superior product and execution velocity.",
       requirements: [
-        "Technical depth to evaluate ML architecture",
-        "B2B SaaS scaling experience",
-        "Patience for mid-market sales cycles"
+        "Technical depth to evaluate ML architecture, training data quality, and model validation methodology — ability to distinguish marketing claims from genuine technical innovation",
+        "B2B SaaS scaling experience with companies that grew from €30K to €500K+ MRR — understanding the operational challenges of this transition",
+        "Patience for mid-market sales cycles (30-60 days) and willingness to accept slower-than-consumer growth rates",
+        "Network of senior engineering and ML talent for hiring support — the next 12 months require significant technical team expansion",
+        "Experience with companies that faced well-funded competitive threats and won through focus and execution"
       ],
       dealbreakers: [
-        "Expecting consumer-like viral growth",
-        "Discomfort with AI/ML investment required"
+        "Expecting consumer-like viral growth coefficients — B2B sales tools don't spread virally, they sell through relationships and demonstrations",
+        "Discomfort with continued AI/ML infrastructure investment — SignalFlow needs to keep improving prediction accuracy, which requires ongoing engineering investment",
+        "Pushing for immediate enterprise pivot — the mid-market focus is strategic, and premature upmarket movement could dilute the positioning",
+        "Requirement for extensive patent portfolio before investing — patents are important but Seed-stage companies rarely have comprehensive IP protection"
       ],
       wantToSee: [
-        "Clear path to enterprise tier",
-        "Evidence of technical hiring ability",
-        "Product roadmap for next 12 months"
+        "Clear path to enterprise tier for customers that grow — €50K+ ACV enterprise offering roadmap for Year 2",
+        "Evidence of technical hiring ability — can the founders recruit strong ML engineers despite FAANG competition?",
+        "Product roadmap for next 12 months with clear milestones — what features unlock the next growth phase?",
+        "Competitive win documentation with customer quotes — proof that the 'prediction vs. recording' positioning resonates in sales process"
       ]
     }
   },
@@ -361,31 +415,53 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
       }
     ],
     bottomsUpTAM: {
-      tamValue: 2500000000,
-      samValue: 630000000,
-      somValue: 112000000,
-      methodology: "180K mid-market B2B companies with 20+ person sales teams × €14K ACV = €2.5B. Filtered to tech-forward industries in US + Western Europe for SAM. SOM based on reachable accounts through current channels.",
-      assumptions: [
-        "Mid-market defined as 100-1000 employees",
-        "Only companies with 20+ person sales teams",
-        "Average contract value of €14K",
-        "Tech-forward industries only for SAM"
+      // Correct field names matching TypeScript interface BottomsUpTAM
+      targetSegments: [
+        { 
+          segment: "Mid-market B2B companies (100-500 employees) with 20+ person sales teams in tech-forward industries (SaaS, fintech, healthtech)", 
+          count: 85000, 
+          acv: 14000, 
+          tam: 1190000000 
+        },
+        { 
+          segment: "Upper mid-market (500-1000 employees) with complex sales motions and RevOps maturity", 
+          count: 45000, 
+          acv: 18000, 
+          tam: 810000000 
+        },
+        { 
+          segment: "SMB tier (50-100 employees) with aggressive growth targets adopting enterprise tools early", 
+          count: 50000, 
+          acv: 10000, 
+          tam: 500000000 
+        }
       ],
-      vcFeedback: "Reasonable methodology. The €2.5B TAM supports a €100M+ outcome. SAM/SOM filters are realistic."
+      totalTAM: 2500000000,
+      sam: 630000000,
+      som: 112000000,
+      methodology: "Bottom-up sizing based on verifiable data sources: LinkedIn Sales Navigator count of B2B companies by employee size, filtered for industries with documented sales tech adoption (SaaS: 40%, fintech: 35%, healthtech: 25% penetration rates). ACV validated against SignalFlow's current pricing (€14K average) and comparable companies (Gong SMB tier: $12K, Clari mid-market: $18K). SAM filtered to US + Western Europe where sales tech adoption is highest. SOM represents reachable accounts through current channels (product-led + outbound) with realistic conversion assumptions (2% of SAM in Year 1).",
+      assumptions: [
+        "Mid-market defined as 100-1000 employees with B2B revenue models — excludes retail, hospitality, and industries without complex sales motions",
+        "Minimum 20-person sales team threshold — below this, deal prediction tools have limited value and budget is typically absent",
+        "Average contract value of €14K — based on SignalFlow's current pricing with seat-based model (€1K/seat × 14 average seats)",
+        "Tech-forward industries only for SAM — SaaS, fintech, healthtech, and professional services where RevOps maturity enables adoption",
+        "US + Western Europe geographic focus — sales tech adoption in APAC and emerging markets is 3-5 years behind, limiting near-term SAM",
+        "25% annual growth in addressable market — driven by mid-market companies adopting enterprise-grade sales tools"
+      ]
     },
     marketReadinessIndex: {
+      // Correct field names matching TypeScript interface MarketReadinessIndex
       overallScore: 78,
-      factors: {
-        regulatoryPressure: { score: 40, evidence: "No regulatory driver, but economic pressure to optimize sales efficiency" },
-        marketUrgency: { score: 85, evidence: "85% of sales orgs increasing AI spend in 2025" },
-        willingnessToPay: { score: 82, evidence: "Revenue intelligence already a proven budget category" },
-        switchingFriction: { score: 65, evidence: "CRM integration creates moderate switching costs" }
-      }
+      regulatoryPressure: { score: 40, evidence: "No direct regulatory driver for deal prediction tools. However, economic pressure to optimize sales efficiency is intensifying — boards and investors are scrutinizing sales productivity metrics more closely post-2022 market correction. Some indirect pressure from revenue recognition regulations (ASC 606) requiring more accurate forecasting." },
+      urgency: { score: 85, evidence: "85% of sales organizations surveyed plan to increase AI tool spending in 2025 (Gartner Sales Tech Survey). Economic conditions are creating urgency: CFOs are demanding forecast accuracy, and 'no decision' deals tie up resources. Mid-market companies feel this pressure acutely as they compete against well-resourced enterprise players." },
+      willingnessToPay: { score: 82, evidence: "Revenue intelligence is a proven budget category — Gong, Clari, and Chorus have normalized €10-50K/year spending for sales intelligence. Mid-market willingness is validated by SignalFlow's €14K ACV with 28 paying customers and minimal pricing objections in sales process. Budget typically comes from RevOps, Sales Enablement, or CRO discretionary spending." },
+      switchingFriction: { score: 65, evidence: "Moderate switching friction created by CRM integration depth and historical data accumulation. Customers with 6+ months of usage report 'stickiness' from accumulated predictions and learned patterns. However, no lock-in comparable to core CRM systems — need to build deeper integration moats." }
     },
     vcMarketNarrative: {
-      howPartnerWouldPitch: "Revenue intelligence is a proven category — Gong and Clari built $10B+ in combined value. But they're enterprise-focused. The mid-market is underserved and adopting fast. SignalFlow is building the Gong for mid-market with better technology.",
-      marketTiming: "Favorable. AI adoption surge meets mid-market RevOps maturation.",
-      whyNow: "Three converging trends: (1) AI tools becoming accessible to mid-market budgets, (2) Post-pandemic shift to remote selling requires digital visibility, (3) Economic pressure making every deal count."
+      // Correct field names matching TypeScript interface VCMarketNarrative
+      pitchToIC: "Revenue intelligence is a proven, multi-billion dollar category — Gong and Clari have built $10B+ in combined enterprise value, validating that sales organizations will pay for better visibility. But here's the gap: both are enterprise-focused with 6-figure ACVs and 6-month implementations. The mid-market — 180,000 companies with 20+ person sales teams — is dramatically underserved. They have the same problems (67% of deals lost to 'no decision') but can't afford enterprise solutions. SignalFlow is building the category-defining solution for this segment: prediction-first (vs. recording-first), 5-minute implementation (vs. weeks), and €14K ACV (vs. €100K+). The team is exceptional — CEO with 8 years at Salesforce, CTO from Datadog's ML team with Stanford PhD. Early metrics are strong: €32K MRR, 15% MoM growth, 4.9x LTV:CAC, NPS 74. This is a Seed investment in a proven category with underserved segment and exceptional team.",
+      marketTiming: "Optimal timing driven by three converging forces: (1) AI capabilities now accessible to mid-market budgets — GPT-4 class models enable prediction features that previously required enterprise ML teams, (2) Post-pandemic permanence of remote/hybrid selling creates sustained demand for digital visibility tools, (3) Economic pressure making every deal count — CFOs are demanding forecast accuracy, making 'no decision' losses unacceptable. The 2023-2024 market correction has actually helped: mid-market companies are investing in efficiency tools while pulling back on growth experiments.",
+      whyNow: "Category timing is favorable for multiple reasons: (1) Gong's success validated the market but their enterprise focus left mid-market whitespace, (2) AI infrastructure costs have dropped 90% since 2021, enabling prediction features at mid-market price points, (3) RevOps as a function has matured in mid-market companies — they now have budget owners who understand and buy these tools, (4) Remote selling normalization means more data is being generated digitally, improving prediction model accuracy, (5) The 'conversation intelligence' phase is maturing — 'deal prediction' is the next wave, and first-mover advantage is still available."
     },
     caseStudy: {
       company: "HubSpot",
