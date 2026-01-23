@@ -133,9 +133,14 @@ export default function Intake() {
       // Invalidate company query cache before showing animation
       await queryClient.invalidateQueries({ queryKey: ["company"] });
 
-      // Store company name and trigger entrance animation
-      setCreatedCompanyName(extractedName);
-      setShowEntranceAnimation(true);
+      // Close the wizard first, then trigger entrance animation
+      setDeckWizardOpen(false);
+      
+      // Small delay for wizard exit animation, then trigger entrance
+      setTimeout(() => {
+        setCreatedCompanyName(extractedName);
+        setShowEntranceAnimation(true);
+      }, 300);
     } catch (error: any) {
       console.error("Deck import error:", error);
       toast({

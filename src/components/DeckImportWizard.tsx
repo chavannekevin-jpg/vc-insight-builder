@@ -402,11 +402,11 @@ export const DeckImportWizard = ({
     // Show completion step with smooth transition
     setStep('complete');
     
-    // Wait briefly to show success, then trigger import and navigation
+    // Shorter delay since entrance animation handles the transition
     setTimeout(() => {
       onImportComplete(finalData);
-      // Parent will navigate, wizard will close when component unmounts
-    }, 1200);
+      // Parent will close wizard and trigger entrance animation
+    }, 400);
   };
 
   // Group sections by category for better display
