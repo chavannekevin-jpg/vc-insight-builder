@@ -836,7 +836,7 @@ export const DashboardScorecard = ({
             
             <CollapsibleContent className="pt-4 space-y-4">
               {/* Section Cards Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4" data-tour-step="section-breakdown">
                 {MEMO_SECTION_ORDER.map((sectionName, index) => {
                   const section = scorecard.sections.find(s => s.section === sectionName);
                   if (!section) return null;
@@ -854,7 +854,7 @@ export const DashboardScorecard = ({
               {/* Investment Thesis Card - Collapsible Toggle */}
               {investmentThesis && (
                 <Collapsible open={isThesisExpanded} onOpenChange={setIsThesisExpanded}>
-                  <div className="mt-4 relative overflow-hidden rounded-xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 transition-all duration-300">
+                  <div className="mt-4 relative overflow-hidden rounded-xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 transition-all duration-300" data-tour-step="investment-thesis">
                     {/* Decorative gradient */}
                     <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-primary/20 via-secondary/20 to-transparent rounded-full blur-2xl opacity-60" />
                     
@@ -959,7 +959,7 @@ export const DashboardScorecard = ({
                   </CollapsibleTrigger>
                   
                   <CollapsibleContent className="pt-4">
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2" data-tour-step="strategic-tools">
                       {availableTools.map(tool => (
                         <MiniToolCard
                           key={tool.id}

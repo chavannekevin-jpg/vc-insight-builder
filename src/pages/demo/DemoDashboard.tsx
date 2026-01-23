@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { DemoLayout } from "@/components/demo/DemoLayout";
 import { DashboardScorecard } from "@/components/memo/DashboardScorecard";
 import { MemoVCQuickTake } from "@/components/memo/MemoVCQuickTake";
@@ -12,7 +13,8 @@ import type { MemoStructuredContent, MemoStructuredSection } from "@/types/memo"
 import type { ARCClassification } from "@/components/memo/DashboardScorecard";
 import { DemoWelcomeModal, useDemoWelcome } from "@/components/demo/DemoWelcomeModal";
 import { DemoSectionHelper } from "@/components/demo/DemoSectionHelper";
-
+import { useProductTour } from "@/hooks/useProductTour";
+import { ProductTourSpotlight } from "@/components/tour/ProductTourSpotlight";
 
 // ARC Classification for SignalFlow - matches the demo analysis
 const DEMO_ARC_CLASSIFICATION: ARCClassification = {
@@ -160,8 +162,28 @@ const buildMemoContent = (): MemoStructuredContent => {
 export default function DemoDashboard() {
   const navigate = useNavigate();
   const { showWelcome, showSectionHelper, isChecked, completeWelcome, dismissSectionHelper } = useDemoWelcome();
+  const tour = useProductTour(true); // true = demo mode
   const sectionTools = buildSectionToolsFromSignalFlow();
   const memoContent = buildMemoContent();
+
+  // Start tour after welcome modal completes
+  useEffect(() => {
+    if (isChecked && !showWelcome && !tour.hasCompletedTour && !tour.isActive) {
+      // Small delay to let the page settle after welcome modal closes
+      const timer = setTimeout(() => {
+        tour.startTour();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isChecked, showWelcome, tour.hasCompletedTour, tour.isActive]);
+
+  // Handler to restart tour from welcome modal
+  const handleRestartTour = () => {
+    tour.resetTour();
+    // Navigate to demo dashboard if not already there, then start tour
+    navigate('/demo');
+    setTimeout(() => tour.startTour(), 300);
+  };
 
   // Custom navigation handler for demo - redirects internal links to demo versions
   const handleNavigate = (path: string) => {
@@ -179,19 +201,23 @@ export default function DemoDashboard() {
   };
 
   return (
-    <DemoLayout currentPage="dashboard">
+    <DemoLayout currentPage="dashboard" onRestartTour={handleRestartTour}>
       {/* Welcome modal for first-time visitors */}
       {isChecked && <DemoWelcomeModal open={showWelcome} onComplete={completeWelcome} />}
       
+      {/* Product Tour */}
+      <ProductTourSpotlight
+        isActive={tour.isActive}
+        currentStep={tour.currentStep}
+        currentStepIndex={tour.currentStepIndex}
+        totalSteps={tour.totalSteps}
+        onNext={tour.nextStep}
+        onPrev={tour.prevStep}
+        onSkip={tour.skipTour}
+      />
+      
       <div className="px-6 py-8">
         <div className="max-w-4xl mx-auto space-y-8">
-          
-          {/* Section Helper - appears after welcome modal closes */}
-          {showSectionHelper && (
-            <div className="mb-2">
-              <DemoSectionHelper onDismiss={dismissSectionHelper} />
-            </div>
-          )}
           
           {/* Investment Readiness Scorecard - with FULL tool data and ARC */}
           <DashboardScorecard

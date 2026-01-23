@@ -24,6 +24,7 @@ import {
   Sparkles,
   Telescope,
   Home,
+  RotateCcw,
 } from "lucide-react";
 import {
   Sidebar,
@@ -52,6 +53,7 @@ import { DEMO_COMPANY } from "@/data/demo/demoSignalFlow";
 
 interface DemoSidebarProps {
   currentPage: 'dashboard' | 'market-lens' | 'fund-discovery' | 'profile' | 'analysis';
+  onRestartTour?: () => void;
 }
 
 // Define all menu items - matching real FounderSidebar structure
@@ -89,7 +91,7 @@ const socialItems = [
   { title: "Scoreboard", icon: Trophy, enabled: false },
 ];
 
-export function DemoSidebar({ currentPage }: DemoSidebarProps) {
+export function DemoSidebar({ currentPage, onRestartTour }: DemoSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { state, setOpen } = useSidebar();
@@ -178,61 +180,76 @@ export function DemoSidebar({ currentPage }: DemoSidebarProps) {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainMenuItems.map((item) => (
-                <SidebarMenuItem key={item.path + item.title}>
-                  <SidebarMenuButton
-                    onClick={() => handleNavigation(item.path, item.enabled)}
-                    className={cn(
-                      "w-full transition-all",
-                      !item.enabled && "opacity-40 cursor-not-allowed",
-                      isActive(item.path) && item.enabled
-                        ? "bg-primary/20 text-primary border-l-2 border-primary"
-                        : item.enabled 
-                          ? "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
-                          : "text-muted-foreground"
-                    )}
-                  >
-                    <item.icon className="w-4 h-4 shrink-0" />
-                    {!collapsed && (
-                      <span className="flex items-center gap-2">
-                        {item.title}
-                        {!item.enabled && <Lock className="w-3 h-3 text-muted-foreground" />}
-                      </span>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {mainMenuItems.map((item) => {
+                // Add tour step data attributes for specific items
+                const tourStep = item.title === "My Profile" ? "sidebar-profile" 
+                  : item.title === "VC Memorandum" ? "sidebar-memo" 
+                  : undefined;
+                
+                return (
+                  <SidebarMenuItem key={item.path + item.title}>
+                    <SidebarMenuButton
+                      onClick={() => handleNavigation(item.path, item.enabled)}
+                      data-tour-step={tourStep}
+                      className={cn(
+                        "w-full transition-all",
+                        !item.enabled && "opacity-40 cursor-not-allowed",
+                        isActive(item.path) && item.enabled
+                          ? "bg-primary/20 text-primary border-l-2 border-primary"
+                          : item.enabled 
+                            ? "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                            : "text-muted-foreground"
+                      )}
+                    >
+                      <item.icon className="w-4 h-4 shrink-0" />
+                      {!collapsed && (
+                        <span className="flex items-center gap-2">
+                          {item.title}
+                          {!item.enabled && <Lock className="w-3 h-3 text-muted-foreground" />}
+                        </span>
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
               
-              {/* Premium Tools */}
-              {premiumTools.map((item) => (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton
-                    onClick={() => handleNavigation(item.path, item.enabled)}
-                    className={cn(
-                      "w-full transition-all",
-                      !item.enabled && "opacity-40 cursor-not-allowed",
-                      isActive(item.path) && item.enabled
-                        ? "bg-primary/20 text-primary border-l-2 border-primary"
-                        : item.enabled 
-                          ? "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
-                          : "text-muted-foreground"
-                    )}
-                  >
-                    <item.icon className="w-4 h-4 shrink-0" />
-                    {!collapsed && (
-                      <span className="flex items-center gap-2">
-                        {item.title}
-                        {item.badge && item.enabled && (
-                          <span className="px-1.5 py-0.5 bg-primary/20 text-primary rounded text-[10px] font-bold">
-                            {item.badge}
-                          </span>
-                        )}
-                        {!item.enabled && <Lock className="w-3 h-3 text-muted-foreground" />}
-                      </span>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {premiumTools.map((item) => {
+                // Add tour step data attributes for specific items
+                const tourStep = item.title === "VC Network" ? "sidebar-network" 
+                  : item.title === "Market Lens" ? "sidebar-market-lens" 
+                  : undefined;
+                
+                return (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton
+                      onClick={() => handleNavigation(item.path, item.enabled)}
+                      data-tour-step={tourStep}
+                      className={cn(
+                        "w-full transition-all",
+                        !item.enabled && "opacity-40 cursor-not-allowed",
+                        isActive(item.path) && item.enabled
+                          ? "bg-primary/20 text-primary border-l-2 border-primary"
+                          : item.enabled 
+                            ? "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                            : "text-muted-foreground"
+                      )}
+                    >
+                      <item.icon className="w-4 h-4 shrink-0" />
+                      {!collapsed && (
+                        <span className="flex items-center gap-2">
+                          {item.title}
+                          {item.badge && item.enabled && (
+                            <span className="px-1.5 py-0.5 bg-primary/20 text-primary rounded text-[10px] font-bold">
+                              {item.badge}
+                            </span>
+                          )}
+                          {!item.enabled && <Lock className="w-3 h-3 text-muted-foreground" />}
+                        </span>
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -377,6 +394,19 @@ export function DemoSidebar({ currentPage }: DemoSidebarProps) {
           </Button>
         ) : (
           <div className="space-y-3">
+            {/* Take the tour again button */}
+            {onRestartTour && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onRestartTour}
+                className="w-full gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Take the tour again
+              </Button>
+            )}
+            
             <div className="flex items-start gap-2 p-3 rounded-xl bg-primary/10 backdrop-blur-sm border border-primary/20">
               <Sparkles className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
