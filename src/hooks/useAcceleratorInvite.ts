@@ -8,6 +8,7 @@ interface AcceleratorInviteInfo {
   discountPercent: number;
   isValid: boolean;
   remainingUses: number | null;
+  customMessage: string | null;
 }
 
 export function useAcceleratorInvite(inviteCode: string | null) {
@@ -56,6 +57,7 @@ export function useAcceleratorInvite(inviteCode: string | null) {
           discountPercent: invite.discount_percent,
           isValid: true,
           remainingUses,
+          customMessage: invite.custom_message || null,
         });
       } catch (error) {
         console.error("Error validating accelerator invite:", error);

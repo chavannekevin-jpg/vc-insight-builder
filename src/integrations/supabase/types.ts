@@ -21,6 +21,7 @@ export type Database = {
           code: string
           created_at: string | null
           created_by: string | null
+          custom_message: string | null
           discount_percent: number
           expires_at: string | null
           id: string
@@ -34,6 +35,7 @@ export type Database = {
           code: string
           created_at?: string | null
           created_by?: string | null
+          custom_message?: string | null
           discount_percent?: number
           expires_at?: string | null
           id?: string
@@ -47,6 +49,7 @@ export type Database = {
           code?: string
           created_at?: string | null
           created_by?: string | null
+          custom_message?: string | null
           discount_percent?: number
           expires_at?: string | null
           id?: string

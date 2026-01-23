@@ -19,7 +19,8 @@ import {
   Shield,
   Loader2,
   Rocket,
-  Info
+  Info,
+  MessageCircle
 } from "lucide-react";
 import { useAcceleratorInvite, incrementAcceleratorInviteUsage } from "@/hooks/useAcceleratorInvite";
 
@@ -338,6 +339,16 @@ export default function AcceleratorInviteLanding() {
                         : `Your ${inviteInfo.discountPercent}% discount will be applied at checkout`}
                     </span>
                   </div>
+
+                  {/* Custom message from accelerator */}
+                  {inviteInfo.customMessage && (
+                    <div className="flex gap-3 p-4 rounded-lg bg-muted/30 border border-border/30">
+                      <MessageCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-muted-foreground italic">
+                        "{inviteInfo.customMessage}"
+                      </p>
+                    </div>
+                  )}
 
                   <Button
                     type="submit"
