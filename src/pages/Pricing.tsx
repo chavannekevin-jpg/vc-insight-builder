@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/sections/Footer";
 import { Button } from "@/components/ui/button";
@@ -15,17 +16,99 @@ import {
   Target,
   Brain,
   ArrowRight,
-  Zap
+  Zap,
+  ChevronDown,
+  X
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Value breakdown data - what consultants would charge
 const VALUE_BREAKDOWN = [
-  { label: "8-Dimension Investment Audit", value: "€2,500", icon: FileSearch },
-  { label: "23+ Strategic Diagnostic Tools", value: "€2,000", icon: Wrench },
-  { label: "Investor Database + Matching", value: "€1,500", icon: Users },
-  { label: "Market Intelligence Briefing", value: "€1,200", icon: Telescope },
-  { label: "Outreach Generation Suite", value: "€800", icon: MessageSquare },
-  { label: "VC Q&A Simulation", value: "€500", icon: Brain },
+  { 
+    label: "8-Dimension Investment Audit", 
+    value: "€2,500", 
+    icon: FileSearch,
+    description: "The complete VC evaluation framework",
+    details: [
+      "Scorecard across Team, Market, Product, Traction, Financials, Narrative, Defensibility & Venture Fit",
+      "Each dimension rated exactly how VCs score you internally",
+      "Investment thesis: the story a partner would pitch to their IC",
+      "Red flags surfaced before they kill your deal",
+      "Prioritized action plan to fix weaknesses fast"
+    ]
+  },
+  { 
+    label: "23+ Strategic Diagnostic Tools", 
+    value: "€2,000", 
+    icon: Wrench,
+    description: "Every analysis tool a VC analyst uses",
+    details: [
+      "TAM/SAM/SOM Calculator with market sizing logic",
+      "Unit Economics breakdown (LTV, CAC, payback period)",
+      "Competitor positioning matrix",
+      "Team gap analysis & hiring roadmap",
+      "Evidence threshold assessment",
+      "Differentiation matrix & moat builder",
+      "And 17 more specialized tools..."
+    ]
+  },
+  { 
+    label: "Investor Database + Matching", 
+    value: "€1,500", 
+    icon: Users,
+    description: "800+ VCs filtered to your exact profile",
+    details: [
+      "Pre-filtered by stage, sector, geography, and check size",
+      "Each investor matched to your specific company profile",
+      "Fund thesis summaries and recent investments",
+      "Direct contact paths and warm intro suggestions",
+      "Network visualization showing investor clusters"
+    ]
+  },
+  { 
+    label: "Market Intelligence Briefing", 
+    value: "€1,200", 
+    icon: Telescope,
+    description: "50+ industry reports distilled for your context",
+    details: [
+      "Tailwinds: macro trends working in your favor",
+      "Headwinds: challenges to address or position around",
+      "Funding landscape: what's getting funded in your space",
+      "Exit precedents: comparable acquisitions and IPOs",
+      "All filtered through your specific sector, stage & geography"
+    ]
+  },
+  { 
+    label: "Outreach Generation Suite", 
+    value: "€800", 
+    icon: MessageSquare,
+    description: "Personalized investor emails that get replies",
+    details: [
+      "Cold outreach templates tailored to your narrative",
+      "Warm intro request scripts for your network",
+      "Follow-up sequences for different scenarios",
+      "Pitch meeting preparation guides",
+      "Objection handling frameworks"
+    ]
+  },
+  { 
+    label: "VC Q&A Simulation", 
+    value: "€500", 
+    icon: Brain,
+    description: "The tough questions VCs will ask—answered",
+    details: [
+      "50+ likely questions based on your profile",
+      "Each question with VC rationale (why they ask)",
+      "Suggested answer frameworks",
+      "Red flag questions specific to your weaknesses",
+      "Practice mode to prepare before real meetings"
+    ]
+  },
 ];
 
 const TOTAL_VALUE = "€8,500+";
@@ -46,7 +129,7 @@ const FEATURES = [
 
 const Pricing = () => {
   const navigate = useNavigate();
-
+  const [selectedValue, setSelectedValue] = useState<typeof VALUE_BREAKDOWN[0] | null>(null);
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <Header />
@@ -121,18 +204,25 @@ const Pricing = () => {
                   {VALUE_BREAKDOWN.map((item, index) => {
                     const Icon = item.icon;
                     return (
-                      <div 
+                      <button 
                         key={index}
-                        className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/30 backdrop-blur-sm hover:bg-muted/50 transition-colors"
+                        onClick={() => setSelectedValue(item)}
+                        className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/30 backdrop-blur-sm hover:bg-muted/50 hover:border-primary/30 transition-all cursor-pointer group text-left"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                             <Icon className="w-5 h-5 text-primary" />
                           </div>
-                          <span className="text-sm font-medium text-foreground">{item.label}</span>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-foreground">{item.label}</span>
+                            <span className="text-xs text-muted-foreground">{item.description}</span>
+                          </div>
                         </div>
-                        <span className="text-sm font-bold text-success">{item.value}</span>
-                      </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-success">{item.value}</span>
+                          <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -281,6 +371,70 @@ const Pricing = () => {
           </div>
         </section>
       </main>
+
+      {/* Value Detail Dialog */}
+      <Dialog open={!!selectedValue} onOpenChange={(open) => !open && setSelectedValue(null)}>
+        <DialogContent className="sm:max-w-lg p-0 gap-0 bg-card/90 backdrop-blur-2xl border-border/50 overflow-hidden rounded-3xl shadow-2xl">
+          {/* Background gradient orbs */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-1/4 -left-1/4 w-[200px] h-[200px] bg-primary/10 rounded-full blur-[60px]" />
+            <div className="absolute -bottom-1/4 -right-1/4 w-[200px] h-[200px] bg-secondary/10 rounded-full blur-[60px]" />
+          </div>
+          
+          {selectedValue && (
+            <div className="relative">
+              {/* Header */}
+              <DialogHeader className="px-6 pt-6 pb-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                    <selectedValue.icon className="w-7 h-7 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <DialogTitle className="text-xl font-bold text-foreground mb-1">
+                      {selectedValue.label}
+                    </DialogTitle>
+                    <p className="text-sm text-muted-foreground">{selectedValue.description}</p>
+                  </div>
+                  <Badge className="bg-success/10 text-success border-success/20 font-bold">
+                    {selectedValue.value}
+                  </Badge>
+                </div>
+              </DialogHeader>
+              
+              {/* Content */}
+              <div className="px-6 pb-6">
+                <div className="space-y-3">
+                  {selectedValue.details.map((detail, idx) => (
+                    <div 
+                      key={idx}
+                      className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border/30"
+                    >
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-3 h-3 text-primary" />
+                      </div>
+                      <span className="text-sm text-foreground/90">{detail}</span>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* CTA */}
+                <div className="mt-6 pt-4 border-t border-border/30">
+                  <Button 
+                    onClick={() => {
+                      setSelectedValue(null);
+                      navigate('/auth');
+                    }}
+                    className="w-full h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground rounded-xl font-semibold shadow-lg shadow-primary/25"
+                  >
+                    Get All This for €100
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>
