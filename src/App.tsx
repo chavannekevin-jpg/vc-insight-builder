@@ -154,6 +154,10 @@ const DemoFundDiscovery = lazy(() => import("./pages/demo/DemoFundDiscovery"));
 const DemoProfile = lazy(() => import("./pages/demo/DemoProfile"));
 const DemoAnalysis = lazy(() => import("./pages/demo/DemoAnalysis"));
 const DemoVCMemorandum = lazy(() => import("./pages/demo/DemoVCMemorandum"));
+const DemoRaiseCalculator = lazy(() => import("./pages/demo/DemoRaiseCalculator"));
+const DemoValuationCalculator = lazy(() => import("./pages/demo/DemoValuationCalculator"));
+const DemoVentureScaleDiagnostic = lazy(() => import("./pages/demo/DemoVentureScaleDiagnostic"));
+const DemoOutreachLab = lazy(() => import("./pages/demo/DemoOutreachLab"));
 
 // VC Memorandum (paid)
 const VCMemorandum = lazy(() => import("./pages/VCMemorandum"));
@@ -219,6 +223,10 @@ const App = () => (
             <Route path="/demo/vc-memorandum" element={<DemoVCMemorandum />} />
             <Route path="/demo/market-lens" element={<DemoMarketLens />} />
             <Route path="/demo/fund-discovery" element={<DemoFundDiscovery />} />
+            <Route path="/demo/raise-calculator" element={<DemoRaiseCalculator />} />
+            <Route path="/demo/valuation-calculator" element={<DemoValuationCalculator />} />
+            <Route path="/demo/venture-scale-diagnostic" element={<DemoVentureScaleDiagnostic />} />
+            <Route path="/demo/outreach-lab" element={<DemoOutreachLab />} />
             {/* Paid VC Memorandum */}
             <Route path="/vc-memorandum" element={<VCMemorandum />} />
             <Route path="/hub/:slug" element={<EducationalContent />} />

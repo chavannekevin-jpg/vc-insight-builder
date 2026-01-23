@@ -75,12 +75,12 @@ const knowledgeLibraryItems = [
 ];
 
 const toolsItems = [
-  { title: "Raise Calculator", path: "/raise-calculator", icon: DollarSign, enabled: true },
-  { title: "Valuation Calculator", path: "/valuation-calculator", icon: TrendingUp, enabled: true },
-  { title: "Venture Scale Diagnostic", path: "/venture-scale-diagnostic", icon: Target, enabled: true },
+  { title: "Raise Calculator", path: "/demo/raise-calculator", icon: DollarSign, enabled: true },
+  { title: "Valuation Calculator", path: "/demo/valuation-calculator", icon: TrendingUp, enabled: true },
+  { title: "Venture Scale Diagnostic", path: "/demo/venture-scale-diagnostic", icon: Target, enabled: true },
   { title: "Roast Your Baby", path: "/roast-your-baby", icon: Flame, enabled: false, premium: true },
   { title: "Dilution Lab", path: "/dilution-lab", icon: Calculator, enabled: false, premium: true },
-  { title: "Outreach Lab", path: "/investor-email-generator", icon: Users, enabled: true },
+  { title: "Outreach Lab", path: "/demo/outreach-lab", icon: Users, enabled: true },
 ];
 
 const socialItems = [
