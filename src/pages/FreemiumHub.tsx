@@ -106,6 +106,7 @@ export default function FreemiumHub() {
   const companyIdFromParams = searchParams.get("companyId");
   
   // Use cached hooks instead of manual data loading
+  // IMPORTANT: Use companyIdFromParams if available to ensure correct company is loaded
   const { user, isAuthenticated, isAdmin, isLoading: authLoading } = useAuth();
   const { 
     company: companyData, 
@@ -116,7 +117,7 @@ export default function FreemiumHub() {
     totalQuestions: cachedTotalQuestions,
     generationsAvailable,
     isLoading: companyLoading 
-  } = useCompany(user?.id);
+  } = useCompany(user?.id, companyIdFromParams);
 
   const [memo, setMemo] = useState<Memo | null>(null);
   const [generatingTagline, setGeneratingTagline] = useState(false);
@@ -186,12 +187,28 @@ export default function FreemiumHub() {
   // Force refetch company data on mount if coming from intake with fresh company or fresh purchase
   useEffect(() => {
     if ((freshCompany || freshPurchase) && user?.id) {
-      console.log('[FreemiumHub] Invalidating company/payment caches after fresh purchase or company creation');
+      console.log('[FreemiumHub] Invalidating ALL caches after fresh purchase or company creation');
+      
+      // Company caches (both patterns)
+      queryClient.invalidateQueries({ queryKey: ["company"] });
       queryClient.invalidateQueries({ queryKey: ["company", user.id] });
+      if (companyIdFromParams) {
+        queryClient.invalidateQueries({ queryKey: ["company", "byId", companyIdFromParams] });
+      }
+      
+      // Payment status
       queryClient.invalidateQueries({ queryKey: ["payment"] });
+      
+      // Memo and content data
       queryClient.invalidateQueries({ queryKey: ["memo"] });
+      if (companyIdFromParams) {
+        queryClient.invalidateQueries({ queryKey: ["memoContent", companyIdFromParams] });
+        queryClient.invalidateQueries({ queryKey: ["vc-quick-take", companyIdFromParams] });
+        queryClient.invalidateQueries({ queryKey: ["sectionTools", companyIdFromParams] });
+        queryClient.invalidateQueries({ queryKey: ["dashboard-responses", companyIdFromParams] });
+      }
     }
-  }, [freshCompany, freshPurchase, user?.id, queryClient]);
+  }, [freshCompany, freshPurchase, user?.id, companyIdFromParams, queryClient]);
 
   // Redirect to intake if no company - with delay to prevent race conditions
   useEffect(() => {
@@ -639,7 +656,9 @@ export default function FreemiumHub() {
 
   const completedQuestions = responses.filter(r => r.answer && r.answer.trim()).length;
   const totalQuestions = cachedTotalQuestions;
-  const memoGenerated = memo && memo.status === "completed";
+  // Use memoHasContent (more robust) instead of memo.status === "completed" for gating
+  // memoHasContent checks for actual structured_content existence
+  const memoGenerated = memoHasContent || (memo && memo.status === "completed");
   const hasPaid = company?.has_premium ?? hasPaidData;
   const deckParsed = !!company?.deck_parsed_at;
 

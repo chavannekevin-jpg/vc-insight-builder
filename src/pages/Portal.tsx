@@ -506,14 +506,29 @@ export default function Portal() {
   }, []);
 
   const handleMemoReady = async () => {
-    console.log("Portal: Memo ready, invalidating caches and navigating to hub...");
+    console.log("Portal: Memo ready, invalidating all caches for hub refresh...");
     setIsGeneratingMemo(false);
     
-    // Invalidate all payment and company caches to ensure hub shows paid version
+    // Invalidate ALL relevant caches to ensure hub shows paid version with full data
+    // Company caches (both by userId and by companyId patterns)
     await queryClient.invalidateQueries({ queryKey: ["company"] });
-    await queryClient.invalidateQueries({ queryKey: ["payment", companyId] });
-    await queryClient.invalidateQueries({ queryKey: ["memo", companyId] });
+    await queryClient.invalidateQueries({ queryKey: ["company", "byId", companyId] });
     
+    // Payment/premium status
+    await queryClient.invalidateQueries({ queryKey: ["payment", companyId] });
+    await queryClient.invalidateQueries({ queryKey: ["payment"] });
+    
+    // Memo and content data
+    await queryClient.invalidateQueries({ queryKey: ["memo", companyId] });
+    await queryClient.invalidateQueries({ queryKey: ["memo"] });
+    await queryClient.invalidateQueries({ queryKey: ["memoContent", companyId] });
+    
+    // Dashboard data (section tools, VC quick take)
+    await queryClient.invalidateQueries({ queryKey: ["vc-quick-take", companyId] });
+    await queryClient.invalidateQueries({ queryKey: ["sectionTools", companyId] });
+    await queryClient.invalidateQueries({ queryKey: ["dashboard-responses", companyId] });
+    
+    console.log("Portal: All caches invalidated, navigating to hub...");
     navigate(`/hub?companyId=${companyId}`, { state: { freshPurchase: true } });
   };
 

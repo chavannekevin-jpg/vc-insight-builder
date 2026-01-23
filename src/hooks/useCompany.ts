@@ -27,10 +27,32 @@ interface CompanyData {
   isLoading: boolean;
 }
 
-export const useCompany = (userId: string | undefined): CompanyData => {
+/**
+ * useCompany hook - fetches company data for a user
+ * @param userId - The user ID to fetch company for
+ * @param companyIdOverride - Optional: specific company ID to fetch (bypasses userId lookup)
+ */
+export const useCompany = (userId: string | undefined, companyIdOverride?: string | null): CompanyData => {
+  // Determine which query key and fetch logic to use
+  const queryKey = companyIdOverride 
+    ? ["company", "byId", companyIdOverride] 
+    : ["company", userId];
+  
   const { data: company, isLoading: companyLoading } = useQuery({
-    queryKey: ["company", userId],
+    queryKey,
     queryFn: async () => {
+      // If we have a specific company ID, fetch that directly
+      if (companyIdOverride) {
+        const { data, error } = await supabase
+          .from("companies")
+          .select("*")
+          .eq("id", companyIdOverride)
+          .maybeSingle();
+        if (error) throw error;
+        return data as Company | null;
+      }
+      
+      // Otherwise, fetch the user's most recent company
       if (!userId) throw new Error("No user ID provided");
       const { data, error } = await supabase
         .from("companies")
@@ -42,7 +64,7 @@ export const useCompany = (userId: string | undefined): CompanyData => {
       if (error) throw error;
       return data as Company | null;
     },
-    enabled: !!userId,
+    enabled: !!(companyIdOverride || userId),
     staleTime: 1000 * 60 * 2, // 2 minutes
     gcTime: 1000 * 60 * 15, // 15 minutes
     retry: 2,
