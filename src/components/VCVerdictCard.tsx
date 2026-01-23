@@ -523,7 +523,7 @@ export const VCVerdictCard = memo(({
             <CollapsibleTrigger className="w-full flex items-center justify-between group">
               <h4 className="text-sm font-semibold">What's Included</h4>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">38+ features</span>
+                <span className="text-xs text-muted-foreground">shitloads of features</span>
                 <ChevronDown className="w-4 h-4 text-muted-foreground group-data-[state=open]:rotate-180 transition-transform" />
               </div>
             </CollapsibleTrigger>
@@ -599,11 +599,11 @@ export const VCVerdictCard = memo(({
               size="lg"
             >
               <FileText className="w-4 h-4 mr-2" />
-              {hasPaid && generationsAvailable > 0 
-                ? "Edit & Regenerate" 
-                : matchingFunds > 0 
-                  ? "Prepare Before You Pitch" 
-                  : "Unlock the Full 9 Page Analysis"}
+            {hasPaid && generationsAvailable > 0 
+              ? "Edit & Regenerate" 
+              : matchingFunds > 0 
+                ? "Build Your VC-Grade Analysis" 
+                : "Unlock the Full 9 Page Analysis"}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
             
