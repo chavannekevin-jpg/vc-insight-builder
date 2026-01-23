@@ -21,11 +21,11 @@ export function DemoFloatingCTA() {
   return (
     <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="relative group">
-        {/* Glow effect on hover */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-primary/40 via-accent/30 to-primary/40 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        {/* Golden glow effect on hover */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/50 via-yellow-400/40 to-amber-500/50 rounded-2xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
         {/* Main card */}
-        <div className="relative bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl shadow-black/20 p-5 max-w-xs overflow-hidden">
+        <div className="relative bg-card/95 backdrop-blur-xl border-2 border-border/50 group-hover:border-amber-500/70 rounded-2xl shadow-2xl shadow-black/20 group-hover:shadow-amber-500/20 p-5 max-w-xs overflow-hidden transition-all duration-300">
           {/* Subtle gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
           
