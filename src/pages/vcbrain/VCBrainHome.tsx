@@ -72,7 +72,7 @@ export default function VCBrainHome() {
           <button
             key={section.title}
             onClick={() => navigate(section.path)}
-            className="bg-card border border-border rounded-xl p-6 text-left hover:border-primary/50 hover:shadow-lg transition-all group"
+            className="bg-card/60 backdrop-blur-xl border border-border/40 rounded-2xl p-6 text-left hover:border-primary/30 hover:bg-card/80 hover:shadow-[0_20px_50px_-12px_hsl(var(--primary)/0.2)] transition-all group"
           >
             <section.icon className="w-8 h-8 text-primary mb-4" />
             <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
@@ -86,7 +86,7 @@ export default function VCBrainHome() {
         ))}
       </div>
 
-      <div className="bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30 rounded-xl p-8 text-center space-y-4">
+      <div className="bg-card/60 backdrop-blur-2xl border border-primary/20 rounded-2xl p-8 text-center space-y-4 shadow-[0_20px_50px_-12px_hsl(var(--primary)/0.15)]">
         <h2 className="text-3xl font-bold text-foreground">
           Stop Learning. Start Executing.
         </h2>
@@ -96,7 +96,7 @@ export default function VCBrainHome() {
         </p>
         <Button 
           size="lg"
-          className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl"
           onClick={() => navigate('/pricing')}
         >
           Get Your VC Analysis

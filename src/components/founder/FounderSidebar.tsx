@@ -154,7 +154,7 @@ export const FounderSidebar = ({
   return (
     <Sidebar
       className={cn(
-        "border-r border-border/40 bg-gradient-to-b from-card via-card to-background transition-all duration-300",
+        "border-r border-border/30 bg-card/60 backdrop-blur-2xl transition-all duration-300",
         collapsed ? "w-16" : "w-64"
       )}
       collapsible="icon"
@@ -164,12 +164,12 @@ export const FounderSidebar = ({
       <SidebarContent className="flex flex-col h-full">
         {/* Logo Section */}
         <div className={cn(
-          "p-4 border-b border-border/30 flex items-center",
+          "p-4 border-b border-border/20 flex items-center bg-gradient-to-r from-primary/5 to-transparent",
           collapsed ? "justify-center" : "gap-3"
         )}>
           <button 
             onClick={() => navigate("/")}
-            className="text-xl font-display font-black tracking-tight neon-pink hover:scale-105 transition-transform"
+            className="text-xl font-display font-black tracking-tight text-primary hover:scale-105 transition-transform"
           >
             {collapsed ? "U" : "UglyBaby"}
           </button>
@@ -494,7 +494,7 @@ export const FounderSidebar = ({
         <div className="flex-1" />
 
         {/* Bottom Actions */}
-        <SidebarGroup className="mt-auto border-t border-border/30 pt-2">
+        <SidebarGroup className="mt-auto border-t border-border/20 pt-2 bg-gradient-to-t from-muted/20 to-transparent">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>

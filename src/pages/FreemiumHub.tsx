@@ -690,10 +690,10 @@ export default function FreemiumHub() {
           )}
           
           {/* Header */}
-          <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="px-6 h-14 flex items-center justify-between">
+          <header className="sticky top-0 z-40 w-full border-b border-border/30 bg-background/80 backdrop-blur-2xl">
+            <div className="px-6 h-16 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+                <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
                 <CompanyBadge
                   name={company.name}
                   sector={company.category || undefined}
@@ -707,7 +707,7 @@ export default function FreemiumHub() {
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
-                className="gap-2 text-muted-foreground hover:text-foreground"
+                className="gap-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted/50 transition-all"
               >
                 <LogOut className="w-4 h-4" />
                 Sign Out
@@ -716,7 +716,7 @@ export default function FreemiumHub() {
           </header>
 
           {/* Main Content - Single Column Layout */}
-          <main className="flex-1 px-6 py-8 overflow-auto">
+          <main className="flex-1 px-6 py-8 overflow-auto bg-gradient-to-b from-transparent via-muted/5 to-muted/10">
             <div className="max-w-4xl mx-auto space-y-8">
           
           {/* Main Content based on paid/unpaid status */}
