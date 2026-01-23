@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { Session, User } from "@supabase/supabase-js";
 import { 
@@ -18,7 +19,8 @@ import {
   TrendingUp,
   Shield,
   Loader2,
-  UserPlus
+  UserPlus,
+  Info
 } from "lucide-react";
 import { useStartupReferral } from "@/hooks/useStartupReferral";
 import { useFounderReferral, processFounderReferral } from "@/hooks/useFounderReferral";
@@ -28,32 +30,38 @@ const INVITED_PERKS = [
   {
     icon: FileText,
     title: "Full VC Audit",
-    description: "The internal memo partners use to pass or pursue — see what VCs will say before you pitch"
+    description: "The internal memo partners use to pass or pursue — see what VCs will say before you pitch",
+    tooltip: "A comprehensive 9-page investment analysis covering Problem, Solution, Market, Competition, Team, Business Model, Traction, and Vision. Exactly how VCs evaluate deals in their Monday IC meetings."
   },
   {
     icon: Users,
     title: "800+ Curated Investors",
-    description: "AI-matched VCs, angels & family offices filtered by stage, sector, and thesis fit"
+    description: "AI-matched VCs, angels & family offices filtered by stage, sector, and thesis fit",
+    tooltip: "Our database includes 760+ funds and 800+ individual investors across Europe and the US. Smart matching filters by your stage, sector, geography, and investment thesis alignment."
   },
   {
     icon: Target,
     title: "Investment Readiness Score",
-    description: "Scored across 8 dimensions — know exactly where you stand before reaching out"
+    description: "Scored across 8 dimensions — know exactly where you stand before reaching out",
+    tooltip: "Get scored on Problem-Solution Fit, Market Opportunity, Competitive Positioning, Team Strength, Business Model, Traction Quality, Financial Projections, and Vision Clarity. Benchmarked against funded companies."
   },
   {
     icon: TrendingUp,
     title: "30+ Prepared VC Questions",
-    description: "The exact questions investors will ask — with draft answers you can refine"
+    description: "The exact questions investors will ask — with draft answers you can refine",
+    tooltip: "Each section of your analysis includes the specific questions VCs will ask, complete with rationale for why they matter and preparation tips to nail your answers."
   },
   {
     icon: Brain,
     title: "Market Lens & Sector Briefings",
-    description: "Tailwinds, headwinds, and funding landscape for your specific market"
+    description: "Tailwinds, headwinds, and funding landscape for your specific market",
+    tooltip: "Curated from 50+ industry reports and funding benchmarks. Get sector-specific insights on market dynamics, recent funding trends, exit precedents, and strategic positioning for your exact vertical."
   },
   {
     icon: Shield,
     title: "Red Flag Detection",
-    description: "Surface deal-breakers before VCs find them. Fix issues before they cost you meetings"
+    description: "Surface deal-breakers before VCs find them. Fix issues before they cost you meetings",
+    tooltip: "AI-powered analysis identifies coherence gaps, narrative inconsistencies, and common deal-breakers. Know your weaknesses before investors do — and get specific recommendations to fix them."
   }
 ];
 
@@ -409,22 +417,44 @@ export default function InvitedStartupLanding() {
                 What You Get
               </h3>
               
-              <div className="space-y-4">
-                {INVITED_PERKS.map((perk, index) => {
-                  const Icon = perk.icon;
-                  return (
-                    <div key={index} className="flex gap-3">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Icon className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-foreground text-sm">{perk.title}</h4>
-                        <p className="text-xs text-muted-foreground leading-relaxed">{perk.description}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <TooltipProvider delayDuration={200}>
+                <div className="space-y-4">
+                  {INVITED_PERKS.map((perk, index) => {
+                    const Icon = perk.icon;
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <div className="flex gap-3 p-2 -m-2 rounded-xl cursor-help group hover:bg-primary/5 transition-colors">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                              <Icon className="w-5 h-5 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <h4 className="font-semibold text-foreground text-sm">{perk.title}</h4>
+                                <Info className="w-3 h-3 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                              </div>
+                              <p className="text-xs text-muted-foreground leading-relaxed">{perk.description}</p>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent 
+                          side="left" 
+                          className="max-w-[320px] p-4 bg-card/95 backdrop-blur-xl border border-primary/20 shadow-glow"
+                          sideOffset={12}
+                        >
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-4 h-4 text-primary" />
+                              <span className="font-semibold text-sm text-foreground">{perk.title}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground leading-relaxed">{perk.tooltip}</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                </div>
+              </TooltipProvider>
             </div>
 
             {/* Trust indicators */}
