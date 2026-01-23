@@ -49,8 +49,8 @@ export default function AcceleratorSignup() {
 
   const handleCheckout = async () => {
     if (!isAuthenticated) {
-      toast.error("Please sign in to continue");
-      navigate("/auth?redirect=/accelerator/signup");
+      toast.error("Please create an account first");
+      navigate("/accelerator/auth");
       return;
     }
 
