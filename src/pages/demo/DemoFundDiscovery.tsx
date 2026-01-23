@@ -75,7 +75,7 @@ export default function DemoFundDiscovery() {
 
   return (
     <DemoLayout currentPage="fund-discovery">
-      <div className="px-6 py-8">
+      <div className="px-6 py-8 bg-gradient-to-b from-transparent to-muted/10">
         <div className="max-w-4xl mx-auto space-y-6">
           
           {/* Header */}
@@ -86,13 +86,13 @@ export default function DemoFundDiscovery() {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate('/demo')}
-                  className="gap-1 -ml-2 text-muted-foreground hover:text-foreground"
+                  className="gap-1 -ml-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted/50"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Dashboard
                 </Button>
               </div>
-              <h1 className="text-2xl font-serif font-bold">VC Network</h1>
+              <h1 className="text-2xl font-display font-bold">VC Network</h1>
               <p className="text-sm text-muted-foreground">
                 Climate-focused investors matched to <span className="font-medium text-foreground">{DEMO_COMPANY.name}</span>
               </p>
@@ -100,10 +100,10 @@ export default function DemoFundDiscovery() {
           </div>
 
           {/* Demo Notice */}
-          <Card className="border-primary/20 bg-primary/5">
+          <Card className="border-primary/20 bg-card/60 backdrop-blur-2xl">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-primary/15 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-primary/20">
                   <Sparkles className="w-4 h-4 text-primary" />
                 </div>
                 <div className="space-y-1">
@@ -124,7 +124,7 @@ export default function DemoFundDiscovery() {
                 placeholder="Search funds, locations, focus areas..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 bg-card/60 backdrop-blur-xl border-border/40 rounded-xl focus:border-primary/40"
               />
             </div>
             <div className="flex gap-2">
@@ -132,16 +132,16 @@ export default function DemoFundDiscovery() {
                 variant={showMatches ? "default" : "outline"}
                 size="sm"
                 onClick={() => setShowMatches(!showMatches)}
-                className="gap-1.5"
+                className="gap-1.5 rounded-xl"
               >
                 <TrendingUp className="w-4 h-4" />
                 My Matches
               </Button>
-              <Button variant="outline" size="sm" className="gap-1.5">
+              <Button variant="outline" size="sm" className="gap-1.5 rounded-xl border-border/40">
                 <Filter className="w-4 h-4" />
                 Filters
               </Button>
-              <Button variant="outline" size="sm" className="gap-1.5">
+              <Button variant="outline" size="sm" className="gap-1.5 rounded-xl border-border/40">
                 <ArrowUpDown className="w-4 h-4" />
                 Sort
               </Button>
@@ -160,13 +160,13 @@ export default function DemoFundDiscovery() {
             {filteredFunds.map((fund) => (
               <Card 
                 key={fund.id}
-                className="cursor-pointer hover:border-primary/30 transition-all"
+                className="cursor-pointer bg-card/60 backdrop-blur-xl border-border/40 hover:border-primary/30 hover:bg-card/80 transition-all"
                 onClick={() => setSelectedFund(fund)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-4">
                     {/* Logo placeholder */}
-                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-muted/40 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
                       <Building2 className="w-6 h-6 text-muted-foreground" />
                     </div>
                     
@@ -184,7 +184,7 @@ export default function DemoFundDiscovery() {
                         </div>
                         
                         {/* Match score */}
-                        <div className={`px-2 py-1 rounded-md text-xs font-semibold border ${getMatchColor(fund.matchScore)}`}>
+                        <div className={`px-2 py-1 rounded-lg text-xs font-semibold border backdrop-blur-sm ${getMatchColor(fund.matchScore)}`}>
                           {fund.matchScore}% match
                         </div>
                       </div>
@@ -192,12 +192,12 @@ export default function DemoFundDiscovery() {
                       {/* Focus areas */}
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {fund.investment_focus?.slice(0, 3).map((focus, i) => (
-                          <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0">
+                          <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0 bg-muted/40 backdrop-blur-sm">
                             {focus}
                           </Badge>
                         ))}
                         {fund.stages?.slice(0, 2).map((stage, i) => (
-                          <Badge key={`stage-${i}`} variant="outline" className="text-[10px] px-1.5 py-0">
+                          <Badge key={`stage-${i}`} variant="outline" className="text-[10px] px-1.5 py-0 border-border/40">
                             {stage}
                           </Badge>
                         ))}

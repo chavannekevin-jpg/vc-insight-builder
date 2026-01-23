@@ -279,11 +279,11 @@ export default function FundDiscovery() {
     <FounderLayout>
       <div className="bg-background">
       {/* Header */}
-      <header className="border-b border-border/40 bg-background/95 backdrop-blur-xl sticky top-0 z-40">
+      <header className="border-b border-border/30 bg-background/80 backdrop-blur-2xl sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/hub')} className="h-8 w-8 p-0">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/hub')} className="h-8 w-8 p-0 rounded-xl hover:bg-muted/50">
                 <ArrowLeft className="w-4 h-4" />
               </Button>
               <div>
@@ -299,17 +299,17 @@ export default function FundDiscovery() {
             {/* Profile Pills */}
             <div className="hidden md:flex items-center gap-1.5">
               {startupProfile.stage && (
-                <Badge className="bg-primary/15 text-primary border-0 text-xs">
+                <Badge className="bg-primary/15 text-primary border-0 text-xs backdrop-blur-sm">
                   {startupProfile.stage}
                 </Badge>
               )}
               {startupProfile.sector?.slice(0, 1).map((s, i) => (
-                <Badge key={i} variant="secondary" className="text-xs border-0">
+                <Badge key={i} variant="secondary" className="text-xs border-0 bg-muted/40 backdrop-blur-sm">
                   {s}
                 </Badge>
               ))}
               {startupProfile.hasRevenue && (
-                <Badge className="bg-green-500/15 text-green-500 border-0 text-xs">
+                <Badge className="bg-green-500/15 text-green-500 border-0 text-xs backdrop-blur-sm">
                   <TrendingUp className="w-3 h-3 mr-1" />
                   Revenue
                 </Badge>
@@ -320,7 +320,7 @@ export default function FundDiscovery() {
       </header>
 
       {/* Search & Toolbar */}
-      <div className="border-b border-border/40 bg-muted/30">
+      <div className="border-b border-border/30 bg-muted/20 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex flex-col gap-3">
             {/* Search Row */}
@@ -331,7 +331,7 @@ export default function FundDiscovery() {
                   placeholder="Search by name, city, or focus area..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9 bg-background border-border/50 focus:border-primary/50 text-sm"
+                  className="pl-9 h-9 bg-card/60 backdrop-blur-xl border-border/40 focus:border-primary/40 text-sm rounded-xl"
                 />
                 {searchQuery && (
                   <button 

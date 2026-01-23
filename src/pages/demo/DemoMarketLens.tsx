@@ -31,7 +31,7 @@ export default function DemoMarketLens() {
 
   return (
     <DemoLayout currentPage="market-lens">
-      <div className="px-6 py-8">
+      <div className="px-6 py-8 bg-gradient-to-b from-transparent to-muted/10">
         <div className="max-w-4xl mx-auto space-y-6">
           
           {/* Header */}
@@ -42,13 +42,13 @@ export default function DemoMarketLens() {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate('/demo')}
-                  className="gap-1 -ml-2 text-muted-foreground hover:text-foreground"
+                  className="gap-1 -ml-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted/50"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Dashboard
                 </Button>
               </div>
-              <h1 className="text-2xl font-serif font-bold">Market Intelligence</h1>
+              <h1 className="text-2xl font-display font-bold">Market Intelligence</h1>
               <p className="text-sm text-muted-foreground">
                 Real-time market insights for <span className="font-medium text-foreground">{DEMO_COMPANY.name}</span> in {DEMO_COMPANY.category}
               </p>
@@ -59,7 +59,7 @@ export default function DemoMarketLens() {
                 variant="outline"
                 size="sm"
                 onClick={handleEditPreferences}
-                className="gap-1.5"
+                className="gap-1.5 rounded-xl border-border/40"
               >
                 <Settings className="w-4 h-4" />
                 <span className="hidden sm:inline">Edit Preferences</span>
@@ -67,7 +67,7 @@ export default function DemoMarketLens() {
               <Button
                 size="sm"
                 onClick={handleRefresh}
-                className="gap-1.5"
+                className="gap-1.5 rounded-xl"
               >
                 <RefreshCw className="w-4 h-4" />
                 Refresh
@@ -76,10 +76,10 @@ export default function DemoMarketLens() {
           </div>
 
           {/* Demo Notice */}
-          <Card className="border-primary/20 bg-primary/5">
+          <Card className="border-primary/20 bg-card/60 backdrop-blur-2xl">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-primary/15 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-primary/20">
                   <Sparkles className="w-4 h-4 text-primary" />
                 </div>
                 <div className="space-y-1">

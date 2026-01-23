@@ -26,7 +26,7 @@ export const CompanyProfileCard = memo(({
   );
 
   return (
-    <div className="bg-card border-2 border-primary/20 rounded-2xl p-6 space-y-4 shadow-glow hover:shadow-glow-strong transition-all duration-500">
+    <div className="bg-card/60 backdrop-blur-2xl border border-primary/20 rounded-2xl p-6 space-y-4 shadow-[0_20px_50px_-12px_hsl(var(--primary)/0.15)] hover:shadow-[0_25px_60px_-12px_hsl(var(--primary)/0.2)] transition-all duration-500">
       <div className="flex items-start justify-between">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -36,11 +36,11 @@ export const CompanyProfileCard = memo(({
           <div className="space-y-1">
             <p className="text-2xl font-bold">{name}</p>
             <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-xs bg-muted/40 backdrop-blur-sm">
                 {stage}
               </Badge>
               {sector && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs border-border/40">
                   {sector}
                 </Badge>
               )}
@@ -51,19 +51,19 @@ export const CompanyProfileCard = memo(({
           variant="outline"
           size="sm"
           onClick={() => navigate("/company-profile")}
-          className="gap-2"
+          className="gap-2 rounded-xl border-border/40 hover:bg-muted/50"
         >
           <Edit className="w-4 h-4" />
           Edit
         </Button>
       </div>
 
-      <div className="pt-4 border-t border-border/50 space-y-2">
+      <div className="pt-4 border-t border-border/30 space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Profile Completion</span>
           <span className="font-semibold">{percentage}%</span>
         </div>
-        <div className="h-2 bg-muted rounded-full overflow-hidden">
+        <div className="h-2 bg-muted/40 rounded-full overflow-hidden backdrop-blur-sm">
           <div
             className="h-full bg-primary transition-all duration-500"
             style={{ width: `${percentage}%` }}
@@ -78,7 +78,7 @@ export const CompanyProfileCard = memo(({
         variant="ghost"
         size="sm"
         onClick={() => navigate("/company-profile")}
-        className="w-full gap-2 text-primary hover:text-primary hover:bg-primary/10"
+        className="w-full gap-2 text-primary hover:text-primary hover:bg-primary/10 rounded-xl"
       >
         <TrendingUp className="w-4 h-4" />
         Complete Your Profile

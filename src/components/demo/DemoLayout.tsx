@@ -19,7 +19,7 @@ export function DemoLayout({ children, currentPage = 'dashboard' }: DemoLayoutPr
           <DemoBanner companyName={DEMO_COMPANY.name} />
           
           {/* Mobile header */}
-          <div className="sticky top-[49px] z-40 flex h-14 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 lg:hidden">
+          <div className="sticky top-[49px] z-40 flex h-14 items-center gap-4 border-b border-border/30 bg-background/80 backdrop-blur-2xl px-4 lg:hidden">
             <SidebarTrigger />
             <div className="flex items-center gap-2">
               <span className="font-semibold text-sm">{DEMO_COMPANY.name}</span>
