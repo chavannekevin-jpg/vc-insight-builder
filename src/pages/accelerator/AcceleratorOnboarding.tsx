@@ -75,7 +75,7 @@ export default function AcceleratorOnboarding() {
           }
 
           if (accData.onboarding_completed) {
-            navigate("/accelerator");
+            navigate("/accelerator/dashboard");
             return;
           }
 
@@ -118,7 +118,7 @@ export default function AcceleratorOnboarding() {
             .single();
 
           if (accData?.onboarding_completed) {
-            navigate("/accelerator");
+            navigate("/accelerator/dashboard");
             return;
           }
           
