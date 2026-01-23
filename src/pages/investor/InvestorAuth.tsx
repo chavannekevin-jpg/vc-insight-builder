@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Network, ArrowLeft, Lock, Sparkles } from "lucide-react";
+import { Network, ArrowLeft, Lock, Sparkles, Mail, KeyRound } from "lucide-react";
 
 const InvestorAuth = () => {
   const navigate = useNavigate();
@@ -286,9 +286,19 @@ const InvestorAuth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      {/* Animated mesh gradient background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 -left-1/4 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-0 -right-1/4 w-[600px] h-[600px] bg-secondary/15 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/10 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: '4s' }} />
+      </div>
+
+      {/* Subtle grid pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--primary)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
+
       {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm">
+      <header className="relative z-10 border-b border-border/30 bg-background/60 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4">
           <button
             onClick={() => navigate("/investor")}
@@ -300,113 +310,140 @@ const InvestorAuth = () => {
         </div>
       </header>
 
-      <div className="flex-1 flex items-center justify-center p-4">
+      <div className="relative z-10 flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-card border border-border rounded-lg p-8">
-            {/* Logo/Badge */}
-            <div className="flex justify-center mb-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-                <Network className="w-5 h-5 text-primary" />
-                <span className="text-sm text-primary font-medium">Investor Network</span>
+          {/* Form Card - Modern Glassmorphism */}
+          <div className="relative group">
+            {/* Animated border glow */}
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/50 via-secondary/50 to-primary/50 rounded-3xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-3xl opacity-50" />
+            
+            {/* Glass card */}
+            <div className="relative bg-card/40 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-border/50 overflow-hidden">
+              {/* Top highlight */}
+              <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+              
+              {/* Corner accents */}
+              <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-primary/10 to-transparent rounded-tl-3xl" />
+              <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-secondary/10 to-transparent rounded-br-3xl" />
+
+              {/* Logo/Badge */}
+              <div className="relative flex justify-center mb-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+                  <Network className="w-5 h-5 text-primary" />
+                  <span className="text-sm text-primary font-medium">Investor Network</span>
+                </div>
               </div>
-            </div>
 
-            <h1 className="text-2xl font-bold text-center mb-2">
-              {isSignUp ? "Join the Network" : "Welcome Back"}
-            </h1>
-            <p className="text-muted-foreground text-center mb-8">
-              {isSignUp
-                ? "An exclusive invite-only network for investors"
-                : "Sign in to access your investor dashboard"}
-            </p>
+              <h1 className="relative text-2xl font-bold text-center mb-2 text-foreground">
+                {isSignUp ? "Join the Network" : "Welcome Back"}
+              </h1>
+              <p className="relative text-muted-foreground text-center mb-8">
+                {isSignUp
+                  ? "An exclusive invite-only network for investors"
+                  : "Sign in to access your investor dashboard"}
+              </p>
 
-            <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
-              {isSignUp && (
-                <div>
-                  <Label htmlFor="inviteCode" className="flex items-center gap-2">
-                    <Lock className="w-3.5 h-3.5" />
-                    Invite Code *
+              <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="relative space-y-5">
+                {isSignUp && (
+                  <div className="space-y-2">
+                    <Label htmlFor="inviteCode" className="flex items-center gap-2 text-foreground/80">
+                      <Lock className="w-3.5 h-3.5" />
+                      Invite Code
+                    </Label>
+                    <Input
+                      id="inviteCode"
+                      value={inviteCode}
+                      onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                      placeholder="XXXXXXXX"
+                      className={`h-12 bg-muted/50 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 placeholder:text-muted-foreground/50 text-foreground font-mono tracking-wider ${
+                        codeValidation?.valid 
+                          ? "border-green-500/50 focus:ring-green-500/20" 
+                          : codeValidation?.valid === false 
+                            ? "border-red-500/50 focus:ring-red-500/20" 
+                            : ""
+                      }`}
+                      maxLength={12}
+                    />
+                    {isValidatingCode && (
+                      <p className="text-xs text-muted-foreground">Validating code...</p>
+                    )}
+                    {codeValidation?.valid && (
+                      <p className="text-xs text-green-400 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        Invited by {codeValidation.inviterName}
+                      </p>
+                    )}
+                    {codeValidation?.valid === false && inviteCode.length >= 6 && (
+                      <p className="text-xs text-red-400">Invalid or expired invite code</p>
+                    )}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="flex items-center gap-2 text-foreground/80">
+                    <Mail className="w-3.5 h-3.5" />
+                    Email
                   </Label>
                   <Input
-                    id="inviteCode"
-                    value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                    placeholder="XXXXXXXX"
-                    className={`mt-1 font-mono tracking-wider ${
-                      codeValidation?.valid 
-                        ? "border-green-500 focus:ring-green-500" 
-                        : codeValidation?.valid === false 
-                          ? "border-red-500 focus:ring-red-500" 
-                          : ""
-                    }`}
-                    maxLength={12}
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="h-12 bg-muted/50 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 placeholder:text-muted-foreground/50 text-foreground [&:-webkit-autofill]:bg-muted/50 [&:-webkit-autofill]:[-webkit-text-fill-color:hsl(var(--foreground))] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
                   />
-                  {isValidatingCode && (
-                    <p className="text-xs text-muted-foreground mt-1">Validating code...</p>
-                  )}
-                  {codeValidation?.valid && (
-                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
-                      Invited by {codeValidation.inviterName}
-                    </p>
-                  )}
-                  {codeValidation?.valid === false && inviteCode.length >= 6 && (
-                    <p className="text-xs text-red-500 mt-1">Invalid or expired invite code</p>
-                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="flex items-center gap-2 text-foreground/80">
+                    <KeyRound className="w-3.5 h-3.5" />
+                    Password
+                  </Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="h-12 bg-muted/50 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 placeholder:text-muted-foreground/50 text-foreground"
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full h-13 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground rounded-xl font-semibold text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5" 
+                  disabled={isLoading || (isSignUp && !codeValidation?.valid)}
+                >
+                  {isLoading ? "Loading..." : isSignUp ? "Join the Network" : "Sign In"}
+                </Button>
+              </form>
+
+              <div className="relative mt-6 text-center">
+                <button
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {isSignUp
+                    ? "Already have an account? Sign in"
+                    : "Have an invite code? Sign up"}
+                </button>
+              </div>
+
+              {isSignUp && (
+                <div className="relative mt-6 pt-6 border-t border-border/30 text-center">
+                  <p className="text-xs text-muted-foreground">
+                    Don't have an invite code? Ask an existing member of the network to invite you.
+                  </p>
                 </div>
               )}
 
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="mt-1"
-                />
+              {/* Bottom pill indicators */}
+              <div className="flex justify-center gap-1.5 mt-8">
+                <div className={`h-1.5 rounded-full transition-all duration-300 ${!isSignUp ? 'w-8 bg-primary' : 'w-4 bg-border/50'}`} />
+                <div className={`h-1.5 rounded-full transition-all duration-300 ${isSignUp ? 'w-8 bg-primary' : 'w-4 bg-border/50'}`} />
               </div>
-
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="mt-1"
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full bg-primary hover:bg-primary/90" 
-                disabled={isLoading || (isSignUp && !codeValidation?.valid)}
-              >
-                {isLoading ? "Loading..." : isSignUp ? "Join the Network" : "Sign In"}
-              </Button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {isSignUp
-                  ? "Already have an account? Sign in"
-                  : "Have an invite code? Sign up"}
-              </button>
             </div>
-
-            {isSignUp && (
-              <div className="mt-6 pt-6 border-t border-border text-center">
-                <p className="text-xs text-muted-foreground">
-                  Don't have an invite code? Ask an existing member of the network to invite you.
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>
