@@ -15,6 +15,7 @@ import { DemoWelcomeModal, useDemoWelcome } from "@/components/demo/DemoWelcomeM
 import { DemoSectionHelper } from "@/components/demo/DemoSectionHelper";
 import { useProductTour } from "@/hooks/useProductTour";
 import { ProductTourSpotlight } from "@/components/tour/ProductTourSpotlight";
+import { DemoEntranceAnimation, useDemoEntrance } from "@/components/demo/DemoEntranceAnimation";
 
 // ARC Classification for SignalFlow - matches the demo analysis
 const DEMO_ARC_CLASSIFICATION: ARCClassification = {
@@ -161,21 +162,22 @@ const buildMemoContent = (): MemoStructuredContent => {
 
 export default function DemoDashboard() {
   const navigate = useNavigate();
+  const { showEntrance: showDemoEntrance, isChecked: entranceChecked, completeEntrance } = useDemoEntrance();
   const { showWelcome, showSectionHelper, isChecked, completeWelcome, dismissSectionHelper } = useDemoWelcome();
   const tour = useProductTour(true); // true = demo mode
   const sectionTools = buildSectionToolsFromSignalFlow();
   const memoContent = buildMemoContent();
 
-  // Start tour after welcome modal completes
+  // Start tour after welcome modal completes (and entrance animation is done)
   useEffect(() => {
-    if (isChecked && !showWelcome && !tour.hasCompletedTour && !tour.isActive) {
+    if (isChecked && entranceChecked && !showDemoEntrance && !showWelcome && !tour.hasCompletedTour && !tour.isActive) {
       // Small delay to let the page settle after welcome modal closes
       const timer = setTimeout(() => {
         tour.startTour();
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [isChecked, showWelcome, tour.hasCompletedTour, tour.isActive]);
+  }, [isChecked, entranceChecked, showDemoEntrance, showWelcome, tour.hasCompletedTour, tour.isActive]);
 
   // Handler to restart tour from welcome modal
   const handleRestartTour = () => {
@@ -199,6 +201,11 @@ export default function DemoDashboard() {
       navigate(path);
     }
   };
+
+  // Show entrance animation first, then welcome modal
+  if (entranceChecked && showDemoEntrance) {
+    return <DemoEntranceAnimation onComplete={completeEntrance} />;
+  }
 
   return (
     <DemoLayout currentPage="dashboard" onRestartTour={handleRestartTour}>
