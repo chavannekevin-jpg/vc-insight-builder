@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Building2, Users, BarChart3, Zap, Check, ArrowRight, Sparkles, ArrowLeft, LogIn, UserPlus } from "lucide-react";
@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-
 const features = [
   {
     icon: Users,
@@ -53,6 +52,47 @@ export default function AcceleratorSignup() {
   const [isSignUp, setIsSignUp] = useState(true);
   const [authError, setAuthError] = useState("");
 
+  // Check if user already has an accelerator with completed onboarding
+  useEffect(() => {
+    const checkExistingAccelerator = async () => {
+      if (!isAuthenticated || authLoading || !user) return;
+
+      try {
+        // Check if user has accelerator role
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "accelerator")
+          .maybeSingle();
+
+        if (roleData) {
+          // Check if they have an accelerator with completed onboarding
+          const { data: accData } = await supabase
+            .from("accelerators")
+            .select("id, onboarding_completed")
+            .eq("ecosystem_head_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (accData?.onboarding_completed) {
+            // Redirect to dashboard
+            navigate("/accelerator/dashboard");
+            return;
+          } else if (accData && !accData.onboarding_completed) {
+            // Redirect to onboarding
+            navigate("/accelerator/onboarding?bypassed=true");
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Error checking existing accelerator:", error);
+      }
+    };
+
+    checkExistingAccelerator();
+  }, [isAuthenticated, authLoading, user, navigate]);
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError("");
