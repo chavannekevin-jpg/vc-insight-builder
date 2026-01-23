@@ -515,29 +515,158 @@ export const DashboardScorecard = ({
           </span>
         </div>
         
-        {/* Invite Banner */}
-        <div className="relative z-10 mx-5 mt-4 p-3 rounded-xl bg-muted/20 backdrop-blur-sm border border-border/30 flex items-center justify-between gap-3">
+        {/* Invite Banner - Mobile optimized */}
+        <div className="relative z-10 mx-4 md:mx-5 mt-4 p-3 rounded-xl bg-muted/20 backdrop-blur-sm border border-border/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
           <div className="flex items-center gap-2">
-            <Gift className="w-4 h-4 text-primary" />
-            <span className="text-sm text-foreground">
+            <Gift className="w-4 h-4 text-primary shrink-0" />
+            <span className="text-xs sm:text-sm text-foreground">
               <span className="font-medium">Invite a friend</span>
-              <span className="text-muted-foreground"> — earn free regeneration credits</span>
+              <span className="text-muted-foreground hidden sm:inline"> — earn free credits</span>
             </span>
           </div>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => setInviteFounderOpen(true)}
-            className="gap-1.5 h-8 px-3 border-primary/30 hover:bg-primary/10 hover:border-primary/40 text-foreground font-medium transition-all rounded-xl"
+            className="gap-1.5 h-8 px-3 border-primary/30 hover:bg-primary/10 hover:border-primary/40 text-foreground font-medium transition-all rounded-xl w-full sm:w-auto"
           >
             <Gift className="w-3.5 h-3.5 text-primary" />
-            Invite
+            <span className="sm:hidden">Invite & Earn Credits</span>
+            <span className="hidden sm:inline">Invite</span>
           </Button>
         </div>
         
         {/* Main content */}
-        <div className="relative z-10 p-5">
-          <div className="grid grid-cols-12 gap-5 items-center">
+        <div className="relative z-10 p-4 md:p-5">
+          {/* Mobile Layout: Stacked */}
+          <div className="flex flex-col gap-4 md:hidden">
+            {/* Score Circle + Readiness - Centered on mobile */}
+            <div className="flex flex-col items-center justify-center py-2">
+              <div className="relative mb-3">
+                <div className={cn(
+                  "w-20 h-20 rounded-full flex items-center justify-center",
+                  "bg-card/80 backdrop-blur-xl border",
+                  scoreColor, scoreGlow
+                )}>
+                  <div className="text-center">
+                    <span className="text-2xl font-bold text-foreground">{scorecard.overallScore}</span>
+                    <span className="text-[10px] text-muted-foreground block -mt-0.5">/100</span>
+                  </div>
+                </div>
+                <div className={cn(
+                  "absolute inset-0 rounded-full opacity-20 animate-ping",
+                  scorecard.overallScore >= 65 ? "bg-success" :
+                  scorecard.overallScore >= 50 ? "bg-warning" : "bg-destructive"
+                )} style={{ animationDuration: '3s' }} />
+              </div>
+              
+              <div className={cn(
+                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur-sm",
+                readinessConfig.bg,
+                readinessConfig.color
+              )}>
+                <Shield className="w-3 h-3" />
+                {readinessConfig.label}
+              </div>
+            </div>
+            
+            {/* VC Verdict - Full width on mobile */}
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Target className="w-3 h-3 text-primary" />
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase">VC Verdict</span>
+              </div>
+              <p className="text-xs text-foreground leading-relaxed">
+                {scorecard.overallVerdict}
+              </p>
+            </div>
+            
+            {/* Strength/Gap cards - Side by side on mobile */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2 rounded-lg bg-success/5 border border-success/20">
+                <div className="flex items-center gap-1 mb-0.5">
+                  <TrendingUp className="w-2.5 h-2.5 text-success" />
+                  <span className="text-[9px] font-semibold text-success uppercase">
+                    {bestStrengthCandidate?.isTrueStrength ? "Strength" : "Best"}
+                  </span>
+                </div>
+                {bestStrengthCandidate ? (() => {
+                  const strengthSection = bestStrengthCandidate.sectionName;
+                  const strengthInsight = companyInsightContext?.sectionInsights[strengthSection];
+                  const sectionRow = scorecard.sections.find(s => s.section === strengthSection);
+                  const score = sectionRow?.score ?? 0;
+                  const benchmark = sectionRow?.benchmark ?? 60;
+                  return (
+                    <p className="text-[10px] text-foreground font-medium line-clamp-2">
+                      {getStrengthHeadline(strengthSection, score, benchmark)}
+                    </p>
+                  );
+                })() : (
+                  <p className="text-[10px] text-muted-foreground">Building…</p>
+                )}
+              </div>
+              <div className="p-2 rounded-lg bg-warning/5 border border-warning/20">
+                <div className="flex items-center gap-1 mb-0.5">
+                  <AlertTriangle className="w-2.5 h-2.5 text-warning" />
+                  <span className="text-[9px] font-semibold text-warning uppercase">Gap</span>
+                </div>
+                {scorecard.criticalWeaknesses.length > 0 ? (() => {
+                  const weakSection = scorecard.criticalWeaknesses[0];
+                  return (
+                    <p className="text-[10px] text-foreground font-medium line-clamp-2">
+                      {getWeaknessHeadline(
+                        weakSection,
+                        scorecard.sections.find(s => s.section === weakSection)?.score || 0,
+                        scorecard.sections.find(s => s.section === weakSection)?.benchmark || 60
+                      )}
+                    </p>
+                  );
+                })() : (
+                  <p className="text-[10px] text-muted-foreground">On track</p>
+                )}
+              </div>
+            </div>
+            
+            {/* Radar Chart - Smaller on mobile */}
+            <div className="h-44 -mx-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={radarData} margin={{ top: 15, right: 25, bottom: 15, left: 25 }}>
+                  <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.4} />
+                  <PolarAngleAxis 
+                    dataKey="section" 
+                    tick={{ 
+                      fill: 'hsl(var(--muted-foreground))', 
+                      fontSize: 8,
+                      fontWeight: 500
+                    }}
+                  />
+                  <Radar
+                    name="Benchmark"
+                    dataKey="benchmark"
+                    stroke="hsl(var(--muted-foreground))"
+                    strokeWidth={1}
+                    strokeDasharray="4 4"
+                    fill="transparent"
+                  />
+                  <Radar
+                    name="Score"
+                    dataKey="score"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    fill="hsl(var(--primary))"
+                    fillOpacity={0.3}
+                    style={{
+                      filter: 'drop-shadow(0 0 6px hsl(var(--primary) / 0.4))'
+                    }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          
+          {/* Desktop Layout: Original 12-column grid */}
+          <div className="hidden md:grid grid-cols-12 gap-5 items-center">
             
             {/* Left: Score Circle */}
             <div className="col-span-3 flex flex-col items-center justify-center">
@@ -959,7 +1088,7 @@ export const DashboardScorecard = ({
                   </CollapsibleTrigger>
                   
                   <CollapsibleContent className="pt-4">
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2" data-tour-step="strategic-tools">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2" data-tour-step="strategic-tools">
                       {availableTools.map(tool => (
                         <MiniToolCard
                           key={tool.id}
@@ -980,22 +1109,22 @@ export const DashboardScorecard = ({
                     </div>
                     
                     {/* Helper text */}
-                    <p className="text-[10px] text-muted-foreground text-center mt-3">
+                    <p className="text-[10px] text-muted-foreground text-center mt-3 hidden sm:block">
                       Click any tool to view detailed analysis
                     </p>
                   </CollapsibleContent>
                 </Collapsible>
               )}
               
-              {/* Premium Tools Row */}
-              <div className="mt-4 grid grid-cols-2 gap-3">
+              {/* Premium Tools Row - Stack on mobile */}
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 {/* Market Lens Card */}
                 <div 
                   className="relative overflow-hidden rounded-lg border border-blue-500/30 bg-blue-500/5 p-3 transition-all duration-200 hover:border-blue-500/50 hover:bg-blue-500/10 group cursor-pointer"
                   onClick={() => onNavigate('/market-lens')}
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-lg bg-blue-500/10">
+                    <div className="p-1.5 sm:p-2 rounded-lg bg-blue-500/10">
                       <Globe className="w-4 h-4 text-blue-400" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -1012,7 +1141,7 @@ export const DashboardScorecard = ({
                   onClick={() => onNavigate('/fund-discovery')}
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-lg bg-emerald-500/10">
+                    <div className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/10">
                       <Building2 className="w-4 h-4 text-emerald-400" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -1026,43 +1155,85 @@ export const DashboardScorecard = ({
             </CollapsibleContent>
           </Collapsible>
           
-          {/* Action buttons */}
-          <div className="mt-5 pt-4 border-t border-border/30 flex flex-wrap items-center justify-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate(`/analysis/section?companyId=${companyId}&section=0`)}
-              className="h-9 px-4 gap-2 border-border/60 bg-card hover:bg-muted/50 hover:border-primary/50 text-foreground font-medium shadow-sm transition-all"
-            >
-              <FileText className="w-4 h-4 text-muted-foreground" />
-              Full Memo
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate(`/tools`)}
-              className="h-9 px-4 gap-2 border-border/60 bg-card hover:bg-muted/50 hover:border-primary/50 text-foreground font-medium shadow-sm transition-all"
-            >
-              <Wrench className="w-4 h-4 text-muted-foreground" />
-              Tools
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate(`/analysis/regenerate?companyId=${companyId}`)}
-              className="h-9 px-4 gap-2 border-warning/40 bg-card hover:bg-warning/10 hover:border-warning/60 text-foreground font-medium shadow-sm transition-all"
-            >
-              <RotateCcw className="w-4 h-4 text-warning" />
-              Regenerate
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => onNavigate(`/analysis/overview?companyId=${companyId}`)}
-              className="h-9 px-4 gap-2 gradient-primary shadow-glow font-medium"
-            >
-              <LayoutGrid className="w-4 h-4" />
-              Overview
-            </Button>
+          {/* Action buttons - Mobile: horizontal scroll, Desktop: centered wrap */}
+          <div className="mt-5 pt-4 border-t border-border/30">
+            {/* Mobile: scrollable row */}
+            <div className="flex md:hidden gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onNavigate(`/analysis/section?companyId=${companyId}&section=0`)}
+                className="h-9 px-3 gap-1.5 border-border/60 bg-card hover:bg-muted/50 text-foreground font-medium shadow-sm transition-all whitespace-nowrap shrink-0"
+              >
+                <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+                Memo
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onNavigate(`/tools`)}
+                className="h-9 px-3 gap-1.5 border-border/60 bg-card hover:bg-muted/50 text-foreground font-medium shadow-sm transition-all whitespace-nowrap shrink-0"
+              >
+                <Wrench className="w-3.5 h-3.5 text-muted-foreground" />
+                Tools
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onNavigate(`/analysis/regenerate?companyId=${companyId}`)}
+                className="h-9 px-3 gap-1.5 border-warning/40 bg-card hover:bg-warning/10 text-foreground font-medium shadow-sm transition-all whitespace-nowrap shrink-0"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-warning" />
+                Regen
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => onNavigate(`/analysis/overview?companyId=${companyId}`)}
+                className="h-9 px-3 gap-1.5 gradient-primary shadow-glow font-medium whitespace-nowrap shrink-0"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                Overview
+              </Button>
+            </div>
+            
+            {/* Desktop: centered wrap */}
+            <div className="hidden md:flex flex-wrap items-center justify-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onNavigate(`/analysis/section?companyId=${companyId}&section=0`)}
+                className="h-9 px-4 gap-2 border-border/60 bg-card hover:bg-muted/50 hover:border-primary/50 text-foreground font-medium shadow-sm transition-all"
+              >
+                <FileText className="w-4 h-4 text-muted-foreground" />
+                Full Memo
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onNavigate(`/tools`)}
+                className="h-9 px-4 gap-2 border-border/60 bg-card hover:bg-muted/50 hover:border-primary/50 text-foreground font-medium shadow-sm transition-all"
+              >
+                <Wrench className="w-4 h-4 text-muted-foreground" />
+                Tools
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onNavigate(`/analysis/regenerate?companyId=${companyId}`)}
+                className="h-9 px-4 gap-2 border-warning/40 bg-card hover:bg-warning/10 hover:border-warning/60 text-foreground font-medium shadow-sm transition-all"
+              >
+                <RotateCcw className="w-4 h-4 text-warning" />
+                Regenerate
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => onNavigate(`/analysis/overview?companyId=${companyId}`)}
+                className="h-9 px-4 gap-2 gradient-primary shadow-glow font-medium"
+              >
+                <LayoutGrid className="w-4 h-4" />
+                Overview
+              </Button>
+            </div>
           </div>
         </div>
       </div>

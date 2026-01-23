@@ -161,6 +161,15 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* Hide scrollbar for horizontal scroll containers */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
   /* Gradient backgrounds */
   .gradient-primary {
     background: var(--gradient-primary);
