@@ -36,9 +36,9 @@ export default function CheckoutMemo() {
   
   const { data: pricingSettings, isLoading: pricingLoading } = usePricingSettings();
   
-  const basePrice = pricingSettings?.memo_pricing.base_price ?? 59.99;
-  const earlyAccessDiscount = pricingSettings?.memo_pricing.early_access_discount ?? 50;
-  const earlyAccessEnabled = pricingSettings?.memo_pricing.early_access_enabled ?? true;
+  const basePrice = pricingSettings?.memo_pricing.base_price ?? 100;
+  const earlyAccessDiscount = pricingSettings?.memo_pricing.early_access_discount ?? 0;
+  const earlyAccessEnabled = pricingSettings?.memo_pricing.early_access_enabled ?? false;
   
   const discountedPrice = earlyAccessEnabled ? basePrice * (1 - earlyAccessDiscount / 100) : basePrice;
   const [finalPrice, setFinalPrice] = useState<number | null>(null);

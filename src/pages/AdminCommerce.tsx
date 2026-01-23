@@ -58,12 +58,12 @@ const AdminCommerce = () => {
   const updatePricing = useUpdatePricingSettings();
 
   const [memoPricing, setMemoPricing] = useState<MemoPricing>({
-    base_price: 59.99,
+    base_price: 100,
     currency: "EUR",
-    early_access_discount: 50,
-    early_access_enabled: true,
-    original_price: 119.99,
-    show_original_price: true,
+    early_access_discount: 0,
+    early_access_enabled: false,
+    original_price: 100,
+    show_original_price: false,
   });
 
   const [networkPricing, setNetworkPricing] = useState<NetworkPricing>({
