@@ -190,6 +190,7 @@ export default function DemoDashboard() {
             onNavigate={handleNavigate}
             memoContent={memoContent}
             arcClassification={DEMO_ARC_CLASSIFICATION}
+            isDemo={true}
           />
 
           {/* VC Quick Take (IC Room) */}
