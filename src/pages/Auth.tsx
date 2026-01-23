@@ -248,10 +248,16 @@ export default function Auth() {
           </p>
         </div>
 
-        {/* Form Card */}
+        {/* Form Card - Glassmorphism */}
         <div className="relative group">
-          <div className="absolute inset-0 gradient-primary opacity-20 blur-xl group-hover:opacity-30 transition-opacity duration-300" />
-          <div className="relative bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-glow">
+          {/* Outer glow */}
+          <div className="absolute -inset-1 bg-primary/20 blur-2xl group-hover:bg-primary/30 transition-all duration-500 rounded-3xl opacity-50" />
+          
+          {/* Glass card */}
+          <div className="relative bg-card/5 backdrop-blur-2xl border border-primary/10 rounded-2xl p-8 shadow-2xl ring-1 ring-inset ring-primary/5 overflow-hidden">
+            {/* Inner glass highlights */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
             <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-6">
               
               <div className="space-y-2">
@@ -310,10 +316,10 @@ export default function Auth() {
               </div>
             </form>
 
-            <div className="mt-6 text-center">
+            <div className="relative mt-6 text-center">
               <button
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-primary hover:text-primary-glow transition-colors font-semibold"
+                className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold"
               >
                 {isSignUp
                   ? "Already have an account? Sign in"
