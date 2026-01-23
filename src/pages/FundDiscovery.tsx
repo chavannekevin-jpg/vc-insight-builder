@@ -35,6 +35,7 @@ import {
   getMatchTierStyle, 
   StartupAffinityResult 
 } from "@/lib/startupAffinityCalculator";
+import { FundDiscoveryExplainer, useFundDiscoveryExplainer } from "@/components/explainers/FundDiscoveryExplainer";
 
 interface FundData {
   id: string;
@@ -77,6 +78,9 @@ export default function FundDiscovery() {
   const [showOnlyMatches, setShowOnlyMatches] = useState(true);
   const [selectedFund, setSelectedFund] = useState<FundWithMatch | null>(null);
   const [sortBy, setSortBy] = useState<"match" | "name" | "size">("match");
+  
+  // Fund discovery explainer modal
+  const { showExplainer, isChecked: explainerChecked, completeExplainer } = useFundDiscoveryExplainer();
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -277,6 +281,13 @@ export default function FundDiscovery() {
 
   return (
     <FounderLayout>
+      {/* Fund Discovery Explainer Modal */}
+      {explainerChecked && (
+        <FundDiscoveryExplainer 
+          open={showExplainer} 
+          onComplete={completeExplainer} 
+        />
+      )}
       <div className="bg-background">
       {/* Header */}
       <header className="border-b border-border/30 bg-background/80 backdrop-blur-2xl sticky top-0 z-40">

@@ -24,6 +24,7 @@ import {
   DEMO_PROFILE_RESPONSES,
   DEMO_PROFILE_SECTIONS
 } from "@/data/demo/demoSignalFlowProfile";
+import { ProfileExplainer, useProfileExplainer } from "@/components/explainers/ProfileExplainer";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Building2,
@@ -40,7 +41,17 @@ const formatCurrency = (value: number) => {
 };
 
 export default function DemoProfile() {
+  const { showExplainer, isChecked: explainerChecked, completeExplainer } = useProfileExplainer();
+
   return (
+    <>
+    {/* Profile Explainer Modal */}
+    {explainerChecked && (
+      <ProfileExplainer 
+        open={showExplainer} 
+        onComplete={completeExplainer} 
+      />
+    )}
     <DemoLayout currentPage="profile">
       <div className="px-6 py-8 bg-gradient-to-b from-transparent to-muted/10">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -211,5 +222,6 @@ export default function DemoProfile() {
         </div>
       </div>
     </DemoLayout>
+    </>
   );
 }

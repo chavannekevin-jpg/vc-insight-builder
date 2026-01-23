@@ -15,6 +15,7 @@ import { UnitEconomicsEditor } from "@/components/UnitEconomicsEditor";
 import { DataSourceBadge } from "@/components/company/DataSourceBadge";
 import { FinancialMetricsDashboard } from "@/components/company/FinancialMetricsDashboard";
 import { CompletionProgress } from "@/components/company/CompletionProgress";
+import { ProfileExplainer, useProfileExplainer } from "@/components/explainers/ProfileExplainer";
 
 interface Company {
   id: string;
@@ -277,6 +278,9 @@ export default function CompanyProfile() {
   const [editedSectionContent, setEditedSectionContent] = useState("");
   const [wizardOpen, setWizardOpen] = useState(false);
   const [deckWizardOpen, setDeckWizardOpen] = useState(false);
+  
+  // Profile explainer modal
+  const { showExplainer, isChecked: explainerChecked, completeExplainer } = useProfileExplainer();
 
   // Sync memo content to responses - with forceSync option
   const syncMemoToResponses = async (
@@ -924,6 +928,14 @@ export default function CompanyProfile() {
           companyName={company.name}
           companyDescription={company.description || ""}
           onImportComplete={handleDeckImportComplete}
+        />
+      )}
+
+      {/* Profile Explainer Modal */}
+      {explainerChecked && (
+        <ProfileExplainer 
+          open={showExplainer} 
+          onComplete={completeExplainer} 
         />
       )}
       </div>
