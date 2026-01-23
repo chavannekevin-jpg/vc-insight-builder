@@ -1,12 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
+import { type TourStep } from "@/components/tour/ProductTourSpotlight";
 
-export interface TourStep {
-  id: string;
-  target: string; // data-tour-step attribute value
-  title: string;
-  description: string;
-  placement?: 'top' | 'bottom' | 'left' | 'right';
-}
+export type { TourStep };
 
 // Tour steps for the product walkthrough
 export const TOUR_STEPS: TourStep[] = [

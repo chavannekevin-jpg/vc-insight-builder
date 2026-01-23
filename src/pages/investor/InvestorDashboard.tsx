@@ -9,6 +9,8 @@ import AddContactModal from "@/components/investor/AddContactModal";
 import ContactProfileModal from "@/components/investor/ContactProfileModal";
 import BulkImportModal from "@/components/investor/BulkImportModal";
 import { useInvestorContacts } from "@/hooks/useInvestorContacts";
+import { useInvestorProductTour } from "@/hooks/useInvestorProductTour";
+import { ProductTourSpotlight } from "@/components/tour/ProductTourSpotlight";
 import {
   Dialog,
   DialogContent,
@@ -37,7 +39,7 @@ import PlaceholderView from "@/components/investor/views/PlaceholderView";
 import FundDirectoryView from "@/components/investor/views/FundDirectoryView";
 import BusinessCRMView from "@/components/investor/views/BusinessCRMView";
 import CalendarView from "@/components/investor/calendar/CalendarView";
-import { BarChart3, CalendarDays, Target } from "lucide-react";
+import { BarChart3, Target } from "lucide-react";
 
 export interface InvestorContact {
   id: string;
@@ -82,6 +84,9 @@ const InvestorDashboard = () => {
   const [isAddingToCRM, setIsAddingToCRM] = useState(false);
 
   const { contacts, isLoading, refetch, cityGroups } = useInvestorContacts(userId);
+  
+  // Product tour hook
+  const tour = useInvestorProductTour();
 
   // Helper to invalidate all network-related queries
   const invalidateNetworkQueries = () => {
@@ -350,6 +355,17 @@ const InvestorDashboard = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Product Tour */}
+        <ProductTourSpotlight
+          isActive={tour.isActive}
+          currentStep={tour.currentStep}
+          currentStepIndex={tour.currentStepIndex}
+          totalSteps={tour.totalSteps}
+          onNext={tour.nextStep}
+          onPrev={tour.prevStep}
+          onSkip={tour.skipTour}
+        />
       </div>
     </SidebarProvider>
   );
