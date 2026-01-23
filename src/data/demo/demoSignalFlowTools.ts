@@ -537,75 +537,117 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
       }
     ],
     competitorChessboard: {
-      marketDynamics: "Revenue intelligence is a validated category with clear leaders (Gong, Clari) but fragmented mid-market. Window for establishing mid-market position is 18-24 months before incumbents fully activate.",
+      marketDynamics: "The revenue intelligence market is experiencing rapid consolidation as larger players acquire point solutions to build comprehensive platforms. Gong's $7.25B valuation and Clari's $2.6B raise have validated the category, creating both validation and competitive pressure. The market is evolving from 'conversation intelligence' (recording) toward 'revenue intelligence' (prediction and optimization). SignalFlow's mid-market focus is strategic — enterprise is crowded, but mid-market remains underserved by purpose-built tools. Key dynamic: incumbents are distracted by enterprise expansion and potential IPO preparation, creating a 12-18 month window for focused mid-market players.",
       competitors: [
         {
           name: "Gong",
-          currentPosition: "Enterprise leader, $70M+ ARR, dominant brand",
+          currentPosition: "Market leader in conversation intelligence with $7.25B valuation. 4,000+ customers, primarily enterprise. Recently announced mid-market push with simplified pricing. Massive data advantage from 5+ years of call recordings across thousands of companies. Brand recognition is exceptional — 'Gong' has become synonymous with conversation intelligence.",
           threatLevel: "High",
           likelyMoves: [
-            "Launch 'Gong Essentials' tier at $99/seat",
-            "Acquire mid-market player for distribution",
-            "Add prediction features to core platform"
+            "Aggressive mid-market expansion with simplified pricing tier ($500-800/seat vs. current $1,200+) — likely to launch within 6-9 months based on job postings and market signals",
+            "Prediction features leveraging existing conversation data — already announced 'Gong Forecast' product that uses call patterns to predict deal outcomes",
+            "Platform expansion through acquisitions of point solutions in adjacent categories (coaching, prospecting, forecasting)",
+            "International expansion, particularly in EMEA where SignalFlow has early foothold",
+            "Potential IPO preparation in 2024-2025 which may actually distract from competitive execution and create opportunity window"
           ]
         },
         {
           name: "Clari",
-          currentPosition: "Revenue platform leader, forecasting focus",
+          currentPosition: "Revenue platform leader focused on forecasting accuracy. $2.6B valuation with strong enterprise traction. Positioning as 'revenue platform' rather than point solution. Key differentiator is forecast accuracy and pipeline management. Less focus on conversation intelligence, more on CRM data analysis and revenue operations workflow.",
           threatLevel: "Medium",
           likelyMoves: [
-            "Expand into deal coaching",
-            "Push downmarket with simplified product",
-            "Partner with CRMs for distribution"
+            "Expand into deal coaching and rep performance optimization — natural extension of forecasting capabilities",
+            "Push downmarket with simplified, lower-ACV product targeting upper mid-market (500-2000 employees)",
+            "Deepen CRM partnerships, particularly with Salesforce and HubSpot, for distribution and data access advantages",
+            "Potential acquisition of conversation intelligence capabilities to compete more directly with Gong",
+            "Continue platform positioning with RevOps workflow automation"
           ]
         },
         {
           name: "People.ai",
-          currentPosition: "Activity capture, weaker retention",
+          currentPosition: "Activity capture and analytics platform. Weaker retention and slower growth compared to Gong/Clari. Struggled to differentiate in crowded market. Valuable activity data but unclear product positioning. Recent leadership changes suggest strategic uncertainty.",
           threatLevel: "Low",
           likelyMoves: [
-            "Likely acquisition target",
-            "May pivot to platform strategy"
+            "Likely acquisition target for larger player (Salesforce, Microsoft, or private equity roll-up)",
+            "May pivot to AI-first positioning to differentiate from Gong/Clari",
+            "Could pursue partnership strategy rather than direct competition",
+            "Possible downmarket pivot if enterprise growth continues to struggle"
+          ]
+        },
+        {
+          name: "Salesforce Einstein",
+          currentPosition: "Built-in AI within world's largest CRM. Limited adoption despite massive distribution advantage. AI capabilities are improving but still perceived as lagging purpose-built tools. Advantages: zero incremental cost for existing customers, tight CRM integration.",
+          threatLevel: "Medium",
+          likelyMoves: [
+            "Aggressive AI feature additions with each Salesforce release — prediction and coaching features likely to improve significantly",
+            "Bundling AI features into existing licenses to undercut third-party tools on price",
+            "Acquisitions of AI-native sales tools to accelerate capabilities",
+            "Integration with Slack for workflow automation and AI-assisted coaching"
+          ]
+        },
+        {
+          name: "HubSpot Sales Hub",
+          currentPosition: "Strong mid-market CRM with growing sales intelligence features. Natural competitor for SignalFlow's target segment. AI features are basic compared to purpose-built tools but improving rapidly. Advantage: existing customer relationships and trust.",
+          threatLevel: "Medium",
+          likelyMoves: [
+            "Enhanced forecasting and prediction features within Sales Hub",
+            "AI coaching tools leveraging conversation and email data",
+            "Acquisitions of point solutions to accelerate AI capabilities",
+            "Aggressive pricing for bundled AI features"
           ]
         }
       ]
     },
     moatDurability: {
       currentMoatStrength: "Medium",
-      estimatedDuration: "12-18 months",
+      estimatedDuration: "12-18 months before significant competitive pressure",
       erosionFactors: [
-        "Gong can build prediction features with existing data",
-        "Data advantage replicable with capital and time",
-        "Mid-market positioning is a segment, not a moat"
+        "Gong's mid-market push could compress differentiation window — they have announced simplified pricing and are hiring mid-market sales reps. Timeline: 6-12 months to serious competitive pressure",
+        "Data advantage is replicable with capital and time — a well-funded competitor could accumulate training data in 18-24 months through aggressive customer acquisition and data partnerships",
+        "Mid-market positioning is a segment focus, not a structural moat — incumbents can target this segment whenever they choose to prioritize it",
+        "Integration advantages are temporary — as APIs become standardized, integration speed advantages diminish",
+        "Prediction accuracy claims could be matched by competitors with similar data volume and ML talent"
       ],
       reinforcementOpportunities: [
-        "Accelerate customer acquisition to build data density",
-        "File patents on prediction methodology",
-        "Build integration depth that creates switching costs"
+        "Accelerate customer acquisition to build data density advantage — every customer adds to training data, creating compounding returns. Target: 75 customers by Month 12",
+        "File provisional patents on core prediction methodology — establish IP protection before competitors file in adjacent areas. Timeline: 30 days for provisional, 12 months for full application",
+        "Build integration depth and workflow embedding that creates switching costs — become embedded in customer sales processes, not just analytics layer",
+        "Establish thought leadership through research publications and industry speaking — own the 'deal prediction' narrative before larger competitors claim it",
+        "Create customer community and ecosystem effects — build network effects through customer data sharing and benchmarking programs",
+        "Develop vertical-specific models that require specialized expertise — healthcare sales, financial services, etc. create domain-specific moats"
       ]
     },
     caseStudy: {
       company: "Zoom",
       sector: "Video Conferencing",
-      problem: "Enterprise video conferencing was dominated by Cisco/Microsoft but they ignored SMB/ease-of-use",
-      fix: "Built radically simple video conferencing that 'just worked' for any business size",
-      outcome: "Grew to $4B+ revenue by owning simplicity while incumbents focused on enterprise features",
-      timeframe: "9 years from founding to pandemic-driven explosion"
+      problem: "Enterprise video conferencing was dominated by Cisco WebEx and Microsoft Skype for Business, but these tools were designed for IT procurement, not end-user experience. Small and mid-size businesses were largely ignored — forced to use consumer tools like Google Hangouts or expensive enterprise solutions. The core user experience problems were reliability (calls dropped, audio quality issues), complexity (joining required software downloads and plugins), and feature bloat (enterprise features added friction for simple use cases).",
+      fix: "Built radically simple video conferencing that 'just worked' — no downloads required, reliable connections, and intuitive interface. Key insights: (1) optimize for the 80% use case (simple meetings) rather than enterprise edge cases, (2) freemium model enabled bottom-up adoption that bypassed IT procurement, (3) obsessive focus on reliability created word-of-mouth growth. Zoom didn't try to out-feature WebEx; they out-simplified it.",
+      outcome: "Grew from $0 to $4B+ revenue, becoming the dominant video platform. When COVID-19 hit, Zoom's simplicity and reliability made it the default choice, growing from 10M to 300M daily meeting participants in 3 months. Market cap reached $150B+ at peak. Cisco and Microsoft were forced to completely redesign their products to compete, but Zoom had already established brand dominance. 'Zoom' became a verb.",
+      timeframe: "9 years from founding (2011) to pandemic-driven explosion (2020). The first 7 years were steady growth in SMB and mid-market. The simplicity advantage became decisive when mass adoption was required in 2020. Key lesson: focus on underserved segment (SMB/mid-market) and nail the user experience before incumbents prioritize it."
     },
     leadInvestorRequirements: {
-      investorParagraph: "Need investor comfortable with competitive markets who has seen smaller players win against incumbents through focus and execution.",
+      investorParagraph: "The ideal lead investor for SignalFlow's competitive positioning has deep experience in competitive B2B SaaS markets where focused challengers beat well-resourced incumbents. They should have pattern recognition from companies like Zoom (vs. Cisco), Slack (vs. Microsoft), or Datadog (vs. New Relic) — situations where product focus and execution speed trumped incumbent distribution. Critical: they need to be genuinely comfortable with competitive dynamics rather than seeking 'blue ocean' opportunities. They should believe that SignalFlow's mid-market focus creates a defensible position, not just a temporary hiding place from enterprise competitors.",
       requirements: [
-        "Experience investing in competitive categories",
-        "Belief that focus beats features"
+        "Demonstrated track record investing in competitive B2B markets where focused challengers won against well-funded incumbents — not just in retrospect, but active investments during competitive uncertainty",
+        "Belief that focus beats features — conviction that a purpose-built mid-market solution can defend against feature-rich enterprise tools moving downmarket",
+        "Ability to help with competitive positioning and messaging — experience shaping narrative in crowded markets",
+        "Network of sales leaders and CROs for customer introductions and competitive intelligence gathering",
+        "Patience for B2B sales cycles (30-60 days) and understanding that market position takes years to establish",
+        "Willingness to invest in go-to-market at scale once product-market fit is validated"
       ],
       dealbreakers: [
-        "Expectation of patent moat",
-        "Concern that Gong will inevitably win mid-market"
+        "Expectation of patent-based moat — SignalFlow's moat is execution and data, not defensible IP. Investors seeking patent protection as primary moat won't be aligned",
+        "Conviction that Gong will inevitably dominate mid-market — if investor believes the outcome is predetermined, they won't be helpful during competitive battles",
+        "Preference for 'blue ocean' markets — competitive markets require different investor temperament and support patterns",
+        "Discomfort with long-term positioning investments — building brand and category authority requires sustained investment that may not show immediate ROI",
+        "Expectation of immediate market leadership — building defensible position takes 3-5 years, not 12 months"
       ],
       wantToSee: [
-        "Competitive win data",
-        "Customer switching stories",
-        "Clear go-to-market differentiation"
+        "Documented competitive wins with customer quotes explaining why they chose SignalFlow over Gong/Clari — specific proof that the differentiation resonates in sales process",
+        "Customer switching stories from incumbent tools — evidence that customers see enough value to justify switching costs",
+        "Clear go-to-market differentiation beyond product features — how does SignalFlow reach customers differently than Gong/Clari?",
+        "Win/loss analysis documentation showing trends over time — improving win rates against specific competitors",
+        "Customer testimonials specifically addressing competitive comparison — NPS and retention are good, but competitive positioning requires direct comparison feedback"
       ]
     }
   },
@@ -674,51 +716,72 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
     credibilityGapAnalysis: {
       overallCredibility: 82,
       currentSkills: [
-        "Enterprise sales strategy (CEO - Salesforce)",
-        "Production ML systems (CTO - Datadog)",
-        "Team building (CEO - managed 45 people)",
-        "Domain expertise in sales operations"
+        "Enterprise sales strategy and execution — CEO spent 8 years at Salesforce, most recently as Senior Director of Sales Strategy. Led teams of 45+ across strategic initiatives. Deep understanding of how enterprise sales organizations think about tooling, forecasting, and pipeline management",
+        "Production ML systems at scale — CTO led ML infrastructure team at Datadog, building real-time anomaly detection serving 20,000+ customers. Stanford PhD in machine learning with publications in top venues. Experience building systems that balance accuracy with latency requirements",
+        "Team building and engineering culture — CEO built and retained teams through Salesforce's rapid growth period. CTO hired 25+ engineers at Datadog and maintained strong engineering culture. Both founders have high Glassdoor ratings from previous direct reports",
+        "Domain expertise in sales operations and revenue operations — combined 15+ years working with sales leaders, understanding their workflows, pain points, and decision-making processes. This is extremely rare technical founding team",
+        "Startup execution velocity — despite coming from large companies, both founders have demonstrated ability to operate at startup pace. Shipped MVP in 4 months, achieved paying customers in 6 months"
       ],
       expectedSkills: [
-        "Growth/demand generation leadership",
-        "Enterprise sales execution",
-        "Board/investor management",
-        "International expansion"
+        "Growth marketing and demand generation leadership — currently relying on founder-led sales and word-of-mouth. Need dedicated growth leadership to scale customer acquisition beyond €50K MRR",
+        "Enterprise sales execution at scale — while CEO understands enterprise sales strategy, executing enterprise deals requires specialized AE talent with track record of €50K+ ACV deals",
+        "Board and investor management — neither founder has board experience. Will need to develop investor communication, board meeting execution, and governance practices",
+        "International expansion — European market is different from US. Will need local knowledge for US expansion and eventual APAC entry",
+        "Public company experience — for eventual IPO path, will need executives with public company finance and compliance experience"
       ],
       gaps: [
         {
           skill: "VP Marketing / Demand Gen",
           severity: "high",
-          mitigation: "Actively recruiting, advisor covering interim"
+          mitigation: "Active search with 3 finalist candidates. Current advisor (former Gong VP Marketing) covering critical decisions interim. Expect hire within 60 days. This is the most critical gap — without demand gen, growth will remain founder-constrained."
         },
         {
           skill: "Enterprise AE experience",
           severity: "medium",
-          mitigation: "Hiring planned for Q2"
+          mitigation: "Hiring planned for Q2 after seed raise closes. Have identified strong candidates through CEO's Salesforce network. Initial focus on 2 AEs to test scalability of sales motion before larger investment."
+        },
+        {
+          skill: "Customer Success leadership",
+          severity: "medium",
+          mitigation: "Currently handled by founders. Manageable at 28 customers but will break at 50+. Plan to hire CS lead by Month 6 post-raise."
+        },
+        {
+          skill: "Financial planning and analysis",
+          severity: "low",
+          mitigation: "Using fractional CFO for now. Will hire full-time finance leader at Series A stage when complexity requires it."
         }
       ]
     },
     caseStudy: {
       company: "Datadog",
-      sector: "DevOps / Monitoring",
-      problem: "Infrastructure monitoring was fragmented across multiple tools",
-      fix: "Built unified observability platform with exceptional UX and developer focus",
-      outcome: "Grew to $2B+ ARR and $35B market cap with disciplined execution",
-      timeframe: "10 years from founding to category leadership"
+      sector: "DevOps / Observability",
+      problem: "Infrastructure monitoring was fragmented across multiple point solutions — one tool for metrics, another for logs, another for APM, another for security. DevOps teams were drowning in tool sprawl, context switching, and alert fatigue. The bigger problem: these tools didn't talk to each other, making root cause analysis painfully slow. When systems failed, engineers spent hours correlating data across dashboards instead of fixing problems.",
+      fix: "Built unified observability platform that combined metrics, traces, and logs in a single interface with consistent query language. Key insight: don't just aggregate data, correlate it automatically so engineers can click from alert → trace → log → root cause in seconds. Second insight: focus obsessively on developer experience — Datadog's UI became the industry benchmark for usability. Third insight: embrace cloud-native architecture before it was mainstream, betting correctly on AWS/Azure/GCP dominance.",
+      outcome: "Grew to $2B+ ARR and $35B+ market cap, becoming the dominant player in cloud monitoring. Datadog's market cap exceeded the combined value of legacy competitors (New Relic, Splunk, AppDynamics). The company went public in 2019 and has consistently beaten expectations with 80%+ growth rates. Created a new category ('observability') and forced every competitor to rebuild their products around unified platform concepts.",
+      timeframe: "10 years from founding (2010) to category leadership (2020). The first 5 years were steady product development and enterprise sales building. Growth accelerated dramatically 2017-2020 as cloud migration reached mainstream enterprise adoption. Key lesson: be early to a secular trend (cloud), focus on developer experience, and build platform before competitors realize they need to."
     },
     leadInvestorRequirements: {
-      investorParagraph: "Ideal investor can help with GTM scaling and provides access to sales leadership network for customer intros and hiring.",
+      investorParagraph: "The ideal lead investor for SignalFlow's team thesis deeply understands founder-market fit and has pattern recognition for exceptional technical founding teams entering enterprise software. They should have experience with companies where domain expertise was the key differentiator — founders who understood their customers' problems viscerally because they lived them. Critical: they need to be able to help with GTM scaling, not just provide capital. The next 18 months require significant hiring support, customer introductions, and operational guidance as the company scales from founder-led sales to scalable go-to-market motion.",
       requirements: [
-        "B2B SaaS operational experience",
-        "Network in sales/RevOps community"
+        "Deep B2B SaaS operational experience — not just board seats, but hands-on experience scaling GTM from €30K to €500K+ MRR. Ability to provide practical advice on sales team structure, compensation, and process",
+        "Strong network in sales and RevOps leadership community — ability to make customer introductions to CROs, VPs of Sales, and Heads of RevOps at target companies",
+        "Track record of helping technical founders become effective executives — coaching on board management, investor communication, and leadership development",
+        "Patience with B2B sales cycles and understanding that enterprise-grade products require time to mature",
+        "Willingness to engage deeply with portfolio companies — not just quarterly board meetings, but accessible for ad-hoc strategic discussions"
       ],
       dealbreakers: [
-        "Micromanagement style",
-        "Pushing for premature enterprise pivot"
+        "Micromanagement style or excessive board control — founders need autonomy to execute while learning from investor experience",
+        "Pushing for premature enterprise pivot — the mid-market focus is strategic, not a limitation. Investors who don't believe in segment ownership won't be aligned",
+        "Lack of time availability — SignalFlow needs engaged investors, not prestigious but absent board members",
+        "Expectation of immediate hyper-growth — B2B SaaS at this stage grows 15-25% MoM, not 50%+. Investors expecting consumer-style growth curves will be disappointed",
+        "Preference for founder replacement — SignalFlow's founders are exceptional and should be supported, not replaced with 'professional management'"
       ],
       wantToSee: [
-        "References from Salesforce/Datadog colleagues",
-        "Evidence of team culture and retention"
+        "References from Salesforce and Datadog colleagues validating founders' claims about experience and reputation — actual conversations with former colleagues and direct reports",
+        "Evidence of team culture and retention — employee satisfaction, tenure, and exit interview feedback from previous roles",
+        "Demonstration of hiring ability — can founders attract and close strong candidates despite startup compensation constraints?",
+        "Founders' self-awareness about gaps and willingness to hire for weaknesses — humility about what they don't know",
+        "Board member references from previous investments — how do founders and investors interact during challenging periods?"
       ]
     }
   },
@@ -795,46 +858,92 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
       overallResilience: "Medium-High",
       scenarios: [
         {
-          scenario: "Churn doubles to 4.2%",
-          impact: "LTV drops to €21K, LTV:CAC falls to 2.5x",
+          scenario: "Monthly churn doubles from 2.1% to 4.2%",
+          impact: "LTV drops from €41K to €21K, bringing LTV:CAC ratio from 4.9x down to 2.5x — below the 3x minimum that most VCs require for investment. This would fundamentally change the unit economics story and require either significant CAC reduction or pricing increases to restore investment thesis viability.",
           survivalProbability: "85%",
-          mitigations: ["Invest in customer success", "Build annual contract base"]
+          mitigations: [
+            "Invest heavily in customer success before churn becomes visible — hire CS lead, implement QBRs, build health scoring dashboard",
+            "Push aggressively for annual contracts (currently 40% of customers) to reduce churn exposure and improve cash position",
+            "Identify churn leading indicators early — usage decline, support ticket patterns, champion turnover — and intervene proactively",
+            "Build switching costs through deeper integration and workflow embedding"
+          ]
         },
         {
-          scenario: "CAC increases 50% due to competition",
-          impact: "Payback extends to 10.5 months, efficiency pressure",
+          scenario: "CAC increases 50% due to competitive pressure",
+          impact: "Payback period extends from 7 months to 10.5 months, still acceptable but approaching concerning territory. If combined with growth plateau, would create efficiency concerns. Marketing spend ROI would decline, requiring either more capital or slower growth to maintain unit economics.",
           survivalProbability: "80%",
-          mitigations: ["Invest in product-led growth", "Build referral channel"]
+          mitigations: [
+            "Invest in product-led growth motion to reduce sales-assisted CAC dependency — self-serve trial, in-product virality, usage-based expansion",
+            "Build customer referral program to create lower-CAC channel — target 20%+ of new customers from referrals by Month 12",
+            "Focus on content marketing and thought leadership to reduce paid acquisition dependency",
+            "Improve win rates through better sales enablement and competitive positioning"
+          ]
         },
         {
-          scenario: "Price pressure forces 30% ACV reduction",
-          impact: "Need 40% more customers for same ARR",
+          scenario: "Competitive pressure forces 30% ACV reduction",
+          impact: "Need 40% more customers to achieve same ARR targets. Sales team productivity pressure intensifies. Gross margin compression if infrastructure costs don't scale proportionally. Would require either faster customer acquisition or longer runway to reach Series A milestones.",
           survivalProbability: "70%",
-          mitigations: ["Differentiate on value, not price", "Add premium tier"]
+          mitigations: [
+            "Differentiate on value, not price — avoid race to bottom by emphasizing prediction accuracy and ROI demonstration",
+            "Add premium enterprise tier for larger deployments at €50K+ ACV to offset mid-market price pressure",
+            "Pursue product-led growth to reach customers who self-select on price earlier in funnel",
+            "Build vertical-specific value propositions that justify premium pricing in specific industries"
+          ]
+        },
+        {
+          scenario: "Key customers (top 3) churn simultaneously",
+          impact: "Revenue concentration risk: top 3 customers represent 22% of MRR. Simultaneous loss would drop MRR from €32K to €25K, creating significant optics problem for fundraising. Would also lose reference customers for sales process.",
+          survivalProbability: "90%",
+          mitigations: [
+            "Diversify customer base aggressively — no single customer should exceed 10% of MRR by Month 12",
+            "Build executive relationships at key accounts beyond primary buyer — multi-threading reduces single-point-of-failure risk",
+            "Lock in annual contracts with top customers, ideally with price protection for early adopter loyalty",
+            "Monitor champion turnover at key accounts and proactively engage new stakeholders"
+          ]
+        },
+        {
+          scenario: "Gong launches directly competitive mid-market product",
+          impact: "Sales cycles would extend as prospects demand competitive bake-offs. Win rates could decline 20-30% initially. Would need to accelerate differentiation and potentially adjust pricing strategy. Marketing spend would need to increase to maintain share of voice.",
+          survivalProbability: "75%",
+          mitigations: [
+            "Accelerate patent filings to create IP defensibility narrative",
+            "Build customer community that creates switching costs and network effects",
+            "Double down on mid-market specialization — features, pricing, support model specifically designed for 100-500 employee companies",
+            "Establish thought leadership in 'deal prediction' category before Gong claims narrative"
+          ]
         }
       ]
     },
     caseStudy: {
       company: "Pipedrive",
       sector: "CRM / Sales Software",
-      problem: "SMB sales teams needed simple, affordable CRM",
-      fix: "Built intuitive CRM with aggressive pricing and self-serve motion",
-      outcome: "Scaled to $100M+ ARR before Vista acquisition at $1.5B",
-      timeframe: "10 years from founding to successful exit"
+      problem: "SMB and mid-market sales teams were forced to choose between expensive, complex enterprise CRMs (Salesforce) or basic, unprofessional tools (spreadsheets, simple contact databases). Salesforce was overkill for small teams — too many features, too much configuration, too expensive for companies with 5-50 sales reps. The core problem: CRMs were designed for sales managers to track reps, not for reps to actually close deals. Adoption was low because the tools created work without providing value.",
+      fix: "Built CRM around the sales rep workflow, not the manager reporting needs. Key insight: if reps love using the tool, managers get the data they need automatically. Pipedrive's pipeline visualization made deal management intuitive and visual. Aggressive pricing ($15-25/user/month) undercut Salesforce by 80%+. Self-serve motion enabled bottom-up adoption without enterprise sales process. Focus on 'pipeline management' rather than 'CRM' — solving a specific problem rather than being a platform.",
+      outcome: "Scaled to $100M+ ARR serving 100,000+ companies globally. Acquired by Vista Equity Partners for $1.5B in 2020. Pipedrive proved that focused, well-designed vertical solutions can build massive businesses even with Salesforce as the incumbent. The company maintained profitability throughout growth, demonstrating that capital efficiency is possible in competitive markets.",
+      timeframe: "10 years from founding (2010) to Vista acquisition (2020). Growth was steady rather than explosive — the company raised only $90M before exit, demonstrating capital-efficient scaling. Key lesson: focus on underserved segment (SMB/mid-market), price aggressively, and optimize for self-serve adoption."
     },
     leadInvestorRequirements: {
-      investorParagraph: "Need investor who understands SaaS unit economics and can help optimize growth efficiency.",
+      investorParagraph: "The ideal lead investor for SignalFlow's business model thesis is a true SaaS operator who can help optimize unit economics and growth efficiency as the company scales. They should have deep pattern recognition for how B2B SaaS companies navigate the transition from founder-led sales to scalable go-to-market motion. Critical: they need to understand that the current unit economics are based on founder-led sales and early adopters, and will naturally compress as the customer base diversifies. They should be able to help identify leading indicators of unit economics degradation and intervene before problems become visible in the numbers.",
       requirements: [
-        "SaaS metrics fluency",
-        "Experience with mid-market pricing"
+        "Deep SaaS metrics fluency — not just understanding of LTV:CAC, but experience diagnosing unit economics problems and implementing fixes across multiple companies",
+        "Experience with mid-market SaaS pricing — understanding of how to balance self-serve and sales-assisted motions, when to push for annual contracts, how to structure enterprise tiers",
+        "Operational experience with sales team scaling — hiring, compensation design, quota setting, territory planning for companies growing from €30K to €500K+ MRR",
+        "Network of revenue operations leaders who can advise on pricing, packaging, and sales process optimization",
+        "Patience for B2B SaaS sales cycles and understanding that unit economics are investments, not instant returns"
       ],
       dealbreakers: [
-        "Pressure to go downmarket to SMB",
-        "Expectation of freemium model"
+        "Pressure to move downmarket to SMB with self-serve-only model — the mid-market focus is strategic, and premature SMB pivot would dilute the positioning and unit economics",
+        "Expectation of freemium model adoption — freemium is expensive and doesn't work well in B2B sales tools where value requires CRM integration",
+        "Insistence on consumer-style growth metrics (DAU, MAU, viral coefficients) — B2B SaaS grows through relationships and value demonstration, not viral loops",
+        "Lack of appreciation for sales-assisted motion — some investors are biased toward product-led growth; SignalFlow needs both motions to work together",
+        "Short-term CAC payback expectations — 7-month payback is excellent, but investors expecting 3-month payback won't be aligned with B2B SaaS dynamics"
       ],
       wantToSee: [
-        "Cohort-level unit economics",
-        "Customer concentration analysis"
+        "Cohort-level unit economics breaking down CAC, LTV, and retention by customer acquisition month — evidence that early cohorts aren't artificially better than later ones",
+        "Customer concentration analysis showing no single customer >10% of MRR — reduces key customer risk and improves acquisition attractiveness",
+        "Channel mix analysis showing CAC by acquisition source — understanding which channels are efficient and scalable",
+        "Pipeline coverage and win rate data demonstrating sales process health — not just closed deals, but leading indicators of future performance",
+        "Pricing experimentation history and willingness to iterate — evidence that founders are data-driven about pricing decisions"
       ]
     }
   },
@@ -911,36 +1020,52 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
       tractionType: "Revenue",
       sustainabilityScore: 75,
       redFlags: [
-        "Small customer base (28) limits pattern confidence",
-        "Founder-led sales may not scale"
+        "Small customer base (28 customers) limits pattern confidence — with only 28 data points, statistical significance for retention and growth claims is limited. A few customer losses could dramatically change metrics. VCs will want to see at least 50-75 customers before high confidence in unit economics",
+        "Founder-led sales may not scale — CEO is currently closing most deals personally. The sales playbook hasn't been validated with non-founder sellers. This is the classic 'founder product' vs. 'product-market fit' question: can hired salespeople replicate founder success?",
+        "Customer concentration risk — top 3 customers represent 22% of MRR. Simultaneous loss (leadership change, budget cuts, competitive switch) would create significant revenue decline",
+        "Limited industry diversity — 60% of customers are in SaaS/tech, which may indicate product-market fit is narrower than TAM suggests. Need to validate appeal in other verticals",
+        "Growth rate declining slightly — 15% MoM average, but last 2 months were 14% and 13%. Could be noise, could be early signal of growth plateau as easy customers are acquired"
       ],
       positiveSignals: [
-        "8 consecutive months of 15%+ growth",
-        "High retention (94% at 6 months)",
-        "Strong NPS (74) indicates organic growth potential"
+        "8 consecutive months of 15%+ MoM growth — this consistency is more important than any single month's result. It suggests systematic demand, not just one-time wins or lucky deals. Very few Seed-stage companies maintain this consistency",
+        "High retention at 6-month mark (94%) — customers who hit 6 months are likely to stay. This is the critical retention cliff for B2B SaaS. The 6% churn is mostly from early customers who weren't ideal fit",
+        "Strong NPS (74) indicates organic growth potential — this NPS is exceptional for B2B SaaS (industry average is 30-40). High NPS typically correlates with word-of-mouth referrals and expansion",
+        "85% weekly active usage — customers are actually using the product regularly, not just paying for it. Usage depth reduces churn risk and indicates genuine value delivery",
+        "108% net revenue retention — expansion revenue from existing customers is offsetting gross churn. This is the sign of a healthy product with upsell potential",
+        "Customer acquisition cost is declining — CAC has decreased 12% over last 6 months as word-of-mouth and inbound increase. This is the early signal of product-led growth working",
+        "Sales cycle shortened from 45 days to 32 days — as market awareness grows and pitch improves, deals close faster. This efficiency improvement suggests scalable sales motion"
       ]
     },
     caseStudy: {
       company: "Notion",
-      sector: "Productivity Software",
-      problem: "Teams needed flexible workspace that combined docs, wikis, and databases",
-      fix: "Built all-in-one workspace with viral collaboration features",
-      outcome: "Grew to $10B+ valuation with strong product-led growth",
-      timeframe: "5 years from relaunch to category leadership"
+      sector: "Productivity Software / Collaborative Workspace",
+      problem: "Teams were drowning in tool fragmentation — one app for docs (Google Docs), another for wikis (Confluence), another for project management (Asana/Monday), another for databases (Airtable), another for notes (Evernote). Context switching was constant, information was scattered, and onboarding new team members was painful. The deeper problem: rigid, single-purpose tools couldn't adapt to how teams actually wanted to work. Every team has unique workflows, but existing tools forced standardization.",
+      fix: "Built infinitely flexible workspace that combined docs, wikis, databases, and project management in a single, beautiful interface. Key insight: don't build features, build blocks that teams can assemble into any workflow they need. Second insight: invest heavily in design and user experience — make the tool feel premium and delightful to use. Third insight: embrace bottom-up adoption through individual users and small teams, then expand organically to company-wide deployment. Fourth insight: community-driven templates created network effects without direct virality.",
+      outcome: "Grew to $10B+ valuation with 30M+ users across 500,000+ teams. Notion became the productivity tool of choice for startups, tech companies, and increasingly enterprises. The company achieved profitability while growing, demonstrating efficient business model. Created a new category ('connected workspace') and forced Google, Microsoft, and Atlassian to respond with competitive products. 'Notion' became shorthand for modern team productivity.",
+      timeframe: "5 years from product relaunch (2018) to category leadership (2023). The original Notion launched in 2016 but was rebuilt from scratch due to technical debt. The relaunch in 2018 with new architecture enabled rapid feature development and scaling. Key lesson: product-led growth works in B2B when the product is truly delightful and solves individual user needs first."
     },
     leadInvestorRequirements: {
-      investorParagraph: "Need investor who can help scale go-to-market and has pattern recognition for B2B growth inflection points.",
+      investorParagraph: "The ideal lead investor for SignalFlow's traction thesis has deep experience scaling B2B SaaS go-to-market from founder-led sales to repeatable sales motion. They should understand the classic 'founder product' challenge — the transition from founders closing deals to hired salespeople replicating that success. Critical: they need to help with GTM strategy, not just provide capital. The next 12-18 months require building a sales team, establishing sales process, and proving that non-founders can sell the product effectively. This is the most common failure mode for Seed-stage B2B companies, and the right investor can significantly de-risk this transition.",
       requirements: [
-        "GTM scaling expertise",
-        "Sales team building experience"
+        "Deep GTM scaling expertise — hands-on experience helping companies transition from €30K to €200K+ MRR with repeatable sales motion",
+        "Sales team building experience — hiring AEs, setting quotas, designing compensation, building enablement programs",
+        "Pattern recognition for B2B growth inflection points — understanding when to invest in marketing, when to expand product, when to add sales capacity",
+        "Network of sales leaders and operators for hiring support — the hardest hires at this stage are first AEs and VP Sales",
+        "Patience with B2B sales cycles — understanding that 30-60 day sales cycles mean growth is predictable but not instant"
       ],
       dealbreakers: [
-        "Expectation of hockey-stick growth immediately",
-        "Pushing for premature international expansion"
+        "Expectation of hockey-stick growth immediately post-funding — B2B SaaS at this stage grows 15-25% MoM with capital, not 50%+. Investors expecting consumer-style growth curves will be frustrated",
+        "Pushing for premature international expansion — US/Europe focus is appropriate at this stage. International expansion before €100K MRR is a distraction",
+        "Preference for product-led growth only — SignalFlow needs both PLG and sales-assisted motion to work. Pure PLG bias would limit addressable market",
+        "Lack of operational support availability — SignalFlow needs engaged investors who can help with hiring, customer intros, and strategic decisions, not just board oversight",
+        "Impatience with the 'messy middle' — the transition from founder-led to scalable sales is ugly and unpredictable. Investors need stomach for variance"
       ],
       wantToSee: [
-        "Sales pipeline and conversion metrics",
-        "Customer acquisition channel mix"
+        "Detailed sales pipeline and conversion metrics — not just closed deals, but stage-by-stage conversion rates showing funnel health",
+        "Customer acquisition channel mix with CAC by source — understanding which channels are working and which are experiments",
+        "Win/loss analysis documentation — systematic understanding of why deals close and why they don't",
+        "Sales process documentation — even if it's founder-led, is the process understood and documented for replication?",
+        "Customer reference calls demonstrating sales process — ability to get customers on calls with investors shows relationship depth"
       ]
     }
   },
@@ -1003,84 +1128,128 @@ export const DEMO_SECTION_TOOLS: Record<string, any> = {
     vcMilestoneMap: {
       milestones: [
         {
-          timeframe: "6 months",
-          milestone: "€75K MRR, 45 customers, VP Marketing hired",
+          timeframe: "6 months post-funding",
+          milestone: "€75K MRR, 45 customers, VP Marketing hired, first 2 AEs ramped and hitting quota",
           status: "upcoming",
-          fundingImplication: "On track for Series A preparation"
+          fundingImplication: "On track for Series A preparation — demonstrating that growth accelerates with capital and that sales motion is replicable beyond founders. Key proof point: at least one AE closing deals independently validates scalable sales."
         },
         {
-          timeframe: "12 months",
-          milestone: "€120K MRR, 60 customers, enterprise tier launched",
+          timeframe: "12 months post-funding",
+          milestone: "€120K MRR, 60 customers, enterprise tier launched with 5+ customers at €50K+ ACV, 115%+ NRR demonstrated",
           status: "upcoming",
-          fundingImplication: "Series A ready, begin process"
+          fundingImplication: "Series A ready — at this milestone, SignalFlow has demonstrated product-market fit, repeatable sales motion, and upmarket expansion potential. Begin Series A process with €4-8M target. Key proof: unit economics hold at scale and enterprise tier validates premium positioning."
         },
         {
-          timeframe: "18 months",
-          milestone: "€150K MRR, 75 customers, US presence established",
+          timeframe: "18 months post-funding",
+          milestone: "€150K MRR, 75 customers, US presence established with first US customers, sales team of 5+ hitting quota consistently",
           status: "upcoming",
-          fundingImplication: "Series A closed, scaling mode"
+          fundingImplication: "Series A closed, scaling mode activated — with Series A complete, SignalFlow has 24+ months runway and proven GTM motion. Focus shifts from proving to scaling. Key proof: US expansion works, indicating total addressable market is truly global."
+        },
+        {
+          timeframe: "24 months post-funding",
+          milestone: "€250K MRR, 100+ customers, US represents 30%+ of new ARR, enterprise tier represents 25%+ of revenue",
+          status: "upcoming",
+          fundingImplication: "Series B preparation — at this stage, SignalFlow is established mid-market player with clear path to €1M+ MRR. Series B ($15-25M) enables acceleration of enterprise expansion and potential acquisitions. Key proof: sustainable growth with improving unit economics."
         }
       ],
       criticalPath: [
-        "Hire VP Marketing by Month 2",
-        "First AE quota attainment by Month 4",
-        "Enterprise tier beta by Month 6",
-        "US customer acquisition by Month 10"
+        "Month 2: Hire VP Marketing — this is the gating factor for demand generation. Without VP Marketing, growth remains founder-constrained. Have 3 finalist candidates identified; target offer accepted by Day 60 post-funding.",
+        "Month 4: First AE achieves quota attainment — proof that sales playbook is replicable. If first AE fails, need to iterate on hiring profile, training, or product before adding more capacity.",
+        "Month 6: Enterprise tier beta launch with 3 pilot customers — validates upmarket expansion and premium pricing. Enterprise tier (€50K+ ACV) dramatically changes unit economics and competitive positioning.",
+        "Month 8: VP Marketing driving 50%+ of pipeline — transition from founder-led demand gen to marketing-led. This is the key proof that growth can scale beyond founder hustle.",
+        "Month 10: First US customer acquisition — validates international expansion hypothesis. US is 60%+ of TAM; inability to sell in US would fundamentally limit company potential.",
+        "Month 12: Series A process begins — by this point, all key milestones should be hit or clearly on track. Series A process takes 2-3 months; starting early ensures capital before runway becomes constraint.",
+        "Month 14: Second AE cohort hired (2 additional) — with proven sales playbook and Series A funding, expand sales team. Target 4 quota-carrying reps by Month 18.",
+        "Month 18: Series A closed, €5M+ raised at 3-4x step-up from Seed valuation — successful Series A validates Seed investment thesis and positions company for acceleration phase."
       ]
     },
     exitNarrative: {
       potentialAcquirers: [
-        "Salesforce (CRM integration, sales AI strategy)",
-        "HubSpot (mid-market expansion)",
-        "Microsoft (Dynamics integration)",
-        "ZoomInfo (revenue intelligence platform)",
-        "Private equity consolidation play"
+        "Salesforce — CRM market leader with strategic need for AI-powered sales intelligence. Acquisition would accelerate Salesforce's competitive response to Gong and provide immediate distribution to 150,000+ customers. Precedent: Salesforce acquired Slack for $27.7B, demonstrating willingness to pay for strategic capabilities. SignalFlow could be $500M-1B acquisition at Series B/C stage.",
+        "HubSpot — Mid-market CRM leader seeking to differentiate from Salesforce through superior AI capabilities. SignalFlow's mid-market focus aligns perfectly with HubSpot's customer base. HubSpot has been acquisitive (The Hustle, Clearbit) and has $1B+ cash for M&A. Acquisition range: $200-500M at Series A/B stage.",
+        "Microsoft — Dynamics 365 needs differentiation vs. Salesforce. Microsoft has massive AI investment (OpenAI partnership) seeking application use cases. Teams/Outlook integration creates natural distribution channel. Acquisition could be strategic premium. Range: $300M-1B depending on stage.",
+        "ZoomInfo — Revenue intelligence platform seeking to expand capabilities. Already acquired Chorus.ai for $575M, demonstrating appetite for sales tech M&A. SignalFlow's prediction capabilities would complement ZoomInfo's data assets. Range: $200-400M.",
+        "Private equity consolidation — Vista, Thoma Bravo, and other PE firms are rolling up sales tech companies. SignalFlow could be acquired as platform or bolt-on. PE typically pays 8-12x ARR for growing SaaS with strong retention. Range: dependent on ARR at acquisition."
       ],
-      strategicValue: "AI-powered deal intelligence represents a strategic capability that every major CRM and sales platform will want to offer. Acquisition provides faster path than internal development.",
+      strategicValue: "AI-powered deal intelligence represents a strategic capability that every major CRM and sales platform will need to offer to remain competitive. Gong's success ($7.25B valuation) has validated the category and created urgency for platforms lacking native conversation/deal intelligence. For acquirers, building this capability internally would take 2-3 years and significant investment; acquisition provides faster path with proven team and technology. SignalFlow's mid-market focus is particularly attractive to HubSpot and Microsoft, who are underrepresented in this segment. The data asset (2M+ deal outcomes) is increasingly valuable as AI training data becomes strategic advantage.",
       comparableExits: [
-        "Chorus.ai acquired by ZoomInfo for $575M",
-        "InsideSales.com acquired by Aurea for ~$100M"
+        {
+          company: "Chorus.ai",
+          acquirer: "ZoomInfo",
+          value: "$575M",
+          multiple: "Estimated 25-30x ARR — premium paid for strategic fit and conversation data assets"
+        },
+        {
+          company: "InsideSales.com",
+          acquirer: "Aurea Software",
+          value: "~$100M (down from $1.5B peak valuation)",
+          multiple: "Approximately 2-3x ARR — example of value destruction when growth stalls and competition intensifies. Cautionary tale for SignalFlow."
+        },
+        {
+          company: "Clearbit",
+          acquirer: "HubSpot",
+          value: "$150M (reported)",
+          multiple: "Estimated 5-8x ARR — data company acquired for strategic integration, not standalone growth potential"
+        },
+        {
+          company: "Outreach (potential)",
+          acquirer: "N/A — still independent, preparing for IPO",
+          value: "$4B+ (last private valuation)",
+          multiple: "Approximately 12-15x ARR — demonstrates public market potential for category leaders in sales tech"
+        }
       ],
-      pathToExit: "Most likely path: strategic acquisition at Series B stage (€500M-1B) or IPO preparation at Series C+ with €100M+ ARR"
+      pathToExit: "Most likely paths: (1) Strategic acquisition at Series B stage ($500M-1B valuation) if SignalFlow achieves €3-5M ARR and demonstrates clear competitive differentiation. Likely acquirers: HubSpot, Salesforce, or Microsoft. (2) Strategic acquisition at Series C+ stage ($1-2B+) if SignalFlow achieves €10M+ ARR and category leadership in mid-market. At this scale, becomes attractive to private equity as platform investment. (3) IPO path if SignalFlow achieves €50M+ ARR with sustainable growth — would require continued independence through multiple funding rounds and 7-10 year timeline. IPO is less likely than strategic acquisition given competitive dynamics and capital requirements."
     },
     scenarioPlanning: {
       bestCase: {
         probability: 25,
-        outcome: "Category leader in mid-market deal intelligence. €200M+ ARR, IPO path or $2B+ strategic acquisition.",
-        fundraisingImplication: "Series D+ or strategic exit"
+        description: "SignalFlow becomes the category leader in mid-market deal intelligence, successfully defending against Gong's mid-market push through superior product focus and execution. Achieves €200M+ ARR with 70%+ market share in target segment. Platform expansion into coaching, prospecting, and forecasting creates full revenue intelligence suite.",
+        outcome: "€200M+ ARR, IPO at $3B+ valuation or strategic acquisition at $2B+",
+        fundraisingImplication: "Series D+ with tier-1 investors, or strategic exit to Salesforce/Microsoft at significant premium. Founders achieve significant liquidity."
       },
       baseCase: {
         probability: 50,
-        outcome: "Strong mid-market player. €50M+ ARR, acquired by CRM platform for $500M-1B.",
-        fundraisingImplication: "Series B/C with strategic exit"
+        description: "SignalFlow establishes strong mid-market position but faces increasing competitive pressure from Gong and Clari. Achieves €50M+ ARR with loyal customer base and strong retention. Growth moderates as market matures. Acquired by CRM platform seeking AI capabilities.",
+        outcome: "€50M+ ARR, acquired by CRM platform for $500M-1B",
+        fundraisingImplication: "Series B/C with solid returns for early investors (5-10x for Seed). Founders achieve meaningful outcome but not generational wealth. Acquisition provides good outcome for team and investors."
       },
       downside: {
         probability: 25,
-        outcome: "Competitive pressure limits growth. Acquired for team/technology at $50-100M.",
-        fundraisingImplication: "Bridge or acquisition"
+        description: "Competitive pressure from Gong's mid-market push limits SignalFlow's growth. Gong's distribution and brand advantage prove insurmountable despite product differentiation. SignalFlow achieves €10-20M ARR but growth stalls and investor interest wanes.",
+        outcome: "€10-20M ARR, acquired for team and technology at $50-150M",
+        fundraisingImplication: "Bridge round or forced sale. Returns for Seed investors are 1-3x — acceptable but not venture-scale. Team acqui-hired by larger player. Cautionary outcome that validates the risk of competing in well-funded market."
       }
     },
     caseStudy: {
       company: "Outreach",
       sector: "Sales Engagement",
-      problem: "Sales reps needed systematic approach to multi-channel prospecting",
-      fix: "Built sales engagement platform automating sequences across email, phone, and social",
-      outcome: "Grew to $300M+ ARR and $4B+ valuation by owning sales execution workflow",
-      timeframe: "8 years from founding to near-IPO status"
+      problem: "Sales reps were drowning in manual, fragmented prospecting work — writing individual emails, making phone calls without templates, tracking activities in spreadsheets. The core problem: sales reps spent more time on administrative tasks than actually selling. Sequences were managed manually, follow-ups were forgotten, and there was no systematic way to understand what outreach strategies worked. Sales managers had no visibility into rep activity or ability to coach on execution.",
+      fix: "Built sales engagement platform that automated multi-channel prospecting sequences (email, phone, social) while maintaining personalization. Key innovations: (1) Sequence automation that felt personal, not robotic — templates with variables, intelligent scheduling, and A/B testing. (2) Activity capture that didn't require rep data entry — automatic logging of emails, calls, and meetings. (3) Analytics showing which sequences, templates, and tactics actually drove results. (4) Coaching layer allowing managers to review rep activity and provide feedback. The platform made sales reps 3x more productive while giving managers unprecedented visibility.",
+      outcome: "Grew to $300M+ ARR and $4.4B valuation, becoming the dominant player in sales engagement. Outreach created an entirely new category and forced Salesforce, Microsoft, and others to respond with competitive offerings. The company was preparing for IPO (later postponed due to market conditions) and had achieved profitability. Expanded from prospecting into full revenue lifecycle with acquisitions and product expansion.",
+      timeframe: "8 years from founding (2014) to near-IPO status (2022). Growth accelerated dramatically 2019-2021 as remote selling required systematic outreach tools. The company raised $500M+ and maintained high growth rates while building toward profitability. Key lesson: own a workflow (sales prospecting), then expand to adjacent workflows (engagement, analytics, coaching, forecasting)."
     },
     leadInvestorRequirements: {
-      investorParagraph: "Need investor with long-term perspective who has helped B2B companies navigate from Seed to Series B and beyond.",
+      investorParagraph: "The ideal lead investor for SignalFlow's vision thesis has deep experience with long-term company building and has helped B2B companies navigate from Seed through Series B and beyond. They should understand that the path from €32K MRR to €150K MRR is fundamentally different from the path to €1M+ MRR, and be prepared to support through multiple phase transitions. Critical: they should have relationships with Series A and B investors who could lead follow-on rounds, de-risking the fundraising path. They should believe in the mid-market opportunity specifically, not just as a stepping stone to enterprise.",
       requirements: [
-        "Track record of multi-stage support",
-        "Exit experience in B2B SaaS"
+        "Track record of multi-stage support — investors who have supported companies from Seed through Series B or beyond, not just early-stage specialists",
+        "Exit experience in B2B SaaS — understanding of strategic vs. financial buyers, M&A processes, and valuation drivers for sales tech companies",
+        "Relationships with follow-on investors — ability to make warm introductions to Series A investors, reducing fundraising friction",
+        "Board governance experience — helping founders develop board management skills, investor communication, and governance practices",
+        "Long-term perspective — willingness to hold investment for 7-10 years if company pursues IPO path"
       ],
       dealbreakers: [
-        "Short-term exit pressure",
-        "Preference for consumer-style returns"
+        "Short-term exit pressure — investors who need quick returns (3-5 year fund cycles) may push for premature exit that limits company potential",
+        "Preference for consumer-style returns — B2B SaaS typically generates 5-20x returns, not 100x. Investors expecting consumer-style outcomes will be disappointed with realistic B2B trajectories",
+        "Lack of follow-on investment capability — Seed investors who can't participate in Series A create signaling risk for future fundraising",
+        "Board seat demands at Seed stage — Seed investment typically doesn't warrant board seat; investors demanding governance control at this stage are misaligned",
+        "Pressure for immediate enterprise pivot — the mid-market focus is strategic and should be maintained through Series A at minimum"
       ],
       wantToSee: [
-        "Clear board composition plan",
-        "Scenario planning documentation"
+        "Clear board composition plan for Series A and beyond — understanding of governance trajectory and board evolution",
+        "Scenario planning documentation demonstrating strategic thinking — founders who have thought through multiple outcomes and have contingency plans",
+        "Use of funds breakdown with specific hiring plan — detailed allocation of €2M raise with monthly cash forecast",
+        "Series A investor target list with relationship status — evidence that founders are already building Series A investor relationships",
+        "Exit analysis showing comparable companies and valuation drivers — founders who understand what creates value for acquirers and public markets"
       ]
     }
   }
