@@ -148,6 +148,19 @@ export default function Portal() {
         }
       }
 
+      // Check if pre-triggered generation from 100% discount flow
+      const generatingParam = searchParams.get('generating');
+      const jobIdParam = searchParams.get('jobId');
+      
+      if (generatingParam === 'true' && jobIdParam) {
+        console.log("Portal: Detected pre-triggered generation, starting poll for job:", jobIdParam);
+        setIsGeneratingMemo(true);
+        // Load company data first, then start polling
+        await loadCompanyData(session.user.id);
+        pollJobUntilComplete(jobIdParam);
+        return;
+      }
+
       // Load company and responses from database
       loadCompanyData(session.user.id);
     });
