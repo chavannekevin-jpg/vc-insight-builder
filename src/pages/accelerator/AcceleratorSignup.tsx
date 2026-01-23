@@ -104,6 +104,10 @@ export default function AcceleratorSignup() {
     }
   };
 
+  // Admin emails that bypass paywall
+  const ADMIN_EMAILS = ["chavanne.kevin@gmail.com"];
+  const isAdminUser = user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
+
   const handleCheckout = async () => {
     if (!acceleratorName.trim()) {
       toast.error("Please enter your accelerator name");
@@ -112,6 +116,23 @@ export default function AcceleratorSignup() {
 
     setIsLoading(true);
     try {
+      // Admin bypass - skip Stripe entirely
+      if (isAdminUser) {
+        const { data, error } = await supabase.functions.invoke("create-accelerator-admin-bypass", {
+          body: {
+            acceleratorName: acceleratorName.trim(),
+          },
+        });
+
+        if (error) throw error;
+        if (data?.success) {
+          toast.success("Ecosystem created!");
+          navigate("/accelerator/onboarding?bypassed=true");
+          return;
+        }
+      }
+
+      // Normal checkout flow
       const { data, error } = await supabase.functions.invoke("create-accelerator-checkout", {
         body: {
           acceleratorName: acceleratorName.trim(),
