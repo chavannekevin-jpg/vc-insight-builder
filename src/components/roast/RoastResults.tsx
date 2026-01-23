@@ -92,7 +92,7 @@ export const RoastResults = ({ verdict, results, onPlayAgain, onSaveAnswers, com
 
   const getReadinessLabel = (readiness: string) => {
     switch (readiness) {
-      case "investor_ready": return { label: "Investor Ready", color: "bg-green-500" };
+      case "investor_ready": return { label: "Investment Ready", color: "bg-green-500" };
       case "almost_ready": return { label: "Almost Ready", color: "bg-yellow-500" };
       case "getting_there": return { label: "Getting There", color: "bg-orange-500" };
       default: return { label: "Needs Work", color: "bg-red-500" };
@@ -242,7 +242,7 @@ export const RoastResults = ({ verdict, results, onPlayAgain, onSaveAnswers, com
             </div>
           </div>
           <p className="text-sm text-muted-foreground mb-6">
-            See how a VC-ready founder would answer each question:
+            See how an investment-ready founder would answer each question:
           </p>
           
           <div className="space-y-4">

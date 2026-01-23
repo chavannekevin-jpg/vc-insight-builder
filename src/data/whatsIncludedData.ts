@@ -23,7 +23,7 @@ export const WHATS_INCLUDED_DATA: WhatsIncludedCategory[] = [
       { name: "Stage-calibrated verdict & expectations", tip: "Pre-seed expectations ≠ Series A expectations. We calibrate feedback to what VCs actually expect at YOUR stage." },
       { name: "30+ investor questions with prepared answers", tip: "The exact questions VCs will ask in your meeting — with draft answers you can refine and practice." },
       { name: "\"Why VCs ask this\" context for each", tip: "Understanding the intent behind each question helps you give answers that address what they're really evaluating." },
-      { name: "Red flags surfaced before your pitch", tip: "Better to discover deal-breakers yourself than have a VC find them. Fix issues before they cost you the meeting." },
+      { name: "Red flags surfaced before you raise", tip: "Better to discover deal-breakers yourself than have a VC find them. Fix issues before they cost you the meeting." },
       { name: "Holistic cross-section coherence check", tip: "VCs notice when your TAM doesn't match your go-to-market, or your team doesn't match your technical claims. We catch these misalignments." },
       { name: "Prioritized \"fix these first\" action plan", tip: "Not all gaps are equal. We rank what to fix first based on what will move the needle most with investors." },
       { name: "Good vs. bad answer examples", tip: "See side-by-side examples of weak answers vs. strong answers for each question — learn the patterns." },
@@ -60,7 +60,7 @@ export const WHATS_INCLUDED_DATA: WhatsIncludedCategory[] = [
       { name: "Valuation calculator (real numbers)", tip: "Get realistic valuation ranges based on your stage, traction, and sector — not fantasy numbers that kill deals." },
       { name: "Dilution simulator (SAFE/CLA/Equity)", tip: "See exactly how much you'll own after your raise under different scenarios — SAFE caps, discounts, pro-rata." },
       { name: "Raise calculator (runway planning)", tip: "Calculate how much to raise based on milestones, burn rate, and the runway needed to hit your next stage." },
-      { name: "90-day milestone roadmap per section", tip: "Concrete next steps for each section of your pitch — what to achieve in the next 90 days to strengthen your story." },
+      { name: "90-day milestone roadmap per section", tip: "Concrete next steps for each section of your story — what to achieve in the next 90 days to strengthen your investment readiness." },
       { name: "Exit pathway scenario planning", tip: "VCs invest for exits. Model potential acquisition and IPO scenarios to show you understand the end game." },
       { name: "Venture scale diagnostic", tip: "Is your business actually venture-scale? Honest assessment of whether VC is the right funding path for you." },
     ]
