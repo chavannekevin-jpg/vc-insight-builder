@@ -23,8 +23,8 @@ export const MiniToolCard = ({
       className={cn(
         "group relative overflow-hidden",
         "flex items-center gap-2.5 px-3 py-2",
-        "rounded-full border border-primary/20 bg-primary/5",
-        "hover:bg-primary/15 hover:border-primary/40",
+        "rounded-full border border-primary/25 bg-primary/10 backdrop-blur-sm",
+        "hover:bg-primary/20 hover:border-primary/40",
         "transition-all duration-200"
       )}
     >

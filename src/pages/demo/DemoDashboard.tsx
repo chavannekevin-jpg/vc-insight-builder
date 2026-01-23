@@ -210,18 +210,18 @@ export default function DemoDashboard() {
           <div className="grid md:grid-cols-2 gap-4">
             {/* Market Lens Card */}
             <Card 
-              className="border border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-transparent cursor-pointer hover:border-primary/40 transition-all group"
+              className="border border-primary/25 bg-gradient-to-br from-primary/10 via-card/50 to-card/30 backdrop-blur-sm cursor-pointer hover:border-primary/40 hover:shadow-[0_20px_50px_-12px_hsl(var(--primary)/0.2)] transition-all group"
               onClick={() => navigate('/demo/market-lens')}
             >
               <CardContent className="p-5">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary/15 backdrop-blur-sm border border-primary/20 flex items-center justify-center flex-shrink-0">
                     <TrendingUp className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-sm">Market Lens</h3>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary">
+                      <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-primary/15 backdrop-blur-sm text-primary">
                         AI-Powered
                       </span>
                     </div>
@@ -239,18 +239,18 @@ export default function DemoDashboard() {
 
             {/* VC Network Card */}
             <Card 
-              className="border border-accent/20 bg-gradient-to-br from-accent/5 via-transparent to-transparent cursor-pointer hover:border-accent/40 transition-all group"
+              className="border border-accent/25 bg-gradient-to-br from-accent/10 via-card/50 to-card/30 backdrop-blur-sm cursor-pointer hover:border-accent/40 hover:shadow-[0_20px_50px_-12px_hsl(var(--accent)/0.2)] transition-all group"
               onClick={() => navigate('/demo/fund-discovery')}
             >
               <CardContent className="p-5">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-accent/15 backdrop-blur-sm border border-accent/20 flex items-center justify-center flex-shrink-0">
                     <Users className="w-5 h-5 text-accent-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-sm">VC Network</h3>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-accent/20 text-accent-foreground">
+                      <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-accent/20 backdrop-blur-sm text-accent-foreground">
                         15 Matches
                       </span>
                     </div>
@@ -268,7 +268,7 @@ export default function DemoDashboard() {
           </div>
 
           {/* Insider Take Preview */}
-          <Card className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-transparent overflow-hidden relative">
+          <Card className="border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-card/30 backdrop-blur-sm overflow-hidden relative">
             <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <CardContent className="p-6 relative">
               <div className="flex items-start justify-between gap-4">
