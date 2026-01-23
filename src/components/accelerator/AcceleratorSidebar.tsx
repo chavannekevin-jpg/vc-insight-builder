@@ -14,7 +14,20 @@ import {
   Calendar,
   Copy,
   Check,
+  Trash2,
+  Loader2,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Sidebar,
   SidebarContent,
@@ -65,6 +78,8 @@ export function AcceleratorSidebar({
   const { state, setOpen } = useSidebar();
   const collapsed = state === "collapsed";
   const [copied, setCopied] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleMouseEnter = () => {
     if (collapsed) {
@@ -84,6 +99,24 @@ export function AcceleratorSidebar({
     await supabase.auth.signOut();
     navigate("/accelerator/auth");
     toast.success("Signed out successfully");
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke("delete-account");
+      if (error) throw error;
+      
+      await supabase.auth.signOut();
+      toast.success("Account deleted successfully");
+      navigate("/");
+    } catch (error: any) {
+      console.error("Delete account error:", error);
+      toast.error(error.message || "Failed to delete account");
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+    }
   };
 
   const copySlug = () => {
@@ -228,6 +261,44 @@ export function AcceleratorSidebar({
                   <LogOut className="w-4 h-4" />
                   <span className="font-medium">Sign Out</span>
                 </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                  <AlertDialogTrigger asChild>
+                    <SidebarMenuButton
+                      tooltip="Delete Account"
+                      className="group rounded-lg transition-all duration-200 hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span className="font-medium">Delete Account</span>
+                    </SidebarMenuButton>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete your account and all associated data, including your accelerator ecosystem, cohorts, and team members. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteAccount}
+                        disabled={isDeleting}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {isDeleting ? (
+                          <span className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Deleting...
+                          </span>
+                        ) : (
+                          "Delete Account"
+                        )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
