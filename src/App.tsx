@@ -149,6 +149,12 @@ const StartupMemo = lazy(() => import("./pages/acceleratorDemo/StartupMemo"));
 const CohortAnalytics = lazy(() => import("./pages/acceleratorDemo/CohortAnalytics"));
 const CompareStartups = lazy(() => import("./pages/acceleratorDemo/CompareStartups"));
 
+// Production Accelerator Pages
+const AcceleratorSignup = lazy(() => import("./pages/accelerator/AcceleratorSignup"));
+const AcceleratorOnboarding = lazy(() => import("./pages/accelerator/AcceleratorOnboarding"));
+const AcceleratorDashboard = lazy(() => import("./pages/accelerator/AcceleratorDashboard"));
+const AcceleratorStartupDetail = lazy(() => import("./pages/accelerator/AcceleratorStartupDetail"));
+
 // Demo Ecosystem Pages
 const DemoDashboard = lazy(() => import("./pages/demo/DemoDashboard"));
 const DemoMarketLens = lazy(() => import("./pages/demo/DemoMarketLens"));
@@ -198,6 +204,11 @@ const App = () => (
             <Route path="/dilution-lab" element={<DilutionLab />} />
             <Route path="/accelerators" element={<AcceleratorLanding />} />
             <Route path="/accelerator/invite" element={<AcceleratorInviteLanding />} />
+            {/* Production Accelerator Routes */}
+            <Route path="/accelerator/signup" element={<AcceleratorSignup />} />
+            <Route path="/accelerator/onboarding" element={<AcceleratorOnboarding />} />
+            <Route path="/accelerator" element={<AcceleratorDashboard />} />
+            <Route path="/accelerator/startup/:id" element={<AcceleratorStartupDetail />} />
             {/* Investor Routes */}
             <Route path="/investor" element={<InvestorLanding />} />
             <Route path="/investor/auth" element={<InvestorAuth />} />
