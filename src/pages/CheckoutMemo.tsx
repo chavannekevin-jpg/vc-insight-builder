@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ModernCard } from "@/components/ModernCard";
 import { Badge } from "@/components/ui/badge";
-import { Check, CreditCard, Tag, Sparkles, ArrowLeft, Gift } from "lucide-react";
+import { Check, CreditCard, Tag, Sparkles, ArrowLeft, Gift, Rocket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
 import { isValidCompanyId } from "@/lib/companyIdUtils";
@@ -31,6 +31,13 @@ export default function CheckoutMemo() {
     code: string;
   } | null>(null);
   
+  // Accelerator discount state (from accelerator invites)
+  const [acceleratorDiscount, setAcceleratorDiscount] = useState<{
+    percent: number;
+    acceleratorName: string | null;
+    code: string;
+  } | null>(null);
+  
   // Earned referral discount state (from referring other founders)
   const [earnedReferralDiscount, setEarnedReferralDiscount] = useState<number>(0);
   
@@ -51,7 +58,7 @@ export default function CheckoutMemo() {
     if (pricingSettings) {
       recalculatePrice();
     }
-  }, [pricingSettings, referralDiscount, appliedDiscount, earnedReferralDiscount]);
+  }, [pricingSettings, referralDiscount, acceleratorDiscount, appliedDiscount, earnedReferralDiscount]);
 
   const recalculatePrice = () => {
     if (!pricingSettings) return;
@@ -71,6 +78,11 @@ export default function CheckoutMemo() {
     // Apply investor referral discount
     if (referralDiscount) {
       price = price * (1 - referralDiscount.percent / 100);
+    }
+    
+    // Apply accelerator discount (from accelerator invites)
+    if (acceleratorDiscount) {
+      price = price * (1 - acceleratorDiscount.percent / 100);
     }
     
     // Apply coupon discount
@@ -179,6 +191,32 @@ export default function CheckoutMemo() {
       }
     }
     
+    // Check for accelerator invite discount from sessionStorage
+    const acceleratorCode = sessionStorage.getItem('accelerator_invite_code');
+    const acceleratorPercent = sessionStorage.getItem('accelerator_discount_percent');
+    
+    if (acceleratorCode && acceleratorPercent) {
+      // Validate the accelerator invite is still valid
+      const { data: acceleratorInvite } = await supabase
+        .from("accelerator_invites")
+        .select("accelerator_name, discount_percent, is_active, max_uses, uses, expires_at")
+        .eq("code", acceleratorCode)
+        .single();
+      
+      if (acceleratorInvite && acceleratorInvite.is_active) {
+        const isExpired = acceleratorInvite.expires_at && new Date(acceleratorInvite.expires_at) < new Date();
+        const hasRemainingUses = !acceleratorInvite.max_uses || acceleratorInvite.uses < acceleratorInvite.max_uses;
+        
+        if (!isExpired && hasRemainingUses) {
+          setAcceleratorDiscount({
+            percent: acceleratorInvite.discount_percent,
+            acceleratorName: acceleratorInvite.accelerator_name,
+            code: acceleratorCode,
+          });
+        }
+      }
+    }
+    
     setCompanyId(validCompanyId);
   };
 
@@ -234,13 +272,16 @@ export default function CheckoutMemo() {
     try {
       // If 100% discount, bypass Stripe and trigger generation
       if (finalPrice === 0) {
+        // Build discount code label for tracking
+        const discountCodeUsed = acceleratorDiscount?.code || appliedDiscount?.code || null;
+        
         const { error: purchaseError } = await supabase
           .from("memo_purchases" as any)
           .insert({
             user_id: user.id,
             company_id: companyId,
             amount_paid: 0,
-            discount_code_used: appliedDiscount?.code || null
+            discount_code_used: discountCodeUsed
           });
 
         if (purchaseError) throw purchaseError;
@@ -257,6 +298,26 @@ export default function CheckoutMemo() {
           .eq("id", companyId);
 
         if (updateError) throw updateError;
+
+        // Increment accelerator invite usage if applicable
+        if (acceleratorDiscount?.code) {
+          const { data: currentInvite } = await supabase
+            .from("accelerator_invites")
+            .select("uses")
+            .eq("code", acceleratorDiscount.code)
+            .single();
+          
+          if (currentInvite) {
+            await supabase
+              .from("accelerator_invites")
+              .update({ uses: (currentInvite.uses || 0) + 1 })
+              .eq("code", acceleratorDiscount.code);
+          }
+          
+          // Clear sessionStorage after use
+          sessionStorage.removeItem('accelerator_invite_code');
+          sessionStorage.removeItem('accelerator_discount_percent');
+        }
 
         if (appliedDiscount) {
           await supabase.functions.invoke('use-discount', {
@@ -307,6 +368,11 @@ export default function CheckoutMemo() {
       if (referralDiscount) {
         remainingPrice = remainingPrice * (1 - referralDiscount.percent / 100);
         discountLabels.push(`INVESTOR_REFERRAL_${referralDiscount.code}`);
+      }
+
+      if (acceleratorDiscount) {
+        remainingPrice = remainingPrice * (1 - acceleratorDiscount.percent / 100);
+        discountLabels.push(`ACCELERATOR_${acceleratorDiscount.code}`);
       }
 
       if (appliedDiscount) {
@@ -481,6 +547,16 @@ export default function CheckoutMemo() {
                   Investor Referral ({referralDiscount.percent}%)
                 </span>
                 <span>-€{((discountedPrice * (1 - earnedReferralDiscount / 100)) * referralDiscount.percent / 100).toFixed(2)}</span>
+              </div>
+            )}
+            
+            {acceleratorDiscount && (
+              <div className="flex items-center justify-between text-success">
+                <span className="flex items-center gap-1">
+                  <Rocket className="w-4 h-4" />
+                  {acceleratorDiscount.acceleratorName} ({acceleratorDiscount.percent}%)
+                </span>
+                <span>-€{((discountedPrice * (1 - earnedReferralDiscount / 100) * (1 - (referralDiscount?.percent || 0) / 100)) * acceleratorDiscount.percent / 100).toFixed(2)}</span>
               </div>
             )}
             
