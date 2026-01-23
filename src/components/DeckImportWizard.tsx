@@ -370,7 +370,7 @@ export const DeckImportWizard = ({
     if (confidence >= CONFIDENCE_THRESHOLD) {
       return <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-600 border-yellow-500/30">Good confidence</Badge>;
     }
-    return <Badge variant="outline" className="text-muted-foreground">Low confidence - won't auto-fill</Badge>;
+    return <Badge variant="outline" className="text-amber-600 border-amber-500/30 bg-amber-500/10">Low confidence - review suggested</Badge>;
   };
 
   const handleSectionEdit = (key: string, value: string) => {
@@ -587,7 +587,7 @@ export const DeckImportWizard = ({
                         className={cn(
                           "p-4 rounded-lg border transition-all",
                           editingSection === key ? "border-primary" : "border-border",
-                          section.confidence < CONFIDENCE_THRESHOLD && "opacity-60"
+                          section.confidence < CONFIDENCE_THRESHOLD && "border-amber-500/30 bg-amber-500/5"
                         )}
                       >
                         <div className="flex items-center justify-between mb-2">

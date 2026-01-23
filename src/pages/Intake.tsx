@@ -38,6 +38,11 @@ export default function Intake() {
   const { inviteInfo } = useStartupReferral(startupInviteCode);
 
   useEffect(() => {
+    // Skip auth check if entrance animation is about to show
+    // This prevents a race condition where the company is created,
+    // the auth check finds it, and navigates to /hub before the animation renders
+    if (showEntranceAnimation) return;
+    
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -58,7 +63,7 @@ export default function Intake() {
     };
 
     checkAuth();
-  }, [navigate]);
+  }, [navigate, showEntranceAnimation]);
 
   const handleDeckImportComplete = async (data: ExtractedData) => {
     try {
