@@ -331,29 +331,14 @@ export default function CheckoutMemo() {
         await queryClient.invalidateQueries({ queryKey: ["company"] });
         await queryClient.invalidateQueries({ queryKey: ["payment", companyId] });
 
-        // Trigger memo generation immediately
-        const { data: genData, error: genError } = await supabase.functions.invoke('generate-full-memo', {
-          body: { companyId, force: false }
-        });
-
-        if (genError) {
-          console.error("Generation trigger error:", genError);
-          // Still redirect to portal - they can trigger manually
-          toast({
-            title: "Access Granted! 🎉",
-            description: "Please complete your profile to generate your analysis.",
-          });
-          navigate(`/portal?companyId=${companyId}`);
-          return;
-        }
-
         toast({
-          title: "Success! 🎉",
-          description: "Generating your VC analysis now...",
+          title: "Access Granted! 🎉",
+          description: "Complete your profile to generate your personalized analysis.",
         });
 
-        // Redirect to portal with pre-triggered generation
-        navigate(`/portal?companyId=${companyId}&generating=true&jobId=${genData?.jobId}`);
+        // Redirect to portal WITHOUT auto-triggering generation
+        // This allows user to improve answers via AnswerOptimizerWizard before generating
+        navigate(`/portal?companyId=${companyId}`);
         return;
       }
 
