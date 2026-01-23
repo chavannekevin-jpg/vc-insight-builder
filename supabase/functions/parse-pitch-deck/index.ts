@@ -99,6 +99,14 @@ VISUAL OCR PRIORITY - TEAM SLIDES:
 - CRITICALLY: Team slides often show COMPANY LOGOS at the bottom representing where founders previously worked (e.g., Novartis, Google, McKinsey, Goldman Sachs). NAME EVERY LOGO you can identify.
 - DO NOT just summarize with "industry veterans" - extract the ACTUAL NAMES and DETAILS shown
 
+VISUAL OCR PRIORITY - FUNDING/ASK SLIDES:
+- Funding slides often display LARGE PROMINENT NUMBERS (e.g., "€960K", "$2M", "£1.5M")
+- Extract the EXACT amount with currency symbol
+- Look for VALUATION info (e.g., "€4.8M Post-Money Valuation", "$10M Pre-Money")
+- Extract PERCENTAGE SECURED if shown (e.g., "~80% Secured", "50% Committed")
+- INVESTOR LOGOS at the bottom of funding slides are NAMED INVESTORS - identify them (e.g., "DOMiNO Ventures", "Sequoia", "a]6z")
+- Look for "Lead Investor" labels next to logos
+
 Return a JSON object with this EXACT structure:
 
 {
@@ -124,10 +132,12 @@ Return a JSON object with this EXACT structure:
       "confidence": 0.0-1.0 
     },
     "funding": {
-      "raising": "amount being raised (e.g., '$2M')",
-      "valuation": "pre/post-money valuation if stated",
+      "raising": "EXACT amount with currency from the slide (e.g., '€960K', '$2M') - READ THE LARGE NUMBER",
+      "valuation": "pre/post-money valuation with currency (e.g., '€4.8M Post-Money')",
+      "percentageSecured": "how much is already committed (e.g., '~80%', '50%')",
+      "leadInvestor": "name of lead investor if shown",
       "previousRounds": "prior funding raised",
-      "notableInvestors": ["list of named investors"],
+      "notableInvestors": ["list ALL investor names/logos visible (e.g., 'DOMiNO Ventures', 'Curiosity', 'Sequoia')"],
       "confidence": 0.0-1.0
     }
   },
@@ -171,7 +181,7 @@ Return a JSON object with this EXACT structure:
       "confidence": 0.0-1.0 
     },
     "vision_ask": { 
-      "content": "DETAILED extraction: Funding amount requested. Use of funds breakdown (% to engineering, sales, etc.). Key milestones for this round. 18-month roadmap. Long-term vision and exit potential.", 
+      "content": "CRITICAL - MUST EXTRACT FROM IMAGES: Funding slides often show LARGE NUMBERS prominently displayed. Extract: (1) EXACT raise amount with currency (e.g., '€960K', '$2M', '£500K'), (2) Valuation if shown (pre-money or post-money, e.g., '€4.8M Post-Money'), (3) Round percentage secured (e.g., '~80% secured', '50% committed'), (4) INVESTOR LOGOS/NAMES visible on the slide (e.g., 'DOMiNO Ventures', 'Sequoia', 'Y Combinator'), (5) Lead investor if specified, (6) Use of funds breakdown if shown (percentages to engineering, sales, marketing). Also extract any roadmap milestones, timeline, and long-term vision statements.", 
       "confidence": 0.0-1.0 
     }
   },
