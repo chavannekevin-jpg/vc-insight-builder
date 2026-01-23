@@ -303,15 +303,15 @@ export const Header = () => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/50 shadow-sm">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-2xl border-b border-border/30">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 rounded-lg flex items-center justify-center shadow-md transition-all duration-300 group-hover:shadow-glow">
-              <span className="neon-pink font-bold text-lg transition-all duration-300">UB</span>
+            <div className="w-9 h-9 bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-lg group-hover:shadow-primary/20">
+              <span className="text-primary font-bold text-base">UB</span>
             </div>
-            <span className="font-serif text-2xl hidden sm:inline neon-pink tracking-tight">UglyBaby</span>
+            <span className="font-bold text-xl hidden sm:inline text-primary tracking-tight">UglyBaby</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -319,8 +319,8 @@ export const Header = () => {
             {/* Home link first */}
             <Link
               to="/"
-              className={`text-sm font-medium transition-all duration-300 ${
-                isActive("/") ? "neon-pink" : "text-muted-foreground hover:neon-pink"
+              className={`text-sm font-medium transition-all duration-200 ${
+                isActive("/") ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Home
@@ -334,8 +334,8 @@ export const Header = () => {
             >
               <button
                 onClick={() => isAuthenticated ? navigate("/hub") : navigate('/auth')}
-                className={`text-sm font-medium transition-all duration-300 flex items-center gap-1 ${
-                  isActive("/hub") ? "neon-pink" : "text-muted-foreground hover:neon-pink"
+                className={`text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
+                  isActive("/hub") ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Hub
@@ -345,7 +345,7 @@ export const Header = () => {
               {/* Hub Dropdown Menu */}
               {hubDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 mt-2 w-[600px] bg-card border border-border/50 rounded-2xl shadow-2xl z-[100] p-6"
+                  className="absolute top-full left-0 mt-2 w-[600px] bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl z-[100] p-6"
                   onMouseEnter={handleHubMouseEnter}
                   onMouseLeave={handleHubMouseLeave}
                 >
@@ -386,7 +386,7 @@ export const Header = () => {
             >
               <button
                 onClick={() => navigate("/tools")}
-                className="text-sm font-medium transition-all duration-300 flex items-center gap-1 text-muted-foreground hover:neon-pink"
+                className="text-sm font-medium transition-all duration-200 flex items-center gap-1 text-muted-foreground hover:text-foreground"
               >
                 Tools
                 <ChevronDown className="w-3 h-3" />
@@ -395,7 +395,7 @@ export const Header = () => {
               {/* Tools Dropdown Menu */}
               {toolsDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 mt-2 w-[400px] bg-card border border-border/50 rounded-2xl shadow-2xl z-[100] p-6"
+                  className="absolute top-full left-0 mt-2 w-[400px] bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl z-[100] p-6"
                   onMouseEnter={handleToolsMouseEnter}
                   onMouseLeave={handleToolsMouseLeave}
                 >
@@ -447,8 +447,8 @@ export const Header = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`text-sm font-medium transition-all duration-300 ${
-                    isActive(link.path) ? "neon-pink" : "text-muted-foreground hover:neon-pink"
+                  className={`text-sm font-medium transition-all duration-200 ${
+                    isActive(link.path) ? "text-primary" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {link.name}
@@ -461,15 +461,15 @@ export const Header = () => {
               <>
                 <Link
                   to="/admin"
-                  className={`text-sm font-medium transition-all duration-300 ${
-                    isActive("/admin") ? "neon-pink" : "text-muted-foreground hover:neon-pink"
+                  className={`text-sm font-medium transition-all duration-200 ${
+                    isActive("/admin") ? "text-primary" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Admin
                 </Link>
                 <button
                   onClick={() => setResetDialogOpen(true)}
-                  className="text-sm font-medium transition-all duration-300 text-destructive hover:text-destructive/80 flex items-center gap-1"
+                  className="text-sm font-medium transition-all duration-200 text-destructive hover:text-destructive/80 flex items-center gap-1"
                 >
                   <RotateCcw className="w-3 h-3" />
                   Reset
@@ -479,23 +479,23 @@ export const Header = () => {
           </div>
 
           {/* CTA Buttons */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             <Link
               to="/investor"
-              className="text-xs font-medium text-muted-foreground hover:text-primary transition-all duration-300 border border-border/50 px-3 py-1.5 rounded-full hover:border-primary/50"
+              className="text-xs font-medium text-muted-foreground hover:text-foreground transition-all duration-200 px-3 py-1.5 rounded-full hover:bg-muted/50"
             >
               For Investors
             </Link>
             <Link
               to="/accelerators"
-              className="text-xs font-medium text-muted-foreground hover:text-primary transition-all duration-300 border border-border/50 px-3 py-1.5 rounded-full hover:border-primary/50"
+              className="text-xs font-medium text-muted-foreground hover:text-foreground transition-all duration-200 px-3 py-1.5 rounded-full hover:bg-muted/50"
             >
               For Accelerators
             </Link>
             {isAuthenticated ? (
               <button
                 onClick={handleSignOut}
-                className="neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2"
+                className="text-primary hover:text-primary/80 transition-all duration-200 cursor-pointer font-medium text-sm flex items-center gap-2"
               >
                 <LogOut className="w-4 h-4" />
                 Sign Out
@@ -503,18 +503,18 @@ export const Header = () => {
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center gap-2">
+                  <button className="text-sm font-medium text-foreground hover:text-primary transition-all duration-200 cursor-pointer flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/30">
                     <LogIn className="w-4 h-4" />
                     Sign In
                     <ChevronDown className="w-3 h-3" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 bg-card border-border">
+                <DropdownMenuContent align="end" className="w-64 bg-card/95 backdrop-blur-xl border-border/50">
                   <DropdownMenuItem onClick={() => navigate('/auth')} className="cursor-pointer py-3">
                     <Rocket className="w-4 h-4 mr-3 text-primary" />
                     <div>
                       <div className="font-medium">Startup Founder</div>
-                      <div className="text-xs text-muted-foreground">Get your investment analysis</div>
+                      <div className="text-xs text-muted-foreground">Get your investment audit</div>
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/investor/auth')} className="cursor-pointer py-3">
@@ -534,17 +534,6 @@ export const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            <Button 
-              onClick={() => {
-                const pricingSection = document.getElementById('pricing-section');
-                if (pricingSection) {
-                  pricingSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className="gradient-primary shadow-glow hover:shadow-glow-strong"
-            >
-              Get Your Analysis
-            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -566,8 +555,8 @@ export const Header = () => {
                   key={link.path}
                   to={link.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`text-sm font-medium transition-all duration-300 ${
-                    isActive(link.path) ? "neon-pink" : "text-muted-foreground hover:neon-pink"
+                  className={`text-sm font-medium transition-all duration-200 ${
+                    isActive(link.path) ? "text-primary" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {link.name}
@@ -579,7 +568,7 @@ export const Header = () => {
                     setMobileMenuOpen(false);
                     handleSignOut();
                   }}
-                  className="w-full neon-pink hover:brightness-125 transition-all duration-300 cursor-pointer font-semibold text-sm flex items-center justify-center gap-2 py-2"
+                  className="w-full text-primary hover:text-primary/80 transition-all duration-200 cursor-pointer font-medium text-sm flex items-center justify-center gap-2 py-2"
                 >
                   <LogOut className="w-4 h-4" />
                   Sign Out
@@ -619,18 +608,6 @@ export const Header = () => {
                   </button>
                 </div>
               )}
-              <Button 
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  const pricingSection = document.getElementById('pricing-section');
-                  if (pricingSection) {
-                    pricingSection.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
-                className="gradient-primary w-full shadow-glow"
-              >
-                Get Your Analysis
-              </Button>
             </div>
           </div>
         )}
