@@ -128,6 +128,17 @@ export const FounderSidebar = ({
     }
   };
 
+  // Determine where "VC Memorandum" should link
+  const handleVCMemorandumClick = () => {
+    if (hasPaid && hasMemo && companyId) {
+      navigate(`/vc-memorandum?companyId=${companyId}`);
+    } else if (companyId) {
+      navigate(`/checkout-analysis?companyId=${companyId}`);
+    } else {
+      navigate('/checkout-analysis');
+    }
+  };
+
   // Hover handlers for auto-expand
   const handleMouseEnter = () => {
     if (collapsed) {
@@ -205,6 +216,27 @@ export const FounderSidebar = ({
                     <span className="flex items-center gap-2">
                       My Analysis
                       {!hasPaid && <Lock className="w-3 h-3 text-muted-foreground" />}
+                    </span>
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              {/* VC Memorandum - conditional link */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={handleVCMemorandumClick}
+                  className={cn(
+                    "w-full transition-all",
+                    isActive("/vc-memorandum")
+                      ? "bg-primary/20 text-primary border-l-2 border-primary"
+                      : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <BookOpen className="w-4 h-4 shrink-0" />
+                  {!collapsed && (
+                    <span className="flex items-center gap-2">
+                      VC Memorandum
+                      {!(hasPaid && hasMemo) && <Lock className="w-3 h-3 text-muted-foreground" />}
                     </span>
                   )}
                 </SidebarMenuButton>
