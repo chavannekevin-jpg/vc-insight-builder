@@ -132,7 +132,7 @@ const Index = () => {
                   { icon: Wrench, step: "03", title: "Unlock Diagnostic Tools", desc: "Access 23+ strategic tools auto-populated with your data—TAM calculators, moat assessments, unit economics models, and 90-day action plans." },
                   { icon: Telescope, step: "04", title: "Access Market Intelligence", desc: "Market Lens synthesizes 50+ industry reports into a personalized briefing. Tailwinds, headwinds, funding trends, and exit precedents for your sector." },
                   { icon: Users, step: "05", title: "Discover Matching Investors", desc: "Access 800+ curated European investors. AI-powered matching scores each fund by stage, sector, and thesis fit. No more spray-and-pray." },
-                  { icon: Rocket, step: "06", title: "Execute With Confidence", desc: "Generate personalized outreach with Outreach Lab. Practice tough questions with Roast Your Baby simulations. Tap into 60+ tactical guides." }
+                  { icon: Rocket, step: "06", title: "Pitch Like You Get It", desc: "Now you understand how VCs think. Build the investment case they're looking for—because most founders fail not from bad ideas, but from not speaking VC." }
                 ].map((item, idx) => {
                   const isEven = idx % 2 === 0;
                   
