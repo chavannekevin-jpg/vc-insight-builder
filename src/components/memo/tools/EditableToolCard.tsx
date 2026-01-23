@@ -15,6 +15,7 @@ interface EditableToolCardProps {
   onReset?: () => void;
   className?: string;
   accentColor?: string;
+  hideHeader?: boolean;
 }
 
 export const EditableToolCard = ({
@@ -28,7 +29,8 @@ export const EditableToolCard = ({
   onSave,
   onReset,
   className,
-  accentColor = "primary"
+  accentColor = "primary",
+  hideHeader = false
 }: EditableToolCardProps) => {
   const [showGuidance, setShowGuidance] = useState(false);
 
@@ -64,54 +66,56 @@ export const EditableToolCard = ({
       isEditing && "ring-2 ring-primary/50 border-primary/30",
       className
     )}>
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-4">
-        <div className="flex items-center gap-3">
-          <div className={cn(
-            "flex items-center justify-center w-10 h-10 rounded-lg",
-            `bg-${accentColor}/10`
-          )}>
-            {icon}
+      {/* Header - can be hidden when used inside modal with its own header */}
+      {!hideHeader && (
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "flex items-center justify-center w-10 h-10 rounded-lg",
+              `bg-${accentColor}/10`
+            )}>
+              {icon}
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground">{title}</h4>
+              <div className="mt-1">{getDataSourceBadge()}</div>
+            </div>
           </div>
-          <div>
-            <h4 className="font-semibold text-foreground">{title}</h4>
-            <div className="mt-1">{getDataSourceBadge()}</div>
+          
+          <div className="flex items-center gap-2">
+            {onReset && dataSource === "user-input" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onReset}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <RotateCcw className="w-4 h-4 mr-1" />
+                Reset
+              </Button>
+            )}
+            {onEditToggle && (
+              <Button
+                variant={isEditing ? "default" : "outline"}
+                size="sm"
+                onClick={isEditing ? onSave : onEditToggle}
+              >
+                {isEditing ? (
+                  <>
+                    <Check className="w-4 h-4 mr-1" />
+                    Save
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="w-4 h-4 mr-1" />
+                    Edit
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
-        
-        <div className="flex items-center gap-2">
-          {onReset && dataSource === "user-input" && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onReset}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <RotateCcw className="w-4 h-4 mr-1" />
-              Reset
-            </Button>
-          )}
-          {onEditToggle && (
-            <Button
-              variant={isEditing ? "default" : "outline"}
-              size="sm"
-              onClick={isEditing ? onSave : onEditToggle}
-            >
-              {isEditing ? (
-                <>
-                  <Check className="w-4 h-4 mr-1" />
-                  Save
-                </>
-              ) : (
-                <>
-                  <Pencil className="w-4 h-4 mr-1" />
-                  Edit
-                </>
-              )}
-            </Button>
-          )}
-        </div>
-      </div>
+      )}
 
       {/* Input Guidance */}
       {inputGuidance && inputGuidance.length > 0 && (dataSource === "ai-partial" || isEditing) && (
