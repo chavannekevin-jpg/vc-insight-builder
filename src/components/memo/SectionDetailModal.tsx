@@ -25,7 +25,8 @@ import {
   ListChecks,
   Briefcase,
   FileText,
-  Calendar
+  Calendar,
+  Lock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type SectionVerdict } from "@/lib/holisticVerdictGenerator";
@@ -51,6 +52,7 @@ interface SectionDetailModalProps {
   sectionIndex?: number;
   sectionNarrative?: MemoStructuredSection | null;
   sectionTools?: Record<string, unknown> | null;
+  isDemo?: boolean;
 }
 
 interface ImprovementQuestion {
@@ -129,7 +131,8 @@ export const SectionDetailModal = ({
   allSectionScores,
   sectionIndex,
   sectionNarrative,
-  sectionTools
+  sectionTools,
+  isDemo = false
 }: SectionDetailModalProps) => {
   const navigate = useNavigate();
   const [improvements, setImprovements] = useState<AIImprovements | null>(null);
@@ -490,29 +493,54 @@ export const SectionDetailModal = ({
                     )}
                   </button>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="pt-4 space-y-4">
-                  {/* VC Investment Logic */}
-                  {sectionTools.vcInvestmentLogic && (
-                    <VCInvestmentLogicCard 
-                      logic={sectionTools.vcInvestmentLogic as any} 
-                      sectionName={section?.section || ''} 
-                    />
+                <CollapsibleContent className="pt-4 space-y-4 relative">
+                  {/* Demo overlay for strategic tools */}
+                  {isDemo && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none rounded-lg">
+                      <div className="pointer-events-auto text-center space-y-2 p-4 rounded-xl bg-card border border-border shadow-lg max-w-xs">
+                        <div className="w-10 h-10 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                          <Lock className="w-5 h-5 text-primary" />
+                        </div>
+                        <h4 className="font-semibold text-sm text-foreground">View-Only Mode</h4>
+                        <p className="text-xs text-muted-foreground">
+                          Create an account to customize these tools for your startup.
+                        </p>
+                        <Button 
+                          onClick={() => navigate('/auth')} 
+                          size="sm"
+                          className="w-full gap-2"
+                        >
+                          Get Started
+                          <ArrowRight className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
                   )}
                   
-                  {/* 90-Day Action Plan */}
-                  {sectionTools.actionPlan90Day && (
-                    <Section90DayPlan 
-                      plan={sectionTools.actionPlan90Day as any} 
-                      sectionName={section?.section || ''} 
-                    />
-                  )}
-                  
-                  {/* Case Study */}
-                  {sectionTools.caseStudy && (
-                    <MicroCaseStudyCard 
-                      caseStudy={sectionTools.caseStudy as any} 
-                    />
-                  )}
+                  <div className={isDemo ? 'opacity-50 pointer-events-none select-none' : ''}>
+                    {/* VC Investment Logic */}
+                    {sectionTools.vcInvestmentLogic && (
+                      <VCInvestmentLogicCard 
+                        logic={sectionTools.vcInvestmentLogic as any} 
+                        sectionName={section?.section || ''} 
+                      />
+                    )}
+                    
+                    {/* 90-Day Action Plan */}
+                    {sectionTools.actionPlan90Day && (
+                      <Section90DayPlan 
+                        plan={sectionTools.actionPlan90Day as any} 
+                        sectionName={section?.section || ''} 
+                      />
+                    )}
+                    
+                    {/* Case Study */}
+                    {sectionTools.caseStudy && (
+                      <MicroCaseStudyCard 
+                        caseStudy={sectionTools.caseStudy as any} 
+                      />
+                    )}
+                  </div>
                 </CollapsibleContent>
               </Collapsible>
             )}

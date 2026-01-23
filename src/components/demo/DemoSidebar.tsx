@@ -109,12 +109,21 @@ export function DemoSidebar({ currentPage }: DemoSidebarProps) {
     <Sidebar>
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-3 px-2 py-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div 
+            className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors"
+            onClick={() => navigate('/')}
+            title="Back to Home"
+          >
             <Building2 className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm truncate">{DEMO_COMPANY.name}</span>
+              <span 
+                className="font-semibold text-sm truncate cursor-pointer hover:text-primary transition-colors"
+                onClick={() => navigate('/')}
+              >
+                {DEMO_COMPANY.name}
+              </span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary">
                 DEMO
               </span>

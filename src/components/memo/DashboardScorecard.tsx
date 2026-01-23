@@ -72,6 +72,7 @@ interface DashboardScorecardProps {
   companyInsightContext?: CompanyInsightContext | null;
   memoContent?: MemoStructuredContent | null;
   arcClassification?: ARCClassification | null;
+  isDemo?: boolean;
 }
 
 const STATUS_CONFIG = {
@@ -278,7 +279,8 @@ export const DashboardScorecard = ({
   onNavigate,
   companyInsightContext,
   memoContent,
-  arcClassification
+  arcClassification,
+  isDemo = false
 }: DashboardScorecardProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isARCExpanded, setIsARCExpanded] = useState(false);
@@ -1071,6 +1073,7 @@ export const DashboardScorecard = ({
         allSectionScores={allSectionScores}
         sectionNarrative={selectedSection ? findSectionNarrative(selectedSection.section) : null}
         sectionTools={selectedSection ? findSectionTools(selectedSection.section) : null}
+        isDemo={isDemo}
       />
       
       {/* Share Scorecard Modal */}
@@ -1100,6 +1103,7 @@ export const DashboardScorecard = ({
         toolType={selectedTool?.toolType || ''}
         toolData={selectedTool?.data}
         sectionName={selectedTool?.sectionName || ''}
+        isDemo={isDemo}
       />
     </>
   );

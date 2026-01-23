@@ -2,7 +2,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X } from "lucide-react";
+import { X, Lock, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { TOOL_CONFIGS } from "@/lib/toolConfig";
 
 // Import all tool components
@@ -36,6 +37,7 @@ interface ToolPopupModalProps {
   toolType: string;
   toolData: any;
   sectionName: string;
+  isDemo?: boolean;
 }
 
 // Helper to wrap raw data in EditableTool shape if needed
@@ -89,8 +91,10 @@ export const ToolPopupModal = ({
   onOpenChange,
   toolType,
   toolData,
-  sectionName
+  sectionName,
+  isDemo = false
 }: ToolPopupModalProps) => {
+  const navigate = useNavigate();
   const config = TOOL_CONFIGS[toolType];
   const Icon = config?.icon;
   
@@ -148,8 +152,30 @@ export const ToolPopupModal = ({
 
         {/* Content - strip outer card styling from tool components since modal provides the frame */}
         <ScrollArea className="max-h-[calc(85vh-80px)]">
-          <div className="p-5">
-            <div className="tool-modal-content [&>div:first-child]:border-0 [&>div:first-child]:bg-transparent [&>div:first-child]:p-0 [&>div:first-child]:rounded-none [&>div:first-child]:shadow-none">
+          <div className="p-5 relative">
+            {/* Demo overlay - grays out content and shows signup CTA */}
+            {isDemo && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-end pb-8 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
+                <div className="pointer-events-auto text-center space-y-3 p-6 rounded-xl bg-card border border-border shadow-lg max-w-sm">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                    <Lock className="w-6 h-6 text-primary" />
+                  </div>
+                  <h4 className="font-semibold text-foreground">This Tool is View-Only</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Create an account to edit and customize this analysis for your startup.
+                  </p>
+                  <Button 
+                    onClick={() => navigate('/auth')} 
+                    className="w-full gap-2"
+                  >
+                    Get Started
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            <div className={`tool-modal-content [&>div:first-child]:border-0 [&>div:first-child]:bg-transparent [&>div:first-child]:p-0 [&>div:first-child]:rounded-none [&>div:first-child]:shadow-none ${isDemo ? 'opacity-60 pointer-events-none select-none' : ''}`}>
               {renderTool()}
             </div>
           </div>

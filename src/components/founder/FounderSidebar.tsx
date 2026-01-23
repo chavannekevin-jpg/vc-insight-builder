@@ -66,7 +66,6 @@ interface FounderSidebarProps {
 const mainMenuItems = [
   { title: "Dashboard", path: "/hub", icon: LayoutDashboard },
   { title: "My Profile", path: "/company-profile", icon: Edit },
-  { title: "Sample Analysis", path: "/sample-memo", icon: FileText },
 ];
 
 const knowledgeLibraryItems = [
