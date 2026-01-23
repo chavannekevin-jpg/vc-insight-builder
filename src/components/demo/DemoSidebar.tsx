@@ -17,7 +17,6 @@ import {
   Trophy,
   Gift,
   Lock,
-  Zap,
   ChevronDown,
   ChevronRight,
   ArrowRight,
@@ -121,312 +120,349 @@ export function DemoSidebar({ currentPage, onRestartTour }: DemoSidebarProps) {
   return (
     <Sidebar 
       className={cn(
-        "border-r border-border/30 bg-card/60 backdrop-blur-2xl transition-all duration-300",
+        "border-r border-border/10 transition-all duration-300",
+        "bg-gradient-to-b from-sidebar/60 via-sidebar/40 to-sidebar/60",
+        "backdrop-blur-3xl",
+        "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),inset_0_0_80px_rgba(255,51,153,0.02)]",
         collapsed ? "w-16" : "w-64"
       )}
       collapsible="icon"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <SidebarHeader className={cn(
-        "border-b border-border/20 bg-gradient-to-r from-primary/5 to-transparent",
-        collapsed && "items-center"
-      )}>
-        {/* Back to Homepage link */}
-        <div 
-          onClick={() => navigate('/')}
-          className={cn(
-            "flex items-center gap-2 rounded-xl cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all group",
-            collapsed ? "justify-center px-2 py-2 mx-auto mt-2" : "px-3 py-2 mx-2 mt-2"
-          )}
-        >
-          <Home className="w-4 h-4" />
-          {!collapsed && (
-            <span className="text-sm font-medium">Back to Homepage</span>
-          )}
+      <SidebarContent className="flex flex-col h-full relative overflow-hidden">
+        {/* Enhanced gradient mesh overlay with animated feel */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/15 rounded-full blur-[80px] animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute top-1/3 -right-16 w-40 h-40 bg-secondary/12 rounded-full blur-[60px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+          <div className="absolute bottom-1/4 -left-10 w-36 h-36 bg-accent/8 rounded-full blur-[70px] animate-pulse" style={{ animationDuration: '12s', animationDelay: '4s' }} />
+          {/* Subtle grid pattern overlay */}
+          <div 
+            className="absolute inset-0 opacity-[0.02]"
+            style={{
+              backgroundImage: 'linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)',
+              backgroundSize: '40px 40px'
+            }}
+          />
         </div>
-        
-        {/* Company info */}
-        <div className={cn(
-          "flex items-center gap-3 py-3",
-          collapsed ? "justify-center px-0" : "px-2"
+
+        {/* Header */}
+        <SidebarHeader className={cn(
+          "border-b border-border/10 bg-gradient-to-r from-primary/5 to-transparent relative z-10",
+          collapsed && "items-center"
         )}>
-          <div className="w-10 h-10 rounded-xl bg-primary/15 backdrop-blur-sm flex items-center justify-center border border-primary/20 flex-shrink-0">
-            <Building2 className="w-5 h-5 text-primary" />
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm truncate">
-                  {DEMO_COMPANY.name}
-                </span>
-                <span className="px-1.5 py-0.5 rounded-lg text-[10px] font-medium bg-primary/15 text-primary backdrop-blur-sm">
-                  DEMO
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground truncate">
-                {DEMO_COMPANY.stage} · {DEMO_COMPANY.category}
-              </p>
-            </div>
-          )}
-        </div>
-      </SidebarHeader>
-
-      <SidebarContent>
-        {/* Main Navigation */}
-        <SidebarGroup>
-          <SidebarGroupLabel className={cn(collapsed && "sr-only")}>
-            Main
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainMenuItems.map((item) => {
-                // Add tour step data attributes for specific items
-                const tourStep = item.title === "My Profile" ? "sidebar-profile" 
-                  : item.title === "VC Memorandum" ? "sidebar-memo" 
-                  : undefined;
-                
-                return (
-                  <SidebarMenuItem key={item.path + item.title}>
-                    <SidebarMenuButton
-                      onClick={() => handleNavigation(item.path, item.enabled)}
-                      data-tour-step={tourStep}
-                      className={cn(
-                        "w-full transition-all",
-                        !item.enabled && "opacity-40 cursor-not-allowed",
-                        isActive(item.path) && item.enabled
-                          ? "bg-primary/20 text-primary border-l-2 border-primary"
-                          : item.enabled 
-                            ? "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
-                            : "text-muted-foreground"
-                      )}
-                    >
-                      <item.icon className="w-4 h-4 shrink-0" />
-                      {!collapsed && (
-                        <span className="flex items-center gap-2">
-                          {item.title}
-                          {!item.enabled && <Lock className="w-3 h-3 text-muted-foreground" />}
-                        </span>
-                      )}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-              
-              {premiumTools.map((item) => {
-                // Add tour step data attributes for specific items
-                const tourStep = item.title === "VC Network" ? "sidebar-network" 
-                  : item.title === "Market Lens" ? "sidebar-market-lens" 
-                  : undefined;
-                
-                return (
-                  <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton
-                      onClick={() => handleNavigation(item.path, item.enabled)}
-                      data-tour-step={tourStep}
-                      className={cn(
-                        "w-full transition-all",
-                        !item.enabled && "opacity-40 cursor-not-allowed",
-                        isActive(item.path) && item.enabled
-                          ? "bg-primary/20 text-primary border-l-2 border-primary"
-                          : item.enabled 
-                            ? "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
-                            : "text-muted-foreground"
-                      )}
-                    >
-                      <item.icon className="w-4 h-4 shrink-0" />
-                      {!collapsed && (
-                        <span className="flex items-center gap-2">
-                          {item.title}
-                          {item.badge && item.enabled && (
-                            <span className="px-1.5 py-0.5 bg-primary/20 text-primary rounded text-[10px] font-bold">
-                              {item.badge}
-                            </span>
-                          )}
-                          {!item.enabled && <Lock className="w-3 h-3 text-muted-foreground" />}
-                        </span>
-                      )}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Social Items */}
-        <SidebarGroup>
-          <SidebarGroupLabel className={cn(collapsed && "sr-only")}>
-            Community
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {socialItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    className="w-full opacity-40 cursor-not-allowed text-muted-foreground"
-                  >
-                    <item.icon className="w-4 h-4 shrink-0" />
-                    {!collapsed && (
-                      <span className="flex items-center gap-2">
-                        {item.title}
-                        <Lock className="w-3 h-3" />
-                      </span>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Resources */}
-        <SidebarGroup>
-          <SidebarGroupLabel className={cn(collapsed && "sr-only")}>
-            Resources
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {/* Knowledge Library Collapsible */}
-              <Collapsible open={knowledgeOpen} onOpenChange={setKnowledgeOpen}>
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className="w-full hover:bg-muted/50 text-muted-foreground hover:text-foreground">
-                      <BookOpen className="w-4 h-4 shrink-0" />
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1">Knowledge Library</span>
-                          {knowledgeOpen ? (
-                            <ChevronDown className="w-3 h-3" />
-                          ) : (
-                            <ChevronRight className="w-3 h-3" />
-                          )}
-                        </>
-                      )}
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {knowledgeLibraryItems.map((item) => (
-                        <SidebarMenuSubItem key={item.path}>
-                          <SidebarMenuSubButton
-                            onClick={() => handleNavigation(item.path, item.enabled)}
-                            className={cn(
-                              "w-full",
-                              item.enabled 
-                                ? "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
-                                : "opacity-40 cursor-not-allowed"
-                            )}
-                          >
-                            <item.icon className="w-3 h-3 shrink-0" />
-                            <span>{item.title}</span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-
-              {/* Tools Collapsible */}
-              <Collapsible open={toolsOpen} onOpenChange={setToolsOpen}>
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className="w-full hover:bg-muted/50 text-muted-foreground hover:text-foreground">
-                      <Calculator className="w-4 h-4 shrink-0" />
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1">Tools</span>
-                          {toolsOpen ? (
-                            <ChevronDown className="w-3 h-3" />
-                          ) : (
-                            <ChevronRight className="w-3 h-3" />
-                          )}
-                        </>
-                      )}
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {toolsItems.map((item) => (
-                        <SidebarMenuSubItem key={item.path}>
-                          <SidebarMenuSubButton
-                            onClick={() => handleNavigation(item.path, item.enabled)}
-                            className={cn(
-                              "w-full",
-                              !item.enabled && "opacity-40 cursor-not-allowed",
-                              item.enabled 
-                                ? "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
-                                : "text-muted-foreground"
-                            )}
-                          >
-                            <item.icon className="w-3 h-3 shrink-0" />
-                            <span className="flex items-center gap-1.5">
-                              {item.title}
-                              {item.premium && !item.enabled && (
-                                <Lock className="w-2.5 h-2.5" />
-                              )}
-                            </span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter className={cn(
-        "border-t border-border/20 bg-gradient-to-t from-muted/20 to-transparent",
-        collapsed ? "p-2" : "p-4"
-      )}>
-        {collapsed ? (
-          <Button
-            onClick={() => navigate('/checkout')}
-            className="w-full rounded-xl p-2"
-            size="icon"
-            variant="default"
-          >
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        ) : (
-          <div className="space-y-3">
-            {/* Take the tour again button */}
-            {onRestartTour && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onRestartTour}
-                className="w-full gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Take the tour again
-              </Button>
+          {/* Back to Homepage link */}
+          <div 
+            onClick={() => navigate('/')}
+            className={cn(
+              "flex items-center gap-2 rounded-xl cursor-pointer text-muted-foreground hover:text-foreground transition-all duration-200 group",
+              "hover:bg-white/5 dark:hover:bg-white/[0.03] border border-transparent hover:border-border/10",
+              collapsed ? "justify-center px-2 py-2 mx-auto mt-2" : "px-3 py-2 mx-2 mt-2"
             )}
-            
-            <div className="flex items-start gap-2 p-3 rounded-xl bg-primary/10 backdrop-blur-sm border border-primary/20">
-              <Sparkles className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-foreground">Ready for your own?</p>
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  Get personalized analysis tailored to your startup.
+          >
+            <Home className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+            {!collapsed && (
+              <span className="text-sm font-medium">Back to Homepage</span>
+            )}
+          </div>
+          
+          {/* Company info */}
+          <div className={cn(
+            "flex items-center gap-3 py-3",
+            collapsed ? "justify-center px-0" : "px-2"
+          )}>
+            <div className="w-10 h-10 rounded-xl bg-primary/15 backdrop-blur-sm flex items-center justify-center border border-primary/20 flex-shrink-0 shadow-[0_0_20px_hsl(var(--primary)/0.15)]">
+              <Building2 className="w-5 h-5 text-primary" />
+            </div>
+            {!collapsed && (
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-sm truncate">
+                    {DEMO_COMPANY.name}
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded-lg text-[10px] font-medium bg-primary/15 text-primary backdrop-blur-sm shadow-[0_0_12px_hsl(var(--primary)/0.2)]">
+                    DEMO
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground truncate">
+                  {DEMO_COMPANY.stage} · {DEMO_COMPANY.category}
                 </p>
               </div>
-            </div>
+            )}
+          </div>
+        </SidebarHeader>
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto relative z-10 py-2">
+          {/* Main Navigation */}
+          <SidebarGroup>
+            <SidebarGroupLabel className={cn(
+              "uppercase tracking-wider text-[10px] font-semibold text-muted-foreground/70 px-4 py-2",
+              collapsed && "sr-only"
+            )}>
+              Main
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="px-2 space-y-1">
+                {mainMenuItems.map((item) => {
+                  const tourStep = item.title === "My Profile" ? "sidebar-profile" 
+                    : item.title === "VC Memorandum" ? "sidebar-memo" 
+                    : undefined;
+                  
+                  return (
+                    <SidebarMenuItem key={item.path + item.title}>
+                      <SidebarMenuButton
+                        onClick={() => handleNavigation(item.path, item.enabled)}
+                        data-tour-step={tourStep}
+                        className={cn(
+                          "w-full transition-all duration-200 rounded-xl group",
+                          !item.enabled && "opacity-40 cursor-not-allowed",
+                          isActive(item.path) && item.enabled
+                            ? "bg-primary/12 text-primary border border-primary/20 shadow-[0_0_24px_hsl(var(--primary)/0.12),inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+                            : item.enabled 
+                              ? "hover:bg-white/5 dark:hover:bg-white/[0.03] text-muted-foreground hover:text-foreground border border-transparent hover:border-border/10"
+                              : "text-muted-foreground border border-transparent"
+                        )}
+                      >
+                        <item.icon className={cn(
+                          "w-4 h-4 shrink-0 transition-all duration-200",
+                          isActive(item.path) && item.enabled && "drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
+                        )} />
+                        {!collapsed && (
+                          <span className="flex items-center gap-2">
+                            {item.title}
+                            {!item.enabled && <Lock className="w-3 h-3 text-muted-foreground" />}
+                          </span>
+                        )}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+                
+                {premiumTools.map((item) => {
+                  const tourStep = item.title === "VC Network" ? "sidebar-network" 
+                    : item.title === "Market Lens" ? "sidebar-market-lens" 
+                    : undefined;
+                  
+                  return (
+                    <SidebarMenuItem key={item.path}>
+                      <SidebarMenuButton
+                        onClick={() => handleNavigation(item.path, item.enabled)}
+                        data-tour-step={tourStep}
+                        className={cn(
+                          "w-full transition-all duration-200 rounded-xl group",
+                          !item.enabled && "opacity-40 cursor-not-allowed",
+                          isActive(item.path) && item.enabled
+                            ? "bg-primary/12 text-primary border border-primary/20 shadow-[0_0_24px_hsl(var(--primary)/0.12),inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+                            : item.enabled 
+                              ? "hover:bg-white/5 dark:hover:bg-white/[0.03] text-muted-foreground hover:text-foreground border border-transparent hover:border-border/10"
+                              : "text-muted-foreground border border-transparent"
+                        )}
+                      >
+                        <item.icon className={cn(
+                          "w-4 h-4 shrink-0 transition-all duration-200",
+                          isActive(item.path) && item.enabled && "drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
+                        )} />
+                        {!collapsed && (
+                          <span className="flex items-center gap-2">
+                            {item.title}
+                            {item.badge && item.enabled && (
+                              <span className="px-1.5 py-0.5 bg-primary/20 text-primary rounded-md text-[10px] font-bold shadow-[0_0_12px_hsl(var(--primary)/0.2)]">
+                                {item.badge}
+                              </span>
+                            )}
+                            {!item.enabled && <Lock className="w-3 h-3 text-muted-foreground" />}
+                          </span>
+                        )}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {/* Social Items */}
+          <SidebarGroup>
+            <SidebarGroupLabel className={cn(
+              "uppercase tracking-wider text-[10px] font-semibold text-muted-foreground/70 px-4 py-2",
+              collapsed && "sr-only"
+            )}>
+              Community
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="px-2 space-y-1">
+                {socialItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      className="w-full opacity-40 cursor-not-allowed text-muted-foreground rounded-xl border border-transparent"
+                    >
+                      <item.icon className="w-4 h-4 shrink-0" />
+                      {!collapsed && (
+                        <span className="flex items-center gap-2">
+                          {item.title}
+                          <Lock className="w-3 h-3" />
+                        </span>
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {/* Resources */}
+          <SidebarGroup>
+            <SidebarGroupLabel className={cn(
+              "uppercase tracking-wider text-[10px] font-semibold text-muted-foreground/70 px-4 py-2",
+              collapsed && "sr-only"
+            )}>
+              Resources
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="px-2 space-y-1">
+                {/* Knowledge Library Collapsible */}
+                <Collapsible open={knowledgeOpen} onOpenChange={setKnowledgeOpen}>
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton className="w-full hover:bg-white/5 dark:hover:bg-white/[0.03] text-muted-foreground hover:text-foreground rounded-xl border border-transparent hover:border-border/10 transition-all duration-200">
+                        <BookOpen className="w-4 h-4 shrink-0" />
+                        {!collapsed && (
+                          <>
+                            <span className="flex-1">Knowledge Library</span>
+                            {knowledgeOpen ? (
+                              <ChevronDown className="w-3 h-3" />
+                            ) : (
+                              <ChevronRight className="w-3 h-3" />
+                            )}
+                          </>
+                        )}
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub className="ml-4 mt-1 space-y-0.5 border-l border-border/10 pl-2">
+                        {knowledgeLibraryItems.map((item) => (
+                          <SidebarMenuSubItem key={item.path}>
+                            <SidebarMenuSubButton
+                              onClick={() => handleNavigation(item.path, item.enabled)}
+                              className={cn(
+                                "w-full rounded-lg transition-all duration-200",
+                                item.enabled 
+                                  ? "hover:bg-white/5 dark:hover:bg-white/[0.03] text-muted-foreground hover:text-foreground"
+                                  : "opacity-40 cursor-not-allowed"
+                              )}
+                            >
+                              <item.icon className="w-3 h-3 shrink-0" />
+                              <span>{item.title}</span>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+
+                {/* Tools Collapsible */}
+                <Collapsible open={toolsOpen} onOpenChange={setToolsOpen}>
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton className="w-full hover:bg-white/5 dark:hover:bg-white/[0.03] text-muted-foreground hover:text-foreground rounded-xl border border-transparent hover:border-border/10 transition-all duration-200">
+                        <Calculator className="w-4 h-4 shrink-0" />
+                        {!collapsed && (
+                          <>
+                            <span className="flex-1">Tools</span>
+                            {toolsOpen ? (
+                              <ChevronDown className="w-3 h-3" />
+                            ) : (
+                              <ChevronRight className="w-3 h-3" />
+                            )}
+                          </>
+                        )}
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub className="ml-4 mt-1 space-y-0.5 border-l border-border/10 pl-2">
+                        {toolsItems.map((item) => (
+                          <SidebarMenuSubItem key={item.path}>
+                            <SidebarMenuSubButton
+                              onClick={() => handleNavigation(item.path, item.enabled)}
+                              className={cn(
+                                "w-full rounded-lg transition-all duration-200",
+                                !item.enabled && "opacity-40 cursor-not-allowed",
+                                item.enabled 
+                                  ? "hover:bg-white/5 dark:hover:bg-white/[0.03] text-muted-foreground hover:text-foreground"
+                                  : "text-muted-foreground"
+                              )}
+                            >
+                              <item.icon className="w-3 h-3 shrink-0" />
+                              <span className="flex items-center gap-1.5">
+                                {item.title}
+                                {item.premium && !item.enabled && (
+                                  <Lock className="w-2.5 h-2.5" />
+                                )}
+                              </span>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </div>
+
+        {/* Footer */}
+        <SidebarFooter className={cn(
+          "border-t border-border/10 bg-gradient-to-t from-muted/10 to-transparent relative z-10",
+          collapsed ? "p-2" : "p-4"
+        )}>
+          {collapsed ? (
             <Button
               onClick={() => navigate('/checkout')}
-              className="w-full gap-2 rounded-xl"
-              size="sm"
+              className="w-full rounded-xl p-2 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
+              size="icon"
+              variant="default"
             >
-              Get Started
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-4 h-4" />
             </Button>
-          </div>
-        )}
-      </SidebarFooter>
+          ) : (
+            <div className="space-y-3">
+              {/* Take the tour again button */}
+              {onRestartTour && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRestartTour}
+                  className="w-full gap-2 text-muted-foreground hover:text-foreground hover:bg-white/5 dark:hover:bg-white/[0.03] rounded-xl border border-transparent hover:border-border/10 transition-all duration-200"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Take the tour again
+                </Button>
+              )}
+              
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-primary/10 backdrop-blur-sm border border-primary/20 shadow-[0_0_24px_hsl(var(--primary)/0.1)]">
+                <Sparkles className="w-4 h-4 text-primary mt-0.5 flex-shrink-0 drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]" />
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-foreground">Ready for your own?</p>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    Get personalized analysis tailored to your startup.
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => navigate('/checkout')}
+                className="w-full gap-2 rounded-xl shadow-[0_0_20px_hsl(var(--primary)/0.2)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.3)] transition-all duration-300"
+                size="sm"
+              >
+                Get Started
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          )}
+        </SidebarFooter>
+      </SidebarContent>
     </Sidebar>
   );
 }
