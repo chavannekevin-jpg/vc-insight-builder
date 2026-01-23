@@ -257,7 +257,7 @@ export default function DemoAnalysis() {
 
   const structuredSections: MemoStructuredSection[] = memoData.sections.map(s => ({
     title: s.title,
-    paragraphs: [{ text: s.narrative, emphasis: "normal" as const }],
+    paragraphs: s.paragraphs,
     keyPoints: s.keyPoints,
   }));
 
@@ -355,7 +355,8 @@ export default function DemoAnalysis() {
 
                   {/* Narrative Overview */}
                   <MemoCollapsibleOverview
-                    paragraphs={[{ text: section.narrative, emphasis: "normal" as const }]}
+                    paragraphs={section.paragraphs}
+                    highlights={section.highlights}
                     keyPoints={section.keyPoints}
                     defaultOpen={true}
                   />
@@ -364,7 +365,7 @@ export default function DemoAnalysis() {
                   {isProblemSection && (
                     <div className="space-y-6">
                       <MemoPainValidatorCard 
-                        problemText={section.narrative} 
+                        problemText={section.paragraphs.map(p => p.text).join(' ')} 
                         companyName={DEMO_COMPANY.name} 
                       />
                       {tools?.evidenceThreshold && (
@@ -380,7 +381,7 @@ export default function DemoAnalysis() {
                   {isSolutionSection && (
                     <div className="space-y-6">
                       <MemoDifferentiationCard 
-                        solutionText={section.narrative} 
+                        solutionText={section.paragraphs.map(p => p.text).join(' ')} 
                         companyName={DEMO_COMPANY.name} 
                       />
                       {tools?.technicalDefensibility && (
@@ -472,7 +473,7 @@ export default function DemoAnalysis() {
                   {isTractionSection && (
                     <div className="space-y-6">
                       <MemoMomentumCard 
-                        tractionText={section.narrative}
+                        tractionText={section.paragraphs.map(p => p.text).join(' ')}
                         companyName={DEMO_COMPANY.name}
                         stage={DEMO_COMPANY.stage}
                       />
