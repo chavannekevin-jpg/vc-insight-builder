@@ -24,6 +24,7 @@ interface AcceleratorInvite {
   is_active: boolean;
   expires_at: string | null;
   created_at: string;
+  custom_message: string | null;
 }
 
 export default function AdminAcceleratorInvites() {
@@ -39,6 +40,7 @@ export default function AdminAcceleratorInvites() {
   const [discountPercent, setDiscountPercent] = useState(100);
   const [maxUses, setMaxUses] = useState<string>("15");
   const [expiresAt, setExpiresAt] = useState("");
+  const [customMessage, setCustomMessage] = useState("");
 
   useEffect(() => {
     fetchInvites();
@@ -107,6 +109,7 @@ export default function AdminAcceleratorInvites() {
         max_uses: maxUses ? parseInt(maxUses) : null,
         expires_at: expiresAt || null,
         is_active: true,
+        custom_message: customMessage.trim() || null,
       }) as any);
 
       if (error) throw error;
@@ -122,6 +125,7 @@ export default function AdminAcceleratorInvites() {
       setDiscountPercent(100);
       setMaxUses("15");
       setExpiresAt("");
+      setCustomMessage("");
       setDialogOpen(false);
       fetchInvites();
     } catch (error: any) {
@@ -354,6 +358,21 @@ export default function AdminAcceleratorInvites() {
                     value={expiresAt}
                     onChange={(e) => setExpiresAt(e.target.value)}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="customMessage">Custom Message (optional)</Label>
+                  <textarea
+                    id="customMessage"
+                    placeholder="e.g., Welcome to our accelerator program! We're excited to support your fundraising journey."
+                    value={customMessage}
+                    onChange={(e) => setCustomMessage(e.target.value)}
+                    className="w-full min-h-[80px] px-3 py-2 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
+                    maxLength={500}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This message will appear on the invite page next to the signup form ({customMessage.length}/500)
+                  </p>
                 </div>
               </div>
 
