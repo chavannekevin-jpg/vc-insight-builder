@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Plus, Layers, Calendar, Users, ArrowRight, 
-  MoreHorizontal, Edit2, Trash2, ExternalLink 
+  MoreHorizontal, Sparkles, ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,84 +99,156 @@ export function AcceleratorCohorts({ cohorts, acceleratorId, onRefresh }: Accele
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Cohorts</h1>
-          <p className="text-muted-foreground">Manage your program batches and cohorts</p>
+    <div className="p-6 md:p-8 space-y-8">
+      {/* Header */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-2xl p-6 md:p-8"
+        style={{
+          background: 'linear-gradient(135deg, hsl(330 20% 12% / 0.9) 0%, hsl(330 20% 8% / 0.8) 100%)',
+          backdropFilter: 'blur(40px)',
+        }}
+      >
+        <div className="absolute inset-0 rounded-2xl border border-white/[0.06]" />
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-br from-secondary/15 via-primary/10 to-transparent rounded-full blur-3xl opacity-50" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 border border-secondary/20 mb-3">
+              <Layers className="w-3.5 h-3.5 text-secondary" />
+              <span className="text-xs font-medium text-secondary">Cohorts</span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Program Batches</h1>
+            <p className="text-muted-foreground mt-1">Manage your cohorts and program cycles</p>
+          </div>
+          
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setIsCreateOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-300"
+            style={{
+              background: 'linear-gradient(135deg, hsl(330 100% 65%) 0%, hsl(280 100% 70%) 100%)',
+              boxShadow: '0 0 20px hsl(330 100% 65% / 0.3)',
+            }}
+          >
+            <Plus className="w-4 h-4" />
+            New Cohort
+          </motion.button>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          New Cohort
-        </Button>
-      </div>
+      </motion.div>
 
       {cohorts.length === 0 ? (
-        <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-12 text-center">
-          <Layers className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="font-semibold text-foreground mb-2">No cohorts yet</h3>
-          <p className="text-muted-foreground mb-4">
-            Create your first cohort to start organizing your startups.
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="rounded-2xl p-12 text-center border border-white/[0.06]"
+          style={{
+            background: 'linear-gradient(135deg, hsl(330 20% 12% / 0.6) 0%, hsl(330 20% 8% / 0.4) 100%)',
+            backdropFilter: 'blur(20px)',
+          }}
+        >
+          <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto mb-4">
+            <Layers className="w-8 h-8 text-secondary" />
+          </div>
+          <h3 className="font-semibold text-lg text-foreground mb-2">No cohorts yet</h3>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            Create your first cohort to start organizing your startups by batch.
           </p>
-          <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
+          <Button 
+            onClick={() => setIsCreateOpen(true)} 
+            className="gap-2"
+            style={{
+              background: 'linear-gradient(135deg, hsl(330 100% 65%) 0%, hsl(280 100% 70%) 100%)',
+            }}
+          >
             <Plus className="w-4 h-4" />
             Create First Cohort
           </Button>
-        </div>
+        </motion.div>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {cohorts.map((cohort, i) => (
             <motion.div
               key={cohort.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-5 hover:border-primary/30 transition-colors"
+              transition={{ delay: 0.05 + i * 0.05 }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              className="group relative rounded-2xl p-5 cursor-default"
+              style={{
+                background: 'linear-gradient(135deg, hsl(330 20% 12% / 0.6) 0%, hsl(330 20% 8% / 0.4) 100%)',
+                backdropFilter: 'blur(20px)',
+              }}
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Layers className="w-5 h-5 text-primary" />
+              {/* Border */}
+              <div className="absolute inset-0 rounded-2xl border border-white/[0.06] group-hover:border-secondary/30 transition-colors" />
+              
+              {/* Glow effect for active cohorts */}
+              {cohort.is_active && (
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-secondary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              )}
+              
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary/20 to-primary/10 flex items-center justify-center border border-white/[0.06]">
+                      <Layers className="w-6 h-6 text-secondary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">{cohort.name}</h3>
+                      {cohort.is_active ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs text-success">
+                          <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                          Active
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Archived</span>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">{cohort.name}</h3>
-                    {cohort.is_active ? (
-                      <span className="text-xs text-success">Active</span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Archived</span>
-                    )}
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent 
+                      align="end"
+                      className="border-white/[0.08]"
+                      style={{
+                        background: 'linear-gradient(135deg, hsl(330 20% 14%) 0%, hsl(330 20% 10%) 100%)',
+                        backdropFilter: 'blur(40px)',
+                      }}
+                    >
+                      <DropdownMenuItem 
+                        onClick={() => handleToggleActive(cohort.id, cohort.is_active)}
+                        className="cursor-pointer"
+                      >
+                        {cohort.is_active ? "Archive" : "Activate"}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleToggleActive(cohort.id, cohort.is_active)}>
-                      {cohort.is_active ? "Archive" : "Activate"}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
 
-              <div className="space-y-2 text-sm">
-                {cohort.start_date && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Calendar className="w-4 h-4" />
-                    <span>Starts {new Date(cohort.start_date).toLocaleDateString()}</span>
+                <div className="space-y-2.5">
+                  {cohort.start_date && (
+                    <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                      <Calendar className="w-4 h-4 text-muted-foreground/60" />
+                      <span>Starts {new Date(cohort.start_date).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  {cohort.demo_day_date && (
+                    <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                      <Sparkles className="w-4 h-4 text-primary/60" />
+                      <span>Demo Day {new Date(cohort.demo_day_date).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                    <Users className="w-4 h-4 text-muted-foreground/60" />
+                    <span>{cohort.company_count || 0} startups</span>
                   </div>
-                )}
-                {cohort.demo_day_date && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <ArrowRight className="w-4 h-4" />
-                    <span>Demo Day {new Date(cohort.demo_day_date).toLocaleDateString()}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Users className="w-4 h-4" />
-                  <span>{cohort.company_count || 0} startups</span>
                 </div>
               </div>
             </motion.div>
@@ -186,11 +258,17 @@ export function AcceleratorCohorts({ cohorts, acceleratorId, onRefresh }: Accele
 
       {/* Create Cohort Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent>
+        <DialogContent 
+          className="border-white/[0.08]"
+          style={{
+            background: 'linear-gradient(135deg, hsl(330 20% 12%) 0%, hsl(330 20% 8%) 100%)',
+            backdropFilter: 'blur(40px)',
+          }}
+        >
           <DialogHeader>
-            <DialogTitle>Create New Cohort</DialogTitle>
+            <DialogTitle className="text-xl">Create New Cohort</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-5 py-4">
             <div className="space-y-2">
               <Label htmlFor="cohortName">Cohort Name</Label>
               <Input
@@ -198,6 +276,7 @@ export function AcceleratorCohorts({ cohorts, acceleratorId, onRefresh }: Accele
                 placeholder="e.g., Winter 2024 Batch"
                 value={newCohort.name}
                 onChange={(e) => setNewCohort(prev => ({ ...prev, name: e.target.value }))}
+                className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04]"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -208,6 +287,7 @@ export function AcceleratorCohorts({ cohorts, acceleratorId, onRefresh }: Accele
                   type="date"
                   value={newCohort.startDate}
                   onChange={(e) => setNewCohort(prev => ({ ...prev, startDate: e.target.value }))}
+                  className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04]"
                 />
               </div>
               <div className="space-y-2">
@@ -217,6 +297,7 @@ export function AcceleratorCohorts({ cohorts, acceleratorId, onRefresh }: Accele
                   type="date"
                   value={newCohort.endDate}
                   onChange={(e) => setNewCohort(prev => ({ ...prev, endDate: e.target.value }))}
+                  className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04]"
                 />
               </div>
             </div>
@@ -227,12 +308,21 @@ export function AcceleratorCohorts({ cohorts, acceleratorId, onRefresh }: Accele
                 type="date"
                 value={newCohort.demoDayDate}
                 onChange={(e) => setNewCohort(prev => ({ ...prev, demoDayDate: e.target.value }))}
+                className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04]"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreateCohort} disabled={isCreating}>
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="border-white/[0.08]">
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleCreateCohort} 
+              disabled={isCreating}
+              style={{
+                background: 'linear-gradient(135deg, hsl(330 100% 65%) 0%, hsl(280 100% 70%) 100%)',
+              }}
+            >
               {isCreating ? "Creating..." : "Create Cohort"}
             </Button>
           </DialogFooter>
