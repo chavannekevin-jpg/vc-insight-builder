@@ -146,10 +146,12 @@ export const ToolPopupModal = ({
           </div>
         </DialogHeader>
 
-        {/* Content */}
+        {/* Content - strip outer card styling from tool components since modal provides the frame */}
         <ScrollArea className="max-h-[calc(85vh-80px)]">
-          <div className="p-6">
-            {renderTool()}
+          <div className="p-5">
+            <div className="tool-modal-content [&>div:first-child]:border-0 [&>div:first-child]:bg-transparent [&>div:first-child]:p-0 [&>div:first-child]:rounded-none [&>div:first-child]:shadow-none">
+              {renderTool()}
+            </div>
           </div>
         </ScrollArea>
       </DialogContent>
