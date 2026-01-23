@@ -172,7 +172,7 @@ export function DashboardEntranceAnimation({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
-              Welcome back
+              Welcome
             </motion.h1>
             
             <motion.p
