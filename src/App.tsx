@@ -153,6 +153,10 @@ const DemoMarketLens = lazy(() => import("./pages/demo/DemoMarketLens"));
 const DemoFundDiscovery = lazy(() => import("./pages/demo/DemoFundDiscovery"));
 const DemoProfile = lazy(() => import("./pages/demo/DemoProfile"));
 const DemoAnalysis = lazy(() => import("./pages/demo/DemoAnalysis"));
+const DemoVCMemorandum = lazy(() => import("./pages/demo/DemoVCMemorandum"));
+
+// VC Memorandum (paid)
+const VCMemorandum = lazy(() => import("./pages/VCMemorandum"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -212,8 +216,11 @@ const App = () => (
             <Route path="/demo" element={<DemoDashboard />} />
             <Route path="/demo/profile" element={<DemoProfile />} />
             <Route path="/demo/analysis" element={<DemoAnalysis />} />
+            <Route path="/demo/vc-memorandum" element={<DemoVCMemorandum />} />
             <Route path="/demo/market-lens" element={<DemoMarketLens />} />
             <Route path="/demo/fund-discovery" element={<DemoFundDiscovery />} />
+            {/* Paid VC Memorandum */}
+            <Route path="/vc-memorandum" element={<VCMemorandum />} />
             <Route path="/hub/:slug" element={<EducationalContent />} />
             <Route path="/vcbrain" element={<VCBrainHub />}>
               <Route index element={<VCBrainHome />} />

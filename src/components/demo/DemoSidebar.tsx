@@ -58,6 +58,7 @@ const mainMenuItems = [
   { title: "Dashboard", path: "/demo", icon: LayoutDashboard, enabled: true },
   { title: "My Profile", path: "/demo/profile", icon: Edit, enabled: true },
   { title: "My Analysis", path: "/demo/analysis", icon: FileText, enabled: true },
+  { title: "VC Memorandum", path: "/demo/vc-memorandum", icon: BookOpen, enabled: true },
 ];
 
 const premiumTools = [
