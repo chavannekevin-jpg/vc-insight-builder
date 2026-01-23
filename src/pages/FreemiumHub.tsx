@@ -19,6 +19,7 @@ import { FounderSidebar } from "@/components/founder/FounderSidebar";
 import { InviteFounderModal } from "@/components/founder/InviteFounderModal";
 import ScoreboardModal from "@/components/founder/ScoreboardModal";
 import { MemoLoadingScreen } from "@/components/MemoLoadingScreen";
+import { DashboardEntranceAnimation, useDashboardEntrance } from "@/components/DashboardEntranceAnimation";
 import { LogOut, Sparkles, Edit, FileText, BookOpen, Calculator, Shield, ArrowRight, RotateCcw, Flame, LayoutGrid, Upload, Wrench, Trash2, Settings, Building2, Menu } from "lucide-react";
 import { FundDiscoveryPremiumModal } from "@/components/FundDiscoveryPremiumModal";
 import { useMatchingFundsCount } from "@/hooks/useMatchingFundsCount";
@@ -129,6 +130,9 @@ export default function FreemiumHub() {
   const [inviteFounderOpen, setInviteFounderOpen] = useState(false);
   const [scoreboardOpen, setScoreboardOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+
+  // Dashboard entrance animation
+  const { showEntrance, isChecked: entranceChecked, completeEntrance } = useDashboardEntrance();
 
   // Cache invalidation for after regeneration
   const invalidateMemoCache = useInvalidateMemoContent();
@@ -663,8 +667,17 @@ export default function FreemiumHub() {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+    <>
+      {/* Entrance Animation */}
+      {entranceChecked && showEntrance && (
+        <DashboardEntranceAnimation 
+          companyName={company.name}
+          onComplete={completeEntrance}
+        />
+      )}
+      
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background">
         {/* Sidebar */}
         <FounderSidebar
           isAdmin={isAdmin}
@@ -967,5 +980,6 @@ export default function FreemiumHub() {
         />
       </div>
     </SidebarProvider>
+    </>
   );
 }
