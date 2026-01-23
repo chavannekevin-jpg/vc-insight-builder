@@ -106,43 +106,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* What You Get Section */}
-        <section className="py-20 px-4">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Everything VCs Know About You—
-                <span className="text-primary"> Before They Do</span>
-              </h2>
-              <p className="text-muted-foreground max-w-xl mx-auto">
-                The complete founder ecosystem. One payment. Full access.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[
-                { icon: FileSearch, title: "8-Dimension Audit", desc: "Scorecard across Team, Market, Product, Traction & more" },
-                { icon: Wrench, title: "23+ Diagnostic Tools", desc: "TAM calculators, unit economics, competitor matrices" },
-                { icon: Users, title: "800+ Investors", desc: "Matched to your stage, sector, and geography" },
-                { icon: Telescope, title: "Market Intelligence", desc: "50+ reports distilled for your context" },
-                { icon: MessageSquare, title: "Outreach Suite", desc: "Personalized emails that get replies" },
-                { icon: Brain, title: "VC Q&A Prep", desc: "The tough questions—with answer frameworks" }
-              ].map((item, idx) => (
-                <div 
-                  key={idx}
-                  className="group p-5 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/30 hover:border-primary/30 hover:bg-card/50 transition-all"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                    <item.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-bold text-foreground mb-1">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* How It Works Section */}
         <section className="py-20 px-4">
           <div className="max-w-5xl mx-auto">
@@ -229,6 +192,43 @@ const Index = () => {
                   );
                 })}
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* What You Get Section */}
+        <section className="py-20 px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Everything VCs Know About You—
+                <span className="text-primary"> Before They Do</span>
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                The complete founder ecosystem. One payment. Full access.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { icon: FileSearch, title: "8-Dimension Audit", desc: "Scorecard across Team, Market, Product, Traction & more" },
+                { icon: Wrench, title: "23+ Diagnostic Tools", desc: "TAM calculators, unit economics, competitor matrices" },
+                { icon: Users, title: "800+ Investors", desc: "Matched to your stage, sector, and geography" },
+                { icon: Telescope, title: "Market Intelligence", desc: "50+ reports distilled for your context" },
+                { icon: MessageSquare, title: "Outreach Suite", desc: "Personalized emails that get replies" },
+                { icon: Brain, title: "VC Q&A Prep", desc: "The tough questions—with answer frameworks" }
+              ].map((item, idx) => (
+                <div 
+                  key={idx}
+                  className="group p-5 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/30 hover:border-primary/30 hover:bg-card/50 transition-all"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <item.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-bold text-foreground mb-1">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
