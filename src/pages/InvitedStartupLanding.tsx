@@ -352,14 +352,12 @@ export default function InvitedStartupLanding() {
 
                   {/* Discount reminder */}
                   {(() => {
-                    const baseDiscount = 50;
-                    const referralDiscount = inviteInfo.discountPercent || 0;
-                    const totalDiscount = Math.min(baseDiscount + referralDiscount, 90);
+                    const referralDiscount = inviteInfo.discountPercent || 20;
                     return (
                       <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 border border-success/20">
                         <Gift className="w-4 h-4 text-success flex-shrink-0" />
                         <span className="text-sm text-success font-medium">
-                          Your {totalDiscount}% discount will be applied at checkout
+                          Your {referralDiscount}% discount will be applied at checkout
                         </span>
                       </div>
                     );
