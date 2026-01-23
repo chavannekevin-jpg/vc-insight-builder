@@ -16,6 +16,7 @@ import {
   Shield,
   Network,
   Layers,
+  Rocket,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -41,6 +42,7 @@ const mainNavItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard, exact: true },
   { title: "Users Hub", url: "/admin/users", icon: Users },
   { title: "Investor Ecosystem", url: "/admin/investors", icon: Network },
+  { title: "Accelerator Invites", url: "/admin/accelerator-invites", icon: Rocket },
 ];
 
 const contentItems = [

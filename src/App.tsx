@@ -122,6 +122,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const RoastYourBaby = lazy(() => import("./pages/RoastYourBaby"));
 const DilutionLab = lazy(() => import("./pages/DilutionLab"));
 const AcceleratorLanding = lazy(() => import("./pages/AcceleratorLanding"));
+const AcceleratorInviteLanding = lazy(() => import("./pages/AcceleratorInviteLanding"));
 const FundDiscovery = lazy(() => import("./pages/FundDiscovery"));
 const MarketLens = lazy(() => import("./pages/MarketLens"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -129,6 +130,7 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const InvitedStartupLanding = lazy(() => import("./pages/InvitedStartupLanding"));
 const Scoreboard = lazy(() => import("./pages/Scoreboard"));
 const PublicScorecard = lazy(() => import("./pages/PublicScorecard"));
+const AdminAcceleratorInvites = lazy(() => import("./pages/AdminAcceleratorInvites"));
 
 // Investor Pages
 const InvestorLanding = lazy(() => import("./pages/investor/InvestorLanding"));
@@ -195,6 +197,7 @@ const App = () => (
             <Route path="/roast-your-baby" element={<RoastYourBaby />} />
             <Route path="/dilution-lab" element={<DilutionLab />} />
             <Route path="/accelerators" element={<AcceleratorLanding />} />
+            <Route path="/accelerator/invite" element={<AcceleratorInviteLanding />} />
             {/* Investor Routes */}
             <Route path="/investor" element={<InvestorLanding />} />
             <Route path="/investor/auth" element={<InvestorAuth />} />
@@ -353,6 +356,7 @@ const App = () => (
             <Route path="/admin/prompts" element={<AdminPrompts />} />
             <Route path="/admin/articles" element={<AdminArticles />} />
             <Route path="/admin/investors" element={<AdminInvestors />} />
+            <Route path="/admin/accelerator-invites" element={<AdminAcceleratorInvites />} />
             <Route path="/admin/commerce" element={<AdminCommerce />} />
             <Route path="/admin/commerce/discounts" element={<AdminCommerce />} />
             <Route path="/admin/emails" element={<AdminEmails />} />
