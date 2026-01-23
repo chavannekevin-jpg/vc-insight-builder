@@ -622,7 +622,7 @@ export const VCVerdictCard = memo(({
                 size="lg"
               >
                 <Play className="w-4 h-4 mr-2" />
-                See Full Demo First
+                Visit a Demo Ecosystem First
               </Button>
             )}
           </div>
