@@ -189,11 +189,14 @@ const ExpandableTools = ({ title, tools, expanded, onToggle }: ExpandableToolsPr
     </Button>
 
     {expanded && (
-      <div className="mt-4 space-y-4 pl-4 border-l-2 border-muted">
+      <div className="mt-4 space-y-6 pl-4 border-l-2 border-muted">
         {/* VC Investment Logic */}
         {tools.vcInvestmentLogic && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <h5 className="font-medium text-sm">VC Investment Logic</h5>
+            <p className="text-xs text-muted-foreground bg-muted/30 rounded-md p-3 italic">
+              This tool reveals how venture capitalists evaluate this specific section. It highlights the key questions investors ask, the metrics they track, and the signals (both positive and negative) that influence their investment decisions.
+            </p>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground mb-1">Primary Questions:</p>
@@ -235,8 +238,11 @@ const ExpandableTools = ({ title, tools, expanded, onToggle }: ExpandableToolsPr
 
         {/* 90-Day Action Plan */}
         {tools.actionPlan90Day && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <h5 className="font-medium text-sm">90-Day Action Plan</h5>
+            <p className="text-xs text-muted-foreground bg-muted/30 rounded-md p-3 italic">
+              A prioritized roadmap of immediate actions to strengthen your position. These milestones are designed to address the most critical gaps identified in this section and demonstrate tangible progress to investors.
+            </p>
             <div className="space-y-2">
               {tools.actionPlan90Day.milestones.map((milestone, i) => (
                 <div key={i} className="flex items-start gap-2 text-sm">
@@ -263,8 +269,11 @@ const ExpandableTools = ({ title, tools, expanded, onToggle }: ExpandableToolsPr
 
         {/* Benchmarks */}
         {tools.benchmarks && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <h5 className="font-medium text-sm">Industry Benchmarks</h5>
+            <p className="text-xs text-muted-foreground bg-muted/30 rounded-md p-3 italic">
+              Compare your metrics against industry standards for companies at your stage. This helps you understand where you excel and where you may need to improve to meet investor expectations.
+            </p>
             <div className="grid gap-2">
               {tools.benchmarks.metrics.map((metric, i) => (
                 <div key={i} className="flex items-center justify-between text-sm bg-muted/30 rounded px-3 py-2">
