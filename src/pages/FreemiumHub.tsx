@@ -663,6 +663,71 @@ export default function FreemiumHub() {
   const deckParsed = !!company?.deck_parsed_at;
 
   const loading = authLoading || companyLoading;
+  
+  // State for "finalizing" mode when paid but memo not ready yet
+  const [isFinalizingAnalysis, setIsFinalizingAnalysis] = useState(false);
+  const [finalizingAttempts, setFinalizingAttempts] = useState(0);
+  
+  // Poll for memo content when paid but memoHasContent is false
+  useEffect(() => {
+    // Only activate if: paid, has company, NOT already loading/regenerating, memo not ready
+    if (!hasPaid || !company?.id || loading || isRegenerating || memoHasContent) {
+      setIsFinalizingAnalysis(false);
+      return;
+    }
+    
+    // User is paid but memo isn't ready - show finalizing state and poll
+    console.log("[FreemiumHub] Paid user without memo content, starting finalization polling...");
+    setIsFinalizingAnalysis(true);
+    
+    let cancelled = false;
+    const maxAttempts = 30; // Up to ~2.5 minutes of polling
+    
+    const pollForMemo = async () => {
+      let attempts = 0;
+      while (!cancelled && attempts < maxAttempts) {
+        try {
+          const { data: memo } = await supabase
+            .from("memos")
+            .select("id, structured_content")
+            .eq("company_id", company.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          
+          if (memo?.structured_content) {
+            console.log("[FreemiumHub] Memo content detected, refreshing data...");
+            // Invalidate all caches and let React Query refetch
+            await queryClient.invalidateQueries({ queryKey: ["memo", company.id] });
+            await queryClient.invalidateQueries({ queryKey: ["memoContent", company.id] });
+            await queryClient.invalidateQueries({ queryKey: ["sectionTools", company.id] });
+            await queryClient.invalidateQueries({ queryKey: ["vc-quick-take", company.id] });
+            await queryClient.invalidateQueries({ queryKey: ["company"] });
+            setIsFinalizingAnalysis(false);
+            return;
+          }
+          
+          attempts++;
+          setFinalizingAttempts(attempts);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        } catch (error) {
+          console.error("[FreemiumHub] Poll error:", error);
+          attempts++;
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+      }
+      
+      // Timeout - stop polling but stay on page (user can refresh)
+      console.log("[FreemiumHub] Finalization polling timeout");
+      setIsFinalizingAnalysis(false);
+    };
+    
+    pollForMemo();
+    
+    return () => {
+      cancelled = true;
+    };
+  }, [hasPaid, company?.id, loading, isRegenerating, memoHasContent, queryClient]);
 
   // Show regeneration loading screen
   if (isRegenerating) {
@@ -674,6 +739,26 @@ export default function FreemiumHub() {
         onMemoReady={handleMemoReady}
         onCheckStatus={handleCheckStatus}
       />
+    );
+  }
+  
+  // Show "Finalizing Analysis" screen when paid but memo not ready
+  if (isFinalizingAnalysis && hasPaid && !memoHasContent) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4 max-w-md px-6">
+          <Sparkles className="w-16 h-16 text-primary animate-pulse mx-auto" />
+          <h2 className="text-xl font-semibold">Finalizing Your Analysis</h2>
+          <p className="text-muted-foreground">
+            Your investment analysis is being finalized. This usually takes just a moment...
+          </p>
+          {finalizingAttempts > 6 && (
+            <p className="text-sm text-muted-foreground/70">
+              Taking longer than expected. Please wait or refresh the page.
+            </p>
+          )}
+        </div>
+      </div>
     );
   }
 
