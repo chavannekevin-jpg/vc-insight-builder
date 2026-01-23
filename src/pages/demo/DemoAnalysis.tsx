@@ -36,8 +36,6 @@ import {
   SectionScoreCard,
   VCInvestmentLogicCard,
   Section90DayPlan,
-  LeadInvestorCard,
-  SectionBenchmarks,
   MicroCaseStudyCard,
   ProblemEvidenceThreshold,
   ProblemFounderBlindSpot,
@@ -130,87 +128,60 @@ const DEMO_ARC_CLASSIFICATION = {
   confidence: 85
 };
 
-// Demo VC Reflection data for each section
-const DEMO_VC_REFLECTIONS: Record<string, { analysis: string; questions: string[]; benchmarking: string; conclusion: string }> = {
-  "Problem": {
-    analysis: "The problem framing is sophisticated and shows deep customer understanding. Quantifying revenue leakage at $2.1M per 50-person team gives investors a clear ROI narrative. The 67% 'no decision' statistic is memorable and creates urgency. This is above-average problem articulation for Seed stage.",
+// Demo Investment Thesis section data
+const DEMO_INVESTMENT_THESIS = {
+  title: "Investment Thesis",
+  paragraphs: [
+    {
+      emphasis: "high" as const,
+      text: "SignalFlow represents a compelling Seed investment opportunity in the revenue intelligence category. The company has demonstrated clear product-market fit signals: €32K MRR growing 15% month-over-month, NPS of 74 (exceptional for B2B), and 94% customer retention at Month 6. The founder-market fit is exceptional — CEO with 8 years at Salesforce and CTO with ML leadership at Datadog and Stanford PhD creates a rare combination of domain expertise and technical credibility."
+    },
+    {
+      emphasis: "normal" as const,
+      text: "The core investment thesis centers on three pillars: (1) Category Timing — revenue intelligence is a validated €10B+ category (Gong, Clari) with clear mid-market whitespace, (2) Technical Differentiation — 'prediction vs. recording' positioning creates sustainable advantage as long as execution velocity is maintained, and (3) Capital Efficiency — 4.9x LTV:CAC and 7-month payback demonstrate efficient growth economics that can scale with investment."
+    },
+    {
+      emphasis: "normal" as const,
+      text: "Key risks are manageable but real: Gong's announced mid-market expansion requires defensive velocity; founder-led sales needs to prove scalability through initial AE hires; and the €2M raise at €10M pre-money is contingent on continued 15%+ MoM growth. The risk-reward profile is attractive for investors who believe execution speed can outpace incumbent response."
+    },
+    {
+      emphasis: "high" as const,
+      text: "Recommendation: Proceed to partner meeting. SignalFlow clears our Seed investment bar with strong team, validated traction, and credible market thesis. The primary diligence focus should be (1) competitive moat durability and (2) evidence that sales motion transfers to non-founders. If both questions resolve positively, this is a fundable opportunity in a category with proven €1B+ exit precedents (Chorus.ai: €575M, Gong: €7B valuation)."
+    }
+  ],
+  highlights: [
+    { label: "Investment Grade", metric: "Seed-Ready" },
+    { label: "Risk Profile", metric: "Moderate" },
+    { label: "Exit Potential", metric: "€500M-1B+" },
+    { label: "Recommendation", metric: "Proceed to Partner Meeting" }
+  ],
+  keyPoints: [
+    "Strong founder-market fit with domain expertise and technical credibility",
+    "Validated PMF: €32K MRR, 15% MoM, NPS 74, 94% retention",
+    "Category timing favorable — mid-market whitespace in validated €10B+ category",
+    "Primary risks: competitive response and sales scalability — both manageable with execution"
+  ],
+  vcReflection: {
+    analysis: "This deal presents a classic 'execution bet' opportunity. The category is validated (Gong proved it), the team is credible (rare founder-market fit), and the early metrics are encouraging (LTV:CAC, retention, NPS all above benchmarks). The question isn't 'is this a good market?' or 'can this team build product?' — those are answered. The question is: 'Can this team out-execute well-funded incumbents in a race for mid-market ownership?' My assessment: yes, with capital and focus. The €2M Seed at €10M pre-money provides good entry point with meaningful upside in all exit scenarios.",
     questions: [
-      "How does the problem intensity vary by industry vertical?",
-      "What's the buying trigger that makes companies prioritize this now?",
-      "How does this problem manifest differently in mid-market vs enterprise?"
+      {
+        question: "What's our ownership target and pro-rata expectations for Series A?",
+        vcRationale: "At €10M pre-money, €2M gives us ~17% ownership. Need to understand if we can maintain 15%+ through Series A with pro-rata.",
+        whatToPrepare: "Model ownership scenarios across different Series A raise sizes and pre-money valuations."
+      },
+      {
+        question: "How does this fit our portfolio construction and sector exposure?",
+        vcRationale: "We have existing investments in sales tech — need to assess overlap, conflict, and portfolio synergy opportunities.",
+        whatToPrepare: "Portfolio mapping against SignalFlow positioning, potential intro opportunities from existing portfolio."
+      },
+      {
+        question: "What's our value-add thesis beyond capital?",
+        vcRationale: "Competitive deals require differentiated investor value. Need to articulate specific ways we help SignalFlow win.",
+        whatToPrepare: "List of specific value-add: customer intros, hiring network, operational playbooks from portfolio."
+      }
     ],
-    benchmarking: "Top quartile for customer discovery depth. Most Seed companies have 20-30 interviews; SignalFlow has 85. The quantified impact ($2.1M) puts this above typical 'nice-to-have' positioning.",
-    conclusion: "Strong problem validation with clear market evidence. The customer discovery depth and quantified pain point provide solid foundation for investment consideration."
-  },
-  "Solution": {
-    analysis: "The 'prediction vs. recording' positioning is smart differentiation in a crowded market. Having 28 paying customers with 89% prediction accuracy demonstrates execution. The 5-minute integration claim needs validation but if true, removes major adoption friction.",
-    questions: [
-      "What's the baseline for 89% accuracy - random chance or manager intuition?",
-      "How does accuracy degrade with different deal types or industries?",
-      "What's the technical moat preventing Gong from adding this feature?"
-    ],
-    benchmarking: "NPS of 74 is exceptional - typical B2B is 30-50. Time to first value (5 minutes) would be best-in-class if validated. Product market fit signals are strong.",
-    conclusion: "Solid product execution with strong customer satisfaction signals. The differentiation angle is credible but technical moat needs reinforcement through IP protection."
-  },
-  "Market": {
-    analysis: "The €2.5B TAM is credible with bottom-up methodology - a sign of analytical rigor. Mid-market focus is a smart wedge strategy given Gong's enterprise dominance. Market timing is favorable with AI adoption accelerating across sales organizations.",
-    questions: [
-      "How defensible is the mid-market position if Gong launches 'Essentials' tier?",
-      "What's the expansion path beyond revenue intelligence?",
-      "How does the European market differ from US in adoption patterns?"
-    ],
-    benchmarking: "Bottom-up TAM methodology puts this in top 15% of pitches. The €2.5B TAM comfortably supports €100M+ outcomes required for venture returns.",
-    conclusion: "Market size and methodology are solid. The mid-market wedge strategy is credible, but long-term defensibility against incumbent expansion remains the key question."
-  },
-  "Competition": {
-    analysis: "Competitive landscape is well-understood but the moat story needs work. Gong's $7B valuation and announced mid-market push is a real threat. The 'prediction vs. recording' differentiation is good but may not hold if incumbents add features.",
-    questions: [
-      "What's your win rate in direct competitive deals against Gong?",
-      "How long would it take Gong to add prediction features?",
-      "What structural advantages prevent feature parity catch-up?"
-    ],
-    benchmarking: "45% competitive win rate is encouraging but sample size is small. Most Seed companies struggle to win any competitive deals.",
-    conclusion: "Competitive awareness is good but moat articulation needs improvement. Execution velocity will determine whether differentiation holds."
-  },
-  "Team": {
-    analysis: "Exceptional founder-market fit. CEO's 8 years at Salesforce provides deep domain expertise and enterprise relationships. CTO's Datadog ML experience and Stanford PhD brings rare technical credibility. This is a team that can execute.",
-    questions: [
-      "How will you scale beyond founder-led sales?",
-      "What's your VP Marketing hiring timeline?",
-      "Who are the first 5 hires after fundraise?"
-    ],
-    benchmarking: "Top 5% for founder domain experience. The CEO-CTO combination of sales domain + ML technical depth is rare and valuable.",
-    conclusion: "Team is a significant strength and de-risks execution considerably. The founder-market fit here is genuinely exceptional for the stage."
-  },
-  "Business Model": {
-    analysis: "Unit economics are healthy: 4.9x LTV:CAC exceeds 3x benchmark, 7-month payback enables aggressive acquisition. 82% gross margin is healthy for SaaS. The model is proven and predictable.",
-    questions: [
-      "Will these metrics hold as you move beyond early adopters?",
-      "What's the expansion revenue contribution?",
-      "How do enterprise deals change the unit economics?"
-    ],
-    benchmarking: "LTV:CAC of 4.9x is top 20%. Payback of 7 months is top 15%. These metrics suggest efficient growth potential.",
-    conclusion: "Business model is solid and de-risked. Focus should be on scaling what works rather than model experimentation."
-  },
-  "Traction": {
-    analysis: "€32K MRR with 15% MoM growth for 8 consecutive months demonstrates product-market fit. 28 customers with 94% retention and NPS 74 are strong engagement signals. Ready for acceleration with capital.",
-    questions: [
-      "What's driving the 6% monthly churn - product or market?",
-      "How much of growth is inbound vs outbound?",
-      "What's the pipeline for next quarter?"
-    ],
-    benchmarking: "€384K ARR run-rate is solid for Seed. 15% MoM growth is healthy but not exceptional. NPS 74 is top 10%.",
-    conclusion: "Traction demonstrates clear PMF and readiness for scaling. The question is whether growth can accelerate beyond founder-led sales."
-  },
-  "Vision": {
-    analysis: "Clear 18-month roadmap from €32K to €150K MRR with defined milestones. Use of funds is specific and realistic. Exit scenarios through strategic acquisition are well-mapped with Chorus.ai precedent.",
-    questions: [
-      "What's the contingency if you don't hit €150K MRR by month 18?",
-      "How are you building relationships with potential acquirers?",
-      "What triggers Series A timeline - milestones or runway?"
-    ],
-    benchmarking: "Milestone clarity is top 20%. Most Seed companies lack specific 18-month targets. Use of funds breakdown shows operational maturity.",
-    conclusion: "Vision is credible and well-articulated. Path to Series A is realistic given current trajectory."
+    benchmarking: "For our Seed portfolio, SignalFlow ranks in the top quartile on founder quality and unit economics. Compared to recent Seed investments: stronger team than average, comparable traction, and better market timing. The €10M pre-money is at the higher end of our Seed range but justified by metrics and team quality. Expected IRR modeling suggests 5-8x return potential in base case (€500M exit) and 15-25x in upside case (€1B+ exit or category leadership).",
+    conclusion: "SignalFlow meets our investment criteria for Seed stage. Proceed to partner meeting with recommendation to lead or co-lead the round. Key diligence items: (1) Reference calls with Salesforce and Datadog colleagues for founder validation, (2) Customer calls to verify retention and NPS claims, (3) Competitive landscape deep-dive with Gong ecosystem contacts. Target decision timeline: 2-3 weeks from partner meeting."
   }
 };
 
@@ -325,7 +296,8 @@ export default function DemoAnalysis() {
             const titleLower = section.title.toLowerCase();
             const tools = DEMO_SECTION_TOOLS[section.title] || {};
             const verdict = DEMO_HOLISTIC_VERDICTS[section.title];
-            const vcReflection = DEMO_VC_REFLECTIONS[section.title];
+            // Use vcReflection from the section itself (full-fidelity data with structured questions)
+            const vcReflection = section.vcReflection;
 
             // Section type detection
             const isProblemSection = titleLower.includes('problem');
@@ -502,14 +474,6 @@ export default function DemoAnalysis() {
                     </div>
                   )}
 
-                  {/* ========== SECTION BENCHMARKS ========== */}
-                  {tools?.benchmarks && tools.benchmarks.length > 0 && (
-                    <SectionBenchmarks
-                      sectionName={section.title}
-                      benchmarks={tools.benchmarks}
-                    />
-                  )}
-
                   {/* ========== MICRO CASE STUDY ========== */}
                   {tools?.caseStudy && (
                     <MicroCaseStudyCard caseStudy={tools.caseStudy} />
@@ -553,18 +517,43 @@ export default function DemoAnalysis() {
                       plan={tools.actionPlan90Day}
                     />
                   )}
-
-                  {/* ========== LEAD INVESTOR REQUIREMENTS ========== */}
-                  {tools?.leadInvestorRequirements && (
-                    <LeadInvestorCard
-                      sectionName={section.title}
-                      requirements={tools.leadInvestorRequirements}
-                    />
-                  )}
                 </MemoSection>
               </div>
             );
           })}
+
+          {/* ========== INVESTMENT THESIS SECTION ========== */}
+          <div data-section="investment-thesis">
+            <MemoSection title={DEMO_INVESTMENT_THESIS.title} index={memoData.sections.length}>
+              {/* VC Framing Explanation */}
+              <VCFramingExplainerCard sectionTitle={DEMO_INVESTMENT_THESIS.title} />
+
+              {/* Narrative Overview with Key Takeaways */}
+              <MemoCollapsibleOverview
+                paragraphs={DEMO_INVESTMENT_THESIS.paragraphs}
+                highlights={DEMO_INVESTMENT_THESIS.highlights}
+                keyPoints={DEMO_INVESTMENT_THESIS.keyPoints}
+                defaultOpen={true}
+              />
+
+              {/* Investment Thesis VC Perspective */}
+              <div className="mt-10 space-y-8 pt-8 border-t border-border/50">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                  <span className="text-xs font-semibold text-primary uppercase tracking-wider">Investment Committee Perspective</span>
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                </div>
+                
+                <MemoVCReflection text={DEMO_INVESTMENT_THESIS.vcReflection.analysis} />
+                
+                <MemoVCQuestions questions={DEMO_INVESTMENT_THESIS.vcReflection.questions} defaultAllOpen={true} />
+                
+                <MemoBenchmarking text={DEMO_INVESTMENT_THESIS.vcReflection.benchmarking} />
+                
+                <MemoAIConclusion text={DEMO_INVESTMENT_THESIS.vcReflection.conclusion} />
+              </div>
+            </MemoSection>
+          </div>
         </div>
       </div>
     </DemoLayout>
