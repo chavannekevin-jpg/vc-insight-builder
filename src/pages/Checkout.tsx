@@ -46,15 +46,15 @@ export default function Checkout() {
 
   const plans = [
     {
-      id: "early-access",
-      title: "Early Access",
-      subtitle: "Early Access - 50% Off",
-      price: "€29.99",
-      originalPrice: "€59.99",
-      discount: "50% OFF",
+      id: "standard",
+      title: "Investment Memo",
+      subtitle: "VC Due Diligence Simulation",
+      price: "€100",
+      originalPrice: undefined,
+      discount: undefined,
       features: [
-        "Get your memo when platform launches",
-        "Save €30 with early access pricing",
+        "Complete VC-grade investment analysis",
+        "Every weakness exposed before you raise",
         "Company profile shared to our VC network (optional)"
       ],
       highlight: true,

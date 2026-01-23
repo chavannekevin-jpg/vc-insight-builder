@@ -14,7 +14,7 @@ export const PricingSection = () => {
   
   const memoFinalPrice = memoPricing?.early_access_enabled 
     ? Math.floor(memoPricing.base_price * 100 * (1 - memoPricing.early_access_discount / 100)) / 100
-    : memoPricing?.base_price ?? 59.99;
+    : memoPricing?.base_price ?? 100;
 
   const pricingOptions = [
     {

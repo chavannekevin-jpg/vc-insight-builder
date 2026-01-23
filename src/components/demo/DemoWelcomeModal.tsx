@@ -64,7 +64,7 @@ export function DemoWelcomeModal({ open, onComplete }: DemoWelcomeModalProps) {
               <span className="text-xl font-bold text-green-400">{TOTAL_VALUE}</span>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Yours for under <span className="text-primary font-semibold">€60</span>
+              Yours for just <span className="text-primary font-semibold">€100</span>
             </p>
           </div>
         </div>
