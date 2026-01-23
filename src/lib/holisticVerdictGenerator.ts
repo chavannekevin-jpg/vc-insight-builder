@@ -128,11 +128,11 @@ export function generateOverallVerdict(
   let verdict = `${companyName} scores ${overallScore}/100 — ${aboveBelow} the ~${stageThreshold} threshold for competitive ${stage} rounds. `;
   
   if (strengths.length > 0) {
-    verdict += `**Strengths:** ${strengths.join(' and ')} show promise. `;
+    verdict += `Strengths: ${strengths.join(' and ')} show promise. `;
   }
   
   if (weaknesses.length > 0) {
-    verdict += `**Gaps:** ${weaknesses.join(' and ')} need work before approaching top-tier VCs. `;
+    verdict += `Gaps: ${weaknesses.join(' and ')} need work before approaching top-tier VCs. `;
   }
   
   // Add stage-specific guidance

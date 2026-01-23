@@ -250,12 +250,12 @@ export const SectionDetailModal = ({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[90vh] p-0 bg-background border-border/30 flex flex-col overflow-hidden gap-0">
+      <DialogContent className="max-w-4xl h-[90vh] p-0 bg-card/95 backdrop-blur-2xl border-border/30 flex flex-col overflow-hidden gap-0 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]">
         
         {/* Elegant Header */}
-        <div className="relative px-8 py-6 border-b border-border/20 bg-gradient-to-b from-muted/30 to-transparent">
+        <div className="relative px-8 py-6 border-b border-border/20 bg-gradient-to-b from-muted/20 to-transparent backdrop-blur-sm">
           {/* Section Number Badge */}
-          <div className="absolute top-6 left-8 w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+          <div className="absolute top-6 left-8 w-8 h-8 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/20 flex items-center justify-center">
             <span className="text-sm font-semibold text-primary">{navIndex + 1}</span>
           </div>
           
@@ -296,7 +296,7 @@ export const SectionDetailModal = ({
                 
                 {/* Status Badge */}
                 <div className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-xl",
+                  "flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-sm",
                   config.bg, config.border, "border"
                 )}>
                   <Icon className={cn("w-5 h-5", config.color)} />
@@ -326,7 +326,7 @@ export const SectionDetailModal = ({
                 <div className="space-y-4">
                   {/* Analysis Quote */}
                   {vcReflection.analysis && (
-                    <div className="relative overflow-hidden rounded-xl border border-accent/20 bg-gradient-to-br from-accent/5 via-background to-background p-5">
+                    <div className="relative overflow-hidden rounded-xl border border-accent/20 bg-gradient-to-br from-accent/5 via-card/50 to-card/30 backdrop-blur-sm p-5">
                       <div className="absolute top-0 left-0 w-1 h-full bg-accent/50" />
                       <p className="text-base text-foreground/90 leading-relaxed italic pl-4">
                         "{safeString(vcReflection.analysis)}"
@@ -338,13 +338,13 @@ export const SectionDetailModal = ({
                   {vcReflection.questions && vcReflection.questions.length > 0 && (
                     <Collapsible open={showVCQuestions} onOpenChange={setShowVCQuestions}>
                       <CollapsibleTrigger asChild>
-                        <button className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors">
+                        <button className="w-full flex items-center justify-between p-4 rounded-xl bg-card/60 backdrop-blur-sm border border-border/40 hover:bg-card/80 hover:border-primary/20 transition-all">
                           <div className="flex items-center gap-3">
                             <HelpCircle className="w-4 h-4 text-muted-foreground" />
                             <span className="font-medium text-sm text-foreground">
                               Questions VCs Will Ask
                             </span>
-                            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                            <span className="text-xs text-muted-foreground bg-muted/50 backdrop-blur-sm px-2 py-0.5 rounded-full">
                               {vcReflection.questions.length}
                             </span>
                           </div>
@@ -362,7 +362,7 @@ export const SectionDetailModal = ({
                           return (
                             <div 
                               key={i}
-                              className="p-4 rounded-lg bg-muted/20 border border-border/30"
+                              className="p-4 rounded-xl bg-card/60 backdrop-blur-sm border border-border/30"
                             >
                               <p className="text-sm font-medium text-foreground">
                                 {safeString(questionText)}
@@ -381,7 +381,7 @@ export const SectionDetailModal = ({
 
                   {/* Bottom Line */}
                   {vcReflection.conclusion && (
-                    <div className="p-4 rounded-xl bg-muted/20 border border-border/30">
+                    <div className="p-4 rounded-xl bg-card/60 backdrop-blur-sm border border-border/30">
                       <div className="flex items-center gap-2 mb-2">
                         <Target className="w-4 h-4 text-muted-foreground" />
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -433,7 +433,7 @@ export const SectionDetailModal = ({
                   {highlights.map((highlight, i) => (
                     <div 
                       key={i}
-                      className="relative overflow-hidden p-4 rounded-xl border border-primary/15 bg-gradient-to-br from-primary/5 via-transparent to-transparent"
+                      className="relative overflow-hidden p-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card/50 to-card/30 backdrop-blur-sm"
                     >
                       <div className="text-2xl font-bold text-primary tracking-tight mb-1">
                         {safeString(highlight.metric)}
@@ -460,7 +460,7 @@ export const SectionDetailModal = ({
                   {keyPoints.map((point, index) => (
                     <div 
                       key={index} 
-                      className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/10"
+                      className="flex items-start gap-3 p-3 rounded-xl bg-success/5 backdrop-blur-sm border border-success/15"
                     >
                       <CheckCircle2 className="w-4 h-4 text-success mt-0.5 shrink-0" />
                       <p className="text-sm text-foreground/90 leading-relaxed">
@@ -476,7 +476,7 @@ export const SectionDetailModal = ({
             {sectionTools && (sectionTools.vcInvestmentLogic || sectionTools.actionPlan90Day || sectionTools.caseStudy) && (
               <Collapsible open={showSectionTools} onOpenChange={setShowSectionTools}>
                 <CollapsibleTrigger asChild>
-                  <button className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors">
+                  <button className="w-full flex items-center justify-between p-4 rounded-xl bg-card/60 backdrop-blur-sm border border-border/40 hover:bg-card/80 hover:border-primary/20 transition-all">
                     <div className="flex items-center gap-3">
                       <Briefcase className="w-4 h-4 text-primary" />
                       <span className="font-medium text-sm text-foreground">
@@ -496,8 +496,8 @@ export const SectionDetailModal = ({
                 <CollapsibleContent className="pt-4 space-y-4 relative">
                   {/* Demo overlay for strategic tools */}
                   {isDemo && (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none rounded-lg">
-                      <div className="pointer-events-auto text-center space-y-2 p-4 rounded-xl bg-card border border-border shadow-lg max-w-xs">
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gradient-to-t from-card/90 via-card/80 to-transparent pointer-events-none rounded-xl backdrop-blur-sm">
+                      <div className="pointer-events-auto text-center space-y-2 p-4 rounded-xl bg-card/90 backdrop-blur-xl border border-border/40 shadow-xl max-w-xs">
                         <div className="w-10 h-10 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
                           <Lock className="w-5 h-5 text-primary" />
                         </div>
@@ -549,7 +549,7 @@ export const SectionDetailModal = ({
             <section className="space-y-4">
               <Collapsible open={showImprovements} onOpenChange={setShowImprovements}>
                 <CollapsibleTrigger asChild>
-                  <button className="w-full flex items-center justify-between p-5 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 hover:from-primary/15 hover:via-primary/10 transition-all">
+                  <button className="w-full flex items-center justify-between p-5 rounded-xl bg-gradient-to-r from-primary/15 via-primary/10 to-transparent backdrop-blur-sm border border-primary/25 hover:from-primary/20 hover:via-primary/15 hover:border-primary/35 transition-all">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-primary/10">
                         <Lightbulb className="w-5 h-5 text-primary" />
@@ -576,14 +576,14 @@ export const SectionDetailModal = ({
                 
                 <CollapsibleContent className="pt-4">
                   {loadingImprovements ? (
-                    <div className="p-8 rounded-xl bg-muted/20 border border-border/30 flex flex-col items-center justify-center gap-3">
+                    <div className="p-8 rounded-xl bg-card/60 backdrop-blur-sm border border-border/30 flex flex-col items-center justify-center gap-3">
                       <RefreshCw className="w-6 h-6 animate-spin text-primary" />
                       <p className="text-sm text-muted-foreground">Analyzing your data...</p>
                     </div>
                   ) : improvements ? (
                     <div className="space-y-4">
                       {improvements.keyInsight && (
-                        <div className="p-4 rounded-xl bg-warning/5 border border-warning/20">
+                        <div className="p-4 rounded-xl bg-warning/10 backdrop-blur-sm border border-warning/25">
                           <div className="flex items-start gap-3">
                             <Zap className="w-5 h-5 text-warning mt-0.5 shrink-0" />
                             <div>
@@ -600,10 +600,10 @@ export const SectionDetailModal = ({
                         {improvements.suggestions.map((suggestion, i) => (
                           <div 
                             key={i}
-                            className="rounded-xl border border-border/40 overflow-hidden"
+                            className="rounded-xl border border-border/40 overflow-hidden bg-card/40 backdrop-blur-sm"
                           >
                             {/* Suggestion Header */}
-                            <div className="p-4 bg-muted/20">
+                            <div className="p-4 bg-muted/30 backdrop-blur-sm">
                               <div className="flex items-start justify-between gap-3 mb-2">
                                 <h5 className="font-medium text-foreground">{suggestion.title}</h5>
                                 <div className="flex items-center gap-2 shrink-0">
@@ -625,7 +625,7 @@ export const SectionDetailModal = ({
                             
                             {/* Actionable Questions */}
                             {suggestion.questions && suggestion.questions.length > 0 && (
-                              <div className="p-4 pt-2 space-y-2 bg-background/50">
+                              <div className="p-4 pt-2 space-y-2 bg-card/60 backdrop-blur-sm">
                                 <p className="text-xs font-medium text-primary flex items-center gap-1.5 mb-3">
                                   <Sparkles className="w-3 h-3" />
                                   Answer to improve your score
@@ -653,7 +653,7 @@ export const SectionDetailModal = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="p-6 rounded-xl bg-muted/20 border border-border/30 text-center">
+                    <div className="p-6 rounded-xl bg-card/60 backdrop-blur-sm border border-border/30 text-center">
                       <p className="text-sm text-muted-foreground">
                         Suggestions unavailable. View full section for detailed analysis.
                       </p>
@@ -666,10 +666,10 @@ export const SectionDetailModal = ({
         </ScrollArea>
         
         {/* Footer with Queue CTA */}
-        <div className="px-8 py-4 border-t border-border/20 bg-muted/10">
+        <div className="px-8 py-4 border-t border-border/20 bg-card/60 backdrop-blur-xl">
           {/* Queue Status Bar */}
           {queueCount > 0 && (
-            <div className="mb-4 p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
+            <div className="mb-4 p-3 rounded-xl bg-primary/15 backdrop-blur-sm border border-primary/25 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                   <ListChecks className="w-4 h-4 text-primary" />

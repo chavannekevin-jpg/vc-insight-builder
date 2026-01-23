@@ -113,13 +113,13 @@ export const ToolPopupModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 bg-background/95 backdrop-blur-xl border-border/50 [&>button]:hidden">
+      <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 bg-card/95 backdrop-blur-2xl border-border/30 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] [&>button]:hidden">
         {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-border/30 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
+        <DialogHeader className="px-6 py-4 border-b border-border/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {Icon && (
-                <div className="p-2 rounded-lg bg-primary/10">
+                <div className="p-2 rounded-xl bg-primary/15 backdrop-blur-sm border border-primary/20">
                   <Icon className="w-5 h-5 text-primary" />
                 </div>
               )}
@@ -133,7 +133,7 @@ export const ToolPopupModal = ({
                   </p>
                 )}
                 {sectionName && (
-                  <Badge variant="secondary" className="mt-1.5 text-[10px]">
+                  <Badge variant="secondary" className="mt-1.5 text-[10px] bg-muted/50 backdrop-blur-sm">
                     {sectionName}
                   </Badge>
                 )}
@@ -143,7 +143,7 @@ export const ToolPopupModal = ({
               variant="ghost"
               size="icon"
               onClick={() => onOpenChange(false)}
-              className="h-8 w-8"
+              className="h-8 w-8 rounded-xl hover:bg-muted/50"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -155,9 +155,9 @@ export const ToolPopupModal = ({
           <div className="p-5 relative">
             {/* Demo overlay - grays out content and shows signup CTA */}
             {isDemo && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-end pb-8 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
-                <div className="pointer-events-auto text-center space-y-3 p-6 rounded-xl bg-card border border-border shadow-lg max-w-sm">
-                  <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-end pb-8 bg-gradient-to-t from-card via-card/95 to-transparent pointer-events-none">
+                <div className="pointer-events-auto text-center space-y-3 p-6 rounded-xl bg-card/90 backdrop-blur-xl border border-border/40 shadow-xl max-w-sm">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-primary/15 backdrop-blur-sm flex items-center justify-center">
                     <Lock className="w-6 h-6 text-primary" />
                   </div>
                   <h4 className="font-semibold text-foreground">This Tool is View-Only</h4>

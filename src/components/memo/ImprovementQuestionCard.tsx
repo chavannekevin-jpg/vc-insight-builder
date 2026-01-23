@@ -55,10 +55,10 @@ export function ImprovementQuestionCard({
 
   return (
     <div className={cn(
-      "group rounded-lg border transition-all",
+      "group rounded-xl border transition-all backdrop-blur-sm",
       isInQueue 
-        ? "border-primary/30 bg-primary/5" 
-        : "border-border/40 bg-muted/10 hover:border-primary/20 hover:bg-muted/20"
+        ? "border-primary/30 bg-primary/10" 
+        : "border-border/40 bg-card/60 hover:border-primary/25 hover:bg-card/80"
     )}>
       <div className="p-4">
         <div className="flex items-start gap-3">
