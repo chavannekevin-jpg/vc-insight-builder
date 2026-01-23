@@ -140,9 +140,13 @@ export function ProductTourSpotlight({
     return () => window.removeEventListener('resize', handleResize);
   }, [isActive, calculatePositions]);
 
-  // Handle escape key
+  // Block scrolling and handle keyboard navigation
   useEffect(() => {
     if (!isActive) return;
+
+    // Block scrolling
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onSkip();
@@ -151,7 +155,11 @@ export function ProductTourSpotlight({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isActive, onSkip, onNext, onPrev, currentStepIndex]);
 
   if (!isActive || !currentStep || !spotlightPos || !tooltipPos) return null;
