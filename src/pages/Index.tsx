@@ -145,8 +145,8 @@ const Index = () => {
 
         {/* How It Works Section */}
         <section className="py-20 px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-16">
               <Badge className="mb-4 px-4 py-1.5 bg-primary/10 border-primary/20 text-primary">
                 Your Journey
               </Badge>
@@ -156,36 +156,78 @@ const Index = () => {
             </div>
 
             <div className="relative">
-              {/* Vertical line */}
-              <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-primary/60 via-primary/40 to-primary/60 md:-translate-x-1/2" />
+              {/* Vertical connecting line - desktop */}
+              <div className="hidden md:block absolute left-1/2 top-8 bottom-8 w-px transform -translate-x-1/2">
+                <div className="h-full w-full bg-gradient-to-b from-primary/60 via-primary/40 to-primary/60" />
+                <div className="absolute inset-0 w-full bg-gradient-to-b from-primary/30 via-primary/20 to-primary/30 blur-sm" />
+              </div>
               
-              <div className="space-y-8">
+              <div className="space-y-6 md:space-y-0">
                 {[
                   { icon: ClipboardList, step: "01", title: "Build Your Profile", desc: "Create your profile in 30 seconds. Upload your deck—UglyBaby extracts the rest." },
                   { icon: FileSearch, step: "02", title: "Receive Your Audit", desc: "Get scores across 8 dimensions, red flags surfaced, and a prioritized action plan." },
                   { icon: Wrench, step: "03", title: "Unlock Tools", desc: "Access 23+ strategic tools auto-populated with your data." },
                   { icon: Rocket, step: "04", title: "Execute", desc: "Find matching investors, generate outreach, and pitch with confidence." }
-                ].map((item, idx) => (
-                  <div key={idx} className="relative flex items-start gap-6 md:gap-12">
-                    {/* Icon */}
-                    <div className="relative z-10 flex-shrink-0">
-                      <div className="w-12 h-12 rounded-full bg-background border-2 border-primary/50 flex items-center justify-center shadow-lg shadow-primary/20">
-                        <item.icon className="w-5 h-5 text-primary" />
-                      </div>
-                    </div>
-                    
-                    {/* Content */}
-                    <div className="flex-1 pb-2">
-                      <div className="p-5 rounded-2xl bg-card/40 backdrop-blur-sm border border-border/30 hover:border-primary/30 transition-colors">
-                        <div className="text-xs font-bold text-primary/80 mb-2 tracking-widest font-mono">
-                          STEP {item.step}
+                ].map((item, idx) => {
+                  const isEven = idx % 2 === 0;
+                  
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`relative md:flex md:items-center md:gap-12 ${
+                        isEven ? 'md:flex-row' : 'md:flex-row-reverse'
+                      }`}
+                    >
+                      {/* Card */}
+                      <div className={`md:w-[calc(50%-3rem)] ${isEven ? 'md:text-right' : 'md:text-left'}`}>
+                        <div className="group relative rounded-2xl p-6 transition-all duration-300 bg-card/40 backdrop-blur-sm border border-border/30 hover:border-primary/40 hover:bg-card/60 hover:shadow-xl hover:shadow-primary/5">
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          
+                          {/* Mobile layout */}
+                          <div className="flex gap-4 items-start md:hidden relative z-10">
+                            <div className="flex-shrink-0">
+                              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center group-hover:scale-105 group-hover:border-primary/40 transition-all duration-300">
+                                <item.icon className="w-6 h-6 text-primary" />
+                              </div>
+                            </div>
+                            <div className="flex-1 pt-1">
+                              <div className="text-xs font-bold text-primary/80 mb-2 tracking-widest font-mono">
+                                STEP {item.step}
+                              </div>
+                              <h3 className="font-semibold text-lg mb-2 text-foreground">{item.title}</h3>
+                              <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                            </div>
+                          </div>
+                          
+                          {/* Desktop layout */}
+                          <div className="hidden md:block relative z-10">
+                            <div className="text-xs font-bold text-primary/80 mb-3 tracking-widest font-mono">
+                              STEP {item.step}
+                            </div>
+                            <h3 className="font-semibold text-xl mb-2 text-foreground group-hover:text-primary/90 transition-colors">{item.title}</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                          </div>
                         </div>
-                        <h3 className="font-bold text-lg text-foreground mb-1">{item.title}</h3>
-                        <p className="text-sm text-muted-foreground">{item.desc}</p>
                       </div>
+                      
+                      {/* Center icon - desktop only */}
+                      <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 z-10">
+                        <div className="relative group/icon">
+                          <div className="absolute inset-0 rounded-full bg-primary/30 blur-md group-hover/icon:bg-primary/50 transition-all duration-300" />
+                          <div className="relative w-14 h-14 rounded-full bg-background border-2 border-primary/50 flex items-center justify-center group-hover/icon:border-primary group-hover/icon:scale-110 transition-all duration-300">
+                            <item.icon className="w-6 h-6 text-primary" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Spacer for opposite side - desktop only */}
+                      <div className="hidden md:block md:w-[calc(50%-3rem)]" />
+                      
+                      {/* Spacing for timeline */}
+                      {idx < 3 && <div className="hidden md:block h-20" />}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
