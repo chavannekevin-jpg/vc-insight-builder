@@ -5,9 +5,10 @@ import {
   FileText, 
   Users, 
   Target,
-  CheckCircle2,
+  MessageSquare,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Lightbulb
 } from "lucide-react";
 
 interface VCMemoExplainerModalProps {
@@ -49,7 +50,7 @@ export function VCMemoExplainerModal({ open, onComplete }: VCMemoExplainerModalP
               The VC Memorandum
             </h2>
             <p className="text-sm text-muted-foreground">
-              The document that decides your fate in partner meetings
+              The foundation for your pitch narrative
             </p>
           </div>
         </div>
@@ -57,18 +58,28 @@ export function VCMemoExplainerModal({ open, onComplete }: VCMemoExplainerModalP
         {/* Content */}
         <div className="relative px-6 py-4 space-y-4">
           <p className="text-muted-foreground leading-relaxed text-sm">
-            When a VC is interested in your company, they write an internal document called an 
-            <span className="text-primary font-semibold"> Investment Memorandum</span>. This is 
-            shared with their partners to make a final decision on whether to invest.
+            Most founders struggle to explain what they do in a way that resonates with investors. 
+            The <span className="text-primary font-semibold">Investment Memorandum</span> is how 
+            VCs internally communicate deals — and it's the perfect template for your narrative.
           </p>
 
           <div className="space-y-3">
             <div className="flex items-start gap-3 p-3 rounded-xl bg-card/60 backdrop-blur-sm border border-border/30">
+              <MessageSquare className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-foreground">The Language VCs Speak</p>
+                <p className="text-xs text-muted-foreground">
+                  This memo contains exactly what VCs want to hear, structured the way they think
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-card/60 backdrop-blur-sm border border-border/30">
               <Users className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-foreground">Written for VC Partners</p>
+                <p className="text-sm font-medium text-foreground">Written for Partner Meetings</p>
                 <p className="text-xs text-muted-foreground">
-                  This is how VCs communicate deals internally — concise, critical, and focused on investment logic
+                  This is the document that gets discussed in IC meetings — concise, critical, and focused on investment logic
                 </p>
               </div>
             </div>
@@ -76,19 +87,9 @@ export function VCMemoExplainerModal({ open, onComplete }: VCMemoExplainerModalP
             <div className="flex items-start gap-3 p-3 rounded-xl bg-card/60 backdrop-blur-sm border border-border/30">
               <Target className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-foreground">The Real Decision Document</p>
+                <p className="text-sm font-medium text-foreground">Your Pitch Blueprint</p>
                 <p className="text-xs text-muted-foreground">
-                  Your pitch deck gets attention, but the memo is what gets discussed in IC meetings
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-card/60 backdrop-blur-sm border border-border/30">
-              <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Your Advantage</p>
-                <p className="text-xs text-muted-foreground">
-                  By seeing this format, you know exactly how to frame your story for maximum impact
+                  Use this as the foundation for your pitch deck, investor conversations, and company narrative
                 </p>
               </div>
             </div>
@@ -96,12 +97,13 @@ export function VCMemoExplainerModal({ open, onComplete }: VCMemoExplainerModalP
 
           <div className="p-4 rounded-xl bg-primary/10 backdrop-blur-sm border border-primary/20">
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-semibold text-foreground">What you're about to see</span>
+              <Lightbulb className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground">How to use this</span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              We've formatted your analysis as an internal VC memo — the same structure partners 
-              use to evaluate deals. Use this to understand how VCs think and communicate about your company.
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Study how each section frames your company. The structure, language, and emphasis 
+              here represent the basics of what VCs want to understand — use it as the starting 
+              point for every investor interaction.
             </p>
           </div>
         </div>

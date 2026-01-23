@@ -609,7 +609,7 @@ export const DashboardScorecard = ({
                   <Target className="w-3 h-3 text-primary" />
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase">VC Verdict</span>
                 </div>
-                <p className="text-xs text-foreground line-clamp-3">
+                <p className="text-xs text-foreground leading-relaxed">
                   {scorecard.overallVerdict}
                 </p>
               </div>
