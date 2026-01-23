@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ModernCard } from "@/components/ModernCard";
 import { DeckImportWizard, ExtractedData } from "@/components/DeckImportWizard";
+import { FounderEntranceAnimation } from "@/components/FounderEntranceAnimation";
 import { ArrowRight, Upload, Zap, FileText, AlertTriangle, PenLine, Target, Search, ArrowLeft, Gift } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { processStartupReferral, useStartupReferral } from "@/hooks/useStartupReferral";
@@ -21,6 +22,10 @@ export default function Intake() {
   const [mode, setMode] = useState<IntakeMode>("choose");
   const [deckWizardOpen, setDeckWizardOpen] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  
+  // Entrance animation state
+  const [showEntranceAnimation, setShowEntranceAnimation] = useState(false);
+  const [createdCompanyName, setCreatedCompanyName] = useState<string | null>(null);
   
   // Manual form state
   const [companyName, setCompanyName] = useState("");
@@ -125,15 +130,12 @@ export default function Intake() {
         console.log(`Saved ${allResponses.length} deck-extracted responses`);
       }
 
-      // Invalidate company query cache before navigation
+      // Invalidate company query cache before showing animation
       await queryClient.invalidateQueries({ queryKey: ["company"] });
 
-      toast({
-        title: "Deck imported!",
-        description: `${extractedName} created. Generating your VC verdict...`
-      });
-
-      navigate("/hub", { state: { freshCompany: true } });
+      // Store company name and trigger entrance animation
+      setCreatedCompanyName(extractedName);
+      setShowEntranceAnimation(true);
     } catch (error: any) {
       console.error("Deck import error:", error);
       toast({
@@ -206,6 +208,25 @@ export default function Intake() {
       setIsSubmitting(false);
     }
   };
+
+  // Handle entrance animation completion
+  const handleEntranceComplete = () => {
+    toast({
+      title: "Deck imported!",
+      description: `${createdCompanyName || 'Your company'} created. Generating your VC verdict...`
+    });
+    navigate("/hub", { state: { freshCompany: true } });
+  };
+
+  // Show entrance animation if triggered
+  if (showEntranceAnimation) {
+    return (
+      <FounderEntranceAnimation
+        onComplete={handleEntranceComplete}
+        companyName={createdCompanyName || undefined}
+      />
+    );
+  }
 
   // Choose mode screen
   if (mode === "choose") {
