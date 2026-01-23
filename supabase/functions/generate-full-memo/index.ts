@@ -14,6 +14,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Declare EdgeRuntime for background tasks.
+// NOTE: In the runtime environment EdgeRuntime exists as a global, but may not be attached to globalThis.
+// Using the declared global fixes cases where jobs get stuck in `processing` because waitUntil never ran.
+declare const EdgeRuntime: {
+  waitUntil: (promise: Promise<unknown>) => void;
+};
+
 // Keep edge-function typing loose (Supabase types are not available in Deno runtime).
 
 // Structured KB context return type for enhanced framework integration
@@ -4852,10 +4859,10 @@ serve(async (req) => {
     console.log(`Created job ${newJob.id} for company ${companyId}`);
 
     // Start background generation using EdgeRuntime.waitUntil
-    // This allows the function to return immediately while processing continues
-    (globalThis as any).EdgeRuntime?.waitUntil?.(
-      generateMemoInBackground(companyId, newJob.id, force)
-    );
+    // This allows the function to return immediately while processing continues.
+    // IMPORTANT: Use the EdgeRuntime global (not globalThis.EdgeRuntime), otherwise
+    // the background task may never run and jobs can get stuck in `processing`.
+    EdgeRuntime.waitUntil(generateMemoInBackground(companyId, newJob.id, force));
 
     // Return immediately with job ID
     return new Response(

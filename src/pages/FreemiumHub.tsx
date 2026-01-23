@@ -119,6 +119,13 @@ export default function FreemiumHub() {
     isLoading: companyLoading 
   } = useCompany(user?.id, companyIdFromParams);
 
+  // IMPORTANT: Always derive a single source-of-truth paid flag.
+  // Some flows (e.g., 100% invite) may set has_premium before a purchase record is visible.
+  const hasPaid = useMemo(
+    () => hasPaidData || !!(companyData as any)?.has_premium,
+    [hasPaidData, (companyData as any)?.has_premium]
+  );
+
   const [memo, setMemo] = useState<Memo | null>(null);
   const [generatingTagline, setGeneratingTagline] = useState(false);
   const [tagline, setTagline] = useState<string>("");
@@ -158,12 +165,14 @@ export default function FreemiumHub() {
   );
 
   // Use React Query cached hooks for dashboard data (prevents reload on navigation)
-  const { data: vcQuickTake } = useVcQuickTake(company?.id || null, hasPaidData);
-  const { data: sectionTools } = useSectionTools(company?.id || null, hasPaidData, memoHasContent);
+  // NOTE: These MUST use the computed `hasPaid` (not raw hasPaidData) to avoid
+  // rendering the paywall/freemium view during post-payment propagation.
+  const { data: vcQuickTake } = useVcQuickTake(company?.id || null, hasPaid);
+  const { data: sectionTools } = useSectionTools(company?.id || null, hasPaid, memoHasContent);
   const { data: responses = [] } = useDashboardResponses(company?.id || null);
   
   // Fetch full memo content for section narratives
-  const { data: memoContentData } = useMemoContent(hasPaidData && memoHasContent ? company?.id : null);
+  const { data: memoContentData } = useMemoContent(hasPaid && memoHasContent ? company?.id : null);
 
   // Cached verdict from company data (already cached by useCompany)
   const cachedVerdict = company?.vc_verdict_json || null;
@@ -171,11 +180,11 @@ export default function FreemiumHub() {
   // Prefetch memo content for instant navigation (paid users with generated memo)
   const prefetchMemo = usePrefetchMemoContent();
   useEffect(() => {
-    if (hasPaidData && company?.id && memoHasContent) {
+    if (hasPaid && company?.id && memoHasContent) {
       console.log('[FreemiumHub] Prefetching memo content for instant loading...');
       prefetchMemo(company.id);
     }
-  }, [hasPaidData, company?.id, memoHasContent, prefetchMemo]);
+  }, [hasPaid, company?.id, memoHasContent, prefetchMemo]);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -659,9 +668,6 @@ export default function FreemiumHub() {
   // Use memoHasContent (more robust) instead of memo.status === "completed" for gating
   // memoHasContent checks for actual structured_content existence
   const memoGenerated = memoHasContent || (memo && memo.status === "completed");
-  // FIX: Use || instead of ?? to ensure either payment record OR has_premium flag triggers paid state
-  // The ?? operator treats false as a valid value, which was causing paid users to see freemium dashboard
-  const hasPaid = hasPaidData || !!company?.has_premium;
   const deckParsed = !!company?.deck_parsed_at;
 
   const loading = authLoading || companyLoading;
