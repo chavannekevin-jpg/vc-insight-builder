@@ -202,7 +202,7 @@ export default function FreemiumHub() {
       // Memo and content data
       queryClient.invalidateQueries({ queryKey: ["memo"] });
       if (companyIdFromParams) {
-        queryClient.invalidateQueries({ queryKey: ["memoContent", companyIdFromParams] });
+        queryClient.invalidateQueries({ queryKey: ["memo-content", companyIdFromParams] });
         queryClient.invalidateQueries({ queryKey: ["vc-quick-take", companyIdFromParams] });
         queryClient.invalidateQueries({ queryKey: ["sectionTools", companyIdFromParams] });
         queryClient.invalidateQueries({ queryKey: ["dashboard-responses", companyIdFromParams] });
@@ -370,8 +370,8 @@ export default function FreemiumHub() {
     // Invalidate all caches to get fresh data
     await invalidateMemoCache(companyIdToRegenerate);
     queryClient.invalidateQueries({ queryKey: ["company"] });
-    queryClient.invalidateQueries({ queryKey: ["memoContent", companyIdToRegenerate] });
-    queryClient.invalidateQueries({ queryKey: ["vcQuickTake", companyIdToRegenerate] });
+    queryClient.invalidateQueries({ queryKey: ["memo-content", companyIdToRegenerate] });
+    queryClient.invalidateQueries({ queryKey: ["vc-quick-take", companyIdToRegenerate] });
     queryClient.invalidateQueries({ queryKey: ["sectionTools", companyIdToRegenerate] });
     
     toast({
@@ -659,7 +659,9 @@ export default function FreemiumHub() {
   // Use memoHasContent (more robust) instead of memo.status === "completed" for gating
   // memoHasContent checks for actual structured_content existence
   const memoGenerated = memoHasContent || (memo && memo.status === "completed");
-  const hasPaid = company?.has_premium ?? hasPaidData;
+  // FIX: Use || instead of ?? to ensure either payment record OR has_premium flag triggers paid state
+  // The ?? operator treats false as a valid value, which was causing paid users to see freemium dashboard
+  const hasPaid = hasPaidData || !!company?.has_premium;
   const deckParsed = !!company?.deck_parsed_at;
 
   const loading = authLoading || companyLoading;
@@ -668,52 +670,59 @@ export default function FreemiumHub() {
   const [isFinalizingAnalysis, setIsFinalizingAnalysis] = useState(false);
   const [finalizingAttempts, setFinalizingAttempts] = useState(0);
   
-  // Poll for memo content when paid but memoHasContent is false
+  // Poll for FULL dashboard readiness when paid but sectionTools not ready
   useEffect(() => {
-    // Only activate if: paid, has company, NOT already loading/regenerating, memo not ready
-    if (!hasPaid || !company?.id || loading || isRegenerating || memoHasContent) {
+    // Only activate if: paid, has company, NOT already loading/regenerating, dashboard not fully ready
+    const hasSectionToolsReady = sectionTools && Object.keys(sectionTools).length >= 8;
+    if (!hasPaid || !company?.id || loading || isRegenerating || (memoHasContent && hasSectionToolsReady)) {
       setIsFinalizingAnalysis(false);
       return;
     }
     
-    // User is paid but memo isn't ready - show finalizing state and poll
-    console.log("[FreemiumHub] Paid user without memo content, starting finalization polling...");
+    // User is paid but dashboard isn't fully ready - show finalizing state and poll
+    console.log("[FreemiumHub] Paid user without full dashboard data, starting finalization polling...");
     setIsFinalizingAnalysis(true);
     
     let cancelled = false;
-    const maxAttempts = 30; // Up to ~2.5 minutes of polling
     
-    const pollForMemo = async () => {
+    const pollForReadiness = async () => {
+      // Dynamically import to avoid circular dependencies
+      const { checkDashboardReadiness } = await import("@/lib/dashboardReadiness");
+      
       let attempts = 0;
+      const maxAttempts = 40; // ~2 minutes at 3s intervals
+      
       while (!cancelled && attempts < maxAttempts) {
         try {
-          const { data: memo } = await supabase
-            .from("memos")
-            .select("id, structured_content")
-            .eq("company_id", company.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
+          const readiness = await checkDashboardReadiness(company.id);
           
-          if (memo?.structured_content) {
-            console.log("[FreemiumHub] Memo content detected, refreshing data...");
-            // Invalidate all caches and let React Query refetch
+          console.log(`[FreemiumHub] Readiness check ${attempts + 1}:`, {
+            isReady: readiness.isReady,
+            sectionScores: `${readiness.sectionScoreCount}/8`,
+            hasVcQuickTake: readiness.hasVcQuickTake,
+            missingSections: readiness.missingSections
+          });
+          
+          if (readiness.isReady) {
+            console.log("[FreemiumHub] Dashboard fully ready, refreshing all data...");
+            // Invalidate all caches with the CORRECT keys
             await queryClient.invalidateQueries({ queryKey: ["memo", company.id] });
-            await queryClient.invalidateQueries({ queryKey: ["memoContent", company.id] });
+            await queryClient.invalidateQueries({ queryKey: ["memo-content", company.id] });
             await queryClient.invalidateQueries({ queryKey: ["sectionTools", company.id] });
             await queryClient.invalidateQueries({ queryKey: ["vc-quick-take", company.id] });
             await queryClient.invalidateQueries({ queryKey: ["company"] });
+            await queryClient.invalidateQueries({ queryKey: ["dashboard-responses", company.id] });
             setIsFinalizingAnalysis(false);
             return;
           }
           
           attempts++;
           setFinalizingAttempts(attempts);
-          await new Promise(resolve => setTimeout(resolve, 5000));
+          await new Promise(resolve => setTimeout(resolve, 3000));
         } catch (error) {
-          console.error("[FreemiumHub] Poll error:", error);
+          console.error("[FreemiumHub] Readiness poll error:", error);
           attempts++;
-          await new Promise(resolve => setTimeout(resolve, 5000));
+          await new Promise(resolve => setTimeout(resolve, 3000));
         }
       }
       
@@ -722,12 +731,12 @@ export default function FreemiumHub() {
       setIsFinalizingAnalysis(false);
     };
     
-    pollForMemo();
+    pollForReadiness();
     
     return () => {
       cancelled = true;
     };
-  }, [hasPaid, company?.id, loading, isRegenerating, memoHasContent, queryClient]);
+  }, [hasPaid, company?.id, loading, isRegenerating, memoHasContent, sectionTools, queryClient]);
 
   // Show regeneration loading screen
   if (isRegenerating) {
@@ -742,17 +751,21 @@ export default function FreemiumHub() {
     );
   }
   
-  // Show "Finalizing Analysis" screen when paid but memo not ready
-  if (isFinalizingAnalysis && hasPaid && !memoHasContent) {
+  // Show "Finalizing Analysis" screen when paid but dashboard data not fully ready
+  // This covers both: no memo content OR memo exists but sectionTools not complete
+  const hasSectionToolsReady = sectionTools && Object.keys(sectionTools).length >= 8;
+  if (isFinalizingAnalysis && hasPaid && (!memoHasContent || !hasSectionToolsReady)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4 max-w-md px-6">
           <Sparkles className="w-16 h-16 text-primary animate-pulse mx-auto" />
           <h2 className="text-xl font-semibold">Finalizing Your Analysis</h2>
           <p className="text-muted-foreground">
-            Your investment analysis is being finalized. This usually takes just a moment...
+            {!memoHasContent 
+              ? "Your investment analysis is being finalized. This usually takes just a moment..."
+              : "Preparing your investment readiness scorecard..."}
           </p>
-          {finalizingAttempts > 6 && (
+          {finalizingAttempts > 10 && (
             <p className="text-sm text-muted-foreground/70">
               Taking longer than expected. Please wait or refresh the page.
             </p>
