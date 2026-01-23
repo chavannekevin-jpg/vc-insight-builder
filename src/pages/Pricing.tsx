@@ -183,7 +183,7 @@ const Pricing = () => {
                 What You'd Pay a Consultant
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                UglyBaby packs the equivalent of months of consultant work into an instant, AI-powered analysis.
+                What takes consultants weeks and costs thousands—UglyBaby delivers in minutes.
               </p>
             </div>
 
@@ -326,7 +326,7 @@ const Pricing = () => {
                 </div>
 
                 <p className="text-xs text-muted-foreground mt-6">
-                  14-day money-back guarantee • Instant access • No subscription
+                  Instant access • No subscription • One payment, full platform
                 </p>
               </div>
             </div>
@@ -355,8 +355,8 @@ const Pricing = () => {
                   a: "Yes. The demo shows exactly what you'll get, built on a fictional startup. Explore every tool, every insight, every score before you commit a cent."
                 },
                 {
-                  q: "What if it's not useful for me?",
-                  a: "14-day money-back guarantee. No questions, no hassle. But you won't need it—this isn't UglyBaby's first rodeo."
+                  q: "What if it's not what I expected?",
+                  a: "The demo shows exactly what you'll get. Explore every tool, every insight, every score before you commit. No surprises."
                 }
               ].map((faq, index) => (
                 <div 
