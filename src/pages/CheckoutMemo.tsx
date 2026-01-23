@@ -232,7 +232,7 @@ export default function CheckoutMemo() {
     setProcessing(true);
 
     try {
-      // If 100% discount, bypass Stripe
+      // If 100% discount, bypass Stripe and trigger generation
       if (finalPrice === 0) {
         const { error: purchaseError } = await supabase
           .from("memo_purchases" as any)
@@ -245,9 +245,15 @@ export default function CheckoutMemo() {
 
         if (purchaseError) throw purchaseError;
 
+        // Grant premium access + 1 generation credit (same as Stripe webhook)
         const { error: updateError } = await supabase
           .from("companies")
-          .update({ has_premium: true })
+          .update({ 
+            has_premium: true,
+            generations_available: 1,
+            generations_used: 0,
+            earned_referral_discount: 0
+          })
           .eq("id", companyId);
 
         if (updateError) throw updateError;
@@ -258,12 +264,29 @@ export default function CheckoutMemo() {
           });
         }
 
-        toast({
-          title: "Success! 🎉",
-          description: "Your memo is being generated now!",
+        // Trigger memo generation immediately
+        const { data: genData, error: genError } = await supabase.functions.invoke('generate-full-memo', {
+          body: { companyId, force: false }
         });
 
-        navigate(`/analysis?companyId=${companyId}&view=full`);
+        if (genError) {
+          console.error("Generation trigger error:", genError);
+          // Still redirect to portal - they can trigger manually
+          toast({
+            title: "Access Granted! 🎉",
+            description: "Please complete your profile to generate your analysis.",
+          });
+          navigate(`/portal?companyId=${companyId}`);
+          return;
+        }
+
+        toast({
+          title: "Success! 🎉",
+          description: "Generating your VC analysis now...",
+        });
+
+        // Redirect to portal with pre-triggered generation
+        navigate(`/portal?companyId=${companyId}&generating=true&jobId=${genData?.jobId}`);
         return;
       }
 
