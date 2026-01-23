@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Building2, Target, Users, Calendar, Rocket, ArrowRight, ArrowLeft, Check, Loader2 } from "lucide-react";
+import { Building2, Target, Users, Calendar, ArrowRight, ArrowLeft, Check, Loader2, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { AcceleratorEntranceAnimation } from "@/components/accelerator/AcceleratorEntranceAnimation";
 
 const FOCUS_AREAS = [
   "B2B SaaS", "Consumer Tech", "FinTech", "HealthTech", "CleanTech",
@@ -151,75 +152,13 @@ export default function AcceleratorOnboarding() {
   // Entrance Animation
   if (showAnimation) {
     return (
-      <AnimatePresence>
-        <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background"
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          {/* Animated background */}
-          <motion.div
-            className="absolute inset-0"
-            initial={{ background: "radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.1) 0%, transparent 50%)" }}
-            animate={{ 
-              background: [
-                "radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.1) 0%, transparent 50%)",
-                "radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.3) 0%, transparent 70%)",
-                "radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.1) 0%, transparent 50%)",
-              ]
-            }}
-            transition={{ duration: 2, repeat: 1 }}
-          />
-
-          {/* Content */}
-          <motion.div
-            className="text-center z-10"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-          >
-            <motion.div
-              className="w-24 h-24 mx-auto mb-8 rounded-2xl gradient-primary flex items-center justify-center shadow-glow"
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-            >
-              <Rocket className="w-12 h-12 text-primary-foreground" />
-            </motion.div>
-
-            <motion.h1
-              className="text-4xl font-bold text-foreground mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              Your Ecosystem is Ready
-            </motion.h1>
-
-            <motion.p
-              className="text-xl text-muted-foreground mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-            >
-              Welcome to {formData.name}
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.5 }}
-              onAnimationComplete={() => {
-                setTimeout(() => navigate("/accelerator"), 1000);
-              }}
-            >
-              <div className="flex items-center justify-center gap-2 text-primary">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Entering dashboard...</span>
-              </div>
-            </motion.div>
-          </motion.div>
-        </motion.div>
-      </AnimatePresence>
+      <AcceleratorEntranceAnimation
+        acceleratorName={formData.name}
+        onComplete={() => {
+          toast.success("Welcome to your ecosystem!");
+          navigate("/accelerator/dashboard");
+        }}
+      />
     );
   }
 
