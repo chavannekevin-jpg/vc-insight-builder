@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { VCMemoExplainerModal, useVCMemoExplainer } from "@/components/memo/VCMemoExplainerModal";
 
 /**
  * VCMemorandum - A simplified one-page investment memo for paid users
@@ -23,6 +24,8 @@ export default function VCMemorandum() {
   const [hasAccess, setHasAccess] = useState(false);
   const [companyName, setCompanyName] = useState("");
   const [companyDescription, setCompanyDescription] = useState("");
+  
+  const { showExplainer, isChecked: explainerChecked, completeExplainer } = useVCMemoExplainer();
   
   const { data: memoContent, isLoading: memoLoading } = useMemoContent(companyId);
 
@@ -175,16 +178,26 @@ export default function VCMemorandum() {
                         memoContent.memoContent?.sections?.[0]?.paragraphs?.[0]?.text || '';
 
   return (
-    <SimplifiedMemoViewer
-      companyName={companyName}
-      companyDescription={companyDescription}
-      heroStatement={heroStatement}
-      sections={sections}
-      sectionTools={sectionTools}
-      holisticVerdicts={holisticVerdicts}
-      aiActionPlan={aiActionPlan}
-      onBack={() => navigate(`/analysis?companyId=${companyId}`)}
-      showBackButton={true}
-    />
+    <>
+      {/* VC Memo Explainer Modal */}
+      {explainerChecked && (
+        <VCMemoExplainerModal 
+          open={showExplainer} 
+          onComplete={completeExplainer} 
+        />
+      )}
+      
+      <SimplifiedMemoViewer
+        companyName={companyName}
+        companyDescription={companyDescription}
+        heroStatement={heroStatement}
+        sections={sections}
+        sectionTools={sectionTools}
+        holisticVerdicts={holisticVerdicts}
+        aiActionPlan={aiActionPlan}
+        onBack={() => navigate(`/analysis?companyId=${companyId}`)}
+        showBackButton={true}
+      />
+    </>
   );
 }

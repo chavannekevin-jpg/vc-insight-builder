@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Edit, Sparkles, Loader2, Check, X, Zap, Rocket, Upload, RefreshCw, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { QuickFillWizard } from "@/components/QuickFillWizard";
@@ -668,7 +668,7 @@ export default function CompanyProfile() {
 
   return (
     <FounderLayout>
-      <div className="bg-background">
+      <div className="bg-gradient-to-b from-transparent to-muted/10">
 
       {company && (
         <QuickFillWizard
@@ -683,62 +683,42 @@ export default function CompanyProfile() {
         />
       )}
 
-      <div className="max-w-5xl mx-auto px-6 py-12 space-y-8">
-        {/* Hero Banner for Empty Profiles */}
-        {isProfileEmpty && (
-          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border border-primary/20 rounded-xl p-8 text-center space-y-4">
-            <Rocket className="w-12 h-12 text-primary mx-auto" />
-            <h2 className="text-2xl font-serif font-bold">New here? Let's get you funded!</h2>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              Complete your profile in under 5 minutes with our guided wizard.
-            </p>
-            <Button onClick={() => setWizardOpen(true)} size="lg" className="gap-2">
-              <Zap className="w-5 h-5" />
-              Quick Fill Your Profile
-            </Button>
-          </div>
-        )}
-
+      <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={() => navigate("/hub")}>← Back to Hub</Button>
-            <div className="flex items-center gap-3">
-              <FileText className="w-8 h-8 text-primary" />
-              <h1 className="text-4xl font-serif font-bold">My Company Details</h1>
-            </div>
-          </div>
-          <div className="flex gap-3 flex-wrap">
-            <Button variant="outline" onClick={() => setDeckWizardOpen(true)} className="gap-2">
-              <Upload className="w-4 h-4" /> Import Deck
-            </Button>
-            <Button variant="outline" onClick={() => setWizardOpen(true)} className="gap-2">
-              <Zap className="w-4 h-4" /> Quick Fill
-            </Button>
-            {hasMemo && memoStructuredContent && (
-              <Button variant="outline" onClick={handleForceSyncFromMemo} disabled={syncing} className="gap-2">
-                {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                {syncing ? "Syncing..." : "Sync from Memo"}
-              </Button>
-            )}
-            <Button onClick={handleEnhanceContent} disabled={enhancing || responses.length === 0} className="gap-2">
-              {enhancing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              {enhancing ? "Enhancing..." : "AI Enhance All"}
-            </Button>
-            <Button variant="outline" onClick={() => navigate("/portal")} className="gap-2">
-              <Edit className="w-4 h-4" /> Edit Questionnaire
-            </Button>
-          </div>
+        <div className="space-y-2">
+          <h1 className="text-2xl font-display font-bold">Company Profile</h1>
+          <p className="text-sm text-muted-foreground">
+            Complete profile inputs for <span className="font-medium text-foreground">{company?.name}</span>
+          </p>
         </div>
 
+        {/* Hero Banner for Empty Profiles */}
+        {isProfileEmpty && (
+          <Card className="border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-card/30 backdrop-blur-xl">
+            <CardContent className="p-8 text-center space-y-4">
+              <Rocket className="w-12 h-12 text-primary mx-auto" />
+              <h2 className="text-2xl font-serif font-bold">New here? Let's get you funded!</h2>
+              <p className="text-muted-foreground max-w-lg mx-auto">
+                Complete your profile in under 5 minutes with our guided wizard.
+              </p>
+              <Button onClick={() => setWizardOpen(true)} size="lg" className="gap-2">
+                <Zap className="w-5 h-5" />
+                Quick Fill Your Profile
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Data Flow Notice */}
-        <Card className="bg-blue-500/5 border-blue-500/20">
-          <CardContent className="py-4">
+        <Card className="border-primary/20 bg-card/60 backdrop-blur-2xl">
+          <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
-              <div className="text-sm">
-                <p className="font-medium text-blue-700 dark:text-blue-300">This is your central data hub</p>
-                <p className="text-muted-foreground">
+              <div className="w-8 h-8 rounded-xl bg-primary/15 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <Sparkles className="w-4 h-4 text-primary" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">This is your central data hub</p>
+                <p className="text-xs text-muted-foreground">
                   Changes you make here will be used when regenerating your memo. Data flows from your deck imports, calculators, and AI enhancements all feed into this profile.
                 </p>
               </div>
@@ -746,62 +726,93 @@ export default function CompanyProfile() {
           </CardContent>
         </Card>
 
+        {/* Action Buttons Row */}
+        <div className="flex gap-3 flex-wrap">
+          <Button variant="outline" onClick={() => navigate("/hub")} className="gap-2 rounded-xl">
+            ← Back to Hub
+          </Button>
+          <Button variant="outline" onClick={() => setDeckWizardOpen(true)} className="gap-2 rounded-xl">
+            <Upload className="w-4 h-4" /> Import Deck
+          </Button>
+          <Button variant="outline" onClick={() => setWizardOpen(true)} className="gap-2 rounded-xl">
+            <Zap className="w-4 h-4" /> Quick Fill
+          </Button>
+          {hasMemo && memoStructuredContent && (
+            <Button variant="outline" onClick={handleForceSyncFromMemo} disabled={syncing} className="gap-2 rounded-xl">
+              {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+              {syncing ? "Syncing..." : "Sync from Memo"}
+            </Button>
+          )}
+          <Button onClick={handleEnhanceContent} disabled={enhancing || responses.length === 0} className="gap-2 rounded-xl">
+            {enhancing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {enhancing ? "Enhancing..." : "AI Enhance All"}
+          </Button>
+        </div>
+
         {/* Completion Progress */}
-        <Card>
-          <CardContent className="py-6">
+        <Card className="bg-card/60 backdrop-blur-xl border-border/40">
+          <CardHeader className="pb-3">
             <CompletionProgress responses={responses} questionLabels={QUESTION_LABELS} />
-          </CardContent>
+          </CardHeader>
         </Card>
 
         {/* Financial Metrics Dashboard */}
         <FinancialMetricsDashboard responses={responses} />
 
         {/* Company Overview */}
-        <div className="bg-card border border-border rounded-lg p-8 space-y-6">
-          <div className="border-b border-border pb-6">
-            {editingCompanyName ? (
-              <div className="flex items-center gap-3">
-                <Input
-                  value={editedCompanyName}
-                  onChange={(e) => setEditedCompanyName(e.target.value)}
-                  className="text-3xl font-serif font-bold h-auto py-2"
-                  autoFocus
-                />
-                <Button size="sm" onClick={handleSaveCompanyName} className="gap-2">
-                  <Check className="w-4 h-4" /> Save
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => { setEditedCompanyName(company?.name || ""); setEditingCompanyName(false); }}>
-                  <X className="w-4 h-4" />
-                </Button>
+        <Card className="bg-card/60 backdrop-blur-xl border-border/40">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-medium flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              Company Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="border-b border-border/30 pb-4">
+              {editingCompanyName ? (
+                <div className="flex items-center gap-3">
+                  <Input
+                    value={editedCompanyName}
+                    onChange={(e) => setEditedCompanyName(e.target.value)}
+                    className="text-xl font-semibold h-auto py-2 bg-card/60 backdrop-blur-sm"
+                    autoFocus
+                  />
+                  <Button size="sm" onClick={handleSaveCompanyName} className="gap-2 rounded-xl">
+                    <Check className="w-4 h-4" /> Save
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => { setEditedCompanyName(company?.name || ""); setEditingCompanyName(false); }} className="rounded-xl">
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold">{company?.name}</h2>
+                  <Button size="sm" variant="ghost" onClick={() => setEditingCompanyName(true)} className="gap-2 rounded-xl">
+                    <Edit className="w-4 h-4" /> Edit
+                  </Button>
+                </div>
+              )}
+              <div className="flex gap-2 mt-3">
+                {company?.category && <Badge variant="secondary" className="text-xs bg-muted/40 backdrop-blur-sm">{company.category}</Badge>}
+                <Badge variant="secondary" className="text-xs bg-muted/40 backdrop-blur-sm">{company?.stage}</Badge>
               </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-serif font-bold">{company?.name}</h2>
-                <Button size="sm" variant="ghost" onClick={() => setEditingCompanyName(true)} className="gap-2">
-                  <Edit className="w-4 h-4" /> Edit
-                </Button>
+            </div>
+
+            {company?.description && (
+              <div className="space-y-1.5">
+                <span className="text-sm font-medium text-foreground">Overview</span>
+                <p className="text-sm text-muted-foreground">{company.description}</p>
               </div>
             )}
-            <div className="flex gap-3 mt-4">
-              {company?.category && <Badge variant="secondary" className="text-sm px-3 py-1">{company.category}</Badge>}
-              <Badge variant="secondary" className="text-sm px-3 py-1">{company?.stage}</Badge>
-            </div>
-          </div>
 
-          {company?.description && (
-            <div className="space-y-2">
-              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Overview</h3>
-              <p className="text-lg leading-relaxed">{company.description}</p>
-            </div>
-          )}
-
-          {company?.biggest_challenge && (
-            <div className="space-y-2">
-              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Key Challenge</h3>
-              <p className="text-lg leading-relaxed">{company.biggest_challenge}</p>
-            </div>
-          )}
-        </div>
+            {company?.biggest_challenge && (
+              <div className="space-y-1.5">
+                <span className="text-sm font-medium text-foreground">Key Challenge</span>
+                <p className="text-sm text-muted-foreground">{company.biggest_challenge}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Unit Economics Editor */}
         {company && (
@@ -830,72 +841,78 @@ export default function CompanyProfile() {
           const charCount = displayContent.length;
 
           return (
-            <div key={sectionName} className="bg-card border border-border rounded-lg p-8 space-y-6">
-              <div className="flex items-center justify-between border-b border-border pb-4">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-serif font-bold">{sectionName}</h2>
+            <Card key={sectionName} className="bg-card/60 backdrop-blur-xl border-border/40">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-medium flex items-center gap-2">
+                  {sectionName}
                   <DataSourceBadge source={displaySource} />
-                </div>
-                <div className="flex items-center gap-2">
-                  {hasContent && (
-                    <span className="text-xs text-muted-foreground">{charCount} chars</span>
-                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {hasContent && (
+                      <span className="text-xs text-muted-foreground">{charCount} chars</span>
+                    )}
+                  </div>
                   {editingSection === sectionName ? (
-                    <>
-                      <Button size="sm" onClick={() => handleSaveSection(sectionName, primaryQuestionKey)} className="gap-2">
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleSaveSection(sectionName, primaryQuestionKey)} className="gap-2 rounded-xl">
                         <Check className="w-4 h-4" /> Save
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setEditingSection(null)}>
+                      <Button size="sm" variant="outline" onClick={() => setEditingSection(null)} className="rounded-xl">
                         <X className="w-4 h-4" />
                       </Button>
-                    </>
+                    </div>
                   ) : (
-                    <Button size="sm" variant="ghost" onClick={() => { setEditingSection(sectionName); setEditedSectionContent(displayContent); }} className="gap-2">
+                    <Button size="sm" variant="ghost" onClick={() => { setEditingSection(sectionName); setEditedSectionContent(displayContent); }} className="gap-2 rounded-xl">
                       <Edit className="w-4 h-4" /> {hasContent ? "Edit" : "Add Content"}
                     </Button>
                   )}
                 </div>
-              </div>
 
-              {editingSection === sectionName ? (
-                <Textarea
-                  value={editedSectionContent}
-                  onChange={(e) => setEditedSectionContent(e.target.value)}
-                  className="min-h-[300px] text-base leading-relaxed"
-                  placeholder={`Add ${sectionName.toLowerCase()} content here...`}
-                  autoFocus
-                />
-              ) : hasContent ? (
-                <div className="prose prose-slate max-w-none">
-                  <p className="text-foreground text-base leading-relaxed whitespace-pre-wrap">{displayContent}</p>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center py-12 text-muted-foreground">
-                  <div className="text-center space-y-4">
-                    <FileText className="w-12 h-12 mx-auto opacity-50" />
-                    <p className="text-sm">No content yet for this section.</p>
-                    <Button variant="outline" size="sm" onClick={() => { setEditingSection(sectionName); setEditedSectionContent(""); }} className="gap-2">
-                      <Edit className="w-4 h-4" /> Add Content
-                    </Button>
+                {editingSection === sectionName ? (
+                  <Textarea
+                    value={editedSectionContent}
+                    onChange={(e) => setEditedSectionContent(e.target.value)}
+                    className="min-h-[200px] text-sm leading-relaxed bg-muted/30 backdrop-blur-sm rounded-xl"
+                    placeholder={`Add ${sectionName.toLowerCase()} content here...`}
+                    autoFocus
+                  />
+                ) : hasContent ? (
+                  <div className="text-sm text-muted-foreground bg-muted/30 backdrop-blur-sm rounded-xl p-3 whitespace-pre-wrap">
+                    {displayContent}
                   </div>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="flex items-center justify-center py-8 text-muted-foreground">
+                    <div className="text-center space-y-3">
+                      <FileText className="w-10 h-10 mx-auto opacity-50" />
+                      <p className="text-xs">No content yet for this section.</p>
+                      <Button variant="outline" size="sm" onClick={() => { setEditingSection(sectionName); setEditedSectionContent(""); }} className="gap-2 rounded-xl">
+                        <Edit className="w-4 h-4" /> Add Content
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           );
         })}
 
         {responses.length === 0 && (
-          <div className="bg-card border border-border rounded-lg p-12 text-center space-y-4">
-            <FileText className="w-16 h-16 mx-auto text-muted-foreground" />
-            <h3 className="text-2xl font-bold">No Content Yet</h3>
-            <p className="text-muted-foreground max-w-md mx-auto">Complete the questionnaire to generate your investment memo.</p>
-            <div className="flex justify-center gap-3">
-              <Button variant="outline" onClick={() => setDeckWizardOpen(true)} className="gap-2">
-                <Upload className="w-4 h-4" /> Import from Deck
-              </Button>
-              <Button onClick={() => navigate("/portal")}>Start Questionnaire</Button>
-            </div>
-          </div>
+          <Card className="bg-card/60 backdrop-blur-xl border-border/40">
+            <CardContent className="p-12 text-center space-y-4">
+              <FileText className="w-16 h-16 mx-auto text-muted-foreground" />
+              <h3 className="text-xl font-bold">No Content Yet</h3>
+              <p className="text-muted-foreground max-w-md mx-auto text-sm">Complete the questionnaire to generate your investment memo.</p>
+              <div className="flex justify-center gap-3">
+                <Button variant="outline" onClick={() => setDeckWizardOpen(true)} className="gap-2 rounded-xl">
+                  <Upload className="w-4 h-4" /> Import from Deck
+                </Button>
+                <Button onClick={() => navigate("/portal")} className="rounded-xl">Start Questionnaire</Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
 
