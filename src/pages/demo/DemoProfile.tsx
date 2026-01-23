@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { DemoLayout } from "@/components/demo/DemoLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +42,20 @@ const formatCurrency = (value: number) => {
 };
 
 export default function DemoProfile() {
-  const { showExplainer, isChecked: explainerChecked, completeExplainer } = useProfileExplainer();
+  // Profile explainer modal - use demo-specific key
+  const [showExplainer, setShowExplainer] = useState(false);
+  const [explainerChecked, setExplainerChecked] = useState(false);
+  
+  useEffect(() => {
+    const seen = localStorage.getItem("demo_profile_explainer_seen");
+    setShowExplainer(!seen);
+    setExplainerChecked(true);
+  }, []);
+  
+  const completeExplainer = () => {
+    localStorage.setItem("demo_profile_explainer_seen", "true");
+    setShowExplainer(false);
+  };
 
   return (
     <>
