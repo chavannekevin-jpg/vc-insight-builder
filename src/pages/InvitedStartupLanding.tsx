@@ -27,8 +27,8 @@ import { useFounderReferral, processFounderReferral } from "@/hooks/useFounderRe
 const INVITED_PERKS = [
   {
     icon: FileText,
-    title: "9-Page VC Investment Memo",
-    description: "Professional analysis of your startup the way VCs evaluate deals internally"
+    title: "Full VC Due Diligence Simulation",
+    description: "The internal memo partners use to pass or pursue — see what VCs will say before you pitch"
   },
   {
     icon: Users,
@@ -36,19 +36,19 @@ const INVITED_PERKS = [
     description: "AI-matched VCs, angels & family offices filtered by stage, sector, and thesis fit"
   },
   {
-    icon: Brain,
-    title: "VC Brain: 60+ Guides",
-    description: "Insider knowledge on what VCs actually look for and how they make decisions"
-  },
-  {
     icon: Target,
     title: "Investment Readiness Score",
-    description: "See exactly where you stand across 8 dimensions, benchmarked against funded companies"
+    description: "Scored across 8 dimensions — know exactly where you stand before reaching out"
   },
   {
     icon: TrendingUp,
     title: "30+ Prepared VC Questions",
     description: "The exact questions investors will ask — with draft answers you can refine"
+  },
+  {
+    icon: Brain,
+    title: "Market Lens & Sector Briefings",
+    description: "Tailwinds, headwinds, and funding landscape for your specific market"
   },
   {
     icon: Shield,
