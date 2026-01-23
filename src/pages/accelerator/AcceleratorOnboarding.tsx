@@ -49,11 +49,55 @@ export default function AcceleratorOnboarding() {
   });
 
   const sessionId = searchParams.get("session_id");
+  const isBypassed = searchParams.get("bypassed") === "true";
 
-  // Verify payment on mount
+  // Verify payment or admin bypass on mount
   useEffect(() => {
-    const verifyPayment = async () => {
-      if (!sessionId || !isAuthenticated || authLoading) return;
+    const verifyAccess = async () => {
+      if (!isAuthenticated || authLoading) return;
+      
+      // Handle admin bypass - find the user's accelerator directly
+      if (isBypassed) {
+        try {
+          const { data: accData, error } = await supabase
+            .from("accelerators")
+            .select("id, name, onboarding_completed")
+            .eq("ecosystem_head_id", user?.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (error) throw error;
+          if (!accData) {
+            toast.error("Accelerator not found");
+            navigate("/accelerator/signup");
+            return;
+          }
+
+          if (accData.onboarding_completed) {
+            navigate("/accelerator");
+            return;
+          }
+
+          setAcceleratorId(accData.id);
+          if (accData.name) {
+            setFormData(prev => ({ ...prev, name: accData.name }));
+          }
+        } catch (error: any) {
+          console.error("Bypass verification error:", error);
+          toast.error(error.message || "Failed to load accelerator");
+          navigate("/accelerator/signup");
+        } finally {
+          setIsVerifying(false);
+        }
+        return;
+      }
+
+      // Normal payment verification flow
+      if (!sessionId) {
+        navigate("/accelerator/signup");
+        return;
+      }
 
       try {
         const { data, error } = await supabase.functions.invoke("verify-accelerator-payment", {
@@ -92,9 +136,9 @@ export default function AcceleratorOnboarding() {
     };
 
     if (!authLoading) {
-      verifyPayment();
+      verifyAccess();
     }
-  }, [sessionId, isAuthenticated, authLoading, navigate]);
+  }, [sessionId, isBypassed, isAuthenticated, authLoading, user?.id, navigate]);
 
   const updateField = <K extends keyof OnboardingData>(field: K, value: OnboardingData[K]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
