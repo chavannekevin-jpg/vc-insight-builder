@@ -8,10 +8,11 @@ import { DEMO_COMPANY } from "@/data/demo/demoSignalFlow";
 interface DemoLayoutProps {
   children: ReactNode;
   currentPage?: 'dashboard' | 'market-lens' | 'fund-discovery' | 'profile' | 'analysis';
+  onRestartTour?: () => void;
 }
 
 // Inner component to handle sidebar auto-collapse on mobile
-function DemoLayoutInner({ children, currentPage }: DemoLayoutProps) {
+function DemoLayoutInner({ children, currentPage, onRestartTour }: DemoLayoutProps) {
   const { setOpenMobile } = useSidebar();
 
   // Close mobile sidebar on route change
@@ -21,7 +22,7 @@ function DemoLayoutInner({ children, currentPage }: DemoLayoutProps) {
 
   return (
     <div className="flex min-h-screen w-full bg-background">
-      <DemoSidebar currentPage={currentPage || 'dashboard'} />
+      <DemoSidebar currentPage={currentPage || 'dashboard'} onRestartTour={onRestartTour} />
       <SidebarInset className="flex-1">
         <DemoBanner companyName={DEMO_COMPANY.name} />
         
@@ -45,10 +46,10 @@ function DemoLayoutInner({ children, currentPage }: DemoLayoutProps) {
   );
 }
 
-export function DemoLayout({ children, currentPage = 'dashboard' }: DemoLayoutProps) {
+export function DemoLayout({ children, currentPage = 'dashboard', onRestartTour }: DemoLayoutProps) {
   return (
     <SidebarProvider>
-      <DemoLayoutInner currentPage={currentPage}>
+      <DemoLayoutInner currentPage={currentPage} onRestartTour={onRestartTour}>
         {children}
       </DemoLayoutInner>
     </SidebarProvider>
