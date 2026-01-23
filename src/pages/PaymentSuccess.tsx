@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ModernCard } from "@/components/ModernCard";
@@ -7,6 +8,7 @@ import { Check, Sparkles, ArrowRight, AlertCircle, RefreshCw } from "lucide-reac
 import { PaymentErrorBoundary } from "@/components/PaymentErrorBoundary";
 
 function PaymentSuccessContent() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const companyId = searchParams.get("companyId");
@@ -42,6 +44,10 @@ function PaymentSuccessContent() {
       if (data?.success) {
         setVerified(true);
         setError(null);
+        
+        // Invalidate caches to ensure fresh payment status
+        await queryClient.invalidateQueries({ queryKey: ["company"] });
+        await queryClient.invalidateQueries({ queryKey: ["payment", companyId] });
         
         // Auto-redirect after 2 seconds with proper cleanup
         timeoutRef.current = setTimeout(() => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import { isValidCompanyId } from "@/lib/companyIdUtils";
 
 export default function CheckoutMemo() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const companyIdFromUrl = searchParams.get("companyId");
@@ -324,6 +326,10 @@ export default function CheckoutMemo() {
             body: { codeId: appliedDiscount.id }
           });
         }
+
+        // Invalidate caches to ensure fresh payment status when reaching hub
+        await queryClient.invalidateQueries({ queryKey: ["company"] });
+        await queryClient.invalidateQueries({ queryKey: ["payment", companyId] });
 
         // Trigger memo generation immediately
         const { data: genData, error: genError } = await supabase.functions.invoke('generate-full-memo', {

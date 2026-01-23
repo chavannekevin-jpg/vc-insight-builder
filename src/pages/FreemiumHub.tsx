@@ -101,6 +101,7 @@ export default function FreemiumHub() {
   const [searchParams, setSearchParams] = useSearchParams();
   const adminView = searchParams.get("admin") === "true";
   const freshCompany = (location.state as any)?.freshCompany === true;
+  const freshPurchase = (location.state as any)?.freshPurchase === true;
   const shouldRegenerate = searchParams.get("regenerate") === "true";
   const companyIdFromParams = searchParams.get("companyId");
   
@@ -182,12 +183,15 @@ export default function FreemiumHub() {
     }
   }, [authLoading, isAuthenticated, adminView, navigate]);
 
-  // Force refetch company data on mount if coming from intake with fresh company
+  // Force refetch company data on mount if coming from intake with fresh company or fresh purchase
   useEffect(() => {
-    if (freshCompany && user?.id) {
+    if ((freshCompany || freshPurchase) && user?.id) {
+      console.log('[FreemiumHub] Invalidating company/payment caches after fresh purchase or company creation');
       queryClient.invalidateQueries({ queryKey: ["company", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["payment"] });
+      queryClient.invalidateQueries({ queryKey: ["memo"] });
     }
-  }, [freshCompany, user?.id, queryClient]);
+  }, [freshCompany, freshPurchase, user?.id, queryClient]);
 
   // Redirect to intake if no company - with delay to prevent race conditions
   useEffect(() => {

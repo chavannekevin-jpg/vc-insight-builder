@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -71,6 +72,7 @@ export default function Portal() {
   const [questions, setQuestions] = useState<Question[]>([]);
   
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
 
@@ -503,10 +505,16 @@ export default function Portal() {
     handleMemoReady();
   }, []);
 
-  const handleMemoReady = () => {
-    console.log("Portal: Memo ready, navigating to hub...");
+  const handleMemoReady = async () => {
+    console.log("Portal: Memo ready, invalidating caches and navigating to hub...");
     setIsGeneratingMemo(false);
-    navigate(`/hub?companyId=${companyId}`);
+    
+    // Invalidate all payment and company caches to ensure hub shows paid version
+    await queryClient.invalidateQueries({ queryKey: ["company"] });
+    await queryClient.invalidateQueries({ queryKey: ["payment", companyId] });
+    await queryClient.invalidateQueries({ queryKey: ["memo", companyId] });
+    
+    navigate(`/hub?companyId=${companyId}`, { state: { freshPurchase: true } });
   };
 
   const handleCheckStatus = async () => {
