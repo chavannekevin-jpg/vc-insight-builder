@@ -11,6 +11,8 @@ import { TrendingUp, Users, Lightbulb, ArrowRight } from "lucide-react";
 import type { MemoStructuredContent, MemoStructuredSection } from "@/types/memo";
 import type { ARCClassification } from "@/components/memo/DashboardScorecard";
 import { DemoWelcomeModal, useDemoWelcome } from "@/components/demo/DemoWelcomeModal";
+import { DemoSectionHelper } from "@/components/demo/DemoSectionHelper";
+
 
 // ARC Classification for SignalFlow - matches the demo analysis
 const DEMO_ARC_CLASSIFICATION: ARCClassification = {
@@ -157,7 +159,7 @@ const buildMemoContent = (): MemoStructuredContent => {
 
 export default function DemoDashboard() {
   const navigate = useNavigate();
-  const { showWelcome, isChecked, completeWelcome } = useDemoWelcome();
+  const { showWelcome, showSectionHelper, isChecked, completeWelcome, dismissSectionHelper } = useDemoWelcome();
   const sectionTools = buildSectionToolsFromSignalFlow();
   const memoContent = buildMemoContent();
 
@@ -184,6 +186,13 @@ export default function DemoDashboard() {
       <div className="px-6 py-8">
         <div className="max-w-4xl mx-auto space-y-8">
           
+          {/* Section Helper - appears after welcome modal closes */}
+          {showSectionHelper && (
+            <div className="mb-2">
+              <DemoSectionHelper onDismiss={dismissSectionHelper} />
+            </div>
+          )}
+          
           {/* Investment Readiness Scorecard - with FULL tool data and ARC */}
           <DashboardScorecard
             sectionTools={sectionTools}
@@ -196,6 +205,7 @@ export default function DemoDashboard() {
             memoContent={memoContent}
             arcClassification={DEMO_ARC_CLASSIFICATION}
             isDemo={true}
+            onSectionClick={dismissSectionHelper}
           />
 
           {/* VC Quick Take (IC Room) */}

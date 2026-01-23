@@ -20,6 +20,7 @@ interface DemoWelcomeModalProps {
 }
 
 const DEMO_WELCOME_KEY = "demo_welcome_completed";
+const DEMO_SECTION_HELPER_KEY = "demo_section_helper_dismissed";
 
 // Value breakdown data
 const VALUE_BREAKDOWN = [
@@ -261,22 +262,46 @@ function FeatureRow({ icon, text }: { icon: React.ReactNode; text: string }) {
 // Hook to manage demo welcome state
 export function useDemoWelcome() {
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showSectionHelper, setShowSectionHelper] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
 
   useEffect(() => {
-    const hasCompleted = localStorage.getItem(DEMO_WELCOME_KEY) === "true";
-    setShowWelcome(!hasCompleted);
+    const hasCompletedWelcome = localStorage.getItem(DEMO_WELCOME_KEY) === "true";
+    const hasCompletedHelper = localStorage.getItem(DEMO_SECTION_HELPER_KEY) === "true";
+    
+    setShowWelcome(!hasCompletedWelcome);
+    // Only show helper if welcome is already completed but helper isn't dismissed
+    setShowSectionHelper(hasCompletedWelcome && !hasCompletedHelper);
     setIsChecked(true);
   }, []);
 
   const completeWelcome = () => {
     setShowWelcome(false);
+    // Show section helper after welcome modal closes
+    const hasCompletedHelper = localStorage.getItem(DEMO_SECTION_HELPER_KEY) === "true";
+    if (!hasCompletedHelper) {
+      setShowSectionHelper(true);
+    }
+  };
+
+  const dismissSectionHelper = () => {
+    localStorage.setItem(DEMO_SECTION_HELPER_KEY, "true");
+    setShowSectionHelper(false);
   };
 
   const resetWelcome = () => {
     localStorage.removeItem(DEMO_WELCOME_KEY);
+    localStorage.removeItem(DEMO_SECTION_HELPER_KEY);
     setShowWelcome(true);
+    setShowSectionHelper(false);
   };
 
-  return { showWelcome, isChecked, completeWelcome, resetWelcome };
+  return { 
+    showWelcome, 
+    showSectionHelper, 
+    isChecked, 
+    completeWelcome, 
+    dismissSectionHelper, 
+    resetWelcome 
+  };
 }
