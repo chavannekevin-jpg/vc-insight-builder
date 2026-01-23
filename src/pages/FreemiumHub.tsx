@@ -473,9 +473,10 @@ export default function FreemiumHub() {
         }
       }
 
-      // 2. Upsert memo responses for high-confidence extractions
-      const highConfidenceResponses = Object.entries(data.extractedSections)
-        .filter(([_, section]) => section.confidence >= CONFIDENCE_THRESHOLD && section.content)
+      // 2. Upsert ALL memo responses (including low-confidence) - they're still shown but marked
+      // Low-confidence fields are pre-filled but labeled so users know to review them
+      const allResponses = Object.entries(data.extractedSections)
+        .filter(([_, section]) => section.content && section.content.trim().length > 0)
         .map(([key, section]) => ({
           company_id: company.id,
           question_key: key,
@@ -484,9 +485,9 @@ export default function FreemiumHub() {
           confidence_score: section.confidence
         }));
 
-      if (highConfidenceResponses.length > 0) {
+      if (allResponses.length > 0) {
         // Use upsert to update existing or insert new
-        for (const response of highConfidenceResponses) {
+        for (const response of allResponses) {
           const { error: upsertError } = await supabase
             .from("memo_responses")
             .upsert(response, {
@@ -498,6 +499,8 @@ export default function FreemiumHub() {
           }
         }
 
+        console.log(`Saved ${allResponses.length} deck-extracted responses (including low-confidence)`);
+        
         // Invalidate responses cache to trigger refetch with new data
         queryClient.invalidateQueries({ queryKey: ["dashboard-responses", company.id] });
       }
