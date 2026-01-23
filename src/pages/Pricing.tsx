@@ -1,266 +1,286 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/sections/Footer";
-import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { Check, X, BookOpen, Sparkles, Users } from "lucide-react";
-import { usePricingSettings } from "@/hooks/usePricingSettings";
+import { 
+  Check, 
+  Sparkles, 
+  TrendingUp, 
+  FileSearch, 
+  Wrench, 
+  Users, 
+  Telescope, 
+  MessageSquare,
+  Target,
+  Brain,
+  ArrowRight,
+  Zap
+} from "lucide-react";
+
+// Value breakdown data - what consultants would charge
+const VALUE_BREAKDOWN = [
+  { label: "8-Dimension Investment Audit", value: "€2,500", icon: FileSearch },
+  { label: "23+ Strategic Diagnostic Tools", value: "€2,000", icon: Wrench },
+  { label: "Investor Database + Matching", value: "€1,500", icon: Users },
+  { label: "Market Intelligence Briefing", value: "€1,200", icon: Telescope },
+  { label: "Outreach Generation Suite", value: "€800", icon: MessageSquare },
+  { label: "VC Q&A Simulation", value: "€500", icon: Brain },
+];
+
+const TOTAL_VALUE = "€8,500+";
+
+// Everything included
+const FEATURES = [
+  "Complete 8-dimension VC scorecard",
+  "Investment thesis & IC meeting simulation",
+  "Every red flag surfaced before your pitch",
+  "23+ diagnostic tools (TAM, unit economics, competitor matrix...)",
+  "Personalized 90-day action plan",
+  "Market intelligence briefing for your sector",
+  "800+ investor database with matching",
+  "Outreach email generation",
+  "VC Q&A practice mode",
+  "Unlimited access to your analysis",
+];
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const { data: pricingSettings, isLoading } = usePricingSettings();
-
-  const memoPricing = pricingSettings?.memo_pricing;
-  const networkPricing = pricingSettings?.network_pricing;
-
-  const memoFinalPrice = memoPricing?.early_access_enabled 
-    ? Math.floor(memoPricing.base_price * 100 * (1 - memoPricing.early_access_discount / 100)) / 100
-    : memoPricing?.base_price ?? 100;
-
-  const pricingPlans = [
-    {
-      name: "Freemium",
-      subtitle: "Everything You Need to Start",
-      price: "€0",
-      description: "Full access to VC knowledge and frameworks",
-      icon: BookOpen,
-      features: [
-        { text: "Full access to VC Hub", included: true },
-        { text: "Complete educational content library", included: true },
-        { text: "Pitch deck frameworks and templates", included: true },
-        { text: "Track your fundraising progress", included: true },
-        { text: "Personalized investment analysis", included: false },
-        { text: "Supporting materials and insights", included: false },
-        { text: "Network exposure to 400+ investors", included: false }
-      ],
-      cta: "Start Free",
-      popular: false,
-      color: "secondary"
-    },
-    {
-      name: "VC Due Diligence Simulation",
-      subtitle: "The Memo That Could Kill Your Round",
-      price: `€${memoFinalPrice.toFixed(2)}`,
-      originalPrice: memoPricing?.early_access_enabled ? `€${memoPricing.base_price.toFixed(2)}` : null,
-      description: "The internal analysis partners use to pass or pursue—now in your hands",
-      icon: Sparkles,
-      features: [
-        { text: "Everything in Freemium", included: true, bold: true },
-        { text: "The internal analysis VCs write about you", included: true },
-        { text: "Every weakness exposed before your pitch", included: true },
-        { text: "Deal-killing red flags surfaced first", included: true },
-        { text: "Specific fixes to strengthen your position", included: true },
-        { text: "1 analysis generation included (€8.99/extra)", included: true },
-        { text: "Network exposure to 400+ investors", included: false }
-      ],
-      cta: "Get the Analysis",
-      popular: true,
-      color: "primary",
-      waitlistBadge: memoPricing?.early_access_enabled
-    },
-    {
-      name: "Network Access",
-      subtitle: "Get In Front of Capital",
-      price: `€${(networkPricing?.base_price ?? 159.99).toFixed(2)}`,
-      description: "Your memo delivered to real investors",
-      icon: Users,
-      features: [
-        { text: "Everything in Analysis Builder", included: true, bold: true },
-        { text: "Unlimited analysis regenerations", included: true },
-        { text: "Profile shared with 400+ investors", included: true },
-        { text: "Direct introductions when there's interest", included: true }
-      ],
-      cta: "Coming Soon",
-      popular: false,
-      color: "accent",
-      comingSoon: true
-    }
-  ];
-
-  const faqs = [
-    {
-      question: "Why is the Freemium tier actually free?",
-      answer: "Because most founders fail due to lack of knowledge, not lack of capital. We want you to have the frameworks and education you need. We only charge when you're ready to fundraise seriously."
-    },
-    {
-      question: `What makes the investment analysis worth €${memoFinalPrice.toFixed(2)}?`,
-      answer: "It's a personalized analysis that translates your startup into VC language. Most founders pitch poorly because they don't speak investor. This analysis does it for you—and it's cheaper than a single coffee meeting that goes nowhere."
-    },
-    {
-      question: "How does Network Access work?",
-      answer: "Your company profile and analysis get pushed to our network of 400+ active investors. When someone shows interest, we facilitate the introduction. We don't guarantee funding—nobody can—but we guarantee exposure to real decision-makers."
-    },
-    {
-      question: "Can I upgrade plans?",
-      answer: "Absolutely. Start with Freemium, upgrade to Analysis Builder when you're ready, and add Network Access when you need exposure. Pay only for what you need, when you need it."
-    },
-    {
-      question: "What's your refund policy?",
-      answer: "Yes. 14-day money-back guarantee if you're not satisfied with your analysis. But you'll be satisfied—this isn't our first rodeo."
-    }
-  ];
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center">
-        <p className="text-foreground">Loading...</p>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+    <div className="min-h-screen bg-background relative overflow-hidden">
       <Header />
+      
+      {/* Animated mesh gradient background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 -left-1/4 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-0 -right-1/4 w-[600px] h-[600px] bg-secondary/15 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/10 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: '4s' }} />
+      </div>
 
-      {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <Badge variant="secondary" className="mb-6 px-4 py-1.5">
-            No BS Pricing
-          </Badge>
-          <h1 className="text-5xl md:text-6xl font-serif mb-6">
-            Pay Only for What You Need
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Start free. Upgrade when you're ready to fundraise. Add network access when you need it.
-            <br />
-            <span className="font-semibold text-foreground">Simple. Transparent. No hidden costs.</span>
-          </p>
-        </div>
-      </section>
+      {/* Subtle grid pattern */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,hsl(var(--primary)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.03)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
 
-      {/* Pricing Cards */}
-      <section className="py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
-            {pricingPlans.map((plan, index) => {
-              const Icon = plan.icon;
-              return (
-                <ModernCard 
-                  key={index}
-                  className={`relative ${plan.popular ? 'ring-2 ring-primary shadow-xl scale-105 md:scale-105' : ''}`}
-                >
-                   {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <Badge className="gradient-primary text-white border-0 px-4 py-1">
-                        {plan.waitlistBadge ? `${memoPricing?.early_access_discount}% OFF - Early Access` : "Most Popular"}
-                      </Badge>
-                    </div>
-                  )}
+      <main className="relative z-10">
+        {/* Hero Section */}
+        <section className="pt-32 pb-16 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <Badge className="mb-6 px-5 py-2 bg-primary/10 border-primary/20 text-primary backdrop-blur-sm">
+              <Zap className="w-3.5 h-3.5 mr-1.5" />
+              No BS Pricing
+            </Badge>
+            
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent leading-tight">
+              €8,500 in Value.
+              <br />
+              <span className="text-primary">€100. Done.</span>
+            </h1>
+            
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+              What consultants charge €8,500+ for, UglyBaby delivers for a flat hundred. 
+              No subscriptions. No hidden fees. One payment. Full access.
+            </p>
 
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-xl ${plan.popular ? 'gradient-primary' : 'gradient-accent'} flex items-center justify-center`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-serif">{plan.name}</h3>
-                        <p className="text-sm text-muted-foreground">{plan.subtitle}</p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex items-baseline gap-2 mb-2">
-                        {plan.originalPrice && (
-                          <span className="text-2xl font-bold line-through text-muted-foreground/50">{plan.originalPrice}</span>
-                        )}
-                        <span className="text-4xl font-bold">{plan.price}</span>
-                        {plan.name === "Freemium" && (
-                          <span className="text-sm text-muted-foreground">/forever</span>
-                        )}
-                        {plan.name !== "Freemium" && (
-                          <span className="text-sm text-muted-foreground">/one-time</span>
-                        )}
-                      </div>
-                      {plan.waitlistBadge && (
-                        <Badge variant="secondary" className="mb-2">
-                          <Sparkles className="w-3 h-3 mr-1" />
-                          Limited Time: {memoPricing?.early_access_discount}% Off
-                        </Badge>
-                      )}
-                      <p className="text-sm text-muted-foreground">{plan.description}</p>
-                    </div>
-
-                    <ul className="space-y-3 py-6 min-h-[320px]">
-                      {plan.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3 text-sm">
-                          {feature.included ? (
-                            <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                          ) : (
-                            <X className="w-5 h-5 text-muted-foreground/30 flex-shrink-0 mt-0.5" />
-                          )}
-                          <span className={`${feature.included ? 'text-foreground' : 'text-muted-foreground/50 line-through'} ${feature.bold ? 'font-semibold' : ''}`}>
-                            {feature.text}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <Button 
-                      onClick={() => !plan.comingSoon && navigate(plan.name === "Freemium" ? '/auth' : `/auth?plan=${encodeURIComponent(plan.name)}&price=${encodeURIComponent(plan.price)}`)}
-                      className={plan.popular ? "w-full gradient-primary hover-neon-pulse" : "w-full hover-neon-pulse"}
-                      variant={plan.popular ? "default" : "outline"}
-                      size="lg"
-                      disabled={plan.comingSoon}
-                    >
-                      {plan.cta}
-                    </Button>
-                  </div>
-                </ModernCard>
-              );
-            })}
+            <Button 
+              size="lg"
+              onClick={() => navigate('/auth')}
+              className="h-14 px-10 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground rounded-2xl font-bold text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5"
+            >
+              Get Started for €100
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FAQs */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-serif mb-4">Frequently Asked Questions</h2>
-          </div>
-
-          <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <ModernCard key={index} hover>
-                <div className="space-y-2">
-                  <h3 className="font-semibold">{faq.question}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {faq.answer}
-                  </p>
-                </div>
-              </ModernCard>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="max-w-4xl mx-auto text-center">
-          <ModernCard className="shadow-xl">
-            <div className="space-y-6 py-8">
-              <h2 className="text-3xl font-serif">Know What Kills Your Round—Before VCs Do</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Start with free access to VC frameworks. Get the analysis when you're ready to see yourself through their eyes.
-                <br />
-                <span className="font-semibold text-foreground">The internal analysis that decides your fate.</span>
-              </p>
-              <Button
-                size="lg"
-                onClick={() => navigate('/auth')}
-                className="gradient-primary px-8 shadow-glow hover:shadow-glow-strong"
-              >
-                Start Free Now
-              </Button>
-              <p className="text-xs text-muted-foreground">
-                14-day money-back guarantee on paid plans • Free tier is free forever
+        {/* Value Breakdown Section */}
+        <section className="py-20 px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                What You'd Pay a Consultant
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                UglyBaby packs the equivalent of months of consultant work into an instant, AI-powered analysis.
               </p>
             </div>
-          </ModernCard>
-        </div>
-      </section>
+
+            {/* Glass card container */}
+            <div className="relative group">
+              {/* Animated border glow */}
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/30 via-secondary/30 to-primary/30 rounded-3xl blur-sm opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+              
+              <div className="relative bg-card/40 backdrop-blur-2xl rounded-3xl p-8 md:p-10 shadow-2xl border border-border/50 overflow-hidden">
+                {/* Top highlight */}
+                <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+                
+                {/* Corner accents */}
+                <div className="absolute top-0 left-0 w-24 h-24 bg-gradient-to-br from-primary/10 to-transparent rounded-tl-3xl" />
+                <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-secondary/10 to-transparent rounded-br-3xl" />
+
+                <div className="relative grid md:grid-cols-2 gap-4">
+                  {VALUE_BREAKDOWN.map((item, index) => {
+                    const Icon = item.icon;
+                    return (
+                      <div 
+                        key={index}
+                        className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/30 backdrop-blur-sm hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                            <Icon className="w-5 h-5 text-primary" />
+                          </div>
+                          <span className="text-sm font-medium text-foreground">{item.label}</span>
+                        </div>
+                        <span className="text-sm font-bold text-success">{item.value}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Total value row */}
+                <div className="relative mt-6 p-6 rounded-2xl bg-gradient-to-r from-success/10 via-success/5 to-success/10 border border-success/20">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <TrendingUp className="w-6 h-6 text-success" />
+                      <span className="text-lg font-bold text-foreground">Total Consultant Value</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-3xl font-bold text-success line-through opacity-60">{TOTAL_VALUE}</span>
+                      <ArrowRight className="w-5 h-5 text-muted-foreground hidden md:block" />
+                      <span className="text-4xl font-black text-primary">€100</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* What's Included Section */}
+        <section className="py-20 px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Everything. No Upsells.
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                One price. Full platform. Every tool. UglyBaby doesn't nickel-and-dime you.
+              </p>
+            </div>
+
+            {/* Features grid in glass card */}
+            <div className="relative group">
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/20 via-transparent to-secondary/20 rounded-3xl opacity-50" />
+              
+              <div className="relative bg-card/30 backdrop-blur-xl rounded-3xl p-8 border border-border/50">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {FEATURES.map((feature, idx) => (
+                    <div 
+                      key={idx} 
+                      className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/30 transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-3.5 h-3.5 text-success" />
+                      </div>
+                      <span className="text-foreground/90">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* The Pitch Section */}
+        <section className="py-20 px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="relative group">
+              {/* Glow effect */}
+              <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-[40px] blur-2xl opacity-50 group-hover:opacity-75 transition-opacity" />
+              
+              <div className="relative bg-card/50 backdrop-blur-2xl rounded-3xl p-10 md:p-14 border border-border/50 shadow-2xl">
+                {/* Top highlight */}
+                <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+                
+                <Sparkles className="w-12 h-12 text-primary mx-auto mb-6 animate-pulse" />
+                
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  Stop Guessing.
+                  <br />
+                  <span className="text-primary">Start Knowing.</span>
+                </h2>
+                
+                <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+                  VCs have frameworks for evaluating you. Now you have access to those same frameworks—before you walk into the room.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button 
+                    size="lg"
+                    onClick={() => navigate('/auth')}
+                    className="h-14 px-10 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground rounded-2xl font-bold text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5"
+                  >
+                    Get the Analysis — €100
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                  
+                  <Button 
+                    size="lg"
+                    variant="outline"
+                    onClick={() => navigate('/demo')}
+                    className="h-14 px-8 rounded-2xl border-border/50 hover:bg-card/50 backdrop-blur-sm"
+                  >
+                    <Target className="w-5 h-5 mr-2" />
+                    See Demo First
+                  </Button>
+                </div>
+
+                <p className="text-xs text-muted-foreground mt-6">
+                  14-day money-back guarantee • Instant access • No subscription
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-20 px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">Questions?</h2>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                {
+                  q: "Why €100 and not some SaaS subscription?",
+                  a: "Because UglyBaby respects your time and money. You pay once, you get everything. No monthly fees bleeding you dry while you're bootstrapping."
+                },
+                {
+                  q: "What makes this worth €100?",
+                  a: "It's the analysis VCs actually run on you—delivered before your pitch. Most founders spend €5k+ on pitch coaching that misses the mark. This is the framework that decides if you get funded."
+                },
+                {
+                  q: "Can I try before I buy?",
+                  a: "Yes. The demo shows exactly what you'll get, built on a fictional startup. Explore every tool, every insight, every score before you commit a cent."
+                },
+                {
+                  q: "What if it's not useful for me?",
+                  a: "14-day money-back guarantee. No questions, no hassle. But you won't need it—this isn't UglyBaby's first rodeo."
+                }
+              ].map((faq, index) => (
+                <div 
+                  key={index}
+                  className="p-6 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/30 hover:bg-card/50 transition-colors"
+                >
+                  <h3 className="font-bold text-foreground mb-2">{faq.q}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
 
       <Footer />
     </div>
