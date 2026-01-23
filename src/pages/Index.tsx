@@ -78,9 +78,11 @@ const Index = () => {
                 size="lg"
                 variant="outline"
                 onClick={() => navigate('/demo')}
-                className="h-14 px-8 rounded-2xl border-border/50 hover:bg-card/50 backdrop-blur-sm"
+                className="group h-14 px-8 rounded-2xl border-2 border-border/50 hover:border-amber-500/80 hover:bg-card/80 backdrop-blur-sm transition-all duration-300 hover:shadow-[0_0_20px_hsl(45_100%_50%/0.3)]"
               >
-                Explore Demo First
+                <span className="text-foreground group-hover:text-foreground transition-colors">
+                  Explore Demo First
+                </span>
               </Button>
             </div>
 
