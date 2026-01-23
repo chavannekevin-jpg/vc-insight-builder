@@ -103,7 +103,7 @@ export default function ToolsHub() {
         <div className="text-center mb-16 pt-8">
           <Badge className="mb-6 px-5 py-2 bg-primary/10 border-primary/20 text-primary backdrop-blur-sm">
             <Zap className="w-3.5 h-3.5 mr-1.5" />
-            Free Founder Tools
+            Founder Tools
           </Badge>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
             <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
@@ -118,15 +118,15 @@ export default function ToolsHub() {
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             The tools VCs wish you'd use before wasting their time.{" "}
-            <span className="text-primary font-semibold">Free, brutal, and better than your napkin math.</span>
+            <span className="text-primary font-semibold">Brutal, and better than your napkin math.</span>
           </p>
         </div>
 
-        {/* Free Tools */}
+        {/* Standalone Tools */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <span className="text-primary">Your Reality Check Toolkit</span>
-            <Badge variant="outline" className="border-primary/30 text-primary">Free</Badge>
+            <Badge variant="outline" className="border-primary/30 text-primary">Try Now</Badge>
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             {freeTools.map((tool) => {
@@ -164,12 +164,19 @@ export default function ToolsHub() {
           </div>
         </div>
 
-        {/* Premium Tools Preview */}
+        {/* The Full Platform */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <span className="text-foreground">The Full Arsenal</span>
-            <Badge className="bg-primary/20 text-primary border-primary/40">Premium</Badge>
-          </h2>
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-3 flex items-center gap-3">
+              <span className="text-foreground">The Full Investment Audit</span>
+              <Badge className="bg-primary/20 text-primary border-primary/40">Full Platform</Badge>
+            </h2>
+            <p className="text-muted-foreground max-w-3xl">
+              Most founders fail not from bad ideas, but from not understanding how VCs evaluate deals. 
+              UglyBaby runs the same methodology VCs use internally—so you can build an investment case that actually resonates.
+            </p>
+          </div>
+          
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {premiumTools.map((tool) => {
               const Icon = tool.icon;
@@ -217,8 +224,8 @@ export default function ToolsHub() {
                 </h2>
                 <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
                   These tools get you started. But VCs don't invest in spreadsheets—they invest in{" "}
-                  <span className="text-primary font-semibold">conviction</span>. 
-                  Get the full investment analysis that shows you exactly what they see.
+                  <span className="text-primary font-semibold">VC-grade cases</span>. 
+                  Get the full investment audit, 23+ diagnostic tools, and access to 800+ investors.
                 </p>
               </div>
               <Button 
@@ -226,7 +233,7 @@ export default function ToolsHub() {
                 onClick={() => navigate('/pricing')}
                 className="h-14 px-10 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground rounded-2xl font-bold text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5"
               >
-                Get Your Full Analysis
+                Get Your Full Audit
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
               <p className="text-xs text-muted-foreground">
