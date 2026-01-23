@@ -99,8 +99,8 @@ export default function DemoFundDiscovery() {
       />
     )}
     <DemoLayout currentPage="fund-discovery">
-      <div className="px-6 py-8 bg-gradient-to-b from-transparent to-muted/10">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="px-4 py-6 lg:px-6 lg:py-8 bg-gradient-to-b from-transparent to-muted/10">
+        <div className="max-w-4xl mx-auto space-y-4 lg:space-y-6">
           
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -116,8 +116,8 @@ export default function DemoFundDiscovery() {
                   Dashboard
                 </Button>
               </div>
-              <h1 className="text-2xl font-display font-bold">VC Network</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-xl lg:text-2xl font-display font-bold">VC Network</h1>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 Climate-focused investors matched to <span className="font-medium text-foreground">{DEMO_COMPANY.name}</span>
               </p>
             </div>

@@ -27,11 +27,23 @@ function DemoLayoutInner({ children, currentPage, onRestartTour }: DemoLayoutPro
         <DemoBanner companyName={DEMO_COMPANY.name} />
         
         {/* Mobile header */}
-        <div className="sticky top-[49px] z-40 flex h-14 items-center gap-4 border-b border-border/30 bg-background/80 backdrop-blur-2xl px-4 lg:hidden">
-          <SidebarTrigger />
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-sm">{DEMO_COMPANY.name}</span>
-            <span className="text-xs text-muted-foreground">Demo</span>
+        <div className="sticky top-[49px] z-40 flex h-14 items-center gap-3 border-b border-border/30 bg-background/80 backdrop-blur-2xl px-4 lg:hidden">
+          <SidebarTrigger className="flex-shrink-0" />
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-primary">SF</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sm truncate">{DEMO_COMPANY.name}</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/15 text-primary flex-shrink-0">
+                  DEMO
+                </span>
+              </div>
+              <p className="text-[10px] text-muted-foreground truncate">
+                {DEMO_COMPANY.stage} · {DEMO_COMPANY.category}
+              </p>
+            </div>
           </div>
         </div>
 

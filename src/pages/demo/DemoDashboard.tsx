@@ -223,8 +223,8 @@ export default function DemoDashboard() {
         onSkip={tour.skipTour}
       />
       
-      <div className="px-6 py-8">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <div className="px-4 py-6 lg:px-6 lg:py-8">
+        <div className="max-w-4xl mx-auto space-y-6 lg:space-y-8">
           
           {/* Investment Readiness Scorecard - with FULL tool data and ARC */}
           <DashboardScorecard
@@ -250,7 +250,7 @@ export default function DemoDashboard() {
           </div>
 
           {/* Premium Tools Showcase */}
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             {/* Market Lens Card */}
             <Card 
               className="border border-primary/25 bg-gradient-to-br from-primary/10 via-card/50 to-card/30 backdrop-blur-sm cursor-pointer hover:border-primary/40 hover:shadow-[0_20px_50px_-12px_hsl(var(--primary)/0.2)] transition-all group"

@@ -145,10 +145,21 @@ export function FounderLayout({ children }: FounderLayoutProps) {
         />
         
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Top bar with sidebar trigger */}
-          <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          {/* Top bar with sidebar trigger - Desktop */}
+          <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 hidden lg:block">
             <div className="px-4 h-12 flex items-center">
               <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+            </div>
+          </header>
+          
+          {/* Top bar with sidebar trigger - Mobile */}
+          <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:hidden">
+            <div className="px-4 h-14 flex items-center gap-3">
+              <SidebarTrigger className="text-muted-foreground hover:text-foreground flex-shrink-0" />
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <span className="font-semibold text-sm truncate">{company.name}</span>
+                <span className="text-xs text-muted-foreground flex-shrink-0">{company.stage}</span>
+              </div>
             </div>
           </header>
           
