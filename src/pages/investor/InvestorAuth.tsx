@@ -157,7 +157,103 @@ const InvestorAuth = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if error is because user already exists
+        if (error.message?.toLowerCase().includes("already registered") || 
+            error.message?.toLowerCase().includes("already exists") ||
+            error.message?.toLowerCase().includes("user already")) {
+          // User already has an account - try to sign them in and add investor role
+          toast({
+            title: "Account exists",
+            description: "You already have an account. Signing you in and adding investor access...",
+          });
+          
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          if (signInError) {
+            toast({
+              title: "Sign in failed",
+              description: "Your account exists but the password is incorrect. Try signing in instead.",
+              variant: "destructive",
+            });
+            setIsSignUp(false); // Switch to sign-in mode
+            return;
+          }
+
+          if (signInData.user) {
+            // Check if already has investor role
+            const { data: existingRole } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", signInData.user.id)
+              .eq("role", "investor")
+              .maybeSingle();
+
+            if (existingRole) {
+              // Already an investor - check onboarding
+              const { data: profile } = await (supabase
+                .from("investor_profiles") as any)
+                .select("onboarding_completed")
+                .eq("id", signInData.user.id)
+                .maybeSingle();
+
+              if (profile?.onboarding_completed) {
+                toast({ title: "Welcome back!", description: "You're already in the investor network." });
+                navigate("/investor/dashboard");
+              } else {
+                navigate("/investor/onboarding");
+              }
+              return;
+            }
+
+            // Add investor role
+            const roleResult = await retryOperation(async () => {
+              const result = await supabase
+                .from("user_roles")
+                .insert({ user_id: signInData.user!.id, role: "investor" });
+              return { data: result.data, error: result.error };
+            });
+
+            if (roleResult.error) {
+              console.error("Failed to add investor role:", roleResult.error);
+              toast({
+                title: "Failed to join investor network",
+                description: "Please try again or contact support.",
+                variant: "destructive",
+              });
+              return;
+            }
+
+            // Increment the invite code usage
+            const { data: currentInvite } = await (supabase
+              .from("investor_invites") as any)
+              .select("uses")
+              .eq("code", inviteCode.toUpperCase())
+              .single();
+            
+            if (currentInvite) {
+              await (supabase
+                .from("investor_invites") as any)
+                .update({ uses: currentInvite.uses + 1 })
+                .eq("code", inviteCode.toUpperCase());
+            }
+
+            sessionStorage.setItem("investor_invite_code", inviteCode.toUpperCase());
+
+            toast({
+              title: "Welcome to the Investor Network!",
+              description: `You've been added by ${codeValidation.inviterName}. Complete your investor profile.`,
+            });
+            navigate("/investor/onboarding");
+          }
+          return;
+        }
+        
+        throw error;
+      }
 
       if (data.user) {
         // CRITICAL: Add investor role with retry logic
@@ -243,17 +339,64 @@ const InvestorAuth = () => {
           .maybeSingle();
 
         if (!roleData) {
-          // User doesn't have investor role - they can't access this area
-          await supabase.auth.signOut();
-          toast({
-            title: "Access denied",
-            description: "This area is for invited investors only. Please use the main platform.",
-            variant: "destructive",
-          });
-          return;
+          // User doesn't have investor role yet
+          // Check if they have a valid invite code to add the role
+          if (inviteCode && codeValidation?.valid) {
+            // Add investor role to existing user
+            const roleResult = await retryOperation(async () => {
+              const result = await supabase
+                .from("user_roles")
+                .insert({ user_id: data.user!.id, role: "investor" });
+              return { data: result.data, error: result.error };
+            });
+
+            if (roleResult.error) {
+              console.error("Failed to add investor role:", roleResult.error);
+              await supabase.auth.signOut();
+              toast({
+                title: "Failed to join investor network",
+                description: "Please try again or contact support.",
+                variant: "destructive",
+              });
+              return;
+            }
+
+            // Increment the invite code usage
+            const { data: currentInvite } = await (supabase
+              .from("investor_invites") as any)
+              .select("uses")
+              .eq("code", inviteCode.toUpperCase())
+              .single();
+            
+            if (currentInvite) {
+              await (supabase
+                .from("investor_invites") as any)
+                .update({ uses: currentInvite.uses + 1 })
+                .eq("code", inviteCode.toUpperCase());
+            }
+
+            // Store the invite code in session storage for onboarding
+            sessionStorage.setItem("investor_invite_code", inviteCode.toUpperCase());
+
+            toast({
+              title: "Welcome to the Investor Network!",
+              description: `You've been added by ${codeValidation.inviterName}. Complete your investor profile to continue.`,
+            });
+            navigate("/investor/onboarding");
+            return;
+          } else {
+            // No valid invite code - they can't access this area
+            await supabase.auth.signOut();
+            toast({
+              title: "Access denied",
+              description: "You need a valid invite code to join the investor network. Enter your invite code and try again.",
+              variant: "destructive",
+            });
+            return;
+          }
         }
 
-        // Check onboarding status
+        // User already has investor role - check onboarding status
         const { data: profile } = await (supabase
           .from("investor_profiles") as any)
           .select("onboarding_completed")
@@ -341,40 +484,44 @@ const InvestorAuth = () => {
               </p>
 
               <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="relative space-y-5">
-                {isSignUp && (
-                  <div className="space-y-2">
-                    <Label htmlFor="inviteCode" className="flex items-center gap-2 text-foreground/80">
-                      <Lock className="w-3.5 h-3.5" />
-                      Invite Code
-                    </Label>
-                    <Input
-                      id="inviteCode"
-                      value={inviteCode}
-                      onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                      placeholder="XXXXXXXX"
-                      className={`h-12 bg-muted/50 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 placeholder:text-muted-foreground/50 text-foreground font-mono tracking-wider ${
-                        codeValidation?.valid 
-                          ? "border-green-500/50 focus:ring-green-500/20" 
-                          : codeValidation?.valid === false 
-                            ? "border-red-500/50 focus:ring-red-500/20" 
-                            : ""
-                      }`}
-                      maxLength={12}
-                    />
-                    {isValidatingCode && (
-                      <p className="text-xs text-muted-foreground">Validating code...</p>
-                    )}
-                    {codeValidation?.valid && (
-                      <p className="text-xs text-green-400 flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" />
-                        Invited by {codeValidation.inviterName}
-                      </p>
-                    )}
-                    {codeValidation?.valid === false && inviteCode.length >= 6 && (
-                      <p className="text-xs text-red-400">Invalid or expired invite code</p>
-                    )}
-                  </div>
-                )}
+                {/* Invite Code - show for signup, and optionally for signin */}
+                <div className="space-y-2">
+                  <Label htmlFor="inviteCode" className="flex items-center gap-2 text-foreground/80">
+                    <Lock className="w-3.5 h-3.5" />
+                    Invite Code {!isSignUp && <span className="text-xs text-muted-foreground">(if joining as new investor)</span>}
+                  </Label>
+                  <Input
+                    id="inviteCode"
+                    value={inviteCode}
+                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                    placeholder={isSignUp ? "XXXXXXXX" : "Leave empty if already an investor"}
+                    className={`h-12 bg-muted/50 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 placeholder:text-muted-foreground/50 text-foreground font-mono tracking-wider ${
+                      codeValidation?.valid 
+                        ? "border-green-500/50 focus:ring-green-500/20" 
+                        : codeValidation?.valid === false 
+                          ? "border-red-500/50 focus:ring-red-500/20" 
+                          : ""
+                    }`}
+                    maxLength={12}
+                  />
+                  {isValidatingCode && (
+                    <p className="text-xs text-muted-foreground">Validating code...</p>
+                  )}
+                  {codeValidation?.valid && (
+                    <p className="text-xs text-green-400 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      Invited by {codeValidation.inviterName}
+                    </p>
+                  )}
+                  {codeValidation?.valid === false && inviteCode.length >= 6 && (
+                    <p className="text-xs text-red-400">Invalid or expired invite code</p>
+                  )}
+                  {!isSignUp && !inviteCode && (
+                    <p className="text-xs text-muted-foreground">
+                      Already a founder? Enter your invite code to also join as an investor.
+                    </p>
+                  )}
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="flex items-center gap-2 text-foreground/80">
