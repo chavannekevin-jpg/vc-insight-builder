@@ -520,11 +520,17 @@ export const VCVerdictCard = memo(({
         {/* What's Included - Collapsible, collapsed by default */}
         <Collapsible>
           <div className="px-6 py-4 border-b border-border/50">
-            <CollapsibleTrigger className="w-full flex items-center justify-between group">
-              <h4 className="text-sm font-semibold">What's Included</h4>
+            <CollapsibleTrigger className="w-full flex items-center justify-between group p-3 -m-3 rounded-xl hover:bg-primary/5 transition-colors">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">shitloads of features</span>
-                <ChevronDown className="w-4 h-4 text-muted-foreground group-data-[state=open]:rotate-180 transition-transform" />
+                <h4 className="text-sm font-semibold">What's Included</h4>
+                <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-primary/30 text-primary bg-primary/10">
+                  shitloads of features
+                </Badge>
+              </div>
+              <div className="flex items-center gap-1 text-primary">
+                <span className="text-xs font-medium group-data-[state=open]:hidden">Show</span>
+                <span className="text-xs font-medium hidden group-data-[state=open]:inline">Hide</span>
+                <ChevronDown className="w-4 h-4 group-data-[state=open]:rotate-180 transition-transform" />
               </div>
             </CollapsibleTrigger>
             
