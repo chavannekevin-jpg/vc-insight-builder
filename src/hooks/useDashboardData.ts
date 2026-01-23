@@ -46,7 +46,8 @@ export const useSectionTools = (
   memoHasContent: boolean
 ) => {
   return useQuery({
-    queryKey: ["section-tools", companyId],
+    // Standardized key: use "sectionTools" consistently (not "section-tools")
+    queryKey: ["sectionTools", companyId],
     queryFn: async (): Promise<Record<string, SectionTool> | null> => {
       if (!companyId) return null;
       

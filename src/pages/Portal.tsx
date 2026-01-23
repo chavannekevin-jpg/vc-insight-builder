@@ -481,37 +481,42 @@ export default function Portal() {
         }
 
         if (job?.status === "completed") {
-          console.log("Portal: Job marked completed, verifying memo exists...");
+          console.log("Portal: Job marked completed, checking full dashboard readiness...");
           
-          // CRITICAL: Verify memo record with structured_content actually exists before redirecting
+          // Import the readiness checker
+          const { checkDashboardReadiness } = await import("@/lib/dashboardReadiness");
+          
+          // CRITICAL: Wait for FULL dashboard readiness, not just structured_content
+          // This ensures all 8 section scores + vcQuickTake are written before redirect
           const targetCompanyId = job.company_id || companyId;
-          let memoVerified = false;
-          let memoCheckAttempts = 0;
-          const maxMemoChecks = 10; // Up to 30 seconds extra wait for DB write
+          let dashboardReady = false;
+          let readinessCheckAttempts = 0;
+          const maxReadinessChecks = 40; // Up to ~2 minutes for all tools to write
           
-          while (!memoVerified && memoCheckAttempts < maxMemoChecks) {
-            const { data: memo } = await supabase
-              .from("memos")
-              .select("id, structured_content")
-              .eq("company_id", targetCompanyId)
-              .order("created_at", { ascending: false })
-              .limit(1)
-              .maybeSingle();
+          while (!dashboardReady && readinessCheckAttempts < maxReadinessChecks) {
+            const readiness = await checkDashboardReadiness(targetCompanyId);
             
-            if (memo?.structured_content) {
-              console.log("Portal: Memo verified with structured_content, redirecting...");
-              memoVerified = true;
+            console.log(`Portal: Readiness check ${readinessCheckAttempts + 1}/${maxReadinessChecks}:`, {
+              isReady: readiness.isReady,
+              sectionScores: `${readiness.sectionScoreCount}/8`,
+              missingSections: readiness.missingSections,
+              hasVcQuickTake: readiness.hasVcQuickTake,
+              hasMemoContent: readiness.hasMemoContent
+            });
+            
+            if (readiness.isReady) {
+              console.log("Portal: Dashboard fully ready, redirecting...");
+              dashboardReady = true;
               handleMemoReady();
               return;
             }
             
-            console.log(`Portal: Memo not ready yet, check ${memoCheckAttempts + 1}/${maxMemoChecks}...`);
-            memoCheckAttempts++;
+            readinessCheckAttempts++;
             await new Promise(resolve => setTimeout(resolve, 3000));
           }
           
-          // If still not verified after extra checks, redirect anyway (Hub will handle gracefully)
-          console.log("Portal: Memo verification timeout, redirecting to Hub (will poll there)...");
+          // If still not ready after all checks, redirect anyway (Hub will handle gracefully with its own polling)
+          console.log("Portal: Dashboard readiness timeout after max attempts, redirecting to Hub...");
           handleMemoReady();
           return;
         }
@@ -551,7 +556,7 @@ export default function Portal() {
     // Memo and content data
     await queryClient.invalidateQueries({ queryKey: ["memo", companyId] });
     await queryClient.invalidateQueries({ queryKey: ["memo"] });
-    await queryClient.invalidateQueries({ queryKey: ["memoContent", companyId] });
+    await queryClient.invalidateQueries({ queryKey: ["memo-content", companyId] });
     
     // Dashboard data (section tools, VC quick take)
     await queryClient.invalidateQueries({ queryKey: ["vc-quick-take", companyId] });
