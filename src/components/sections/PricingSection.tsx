@@ -43,7 +43,7 @@ export const PricingSection = () => {
       features: [
         "Everything in Free, plus:",
         "The internal memo VCs write about you",
-        "Every weakness exposed before your pitch",
+        "Every weakness exposed before you raise",
         "Deal-killing red flags surfaced first",
         "Specific fixes to strengthen your position",
         "1 memo generation included (€8.99/extra)",

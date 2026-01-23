@@ -384,7 +384,7 @@ const PublicBookingPage = () => {
                   </div>
                   <div className="min-w-0">
                     <p className={`text-sm font-semibold ${theme.text}`}>Are you a startup?</p>
-                    <p className={`text-xs ${theme.textSubtle}`}>Get VC-ready before you pitch</p>
+                    <p className={`text-xs ${theme.textSubtle}`}>Get investment-ready before you raise</p>
                   </div>
                 </div>
                 <p className={`text-xs leading-relaxed mb-2.5 ${theme.textSubtle}`}>
@@ -558,7 +558,7 @@ const PublicBookingPage = () => {
                     </div>
                     <div className="min-w-0">
                       <p className={`text-sm font-semibold ${theme.text}`}>Are you a startup?</p>
-                      <p className={`text-xs ${theme.textSubtle}`}>Get VC-ready before you pitch</p>
+                      <p className={`text-xs ${theme.textSubtle}`}>Get investment-ready before you raise</p>
                     </div>
                   </div>
                   <p className={`text-xs leading-relaxed mb-2.5 ${theme.textSubtle}`}>

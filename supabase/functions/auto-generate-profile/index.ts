@@ -82,7 +82,7 @@ Guidelines:
 - Be specific with numbers, examples, and data points
 - Write from the founder's perspective (first person)
 - Keep the answer concise but informative (3-5 sentences)
-- Make it compelling and VC-ready
+- Make it compelling and investment-ready
 
 Return ONLY valid JSON with this structure:
 {

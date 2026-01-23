@@ -115,7 +115,7 @@ export const RoastEntryScreen = ({ companyName, onStart, isLoading }: RoastEntry
           </li>
           <li className="flex items-start gap-3">
             <Trophy className="w-4 h-4 text-yellow-500 mt-0.5" />
-            <span><strong className="text-yellow-500">Goal:</strong> Score 70%+ to prove you're investor-ready</span>
+            <span><strong className="text-yellow-500">Goal:</strong> Score 70%+ to prove you're investment-ready</span>
           </li>
         </ul>
       </ModernCard>

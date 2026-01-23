@@ -43,7 +43,7 @@ export const WhyYouNeedThisSection = () => {
     {
       icon: Eye,
       title: "Insider Perspective",
-      description: "See your company through a VC's eyes before you pitch—spot issues before meetings, not after rejections"
+      description: "See your company through a VC's eyes before you raise—spot issues before meetings, not after rejections"
     }
   ];
 
@@ -62,7 +62,7 @@ export const WhyYouNeedThisSection = () => {
             Why You Need This
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Stop pitching blind. Learn the framework we use.
+            Stop raising blind. Learn the framework VCs use.
           </p>
         </div>
 
@@ -78,7 +78,7 @@ export const WhyYouNeedThisSection = () => {
                 <h3 className="text-2xl font-bold">The Core Issue</h3>
               </div>
             <p className="text-xl text-foreground/90 leading-relaxed">
-              Founders pitch blind, without understanding the evaluation framework. The result? Rejections they don't understand, for reasons they can't fix.
+              Founders raise blind, without understanding the evaluation framework. The result? Rejections they don't understand, for reasons they can't fix.
             </p>
             </div>
           </div>

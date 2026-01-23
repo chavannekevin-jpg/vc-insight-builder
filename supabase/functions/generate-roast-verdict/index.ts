@@ -61,7 +61,7 @@ serve(async (req) => {
 Your personality: Direct, witty, experienced, ultimately supportive but never sugarcoating.
 
 Based on the results, provide:
-1. A verdict title (e.g., "Promising But Needs Polish", "VC-Ready Contender", "Back to the Drawing Board")
+1. A verdict title (e.g., "Promising But Needs Polish", "Investment-Ready Contender", "Back to the Drawing Board")
 2. A 2-3 sentence overall assessment
 3. Three specific, actionable recommendations
 4. A shareable quote (tweet-length, punchy)
@@ -72,7 +72,7 @@ Score interpretation:
 - 31-50%: Shows potential but major gaps
 - 51-70%: Solid foundation, some refinement needed
 - 71-85%: Strong performer, minor polish needed
-- 86-100%: Exceptional, VC-ready
+- 86-100%: Exceptional, investment-ready
 
 Return ONLY valid JSON:
 {

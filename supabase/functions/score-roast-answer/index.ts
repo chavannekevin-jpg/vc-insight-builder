@@ -31,7 +31,7 @@ SCORING RULES:
 - 0-3: Weak, evasive, or shows lack of understanding
 - 4-6: Adequate but missing depth or specificity
 - 7-8: Strong answer with good insight
-- 9-10: Exceptional, VC-ready answer
+- 9-10: Exceptional, investment-ready answer
 
 ROAST STYLE:
 - Be witty and direct, not mean-spirited

@@ -56,7 +56,7 @@ export const HowItWorksSection = () => {
             How It Works
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            From profile to pitch-ready through a complete founder ecosystem
+            From profile to investment-ready through a complete founder ecosystem
           </p>
         </div>
         

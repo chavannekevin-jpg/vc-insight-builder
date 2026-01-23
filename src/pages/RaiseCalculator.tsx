@@ -632,7 +632,7 @@ export default function RaiseCalculator() {
                         <Info className="w-4 h-4 text-muted-foreground cursor-help" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p className="max-w-xs">Extra cushion beyond calculated runway. VC-Ready (25%) gives more room for delays or hiring adjustments.</p>
+                        <p className="max-w-xs">Extra cushion beyond calculated runway. Investment-Ready (25%) gives more room for delays or hiring adjustments.</p>
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -642,7 +642,7 @@ export default function RaiseCalculator() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="conservative">Conservative (15%)</SelectItem>
-                      <SelectItem value="vc-ready">VC-Ready (25%)</SelectItem>
+                      <SelectItem value="vc-ready">Investment-Ready (25%)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
