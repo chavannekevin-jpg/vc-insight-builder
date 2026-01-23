@@ -7,11 +7,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DEMO_COMPANY, DEMO_MARKET_LENS_BRIEFING } from "@/data/demo/demoSignalFlow";
 import { DemoUpsellModal } from "@/components/demo/DemoUpsellModal";
 import { RefreshCw, Settings, ArrowLeft, Sparkles } from "lucide-react";
+import { MarketLensExplainer, useMarketLensExplainer } from "@/components/explainers/MarketLensExplainer";
 
 export default function DemoMarketLens() {
   const navigate = useNavigate();
   const [showUpsell, setShowUpsell] = useState(false);
   const [upsellContext, setUpsellContext] = useState({ feature: "", description: "" });
+  
+  // Market lens explainer modal
+  const { showExplainer, isChecked: explainerChecked, completeExplainer } = useMarketLensExplainer();
 
   const handleRefresh = () => {
     setUpsellContext({
@@ -30,6 +34,14 @@ export default function DemoMarketLens() {
   };
 
   return (
+    <>
+    {/* Market Lens Explainer Modal */}
+    {explainerChecked && (
+      <MarketLensExplainer 
+        open={showExplainer} 
+        onComplete={completeExplainer} 
+      />
+    )}
     <DemoLayout currentPage="market-lens">
       <div className="px-6 py-8 bg-gradient-to-b from-transparent to-muted/10">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -109,5 +121,6 @@ export default function DemoMarketLens() {
         description={upsellContext.description}
       />
     </DemoLayout>
+    </>
   );
 }

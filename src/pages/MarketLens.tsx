@@ -10,6 +10,7 @@ import { MarketLensOnboarding } from "@/components/market-lens/MarketLensOnboard
 import { Button } from "@/components/ui/button";
 import { Telescope, RefreshCw, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { MarketLensExplainer, useMarketLensExplainer } from "@/components/explainers/MarketLensExplainer";
 
 interface MarketLensPreferences {
   region: "europe" | "us" | "other";
@@ -67,6 +68,9 @@ export default function MarketLens() {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [preferences, setPreferences] = useState<MarketLensPreferences | null>(null);
+  
+  // Market lens explainer modal
+  const { showExplainer, isChecked: explainerChecked, completeExplainer } = useMarketLensExplainer();
 
   const canAccess = hasPaid && hasMemo;
 
@@ -200,8 +204,16 @@ export default function MarketLens() {
 
   return (
     <FounderLayout>
+      {/* Market Lens Explainer Modal */}
+      {explainerChecked && (
+        <MarketLensExplainer 
+          open={showExplainer} 
+          onComplete={completeExplainer} 
+        />
+      )}
+      
       {/* Onboarding Modal */}
-      <MarketLensOnboarding 
+      <MarketLensOnboarding
         open={showOnboarding}
         onComplete={handleOnboardingComplete}
         companyName={company?.name || "Your Company"}

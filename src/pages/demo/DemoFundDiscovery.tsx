@@ -20,6 +20,7 @@ import {
   Filter,
   ArrowUpDown
 } from "lucide-react";
+import { FundDiscoveryExplainer, useFundDiscoveryExplainer } from "@/components/explainers/FundDiscoveryExplainer";
 
 // Helper to format currency
 const formatCurrency = (amount: number): string => {
@@ -43,6 +44,9 @@ export default function DemoFundDiscovery() {
   const [showMatches, setShowMatches] = useState(true);
   const [showUpsell, setShowUpsell] = useState(false);
   const [upsellContext, setUpsellContext] = useState({ feature: "", description: "" });
+  
+  // Fund discovery explainer modal
+  const { showExplainer, isChecked: explainerChecked, completeExplainer } = useFundDiscoveryExplainer();
 
   // Filter and sort funds
   const filteredFunds = useMemo(() => {
@@ -74,6 +78,14 @@ export default function DemoFundDiscovery() {
   };
 
   return (
+    <>
+    {/* Fund Discovery Explainer Modal */}
+    {explainerChecked && (
+      <FundDiscoveryExplainer 
+        open={showExplainer} 
+        onComplete={completeExplainer} 
+      />
+    )}
     <DemoLayout currentPage="fund-discovery">
       <div className="px-6 py-8 bg-gradient-to-b from-transparent to-muted/10">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -346,5 +358,6 @@ export default function DemoFundDiscovery() {
         description={upsellContext.description}
       />
     </DemoLayout>
+    </>
   );
 }
