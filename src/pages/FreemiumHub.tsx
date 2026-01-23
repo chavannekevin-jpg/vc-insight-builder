@@ -705,8 +705,8 @@ export default function FreemiumHub() {
             />
           )}
           
-          {/* Header */}
-          <header className="sticky top-0 z-40 w-full border-b border-border/30 bg-background/80 backdrop-blur-2xl">
+          {/* Header - Desktop */}
+          <header className="sticky top-0 z-40 w-full border-b border-border/30 bg-background/80 backdrop-blur-2xl hidden lg:block">
             <div className="px-6 h-16 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
@@ -730,10 +730,40 @@ export default function FreemiumHub() {
               </Button>
             </div>
           </header>
+          
+          {/* Header - Mobile */}
+          <header className="sticky top-0 z-40 w-full border-b border-border/30 bg-background/80 backdrop-blur-2xl lg:hidden">
+            <div className="px-4 h-14 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0" />
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-sm truncate">{company.name}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {company.stage}{company.category ? ` · ${company.category}` : ''}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Mobile sign out - icon only */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSignOut}
+                className="text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-all flex-shrink-0 h-9 w-9"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
+          </header>
 
           {/* Main Content - Single Column Layout */}
-          <main className="flex-1 px-6 py-8 overflow-auto bg-gradient-to-b from-transparent via-muted/5 to-muted/10">
-            <div className="max-w-4xl mx-auto space-y-8">
+          <main className="flex-1 px-4 py-6 lg:px-6 lg:py-8 overflow-auto bg-gradient-to-b from-transparent via-muted/5 to-muted/10">
+            <div className="max-w-4xl mx-auto space-y-6 lg:space-y-8">
           
           {/* Main Content based on paid/unpaid status */}
           {hasPaid && memoGenerated ? (

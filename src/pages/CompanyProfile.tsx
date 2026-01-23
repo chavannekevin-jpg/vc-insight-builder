@@ -687,11 +687,11 @@ export default function CompanyProfile() {
         />
       )}
 
-      <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-4xl mx-auto px-4 py-6 lg:px-6 lg:py-8 space-y-5 lg:space-y-6">
         {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-2xl font-display font-bold">Company Profile</h1>
-          <p className="text-sm text-muted-foreground">
+        <div className="space-y-1 lg:space-y-2">
+          <h1 className="text-xl lg:text-2xl font-display font-bold">Company Profile</h1>
+          <p className="text-xs lg:text-sm text-muted-foreground">
             Complete profile inputs for <span className="font-medium text-foreground">{company?.name}</span>
           </p>
         </div>
@@ -730,8 +730,8 @@ export default function CompanyProfile() {
           </CardContent>
         </Card>
 
-        {/* Action Buttons Row */}
-        <div className="flex gap-3 flex-wrap">
+        {/* Action Buttons Row - scrollable on mobile */}
+        <div className="flex gap-2 lg:gap-3 flex-wrap overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0">
           <Button variant="outline" onClick={() => navigate("/hub")} className="gap-2 rounded-xl">
             ← Back to Hub
           </Button>

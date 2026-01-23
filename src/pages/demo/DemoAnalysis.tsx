@@ -238,26 +238,26 @@ export default function DemoAnalysis() {
     <DemoLayout currentPage="analysis">
       <MemoNavigation sections={structuredSections} hasQuickTake={!!memoData.vcQuickTake} />
 
-      <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl pb-24">
+      <div className="container mx-auto px-4 py-6 lg:py-12 max-w-5xl pb-24">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center gap-4 mb-6">
-            <Button variant="ghost" onClick={() => navigate("/demo")} className="no-print">
+        <div className="mb-6 lg:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 lg:mb-6">
+            <Button variant="ghost" onClick={() => navigate("/demo")} className="no-print w-fit">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
+              <span className="sm:inline">Back to Dashboard</span>
             </Button>
-            <Button variant="default" onClick={() => window.print()} size="sm" className="no-print">
+            <Button variant="default" onClick={() => window.print()} size="sm" className="no-print w-fit">
               <Printer className="w-4 h-4 mr-2" />
               Print / Export
             </Button>
           </div>
 
-          <div className="bg-card/95 backdrop-blur-sm border border-border/50 rounded-2xl p-6 md:p-8 shadow-lg">
-            <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">{DEMO_COMPANY.name}</h1>
-            <p className="text-muted-foreground mb-4">{DEMO_COMPANY.description}</p>
-            <div className="flex gap-3">
-              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">{DEMO_COMPANY.stage}</span>
-              <span className="px-3 py-1 rounded-full bg-muted text-muted-foreground text-sm">{DEMO_COMPANY.category}</span>
+          <div className="bg-card/95 backdrop-blur-sm border border-border/50 rounded-xl lg:rounded-2xl p-4 lg:p-8 shadow-lg">
+            <h1 className="text-2xl lg:text-4xl font-display font-bold mb-3 lg:mb-4">{DEMO_COMPANY.name}</h1>
+            <p className="text-sm lg:text-base text-muted-foreground mb-3 lg:mb-4">{DEMO_COMPANY.description}</p>
+            <div className="flex flex-wrap gap-2 lg:gap-3">
+              <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs lg:text-sm font-medium">{DEMO_COMPANY.stage}</span>
+              <span className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs lg:text-sm">{DEMO_COMPANY.category}</span>
             </div>
           </div>
         </div>
@@ -291,7 +291,7 @@ export default function DemoAnalysis() {
         {actionPlan && <MemoActionPlan actionPlan={actionPlan} companyName={DEMO_COMPANY.name} />}
 
         {/* All Sections with Full Tool Suite */}
-        <div className="space-y-8">
+        <div className="space-y-6 lg:space-y-8">
           {memoData.sections.map((section, index) => {
             const titleLower = section.title.toLowerCase();
             const tools = DEMO_SECTION_TOOLS[section.title] || {};

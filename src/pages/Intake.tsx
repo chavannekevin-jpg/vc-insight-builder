@@ -241,30 +241,30 @@ export default function Intake() {
   // Choose mode screen
   if (mode === "choose") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-6 py-12">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8 lg:px-6 lg:py-12">
         <div className="absolute inset-0 gradient-hero -z-10 opacity-30" />
         
-        <div className="w-full max-w-2xl space-y-8 animate-fade-in">
-          <ModernCard className="p-8">
-            <div className="space-y-6">
+        <div className="w-full max-w-2xl space-y-6 lg:space-y-8 animate-fade-in">
+          <ModernCard className="p-5 lg:p-8">
+            <div className="space-y-5 lg:space-y-6">
               {/* Referral banner */}
               {inviteInfo?.isValid && (
-                <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/30">
-                  <Gift className="w-6 h-6 text-green-500 shrink-0" />
+                <div className="flex items-center gap-3 p-3 lg:p-4 rounded-xl bg-green-500/10 border border-green-500/30">
+                  <Gift className="w-5 h-5 lg:w-6 lg:h-6 text-green-500 shrink-0" />
                   <div>
-                    <p className="font-semibold text-green-600 dark:text-green-400">
+                    <p className="font-semibold text-sm lg:text-base text-green-600 dark:text-green-400">
                       You've been invited by {inviteInfo.investorName || 'an investor'}!
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs lg:text-sm text-muted-foreground">
                       Get {inviteInfo.discountPercent}% off when you generate your VC memo.
                     </p>
                   </div>
                 </div>
               )}
               
-              <div className="text-center space-y-3 mb-8">
-                <h2 className="text-3xl font-display font-bold">Let's Analyze Your Startup</h2>
-                <p className="text-muted-foreground">
+              <div className="text-center space-y-2 lg:space-y-3 mb-6 lg:mb-8">
+                <h2 className="text-2xl lg:text-3xl font-display font-bold">Let's Analyze Your Startup</h2>
+                <p className="text-sm lg:text-base text-muted-foreground">
                   We'll show you exactly what VCs say when you leave the room — and how to fix it.
                 </p>
               </div>
@@ -274,20 +274,20 @@ export default function Intake() {
                 onClick={() => setDeckWizardOpen(true)}
                 className="cursor-pointer group"
               >
-                <div className="relative p-6 rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-primary/10 to-transparent hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-primary/20 group-hover:bg-primary/30 transition-colors">
-                      <Upload className="w-8 h-8 text-primary" />
+                <div className="relative p-4 lg:p-6 rounded-xl lg:rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-primary/10 to-transparent hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
+                  <div className="flex items-center gap-3 lg:gap-4">
+                    <div className="p-2.5 lg:p-3 rounded-lg lg:rounded-xl bg-primary/20 group-hover:bg-primary/30 transition-colors flex-shrink-0">
+                      <Upload className="w-6 h-6 lg:w-8 lg:h-8 text-primary" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold mb-1">Upload Your Pitch Deck</h3>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base lg:text-lg font-bold mb-0.5 lg:mb-1">Upload Your Pitch Deck</h3>
+                      <p className="text-xs lg:text-sm text-muted-foreground">
                         PDF, PNG, or JPG — we extract your company info automatically
                       </p>
                     </div>
-                    <ArrowRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block" />
                   </div>
-                  <div className="mt-3 flex items-center gap-2 text-xs text-primary font-medium">
+                  <div className="mt-2 lg:mt-3 flex items-center gap-2 text-xs text-primary font-medium">
                     <Zap className="w-3 h-3" />
                     Recommended • Takes 30 seconds
                   </div>
@@ -299,43 +299,43 @@ export default function Intake() {
                 onClick={() => setMode("manual")}
                 className="cursor-pointer group"
               >
-                <div className="relative p-6 rounded-2xl border border-border/50 bg-muted/20 hover:border-border hover:bg-muted/40 transition-all duration-300">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-muted">
-                      <PenLine className="w-8 h-8 text-muted-foreground" />
+                <div className="relative p-4 lg:p-6 rounded-xl lg:rounded-2xl border border-border/50 bg-muted/20 hover:border-border hover:bg-muted/40 transition-all duration-300">
+                  <div className="flex items-center gap-3 lg:gap-4">
+                    <div className="p-2.5 lg:p-3 rounded-lg lg:rounded-xl bg-muted flex-shrink-0">
+                      <PenLine className="w-6 h-6 lg:w-8 lg:h-8 text-muted-foreground" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold mb-1">I don't have a deck yet</h3>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base lg:text-lg font-bold mb-0.5 lg:mb-1">I don't have a deck yet</h3>
+                      <p className="text-xs lg:text-sm text-muted-foreground">
                         Tell us about your startup — our AI figures out the rest
                       </p>
                     </div>
-                    <ArrowRight className="w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowRight className="w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block" />
                   </div>
                 </div>
               </div>
 
               {/* What happens next */}
-              <div className="pt-6 border-t border-border/50">
-                <h4 className="text-sm font-semibold text-muted-foreground mb-4 text-center">What happens next?</h4>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="space-y-2">
-                    <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
-                      <AlertTriangle className="w-4 h-4 text-destructive" />
+              <div className="pt-5 lg:pt-6 border-t border-border/50">
+                <h4 className="text-xs lg:text-sm font-semibold text-muted-foreground mb-3 lg:mb-4 text-center">What happens next?</h4>
+                <div className="grid grid-cols-3 gap-3 lg:gap-4 text-center">
+                  <div className="space-y-1.5 lg:space-y-2">
+                    <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+                      <AlertTriangle className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-destructive" />
                     </div>
-                    <p className="text-xs text-muted-foreground">Instant VC verdict on your case</p>
+                    <p className="text-[10px] lg:text-xs text-muted-foreground">Instant VC verdict on your case</p>
                   </div>
-                  <div className="space-y-2">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                      <Search className="w-4 h-4 text-primary" />
+                  <div className="space-y-1.5 lg:space-y-2">
+                    <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                      <Search className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-primary" />
                     </div>
-                    <p className="text-xs text-muted-foreground">Deep-dive analysis of your startup</p>
+                    <p className="text-[10px] lg:text-xs text-muted-foreground">Deep-dive analysis of your startup</p>
                   </div>
-                  <div className="space-y-2">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                      <Target className="w-4 h-4 text-primary" />
+                  <div className="space-y-1.5 lg:space-y-2">
+                    <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                      <Target className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-primary" />
                     </div>
-                    <p className="text-xs text-muted-foreground">Actionable plan to improve VC odds</p>
+                    <p className="text-[10px] lg:text-xs text-muted-foreground">Actionable plan to improve VC odds</p>
                   </div>
                 </div>
               </div>
