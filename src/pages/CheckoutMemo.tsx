@@ -194,8 +194,38 @@ export default function CheckoutMemo() {
     }
     
     // Check for accelerator invite discount from sessionStorage
-    const acceleratorCode = sessionStorage.getItem('accelerator_invite_code');
-    const acceleratorPercent = sessionStorage.getItem('accelerator_discount_percent');
+    let acceleratorCode = sessionStorage.getItem('accelerator_invite_code');
+    let acceleratorPercent = sessionStorage.getItem('accelerator_discount_percent');
+    
+    // FALLBACK: If session storage is empty but company has accelerator_invite_id,
+    // fetch the discount directly from the database. This handles the case where
+    // session storage was cleared prematurely (e.g., browser refresh, navigation).
+    if (!acceleratorCode) {
+      const { data: companyWithInvite } = await supabase
+        .from("companies")
+        .select("accelerator_invite_id")
+        .eq("id", validCompanyId)
+        .single();
+      
+      if (companyWithInvite?.accelerator_invite_id) {
+        const { data: invite } = await supabase
+          .from("accelerator_invites")
+          .select("code, discount_percent, accelerator_name, is_active, max_uses, uses, expires_at")
+          .eq("id", companyWithInvite.accelerator_invite_id)
+          .single();
+        
+        if (invite && invite.is_active) {
+          const isExpired = invite.expires_at && new Date(invite.expires_at) < new Date();
+          const hasRemainingUses = !invite.max_uses || (invite.uses || 0) < invite.max_uses;
+          
+          if (!isExpired && hasRemainingUses) {
+            acceleratorCode = invite.code;
+            acceleratorPercent = String(invite.discount_percent);
+            console.log('[CheckoutMemo] Recovered accelerator discount from DB:', invite.code, invite.discount_percent);
+          }
+        }
+      }
+    }
     
     if (acceleratorCode && acceleratorPercent) {
       // Validate the accelerator invite is still valid
@@ -207,7 +237,7 @@ export default function CheckoutMemo() {
       
       if (acceleratorInvite && acceleratorInvite.is_active) {
         const isExpired = acceleratorInvite.expires_at && new Date(acceleratorInvite.expires_at) < new Date();
-        const hasRemainingUses = !acceleratorInvite.max_uses || acceleratorInvite.uses < acceleratorInvite.max_uses;
+        const hasRemainingUses = !acceleratorInvite.max_uses || (acceleratorInvite.uses || 0) < acceleratorInvite.max_uses;
         
         if (!isExpired && hasRemainingUses) {
           setAcceleratorDiscount({

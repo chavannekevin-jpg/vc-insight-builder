@@ -113,12 +113,9 @@ export default function Intake() {
         sessionStorage.removeItem('startup_invite_code');
       }
       
-      // Clear accelerator invite from session after use
-      if (acceleratorInviteId) {
-        sessionStorage.removeItem('accelerator_invite_id');
-        sessionStorage.removeItem('accelerator_invite_code');
-        sessionStorage.removeItem('accelerator_discount_percent');
-      }
+      // NOTE: Do NOT clear accelerator session storage here!
+      // Session data is needed by CheckoutMemo for the 100% discount bypass.
+      // It will be cleared there after premium is granted.
 
       // Save ALL sections that have content (user edits should always be saved)
       // User-edited sections get a boosted confidence score to ensure they persist
@@ -216,12 +213,9 @@ export default function Intake() {
         sessionStorage.removeItem('startup_invite_code');
       }
 
-      // Clear accelerator invite from session after use
-      if (acceleratorInviteId) {
-        sessionStorage.removeItem('accelerator_invite_id');
-        sessionStorage.removeItem('accelerator_invite_code');
-        sessionStorage.removeItem('accelerator_discount_percent');
-      }
+      // NOTE: Do NOT clear accelerator session storage here!
+      // Session data is needed by CheckoutMemo for the 100% discount bypass.
+      // It will be cleared there after premium is granted.
 
       // Invalidate company query cache before navigation
       await queryClient.invalidateQueries({ queryKey: ["company"] });
