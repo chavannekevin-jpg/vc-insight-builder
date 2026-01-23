@@ -23,6 +23,140 @@ const DEFAULT_SCALE = 1.15;
 const DEFAULT_QUALITY = 0.68;
 const DEFAULT_MAX_DIMENSION = 1600; // px (max width/height)
 
+type PageScore = { pageNumber: number; score: number };
+
+const KEYWORD_WEIGHTS: Array<{ weight: number; keywords: string[] }> = [
+  {
+    weight: 5,
+    keywords: [
+      "team",
+      "founder",
+      "founders",
+      "cofounder",
+      "co-founder",
+      "leadership",
+      "management",
+      "advisors",
+      "advisory",
+      "board",
+      "ceo",
+      "cto",
+      "cpo",
+      "cfo",
+      "bios",
+      "background",
+    ],
+  },
+  {
+    weight: 4,
+    keywords: [
+      "vision",
+      "mission",
+      "roadmap",
+      "strategy",
+      "future",
+      "next",
+      "plan",
+      "milestones",
+      "18 months",
+      "12 months",
+    ],
+  },
+  {
+    weight: 6,
+    keywords: [
+      "raise",
+      "raising",
+      "funding",
+      "round",
+      "valuation",
+      "pre-money",
+      "post-money",
+      "committed",
+      "secured",
+      "use of funds",
+      "allocation",
+      "runway",
+      "investment",
+      "investors",
+      "lead investor",
+      "ticket",
+    ],
+  },
+];
+
+function scoreText(text: string): number {
+  const t = text.toLowerCase();
+  let score = 0;
+
+  for (const group of KEYWORD_WEIGHTS) {
+    for (const k of group.keywords) {
+      if (t.includes(k)) score += group.weight;
+    }
+  }
+
+  return score;
+}
+
+async function extractPageText(pdf: any, pageNumber: number): Promise<string> {
+  const page = await pdf.getPage(pageNumber);
+  const content = await page.getTextContent();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const items = (content?.items || []) as any[];
+  return items
+    .map((it) => (typeof it?.str === "string" ? it.str : ""))
+    .filter(Boolean)
+    .join(" ");
+}
+
+async function selectPagesToRender(pdf: any, totalPages: number, maxPages: number): Promise<number[]> {
+  if (totalPages <= maxPages) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  // Always include cover + last pages (team/funding often live near the end)
+  const selected = new Set<number>();
+  selected.add(1);
+  selected.add(totalPages);
+  selected.add(Math.max(1, totalPages - 1));
+  selected.add(Math.max(1, totalPages - 2));
+
+  // Score every page for likely VC-critical slides (team/vision/funding)
+  const scores: PageScore[] = [];
+  for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
+    try {
+      const text = await extractPageText(pdf, pageNumber);
+      const score = scoreText(text);
+      scores.push({ pageNumber, score });
+    } catch {
+      // Ignore text extraction failures; we'll still fill with fallbacks
+      scores.push({ pageNumber, score: 0 });
+    }
+  }
+
+  scores
+    .filter((s) => !selected.has(s.pageNumber))
+    .sort((a, b) => b.score - a.score)
+    .forEach((s) => {
+      if (selected.size >= maxPages) return;
+      // Only include scored pages if they likely contain relevant content
+      if (s.score > 0) selected.add(s.pageNumber);
+    });
+
+  // Fill remaining slots with evenly-spaced pages for broader context
+  if (selected.size < maxPages) {
+    const needed = maxPages - selected.size;
+    for (let i = 1; i <= needed * 2 && selected.size < maxPages; i++) {
+      const pageNumber = Math.round(1 + (i * (totalPages - 1)) / (needed * 2 + 1));
+      selected.add(Math.min(totalPages, Math.max(1, pageNumber)));
+    }
+  }
+
+  return Array.from(selected)
+    .sort((a, b) => a - b)
+    .slice(0, maxPages);
+}
+
 // Configure worker once
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (pdfjs as any).GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
@@ -60,11 +194,17 @@ export async function convertPDFToImages(
   const pdf = (await loadingTask.promise) as any;
 
   const total = pdf.numPages;
-  const pagesToRender = Math.min(total, maxPages);
+
+  // IMPORTANT: we don't just take the first N pages.
+  // We pick a small set of pages likely to contain TEAM / VISION / FUNDING slides,
+  // plus the cover + end pages, so the AI can actually see them.
+  const pageNumbers = await selectPagesToRender(pdf, total, maxPages);
+  const pagesToRender = pageNumbers.length;
 
   const images: Blob[] = [];
-  for (let pageNumber = 1; pageNumber <= pagesToRender; pageNumber++) {
-    onProgress?.({ currentPage: pageNumber, totalPages: pagesToRender, stage: 'converting' });
+  for (let i = 0; i < pageNumbers.length; i++) {
+    const pageNumber = pageNumbers[i];
+    onProgress?.({ currentPage: i + 1, totalPages: pagesToRender, stage: 'converting' });
 
     const page = await pdf.getPage(pageNumber);
 
