@@ -297,18 +297,14 @@ const InvestorAuth = () => {
       {/* Subtle grid pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--primary)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
-      {/* Header */}
-      <header className="relative z-10 border-b border-border/30 bg-background/60 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-4">
-          <button
-            onClick={() => navigate("/investor")}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-        </div>
-      </header>
+      {/* Back button - fixed top-left */}
+      <button
+        onClick={() => navigate("/investor")}
+        className="fixed top-4 left-4 z-20 flex items-center gap-2 text-muted-foreground hover:text-foreground backdrop-blur-sm bg-card/30 border border-border/30 rounded-full px-4 py-2 hover:bg-card/50 transition-all duration-300"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back
+      </button>
 
       <div className="relative z-10 flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
