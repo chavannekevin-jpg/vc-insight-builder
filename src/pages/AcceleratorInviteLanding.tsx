@@ -321,6 +321,37 @@ export default function AcceleratorInviteLanding() {
           </p>
         </div>
 
+        {/* Custom welcome message from accelerator - displayed prominently above the form */}
+        {inviteInfo.customMessage && (
+          <div className="max-w-3xl mx-auto mb-10 animate-fade-in">
+            <div className="relative group">
+              {/* Animated gradient border */}
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/40 via-secondary/40 to-accent/40 rounded-2xl blur-sm opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+              
+              <div className="relative bg-card/50 backdrop-blur-2xl border border-border/50 rounded-2xl p-6 overflow-hidden">
+                {/* Top highlight */}
+                <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+                
+                {/* Quote decoration */}
+                <div className="flex gap-4 items-start">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20 flex items-center justify-center">
+                    <MessageCircle className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base md:text-lg text-foreground/90 leading-relaxed font-medium">
+                      "{inviteInfo.customMessage}"
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-3 flex items-center gap-2">
+                      <span className="w-6 h-px bg-primary/40" />
+                      <span className="font-medium text-primary">{inviteInfo.acceleratorName}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Main content: side by side on desktop */}
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-6xl mx-auto items-start">
           
@@ -394,15 +425,6 @@ export default function AcceleratorInviteLanding() {
                     </span>
                   </div>
 
-                  {/* Custom message from accelerator */}
-                  {inviteInfo.customMessage && (
-                    <div className="flex gap-3 p-4 rounded-xl bg-muted/30 border border-border/30 backdrop-blur-xl">
-                      <MessageCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-muted-foreground italic">
-                        "{inviteInfo.customMessage}"
-                      </p>
-                    </div>
-                  )}
 
                   <div className="pt-2">
                     <Button
