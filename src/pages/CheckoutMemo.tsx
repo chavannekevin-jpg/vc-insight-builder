@@ -357,9 +357,11 @@ export default function CheckoutMemo() {
           });
         }
 
-        // Invalidate caches to ensure fresh payment status when reaching hub
+        // Invalidate caches to ensure fresh payment status when reaching portal/hub
         await queryClient.invalidateQueries({ queryKey: ["company"] });
+        await queryClient.invalidateQueries({ queryKey: ["company", "byId", companyId] });
         await queryClient.invalidateQueries({ queryKey: ["payment", companyId] });
+        await queryClient.invalidateQueries({ queryKey: ["payment"] });
 
         toast({
           title: "Access Granted! 🎉",
