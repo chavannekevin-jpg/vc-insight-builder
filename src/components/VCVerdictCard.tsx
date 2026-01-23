@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Select,
   SelectContent,
@@ -17,15 +18,14 @@ import {
   MessageSquareX, Target,
   Rocket,
   RefreshCw, Briefcase, Code, GraduationCap, Building,
-  ChevronRight, Pencil, Lightbulb, FileSearch,
+  ChevronRight, ChevronDown, Pencil, Lightbulb, FileSearch,
   BookOpen, BarChart3, MessageSquare, Calendar, Wrench, Building2,
-  Info
+  Info, Play
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useMatchingFundsCount } from "@/hooks/useMatchingFundsCount";
 import { WHATS_INCLUDED_DATA } from "@/data/whatsIncludedData";
-
 interface Concern {
   text: string;
   category: string;
@@ -400,13 +400,13 @@ export const VCVerdictCard = memo(({
       
       {/* Investor Match Banner - Detached from card */}
       {!hasPaid && matchingFunds > 0 && (
-        <div className="mb-4 px-6 py-4 bg-gradient-to-r from-green-500/10 via-emerald-500/5 to-transparent border border-green-500/20 rounded-2xl">
+        <div className="mb-4 px-6 py-4 bg-gradient-to-r from-success/10 via-success/5 to-transparent border border-success/20 rounded-2xl backdrop-blur-sm">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0 border border-green-500/30">
-              <Building2 className="w-5 h-5 text-green-500" />
+            <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center flex-shrink-0 border border-success/30">
+              <Building2 className="w-5 h-5 text-success" />
             </div>
-            <p className="text-sm font-semibold text-green-400">
-              Good news: {matchingFunds} investors in our network look for companies like yours
+            <p className="text-sm font-semibold text-success">
+              We identified {matchingFunds} investors in our network actively looking for companies like yours
             </p>
           </div>
         </div>
@@ -517,47 +517,57 @@ export const VCVerdictCard = memo(({
           </div>
         </div>
 
-        {/* What's Included - Comprehensive but Scannable */}
-        <div className="p-6 border-b border-border/50">
-          <h4 className="text-sm font-semibold mb-4">What's Included</h4>
-          
-          <TooltipProvider delayDuration={100}>
-          <div className="space-y-4">
-            {WHATS_INCLUDED_DATA.map((category) => (
-              <div key={category.key}>
-                <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-2">{category.title}</p>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-                  {category.items.map((item, i) => (
-                    <Tooltip key={i}>
-                      <TooltipTrigger asChild>
-                        <div className="flex items-center gap-1.5 cursor-help group">
-                          <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
-                          <span className="text-muted-foreground text-[11px] group-hover:text-foreground transition-colors">{item.name}</span>
-                          <Info className="w-2.5 h-2.5 text-muted-foreground/50 group-hover:text-primary transition-colors flex-shrink-0" />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[280px] text-xs">
-                        <p>{item.tip}</p>
-                      </TooltipContent>
-                    </Tooltip>
+        {/* What's Included - Collapsible, collapsed by default */}
+        <Collapsible>
+          <div className="px-6 py-4 border-b border-border/50">
+            <CollapsibleTrigger className="w-full flex items-center justify-between group">
+              <h4 className="text-sm font-semibold">What's Included</h4>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">38+ features</span>
+                <ChevronDown className="w-4 h-4 text-muted-foreground group-data-[state=open]:rotate-180 transition-transform" />
+              </div>
+            </CollapsibleTrigger>
+            
+            <CollapsibleContent className="mt-4">
+              <TooltipProvider delayDuration={100}>
+                <div className="space-y-4">
+                  {WHATS_INCLUDED_DATA.map((category) => (
+                    <div key={category.key}>
+                      <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-2">{category.title}</p>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                        {category.items.map((item, i) => (
+                          <Tooltip key={i}>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-1.5 cursor-help group">
+                                <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />
+                                <span className="text-muted-foreground text-[11px] group-hover:text-foreground transition-colors">{item.name}</span>
+                                <Info className="w-2.5 h-2.5 text-muted-foreground/50 group-hover:text-primary transition-colors flex-shrink-0" />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-[280px] text-xs">
+                              <p>{item.tip}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </div>
-            ))}
+              </TooltipProvider>
+            </CollapsibleContent>
           </div>
-          </TooltipProvider>
-        </div>
+        </Collapsible>
 
-        {/* Don't Burn Bridges CTA - Only for unpaid users with matches */}
+        {/* Investor Insight CTA - Only for unpaid users with matches */}
         {!hasPaid && matchingFunds > 0 && (
-          <div className="px-6 py-5 border-b border-border/50 bg-gradient-to-r from-amber-500/5 via-orange-500/5 to-transparent">
+          <div className="px-6 py-5 border-b border-border/50 bg-gradient-to-r from-warning/5 via-warning/3 to-transparent">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-amber-500/15 flex items-center justify-center flex-shrink-0 border border-amber-500/20">
-                <Target className="w-6 h-6 text-amber-500" />
+              <div className="w-12 h-12 rounded-xl bg-warning/15 flex items-center justify-center flex-shrink-0 border border-warning/20">
+                <Target className="w-6 h-6 text-warning" />
               </div>
               <div className="flex-1 space-y-2">
                 <p className="text-sm font-semibold text-foreground">
-                  Before you reach out to these {matchingFunds} investors...
+                  We identified {matchingFunds} investors who match your profile
                 </p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   VCs talk. A bad first impression travels fast. Build your analysis first so you walk in prepared — 
@@ -582,19 +592,35 @@ export const VCVerdictCard = memo(({
 
         {/* CTA Section */}
         <div className="p-6 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
-          <Button 
-            onClick={handleFixAction} 
-            className="w-full h-12 text-sm font-semibold shadow-glow hover-neon-pulse" 
-            size="lg"
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            {hasPaid && generationsAvailable > 0 
-              ? "Edit & Regenerate" 
-              : matchingFunds > 0 
-                ? "Prepare Before You Pitch" 
-                : "Unlock the Full 9 Page Analysis"}
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
+          <div className="space-y-3">
+            <Button 
+              onClick={handleFixAction} 
+              className="w-full h-12 text-sm font-semibold shadow-glow hover-neon-pulse" 
+              size="lg"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              {hasPaid && generationsAvailable > 0 
+                ? "Edit & Regenerate" 
+                : matchingFunds > 0 
+                  ? "Prepare Before You Pitch" 
+                  : "Unlock the Full 9 Page Analysis"}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            
+            {/* Demo Access Button - Only for unpaid users */}
+            {!hasPaid && (
+              <Button 
+                onClick={() => navigate('/demo')} 
+                variant="outline"
+                className="w-full h-10 text-sm border-border/50 hover:bg-muted/50 backdrop-blur-sm" 
+                size="lg"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                See Full Demo First
+              </Button>
+            )}
+          </div>
+          
           <p className="text-xs text-center text-muted-foreground mt-3">
             {hasPaid && generationsAvailable > 0 
               ? `You have ${generationsAvailable} generation credit${generationsAvailable !== 1 ? 's' : ''} available.`
