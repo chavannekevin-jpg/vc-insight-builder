@@ -144,9 +144,12 @@ export default function ToolsHub() {
                     <Button 
                       onClick={() => navigate(tool.path)}
                       variant="outline"
-                      className="w-full rounded-xl border-primary/30 hover:bg-primary/10"
+                      className="group w-full rounded-xl border-2 border-primary/30 hover:border-amber-500/80 hover:bg-card/80 transition-all duration-300 hover:shadow-[0_0_20px_hsl(45_100%_50%/0.3)]"
                     >
-                      Use Tool <ArrowRight className="w-4 h-4 ml-2" />
+                      <span className="text-foreground group-hover:text-foreground transition-colors">
+                        Use Tool
+                      </span>
+                      <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </div>
                 </div>
