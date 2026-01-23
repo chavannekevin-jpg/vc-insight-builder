@@ -50,19 +50,19 @@ import { QRCodeSVG } from "qrcode.react";
 
 
 const mainMenuItems = [
-  { title: "Network Map", url: "/investor/dashboard", icon: Map, section: "map" },
+  { title: "Network Map", url: "/investor/dashboard", icon: Map, section: "map", tourId: "tour-network-map" },
   { title: "My Contacts", url: "/investor/dashboard?view=directory", icon: BookUser, section: "directory" },
-  { title: "CRM Pipeline", url: "/investor/dashboard?view=crm", icon: Users, section: "crm" },
+  { title: "CRM Pipeline", url: "/investor/dashboard?view=crm", icon: Users, section: "crm", tourId: "tour-crm" },
   { title: "Fund Directory", url: "/investor/dashboard?view=funds", icon: Building2, section: "funds" },
-  { title: "Dealflow", url: "/investor/dashboard?view=dealflow", icon: Briefcase, section: "dealflow" },
-  { title: "Scout Deals", url: "/investor/dashboard?view=scout", icon: Compass, section: "scout" },
-  { title: "Upload Deck", url: "/investor/dashboard?view=upload", icon: FileUp, section: "upload" },
+  { title: "Dealflow", url: "/investor/dashboard?view=dealflow", icon: Briefcase, section: "dealflow", tourId: "tour-dealflow" },
+  { title: "Scout Deals", url: "/investor/dashboard?view=scout", icon: Compass, section: "scout", tourId: "tour-scout" },
+  { title: "Upload Deck", url: "/investor/dashboard?view=upload", icon: FileUp, section: "upload", tourId: "tour-upload" },
 ];
 
 const toolsMenuItems = [
   { title: "Business CRM", url: "/investor/dashboard?view=businesscrm", icon: Briefcase, section: "businesscrm" },
   { title: "Portfolio", url: "/investor/dashboard?view=portfolio", icon: BarChart3, section: "portfolio" },
-  { title: "Calendar", url: "/investor/dashboard?view=calendar", icon: CalendarDays, section: "calendar" },
+  { title: "Calendar", url: "/investor/dashboard?view=calendar", icon: CalendarDays, section: "calendar", tourId: "tour-calendar" },
   { title: "Thesis", url: "/investor/dashboard?view=thesis", icon: Target, section: "thesis" },
 ];
 
@@ -300,7 +300,7 @@ ${userProfile.full_name}`
             <SidebarGroupContent className="px-2">
               <SidebarMenu>
                 {mainMenuItems.map((item) => (
-                  <SidebarMenuItem key={item.section}>
+                  <SidebarMenuItem key={item.section} data-tour-step={item.tourId}>
                     <SidebarMenuButton
                       onClick={() => handleNavClick(item.section)}
                       isActive={activeSection === item.section}
@@ -326,7 +326,7 @@ ${userProfile.full_name}`
             <SidebarGroupContent className="px-2">
               <SidebarMenu>
                 {toolsMenuItems.map((item) => (
-                  <SidebarMenuItem key={item.section}>
+                  <SidebarMenuItem key={item.section} data-tour-step={item.tourId}>
                     <SidebarMenuButton
                       onClick={() => handleNavClick(item.section)}
                       isActive={activeSection === item.section}

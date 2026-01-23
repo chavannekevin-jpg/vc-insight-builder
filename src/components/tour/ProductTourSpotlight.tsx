@@ -3,7 +3,14 @@ import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronLeft, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { type TourStep } from "@/hooks/useProductTour";
+
+export interface TourStep {
+  id: string;
+  target: string;
+  title: string;
+  description: string;
+  placement?: "top" | "bottom" | "left" | "right";
+}
 
 interface ProductTourSpotlightProps {
   isActive: boolean;
