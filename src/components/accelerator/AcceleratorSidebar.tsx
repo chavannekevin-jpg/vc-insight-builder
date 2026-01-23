@@ -17,7 +17,6 @@ import {
   Check,
   Trash2,
   Loader2,
-  Sparkles,
 } from "lucide-react";
 import {
   Sidebar,
@@ -137,91 +136,54 @@ export function AcceleratorSidebar({
   return (
     <Sidebar 
       collapsible="icon" 
-      className="border-r border-white/[0.04]"
-      style={{
-        background: 'linear-gradient(180deg, hsl(330 20% 8% / 0.95) 0%, hsl(330 20% 6% / 0.98) 100%)',
-        backdropFilter: 'blur(40px) saturate(180%)',
-      }}
+      className="border-r border-border bg-card"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <SidebarContent className="flex flex-col h-full">
         {/* Accelerator Profile Section */}
-        <div className={`p-4 border-b border-white/[0.04] ${collapsed ? "px-2" : ""}`}>
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`flex items-center gap-3 ${!collapsed ? "p-4 rounded-2xl relative overflow-hidden" : ""}`}
-            style={!collapsed ? {
-              background: 'linear-gradient(135deg, hsl(330 20% 15% / 0.6) 0%, hsl(330 20% 10% / 0.4) 100%)',
-              border: '1px solid hsl(330 100% 65% / 0.1)',
-            } : {}}
-          >
-            {/* Decorative glow */}
-            {!collapsed && (
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-60" />
-            )}
-            
-            <div className="relative group">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/30 to-secondary/20 flex items-center justify-center text-primary font-bold flex-shrink-0 border border-primary/20">
-                {accelerator?.name ? getInitials(accelerator.name) : <Building2 className="w-5 h-5" />}
-              </div>
-              <div className="absolute inset-0 rounded-xl bg-primary/30 blur-md opacity-0 group-hover:opacity-60 transition-opacity duration-300" />
+        <div className={`p-4 border-b border-border ${collapsed ? "px-2" : ""}`}>
+          <div className={`flex items-center gap-3 ${!collapsed ? "p-3 rounded-lg bg-muted/50" : ""}`}>
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm flex-shrink-0">
+              {accelerator?.name ? getInitials(accelerator.name) : <Building2 className="w-5 h-5" />}
             </div>
             {!collapsed && (
-              <div className="min-w-0 flex-1 relative z-10">
+              <div className="min-w-0 flex-1">
                 <p className="font-semibold text-sm truncate text-foreground">{accelerator?.name || "Accelerator"}</p>
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className="w-3 h-3 text-primary" />
-                  <p className="text-xs text-muted-foreground/80">Ecosystem</p>
-                </div>
+                <p className="text-xs text-muted-foreground">Ecosystem</p>
               </div>
             )}
-          </motion.div>
+          </div>
         </div>
 
         {/* Main Menu */}
-        <SidebarGroup className="mt-4">
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 font-semibold px-4 mb-2">
+        <SidebarGroup className="mt-2">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium px-4 mb-1">
             Main
           </SidebarGroupLabel>
           <SidebarGroupContent className="px-2">
             <SidebarMenu>
-              {mainMenuItems.map((item, index) => (
+              {mainMenuItems.map((item) => (
                 <SidebarMenuItem key={item.section}>
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                  <SidebarMenuButton
+                    onClick={() => handleNavClick(item.section)}
+                    isActive={activeSection === item.section}
+                    tooltip={item.title}
+                    className={`group relative rounded-lg transition-colors ${
+                      activeSection === item.section 
+                        ? "bg-primary/10 text-primary" 
+                        : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                    }`}
                   >
-                    <SidebarMenuButton
-                      onClick={() => handleNavClick(item.section)}
-                      isActive={activeSection === item.section}
-                      tooltip={item.title}
-                      className={`group relative rounded-xl transition-all duration-300 ${
-                        activeSection === item.section 
-                          ? "text-primary" 
-                          : "hover:bg-white/[0.04]"
-                      }`}
-                      style={activeSection === item.section ? {
-                        background: 'linear-gradient(135deg, hsl(330 100% 65% / 0.15) 0%, hsl(330 100% 65% / 0.05) 100%)',
-                      } : {}}
-                    >
-                      {activeSection === item.section && (
-                        <motion.div
-                          layoutId="activeIndicator"
-                          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-primary rounded-r-full"
-                          style={{ boxShadow: '0 0 12px hsl(330 100% 65% / 0.6)' }}
-                        />
-                      )}
-                      <item.icon className={`w-4 h-4 transition-all duration-200 ${
-                        activeSection === item.section ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                      }`} />
-                      <span className={`font-medium ${
-                        activeSection === item.section ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                      }`}>{item.title}</span>
-                    </SidebarMenuButton>
-                  </motion.div>
+                    {activeSection === item.section && (
+                      <motion.div
+                        layoutId="activeIndicator"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full"
+                      />
+                    )}
+                    <item.icon className="w-4 h-4" />
+                    <span className="font-medium text-sm">{item.title}</span>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -230,46 +192,32 @@ export function AcceleratorSidebar({
 
         {/* Tools Menu */}
         <SidebarGroup className="mt-4">
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 font-semibold px-4 mb-2">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium px-4 mb-1">
             Tools
           </SidebarGroupLabel>
           <SidebarGroupContent className="px-2">
             <SidebarMenu>
-              {toolsMenuItems.map((item, index) => (
+              {toolsMenuItems.map((item) => (
                 <SidebarMenuItem key={item.section}>
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 + index * 0.05 }}
+                  <SidebarMenuButton
+                    onClick={() => handleNavClick(item.section)}
+                    isActive={activeSection === item.section}
+                    tooltip={item.title}
+                    className={`group relative rounded-lg transition-colors ${
+                      activeSection === item.section 
+                        ? "bg-primary/10 text-primary" 
+                        : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                    }`}
                   >
-                    <SidebarMenuButton
-                      onClick={() => handleNavClick(item.section)}
-                      isActive={activeSection === item.section}
-                      tooltip={item.title}
-                      className={`group relative rounded-xl transition-all duration-300 ${
-                        activeSection === item.section 
-                          ? "text-primary" 
-                          : "hover:bg-white/[0.04]"
-                      }`}
-                      style={activeSection === item.section ? {
-                        background: 'linear-gradient(135deg, hsl(330 100% 65% / 0.15) 0%, hsl(330 100% 65% / 0.05) 100%)',
-                      } : {}}
-                    >
-                      {activeSection === item.section && (
-                        <motion.div
-                          layoutId="activeIndicator"
-                          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-primary rounded-r-full"
-                          style={{ boxShadow: '0 0 12px hsl(330 100% 65% / 0.6)' }}
-                        />
-                      )}
-                      <item.icon className={`w-4 h-4 transition-all duration-200 ${
-                        activeSection === item.section ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                      }`} />
-                      <span className={`font-medium ${
-                        activeSection === item.section ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                      }`}>{item.title}</span>
-                    </SidebarMenuButton>
-                  </motion.div>
+                    {activeSection === item.section && (
+                      <motion.div
+                        layoutId="activeIndicator"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full"
+                      />
+                    )}
+                    <item.icon className="w-4 h-4" />
+                    <span className="font-medium text-sm">{item.title}</span>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -281,38 +229,26 @@ export function AcceleratorSidebar({
 
         {/* Quick Invite Button */}
         {!collapsed && accelerator?.slug && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="px-4 py-3"
-          >
+          <div className="px-4 py-3">
             <button
               onClick={copySlug}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden"
-              style={{
-                background: 'linear-gradient(135deg, hsl(330 100% 65% / 0.15) 0%, hsl(280 100% 70% / 0.1) 100%)',
-                border: '1px solid hsl(330 100% 65% / 0.2)',
-              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 hover:bg-primary/15 border border-primary/20 transition-colors group"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative z-10 flex items-center gap-3 w-full">
-                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <UserPlus className="w-4 h-4 text-primary" />
-                </div>
-                <span className="text-sm font-medium text-foreground flex-1 text-left">Invite Startups</span>
-                {copied ? (
-                  <Check className="w-4 h-4 text-success" />
-                ) : (
-                  <Copy className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                )}
+              <div className="w-8 h-8 rounded-md bg-primary/20 flex items-center justify-center">
+                <UserPlus className="w-4 h-4 text-primary" />
               </div>
+              <span className="text-sm font-medium text-foreground flex-1 text-left">Invite Startups</span>
+              {copied ? (
+                <Check className="w-4 h-4 text-success" />
+              ) : (
+                <Copy className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              )}
             </button>
-          </motion.div>
+          </div>
         )}
 
         {/* Settings & Sign Out */}
-        <SidebarGroup className="border-t border-white/[0.04] pt-3 pb-2">
+        <SidebarGroup className="border-t border-border pt-2 pb-2">
           <SidebarGroupContent className="px-2">
             <SidebarMenu>
               {settingsMenuItems.map((item) => (
@@ -321,14 +257,14 @@ export function AcceleratorSidebar({
                     onClick={() => handleNavClick(item.section)}
                     isActive={activeSection === item.section}
                     tooltip={item.title}
-                    className={`group rounded-xl transition-all duration-300 ${
+                    className={`group rounded-lg transition-colors ${
                       activeSection === item.section 
                         ? "bg-primary/10 text-primary" 
-                        : "hover:bg-white/[0.04]"
+                        : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     <item.icon className="w-4 h-4" />
-                    <span className="font-medium">{item.title}</span>
+                    <span className="font-medium text-sm">{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -336,10 +272,10 @@ export function AcceleratorSidebar({
                 <SidebarMenuButton
                   onClick={handleSignOut}
                   tooltip="Sign Out"
-                  className="group rounded-xl transition-all duration-300 hover:bg-destructive/10 hover:text-destructive"
+                  className="group rounded-lg transition-colors hover:bg-muted/50 text-muted-foreground hover:text-foreground"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span className="font-medium">Sign Out</span>
+                  <span className="font-medium text-sm">Sign Out</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
@@ -347,16 +283,13 @@ export function AcceleratorSidebar({
                   <AlertDialogTrigger asChild>
                     <SidebarMenuButton
                       tooltip="Delete Account"
-                      className="group rounded-xl transition-all duration-300 hover:bg-destructive/10 hover:text-destructive"
+                      className="group rounded-lg transition-colors hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
                     >
                       <Trash2 className="w-4 h-4" />
-                      <span className="font-medium">Delete Account</span>
+                      <span className="font-medium text-sm">Delete Account</span>
                     </SidebarMenuButton>
                   </AlertDialogTrigger>
-                  <AlertDialogContent className="border-white/[0.08]" style={{
-                    background: 'linear-gradient(135deg, hsl(330 20% 12%) 0%, hsl(330 20% 8%) 100%)',
-                    backdropFilter: 'blur(40px)',
-                  }}>
+                  <AlertDialogContent className="border-border bg-card">
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete your account?</AlertDialogTitle>
                       <AlertDialogDescription>
@@ -364,7 +297,7 @@ export function AcceleratorSidebar({
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel disabled={isDeleting} className="border-white/[0.08] hover:bg-white/[0.04]">
+                      <AlertDialogCancel disabled={isDeleting}>
                         Cancel
                       </AlertDialogCancel>
                       <AlertDialogAction
