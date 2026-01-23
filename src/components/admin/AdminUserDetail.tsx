@@ -5,6 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   Building2, 
   FileText, 
@@ -15,7 +25,9 @@ import {
   LogIn,
   Activity,
   Plus,
-  RefreshCw
+  RefreshCw,
+  Trash2,
+  Loader2
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -42,9 +54,10 @@ interface Purchase {
 interface UserDetailProps {
   userId: string;
   onCompanyClick?: (companyId: string) => void;
+  onUserDeleted?: () => void;
 }
 
-export const AdminUserDetail = ({ userId, onCompanyClick }: UserDetailProps) => {
+export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserDetailProps) => {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState("");
   const [userCreatedAt, setUserCreatedAt] = useState<string | null>(null);
@@ -54,6 +67,51 @@ export const AdminUserDetail = ({ userId, onCompanyClick }: UserDetailProps) => 
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [creditsToAdd, setCreditsToAdd] = useState<Record<string, number>>({});
   const [addingCredits, setAddingCredits] = useState<Record<string, boolean>>({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-delete-account', {
+        body: { targetUserId: userId }
+      });
+
+      if (error) {
+        console.error('[AdminUserDetail] Delete error:', error);
+        toast({
+          title: "Failed to delete account",
+          description: error.message || "An error occurred",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data?.success) {
+        toast({
+          title: "Account deleted",
+          description: `${userEmail} has been permanently deleted`
+        });
+        onUserDeleted?.();
+      } else {
+        toast({
+          title: "Failed to delete account",
+          description: data?.error || "An error occurred",
+          variant: "destructive"
+        });
+      }
+    } catch (error: any) {
+      console.error('[AdminUserDetail] Delete exception:', error);
+      toast({
+        title: "Failed to delete account",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  };
 
   const handleAddCredits = async (companyId: string, companyName: string) => {
     const credits = creditsToAdd[companyId] || 1;
@@ -389,6 +447,75 @@ export const AdminUserDetail = ({ userId, onCompanyClick }: UserDetailProps) => 
           </div>
         )}
       </div>
+
+      {/* Danger Zone - Delete Account */}
+      <div className="pt-4 border-t border-destructive/20">
+        <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20">
+          <h4 className="text-sm font-semibold text-destructive mb-2 flex items-center gap-2">
+            <Trash2 className="w-4 h-4" />
+            Danger Zone
+          </h4>
+          <p className="text-sm text-muted-foreground mb-3">
+            Permanently delete this user account and all associated data. This action cannot be undone.
+          </p>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setDeleteDialogOpen(true)}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Account
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User Account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>{userEmail}</strong> and all associated data including:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>{companies.length} company/companies</li>
+                <li>All memos and analyses</li>
+                <li>All purchase records</li>
+                <li>User authentication record</li>
+              </ul>
+              <span className="block mt-3 font-semibold text-destructive">
+                This action cannot be undone.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Account"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

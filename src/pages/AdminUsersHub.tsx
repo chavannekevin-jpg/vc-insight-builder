@@ -778,6 +778,10 @@ const AdminUsersHub = () => {
                 setSelectedUserId(null);
                 setSelectedCompanyId(companyId);
               }}
+              onUserDeleted={() => {
+                setSelectedUserId(null);
+                fetchData();
+              }}
             />
           )}
         </DialogContent>
