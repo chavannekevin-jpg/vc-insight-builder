@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      accelerator_cohorts: {
+        Row: {
+          accelerator_id: string
+          created_at: string | null
+          demo_day_date: string | null
+          end_date: string | null
+          id: string
+          invite_id: string | null
+          is_active: boolean | null
+          name: string
+          start_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          accelerator_id: string
+          created_at?: string | null
+          demo_day_date?: string | null
+          end_date?: string | null
+          id?: string
+          invite_id?: string | null
+          is_active?: boolean | null
+          name: string
+          start_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          accelerator_id?: string
+          created_at?: string | null
+          demo_day_date?: string | null
+          end_date?: string | null
+          id?: string
+          invite_id?: string | null
+          is_active?: boolean | null
+          name?: string
+          start_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accelerator_cohorts_accelerator_id_fkey"
+            columns: ["accelerator_id"]
+            isOneToOne: false
+            referencedRelation: "accelerators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accelerator_cohorts_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "accelerator_invites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       accelerator_invites: {
         Row: {
           accelerator_name: string
@@ -27,6 +81,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_active: boolean | null
+          linked_accelerator_id: string | null
           max_uses: number | null
           uses: number | null
         }
@@ -42,6 +97,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          linked_accelerator_id?: string | null
           max_uses?: number | null
           uses?: number | null
         }
@@ -57,8 +113,121 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          linked_accelerator_id?: string | null
           max_uses?: number | null
           uses?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accelerator_invites_linked_accelerator_id_fkey"
+            columns: ["linked_accelerator_id"]
+            isOneToOne: false
+            referencedRelation: "accelerators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accelerator_members: {
+        Row: {
+          accelerator_id: string
+          id: string
+          invite_email: string | null
+          invite_token: string | null
+          invited_at: string | null
+          invited_by: string | null
+          joined_at: string | null
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          accelerator_id: string
+          id?: string
+          invite_email?: string | null
+          invite_token?: string | null
+          invited_at?: string | null
+          invited_by?: string | null
+          joined_at?: string | null
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          accelerator_id?: string
+          id?: string
+          invite_email?: string | null
+          invite_token?: string | null
+          invited_at?: string | null
+          invited_by?: string | null
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accelerator_members_accelerator_id_fkey"
+            columns: ["accelerator_id"]
+            isOneToOne: false
+            referencedRelation: "accelerators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accelerators: {
+        Row: {
+          cohort_size_target: number | null
+          created_at: string | null
+          demo_day_date: string | null
+          description: string | null
+          ecosystem_head_id: string
+          focus_areas: string[] | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          name: string
+          onboarding_completed: boolean | null
+          paid_at: string | null
+          program_length_weeks: number | null
+          slug: string
+          stripe_payment_id: string | null
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          cohort_size_target?: number | null
+          created_at?: string | null
+          demo_day_date?: string | null
+          description?: string | null
+          ecosystem_head_id: string
+          focus_areas?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name: string
+          onboarding_completed?: boolean | null
+          paid_at?: string | null
+          program_length_weeks?: number | null
+          slug: string
+          stripe_payment_id?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          cohort_size_target?: number | null
+          created_at?: string | null
+          demo_day_date?: string | null
+          description?: string | null
+          ecosystem_head_id?: string
+          focus_areas?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name?: string
+          onboarding_completed?: boolean | null
+          paid_at?: string | null
+          program_length_weeks?: number | null
+          slug?: string
+          stripe_payment_id?: string | null
+          updated_at?: string | null
+          website_url?: string | null
         }
         Relationships: []
       }
@@ -2161,6 +2330,7 @@ export type Database = {
         Args: { p_referral_code: string; p_referred_company_id: string }
         Returns: boolean
       }
+      generate_accelerator_slug: { Args: { acc_name: string }; Returns: string }
       generate_founder_referral_code: { Args: never; Returns: string }
       generate_invite_code: { Args: never; Returns: string }
       generate_profile_slug: { Args: { full_name: string }; Returns: string }
@@ -2176,9 +2346,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_accelerator_member: {
+        Args: { _accelerator_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_ecosystem_head: {
+        Args: { _accelerator_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      app_role: "admin" | "user" | "investor"
+      app_role: "admin" | "user" | "investor" | "accelerator"
       entity_type: "investor" | "fund"
       investor_type:
         | "vc"
@@ -2315,7 +2493,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user", "investor"],
+      app_role: ["admin", "user", "investor", "accelerator"],
       entity_type: ["investor", "fund"],
       investor_type: [
         "vc",
