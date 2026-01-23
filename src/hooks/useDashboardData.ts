@@ -43,7 +43,9 @@ export const useVcQuickTake = (companyId: string | null, hasPaid: boolean) => {
 export const useSectionTools = (
   companyId: string | null, 
   hasPaid: boolean, 
-  memoHasContent: boolean
+  // memoHasContent is kept for API compatibility but no longer gates the query.
+  // This prevents race conditions where memo content exists but the cache hasn't updated yet.
+  _memoHasContent?: boolean
 ) => {
   return useQuery({
     // Standardized key: use "sectionTools" consistently (not "section-tools")
@@ -73,7 +75,10 @@ export const useSectionTools = (
       }
       return null;
     },
-    enabled: !!companyId && hasPaid && memoHasContent,
+    // IMPORTANT: Only gate on hasPaid, not memoHasContent.
+    // This allows the query to run immediately when paid, and return empty if data isn't ready.
+    // The hub's "finalizing" state handles the waiting logic instead.
+    enabled: !!companyId && hasPaid,
     staleTime: 1000 * 60 * 10, // 10 minutes
     gcTime: 1000 * 60 * 30, // 30 minutes
   });
