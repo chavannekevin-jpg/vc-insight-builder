@@ -209,16 +209,17 @@ export default function Auth() {
       {/* Subtle grid pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--primary)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
       
+      {/* Back button - fixed top-left */}
+      <Button
+        variant="ghost"
+        className="fixed top-4 left-4 z-20 text-muted-foreground hover:text-foreground backdrop-blur-sm bg-card/30 border border-border/30 rounded-full px-4 py-2 hover:bg-card/50 transition-all duration-300"
+        onClick={() => navigate('/')}
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back
+      </Button>
+
       <div className="w-full max-w-md relative z-10">
-        {/* Back button - floating pill style */}
-        <Button
-          variant="ghost"
-          className="mb-8 text-muted-foreground hover:text-foreground backdrop-blur-sm bg-card/30 border border-border/30 rounded-full px-5 hover:bg-card/50 transition-all duration-300"
-          onClick={() => navigate('/')}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to home
-        </Button>
 
         {/* Header */}
         <div className="text-center mb-10 animate-fade-in">
