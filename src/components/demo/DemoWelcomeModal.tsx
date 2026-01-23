@@ -47,7 +47,7 @@ export function DemoWelcomeModal({ open, onComplete }: DemoWelcomeModalProps) {
             {VALUE_BREAKDOWN.map((item, index) => (
               <div 
                 key={index}
-                className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/30 backdrop-blur-sm"
+                className="flex items-center justify-between p-3 rounded-xl bg-card/60 backdrop-blur-sm border border-border/30"
               >
                 <span className="text-sm text-foreground/80">{item.label}</span>
                 <span className="text-sm font-semibold text-green-400">{item.value}</span>
@@ -55,7 +55,7 @@ export function DemoWelcomeModal({ open, onComplete }: DemoWelcomeModalProps) {
             ))}
           </div>
           
-          <div className="p-4 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20">
+          <div className="p-4 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-5 h-5 text-green-400" />
@@ -81,7 +81,7 @@ export function DemoWelcomeModal({ open, onComplete }: DemoWelcomeModalProps) {
             a fictional B2B SaaS company we've created to showcase exactly what you'll get when 
             you run your own investment audit.
           </p>
-          <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 backdrop-blur-sm">
+          <div className="p-4 rounded-xl bg-primary/10 backdrop-blur-sm border border-primary/20">
             <p className="text-sm text-foreground/80">
               <span className="font-semibold text-primary">SignalFlow</span> is an AI-powered 
               revenue intelligence platform at Seed stage with €32K MRR. Everything you see 
@@ -122,20 +122,31 @@ export function DemoWelcomeModal({ open, onComplete }: DemoWelcomeModalProps) {
       )
     },
     {
-      icon: Wrench,
-      title: "Strategic Tools & Intelligence",
-      subtitle: "More than a report—a complete founder ecosystem",
+      icon: Telescope,
+      title: "Explore the Full Ecosystem",
+      subtitle: "Navigate the sidebar to discover all features",
       content: (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <ToolCard icon={<Wrench className="w-4 h-4" />} label="23+ Diagnostic Tools" value="€2,000" />
-            <ToolCard icon={<Telescope className="w-4 h-4" />} label="Market Lens" value="€1,200" />
-            <ToolCard icon={<Users className="w-4 h-4" />} label="800+ Investors" value="€1,500" />
-            <ToolCard icon={<Sparkles className="w-4 h-4" />} label="Outreach Lab" value="€800" />
+          <div className="grid gap-3">
+            <FeatureRow 
+              icon={<FileSearch className="w-4 h-4 text-primary" />}
+              text="My Analysis — Your complete investment readiness scorecard"
+            />
+            <FeatureRow 
+              icon={<Wrench className="w-4 h-4 text-primary" />}
+              text="23+ Strategic Tools — TAM calculators, competitor matrices, action plans"
+            />
+            <FeatureRow 
+              icon={<Telescope className="w-4 h-4 text-primary" />}
+              text="Market Lens — Real-time market intelligence for your sector"
+            />
+            <FeatureRow 
+              icon={<Users className="w-4 h-4 text-primary" />}
+              text="VC Network — 800+ investors matched to your profile"
+            />
           </div>
           <p className="text-sm text-muted-foreground">
-            Every tool is pre-populated with SignalFlow's data. Explore TAM calculators, 
-            competitor matrices, 90-day action plans, and more.
+            Everything is pre-populated with SignalFlow's data so you can experience the full depth of insights.
           </p>
         </div>
       )
@@ -240,21 +251,9 @@ export function DemoWelcomeModal({ open, onComplete }: DemoWelcomeModalProps) {
 
 function FeatureRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-border/30 backdrop-blur-sm">
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-card/60 backdrop-blur-sm border border-border/30">
       {icon}
       <span className="text-sm text-foreground">{text}</span>
-    </div>
-  );
-}
-
-function ToolCard({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string }) {
-  return (
-    <div className="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted/20 border border-border/30 backdrop-blur-sm">
-      <div className="flex items-center gap-2">
-        <div className="text-primary">{icon}</div>
-        <span className="text-xs font-medium text-foreground">{label}</span>
-      </div>
-      {value && <span className="text-xs text-green-400 font-bold">{value}</span>}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { DemoSidebar } from "@/components/demo/DemoSidebar";
 import { SimplifiedMemoViewer } from "@/components/templates/SimplifiedMemoViewer";
 import type { SectionToolData } from "@/components/templates/SimplifiedMemoViewer";
+import { VCMemoExplainerModal, useVCMemoExplainer } from "@/components/memo/VCMemoExplainerModal";
 
 // Import demo data
 import { DEMO_COMPANY } from "@/data/demo/demoSignalFlow";
@@ -16,6 +17,7 @@ import { getDemoMemo } from "@/data/acceleratorDemo/demoMemos";
 export default function DemoVCMemorandum() {
   const navigate = useNavigate();
   const memoData = getDemoMemo("demo-signalflow");
+  const { showExplainer, isChecked: explainerChecked, completeExplainer } = useVCMemoExplainer();
 
   // Transform DEMO_SECTION_TOOLS to match SectionToolData interface expected by SimplifiedMemoViewer
   const transformedTools: Record<string, SectionToolData> = {};
@@ -65,24 +67,34 @@ export default function DemoVCMemorandum() {
   } : undefined;
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <DemoSidebar currentPage="analysis" />
-        
-        <main className="flex-1 overflow-auto">
-          <SimplifiedMemoViewer
-            companyName={DEMO_COMPANY.name}
-            companyDescription={DEMO_COMPANY.description}
-            heroStatement={memoData?.heroStatement || ""}
-            sections={memoData?.sections || []}
-            sectionTools={transformedTools}
-            holisticVerdicts={DEMO_HOLISTIC_VERDICTS}
-            aiActionPlan={aiActionPlan}
-            onBack={() => navigate('/demo')}
-            showBackButton={true}
-          />
-        </main>
-      </div>
-    </SidebarProvider>
+    <>
+      {/* VC Memo Explainer Modal */}
+      {explainerChecked && (
+        <VCMemoExplainerModal 
+          open={showExplainer} 
+          onComplete={completeExplainer} 
+        />
+      )}
+      
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full bg-background">
+          <DemoSidebar currentPage="analysis" />
+          
+          <main className="flex-1 overflow-auto">
+            <SimplifiedMemoViewer
+              companyName={DEMO_COMPANY.name}
+              companyDescription={DEMO_COMPANY.description}
+              heroStatement={memoData?.heroStatement || ""}
+              sections={memoData?.sections || []}
+              sectionTools={transformedTools}
+              holisticVerdicts={DEMO_HOLISTIC_VERDICTS}
+              aiActionPlan={aiActionPlan}
+              onBack={() => navigate('/demo')}
+              showBackButton={true}
+            />
+          </main>
+        </div>
+      </SidebarProvider>
+    </>
   );
 }
