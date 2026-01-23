@@ -299,8 +299,8 @@ interface ActionPlanSectionProps {
 }
 
 const ActionPlanSection = ({ actionPlan }: ActionPlanSectionProps) => {
-  // Start with all items expanded by default
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(actionPlan.items.map(item => item.id)));
+  // Start with all items collapsed by default
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const toggleItem = (id: string) => {
     setExpandedItems((prev) => {
@@ -386,8 +386,8 @@ export function SimplifiedMemoViewer({
   onBack,
   showBackButton = true,
 }: SimplifiedMemoViewerProps) {
-  // Start with all sections expanded by default
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(sections.map(s => s.title)));
+  // Start with all sections collapsed by default
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const toggleSection = (title: string) => {
     setExpandedSections((prev) => {
