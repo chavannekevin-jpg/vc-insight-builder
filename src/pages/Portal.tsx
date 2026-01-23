@@ -469,7 +469,7 @@ export default function Portal() {
       try {
         const { data: job, error } = await supabase
           .from("memo_generation_jobs")
-          .select("status, error_message")
+          .select("status, error_message, company_id")
           .eq("id", jobId)
           .maybeSingle();
 
@@ -481,7 +481,37 @@ export default function Portal() {
         }
 
         if (job?.status === "completed") {
-          console.log("Portal: Memo generation completed!");
+          console.log("Portal: Job marked completed, verifying memo exists...");
+          
+          // CRITICAL: Verify memo record with structured_content actually exists before redirecting
+          const targetCompanyId = job.company_id || companyId;
+          let memoVerified = false;
+          let memoCheckAttempts = 0;
+          const maxMemoChecks = 10; // Up to 30 seconds extra wait for DB write
+          
+          while (!memoVerified && memoCheckAttempts < maxMemoChecks) {
+            const { data: memo } = await supabase
+              .from("memos")
+              .select("id, structured_content")
+              .eq("company_id", targetCompanyId)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            
+            if (memo?.structured_content) {
+              console.log("Portal: Memo verified with structured_content, redirecting...");
+              memoVerified = true;
+              handleMemoReady();
+              return;
+            }
+            
+            console.log(`Portal: Memo not ready yet, check ${memoCheckAttempts + 1}/${maxMemoChecks}...`);
+            memoCheckAttempts++;
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
+          
+          // If still not verified after extra checks, redirect anyway (Hub will handle gracefully)
+          console.log("Portal: Memo verification timeout, redirecting to Hub (will poll there)...");
           handleMemoReady();
           return;
         }
@@ -500,10 +530,10 @@ export default function Portal() {
       }
     }
 
-    // Timeout - but memo might still be ready
-    console.log("Portal: Polling timeout, checking database...");
+    // Timeout - redirect to Hub which will handle gracefully
+    console.log("Portal: Polling timeout, redirecting to Hub...");
     handleMemoReady();
-  }, []);
+  }, [companyId]);
 
   const handleMemoReady = async () => {
     console.log("Portal: Memo ready, invalidating all caches for hub refresh...");
