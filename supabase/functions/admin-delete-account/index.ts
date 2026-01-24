@@ -88,14 +88,19 @@ serve(async (req) => {
 
     console.log(`[admin-delete-account] Admin ${callerData.user.id} deleting user: ${targetUserId}`);
 
-    // 1. Get user's companies
+    // 1. Get user's companies (including accelerator_invite_id for cleanup)
     const { data: companies } = await supabaseAdmin
       .from('companies')
-      .select('id')
+      .select('id, accelerator_invite_id')
       .eq('founder_id', targetUserId);
 
     const companyIds = companies?.map(c => c.id) || [];
+    const acceleratorInviteIds = companies
+      ?.filter(c => c.accelerator_invite_id)
+      .map(c => c.accelerator_invite_id) || [];
+    
     console.log(`[admin-delete-account] Found ${companyIds.length} companies to delete`);
+    console.log(`[admin-delete-account] Found ${acceleratorInviteIds.length} accelerator invites to update`);
 
     if (companyIds.length > 0) {
       // 2. Get memo IDs for these companies
@@ -221,7 +226,24 @@ serve(async (req) => {
         console.log('[admin-delete-account] Deleted founder_referral_signups');
       }
 
-      // 14. Delete companies
+      // 14. Decrement accelerator invite usage counts
+      for (const inviteId of acceleratorInviteIds) {
+        const { data: invite } = await supabaseAdmin
+          .from('accelerator_invites')
+          .select('uses')
+          .eq('id', inviteId)
+          .single();
+        
+        if (invite && invite.uses > 0) {
+          await supabaseAdmin
+            .from('accelerator_invites')
+            .update({ uses: invite.uses - 1 })
+            .eq('id', inviteId);
+        }
+      }
+      console.log('[admin-delete-account] Decremented accelerator invite uses');
+
+      // 15. Delete companies
       await supabaseAdmin
         .from('companies')
         .delete()
