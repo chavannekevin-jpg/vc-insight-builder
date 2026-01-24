@@ -262,11 +262,22 @@ export default function AdminAccelerators() {
   const copyClaimLink = (token: string) => {
     const fullLink = `${window.location.origin}/accelerator/auth?claim=${token}`;
     navigator.clipboard.writeText(fullLink);
-    setCopiedCode(token);
+    setCopiedCode(`claim-${token}`);
     setTimeout(() => setCopiedCode(null), 3000);
     toast({
       title: "Link copied!",
       description: "Claim link copied to clipboard",
+    });
+  };
+
+  const copyStartupJoinLink = (slug: string) => {
+    const fullLink = `${window.location.origin}/join/${slug}`;
+    navigator.clipboard.writeText(fullLink);
+    setCopiedCode(`join-${slug}`);
+    setTimeout(() => setCopiedCode(null), 3000);
+    toast({
+      title: "Link copied!",
+      description: "Startup join link copied to clipboard",
     });
   };
 
@@ -504,20 +515,35 @@ export default function AdminAccelerators() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {/* Startup Join Link - always available */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            title="Copy startup join link"
+                            onClick={() => copyStartupJoinLink(acc.slug)}
+                            className="gap-1"
+                          >
+                            {copiedCode === `join-${acc.slug}` ? (
+                              <Check className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Users className="h-4 w-4" />
+                            )}
+                            Join Link
+                          </Button>
                           {acc.claim_token && (
                             <Button
                               variant="outline"
                               size="sm"
-                              title="Copy claim link"
+                              title="Copy claim link for ecosystem head"
                               onClick={() => copyClaimLink(acc.claim_token!)}
                               className="gap-1 text-amber-600 border-amber-500/50 hover:bg-amber-500/10"
                             >
-                              {copiedCode === acc.claim_token ? (
+                              {copiedCode === `claim-${acc.claim_token}` ? (
                                 <Check className="h-4 w-4" />
                               ) : (
                                 <Link2 className="h-4 w-4" />
                               )}
-                              Copy Link
+                              Claim Link
                             </Button>
                           )}
                           <Button
@@ -736,28 +762,61 @@ export default function AdminAccelerators() {
                   <span className="font-semibold">Ecosystem Created!</span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Share this link with the ecosystem head. They can sign up or sign in to claim <strong>{preCreateName}</strong>.
+                  Share these links with the ecosystem head. They can sign up or sign in to claim <strong>{preCreateName}</strong>.
                 </p>
                 
-                <div className="flex gap-2">
-                  <Input
-                    value={generatedClaimLink}
-                    readOnly
-                    className="text-sm font-mono bg-background"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      navigator.clipboard.writeText(generatedClaimLink);
-                      toast({
-                        title: "Copied!",
-                        description: "Claim link copied to clipboard",
-                      });
-                    }}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
+                {/* Claim Link for Head */}
+                <div className="space-y-2 mb-4">
+                  <Label className="text-xs font-medium">Claim Link (for Ecosystem Head)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={generatedClaimLink}
+                      readOnly
+                      className="text-sm font-mono bg-background"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        navigator.clipboard.writeText(generatedClaimLink!);
+                        toast({
+                          title: "Copied!",
+                          description: "Claim link copied to clipboard",
+                        });
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Startup Join Link */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium">Startup Join Link (for inviting startups)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={`${window.location.origin}/join/${preCreateName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                      readOnly
+                      className="text-sm font-mono bg-background"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const slug = preCreateName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+                        navigator.clipboard.writeText(`${window.location.origin}/join/${slug}`);
+                        toast({
+                          title: "Copied!",
+                          description: "Startup join link copied to clipboard",
+                        });
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Share this with startups to invite them to the ecosystem.
+                  </p>
                 </div>
               </div>
               
