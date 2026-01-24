@@ -108,15 +108,25 @@ export default function AcceleratorDashboard() {
 
       setCohorts(cohortData || []);
 
-      if (cohortData && cohortData.length > 0) {
-        const inviteIds = cohortData.filter(c => c.invite_id).map(c => c.invite_id);
-        if (inviteIds.length > 0) {
-          const { data: companyData } = await supabase
-            .from("companies")
-            .select("id, name, category, stage, public_score, memo_content_generated, created_at")
-            .in("accelerator_invite_id", inviteIds);
-          setCompanies(companyData || []);
-        }
+      // Get all invites linked to this accelerator (not just through cohorts)
+      const { data: allInvites } = await supabase
+        .from("accelerator_invites")
+        .select("id")
+        .eq("linked_accelerator_id", acceleratorId);
+
+      // Collect invite IDs from both cohorts and direct accelerator invites
+      const cohortInviteIds = (cohortData || []).filter(c => c.invite_id).map(c => c.invite_id);
+      const directInviteIds = (allInvites || []).map(inv => inv.id);
+      
+      // Combine and deduplicate
+      const allInviteIds = [...new Set([...cohortInviteIds, ...directInviteIds])];
+
+      if (allInviteIds.length > 0) {
+        const { data: companyData } = await supabase
+          .from("companies")
+          .select("id, name, category, stage, public_score, memo_content_generated, created_at")
+          .in("accelerator_invite_id", allInviteIds);
+        setCompanies(companyData || []);
       }
     } catch (error: any) {
       console.error("Error fetching accelerator:", error);
