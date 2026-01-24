@@ -375,6 +375,38 @@ export default function AcceleratorAuth() {
 
       if (error) throw error;
 
+      // Check if user is admin - admins can access all accelerators
+      const { data: adminRole } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (adminRole) {
+        // Admin bypass - show all accelerators or navigate to first one
+        const { data: allAccelerators } = await supabase
+          .from("accelerators")
+          .select("id, name, slug, logo_url, description, onboarding_completed, created_at")
+          .order("created_at", { ascending: false });
+
+        if (allAccelerators && allAccelerators.length > 0) {
+          if (allAccelerators.length === 1) {
+            const acc = allAccelerators[0];
+            navigate(`/accelerator/dashboard?id=${acc.id}`);
+          } else {
+            setUserAccelerators(allAccelerators);
+            setShowSelectDialog(true);
+          }
+          toast.success("Welcome back, Admin!");
+          return;
+        } else {
+          toast.error("No accelerators found in the system");
+          setIsLoading(false);
+          return;
+        }
+      }
+
       // Check if user has accelerator role
       const { data: roleData } = await supabase
         .from("user_roles")

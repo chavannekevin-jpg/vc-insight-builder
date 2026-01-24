@@ -26,6 +26,30 @@ const InvestorAuth = () => {
         if (session?.user) {
           // Defer Supabase calls with setTimeout to prevent deadlock
           setTimeout(async () => {
+            // Check if user is admin - admins can access investor hub without invite code
+            const { data: adminRole } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", session.user.id)
+              .eq("role", "admin")
+              .maybeSingle();
+
+            if (adminRole) {
+              // Admin bypass - check if they have investor profile, if not create minimal access
+              const { data: profile } = await (supabase
+                .from("investor_profiles") as any)
+                .select("onboarding_completed")
+                .eq("id", session.user.id)
+                .maybeSingle();
+
+              if (profile?.onboarding_completed) {
+                navigate("/investor/dashboard");
+              } else {
+                navigate("/investor/onboarding");
+              }
+              return;
+            }
+
             const { data: roleData } = await supabase
               .from("user_roles")
               .select("role")
@@ -287,6 +311,30 @@ const InvestorAuth = () => {
       if (error) throw error;
 
       if (data.user) {
+        // Check if user is admin - admins can access without invite code
+        const { data: adminRole } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+
+        if (adminRole) {
+          // Admin bypass - check if they have investor profile
+          const { data: profile } = await (supabase
+            .from("investor_profiles") as any)
+            .select("onboarding_completed")
+            .eq("id", data.user.id)
+            .maybeSingle();
+
+          if (profile?.onboarding_completed) {
+            navigate("/investor/dashboard");
+          } else {
+            navigate("/investor/onboarding");
+          }
+          return;
+        }
+
         // Check if user has investor role
         const { data: roleData } = await supabase
           .from("user_roles")
