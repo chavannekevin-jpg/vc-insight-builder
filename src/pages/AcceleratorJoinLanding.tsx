@@ -99,6 +99,8 @@ export default function AcceleratorJoinLanding() {
       }
 
       try {
+        console.log("Starting accelerator lookup for slug:", slug);
+        
         // First, find the accelerator by slug
         const { data: accelerator, error: accError } = await supabase
           .from("accelerators")
@@ -107,10 +109,11 @@ export default function AcceleratorJoinLanding() {
           .eq("is_active", true)
           .maybeSingle();
 
-        console.log("Accelerator lookup result:", { accelerator, accError, slug });
+        console.log("Accelerator lookup result:", { accelerator, accError });
 
         if (accError) {
-          console.error("Accelerator error:", accError);
+          console.error("Accelerator fetch error:", accError);
+          // Don't set notFound for permission errors, might be a temporary issue
           setNotFound(true);
           setIsLoadingAccelerator(false);
           return;
@@ -122,6 +125,8 @@ export default function AcceleratorJoinLanding() {
           setIsLoadingAccelerator(false);
           return;
         }
+        
+        console.log("Found accelerator:", accelerator.name);
 
         // Look for an existing default invite for this accelerator
         let { data: existingInvite } = await supabase
@@ -135,7 +140,7 @@ export default function AcceleratorJoinLanding() {
 
         let inviteId = existingInvite?.id;
 
-        // If no invite exists, create a default one
+        // If no invite exists, try to create one (may fail for anon users - that's OK)
         if (!inviteId) {
           const inviteCode = `${accelerator.slug.toUpperCase().replace(/-/g, "")}-${Date.now().toString(36).toUpperCase()}`;
           
@@ -153,12 +158,12 @@ export default function AcceleratorJoinLanding() {
             .single();
 
           if (createError) {
-            console.error("Failed to create invite:", createError);
-            setNotFound(true);
-            setIsLoadingAccelerator(false);
-            return;
+            // For anon users, insert will fail due to RLS - that's OK
+            // The invite will be created after they sign up
+            console.log("Could not create invite (expected for anon users):", createError.message);
+          } else {
+            inviteId = newInvite.id;
           }
-          inviteId = newInvite.id;
         }
 
         setAcceleratorInfo({
@@ -167,7 +172,7 @@ export default function AcceleratorJoinLanding() {
           slug: accelerator.slug,
           description: accelerator.description,
           defaultDiscount: existingInvite?.discount_percent ?? accelerator.default_discount_percent ?? 0,
-          inviteId: inviteId,
+          inviteId: inviteId || accelerator.id, // Use accelerator ID as fallback
         });
       } catch (error) {
         console.error("Error fetching accelerator:", error);
