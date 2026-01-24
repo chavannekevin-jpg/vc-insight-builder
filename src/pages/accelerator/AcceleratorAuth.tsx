@@ -124,7 +124,10 @@ export default function AcceleratorAuth() {
 
         if (roleData) {
           const hasAccelerator = await checkAndNavigateToAccelerator(session.user.id);
-          if (hasAccelerator) return;
+          // If single accelerator, navigation happens inside the function
+          // If multiple, dialog is shown - either way, stop checking
+          setCheckingSession(false);
+          return;
         }
       }
       setCheckingSession(false);
