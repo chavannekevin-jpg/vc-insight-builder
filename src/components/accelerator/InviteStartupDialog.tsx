@@ -35,12 +35,24 @@ interface InviteStartupDialogProps {
 export function InviteStartupDialog({ accelerator, children }: InviteStartupDialogProps) {
   const [open, setOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
   const [claimCode, setClaimCode] = useState("");
   const [isClaiming, setIsClaiming] = useState(false);
 
   const inviteLink = accelerator?.slug 
     ? `${window.location.origin}/join/${accelerator.slug}` 
     : "";
+
+  const acceleratorCode = accelerator?.slug?.toUpperCase() || "";
+
+  const copyAcceleratorCode = () => {
+    if (acceleratorCode) {
+      navigator.clipboard.writeText(acceleratorCode);
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2000);
+      toast.success("Accelerator code copied!");
+    }
+  };
 
   const copyInviteLink = () => {
     if (inviteLink) {
@@ -144,16 +156,16 @@ export function InviteStartupDialog({ accelerator, children }: InviteStartupDial
       description: "If the startup already uses the platform, share your accelerator code. They can add it through their profile settings.",
       action: (
         <div className="flex items-center gap-2 mt-3">
-          <code className="flex-1 px-3 py-2 bg-muted rounded-lg text-sm font-mono truncate">
-            {accelerator?.slug || "your-code"}
+          <code className="flex-1 px-3 py-2 bg-muted rounded-lg text-sm font-mono truncate uppercase">
+            {acceleratorCode || "YOUR-CODE"}
           </code>
           <Button
             size="sm"
             variant="outline"
-            onClick={copyInviteLink}
+            onClick={copyAcceleratorCode}
             className="shrink-0"
           >
-            {copiedLink ? (
+            {copiedCode ? (
               <Check className="w-4 h-4 text-success" />
             ) : (
               <Copy className="w-4 h-4" />
