@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2, Menu, Bell } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AcceleratorSidebar } from "@/components/accelerator/AcceleratorSidebar";
@@ -50,6 +50,7 @@ interface Company {
 
 export default function AcceleratorDashboard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   
   const [activeSection, setActiveSection] = useState("overview");
@@ -58,33 +59,42 @@ export default function AcceleratorDashboard() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Get accelerator ID from URL or fallback to user's membership
+  const urlAcceleratorId = searchParams.get("id");
+
   const fetchData = async () => {
     if (!isAuthenticated || authLoading || !user) return;
 
     try {
-      const { data: membership } = await supabase
-        .from("accelerator_members")
-        .select("accelerator_id")
-        .eq("user_id", user.id)
-        .not("joined_at", "is", null)
-        .limit(1)
-        .maybeSingle();
+      let acceleratorId = urlAcceleratorId;
 
-      if (!membership) {
-        navigate("/accelerator/signup");
-        return;
+      // If no ID in URL, find user's first accelerator membership
+      if (!acceleratorId) {
+        const { data: membership } = await supabase
+          .from("accelerator_members")
+          .select("accelerator_id")
+          .eq("user_id", user.id)
+          .not("joined_at", "is", null)
+          .limit(1)
+          .maybeSingle();
+
+        if (!membership) {
+          navigate("/accelerator/signup");
+          return;
+        }
+        acceleratorId = membership.accelerator_id;
       }
 
       const { data: accData, error: accError } = await supabase
         .from("accelerators")
         .select("*")
-        .eq("id", membership.accelerator_id)
+        .eq("id", acceleratorId)
         .single();
 
       if (accError) throw accError;
       
       if (!accData.onboarding_completed) {
-        navigate("/accelerator/onboarding?bypassed=true");
+        navigate(`/accelerator/onboarding?id=${acceleratorId}&bypassed=true`);
         return;
       }
 
@@ -93,7 +103,7 @@ export default function AcceleratorDashboard() {
       const { data: cohortData } = await supabase
         .from("accelerator_cohorts")
         .select("*")
-        .eq("accelerator_id", membership.accelerator_id)
+        .eq("accelerator_id", acceleratorId)
         .order("created_at", { ascending: false });
 
       setCohorts(cohortData || []);
