@@ -31,7 +31,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -40,7 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, Trash2, Users, Calendar, Search, Loader2, ExternalLink, Settings, Percent, Copy, Check, Ticket } from "lucide-react";
+import { Building2, Trash2, Users, Calendar, Search, Loader2, ExternalLink, Settings, Percent, Copy, Check, Ticket, Plus, Link2, Clock } from "lucide-react";
 import { format } from "date-fns";
 
 interface Accelerator {
@@ -56,9 +55,11 @@ interface Accelerator {
   paid_at: string | null;
   stripe_payment_id: string | null;
   default_discount_percent: number;
+  pending_head_email?: string | null;
   cohort_count?: number;
   member_count?: number;
   ecosystem_head_email?: string;
+  claim_token?: string | null;
 }
 
 export default function AdminAccelerators() {
@@ -71,6 +72,14 @@ export default function AdminAccelerators() {
   const [configDiscount, setConfigDiscount] = useState(100);
   const [savingConfig, setSavingConfig] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  
+  // Pre-create ecosystem state
+  const [showPreCreateDialog, setShowPreCreateDialog] = useState(false);
+  const [preCreateName, setPreCreateName] = useState("");
+  const [preCreateEmail, setPreCreateEmail] = useState("");
+  const [preCreating, setPreCreating] = useState(false);
+  const [generatedClaimLink, setGeneratedClaimLink] = useState<string | null>(null);
+  
   const { toast } = useToast();
 
   useEffect(() => {
@@ -87,7 +96,7 @@ export default function AdminAccelerators() {
 
       if (accError) throw accError;
 
-      // Enrich with counts and head email
+      // Enrich with counts, head email, and claim tokens
       const enrichedData = await Promise.all(
         (accData || []).map(async (acc) => {
           // Get cohort count
@@ -109,11 +118,28 @@ export default function AdminAccelerators() {
             .eq("id", acc.ecosystem_head_id)
             .single();
 
+          // Check for pending claim token (unclaimed pre-created ecosystem)
+          let claimToken = null;
+          if (acc.stripe_payment_id === "admin_precreated") {
+            const { data: pendingMember } = await supabase
+              .from("accelerator_members")
+              .select("invite_token")
+              .eq("accelerator_id", acc.id)
+              .eq("role", "head")
+              .is("joined_at", null)
+              .maybeSingle();
+            
+            if (pendingMember?.invite_token) {
+              claimToken = pendingMember.invite_token;
+            }
+          }
+
           return {
             ...acc,
             cohort_count: cohortCount || 0,
             member_count: memberCount || 0,
             ecosystem_head_email: profileData?.email || "Unknown",
+            claim_token: claimToken,
           };
         })
       );
@@ -191,39 +217,64 @@ export default function AdminAccelerators() {
     }
   };
 
-  const generateClaimCode = async (companyId: string, companyName: string) => {
-    try {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      let code = "CLAIM-";
-      for (let i = 0; i < 6; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
+  const handlePreCreateEcosystem = async () => {
+    if (!preCreateName.trim()) {
+      toast({
+        title: "Name required",
+        description: "Please enter an accelerator name",
+        variant: "destructive",
+      });
+      return;
+    }
 
-      const { error } = await supabase
-        .from("startup_claim_codes")
-        .insert({
-          code,
-          company_id: companyId,
-          is_active: true,
-        });
+    setPreCreating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-accelerator-for-head", {
+        body: { 
+          acceleratorName: preCreateName.trim(),
+          headEmail: preCreateEmail.trim() || null,
+        },
+      });
 
       if (error) throw error;
 
-      navigator.clipboard.writeText(code);
-      setCopiedCode(code);
-      setTimeout(() => setCopiedCode(null), 3000);
-
+      const fullClaimLink = `${window.location.origin}/accelerator/auth?claim=${data.claimToken}`;
+      setGeneratedClaimLink(fullClaimLink);
+      
       toast({
-        title: "Claim code generated!",
-        description: `Code ${code} copied. Share with the accelerator to claim ${companyName}.`,
+        title: "Ecosystem pre-created!",
+        description: `${preCreateName} is ready. Share the claim link with the ecosystem head.`,
       });
+
+      fetchAccelerators();
     } catch (error: any) {
+      console.error("Pre-create error:", error);
       toast({
-        title: "Failed to generate code",
-        description: error.message,
+        title: "Failed to create",
+        description: error.message || "Failed to pre-create ecosystem",
         variant: "destructive",
       });
+    } finally {
+      setPreCreating(false);
     }
+  };
+
+  const copyClaimLink = (token: string) => {
+    const fullLink = `${window.location.origin}/accelerator/auth?claim=${token}`;
+    navigator.clipboard.writeText(fullLink);
+    setCopiedCode(token);
+    setTimeout(() => setCopiedCode(null), 3000);
+    toast({
+      title: "Link copied!",
+      description: "Claim link copied to clipboard",
+    });
+  };
+
+  const resetPreCreateDialog = () => {
+    setShowPreCreateDialog(false);
+    setPreCreateName("");
+    setPreCreateEmail("");
+    setGeneratedClaimLink(null);
   };
 
   const filteredAccelerators = accelerators.filter(
@@ -232,6 +283,8 @@ export default function AdminAccelerators() {
       acc.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
       acc.ecosystem_head_email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const pendingClaimCount = accelerators.filter(acc => acc.claim_token).length;
 
   return (
     <AdminLayout title="Accelerator Ecosystems">
@@ -290,7 +343,7 @@ export default function AdminAccelerators() {
         </Card>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total Ecosystems</CardDescription>
@@ -309,8 +362,17 @@ export default function AdminAccelerators() {
             <CardHeader className="pb-2">
               <CardDescription>Pending Onboarding</CardDescription>
               <CardTitle className="text-3xl">
-                {accelerators.filter((a) => !a.onboarding_completed).length}
+                {accelerators.filter((a) => !a.onboarding_completed && !a.claim_token).length}
               </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className={pendingClaimCount > 0 ? "border-amber-500/50 bg-amber-500/5" : ""}>
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Pending Claim
+              </CardDescription>
+              <CardTitle className="text-3xl">{pendingClaimCount}</CardTitle>
             </CardHeader>
           </Card>
         </div>
@@ -328,14 +390,23 @@ export default function AdminAccelerators() {
                   Manage accelerator ecosystems and their data
                 </CardDescription>
               </div>
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search accelerators..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={() => setShowPreCreateDialog(true)}
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Pre-Create Ecosystem
+                </Button>
+                <div className="relative w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search accelerators..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
               </div>
             </div>
           </CardHeader>
@@ -372,17 +443,32 @@ export default function AdminAccelerators() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm">{acc.ecosystem_head_email}</span>
+                        <div className="flex flex-col">
+                          <span className="text-sm">{acc.ecosystem_head_email}</span>
+                          {acc.pending_head_email && (
+                            <span className="text-xs text-amber-600">
+                              Invited: {acc.pending_head_email}
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1">
-                          {acc.onboarding_completed ? (
+                          {acc.claim_token ? (
+                            <Badge variant="outline" className="w-fit border-amber-500 text-amber-600 bg-amber-500/10">
+                              <Clock className="h-3 w-3 mr-1" />
+                              Pending Claim
+                            </Badge>
+                          ) : acc.onboarding_completed ? (
                             <Badge variant="default" className="w-fit">Active</Badge>
                           ) : (
                             <Badge variant="secondary" className="w-fit">Pending</Badge>
                           )}
                           {acc.stripe_payment_id === "admin_bypass" && (
                             <Badge variant="outline" className="w-fit text-xs">Admin</Badge>
+                          )}
+                          {acc.stripe_payment_id === "admin_precreated" && !acc.claim_token && (
+                            <Badge variant="outline" className="w-fit text-xs">Pre-created</Badge>
                           )}
                         </div>
                       </TableCell>
@@ -418,6 +504,22 @@ export default function AdminAccelerators() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {acc.claim_token && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              title="Copy claim link"
+                              onClick={() => copyClaimLink(acc.claim_token!)}
+                              className="gap-1 text-amber-600 border-amber-500/50 hover:bg-amber-500/10"
+                            >
+                              {copiedCode === acc.claim_token ? (
+                                <Check className="h-4 w-4" />
+                              ) : (
+                                <Link2 className="h-4 w-4" />
+                              )}
+                              Copy Link
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -555,6 +657,119 @@ export default function AdminAccelerators() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Pre-Create Ecosystem Dialog */}
+      <Dialog open={showPreCreateDialog} onOpenChange={resetPreCreateDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" />
+              Pre-Create Ecosystem
+            </DialogTitle>
+            <DialogDescription>
+              Create an accelerator ecosystem and generate a claim link for the ecosystem head. 
+              They can sign up or sign in to claim ownership.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {!generatedClaimLink ? (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="acc-name">Accelerator Name *</Label>
+                <Input
+                  id="acc-name"
+                  placeholder="e.g., TechStars NYC"
+                  value={preCreateName}
+                  onChange={(e) => setPreCreateName(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="head-email">Ecosystem Head Email (optional)</Label>
+                <Input
+                  id="head-email"
+                  type="email"
+                  placeholder="head@accelerator.com"
+                  value={preCreateEmail}
+                  onChange={(e) => setPreCreateEmail(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  If provided, only this email can claim the ecosystem. Leave empty to allow anyone with the link.
+                </p>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={resetPreCreateDialog}
+                  disabled={preCreating}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handlePreCreateEcosystem}
+                  disabled={preCreating || !preCreateName.trim()}
+                >
+                  {preCreating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create & Generate Link
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 py-4">
+              <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                <div className="flex items-center gap-2 text-green-600 mb-2">
+                  <Check className="h-5 w-5" />
+                  <span className="font-semibold">Ecosystem Created!</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Share this link with the ecosystem head. They can sign up or sign in to claim <strong>{preCreateName}</strong>.
+                </p>
+                
+                <div className="flex gap-2">
+                  <Input
+                    value={generatedClaimLink}
+                    readOnly
+                    className="text-sm font-mono bg-background"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedClaimLink);
+                      toast({
+                        title: "Copied!",
+                        description: "Claim link copied to clipboard",
+                      });
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={resetPreCreateDialog}
+              >
+                Done
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </AdminLayout>
