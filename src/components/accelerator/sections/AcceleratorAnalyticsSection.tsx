@@ -17,7 +17,7 @@ interface AcceleratorAnalyticsSectionProps {
   }>;
 }
 
-// Premium fluid glass card
+// Premium auth-style glass card
 const FluidGlassCard = ({ 
   children, 
   className = "",
@@ -31,17 +31,23 @@ const FluidGlassCard = ({
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-    className={cn(
-      "relative rounded-2xl overflow-hidden",
-      "bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-white/[0.02]",
-      "backdrop-blur-xl border border-white/[0.08]",
-      "shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.05)]",
-      "hover:border-white/[0.12] transition-all duration-500",
-      className
-    )}
+    className={cn("relative group", className)}
   >
-    <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-transparent pointer-events-none" />
-    <div className="relative z-10">{children}</div>
+    {/* Animated border glow on hover */}
+    <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/40 via-secondary/40 to-primary/40 rounded-3xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+    <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/15 via-secondary/15 to-primary/15 rounded-3xl opacity-40" />
+    
+    {/* Glass card */}
+    <div className="relative bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-border/50 overflow-hidden">
+      {/* Top highlight */}
+      <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      
+      {/* Corner accents */}
+      <div className="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-primary/8 to-transparent rounded-tl-3xl" />
+      <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-secondary/8 to-transparent rounded-br-3xl" />
+      
+      <div className="relative z-10">{children}</div>
+    </div>
   </motion.div>
 );
 
@@ -99,20 +105,22 @@ export function AcceleratorAnalyticsSection({ stats, companies }: AcceleratorAna
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.1 + i * 0.05, duration: 0.5 }}
-            className={cn(
-              "group relative rounded-2xl p-5 overflow-hidden",
-              "bg-gradient-to-br from-white/[0.06] via-white/[0.03] to-transparent",
-              "backdrop-blur-xl border border-white/[0.06]",
-              "hover:border-white/[0.1] transition-all duration-500"
-            )}
+            className="relative group"
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
-                <stat.icon className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-sm text-muted-foreground/70">{stat.label}</p>
+            {/* Subtle glow on hover */}
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/30 via-secondary/30 to-primary/30 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-2xl opacity-30" />
+            
+            <div className="relative bg-card/40 backdrop-blur-2xl rounded-2xl p-5 border border-border/50 overflow-hidden">
+              <div className="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                  <stat.icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-sm text-muted-foreground/70">{stat.label}</p>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -121,8 +129,9 @@ export function AcceleratorAnalyticsSection({ stats, companies }: AcceleratorAna
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Score Distribution */}
-        <FluidGlassCard delay={0.25} className="p-6">
-          <h2 className="font-semibold text-foreground mb-5">Fundability Distribution</h2>
+        <FluidGlassCard delay={0.25}>
+          <div className="p-6">
+            <h2 className="font-semibold text-foreground mb-5">Fundability Distribution</h2>
           <div className="space-y-4">
             {[
               { label: "Excellent (75+)", value: scoreRanges.excellent, color: "bg-success" },
@@ -139,7 +148,7 @@ export function AcceleratorAnalyticsSection({ stats, companies }: AcceleratorAna
                 className="flex items-center gap-3"
               >
                 <div className="w-32 text-sm text-muted-foreground/70">{range.label}</div>
-                <div className="flex-1 h-7 bg-white/[0.03] rounded-lg overflow-hidden">
+                <div className="flex-1 h-7 bg-muted/30 rounded-lg overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${(range.value / Math.max(companies.length, 1)) * 100}%` }}
@@ -151,11 +160,13 @@ export function AcceleratorAnalyticsSection({ stats, companies }: AcceleratorAna
               </motion.div>
             ))}
           </div>
+          </div>
         </FluidGlassCard>
 
         {/* Top Categories */}
-        <FluidGlassCard delay={0.3} className="p-6">
-          <h2 className="font-semibold text-foreground mb-5">Top Categories</h2>
+        <FluidGlassCard delay={0.3}>
+          <div className="p-6">
+            <h2 className="font-semibold text-foreground mb-5">Top Categories</h2>
           {topCategories.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground/60 text-sm">No category data available</p>
@@ -168,7 +179,7 @@ export function AcceleratorAnalyticsSection({ stats, companies }: AcceleratorAna
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.35 + i * 0.05 }}
-                  className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]"
+                  className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/30"
                 >
                   <span className="text-sm font-medium text-foreground/90">{category}</span>
                   <div className="flex items-center gap-2">
@@ -181,6 +192,7 @@ export function AcceleratorAnalyticsSection({ stats, companies }: AcceleratorAna
               ))}
             </div>
           )}
+          </div>
         </FluidGlassCard>
       </div>
     </div>

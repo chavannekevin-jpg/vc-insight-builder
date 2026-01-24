@@ -36,7 +36,7 @@ interface AcceleratorInvitesProps {
   acceleratorSlug: string;
 }
 
-// Premium fluid glass card
+// Premium auth-style glass card
 const FluidGlassCard = ({ 
   children, 
   className = "",
@@ -50,17 +50,23 @@ const FluidGlassCard = ({
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-    className={cn(
-      "relative rounded-2xl overflow-hidden",
-      "bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-white/[0.02]",
-      "backdrop-blur-xl border border-white/[0.08]",
-      "shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.05)]",
-      "hover:border-white/[0.12] transition-all duration-500",
-      className
-    )}
+    className={cn("relative group", className)}
   >
-    <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-transparent pointer-events-none" />
-    <div className="relative z-10">{children}</div>
+    {/* Animated border glow on hover */}
+    <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/40 via-secondary/40 to-primary/40 rounded-3xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+    <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/15 via-secondary/15 to-primary/15 rounded-3xl opacity-40" />
+    
+    {/* Glass card */}
+    <div className="relative bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-border/50 overflow-hidden">
+      {/* Top highlight */}
+      <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      
+      {/* Corner accents */}
+      <div className="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-primary/8 to-transparent rounded-tl-3xl" />
+      <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-secondary/8 to-transparent rounded-br-3xl" />
+      
+      <div className="relative z-10">{children}</div>
+    </div>
   </motion.div>
 );
 
@@ -218,7 +224,8 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
       ) : (
         <div className="grid gap-4">
           {invites.map((invite, i) => (
-            <FluidGlassCard key={invite.id} delay={0.1 + i * 0.05} className="p-5">
+            <FluidGlassCard key={invite.id} delay={0.1 + i * 0.05}>
+              <div className="p-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -226,12 +233,12 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                       {invite.code}
                     </code>
                     {invite.is_active ? (
-                      <span className="text-xs px-2.5 py-1 rounded-lg bg-success/15 text-success border border-success/20">Active</span>
+                      <span className="text-xs px-2.5 py-1 rounded-lg bg-success/15 text-success border border-success/30">Active</span>
                     ) : (
-                      <span className="text-xs px-2.5 py-1 rounded-lg bg-white/[0.04] text-muted-foreground/60 border border-white/[0.06]">Inactive</span>
+                      <span className="text-xs px-2.5 py-1 rounded-lg bg-muted/30 text-muted-foreground/60 border border-border/30">Inactive</span>
                     )}
                     {invite.discount_percent === 100 && (
-                      <span className="text-xs px-2.5 py-1 rounded-lg bg-warning/15 text-warning border border-warning/20">Free Access</span>
+                      <span className="text-xs px-2.5 py-1 rounded-lg bg-warning/15 text-warning border border-warning/30">Free Access</span>
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground/70">
@@ -247,7 +254,7 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                     variant="outline"
                     size="sm"
                     onClick={() => copyInviteLink(invite)}
-                    className="gap-2 bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.05] hover:border-white/[0.12]"
+                    className="gap-2 bg-muted/20 border-border/50 hover:bg-muted/40 hover:border-border"
                   >
                     {copiedId === invite.id ? (
                       <>
@@ -265,17 +272,18 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                     variant="ghost"
                     size="sm"
                     onClick={() => toggleInviteActive(invite.id, invite.is_active)}
-                    className="hover:bg-white/[0.04]"
+                    className="hover:bg-muted/30"
                   >
                     {invite.is_active ? "Deactivate" : "Activate"}
                   </Button>
                 </div>
               </div>
               {invite.custom_message && (
-                <p className="mt-3 text-sm text-muted-foreground/60 border-t border-white/[0.04] pt-3 italic">
+                <p className="mt-4 text-sm text-muted-foreground/60 border-t border-border/30 pt-4 italic">
                   "{invite.custom_message}"
                 </p>
               )}
+              </div>
             </FluidGlassCard>
           ))}
         </div>
@@ -283,7 +291,7 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
 
       {/* Create Invite Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="border-white/[0.08] bg-card/95 backdrop-blur-xl">
+        <DialogContent className="border-border/50 bg-card/95 backdrop-blur-2xl rounded-3xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
@@ -298,7 +306,7 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                 placeholder="e.g., Winter 2024 Batch"
                 value={newInvite.cohortName}
                 onChange={(e) => setNewInvite(prev => ({ ...prev, cohortName: e.target.value }))}
-                className="bg-white/[0.02] border-white/[0.08] focus:border-primary/30"
+                className="bg-muted/30 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div className="space-y-2">
@@ -309,7 +317,7 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                 value={newInvite.customMessage}
                 onChange={(e) => setNewInvite(prev => ({ ...prev, customMessage: e.target.value }))}
                 rows={3}
-                className="bg-white/[0.02] border-white/[0.08] focus:border-primary/30"
+                className="bg-muted/30 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -322,7 +330,7 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                   max="100"
                   value={newInvite.discountPercent}
                   onChange={(e) => setNewInvite(prev => ({ ...prev, discountPercent: parseInt(e.target.value) || 0 }))}
-                  className="bg-white/[0.02] border-white/[0.08] focus:border-primary/30"
+                  className="bg-muted/30 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
               <div className="space-y-2">
@@ -334,13 +342,13 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                   placeholder="Unlimited"
                   value={newInvite.maxUses}
                   onChange={(e) => setNewInvite(prev => ({ ...prev, maxUses: e.target.value }))}
-                  className="bg-white/[0.02] border-white/[0.08] focus:border-primary/30"
+                  className="bg-muted/30 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="bg-white/[0.02] border-white/[0.08]">
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="bg-muted/20 border-border/50">
               Cancel
             </Button>
             <Button onClick={handleCreateInvite} disabled={isCreating} className="shadow-[0_0_20px_rgba(var(--primary),0.2)]">
