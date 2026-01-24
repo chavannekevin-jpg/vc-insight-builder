@@ -81,7 +81,7 @@ export function JoinAcceleratorCard({
       // If no invite found, try to find by accelerator slug
       const { data: accelerator } = await supabase
         .from("accelerators")
-        .select("id, name, slug, default_discount_percent, is_active")
+        .select("id, name, slug, default_discount_percent, max_discounted_startups, is_active")
         .eq("slug", codeUpper.toLowerCase())
         .eq("is_active", true)
         .maybeSingle();
@@ -89,6 +89,32 @@ export function JoinAcceleratorCard({
       if (!accelerator) {
         setError("Invalid invite code. Please check and try again.");
         return;
+      }
+
+      // Check if discount cap has been reached
+      let effectiveDiscount = accelerator.default_discount_percent || 0;
+      
+      if (accelerator.max_discounted_startups !== null) {
+        // First get all invite IDs for this accelerator
+        const { data: invites } = await supabase
+          .from("accelerator_invites")
+          .select("id")
+          .eq("linked_accelerator_id", accelerator.id);
+        
+        if (invites && invites.length > 0) {
+          const inviteIds = invites.map(i => i.id);
+          
+          // Count companies linked to these invites
+          const { count } = await supabase
+            .from("companies")
+            .select("id", { count: "exact", head: true })
+            .in("accelerator_invite_id", inviteIds);
+          
+          // If cap reached, set discount to 0
+          if (count !== null && count >= accelerator.max_discounted_startups) {
+            effectiveDiscount = 0;
+          }
+        }
       }
 
       // Find or create an invite for this accelerator
@@ -114,7 +140,7 @@ export function JoinAcceleratorCard({
             accelerator_name: accelerator.name,
             accelerator_slug: accelerator.slug,
             linked_accelerator_id: accelerator.id,
-            discount_percent: accelerator.default_discount_percent || 0,
+            discount_percent: effectiveDiscount,
             is_active: true,
           })
           .select("id, accelerator_name, accelerator_slug, discount_percent, cohort_name, custom_message")
@@ -125,6 +151,9 @@ export function JoinAcceleratorCard({
           return;
         }
         existingInvite = newInvite;
+      } else if (accelerator.max_discounted_startups !== null) {
+        // If existing invite but cap applies, override the displayed discount
+        existingInvite = { ...existingInvite, discount_percent: effectiveDiscount };
       }
 
       setAcceleratorInfo({
