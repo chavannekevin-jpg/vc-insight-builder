@@ -37,8 +37,14 @@ export default function Intake() {
   const startupInviteCode = sessionStorage.getItem('startup_invite_code');
   const { inviteInfo } = useStartupReferral(startupInviteCode);
   
-  // Accelerator tracking
-  const acceleratorInviteId = sessionStorage.getItem('accelerator_invite_id');
+  // Accelerator tracking - we may have invite ID or just accelerator ID
+  const [acceleratorInviteId, setAcceleratorInviteId] = useState<string | null>(
+    sessionStorage.getItem('accelerator_invite_id')
+  );
+  const acceleratorId = sessionStorage.getItem('accelerator_id');
+  const acceleratorName = sessionStorage.getItem('accelerator_name');
+  const acceleratorSlug = sessionStorage.getItem('accelerator_slug');
+  const acceleratorDiscount = sessionStorage.getItem('accelerator_discount_percent');
 
   useEffect(() => {
     // Skip auth check if entrance animation is about to show
@@ -77,6 +83,36 @@ export default function Intake() {
         return;
       }
 
+      // If we have an accelerator ID but no invite ID, create the invite now
+      let finalInviteId = acceleratorInviteId;
+      if (!finalInviteId && acceleratorId && acceleratorName && acceleratorSlug) {
+        console.log("Creating accelerator invite for authenticated user...");
+        const inviteCode = `${acceleratorSlug.toUpperCase().replace(/-/g, "")}-${Date.now().toString(36).toUpperCase()}`;
+        
+        const { data: newInvite, error: inviteError } = await supabase
+          .from("accelerator_invites")
+          .insert({
+            code: inviteCode,
+            accelerator_name: acceleratorName,
+            accelerator_slug: acceleratorSlug,
+            linked_accelerator_id: acceleratorId,
+            discount_percent: parseInt(acceleratorDiscount || "0", 10),
+            is_active: true,
+          })
+          .select("id")
+          .single();
+
+        if (inviteError) {
+          console.error("Failed to create accelerator invite:", inviteError);
+          // Don't fail the whole flow, just proceed without accelerator link
+        } else {
+          finalInviteId = newInvite.id;
+          setAcceleratorInviteId(newInvite.id);
+          sessionStorage.setItem('accelerator_invite_id', newInvite.id);
+          console.log("Created accelerator invite:", newInvite.id);
+        }
+      }
+
       // Create company from deck data - company name is extracted
       const extractedName = data.companyInfo.name || "My Company";
       const companyDescription = data.companyInfo.description || "";
@@ -98,8 +134,8 @@ export default function Intake() {
             referral_code: startupInviteCode,
           }),
           // Add accelerator invite tracking if present
-          ...(acceleratorInviteId && {
-            accelerator_invite_id: acceleratorInviteId,
+          ...(finalInviteId && {
+            accelerator_invite_id: finalInviteId,
           }),
         })
         .select()
