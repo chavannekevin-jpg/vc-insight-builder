@@ -7,21 +7,108 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AcceleratorSelectDialog } from "@/components/accelerator/AcceleratorSelectDialog";
 
 type AuthMode = "choose" | "create-auth" | "signin";
+
+interface Accelerator {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  description: string | null;
+  onboarding_completed: boolean | null;
+  created_at: string | null;
+}
 
 export default function AcceleratorAuth() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<AuthMode>("choose");
-  const [isSignUp, setIsSignUp] = useState(true); // For create-auth mode
+  const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Multi-ecosystem selection state
+  const [userAccelerators, setUserAccelerators] = useState<Accelerator[]>([]);
+  const [showSelectDialog, setShowSelectDialog] = useState(false);
+
+  // Helper function to check accelerators and navigate accordingly
+  const checkAndNavigateToAccelerator = async (userId: string) => {
+    // First check via ecosystem_head_id
+    const { data: ownedAccelerators } = await supabase
+      .from("accelerators")
+      .select("id, name, slug, logo_url, description, onboarding_completed, created_at")
+      .eq("ecosystem_head_id", userId);
+
+    // Also check via accelerator_members for team access
+    const { data: memberAccelerators } = await supabase
+      .from("accelerator_members")
+      .select(`
+        accelerator_id,
+        accelerators:accelerator_id (
+          id, name, slug, logo_url, description, onboarding_completed, created_at
+        )
+      `)
+      .eq("user_id", userId)
+      .not("joined_at", "is", null);
+
+    // Combine and deduplicate
+    const allAccelerators: Accelerator[] = [];
+    const seenIds = new Set<string>();
+
+    if (ownedAccelerators) {
+      for (const acc of ownedAccelerators) {
+        if (!seenIds.has(acc.id)) {
+          seenIds.add(acc.id);
+          allAccelerators.push(acc);
+        }
+      }
+    }
+
+    if (memberAccelerators) {
+      for (const member of memberAccelerators) {
+        const acc = member.accelerators as unknown as Accelerator;
+        if (acc && !seenIds.has(acc.id)) {
+          seenIds.add(acc.id);
+          allAccelerators.push(acc);
+        }
+      }
+    }
+
+    if (allAccelerators.length === 0) {
+      return false;
+    }
+
+    if (allAccelerators.length === 1) {
+      // Single accelerator - navigate directly
+      const acc = allAccelerators[0];
+      if (acc.onboarding_completed) {
+        navigate(`/accelerator/dashboard?id=${acc.id}`);
+      } else {
+        navigate(`/accelerator/onboarding?id=${acc.id}`);
+      }
+      return true;
+    }
+
+    // Multiple accelerators - show selection dialog
+    setUserAccelerators(allAccelerators);
+    setShowSelectDialog(true);
+    return true;
+  };
+
+  const handleAcceleratorSelect = (accelerator: Accelerator) => {
+    setShowSelectDialog(false);
+    if (accelerator.onboarding_completed) {
+      navigate(`/accelerator/dashboard?id=${accelerator.id}`);
+    } else {
+      navigate(`/accelerator/onboarding?id=${accelerator.id}`);
+    }
+  };
 
   useEffect(() => {
-    // Check if already authenticated with accelerator role
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
@@ -36,21 +123,8 @@ export default function AcceleratorAuth() {
           .maybeSingle();
 
         if (roleData) {
-          // Check if they have an accelerator
-          const { data: accelerator } = await supabase
-            .from("accelerators")
-            .select("id, onboarding_completed")
-            .eq("ecosystem_head_id", session.user.id)
-            .maybeSingle();
-
-          if (accelerator) {
-            if (accelerator.onboarding_completed) {
-              navigate("/accelerator/dashboard");
-            } else {
-              navigate("/accelerator/onboarding");
-            }
-            return;
-          }
+          const hasAccelerator = await checkAndNavigateToAccelerator(session.user.id);
+          if (hasAccelerator) return;
         }
       }
       setCheckingSession(false);
@@ -62,7 +136,6 @@ export default function AcceleratorAuth() {
       if (event === "SIGNED_IN" && session?.user) {
         setIsAuthenticated(true);
         
-        // Check accelerator role after sign in
         const { data: roleData } = await supabase
           .from("user_roles")
           .select("role")
@@ -71,22 +144,12 @@ export default function AcceleratorAuth() {
           .maybeSingle();
 
         if (roleData) {
-          const { data: accelerator } = await supabase
-            .from("accelerators")
-            .select("id, onboarding_completed")
-            .eq("ecosystem_head_id", session.user.id)
-            .maybeSingle();
-
-          if (accelerator) {
-            if (accelerator.onboarding_completed) {
-              navigate("/accelerator/dashboard");
-            } else {
-              navigate("/accelerator/onboarding");
-            }
-          }
+          await checkAndNavigateToAccelerator(session.user.id);
         }
       } else if (event === "SIGNED_OUT") {
         setIsAuthenticated(false);
+        setUserAccelerators([]);
+        setShowSelectDialog(false);
       }
     });
 
@@ -192,27 +255,20 @@ export default function AcceleratorAuth() {
       if (!roleData) {
         toast.error("This account is not registered as an accelerator");
         await supabase.auth.signOut();
+        setIsLoading(false);
         return;
       }
 
-      // Check for accelerator
-      const { data: accelerator } = await supabase
-        .from("accelerators")
-        .select("id, onboarding_completed")
-        .eq("ecosystem_head_id", data.user.id)
-        .maybeSingle();
-
-      if (!accelerator) {
+      // Check for accelerator(s)
+      const hasAccelerator = await checkAndNavigateToAccelerator(data.user.id);
+      
+      if (!hasAccelerator) {
         toast.error("No accelerator found for this account");
+        setIsLoading(false);
         return;
       }
 
       toast.success("Welcome back!");
-      if (accelerator.onboarding_completed) {
-        navigate("/accelerator/dashboard");
-      } else {
-        navigate("/accelerator/onboarding");
-      }
     } catch (error: any) {
       console.error("Sign in error:", error);
       toast.error(error.message || "Failed to sign in");
@@ -509,6 +565,15 @@ export default function AcceleratorAuth() {
           </p>
         </motion.div>
       </div>
+
+      {/* Ecosystem Selection Dialog */}
+      <AcceleratorSelectDialog
+        open={showSelectDialog}
+        onOpenChange={setShowSelectDialog}
+        accelerators={userAccelerators}
+        onSelect={handleAcceleratorSelect}
+        isLoading={isLoading}
+      />
     </div>
   );
 }
