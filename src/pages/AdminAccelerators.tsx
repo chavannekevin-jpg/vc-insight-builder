@@ -39,7 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, Trash2, Users, Calendar, Search, Loader2, ExternalLink, Settings, Percent, Copy, Check, Ticket, Plus, Link2, Clock } from "lucide-react";
+import { Building2, Trash2, Users, Calendar, Search, Loader2, ExternalLink, Settings, Percent, Copy, Check, Ticket, Plus, Link2, Clock, Briefcase, UserMinus } from "lucide-react";
 import { format } from "date-fns";
 
 interface Accelerator {
@@ -59,8 +59,17 @@ interface Accelerator {
   pending_head_email?: string | null;
   cohort_count?: number;
   member_count?: number;
+  startup_count?: number;
   ecosystem_head_email?: string;
   claim_token?: string | null;
+}
+
+interface LinkedCompany {
+  id: string;
+  name: string;
+  stage: string;
+  created_at: string;
+  founder_email: string;
 }
 
 export default function AdminAccelerators() {
@@ -82,6 +91,12 @@ export default function AdminAccelerators() {
   const [preCreateMaxStartups, setPreCreateMaxStartups] = useState<string>("");
   const [preCreating, setPreCreating] = useState(false);
   const [generatedClaimLink, setGeneratedClaimLink] = useState<string | null>(null);
+  
+  // Companies view state
+  const [companiesTarget, setCompaniesTarget] = useState<Accelerator | null>(null);
+  const [linkedCompanies, setLinkedCompanies] = useState<LinkedCompany[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
+  const [removingCompanyId, setRemovingCompanyId] = useState<string | null>(null);
   
   const { toast } = useToast();
 
@@ -114,6 +129,22 @@ export default function AdminAccelerators() {
             .select("id", { count: "exact", head: true })
             .eq("accelerator_id", acc.id);
 
+          // Get startup count - companies linked via accelerator_invites
+          let startupCount = 0;
+          const { data: invites } = await supabase
+            .from("accelerator_invites")
+            .select("id")
+            .eq("linked_accelerator_id", acc.id);
+          
+          if (invites && invites.length > 0) {
+            const inviteIds = invites.map(i => i.id);
+            const { count } = await supabase
+              .from("companies")
+              .select("id", { count: "exact", head: true })
+              .in("accelerator_invite_id", inviteIds);
+            startupCount = count || 0;
+          }
+
           // Get ecosystem head email
           const { data: profileData } = await supabase
             .from("profiles")
@@ -141,6 +172,7 @@ export default function AdminAccelerators() {
             ...acc,
             cohort_count: cohortCount || 0,
             member_count: memberCount || 0,
+            startup_count: startupCount,
             ecosystem_head_email: profileData?.email || "Unknown",
             claim_token: claimToken,
           };
@@ -217,6 +249,98 @@ export default function AdminAccelerators() {
       });
     } finally {
       setSavingConfig(false);
+    }
+  };
+
+  const fetchLinkedCompanies = async (accelerator: Accelerator) => {
+    setCompaniesTarget(accelerator);
+    setLoadingCompanies(true);
+    setLinkedCompanies([]);
+    
+    try {
+      // Get all invite IDs for this accelerator
+      const { data: invites } = await supabase
+        .from("accelerator_invites")
+        .select("id")
+        .eq("linked_accelerator_id", accelerator.id);
+      
+      if (!invites || invites.length === 0) {
+        setLinkedCompanies([]);
+        return;
+      }
+      
+      const inviteIds = invites.map(i => i.id);
+      
+      // Get companies linked to these invites
+      const { data: companies, error } = await supabase
+        .from("companies")
+        .select("id, name, stage, created_at, founder_id")
+        .in("accelerator_invite_id", inviteIds)
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      
+      // Enrich with founder email
+      const enrichedCompanies = await Promise.all(
+        (companies || []).map(async (company) => {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("email")
+            .eq("id", company.founder_id)
+            .single();
+          
+          return {
+            id: company.id,
+            name: company.name,
+            stage: company.stage,
+            created_at: company.created_at,
+            founder_email: profile?.email || "Unknown",
+          };
+        })
+      );
+      
+      setLinkedCompanies(enrichedCompanies);
+    } catch (error) {
+      console.error("Error fetching linked companies:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load companies",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingCompanies(false);
+    }
+  };
+
+  const handleRemoveCompany = async (companyId: string, companyName: string) => {
+    setRemovingCompanyId(companyId);
+    try {
+      // Remove the accelerator link from the company
+      const { error } = await supabase
+        .from("companies")
+        .update({ accelerator_invite_id: null })
+        .eq("id", companyId);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Company removed",
+        description: `${companyName} has been unlinked from ${companiesTarget?.name}`,
+      });
+      
+      // Refresh the companies list
+      setLinkedCompanies(prev => prev.filter(c => c.id !== companyId));
+      
+      // Refresh accelerators to update counts
+      fetchAccelerators();
+    } catch (error: any) {
+      toast({
+        title: "Failed to remove",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setRemovingCompanyId(null);
     }
   };
 
@@ -445,6 +569,7 @@ export default function AdminAccelerators() {
                     <TableHead>Owner</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Discount</TableHead>
+                    <TableHead>Startups</TableHead>
                     <TableHead>Cohorts</TableHead>
                     <TableHead>Members</TableHead>
                     <TableHead>Created</TableHead>
@@ -502,6 +627,20 @@ export default function AdminAccelerators() {
                           <Percent className="h-3 w-3 mr-1" />
                           {acc.default_discount_percent}%
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto py-1 px-2"
+                          onClick={() => fetchLinkedCompanies(acc)}
+                        >
+                          <Briefcase className="h-3 w-3 mr-1 text-muted-foreground" />
+                          <span>{acc.startup_count || 0}</span>
+                          {acc.max_discounted_startups && (
+                            <span className="text-muted-foreground">/{acc.max_discounted_startups}</span>
+                          )}
+                        </Button>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
@@ -873,6 +1012,91 @@ export default function AdminAccelerators() {
               </Button>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Companies List Dialog */}
+      <Dialog open={!!companiesTarget} onOpenChange={() => setCompaniesTarget(null)}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Briefcase className="h-5 w-5 text-primary" />
+              Startups in {companiesTarget?.name}
+            </DialogTitle>
+            <DialogDescription>
+              {linkedCompanies.length} startup{linkedCompanies.length !== 1 ? "s" : ""} linked to this accelerator
+              {companiesTarget?.max_discounted_startups && (
+                <span className="ml-1">(cap: {companiesTarget.max_discounted_startups})</span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-auto">
+            {loadingCompanies ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : linkedCompanies.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                No startups linked to this accelerator yet
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Founder</TableHead>
+                    <TableHead>Stage</TableHead>
+                    <TableHead>Joined</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {linkedCompanies.map((company) => (
+                    <TableRow key={company.id}>
+                      <TableCell className="font-medium">{company.name}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {company.founder_email}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="capitalize">
+                          {company.stage}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {format(new Date(company.created_at), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleRemoveCompany(company.id, company.name)}
+                          disabled={removingCompanyId === company.id}
+                        >
+                          {removingCompanyId === company.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <UserMinus className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+          
+          <div className="pt-4 border-t">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setCompaniesTarget(null)}
+            >
+              Close
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </AdminLayout>
