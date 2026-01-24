@@ -24,6 +24,7 @@ import {
   Telescope,
   Home,
   RotateCcw,
+  HelpCircle,
 } from "lucide-react";
 import {
   Sidebar,
@@ -429,6 +430,22 @@ export function DemoSidebar({ currentPage, onRestartTour }: DemoSidebarProps) {
             </Button>
           ) : (
             <div className="space-y-3">
+              {/* Platform Guide link */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/startup-guide')}
+                className={cn(
+                  "w-full gap-2 rounded-xl transition-all duration-200",
+                  location.pathname === '/startup-guide'
+                    ? "bg-primary/12 text-primary border border-primary/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/5 dark:hover:bg-white/[0.03] border border-transparent hover:border-border/10"
+                )}
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                Platform Guide
+              </Button>
+              
               {/* Take the tour again button */}
               {onRestartTour && (
                 <Button
