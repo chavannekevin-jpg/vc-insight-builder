@@ -48,20 +48,20 @@ import { AcceleratorProductGuide } from "./AcceleratorProductGuide";
 import { StartupGuideDialog } from "./StartupGuideDialog";
 
 const mainMenuItems = [
-  { title: "Overview", icon: LayoutDashboard, section: "overview" },
-  { title: "Portfolio", icon: Briefcase, section: "portfolio" },
-  { title: "Cohorts", icon: Layers, section: "cohorts" },
-  { title: "Team", icon: Users, section: "team" },
+  { title: "Overview", icon: LayoutDashboard, section: "overview", tourId: "tour-overview" },
+  { title: "Portfolio", icon: Briefcase, section: "portfolio", tourId: "tour-portfolio" },
+  { title: "Cohorts", icon: Layers, section: "cohorts", tourId: "tour-cohorts" },
+  { title: "Team", icon: Users, section: "team", tourId: "tour-team" },
 ];
 
 const toolsMenuItems = [
-  { title: "Invites", icon: Mail, section: "invites" },
-  { title: "Analytics", icon: BarChart3, section: "analytics" },
-  { title: "Calendar", icon: Calendar, section: "calendar" },
+  { title: "Invites", icon: Mail, section: "invites", tourId: "tour-invites" },
+  { title: "Analytics", icon: BarChart3, section: "analytics", tourId: "tour-analytics" },
+  { title: "Calendar", icon: Calendar, section: "calendar", tourId: "tour-calendar" },
 ];
 
 const settingsMenuItems = [
-  { title: "Settings", icon: Settings, section: "settings" },
+  { title: "Settings", icon: Settings, section: "settings", tourId: "tour-settings" },
 ];
 
 interface AcceleratorSidebarProps {
@@ -72,12 +72,14 @@ interface AcceleratorSidebarProps {
     name: string;
     slug: string;
   } | null;
+  onStartTour?: () => void;
 }
 
 export function AcceleratorSidebar({ 
   activeSection, 
   onSectionChange, 
-  accelerator 
+  accelerator,
+  onStartTour 
 }: AcceleratorSidebarProps) {
   const navigate = useNavigate();
   const { state, setOpen } = useSidebar();
@@ -87,6 +89,7 @@ export function AcceleratorSidebar({
   const [isAdmin, setIsAdmin] = useState(false);
   const [productGuideOpen, setProductGuideOpen] = useState(false);
   const [startupGuideOpen, setStartupGuideOpen] = useState(false);
+
 
   // Check if user has admin role
   useEffect(() => {
@@ -181,7 +184,7 @@ export function AcceleratorSidebar({
           <SidebarGroupContent className="px-2">
             <SidebarMenu>
               {mainMenuItems.map((item) => (
-                <SidebarMenuItem key={item.section}>
+                <SidebarMenuItem key={item.section} id={item.tourId}>
                   <SidebarMenuButton
                     onClick={() => handleNavClick(item.section)}
                     isActive={activeSection === item.section}
@@ -215,7 +218,7 @@ export function AcceleratorSidebar({
           <SidebarGroupContent className="px-2">
             <SidebarMenu>
               {toolsMenuItems.map((item) => (
-                <SidebarMenuItem key={item.section}>
+                <SidebarMenuItem key={item.section} id={item.tourId}>
                   <SidebarMenuButton
                     onClick={() => handleNavClick(item.section)}
                     isActive={activeSection === item.section}
@@ -380,7 +383,11 @@ export function AcceleratorSidebar({
       </SidebarContent>
       
       {/* Guide Dialogs */}
-      <AcceleratorProductGuide open={productGuideOpen} onOpenChange={setProductGuideOpen} />
+      <AcceleratorProductGuide 
+        open={productGuideOpen} 
+        onOpenChange={setProductGuideOpen} 
+        onComplete={onStartTour}
+      />
       <StartupGuideDialog open={startupGuideOpen} onOpenChange={setStartupGuideOpen} acceleratorName={accelerator?.name} />
     </Sidebar>
   );

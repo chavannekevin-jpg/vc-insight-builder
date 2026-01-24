@@ -198,7 +198,7 @@ export function AcceleratorOverview({
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div id="tour-portfolio-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, i) => (
           <div key={stat.label} onClick={stat.onClick} className={stat.onClick ? "cursor-pointer" : ""}>
             <StatCard label={stat.label} value={stat.value} icon={stat.icon} accent={stat.accent} delay={0.1 + i * 0.05} />
