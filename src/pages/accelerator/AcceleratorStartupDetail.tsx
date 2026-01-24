@@ -93,6 +93,13 @@ export default function AcceleratorStartupDetail() {
   const [dashboardReadiness, setDashboardReadiness] = useState<DashboardReadinessResult | null>(null);
   const [vcQuickTake, setVcQuickTake] = useState<any>(null);
 
+  const verdictText = (() => {
+    const v = vcQuickTake?.verdict;
+    if (!v) return "";
+    if (typeof v === "string") return v;
+    return getVCQuickTakeItemText(v as VCQuickTakeItem);
+  })();
+
   useEffect(() => {
     const fetchData = async () => {
       if (!id || !isAuthenticated || authLoading) return;
@@ -408,9 +415,7 @@ export default function AcceleratorStartupDetail() {
                     <Target className="w-5 h-5 text-primary" />
                     VC Quick Take
                   </h3>
-                  {vcQuickTake.verdict && (
-                    <p className="text-foreground mb-4">{vcQuickTake.verdict}</p>
-                  )}
+                  {verdictText && <p className="text-foreground mb-4">{verdictText}</p>}
                   <div className="grid md:grid-cols-2 gap-4">
                     {vcQuickTake.strengths && vcQuickTake.strengths.length > 0 && (
                       <div>

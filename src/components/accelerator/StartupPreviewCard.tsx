@@ -13,10 +13,10 @@ interface StrengthConcernItem {
 }
 
 interface VCQuickTake {
-  verdict?: string;
+  verdict?: string | StrengthConcernItem;
   strengths?: (string | StrengthConcernItem)[];
   concerns?: (string | StrengthConcernItem)[];
-  readinessLevel?: string;
+  readinessLevel?: string | StrengthConcernItem;
   rationale?: string;
   readinessRationale?: string;
 }
@@ -91,7 +91,19 @@ export function StartupPreviewCard({
     return item.teaserLine || item.text || '';
   };
 
-  const readinessConfig = getReadinessConfig(vcQuickTake?.readinessLevel);
+  const readinessLevelText = (() => {
+    const v = vcQuickTake?.readinessLevel;
+    if (!v) return undefined;
+    return typeof v === "string" ? v : getItemText(v);
+  })();
+
+  const verdictText = (() => {
+    const v = vcQuickTake?.verdict;
+    if (!v) return "";
+    return typeof v === "string" ? v : getItemText(v);
+  })();
+
+  const readinessConfig = getReadinessConfig(readinessLevelText);
   const ReadinessIcon = readinessConfig.icon;
 
   return (
@@ -142,18 +154,16 @@ export function StartupPreviewCard({
             </div>
             <div>
               <h3 className="font-semibold text-foreground">VC Quick Take</h3>
-              {vcQuickTake.readinessLevel && (
+              {readinessLevelText && (
                 <div className={cn("inline-flex items-center gap-1.5 text-xs mt-0.5", readinessConfig.color)}>
                   <ReadinessIcon className="w-3 h-3" />
-                  {vcQuickTake.readinessLevel}
+                  {readinessLevelText}
                 </div>
               )}
             </div>
           </div>
           
-          {vcQuickTake.verdict && (
-            <p className="text-foreground mb-4 italic">"{vcQuickTake.verdict}"</p>
-          )}
+          {verdictText && <p className="text-foreground mb-4 italic">"{verdictText}"</p>}
 
           <div className="grid md:grid-cols-2 gap-4">
             {vcQuickTake.strengths && vcQuickTake.strengths.length > 0 && (
