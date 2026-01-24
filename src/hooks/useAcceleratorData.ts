@@ -46,11 +46,20 @@ export function useAcceleratorCompanies(acceleratorId: string | undefined) {
         .select("id, name, invite_id")
         .eq("accelerator_id", acceleratorId);
 
-      if (!cohorts || cohorts.length === 0) return [];
+      // Get all invites linked to this accelerator (not just through cohorts)
+      const { data: allInvites } = await supabase
+        .from("accelerator_invites")
+        .select("id")
+        .eq("linked_accelerator_id", acceleratorId);
 
-      const inviteIds = cohorts
+      // Collect invite IDs from both cohorts and direct accelerator invites
+      const cohortInviteIds = (cohorts || [])
         .filter(c => c.invite_id)
         .map(c => c.invite_id) as string[];
+      const directInviteIds = (allInvites || []).map(inv => inv.id);
+      
+      // Combine and deduplicate
+      const inviteIds = [...new Set([...cohortInviteIds, ...directInviteIds])];
 
       if (inviteIds.length === 0) return [];
 
