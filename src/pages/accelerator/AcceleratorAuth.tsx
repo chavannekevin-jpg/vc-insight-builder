@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AcceleratorSelectDialog } from "@/components/accelerator/AcceleratorSelectDialog";
 
-type AuthMode = "choose" | "create-auth" | "signin" | "claim";
+type AuthMode = "choose" | "create-auth" | "signin" | "claim" | "team-invite";
 
 interface Accelerator {
   id: string;
@@ -26,12 +26,21 @@ interface ClaimInfo {
   pendingEmail: string | null;
 }
 
+interface TeamInviteInfo {
+  acceleratorName: string;
+  role: string;
+  inviterName?: string;
+}
+
 export default function AcceleratorAuth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const claimToken = searchParams.get("claim");
+  const teamInviteCode = searchParams.get("code");
   
-  const [mode, setMode] = useState<AuthMode>(claimToken ? "claim" : "choose");
+  const [mode, setMode] = useState<AuthMode>(
+    claimToken ? "claim" : teamInviteCode ? "team-invite" : "choose"
+  );
   const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,6 +52,11 @@ export default function AcceleratorAuth() {
   const [claimInfo, setClaimInfo] = useState<ClaimInfo | null>(null);
   const [loadingClaimInfo, setLoadingClaimInfo] = useState(!!claimToken);
   const [claimError, setClaimError] = useState<string | null>(null);
+  
+  // Team invite mode state
+  const [teamInviteInfo, setTeamInviteInfo] = useState<TeamInviteInfo | null>(null);
+  const [loadingTeamInvite, setLoadingTeamInvite] = useState(!!teamInviteCode);
+  const [teamInviteError, setTeamInviteError] = useState<string | null>(null);
   
   // Multi-ecosystem selection state
   const [userAccelerators, setUserAccelerators] = useState<Accelerator[]>([]);
@@ -101,6 +115,83 @@ export default function AcceleratorAuth() {
 
     fetchClaimInfo();
   }, [claimToken]);
+
+  // Fetch team invite info when code is present
+  useEffect(() => {
+    if (!teamInviteCode) return;
+    
+    const fetchTeamInviteInfo = async () => {
+      setLoadingTeamInvite(true);
+      try {
+        const { data: invite, error: inviteError } = await supabase
+          .from("accelerator_team_invites")
+          .select(`
+            *,
+            accelerators:accelerator_id (name)
+          `)
+          .eq("code", teamInviteCode.toUpperCase())
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (inviteError) throw inviteError;
+        
+        if (!invite) {
+          setTeamInviteError("This invite code is invalid or has expired.");
+          return;
+        }
+
+        // Check if code has remaining uses
+        const hasUses = !invite.max_uses || invite.uses < invite.max_uses;
+        const notExpired = !invite.expires_at || new Date(invite.expires_at) > new Date();
+        
+        if (!hasUses || !notExpired) {
+          setTeamInviteError("This invite code has expired or reached its usage limit.");
+          return;
+        }
+
+        setTeamInviteInfo({
+          acceleratorName: (invite.accelerators as any)?.name || "Unknown Accelerator",
+          role: invite.role,
+        });
+      } catch (error) {
+        console.error("Error fetching team invite info:", error);
+        setTeamInviteError("Failed to load invite information.");
+      } finally {
+        setLoadingTeamInvite(false);
+      }
+    };
+
+    fetchTeamInviteInfo();
+  }, [teamInviteCode]);
+
+  // Handle team invite after authentication
+  const handleTeamInviteJoin = async (userId: string) => {
+    if (!teamInviteCode) return false;
+    
+    try {
+      const { data, error } = await supabase.rpc("add_accelerator_member_with_invite", {
+        p_user_id: userId,
+        p_invite_code: teamInviteCode,
+      });
+
+      if (error) throw error;
+
+      const result = data as { success: boolean; message: string; accelerator_id?: string; accelerator_name?: string; role?: string };
+      
+      if (!result.success) {
+        toast.error(result.message);
+        return false;
+      }
+
+      toast.success(`Welcome to ${result.accelerator_name}!`);
+      navigate(`/accelerator/dashboard?id=${result.accelerator_id}`);
+      return true;
+    } catch (error: any) {
+      console.error("Team invite error:", error);
+      toast.error(error.message || "Failed to join accelerator");
+      return false;
+    }
+  };
 
   // Helper function to check accelerators and navigate accordingly
   const checkAndNavigateToAccelerator = async (userId: string) => {
@@ -497,18 +588,67 @@ export default function AcceleratorAuth() {
     }
   };
 
+  // Handle team invite mode authentication
+  const handleTeamInviteAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error("Please enter email and password");
+      return;
+    }
+
+    if (isSignUp && password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (isSignUp) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/accelerator/auth?code=${teamInviteCode}`,
+          },
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          await handleTeamInviteJoin(data.user.id);
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+        await handleTeamInviteJoin(data.user.id);
+      }
+    } catch (error: any) {
+      console.error("Auth error:", error);
+      if (error.message?.includes("already registered")) {
+        toast.error("This email is already registered. Try signing in instead.");
+        setIsSignUp(false);
+      } else {
+        toast.error(error.message || "Authentication failed");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Handle "Create an Ecosystem" click
   const handleCreateClick = () => {
     if (isAuthenticated) {
-      // Already authenticated, go directly to signup
       navigate("/accelerator/signup");
     } else {
-      // Need to authenticate first
       setMode("create-auth");
     }
   };
 
-  if (checkingSession || loadingClaimInfo) {
+  if (checkingSession || loadingClaimInfo || loadingTeamInvite) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -528,7 +668,100 @@ export default function AcceleratorAuth() {
         return claimInfo 
           ? `Sign in or create an account to claim ${claimInfo.acceleratorName}`
           : "Claim your ecosystem";
+      case "team-invite":
+        return teamInviteInfo
+          ? `Sign in or create an account to join ${teamInviteInfo.acceleratorName}`
+          : "Join accelerator team";
     }
+  };
+
+  // Render team invite mode UI
+  const renderTeamInviteMode = () => {
+    if (teamInviteError) {
+      return (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-destructive/10 border border-destructive/30 rounded-2xl p-8 text-center"
+        >
+          <p className="text-destructive font-medium mb-4">{teamInviteError}</p>
+          <Button onClick={() => navigate("/accelerator/auth")} variant="outline">
+            Go to Accelerator Portal
+          </Button>
+        </motion.div>
+      );
+    }
+
+    if (!teamInviteInfo) return null;
+
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-card rounded-2xl border border-border/50 p-8"
+      >
+        <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20">
+          <div className="flex items-center gap-2 text-primary mb-1">
+            <Check className="w-5 h-5" />
+            <span className="font-semibold">You've been invited!</span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Join <strong>{teamInviteInfo.acceleratorName}</strong> as a <strong>{teamInviteInfo.role}</strong>.
+          </p>
+        </div>
+
+        <div className="flex gap-2 p-1 rounded-xl bg-muted mb-6">
+          <button
+            onClick={() => setIsSignUp(true)}
+            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+              isSignUp ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            New Account
+          </button>
+          <button
+            onClick={() => setIsSignUp(false)}
+            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+              !isSignUp ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Existing Account
+          </button>
+        </div>
+
+        <form onSubmit={handleTeamInviteAuth} className="space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="bg-background"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder={isSignUp ? "Create a password" : "••••••••"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-background"
+            />
+          </div>
+          <Button type="submit" disabled={isLoading} className="w-full h-12">
+            {isLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              isSignUp ? "Create Account & Join" : "Sign In & Join"
+            )}
+          </Button>
+        </form>
+      </motion.div>
+    );
   };
 
   return (
@@ -585,6 +818,9 @@ export default function AcceleratorAuth() {
               </Button>
             </motion.div>
           )}
+
+          {/* Team Invite Mode */}
+          {mode === "team-invite" && renderTeamInviteMode()}
 
           {/* Claim Mode */}
           {mode === "claim" && claimInfo && !claimError && (
