@@ -1,13 +1,21 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   ArrowLeft, Building2, Users, Target, 
   Lightbulb, TrendingUp, BarChart3, ExternalLink,
-  AlertTriangle, Layers, Eye, DollarSign
+  AlertTriangle, Layers, Eye, DollarSign, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { getStartupById, DemoStartup } from "@/data/acceleratorDemo/demoStartups";
+import { getDemoMemo } from "@/data/acceleratorDemo/demoMemos";
 import { AcceleratorDemoLayout } from "@/components/acceleratorDemo/AcceleratorDemoLayout";
 
 const sectionIcons: Record<string, any> = {
@@ -22,6 +30,18 @@ const sectionIcons: Record<string, any> = {
 };
 
 const sectionLabels: Record<string, string> = {
+  problem: "Problem",
+  solution: "Solution",
+  market: "Market",
+  competition: "Competition",
+  team: "Team",
+  businessModel: "Business Model",
+  traction: "Traction",
+  vision: "Vision",
+};
+
+// Map from camelCase keys to memo section titles
+const sectionToMemoTitle: Record<string, string> = {
   problem: "Problem",
   solution: "Solution",
   market: "Market",
@@ -52,6 +72,9 @@ const StartupDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const startup = getStartupById(id || "");
+  const memoData = getDemoMemo(id || "");
+  
+  const [selectedSection, setSelectedSection] = useState<string | null>(null);
 
   if (!startup) {
     return (
@@ -81,6 +104,16 @@ const StartupDetail = () => {
     concerns: startup.topConcerns,
   };
 
+  // Get section content from memo data
+  const getSectionContent = (sectionKey: string) => {
+    if (!memoData) return null;
+    const memoTitle = sectionToMemoTitle[sectionKey];
+    return memoData.sections.find(s => s.title === memoTitle);
+  };
+
+  const selectedSectionContent = selectedSection ? getSectionContent(selectedSection) : null;
+  const SelectedIcon = selectedSection ? (sectionIcons[selectedSection] || Building2) : Building2;
+
   return (
     <AcceleratorDemoLayout>
       {/* Header */}
@@ -103,7 +136,7 @@ const StartupDetail = () => {
               <Button
                 variant="default"
                 size="sm"
-                onClick={() => navigate(`/accelerator-demo/startup/${id}/preview`)}
+                onClick={() => navigate("/demo")}
                 className="gap-2"
               >
                 <ExternalLink className="w-4 h-4" />
@@ -112,7 +145,7 @@ const StartupDetail = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigate(`/accelerator-demo/startup/${id}/share`)}
+                onClick={() => navigate("/demo/analysis")}
                 className="gap-2"
               >
                 <Eye className="w-4 h-4" />
@@ -209,7 +242,7 @@ const StartupDetail = () => {
               </div>
             </motion.div>
 
-            {/* Section Scores */}
+            {/* Section Scores - Clickable */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -217,13 +250,17 @@ const StartupDetail = () => {
               className="p-5 rounded-xl bg-card/60 border border-border/50"
             >
               <h2 className="font-semibold text-foreground mb-4">Section Breakdown</h2>
+              <p className="text-xs text-muted-foreground mb-4">Click a section to view detailed analysis</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {Object.entries(startup.sectionScores).map(([section, score]) => {
                   const Icon = sectionIcons[section] || Building2;
                   return (
-                    <div
+                    <motion.div
                       key={section}
-                      className="p-3 rounded-lg border border-border/50 bg-card/40 cursor-pointer hover:bg-card/60 transition-colors"
+                      onClick={() => setSelectedSection(section)}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="p-3 rounded-lg border border-border/50 bg-card/40 cursor-pointer hover:bg-primary/10 hover:border-primary/30 transition-all"
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <Icon className="w-4 h-4 text-muted-foreground" />
@@ -242,7 +279,7 @@ const StartupDetail = () => {
                           />
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
@@ -324,7 +361,7 @@ const StartupDetail = () => {
                   variant="outline"
                   size="sm"
                   className="w-full justify-start border-border/50"
-                  onClick={() => navigate(`/accelerator-demo/startup/${startup.id}/preview`)}
+                  onClick={() => navigate("/demo")}
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
                   View Ecosystem
@@ -333,7 +370,7 @@ const StartupDetail = () => {
                   variant="outline"
                   size="sm"
                   className="w-full justify-start border-border/50"
-                  onClick={() => navigate(`/accelerator-demo/startup/${startup.id}/share`)}
+                  onClick={() => navigate("/demo/analysis")}
                 >
                   <Eye className="w-4 h-4 mr-2" />
                   Share Preview
@@ -343,6 +380,70 @@ const StartupDetail = () => {
           </div>
         </div>
       </main>
+
+      {/* Section Detail Modal */}
+      <Dialog open={!!selectedSection} onOpenChange={(open) => !open && setSelectedSection(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <SelectedIcon className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1">
+                <span>{selectedSection ? sectionLabels[selectedSection] : ""}</span>
+              </div>
+              {selectedSection && (
+                <div className={cn("text-xl font-bold", getScoreColor(startup.sectionScores[selectedSection as keyof typeof startup.sectionScores]))}>
+                  {startup.sectionScores[selectedSection as keyof typeof startup.sectionScores]}
+                  <span className="text-xs text-muted-foreground">/100</span>
+                </div>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedSectionContent ? (
+            <div className="space-y-4 mt-4">
+              {/* Narrative */}
+              <div className="p-4 rounded-lg bg-card/60 border border-border/50">
+                <p className="text-sm text-foreground/90 leading-relaxed">
+                  {selectedSectionContent.narrative}
+                </p>
+              </div>
+
+              {/* Key Points */}
+              <div>
+                <h4 className="text-xs font-semibold text-muted-foreground mb-3">Key Points</h4>
+                <ul className="space-y-2">
+                  {selectedSectionContent.keyPoints.map((point, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span className="text-foreground/80">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* View Full Analysis CTA */}
+              <div className="pt-4 border-t border-border/50">
+                <Button 
+                  size="sm" 
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedSection(null);
+                    navigate(`/accelerator-demo/startup/${id}/analysis`);
+                  }}
+                >
+                  View Full Analysis
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center text-muted-foreground">
+              <p>Section content not available for this startup.</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AcceleratorDemoLayout>
   );
 };
