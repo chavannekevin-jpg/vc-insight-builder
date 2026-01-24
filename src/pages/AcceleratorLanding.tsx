@@ -201,11 +201,11 @@ const AcceleratorLanding = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="h-14 px-8 text-lg gap-2 border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80"
+                className="h-14 px-8 text-lg gap-2 border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:border-amber-500/50 hover:shadow-[0_0_20px_hsl(45_100%_50%/0.2)]"
                 onClick={() => navigate('/accelerator-demo')}
               >
                 <Eye className="w-5 h-5" />
-                See a Demo Cohort
+                See Demo Cohort
               </Button>
             </div>
           </motion.div>
