@@ -16,6 +16,7 @@ import { DataSourceBadge } from "@/components/company/DataSourceBadge";
 import { FinancialMetricsDashboard } from "@/components/company/FinancialMetricsDashboard";
 import { CompletionProgress } from "@/components/company/CompletionProgress";
 import { ProfileExplainer, useProfileExplainer } from "@/components/explainers/ProfileExplainer";
+import { JoinAcceleratorCard } from "@/components/portal/JoinAcceleratorCard";
 
 interface Company {
   id: string;
@@ -278,6 +279,7 @@ export default function CompanyProfile() {
   const [editedSectionContent, setEditedSectionContent] = useState("");
   const [wizardOpen, setWizardOpen] = useState(false);
   const [deckWizardOpen, setDeckWizardOpen] = useState(false);
+  const [acceleratorName, setAcceleratorName] = useState<string | null>(null);
   
   // Profile explainer modal
   const { showExplainer, isChecked: explainerChecked, completeExplainer } = useProfileExplainer();
@@ -429,6 +431,16 @@ export default function CompanyProfile() {
         if (hasEmptySections) {
           currentResponses = await syncMemoToResponses(companies[0].id, structuredContent, currentResponses, false);
         }
+      }
+      
+      // Check if part of an accelerator
+      if (companies[0].accelerator_invite_id) {
+        const { data: inviteData } = await supabase
+          .from("accelerator_invites")
+          .select("accelerator_name")
+          .eq("id", companies[0].accelerator_invite_id)
+          .single();
+        setAcceleratorName(inviteData?.accelerator_name || null);
       }
       
       setResponses(currentResponses);
@@ -817,6 +829,40 @@ export default function CompanyProfile() {
             )}
           </CardContent>
         </Card>
+
+        {/* Accelerator Settings */}
+        {company && (
+          <Card className="bg-card/60 backdrop-blur-xl border-border/40">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-medium">Accelerator</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <JoinAcceleratorCard 
+                companyId={company.id}
+                currentAcceleratorName={acceleratorName}
+                onJoin={async () => {
+                  // Reload company data to get updated accelerator name
+                  if (company.id) {
+                    const { data: updatedCompany } = await supabase
+                      .from("companies")
+                      .select("accelerator_invite_id")
+                      .eq("id", company.id)
+                      .single();
+                    
+                    if (updatedCompany?.accelerator_invite_id) {
+                      const { data: inviteData } = await supabase
+                        .from("accelerator_invites")
+                        .select("accelerator_name")
+                        .eq("id", updatedCompany.accelerator_invite_id)
+                        .single();
+                      setAcceleratorName(inviteData?.accelerator_name || null);
+                    }
+                  }
+                }}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Unit Economics Editor */}
         {company && (
