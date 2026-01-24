@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { AssignCohortDialog } from "@/components/accelerator/AssignCohortDialog";
 import { StartupPreviewCard } from "@/components/accelerator/StartupPreviewCard";
+import { checkDashboardReadiness, DashboardReadinessResult } from "@/lib/dashboardReadiness";
 
 interface Company {
   id: string;
@@ -75,21 +76,26 @@ export default function AcceleratorStartupDetail() {
   const [acceleratorId, setAcceleratorId] = useState<string | null>(acceleratorIdFromUrl);
   const [assignCohortOpen, setAssignCohortOpen] = useState(false);
   const [showPreviewCard, setShowPreviewCard] = useState(false);
+  const [dashboardReadiness, setDashboardReadiness] = useState<DashboardReadinessResult | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!id || !isAuthenticated || authLoading) return;
 
       try {
-        // Fetch company
-        const { data: companyData, error: companyError } = await supabase
-          .from("companies")
-          .select("*")
-          .eq("id", id)
-          .single();
+        // Fetch company and check dashboard readiness in parallel
+        const [companyResult, readinessResult] = await Promise.all([
+          supabase
+            .from("companies")
+            .select("*")
+            .eq("id", id)
+            .single(),
+          checkDashboardReadiness(id)
+        ]);
 
-        if (companyError) throw companyError;
-        setCompany(companyData);
+        if (companyResult.error) throw companyResult.error;
+        setCompany(companyResult.data);
+        setDashboardReadiness(readinessResult);
 
         // Fetch memo tool data
         const { data: memoData } = await supabase
@@ -100,12 +106,12 @@ export default function AcceleratorStartupDetail() {
         setToolData(memoData || []);
 
         // If company has an accelerator_invite_id, find the cohort/accelerator
-        if (companyData.accelerator_invite_id) {
+        if (companyResult.data.accelerator_invite_id) {
           // First try to find a cohort linked to this invite
           const { data: cohort } = await supabase
             .from("accelerator_cohorts")
             .select("name, accelerator_id")
-            .eq("invite_id", companyData.accelerator_invite_id)
+            .eq("invite_id", companyResult.data.accelerator_invite_id)
             .maybeSingle();
 
           if (cohort) {
@@ -116,7 +122,7 @@ export default function AcceleratorStartupDetail() {
             const { data: invite } = await supabase
               .from("accelerator_invites")
               .select("linked_accelerator_id")
-              .eq("id", companyData.accelerator_invite_id)
+              .eq("id", companyResult.data.accelerator_invite_id)
               .maybeSingle();
 
             if (invite?.linked_accelerator_id && !acceleratorId) {
@@ -231,7 +237,7 @@ export default function AcceleratorStartupDetail() {
   }
 
   // Show preview card mode
-  if (showPreviewCard && company.memo_content_generated) {
+  if (showPreviewCard && dashboardReadiness?.isReady) {
     return (
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
@@ -278,7 +284,7 @@ export default function AcceleratorStartupDetail() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              {company.memo_content_generated && (
+              {dashboardReadiness?.isReady && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -328,13 +334,21 @@ export default function AcceleratorStartupDetail() {
           )}
         </motion.div>
 
-        {!company.memo_content_generated ? (
+        {!dashboardReadiness?.isReady ? (
           <div className="bg-card border border-border rounded-xl p-12 text-center">
             <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="font-semibold text-foreground mb-2">Report Not Ready</h3>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               This startup hasn't completed their analysis yet.
             </p>
+            {dashboardReadiness && (
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>Missing: {dashboardReadiness.missingSections.length > 0 
+                  ? dashboardReadiness.missingSections.join(", ") 
+                  : "Section scores complete"}</p>
+                <p>VC Quick Take: {dashboardReadiness.hasVcQuickTake ? "✓" : "Pending"}</p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid lg:grid-cols-3 gap-8">

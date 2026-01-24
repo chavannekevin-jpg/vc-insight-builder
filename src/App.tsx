@@ -213,6 +213,7 @@ const App = () => (
             <Route path="/accelerator/auth" element={<AcceleratorAuth />} />
             <Route path="/accelerator/signup" element={<AcceleratorSignup />} />
             <Route path="/accelerator/onboarding" element={<AcceleratorOnboarding />} />
+            <Route path="/accelerator" element={<Navigate to="/accelerator/dashboard" replace />} />
             <Route path="/accelerator/dashboard" element={<AcceleratorDashboard />} />
             <Route path="/accelerator/startup/:id" element={<AcceleratorStartupDetail />} />
             <Route path="/accelerator/analytics" element={<AcceleratorAnalytics />} />
