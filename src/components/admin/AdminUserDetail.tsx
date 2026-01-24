@@ -73,6 +73,7 @@ export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserD
   const [addingCredits, setAddingCredits] = useState<Record<string, boolean>>({});
   const [generatingCode, setGeneratingCode] = useState<Record<string, boolean>>({});
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [claimCodes, setClaimCodes] = useState<Record<string, string | null>>({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -94,6 +95,9 @@ export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserD
         });
 
       if (error) throw error;
+
+      // Update local state with the new code
+      setClaimCodes(prev => ({ ...prev, [companyId]: code }));
 
       navigator.clipboard.writeText(code);
       setCopiedCode(code);
@@ -279,6 +283,26 @@ export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserD
 
       setCompanies(companiesWithDetails);
 
+      // Fetch existing claim codes for all companies
+      const companyIds = companiesWithDetails.map(c => c.id);
+      if (companyIds.length > 0) {
+        const { data: existingCodes } = await supabase
+          .from("startup_claim_codes")
+          .select("company_id, code")
+          .in("company_id", companyIds)
+          .eq("is_active", true)
+          .is("claimed_at", null)
+          .order("created_at", { ascending: false });
+
+        const codeMap: Record<string, string | null> = {};
+        existingCodes?.forEach(cc => {
+          if (!codeMap[cc.company_id]) {
+            codeMap[cc.company_id] = cc.code;
+          }
+        });
+        setClaimCodes(codeMap);
+      }
+
       // Fetch purchases with company names
       const { data: purchasesData } = await supabase
         .from("memo_purchases")
@@ -452,38 +476,54 @@ export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserD
                 
                 {/* Accelerator Claim Code */}
                 <div className="flex items-center justify-between pt-3 border-t border-border/50">
-                  <div className="flex items-center gap-2">
-                    <Ticket className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      Accelerator Claim Code
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Ticket className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <span className="text-sm text-muted-foreground shrink-0">
+                      Claim Code
                     </span>
-                    {company.referral_code && (
-                      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                        {company.referral_code}
+                    {claimCodes[company.id] && (
+                      <code className="text-xs bg-primary/10 text-primary px-2 py-1 rounded font-mono font-semibold">
+                        {claimCodes[company.id]}
                       </code>
                     )}
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => generateClaimCode(company.id, company.name)}
-                    disabled={generatingCode[company.id]}
-                    className="h-8"
-                  >
-                    {generatingCode[company.id] ? (
-                      <RefreshCw className="w-3 h-3 animate-spin" />
-                    ) : copiedCode ? (
-                      <>
-                        <Check className="w-3 h-3 mr-1 text-success" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3 h-3 mr-1" />
-                        Generate Code
-                      </>
+                  <div className="flex items-center gap-1">
+                    {claimCodes[company.id] && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          navigator.clipboard.writeText(claimCodes[company.id]!);
+                          setCopiedCode(claimCodes[company.id]!);
+                          setTimeout(() => setCopiedCode(null), 3000);
+                          toast({ title: "Copied!", description: `Code ${claimCodes[company.id]} copied to clipboard` });
+                        }}
+                        className="h-8"
+                      >
+                        {copiedCode === claimCodes[company.id] ? (
+                          <Check className="w-3 h-3 text-success" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                      </Button>
                     )}
-                  </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => generateClaimCode(company.id, company.name)}
+                      disabled={generatingCode[company.id]}
+                      className="h-8"
+                    >
+                      {generatingCode[company.id] ? (
+                        <RefreshCw className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <>
+                          <Plus className="w-3 h-3 mr-1" />
+                          {claimCodes[company.id] ? "New Code" : "Generate"}
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
