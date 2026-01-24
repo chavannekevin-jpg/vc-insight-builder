@@ -10,6 +10,7 @@ import { AcceleratorTeam } from "@/components/accelerator/sections/AcceleratorTe
 import { AcceleratorInvites } from "@/components/accelerator/sections/AcceleratorInvites";
 import { AcceleratorAnalyticsSection } from "@/components/accelerator/sections/AcceleratorAnalyticsSection";
 import { AcceleratorSettings } from "@/components/accelerator/sections/AcceleratorSettings";
+import { StartupQuickViewModal } from "@/components/accelerator/StartupQuickViewModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -58,6 +59,10 @@ export default function AcceleratorDashboard() {
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Modal state for quick startup view
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
 
   // Get accelerator ID from URL or fallback to user's membership
   const urlAcceleratorId = searchParams.get("id");
@@ -150,7 +155,13 @@ export default function AcceleratorDashboard() {
   };
 
   const handleViewStartup = (id: string) => {
-    // Pass the current accelerator ID so the startup detail page knows which accelerator context to use
+    // Open the quick view modal instead of navigating
+    setSelectedCompanyId(id);
+    setQuickViewOpen(true);
+  };
+
+  const handleViewStartupFullPage = (id: string) => {
+    // For cases where we need full page navigation
     navigate(`/accelerator/startup/${id}?acceleratorId=${accelerator?.id || ''}`);
   };
 
@@ -161,7 +172,7 @@ export default function AcceleratorDashboard() {
       case "portfolio":
         return <AcceleratorPortfolio companies={companies} onViewStartup={handleViewStartup} />;
       case "cohorts":
-        return <AcceleratorCohortsView cohorts={cohorts} acceleratorId={accelerator.id} onRefresh={fetchData} onViewStartup={handleViewStartup} />;
+        return <AcceleratorCohortsView cohorts={cohorts} acceleratorId={accelerator.id} onRefresh={fetchData} onViewStartup={handleViewStartupFullPage} />;
       case "team":
         return <AcceleratorTeam acceleratorId={accelerator.id} currentUserId={user?.id || ""} />;
       case "invites":
@@ -294,6 +305,14 @@ export default function AcceleratorDashboard() {
             </motion.div>
           </main>
         </div>
+
+        {/* Startup Quick View Modal */}
+        <StartupQuickViewModal
+          open={quickViewOpen}
+          onOpenChange={setQuickViewOpen}
+          companyId={selectedCompanyId}
+          acceleratorId={accelerator?.id}
+        />
       </div>
     </SidebarProvider>
   );

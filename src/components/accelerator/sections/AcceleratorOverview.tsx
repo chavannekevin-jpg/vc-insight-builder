@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, CheckCircle2, TrendingUp, Calendar, 
@@ -6,9 +7,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CohortQuickSwitchDialog } from "@/components/accelerator/CohortQuickSwitchDialog";
+import { CohortDetailDialog } from "@/components/accelerator/CohortDetailDialog";
 
 interface AcceleratorOverviewProps {
   accelerator: {
+    id: string;
     name: string;
     demo_day_date: string | null;
     focus_areas: string[] | null;
@@ -123,6 +127,10 @@ export function AcceleratorOverview({
   onNavigate,
   onViewStartup 
 }: AcceleratorOverviewProps) {
+  const [cohortSwitchOpen, setCohortSwitchOpen] = useState(false);
+  const [selectedCohort, setSelectedCohort] = useState<any>(null);
+  const [cohortDetailOpen, setCohortDetailOpen] = useState(false);
+
   const daysUntilDemoDay = accelerator?.demo_day_date 
     ? Math.ceil((new Date(accelerator.demo_day_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
@@ -135,11 +143,20 @@ export function AcceleratorOverview({
     return "text-destructive";
   };
 
+  const handleCohortClick = () => {
+    setCohortSwitchOpen(true);
+  };
+
+  const handleCohortSelected = (cohort: any) => {
+    setSelectedCohort(cohort);
+    setCohortDetailOpen(true);
+  };
+
   const statCards = [
-    { label: "Total Startups", value: stats.totalStartups, icon: Users, accent: "bg-primary/15 text-primary" },
-    { label: "Reports Ready", value: stats.withReports, icon: CheckCircle2, accent: "bg-success/15 text-success" },
-    { label: "Avg Fundability", value: stats.avgScore || "—", icon: TrendingUp, accent: "bg-warning/15 text-warning" },
-    { label: "Active Cohorts", value: stats.activeCohorts, icon: Calendar, accent: "bg-secondary/15 text-secondary" },
+    { label: "Total Startups", value: stats.totalStartups, icon: Users, accent: "bg-primary/15 text-primary", onClick: undefined },
+    { label: "Reports Ready", value: stats.withReports, icon: CheckCircle2, accent: "bg-success/15 text-success", onClick: undefined },
+    { label: "Avg Fundability", value: stats.avgScore || "—", icon: TrendingUp, accent: "bg-warning/15 text-warning", onClick: undefined },
+    { label: "Active Cohorts", value: stats.activeCohorts, icon: Calendar, accent: "bg-secondary/15 text-secondary", onClick: handleCohortClick },
   ];
 
   return (
@@ -183,7 +200,9 @@ export function AcceleratorOverview({
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, i) => (
-          <StatCard key={stat.label} {...stat} delay={0.1 + i * 0.05} />
+          <div key={stat.label} onClick={stat.onClick} className={stat.onClick ? "cursor-pointer" : ""}>
+            <StatCard label={stat.label} value={stat.value} icon={stat.icon} accent={stat.accent} delay={0.1 + i * 0.05} />
+          </div>
         ))}
       </div>
 
@@ -352,6 +371,23 @@ export function AcceleratorOverview({
           )}
         </div>
       </div>
+
+      {/* Cohort Quick Switch Dialog */}
+      <CohortQuickSwitchDialog
+        open={cohortSwitchOpen}
+        onOpenChange={setCohortSwitchOpen}
+        acceleratorId={accelerator?.id || null}
+        onSelectCohort={handleCohortSelected}
+      />
+
+      {/* Cohort Detail Dialog */}
+      <CohortDetailDialog
+        open={cohortDetailOpen}
+        onOpenChange={setCohortDetailOpen}
+        cohort={selectedCohort}
+        onViewStartup={onViewStartup}
+        onAddStartup={() => {}}
+      />
     </div>
   );
 }

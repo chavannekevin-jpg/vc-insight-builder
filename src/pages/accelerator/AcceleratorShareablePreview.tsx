@@ -40,6 +40,13 @@ interface SectionScore {
   benchmark: number;
 }
 
+interface MemoContent {
+  traction?: string;
+  businessModel?: string;
+  investmentThesis?: string;
+  sections?: any[];
+}
+
 const sectionIcons: Record<string, any> = {
   Team: Users,
   Market: Target,
@@ -60,6 +67,7 @@ export default function AcceleratorShareablePreview() {
   const [company, setCompany] = useState<Company | null>(null);
   const [vcQuickTake, setVcQuickTake] = useState<VCQuickTake | null>(null);
   const [sectionScores, setSectionScores] = useState<Record<string, number>>({});
+  const [memoContent, setMemoContent] = useState<MemoContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
@@ -78,7 +86,7 @@ export default function AcceleratorShareablePreview() {
         if (companyError) throw companyError;
         setCompany(companyData);
 
-        // Fetch memo for vcQuickTake
+        // Fetch memo for vcQuickTake and sections
         const { data: memoData } = await supabase
           .from("memos")
           .select("structured_content")
@@ -92,6 +100,48 @@ export default function AcceleratorShareablePreview() {
           setVcQuickTake(structuredContent.vcQuickTake as VCQuickTake);
         } else if (companyData.vc_verdict_json) {
           setVcQuickTake(companyData.vc_verdict_json as VCQuickTake);
+        }
+
+        // Extract traction and business model from structured sections
+        if (structuredContent?.sections) {
+          const sections = structuredContent.sections;
+          const tractionSection = sections.find((s: any) => 
+            s.title?.toLowerCase().includes('traction') || s.sectionKey === 'traction'
+          );
+          const businessModelSection = sections.find((s: any) => 
+            s.title?.toLowerCase().includes('business model') || s.sectionKey === 'businessModel'
+          );
+          
+          setMemoContent({
+            traction: tractionSection?.content || tractionSection?.narrative,
+            businessModel: businessModelSection?.content || businessModelSection?.narrative,
+            investmentThesis: structuredContent.investmentThesis?.summary || structuredContent.investmentThesis?.narrative,
+            sections: sections,
+          });
+        }
+
+        // Fetch memo responses for traction and business model
+        const { data: responses } = await supabase
+          .from("memo_responses")
+          .select("question_key, answer")
+          .eq("company_id", id)
+          .in("question_key", ["traction", "traction_metrics", "revenue_model", "business_model", "monetization"]);
+
+        if (responses && responses.length > 0 && !memoContent?.traction) {
+          const tractionResp = responses.find(r => 
+            r.question_key.toLowerCase().includes("traction")
+          );
+          const businessModelResp = responses.find(r => 
+            r.question_key.toLowerCase().includes("business") || 
+            r.question_key.toLowerCase().includes("revenue") ||
+            r.question_key.toLowerCase().includes("monetization")
+          );
+          
+          setMemoContent(prev => ({
+            ...prev,
+            traction: tractionResp?.answer || prev?.traction,
+            businessModel: businessModelResp?.answer || prev?.businessModel,
+          }));
         }
 
         // Fetch section scores
@@ -307,11 +357,76 @@ export default function AcceleratorShareablePreview() {
           </motion.div>
         )}
 
+        {/* Investment Thesis Highlights */}
+        {(memoContent?.investmentThesis || vcQuickTake?.strengths) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-gradient-to-br from-success/5 to-primary/5 border border-success/20 rounded-xl p-6 mb-8"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-success" />
+              </div>
+              <h3 className="font-semibold text-foreground">Investment Highlights</h3>
+            </div>
+            
+            {memoContent?.investmentThesis && (
+              <p className="text-foreground/90 leading-relaxed mb-4">{memoContent.investmentThesis}</p>
+            )}
+            
+            {vcQuickTake?.strengths && vcQuickTake.strengths.length > 0 && !memoContent?.investmentThesis && (
+              <ul className="space-y-2">
+                {vcQuickTake.strengths.slice(0, 4).map((s: any, i: number) => (
+                  <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                    <span>{getItemText(s)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </motion.div>
+        )}
+
+        {/* Traction & Business Model */}
+        {(memoContent?.traction || memoContent?.businessModel) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="grid md:grid-cols-2 gap-6 mb-8"
+          >
+            {memoContent?.traction && (
+              <div className="bg-card border border-border rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <h4 className="font-semibold text-foreground">Traction</h4>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4">
+                  {memoContent.traction}
+                </p>
+              </div>
+            )}
+            {memoContent?.businessModel && (
+              <div className="bg-card border border-border rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <DollarSign className="w-5 h-5 text-primary" />
+                  <h4 className="font-semibold text-foreground">Business Model</h4>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4">
+                  {memoContent.businessModel}
+                </p>
+              </div>
+            )}
+          </motion.div>
+        )}
+
         {/* Section Breakdown */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.25 }}
           className="bg-card border border-border rounded-xl p-6 mb-8"
         >
           <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
