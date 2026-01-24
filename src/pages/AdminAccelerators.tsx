@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -24,7 +25,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Building2, Trash2, Users, Calendar, Search, Loader2, ExternalLink } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Building2, Trash2, Users, Calendar, Search, Loader2, ExternalLink, Settings, Percent, Copy, Check, Ticket } from "lucide-react";
 import { format } from "date-fns";
 
 interface Accelerator {
@@ -39,6 +55,7 @@ interface Accelerator {
   created_at: string;
   paid_at: string | null;
   stripe_payment_id: string | null;
+  default_discount_percent: number;
   cohort_count?: number;
   member_count?: number;
   ecosystem_head_email?: string;
@@ -50,6 +67,10 @@ export default function AdminAccelerators() {
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Accelerator | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [configTarget, setConfigTarget] = useState<Accelerator | null>(null);
+  const [configDiscount, setConfigDiscount] = useState(100);
+  const [savingConfig, setSavingConfig] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -140,6 +161,71 @@ export default function AdminAccelerators() {
     }
   };
 
+  const handleSaveDiscount = async () => {
+    if (!configTarget) return;
+    
+    setSavingConfig(true);
+    try {
+      const { error } = await supabase
+        .from("accelerators")
+        .update({ default_discount_percent: configDiscount })
+        .eq("id", configTarget.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Discount updated",
+        description: `${configTarget.name} now offers ${configDiscount}% discount to invitees`,
+      });
+      
+      setConfigTarget(null);
+      fetchAccelerators();
+    } catch (error: any) {
+      toast({
+        title: "Failed to update",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSavingConfig(false);
+    }
+  };
+
+  const generateClaimCode = async (companyId: string, companyName: string) => {
+    try {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let code = "CLAIM-";
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      const { error } = await supabase
+        .from("startup_claim_codes")
+        .insert({
+          code,
+          company_id: companyId,
+          is_active: true,
+        });
+
+      if (error) throw error;
+
+      navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 3000);
+
+      toast({
+        title: "Claim code generated!",
+        description: `Code ${code} copied. Share with the accelerator to claim ${companyName}.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to generate code",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredAccelerators = accelerators.filter(
     (acc) =>
       acc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -216,6 +302,7 @@ export default function AdminAccelerators() {
                     <TableHead>Ecosystem</TableHead>
                     <TableHead>Owner</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Discount</TableHead>
                     <TableHead>Cohorts</TableHead>
                     <TableHead>Members</TableHead>
                     <TableHead>Created</TableHead>
@@ -247,6 +334,19 @@ export default function AdminAccelerators() {
                         </div>
                       </TableCell>
                       <TableCell>
+                        <Badge 
+                          variant={acc.default_discount_percent === 100 ? "default" : "secondary"}
+                          className="cursor-pointer"
+                          onClick={() => {
+                            setConfigTarget(acc);
+                            setConfigDiscount(acc.default_discount_percent);
+                          }}
+                        >
+                          <Percent className="h-3 w-3 mr-1" />
+                          {acc.default_discount_percent}%
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3 text-muted-foreground" />
                           {acc.cohort_count}
@@ -268,7 +368,18 @@ export default function AdminAccelerators() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => window.open(`/accelerator/dashboard`, "_blank")}
+                            title="Configure discount"
+                            onClick={() => {
+                              setConfigTarget(acc);
+                              setConfigDiscount(acc.default_discount_percent);
+                            }}
+                          >
+                            <Settings className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => window.open(`/accelerator/dashboard?id=${acc.id}`, "_blank")}
                           >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
@@ -330,6 +441,69 @@ export default function AdminAccelerators() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Discount Configuration Dialog */}
+      <Dialog open={!!configTarget} onOpenChange={() => !savingConfig && setConfigTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Configure Discount</DialogTitle>
+            <DialogDescription>
+              Set the default discount for startups invited by {configTarget?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Default Discount Percentage</Label>
+              <Select
+                value={configDiscount.toString()}
+                onValueChange={(v) => setConfigDiscount(parseInt(v))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">0% (No discount)</SelectItem>
+                  <SelectItem value="10">10%</SelectItem>
+                  <SelectItem value="20">20%</SelectItem>
+                  <SelectItem value="25">25%</SelectItem>
+                  <SelectItem value="30">30%</SelectItem>
+                  <SelectItem value="40">40%</SelectItem>
+                  <SelectItem value="50">50%</SelectItem>
+                  <SelectItem value="75">75%</SelectItem>
+                  <SelectItem value="100">100% (Free)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                This discount will apply to new invite codes created by this accelerator.
+              </p>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setConfigTarget(null)}
+                disabled={savingConfig}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleSaveDiscount}
+                disabled={savingConfig}
+              >
+                {savingConfig ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

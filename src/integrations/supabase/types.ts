@@ -175,6 +175,7 @@ export type Database = {
         Row: {
           cohort_size_target: number | null
           created_at: string | null
+          default_discount_percent: number | null
           demo_day_date: string | null
           description: string | null
           ecosystem_head_id: string
@@ -194,6 +195,7 @@ export type Database = {
         Insert: {
           cohort_size_target?: number | null
           created_at?: string | null
+          default_discount_percent?: number | null
           demo_day_date?: string | null
           description?: string | null
           ecosystem_head_id: string
@@ -213,6 +215,7 @@ export type Database = {
         Update: {
           cohort_size_target?: number | null
           created_at?: string | null
+          default_discount_percent?: number | null
           demo_day_date?: string | null
           description?: string | null
           ecosystem_head_id?: string
@@ -2173,6 +2176,60 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      startup_claim_codes: {
+        Row: {
+          accelerator_id: string | null
+          claimed_at: string | null
+          claimed_by: string | null
+          code: string
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+        }
+        Insert: {
+          accelerator_id?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
+          code: string
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+        }
+        Update: {
+          accelerator_id?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
+          code?: string
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_claim_codes_accelerator_id_fkey"
+            columns: ["accelerator_id"]
+            isOneToOne: false
+            referencedRelation: "accelerators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_claim_codes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       startup_invites: {
         Row: {
