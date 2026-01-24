@@ -171,6 +171,47 @@ export type Database = {
           },
         ]
       }
+      accelerator_section_recommendations: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          generated_at: string | null
+          id: string
+          key_insight: string | null
+          section_name: string
+          suggestions: Json
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          key_insight?: string | null
+          section_name: string
+          suggestions: Json
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          key_insight?: string | null
+          section_name?: string
+          suggestions?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accelerator_section_recommendations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       accelerators: {
         Row: {
           cohort_size_target: number | null

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   ArrowLeft, Building2, TrendingUp, Users, Target, 
   Lightbulb, DollarSign, BarChart3, Loader2, ExternalLink,
-  CheckCircle2, AlertTriangle, Clock, Layers, Eye
+  CheckCircle2, AlertTriangle, Clock, Layers, Eye, Share2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { AssignCohortDialog } from "@/components/accelerator/AssignCohortDialog";
 import { StartupPreviewCard } from "@/components/accelerator/StartupPreviewCard";
+import { SectionRecommendationModal } from "@/components/accelerator/SectionRecommendationModal";
 import { checkDashboardReadiness, DashboardReadinessResult } from "@/lib/dashboardReadiness";
 
 interface Company {
@@ -92,6 +93,8 @@ export default function AcceleratorStartupDetail() {
   const [showPreviewCard, setShowPreviewCard] = useState(false);
   const [dashboardReadiness, setDashboardReadiness] = useState<DashboardReadinessResult | null>(null);
   const [vcQuickTake, setVcQuickTake] = useState<any>(null);
+  const [selectedSectionForRec, setSelectedSectionForRec] = useState<string | null>(null);
+  const [sectionRecModalOpen, setSectionRecModalOpen] = useState(false);
 
   const verdictText = (() => {
     const v = vcQuickTake?.verdict;
@@ -335,11 +338,11 @@ export default function AcceleratorStartupDetail() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowPreviewCard(true)}
+                    onClick={() => navigate(`/accelerator/startup/${id}/share`)}
                     className="gap-2"
                   >
                     <Eye className="w-4 h-4" />
-                    Quick Summary
+                    Share Preview
                   </Button>
                 </>
               )}
@@ -471,9 +474,13 @@ export default function AcceleratorStartupDetail() {
                     const score = sectionScores[key];
                     const Icon = sectionIcons[key] || Target;
                     return (
-                      <div
+                      <button
                         key={key}
-                        className="flex items-center gap-4 p-4 rounded-lg bg-muted/50"
+                        onClick={() => {
+                          setSelectedSectionForRec(key);
+                          setSectionRecModalOpen(true);
+                        }}
+                        className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors cursor-pointer text-left w-full"
                       >
                         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                           <Icon className="w-5 h-5 text-primary" />
@@ -492,7 +499,7 @@ export default function AcceleratorStartupDetail() {
                             />
                           </div>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -597,6 +604,20 @@ export default function AcceleratorStartupDetail() {
           acceleratorId={acceleratorId}
           currentCohortName={cohortInfo?.name}
           onAssigned={refreshData}
+        />
+      )}
+
+      {/* Section Recommendation Modal */}
+      {selectedSectionForRec && (
+        <SectionRecommendationModal
+          open={sectionRecModalOpen}
+          onOpenChange={setSectionRecModalOpen}
+          companyId={company.id}
+          companyName={company.name}
+          sectionName={selectedSectionForRec}
+          sectionScore={sectionScores[selectedSectionForRec] || 50}
+          sectionBenchmark={65}
+          companyDescription={company.description || undefined}
         />
       )}
     </div>
