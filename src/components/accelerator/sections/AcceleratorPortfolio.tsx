@@ -17,9 +17,10 @@ interface Company {
 interface AcceleratorPortfolioProps {
   companies: Company[];
   onViewStartup: (id: string) => void;
+  isDemo?: boolean;
 }
 
-export function AcceleratorPortfolio({ companies, onViewStartup }: AcceleratorPortfolioProps) {
+export function AcceleratorPortfolio({ companies, onViewStartup, isDemo = false }: AcceleratorPortfolioProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "score" | "date">("date");
   const [filterStatus, setFilterStatus] = useState<"all" | "ready" | "pending">("all");

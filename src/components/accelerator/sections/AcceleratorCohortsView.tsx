@@ -40,6 +40,7 @@ interface AcceleratorCohortsViewProps {
   acceleratorId: string;
   onRefresh: () => void;
   onViewStartup: (id: string) => void;
+  isDemo?: boolean;
 }
 
 export function AcceleratorCohortsView({
@@ -47,6 +48,7 @@ export function AcceleratorCohortsView({
   acceleratorId,
   onRefresh,
   onViewStartup,
+  isDemo = false,
 }: AcceleratorCohortsViewProps) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -61,6 +63,11 @@ export function AcceleratorCohortsView({
   });
 
   const handleCreateCohort = async () => {
+    if (isDemo) {
+      toast.info("This is a demo - creating cohorts is disabled");
+      return;
+    }
+    
     if (!newCohort.name.trim()) {
       toast.error("Please enter a cohort name");
       return;
@@ -94,6 +101,11 @@ export function AcceleratorCohortsView({
   };
 
   const handleToggleActive = async (cohortId: string, currentStatus: boolean) => {
+    if (isDemo) {
+      toast.info("This is a demo - modifying cohorts is disabled");
+      return;
+    }
+    
     try {
       const { error } = await supabase
         .from("accelerator_cohorts")

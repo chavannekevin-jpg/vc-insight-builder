@@ -42,9 +42,10 @@ interface AcceleratorSettingsProps {
     focus_areas: string[] | null;
   };
   onUpdate: () => void;
+  isDemo?: boolean;
 }
 
-export function AcceleratorSettings({ accelerator, onUpdate }: AcceleratorSettingsProps) {
+export function AcceleratorSettings({ accelerator, onUpdate, isDemo = false }: AcceleratorSettingsProps) {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -96,6 +97,11 @@ export function AcceleratorSettings({ accelerator, onUpdate }: AcceleratorSettin
   };
 
   const handleSave = async () => {
+    if (isDemo) {
+      toast.info("This is a demo - saving settings is disabled");
+      return;
+    }
+    
     if (!formData.name.trim()) {
       toast.error("Accelerator name is required");
       return;
@@ -125,6 +131,11 @@ export function AcceleratorSettings({ accelerator, onUpdate }: AcceleratorSettin
   };
 
   const handleDeleteAccelerator = async () => {
+    if (isDemo) {
+      toast.info("This is a demo - deleting accelerators is disabled");
+      return;
+    }
+    
     setIsDeleting(true);
     try {
       const { data, error } = await supabase.functions.invoke("delete-accelerator", {

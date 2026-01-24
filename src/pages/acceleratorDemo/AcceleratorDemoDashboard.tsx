@@ -1,352 +1,252 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Menu, Bell, Info, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { 
-  AlertTriangle, 
-  ArrowRight, 
-  Calendar, 
-  Target, 
-  TrendingUp,
-  Users,
-  Lightbulb,
-  ChevronRight,
-  FileText,
-  BarChart3,
-  Sparkles,
-  Briefcase
-} from "lucide-react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { ProductTourSpotlight } from "@/components/tour/ProductTourSpotlight";
-import { AcceleratorDemoLayout } from "@/components/acceleratorDemo/AcceleratorDemoLayout";
-import { AcceleratorDemoEntranceAnimation, useAcceleratorDemoEntrance } from "@/components/acceleratorDemo/AcceleratorDemoEntranceAnimation";
-import { AcceleratorDemoWelcomeModal, useAcceleratorDemoWelcome } from "@/components/acceleratorDemo/AcceleratorDemoWelcomeModal";
-import { useAcceleratorDemoProductTour } from "@/hooks/useAcceleratorDemoProductTour";
-import { DEMO_ACCELERATOR } from "@/data/acceleratorDemo/acceleratorProfile";
-import { DEMO_STARTUPS, getStartupsByStatus, getCohortStats } from "@/data/acceleratorDemo/demoStartups";
 
-const AcceleratorDemoDashboard = () => {
+// Production components
+import { AcceleratorSidebar } from "@/components/accelerator/AcceleratorSidebar";
+import { AcceleratorOverview } from "@/components/accelerator/sections/AcceleratorOverview";
+import { AcceleratorPortfolio } from "@/components/accelerator/sections/AcceleratorPortfolio";
+import { AcceleratorCohortsView } from "@/components/accelerator/sections/AcceleratorCohortsView";
+import { AcceleratorTeam } from "@/components/accelerator/sections/AcceleratorTeam";
+import { AcceleratorInvites } from "@/components/accelerator/sections/AcceleratorInvites";
+import { AcceleratorAnalyticsSection } from "@/components/accelerator/sections/AcceleratorAnalyticsSection";
+import { AcceleratorSettings } from "@/components/accelerator/sections/AcceleratorSettings";
+
+// Demo-specific components
+import { AcceleratorDemoProvider, useAcceleratorDemo } from "@/contexts/AcceleratorDemoContext";
+import { AcceleratorDemoWelcomeModal } from "@/components/acceleratorDemo/AcceleratorDemoWelcomeModal";
+import { AcceleratorDemoEntranceAnimation, useAcceleratorDemoEntrance } from "@/components/acceleratorDemo/AcceleratorDemoEntranceAnimation";
+import { ProductTourSpotlight } from "@/components/tour/ProductTourSpotlight";
+import { useAcceleratorDemoProductTour } from "@/hooks/useAcceleratorDemoProductTour";
+
+function AcceleratorDemoDashboardContent() {
   const navigate = useNavigate();
+  const { accelerator, cohorts, companies, stats } = useAcceleratorDemo();
+  
+  const [activeSection, setActiveSection] = useState("overview");
+  
+  // Demo entrance and tour state
   const { showEntrance, isChecked: entranceChecked, completeEntrance } = useAcceleratorDemoEntrance();
-  const { showWelcome, isChecked: welcomeChecked, completeWelcome, resetWelcome } = useAcceleratorDemoWelcome();
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const tour = useAcceleratorDemoProductTour();
 
-  const atRiskStartups = getStartupsByStatus("at-risk");
-  const demoReadyStartups = getStartupsByStatus("demo-ready");
-  const needsWorkStartups = getStartupsByStatus("needs-work");
-  const onTrackStartups = getStartupsByStatus("on-track");
-  const cohortStats = getCohortStats();
-
-  // Priority interventions - startups that need immediate attention
-  const priorityInterventions = [...atRiskStartups, ...needsWorkStartups]
-    .sort((a, b) => a.fundabilityScore - b.fundabilityScore)
-    .slice(0, 3);
-
-  // Start tour after welcome modal completes (and entrance animation is done)
-  useEffect(() => {
-    if (!showWelcome && welcomeChecked && !tour.hasCompletedTour && !showEntrance) {
-      const timer = setTimeout(() => {
-        tour.startTour();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [showWelcome, welcomeChecked, tour.hasCompletedTour, showEntrance]);
-
-  const handleRestartTour = () => {
-    resetWelcome();
+  // After entrance animation completes, show welcome modal
+  const handleEntranceComplete = () => {
+    completeEntrance();
+    setShowWelcomeModal(true);
   };
 
-  // Show entrance animation first
+  // After welcome modal completes, start tour
+  const handleWelcomeComplete = () => {
+    setShowWelcomeModal(false);
+    setTimeout(() => {
+      tour.startTour();
+    }, 500);
+  };
+
+  const handleRestartTour = () => {
+    setShowWelcomeModal(true);
+  };
+
+  const handleViewStartup = (id: string) => {
+    navigate(`/accelerator-demo/startup/${id}`);
+  };
+
+  const handleViewStartupFullPage = (id: string) => {
+    navigate(`/accelerator-demo/startup/${id}`);
+  };
+
+  // No-op for demo mode (data is static)
+  const handleRefresh = () => {};
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case "portfolio":
+        return <AcceleratorPortfolio companies={companies} onViewStartup={handleViewStartup} isDemo />;
+      case "cohorts":
+        return <AcceleratorCohortsView cohorts={cohorts} acceleratorId={accelerator.id} onRefresh={handleRefresh} onViewStartup={handleViewStartupFullPage} isDemo />;
+      case "team":
+        return <AcceleratorTeam acceleratorId={accelerator.id} acceleratorName={accelerator.name} currentUserId="demo-user" isDemo />;
+      case "invites":
+        return <AcceleratorInvites acceleratorId={accelerator.id} acceleratorName={accelerator.name} acceleratorSlug={accelerator.slug} />;
+      case "analytics":
+        return <AcceleratorAnalyticsSection stats={stats} companies={companies} />;
+      case "settings":
+        return <AcceleratorSettings accelerator={accelerator} onUpdate={handleRefresh} isDemo />;
+      default:
+        return (
+          <AcceleratorOverview
+            accelerator={accelerator}
+            stats={stats}
+            recentCompanies={companies.slice(0, 5)}
+            onNavigate={setActiveSection}
+            onViewStartup={handleViewStartup}
+            isDemo
+          />
+        );
+    }
+  };
+
+  // Wait for entrance check
   if (!entranceChecked) {
     return null;
   }
 
+  // Show entrance animation if needed
   if (showEntrance) {
-    return <AcceleratorDemoEntranceAnimation onComplete={completeEntrance} />;
+    return <AcceleratorDemoEntranceAnimation onComplete={handleEntranceComplete} />;
   }
 
-  const getStatusColor = (score: number) => {
-    if (score >= 80) return "text-emerald-400";
-    if (score >= 70) return "text-primary";
-    if (score >= 50) return "text-amber-400";
-    return "text-rose-400";
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "demo-ready":
-        return <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Ready</span>;
-      case "on-track":
-        return <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">On Track</span>;
-      case "needs-work":
-        return <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Needs Work</span>;
-      case "at-risk":
-        return <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">At Risk</span>;
-      default:
-        return null;
-    }
-  };
-
   return (
-    <AcceleratorDemoLayout onRestartTour={handleRestartTour}>
-      {/* Welcome Modal */}
-      {welcomeChecked && <AcceleratorDemoWelcomeModal open={showWelcome} onComplete={completeWelcome} />}
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background relative overflow-hidden">
+        {/* Ultra-premium animated background - matching production */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          {/* Base gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-background" />
+          
+          {/* Animated mesh orbs */}
+          <motion.div
+            animate={{
+              x: [0, 30, 0],
+              y: [0, -20, 0],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-1/4 -right-1/4 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-primary/8 via-primary/4 to-transparent blur-3xl"
+          />
+          <motion.div
+            animate={{
+              x: [0, -40, 0],
+              y: [0, 30, 0],
+              scale: [1, 1.15, 1],
+            }}
+            transition={{ duration: 25, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            className="absolute top-1/3 -left-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-secondary/6 via-secondary/3 to-transparent blur-3xl"
+          />
+          <motion.div
+            animate={{
+              x: [0, 20, 0],
+              y: [0, -30, 0],
+              scale: [1, 1.08, 1],
+            }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+            className="absolute -bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-tl from-accent/5 via-accent/2 to-transparent blur-3xl"
+          />
+          
+          {/* Subtle grid pattern */}
+          <div 
+            className="absolute inset-0 opacity-[0.02]"
+            style={{
+              backgroundImage: `linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px),
+                linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)`,
+              backgroundSize: '60px 60px',
+            }}
+          />
+          
+          {/* Top light wash */}
+          <div className="absolute top-0 left-0 right-0 h-[400px] bg-gradient-to-b from-primary/[0.02] via-transparent to-transparent" />
+        </div>
 
-      {/* Product Tour */}
-      <ProductTourSpotlight
-        isActive={tour.isActive}
-        currentStep={tour.currentStep}
-        currentStepIndex={tour.currentStepIndex}
-        totalSteps={tour.totalSteps}
-        onNext={tour.nextStep}
-        onPrev={tour.prevStep}
-        onSkip={tour.skipTour}
-      />
+        {/* Production Sidebar with demo mode enabled */}
+        <AcceleratorSidebar
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+          accelerator={accelerator}
+          onStartTour={tour.startTour}
+          isDemo
+          onRestartTour={handleRestartTour}
+        />
 
-      <div className="p-6 max-w-7xl mx-auto">
-        {/* Welcome Section */}
-        <motion.div 
-          className="mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="text-2xl font-bold mb-1">
-            Welcome back, {DEMO_ACCELERATOR.programManager.name.split(" ")[0]}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Week {DEMO_ACCELERATOR.currentWeek} of {DEMO_ACCELERATOR.programLength} • Demo Day: {DEMO_ACCELERATOR.demoDay}
-          </p>
-        </motion.div>
-
-        {/* Stats Bar */}
-        <motion.div 
-          id="cohort-stats"
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          {[
-            { icon: Users, label: "Total Startups", value: cohortStats.totalStartups, color: "text-primary" },
-            { icon: BarChart3, label: "Avg Score", value: cohortStats.avgFundabilityScore, color: getStatusColor(cohortStats.avgFundabilityScore) },
-            { icon: Target, label: "Demo Ready", value: cohortStats.demoReady, color: "text-emerald-400" },
-            { icon: AlertTriangle, label: "Needs Attention", value: cohortStats.needsWork + cohortStats.atRisk, color: "text-rose-400" },
-          ].map((stat, i) => (
-            <div key={i} className="p-4 rounded-2xl bg-card/40 backdrop-blur-xl border border-white/[0.06]">
-              <div className="flex items-center gap-2 mb-2">
-                <stat.icon className={`w-4 h-4 ${stat.color}`} />
-                <span className="text-xs text-muted-foreground">{stat.label}</span>
+        <div className="flex-1 flex flex-col min-w-0 relative z-10">
+          {/* Demo Mode Banner */}
+          <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border-b border-primary/20 px-4 py-2">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 text-sm">
+                <Info className="w-4 h-4 text-primary" />
+                <span className="text-foreground">
+                  <span className="font-semibold text-primary">Demo Mode</span> — You're viewing a fictional accelerator cohort.
+                </span>
               </div>
-              <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate("/accelerator/signup")}
+                className="text-primary hover:text-primary hover:bg-primary/10 gap-1"
+              >
+                Apply to your cohort
+                <ArrowRight className="w-3 h-3" />
+              </Button>
             </div>
-          ))}
-        </motion.div>
-
-        {/* Main Grid */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left Column - Priority Interventions & Portfolio */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Priority Interventions */}
-            <motion.section
-              id="priority-interventions"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-400" />
-                  <h2 className="text-lg font-semibold">Priority Interventions</h2>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => navigate("/accelerator-demo/cohort")}
-                  className="text-muted-foreground hover:text-foreground text-xs"
-                >
-                  View all <ChevronRight className="w-3 h-3 ml-1" />
-                </Button>
-              </div>
-              <div className="space-y-3">
-                {priorityInterventions.map((startup) => (
-                  <div
-                    key={startup.id}
-                    className="group p-4 rounded-xl bg-card/40 backdrop-blur-xl border border-white/[0.06] hover:border-primary/30 transition-all cursor-pointer"
-                    onClick={() => navigate(`/accelerator-demo/startup/${startup.id}`)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-1.5">
-                          <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                            {startup.name}
-                          </h3>
-                          <span className={`text-sm font-bold ${getStatusColor(startup.fundabilityScore)}`}>
-                            {startup.fundabilityScore}
-                          </span>
-                          {getStatusBadge(startup.status)}
-                        </div>
-                        <p className="text-xs text-muted-foreground mb-2">{startup.tagline}</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {startup.topConcerns.slice(0, 2).map((concern, i) => (
-                            <span key={i} className="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded">
-                              {concern}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.section>
-
-            {/* Demo Ready Startups */}
-            <motion.section
-              id="demo-ready-startups"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 text-emerald-400" />
-                  <h2 className="text-lg font-semibold">Demo Day Ready</h2>
-                </div>
-                <span className="text-xs text-muted-foreground">{demoReadyStartups.length} startups</span>
-              </div>
-              <div className="grid md:grid-cols-2 gap-3">
-                {demoReadyStartups.slice(0, 4).map((startup) => (
-                  <div
-                    key={startup.id}
-                    className="group p-4 rounded-xl bg-card/40 backdrop-blur-xl border border-white/[0.06] hover:border-emerald-500/30 transition-all cursor-pointer"
-                    onClick={() => navigate(`/accelerator-demo/startup/${startup.id}`)}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">{startup.name}</h3>
-                      <span className={`text-sm font-bold ${getStatusColor(startup.fundabilityScore)}`}>
-                        {startup.fundabilityScore}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{startup.tagline}</p>
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                      <span className="px-1.5 py-0.5 rounded bg-muted/50">{startup.category}</span>
-                      <span>{startup.stage}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.section>
           </div>
 
-          {/* Right Column - Quick Actions & Insights */}
-          <motion.div 
-            className="space-y-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
+          {/* Premium glass header */}
+          <motion.header 
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="h-16 border-b border-white/[0.06] flex items-center justify-between px-6 sticky top-0 z-40 bg-card/40 backdrop-blur-2xl"
           >
-            {/* Quick Actions */}
-            <section 
-              id="quick-actions"
-              className="p-5 rounded-xl bg-card/40 backdrop-blur-xl border border-white/[0.06]"
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="p-2 -ml-2 rounded-lg hover:bg-white/[0.04] transition-colors">
+                <Menu className="w-5 h-5 text-muted-foreground" />
+              </SidebarTrigger>
+              <div className="h-6 w-px bg-white/[0.06]" />
+              <div>
+                <h1 className="text-sm font-semibold text-foreground">
+                  {accelerator.name}
+                </h1>
+                <p className="text-xs text-muted-foreground/70">Ecosystem Dashboard</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button className="p-2 rounded-lg hover:bg-white/[0.04] transition-colors relative group">
+                <Bell className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full animate-pulse" />
+              </button>
+            </div>
+          </motion.header>
+
+          <main className="flex-1 overflow-auto">
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
-              <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
-                <Lightbulb className="w-4 h-4 text-primary" />
-                Quick Actions
-              </h3>
-              <div className="space-y-2">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-9 text-sm hover:bg-white/[0.04]"
-                  onClick={() => navigate("/accelerator-demo/cohort")}
-                >
-                  <Briefcase className="w-4 h-4 mr-2" />
-                  View Full Portfolio
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-9 text-sm hover:bg-white/[0.04]"
-                  onClick={() => navigate("/accelerator-demo/analytics")}
-                >
-                  <TrendingUp className="w-4 h-4 mr-2" />
-                  Cohort Analytics
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-9 text-sm hover:bg-white/[0.04]"
-                  onClick={() => navigate("/accelerator-demo/compare")}
-                >
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Compare Startups
-                </Button>
-              </div>
-            </section>
-
-            {/* Cohort Insights */}
-            <section className="p-5 rounded-xl bg-card/40 backdrop-blur-xl border border-white/[0.06]">
-              <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
-                <Sparkles className="w-4 h-4 text-primary" />
-                Cohort Insights
-              </h3>
-              <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
-                  <p className="text-xs font-medium text-emerald-400 mb-0.5">Strongest Section</p>
-                  <p className="text-[11px] text-muted-foreground">Team scores highest (avg 81/100)</p>
-                </div>
-                <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
-                  <p className="text-xs font-medium text-amber-400 mb-0.5">Common Weakness</p>
-                  <p className="text-[11px] text-muted-foreground">Business Model clarity (avg 64/100)</p>
-                </div>
-                <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
-                  <p className="text-xs font-medium text-primary mb-0.5">Trending Up</p>
-                  <p className="text-[11px] text-muted-foreground">3 startups improved 5+ points</p>
-                </div>
-              </div>
-            </section>
-
-            {/* Upcoming */}
-            <section className="p-5 rounded-xl bg-card/40 backdrop-blur-xl border border-white/[0.06]">
-              <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                Upcoming
-              </h3>
-              <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Mentor Sessions</span>
-                  <span className="font-medium">Tomorrow</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Pitch Practice</span>
-                  <span className="font-medium">Week 8</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Demo Day</span>
-                  <span className="font-medium text-primary">{DEMO_ACCELERATOR.demoDay}</span>
-                </div>
-              </div>
-            </section>
-
-            {/* CTA */}
-            <section className="p-5 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20">
-              <h3 className="font-semibold mb-2 text-sm">Ready for your cohort?</h3>
-              <p className="text-xs text-muted-foreground mb-4">
-                Get the same insights for your own accelerator.
-              </p>
-              <Button
-                size="sm"
-                className="w-full"
-                onClick={() => navigate("/accelerator/signup")}
-              >
-                Create Your Ecosystem
-                <ArrowRight className="w-3 h-3 ml-2" />
-              </Button>
-            </section>
-          </motion.div>
+              {renderContent()}
+            </motion.div>
+          </main>
         </div>
-      </div>
-    </AcceleratorDemoLayout>
-  );
-};
 
-export default AcceleratorDemoDashboard;
+        {/* Welcome Modal */}
+        <AcceleratorDemoWelcomeModal 
+          open={showWelcomeModal} 
+          onComplete={handleWelcomeComplete} 
+        />
+
+        {/* Product Tour Spotlight */}
+        <ProductTourSpotlight
+          isActive={tour.isActive}
+          currentStep={tour.currentStep}
+          currentStepIndex={tour.currentStepIndex}
+          totalSteps={tour.totalSteps}
+          onNext={tour.nextStep}
+          onPrev={tour.prevStep}
+          onSkip={tour.skipTour}
+        />
+      </div>
+    </SidebarProvider>
+  );
+}
+
+export default function AcceleratorDemoDashboard() {
+  return (
+    <AcceleratorDemoProvider>
+      <AcceleratorDemoDashboardContent />
+    </AcceleratorDemoProvider>
+  );
+}

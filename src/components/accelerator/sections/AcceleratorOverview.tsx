@@ -32,6 +32,7 @@ interface AcceleratorOverviewProps {
   }>;
   onNavigate: (section: string) => void;
   onViewStartup: (id: string) => void;
+  isDemo?: boolean;
 }
 
 // Premium auth-style glass card component
@@ -125,7 +126,8 @@ export function AcceleratorOverview({
   stats, 
   recentCompanies,
   onNavigate,
-  onViewStartup 
+  onViewStartup,
+  isDemo = false 
 }: AcceleratorOverviewProps) {
   const [cohortSwitchOpen, setCohortSwitchOpen] = useState(false);
   const [selectedCohort, setSelectedCohort] = useState<any>(null);
