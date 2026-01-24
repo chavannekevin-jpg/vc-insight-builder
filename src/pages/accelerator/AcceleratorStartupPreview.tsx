@@ -8,7 +8,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Building2, Eye, Lock, Loader2 } from "lucide-react";
+import { ArrowLeft, Building2, Eye, Lock, Loader2, Globe, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -119,6 +119,28 @@ export default function AcceleratorStartupPreview() {
                   </p>
                 </div>
               </div>
+            </div>
+            
+            {/* Tool Navigation */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/accelerator/startup/${id}/market-lens`)}
+                className="gap-1.5 border-blue-500/30 text-blue-600 hover:bg-blue-500/10"
+              >
+                <Globe className="w-4 h-4" />
+                <span className="hidden sm:inline">Market Lens</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/accelerator/startup/${id}/investors`)}
+                className="gap-1.5 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
+              >
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Investor Network</span>
+              </Button>
             </div>
             
             {/* Read-only badge */}
