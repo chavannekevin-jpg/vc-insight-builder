@@ -18,6 +18,9 @@ import {
   Shield,
   HelpCircle,
   BookOpen,
+  Home,
+  RotateCcw,
+  Sparkles,
 } from "lucide-react";
 import {
   Sidebar,
@@ -73,13 +76,17 @@ interface AcceleratorSidebarProps {
     slug: string;
   } | null;
   onStartTour?: () => void;
+  isDemo?: boolean;
+  onRestartTour?: () => void;
 }
 
 export function AcceleratorSidebar({ 
   activeSection, 
   onSectionChange, 
   accelerator,
-  onStartTour 
+  onStartTour,
+  isDemo = false,
+  onRestartTour 
 }: AcceleratorSidebarProps) {
   const navigate = useNavigate();
   const { state, setOpen } = useSidebar();
@@ -278,8 +285,8 @@ export function AcceleratorSidebar({
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Invite Startup Button */}
-        {!collapsed && accelerator && (
+        {/* Invite Startup Button - Hide in demo mode */}
+        {!collapsed && accelerator && !isDemo && (
           <div className="px-4 py-3">
             <InviteStartupDialog accelerator={accelerator}>
               <button
@@ -294,92 +301,141 @@ export function AcceleratorSidebar({
           </div>
         )}
 
-        {/* Settings & Sign Out */}
-        <SidebarGroup className="border-t border-white/[0.06] pt-2 pb-2">
-          <SidebarGroupContent className="px-2">
-            <SidebarMenu>
-              {settingsMenuItems.map((item) => (
-                <SidebarMenuItem key={item.section}>
-                  <SidebarMenuButton
-                    onClick={() => handleNavClick(item.section)}
-                    isActive={activeSection === item.section}
-                    tooltip={item.title}
-                    className={`group rounded-xl transition-all duration-300 ${
-                      activeSection === item.section 
-                        ? "bg-primary/10 text-primary" 
-                        : "hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
-                    }`}
-                  >
-                    <item.icon className="w-4 h-4" />
-                    <span className="font-medium text-sm">{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-              {isAdmin && (
+        {/* Demo Mode CTA */}
+        {!collapsed && isDemo && (
+          <div className="px-4 py-3">
+            <button
+              onClick={() => navigate("/accelerator/signup")}
+              className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gradient-to-r from-primary/15 via-primary/10 to-primary/5 hover:from-primary/20 hover:via-primary/15 hover:to-primary/10 border border-primary/20 hover:border-primary/30 transition-all duration-300 group shadow-[0_0_20px_rgba(var(--primary),0.05)] hover:shadow-[0_0_25px_rgba(var(--primary),0.1)]"
+            >
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/25 to-primary/10 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-sm font-medium text-foreground flex-1 text-left">Create Your Ecosystem</span>
+            </button>
+          </div>
+        )}
+
+        {/* Settings & Sign Out - Production Mode */}
+        {!isDemo && (
+          <SidebarGroup className="border-t border-white/[0.06] pt-2 pb-2">
+            <SidebarGroupContent className="px-2">
+              <SidebarMenu>
+                {settingsMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.section}>
+                    <SidebarMenuButton
+                      onClick={() => handleNavClick(item.section)}
+                      isActive={activeSection === item.section}
+                      tooltip={item.title}
+                      className={`group rounded-xl transition-all duration-300 ${
+                        activeSection === item.section 
+                          ? "bg-primary/10 text-primary" 
+                          : "hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
+                      }`}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      <span className="font-medium text-sm">{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+                {isAdmin && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => navigate("/admin")}
+                      tooltip="Admin Panel"
+                      className="group rounded-xl transition-all duration-300 hover:bg-warning/10 text-warning hover:translate-x-0.5"
+                    >
+                      <Shield className="w-4 h-4" />
+                      <span className="font-medium text-sm">Admin Panel</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => navigate("/admin")}
-                    tooltip="Admin Panel"
-                    className="group rounded-xl transition-all duration-300 hover:bg-warning/10 text-warning hover:translate-x-0.5"
+                    onClick={handleSignOut}
+                    tooltip="Sign Out"
+                    className="group rounded-xl transition-all duration-300 hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
                   >
-                    <Shield className="w-4 h-4" />
-                    <span className="font-medium text-sm">Admin Panel</span>
+                    <LogOut className="w-4 h-4" />
+                    <span className="font-medium text-sm">Sign Out</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              )}
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={handleSignOut}
-                  tooltip="Sign Out"
-                  className="group rounded-xl transition-all duration-300 hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span className="font-medium text-sm">Sign Out</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                  <AlertDialogTrigger asChild>
-                    <SidebarMenuButton
-                      tooltip="Delete Account"
-                      className="group rounded-xl transition-all duration-300 hover:bg-destructive/10 text-muted-foreground/70 hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      <span className="font-medium text-sm">Delete Account</span>
-                    </SidebarMenuButton>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="border-border bg-card">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently delete your account and all associated data, including your accelerator ecosystem, cohorts, and team members. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel disabled={isDeleting}>
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleDeleteAccount}
-                        disabled={isDeleting}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                <SidebarMenuItem>
+                  <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <AlertDialogTrigger asChild>
+                      <SidebarMenuButton
+                        tooltip="Delete Account"
+                        className="group rounded-xl transition-all duration-300 hover:bg-destructive/10 text-muted-foreground/70 hover:text-destructive"
                       >
-                        {isDeleting ? (
-                          <span className="flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Deleting...
-                          </span>
-                        ) : (
-                          "Delete Account"
-                        )}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                        <Trash2 className="w-4 h-4" />
+                        <span className="font-medium text-sm">Delete Account</span>
+                      </SidebarMenuButton>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="border-border bg-card">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete your account and all associated data, including your accelerator ecosystem, cohorts, and team members. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteAccount}
+                          disabled={isDeleting}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {isDeleting ? (
+                            <span className="flex items-center gap-2">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Deleting...
+                            </span>
+                          ) : (
+                            "Delete Account"
+                          )}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Demo Mode Footer */}
+        {isDemo && (
+          <SidebarGroup className="border-t border-white/[0.06] pt-2 pb-2">
+            <SidebarGroupContent className="px-2">
+              <SidebarMenu>
+                {onRestartTour && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={onRestartTour}
+                      tooltip="Restart Tour"
+                      className="group rounded-xl transition-all duration-300 hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      <span className="font-medium text-sm">Take the Tour</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => navigate("/")}
+                    tooltip="Back to Home"
+                    className="group rounded-xl transition-all duration-300 hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
+                  >
+                    <Home className="w-4 h-4" />
+                    <span className="font-medium text-sm">Back to Landing</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       
       {/* Guide Dialogs */}

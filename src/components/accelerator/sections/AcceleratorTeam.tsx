@@ -39,6 +39,7 @@ interface AcceleratorTeamProps {
   acceleratorId: string;
   acceleratorName: string;
   currentUserId: string;
+  isDemo?: boolean;
 }
 
 const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
@@ -46,7 +47,7 @@ const roleLabels: Record<string, { label: string; icon: any; color: string }> = 
   member: { label: "Team Member", icon: Users, color: "text-primary" },
 };
 
-export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId }: AcceleratorTeamProps) {
+export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId, isDemo = false }: AcceleratorTeamProps) {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [invites, setInvites] = useState<TeamInvite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -101,6 +102,11 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId 
   };
 
   const handleCreateInvite = async () => {
+    if (isDemo) {
+      toast.info("This is a demo - creating invites is disabled");
+      return;
+    }
+    
     setIsCreating(true);
     try {
       const code = generateCode();
