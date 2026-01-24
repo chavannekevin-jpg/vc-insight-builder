@@ -20,8 +20,6 @@ import {
   Copy,
   CheckCircle2,
   FileText,
-  Share2,
-  Mail,
   Sparkles,
   Target,
   TrendingUp,
@@ -31,7 +29,9 @@ import {
   DollarSign,
   AlertTriangle,
   Building2,
-  ExternalLink,
+  Clock,
+  Globe,
+  BookOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -52,41 +52,54 @@ Start by uploading your pitch deck (PDF format works best). Our AI will analyze 
 
 **Tip:** Make sure your deck includes information about your team, market, problem, solution, traction, and business model.
 
-## Step 2: Complete Your Investment Analysis 🎯
+## Step 2: Review the Sections 🎯
 
-After the deck analysis, you'll see 8 key dimensions that investors evaluate:
+After the deck upload, review each of the 8 sections that investors evaluate. The AI pre-fills information from your deck, but you can edit and add details:
 
-1. **Problem** - Is the problem clear and significant?
-2. **Solution** - Is your solution unique and defensible?
-3. **Market** - Is the market large enough?
-4. **Competition** - Do you understand your competitive landscape?
-5. **Team** - Does your team have the right experience?
-6. **Business Model** - Is your path to revenue clear?
-7. **Traction** - Do you have proof of progress?
-8. **Vision** - Is your long-term vision compelling?
+- Problem, Solution, Market, Competition
+- Team, Business Model, Traction, Vision
 
-Click on each section to add details, review AI-generated insights, and improve your score.
+Click on each section to review, edit, and complete your profile.
 
-## Step 3: Review Your VC Quick Take 📊
+## Step 3: Land on Your Dashboard 🏠
 
-Once you've completed your analysis, you'll receive a "VC Quick Take" - a summary of how investors might view your startup, including:
+Once your sections are reviewed, you'll land on your startup dashboard where you can see your progress and scores.
 
-- Key strengths to highlight
-- Areas that need improvement
-- Overall investment readiness level
+## Step 4: Request the Analysis 📊
 
-## Step 4: Use Strategic Tools 🛠️
+From your dashboard, request your AI-powered investment analysis. This generates your fundability score and detailed feedback.
 
-Access powerful tools to strengthen your pitch:
+## Step 5: Wait for the Analysis ⏳
 
-- **TAM Calculator** - Size your market opportunity
-- **Unit Economics** - Validate your business model
-- **Competitor Map** - Visualize your competitive position
-- **Investor Matching** - Find VCs aligned with your stage and sector
+The analysis takes a few minutes to complete. You'll be notified when it's ready.
 
-## Step 5: Generate Your Investment Memo 📝
+## Step 6: Review Your Audit 📋
 
-When you're ready, generate a professional VC-style investment memorandum that you can share with investors. This document presents your startup in the language VCs use internally.
+Once complete, review your Investment Audit - a comprehensive breakdown of your startup's investment readiness across all 8 dimensions, including:
+
+- Section-by-section scores with benchmarks
+- VC Quick Take summary
+- Strengths and areas for improvement
+
+## Step 7: Use the Strategic Tools 🛠️
+
+Explore the powerful tools available to strengthen your pitch:
+
+**Market Lens**
+- TAM/SAM/SOM Calculator - Size your market opportunity
+- Competitive Landscape Maps
+- Market Trend Analysis
+
+**Investor Network**  
+- Find VCs aligned with your stage and sector
+- Geographic matching
+- Thesis alignment scores
+
+**Tools Library**
+- Unit Economics Calculator
+- Valuation Benchmarks
+- Fundraising Readiness Checker
+- Pitch Deck Analyzer
 
 ## Tips for Success 💡
 
@@ -115,18 +128,13 @@ export function StartupGuideDialog({ open, onOpenChange, acceleratorName }: Star
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleShareEmail = () => {
-    const subject = encodeURIComponent(`Getting Started with UglyBaby - ${acceleratorName || "Your Accelerator"}`);
-    const body = encodeURIComponent(guideContent);
-    window.open(`mailto:?subject=${subject}&body=${body}`);
-  };
-
   const steps = [
     { icon: FileText, title: "Upload Deck", color: "text-blue-500" },
-    { icon: Target, title: "Complete Analysis", color: "text-primary" },
-    { icon: BarChart3, title: "Review Scores", color: "text-success" },
-    { icon: Lightbulb, title: "Use Tools", color: "text-warning" },
-    { icon: Sparkles, title: "Generate Memo", color: "text-purple-500" },
+    { icon: Target, title: "Review Sections", color: "text-primary" },
+    { icon: Building2, title: "Dashboard", color: "text-success" },
+    { icon: BarChart3, title: "Request Analysis", color: "text-warning" },
+    { icon: Clock, title: "Wait", color: "text-muted-foreground" },
+    { icon: Sparkles, title: "Review Audit", color: "text-purple-500" },
   ];
 
   return (
@@ -140,7 +148,7 @@ export function StartupGuideDialog({ open, onOpenChange, acceleratorName }: Star
             Startup Guide
           </DialogTitle>
           <DialogDescription>
-            Share this guide with startups to help them use UglyBaby effectively
+            Copy and share this guide with startups to help them use UglyBaby effectively
           </DialogDescription>
         </DialogHeader>
 
@@ -155,41 +163,36 @@ export function StartupGuideDialog({ open, onOpenChange, acceleratorName }: Star
               {/* Quick visual overview */}
               <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-primary/5 to-transparent border border-primary/10">
                 <h4 className="text-sm font-semibold mb-3 text-foreground">Quick Start Journey</h4>
-                <div className="flex items-center justify-between gap-2">
+                <div className="grid grid-cols-6 gap-1">
                   {steps.map((step, i) => (
-                    <div key={step.title} className="flex items-center gap-2">
-                      <div className="flex flex-col items-center gap-1">
-                        <div className={cn(
-                          "w-10 h-10 rounded-xl flex items-center justify-center bg-muted/50",
-                          step.color
-                        )}>
-                          <step.icon className="w-5 h-5" />
-                        </div>
-                        <span className="text-[10px] text-muted-foreground text-center max-w-[60px]">
-                          {step.title}
-                        </span>
+                    <div key={step.title} className="flex flex-col items-center gap-1">
+                      <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center bg-muted/50",
+                        step.color
+                      )}>
+                        <step.icon className="w-4 h-4" />
                       </div>
-                      {i < steps.length - 1 && (
-                        <div className="w-4 h-px bg-border" />
-                      )}
+                      <span className="text-[9px] text-muted-foreground text-center leading-tight">
+                        {step.title}
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Main content */}
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <section>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Step 1: Upload Your Pitch Deck 📄</h3>
+                  <h3 className="text-base font-semibold text-foreground mb-2">Step 1: Upload Your Pitch Deck 📄</h3>
                   <p className="text-sm text-muted-foreground">
                     Start by uploading your pitch deck (PDF format works best). Our AI will analyze it and extract key information about your startup automatically.
                   </p>
                 </section>
 
                 <section>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Step 2: Complete Your Analysis 🎯</h3>
+                  <h3 className="text-base font-semibold text-foreground mb-2">Step 2: Review the Sections 🎯</h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    After the deck analysis, you'll see 8 key dimensions that investors evaluate:
+                    Review each of the 8 sections that investors evaluate:
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -203,7 +206,7 @@ export function StartupGuideDialog({ open, onOpenChange, acceleratorName }: Star
                       { name: "Vision", icon: Building2 },
                     ].map((item) => (
                       <div key={item.name} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <item.icon className="w-4 h-4 text-primary" />
+                        <item.icon className="w-3.5 h-3.5 text-primary" />
                         <span>{item.name}</span>
                       </div>
                     ))}
@@ -211,24 +214,58 @@ export function StartupGuideDialog({ open, onOpenChange, acceleratorName }: Star
                 </section>
 
                 <section>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Step 3: Review Your VC Quick Take 📊</h3>
+                  <h3 className="text-base font-semibold text-foreground mb-2">Step 3: Land on Your Dashboard 🏠</h3>
                   <p className="text-sm text-muted-foreground">
-                    Once completed, you'll receive a "VC Quick Take" - a summary of how investors might view your startup.
+                    Once sections are reviewed, access your startup dashboard to see your progress.
                   </p>
                 </section>
 
                 <section>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Step 4: Use Strategic Tools 🛠️</h3>
+                  <h3 className="text-base font-semibold text-foreground mb-2">Step 4: Request the Analysis 📊</h3>
                   <p className="text-sm text-muted-foreground">
-                    Access TAM Calculator, Unit Economics, Competitor Maps, and Investor Matching tools.
+                    From your dashboard, request your AI-powered investment analysis.
                   </p>
                 </section>
 
                 <section>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Step 5: Generate Your Memo 📝</h3>
+                  <h3 className="text-base font-semibold text-foreground mb-2">Step 5: Wait for the Analysis ⏳</h3>
                   <p className="text-sm text-muted-foreground">
-                    Generate a professional VC-style investment memorandum to share with investors.
+                    The analysis takes a few minutes. You'll be notified when it's ready.
                   </p>
+                </section>
+
+                <section>
+                  <h3 className="text-base font-semibold text-foreground mb-2">Step 6: Review Your Audit 📋</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Review your comprehensive Investment Audit with scores, VC Quick Take, and actionable feedback.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="text-base font-semibold text-foreground mb-2">Step 7: Use Strategic Tools 🛠️</h3>
+                  <div className="space-y-3 mt-3">
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Globe className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-foreground">Market Lens</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">TAM/SAM/SOM Calculator, Competitive Maps, Market Trends</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Users className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-foreground">Investor Network</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Find matching VCs by stage, sector, and geography</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                      <div className="flex items-center gap-2 mb-1">
+                        <BookOpen className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-foreground">Tools Library</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Unit Economics, Valuations, Fundraising Readiness</p>
+                    </div>
+                  </div>
                 </section>
 
                 <div className="p-4 rounded-xl bg-muted/30 border border-border">
@@ -256,36 +293,25 @@ export function StartupGuideDialog({ open, onOpenChange, acceleratorName }: Star
         {/* Actions */}
         <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
           <p className="text-xs text-muted-foreground">
-            Share this guide with your startups
+            Copy and share via your preferred channel
           </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShareEmail}
-              className="gap-2"
-            >
-              <Mail className="w-4 h-4" />
-              Email
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleCopy}
-              className="gap-2"
-            >
-              {copied ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4" />
-                  Copy Guide
-                </>
-              )}
-            </Button>
-          </div>
+          <Button
+            size="sm"
+            onClick={handleCopy}
+            className="gap-2"
+          >
+            {copied ? (
+              <>
+                <CheckCircle2 className="w-4 h-4" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4" />
+                Copy Guide
+              </>
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

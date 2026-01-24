@@ -125,9 +125,10 @@ const steps: Step[] = [
 interface AcceleratorProductGuideProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onComplete?: () => void; // Callback to trigger product tour after guide
 }
 
-export function AcceleratorProductGuide({ open, onOpenChange }: AcceleratorProductGuideProps) {
+export function AcceleratorProductGuide({ open, onOpenChange, onComplete }: AcceleratorProductGuideProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
   const handleNext = () => {
@@ -136,6 +137,10 @@ export function AcceleratorProductGuide({ open, onOpenChange }: AcceleratorProdu
     } else {
       onOpenChange(false);
       setCurrentStep(0);
+      // Trigger product tour after completing the guide
+      if (onComplete) {
+        setTimeout(() => onComplete(), 300);
+      }
     }
   };
 
