@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Plus, Layers, Calendar, Users, ChevronRight, Sparkles,
-  MoreHorizontal, CheckCircle2, Clock, ArrowLeft, Loader2
+  MoreHorizontal
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { CohortDetailDialog } from "@/components/accelerator/CohortDetailDialog";
+import { AddStartupToCohortDialog } from "@/components/accelerator/AddStartupToCohortDialog";
 
 interface Cohort {
   id: string;
@@ -32,17 +33,6 @@ interface Cohort {
   end_date: string | null;
   demo_day_date: string | null;
   is_active: boolean;
-}
-
-interface Company {
-  id: string;
-  name: string;
-  category: string | null;
-  stage: string;
-  public_score: number | null;
-  memo_content_generated: boolean;
-  created_at: string;
-  accelerator_invite_id: string | null;
 }
 
 interface AcceleratorCohortsViewProps {
@@ -61,40 +51,14 @@ export function AcceleratorCohortsView({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedCohort, setSelectedCohort] = useState<Cohort | null>(null);
-  const [cohortCompanies, setCohortCompanies] = useState<Company[]>([]);
-  const [loadingCompanies, setLoadingCompanies] = useState(false);
+  const [cohortDetailOpen, setCohortDetailOpen] = useState(false);
+  const [addStartupOpen, setAddStartupOpen] = useState(false);
   const [newCohort, setNewCohort] = useState({
     name: "",
     startDate: "",
     endDate: "",
     demoDayDate: "",
   });
-
-  // Fetch companies when a cohort is selected
-  useEffect(() => {
-    if (selectedCohort?.invite_id) {
-      fetchCohortCompanies(selectedCohort.invite_id);
-    }
-  }, [selectedCohort]);
-
-  const fetchCohortCompanies = async (inviteId: string) => {
-    setLoadingCompanies(true);
-    try {
-      const { data, error } = await supabase
-        .from("companies")
-        .select("id, name, category, stage, public_score, memo_content_generated, created_at, accelerator_invite_id")
-        .eq("accelerator_invite_id", inviteId)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setCohortCompanies(data || []);
-    } catch (error) {
-      console.error("Error fetching cohort companies:", error);
-      toast.error("Failed to load cohort startups");
-    } finally {
-      setLoadingCompanies(false);
-    }
-  };
 
   const handleCreateCohort = async () => {
     if (!newCohort.name.trim()) {
@@ -144,166 +108,23 @@ export function AcceleratorCohortsView({
     }
   };
 
-  const getScoreColor = (score: number | null) => {
-    if (!score) return "text-muted-foreground";
-    if (score >= 75) return "text-success";
-    if (score >= 60) return "text-primary";
-    if (score >= 45) return "text-warning";
-    return "text-destructive";
+  const handleCohortClick = (cohort: Cohort) => {
+    setSelectedCohort(cohort);
+    setCohortDetailOpen(true);
   };
 
-  // Detail view for a selected cohort
-  if (selectedCohort) {
-    return (
-      <div className="p-6 md:p-8 space-y-6">
-        {/* Back button and header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl p-6"
-          style={{
-            background: 'linear-gradient(135deg, hsl(330 20% 12% / 0.9) 0%, hsl(330 20% 8% / 0.8) 100%)',
-            backdropFilter: 'blur(40px)',
-          }}
-        >
-          <div className="absolute inset-0 rounded-2xl border border-white/[0.06]" />
-          <div className="relative z-10">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setSelectedCohort(null);
-                setCohortCompanies([]);
-              }}
-              className="mb-4 -ml-2"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              All Cohorts
-            </Button>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary/20 to-primary/10 flex items-center justify-center border border-white/[0.06]">
-                  <Layers className="w-7 h-7 text-secondary" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground">{selectedCohort.name}</h1>
-                  <div className="flex items-center gap-3 mt-1">
-                    {selectedCohort.is_active ? (
-                      <span className="inline-flex items-center gap-1.5 text-xs text-success">
-                        <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                        Active
-                      </span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Archived</span>
-                    )}
-                    {selectedCohort.demo_day_date && (
-                      <span className="text-xs text-muted-foreground">
-                        Demo Day: {new Date(selectedCohort.demo_day_date).toLocaleDateString()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="px-4 py-2 rounded-xl bg-success/10 border border-success/20">
-                  <span className="text-sm font-medium text-success">
-                    {cohortCompanies.filter(c => c.memo_content_generated).length} Ready
-                  </span>
-                </div>
-                <div className="px-4 py-2 rounded-xl bg-muted/30 border border-white/[0.06]">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {cohortCompanies.length} Total
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+  const handleAddStartupFromDetail = () => {
+    setCohortDetailOpen(false);
+    setAddStartupOpen(true);
+  };
 
-        {/* Companies list */}
-        {loadingCompanies ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
-        ) : cohortCompanies.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl p-12 text-center border border-white/[0.06]"
-            style={{
-              background: 'linear-gradient(135deg, hsl(330 20% 12% / 0.6) 0%, hsl(330 20% 8% / 0.4) 100%)',
-            }}
-          >
-            <Users className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-            <h3 className="font-semibold text-lg text-foreground mb-2">No startups in this cohort</h3>
-            <p className="text-muted-foreground">
-              Assign startups to this cohort from the Portfolio section
-            </p>
-          </motion.div>
-        ) : (
-          <div className="grid gap-4">
-            {cohortCompanies.map((company, i) => (
-              <motion.div
-                key={company.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 + i * 0.03 }}
-                whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                onClick={() => onViewStartup(company.id)}
-                className="group relative rounded-2xl p-5 cursor-pointer"
-                style={{
-                  background: 'linear-gradient(135deg, hsl(330 20% 12% / 0.6) 0%, hsl(330 20% 8% / 0.4) 100%)',
-                }}
-              >
-                <div className="absolute inset-0 rounded-2xl border border-white/[0.06] group-hover:border-primary/30 transition-colors" />
-                
-                <div className="relative z-10 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/10 flex items-center justify-center border border-white/[0.06]">
-                      <span className="text-lg font-bold text-foreground">
-                        {company.name.slice(0, 2).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                          {company.name}
-                        </h3>
-                        {company.memo_content_generated ? (
-                          <span className="px-2 py-0.5 rounded-full bg-success/15 text-success text-xs font-medium">
-                            Ready
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded-full bg-muted/30 text-muted-foreground text-xs flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            Pending
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {company.category || "Uncategorized"} • {company.stage}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <div className={cn("text-2xl font-bold", getScoreColor(company.public_score))}>
-                      {company.public_score || "—"}
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
+  const handleStartupAdded = () => {
+    setAddStartupOpen(false);
+    // Reopen the cohort detail to show updated list
+    setCohortDetailOpen(true);
+    onRefresh();
+  };
 
-  // Main cohorts grid view
   return (
     <div className="p-6 md:p-8 space-y-8">
       {/* Header */}
@@ -381,7 +202,7 @@ export function AcceleratorCohortsView({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 + i * 0.05 }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              onClick={() => setSelectedCohort(cohort)}
+              onClick={() => handleCohortClick(cohort)}
               className="group relative rounded-2xl p-5 cursor-pointer"
               style={{
                 background: 'linear-gradient(135deg, hsl(330 20% 12% / 0.6) 0%, hsl(330 20% 8% / 0.4) 100%)',
@@ -473,6 +294,24 @@ export function AcceleratorCohortsView({
           ))}
         </div>
       )}
+
+      {/* Cohort Detail Dialog */}
+      <CohortDetailDialog
+        open={cohortDetailOpen}
+        onOpenChange={setCohortDetailOpen}
+        cohort={selectedCohort}
+        onViewStartup={onViewStartup}
+        onAddStartup={handleAddStartupFromDetail}
+      />
+
+      {/* Add Startup to Cohort Dialog */}
+      <AddStartupToCohortDialog
+        open={addStartupOpen}
+        onOpenChange={setAddStartupOpen}
+        cohort={selectedCohort}
+        acceleratorId={acceleratorId}
+        onAdded={handleStartupAdded}
+      />
 
       {/* Create Cohort Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
