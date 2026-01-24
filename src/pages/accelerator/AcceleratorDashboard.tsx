@@ -179,7 +179,7 @@ export default function AcceleratorDashboard() {
       case "cohorts":
         return <AcceleratorCohortsView cohorts={cohorts} acceleratorId={accelerator.id} onRefresh={fetchData} onViewStartup={handleViewStartupFullPage} />;
       case "team":
-        return <AcceleratorTeam acceleratorId={accelerator.id} currentUserId={user?.id || ""} />;
+        return <AcceleratorTeam acceleratorId={accelerator.id} acceleratorName={accelerator.name} currentUserId={user?.id || ""} />;
       case "invites":
         return <AcceleratorInvites acceleratorId={accelerator.id} acceleratorName={accelerator.name} acceleratorSlug={accelerator.slug} />;
       case "analytics":

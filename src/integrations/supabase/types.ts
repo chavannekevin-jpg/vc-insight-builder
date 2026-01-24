@@ -219,6 +219,53 @@ export type Database = {
           },
         ]
       }
+      accelerator_team_invites: {
+        Row: {
+          accelerator_id: string
+          code: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          inviter_id: string
+          is_active: boolean | null
+          max_uses: number | null
+          role: string
+          uses: number | null
+        }
+        Insert: {
+          accelerator_id: string
+          code: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          inviter_id: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          role?: string
+          uses?: number | null
+        }
+        Update: {
+          accelerator_id?: string
+          code?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          inviter_id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          role?: string
+          uses?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accelerator_team_invites_accelerator_id_fkey"
+            columns: ["accelerator_id"]
+            isOneToOne: false
+            referencedRelation: "accelerators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       accelerators: {
         Row: {
           cohort_size_target: number | null
@@ -2631,6 +2678,10 @@ export type Database = {
       }
     }
     Functions: {
+      add_accelerator_member_with_invite: {
+        Args: { p_invite_code: string; p_user_id: string }
+        Returns: Json
+      }
       add_investor_role_with_invite: {
         Args: { p_invite_code: string; p_user_id: string }
         Returns: Json
