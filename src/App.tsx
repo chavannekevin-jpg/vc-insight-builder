@@ -157,6 +157,7 @@ const AcceleratorSignup = lazy(() => import("./pages/accelerator/AcceleratorSign
 const AcceleratorOnboarding = lazy(() => import("./pages/accelerator/AcceleratorOnboarding"));
 const AcceleratorDashboard = lazy(() => import("./pages/accelerator/AcceleratorDashboard"));
 const AcceleratorStartupDetail = lazy(() => import("./pages/accelerator/AcceleratorStartupDetail"));
+const AcceleratorStartupPreview = lazy(() => import("./pages/accelerator/AcceleratorStartupPreview"));
 const AcceleratorAnalytics = lazy(() => import("./pages/accelerator/AcceleratorAnalytics"));
 
 // Demo Ecosystem Pages
@@ -216,6 +217,7 @@ const App = () => (
             <Route path="/accelerator" element={<Navigate to="/accelerator/dashboard" replace />} />
             <Route path="/accelerator/dashboard" element={<AcceleratorDashboard />} />
             <Route path="/accelerator/startup/:id" element={<AcceleratorStartupDetail />} />
+            <Route path="/accelerator/startup/:id/preview" element={<AcceleratorStartupPreview />} />
             <Route path="/accelerator/analytics" element={<AcceleratorAnalytics />} />
             {/* Investor Routes */}
             <Route path="/investor" element={<InvestorLanding />} />

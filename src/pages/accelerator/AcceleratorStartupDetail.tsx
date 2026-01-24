@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   ArrowLeft, Building2, TrendingUp, Users, Target, 
   Lightbulb, DollarSign, BarChart3, Loader2, ExternalLink,
-  CheckCircle2, AlertTriangle, Clock, Layers, Eye, FileText
+  CheckCircle2, AlertTriangle, Clock, Layers, Eye
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,9 +13,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { AssignCohortDialog } from "@/components/accelerator/AssignCohortDialog";
 import { StartupPreviewCard } from "@/components/accelerator/StartupPreviewCard";
-import { AcceleratorStartupFullView } from "@/components/accelerator/AcceleratorStartupFullView";
 import { checkDashboardReadiness, DashboardReadinessResult } from "@/lib/dashboardReadiness";
-import { useMemoContent } from "@/hooks/useMemoContent";
 
 interface Company {
   id: string;
@@ -92,12 +90,8 @@ export default function AcceleratorStartupDetail() {
   const [acceleratorId, setAcceleratorId] = useState<string | null>(acceleratorIdFromUrl);
   const [assignCohortOpen, setAssignCohortOpen] = useState(false);
   const [showPreviewCard, setShowPreviewCard] = useState(false);
-  const [showFullAnalysis, setShowFullAnalysis] = useState(false);
   const [dashboardReadiness, setDashboardReadiness] = useState<DashboardReadinessResult | null>(null);
   const [vcQuickTake, setVcQuickTake] = useState<any>(null);
-
-  // Use the same useMemoContent hook that founders use for full data fidelity
-  const { data: memoData, isLoading: memoLoading } = useMemoContent(id);
 
   const verdictText = (() => {
     const v = vcQuickTake?.verdict;
@@ -279,34 +273,6 @@ export default function AcceleratorStartupDetail() {
     );
   }
 
-  // Show full analysis view (uses useMemoContent for full data)
-  if (showFullAnalysis && memoData && dashboardReadiness?.isReady) {
-    return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
-          <div className="max-w-6xl mx-auto px-4 py-4">
-            <Button variant="ghost" size="sm" onClick={() => setShowFullAnalysis(false)}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Overview
-            </Button>
-          </div>
-        </header>
-
-        <main className="max-w-6xl mx-auto px-4 py-8">
-          <AcceleratorStartupFullView
-            companyName={company.name}
-            companyId={company.id}
-            category={company.category}
-            stage={company.stage}
-            score={company.public_score}
-            createdAt={company.created_at}
-            memoData={memoData}
-          />
-        </main>
-      </div>
-    );
-  }
-
   // Show preview card mode
   if (showPreviewCard && dashboardReadiness?.isReady) {
     return (
@@ -360,12 +326,11 @@ export default function AcceleratorStartupDetail() {
                   <Button
                     variant="default"
                     size="sm"
-                    onClick={() => setShowFullAnalysis(true)}
+                    onClick={() => navigate(`/accelerator/startup/${id}/preview`)}
                     className="gap-2"
-                    disabled={memoLoading}
                   >
-                    <FileText className="w-4 h-4" />
-                    {memoLoading ? "Loading..." : "Full Analysis"}
+                    <ExternalLink className="w-4 h-4" />
+                    View Ecosystem
                   </Button>
                   <Button
                     variant="outline"
@@ -374,7 +339,7 @@ export default function AcceleratorStartupDetail() {
                     className="gap-2"
                   >
                     <Eye className="w-4 h-4" />
-                    Quick Preview
+                    Quick Summary
                   </Button>
                 </>
               )}
