@@ -44,6 +44,14 @@ export default function Auth() {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Check if user is admin - admins can access startup hub without a company
+          const { data: adminRole } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", session.user.id)
+            .eq("role", "admin")
+            .maybeSingle();
+
           const redirect = searchParams.get('redirect') || '/hub';
           // Use setTimeout to ensure navigation happens after state updates
           setTimeout(() => {
