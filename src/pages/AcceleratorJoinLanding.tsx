@@ -172,7 +172,7 @@ export default function AcceleratorJoinLanding() {
           slug: accelerator.slug,
           description: accelerator.description,
           defaultDiscount: existingInvite?.discount_percent ?? accelerator.default_discount_percent ?? 0,
-          inviteId: inviteId || accelerator.id, // Use accelerator ID as fallback
+          inviteId: inviteId || null, // Only store valid invite ID, null otherwise
         });
       } catch (error) {
         console.error("Error fetching accelerator:", error);
@@ -185,11 +185,22 @@ export default function AcceleratorJoinLanding() {
     fetchAccelerator();
   }, [slug]);
 
-  // Store invite ID in sessionStorage for use in Intake
+  // Store accelerator info in sessionStorage for use in Intake
   useEffect(() => {
-    if (acceleratorInfo?.inviteId) {
-      sessionStorage.setItem('accelerator_invite_id', acceleratorInfo.inviteId);
+    if (acceleratorInfo) {
+      // Store accelerator ID always (needed to create invite after auth)
+      sessionStorage.setItem('accelerator_id', acceleratorInfo.id);
+      sessionStorage.setItem('accelerator_name', acceleratorInfo.name);
+      sessionStorage.setItem('accelerator_slug', acceleratorInfo.slug);
       sessionStorage.setItem('accelerator_discount_percent', String(acceleratorInfo.defaultDiscount));
+      
+      // Only store invite ID if we have a valid one
+      if (acceleratorInfo.inviteId) {
+        sessionStorage.setItem('accelerator_invite_id', acceleratorInfo.inviteId);
+      } else {
+        // Clear any stale invite ID
+        sessionStorage.removeItem('accelerator_invite_id');
+      }
     }
   }, [acceleratorInfo]);
 
