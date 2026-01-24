@@ -236,6 +236,59 @@ export default function AdminAccelerators() {
   return (
     <AdminLayout title="Accelerator Ecosystems">
       <div className="space-y-6">
+        {/* How Invite Flows Work */}
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Ticket className="h-5 w-5 text-primary" />
+              Startup Invite System Guide
+            </CardTitle>
+            <CardDescription>
+              Three ways for accelerators to bring startups into their ecosystem
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm space-y-4">
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-lg bg-background/80 border border-border/50">
+                <h4 className="font-semibold mb-2 text-foreground">1. Admin Claim Code</h4>
+                <p className="text-muted-foreground text-xs mb-3">
+                  You generate a claim code for a specific startup. Give this code to the accelerator, who enters it in Settings → Claim Startups.
+                </p>
+                <div className="text-xs space-y-1 text-muted-foreground/80">
+                  <p>• Use "Generate Claim Code" in Users Hub</p>
+                  <p>• Code format: CLAIM-XXXXXX</p>
+                  <p>• Single-use, expires in 30 days</p>
+                </div>
+              </div>
+              <div className="p-4 rounded-lg bg-background/80 border border-border/50">
+                <h4 className="font-semibold mb-2 text-foreground">2. Accelerator Invite Code</h4>
+                <p className="text-muted-foreground text-xs mb-3">
+                  Accelerator creates invite codes from their dashboard. Existing startups enter the code in Company Profile → Accelerator section.
+                </p>
+                <div className="text-xs space-y-1 text-muted-foreground/80">
+                  <p>• Discount from "Default Discount %" column</p>
+                  <p>• Reusable based on max uses setting</p>
+                  <p>• Links startup + applies discount</p>
+                </div>
+              </div>
+              <div className="p-4 rounded-lg bg-background/80 border border-border/50">
+                <h4 className="font-semibold mb-2 text-foreground">3. Signup Invite Link</h4>
+                <p className="text-muted-foreground text-xs mb-3">
+                  Accelerator shares invite link with new startups. They sign up via the link, auto-join the ecosystem with discount applied.
+                </p>
+                <div className="text-xs space-y-1 text-muted-foreground/80">
+                  <p>• URL: /join/[accelerator-slug]?code=XXX</p>
+                  <p>• New users only, auto-links on signup</p>
+                  <p>• Best for cohort onboarding</p>
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground pt-2 border-t border-border/50">
+              <strong>Discount Config:</strong> Click the % badge or settings icon on any accelerator row to set their default discount (0-100%). This discount applies to all new invite codes they create.
+            </p>
+          </CardContent>
+        </Card>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>

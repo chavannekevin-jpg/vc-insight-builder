@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -17,6 +17,7 @@ import {
   Check,
   Trash2,
   Loader2,
+  Shield,
 } from "lucide-react";
 import {
   Sidebar,
@@ -81,6 +82,26 @@ export function AcceleratorSidebar({
   const [copied, setCopied] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user has admin role
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      
+      setIsAdmin(!!data);
+    };
+    
+    checkAdminRole();
+  }, []);
 
   const handleMouseEnter = () => {
     if (collapsed) {
@@ -268,6 +289,18 @@ export function AcceleratorSidebar({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => navigate("/admin")}
+                    tooltip="Admin Panel"
+                    className="group rounded-lg transition-colors hover:bg-amber-500/10 text-amber-600 hover:translate-x-0.5"
+                  >
+                    <Shield className="w-4 h-4" />
+                    <span className="font-medium text-sm">Admin Panel</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={handleSignOut}

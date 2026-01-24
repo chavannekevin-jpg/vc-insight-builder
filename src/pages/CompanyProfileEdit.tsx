@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CompanyReadinessScore } from "@/components/CompanyReadinessScore";
+import { JoinAcceleratorCard } from "@/components/portal/JoinAcceleratorCard";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -38,6 +39,7 @@ export default function CompanyProfileEdit() {
   const [companyId, setCompanyId] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [companyDescription, setCompanyDescription] = useState("");
+  const [acceleratorName, setAcceleratorName] = useState<string | null>(null);
   const [sectionData, setSectionData] = useState<SectionData>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -75,6 +77,16 @@ export default function CompanyProfileEdit() {
       setCompanyId(company.id);
       setCompanyName(company.name);
       setCompanyDescription(company.description || "");
+
+      // Check if part of an accelerator
+      if (company.accelerator_invite_id) {
+        const { data: inviteData } = await supabase
+          .from("accelerator_invites")
+          .select("accelerator_name")
+          .eq("id", company.accelerator_invite_id)
+          .single();
+        setAcceleratorName(inviteData?.accelerator_name || null);
+      }
 
       // Load all memo responses for this company
       const { data: responses, error: responsesError } = await supabase
@@ -323,6 +335,21 @@ export default function CompanyProfileEdit() {
               />
             </CardContent>
           </Card>
+          {/* Accelerator Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Accelerator</CardTitle>
+              <CardDescription>Join an accelerator ecosystem using their invite code</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <JoinAcceleratorCard 
+                companyId={companyId}
+                currentAcceleratorName={acceleratorName}
+                onJoin={loadCompanyProfile}
+              />
+            </CardContent>
+          </Card>
+
 
           {/* Section Forms */}
           <div className="space-y-4">
