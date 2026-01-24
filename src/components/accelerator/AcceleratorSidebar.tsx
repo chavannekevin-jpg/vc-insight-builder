@@ -13,8 +13,6 @@ import {
   Building2,
   UserPlus,
   Calendar,
-  Copy,
-  Check,
   Trash2,
   Loader2,
   Shield,
@@ -43,6 +41,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { InviteStartupDialog } from "./InviteStartupDialog";
 
 const mainMenuItems = [
   { title: "Overview", icon: LayoutDashboard, section: "overview" },
@@ -79,7 +78,6 @@ export function AcceleratorSidebar({
   const navigate = useNavigate();
   const { state, setOpen } = useSidebar();
   const collapsed = state === "collapsed";
-  const [copied, setCopied] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -141,14 +139,6 @@ export function AcceleratorSidebar({
     }
   };
 
-  const copySlug = () => {
-    if (accelerator?.slug) {
-      navigator.clipboard.writeText(`${window.location.origin}/join/${accelerator.slug}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      toast.success("Invite link copied!");
-    }
-  };
 
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -248,23 +238,19 @@ export function AcceleratorSidebar({
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Quick Invite Button */}
-        {!collapsed && accelerator?.slug && (
+        {/* Invite Startup Button */}
+        {!collapsed && accelerator && (
           <div className="px-4 py-3">
-            <button
-              onClick={copySlug}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 hover:bg-primary/15 border border-primary/20 transition-colors group"
-            >
-              <div className="w-8 h-8 rounded-md bg-primary/20 flex items-center justify-center">
-                <UserPlus className="w-4 h-4 text-primary" />
-              </div>
-              <span className="text-sm font-medium text-foreground flex-1 text-left">Invite Startups</span>
-              {copied ? (
-                <Check className="w-4 h-4 text-success" />
-              ) : (
-                <Copy className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              )}
-            </button>
+            <InviteStartupDialog accelerator={accelerator}>
+              <button
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 hover:bg-primary/15 border border-primary/20 transition-colors group"
+              >
+                <div className="w-8 h-8 rounded-md bg-primary/20 flex items-center justify-center">
+                  <UserPlus className="w-4 h-4 text-primary" />
+                </div>
+                <span className="text-sm font-medium text-foreground flex-1 text-left">Invite Startups</span>
+              </button>
+            </InviteStartupDialog>
           </div>
         )}
 
