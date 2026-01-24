@@ -1,7 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { DemoModeBanner } from "@/components/acceleratorDemo/DemoModeBanner";
-import { AcceleratorDemoHeader } from "@/components/acceleratorDemo/AcceleratorDemoHeader";
-import { DemoWrapper } from "@/components/acceleratorDemo/DemoWrapper";
+import { AcceleratorDemoLayout } from "@/components/acceleratorDemo/AcceleratorDemoLayout";
 import { getStartupById } from "@/data/acceleratorDemo/demoStartups";
 import { getDemoMemo } from "@/data/acceleratorDemo/demoMemos";
 import { Button } from "@/components/ui/button";
@@ -17,7 +15,8 @@ import {
   DollarSign,
   BarChart3,
   Rocket,
-  ChevronRight
+  ChevronRight,
+  ArrowRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,10 +32,10 @@ const sectionIcons: Record<string, any> = {
 };
 
 const getScoreColor = (score: number) => {
-  if (score >= 75) return "text-success";
+  if (score >= 75) return "text-emerald-400";
   if (score >= 60) return "text-primary";
-  if (score >= 45) return "text-warning";
-  return "text-destructive";
+  if (score >= 45) return "text-amber-400";
+  return "text-rose-400";
 };
 
 const StartupMemo = () => {
@@ -47,14 +46,16 @@ const StartupMemo = () => {
 
   if (!startup || !memoData) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Memo not found</h1>
-          <Button onClick={() => navigate("/accelerator-demo/cohort")}>
-            Back to Cohort
-          </Button>
+      <AcceleratorDemoLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <h1 className="text-xl font-bold mb-2">Memo not found</h1>
+            <Button onClick={() => navigate("/accelerator-demo/cohort")}>
+              Back to Portfolio
+            </Button>
+          </div>
         </div>
-      </div>
+      </AcceleratorDemoLayout>
     );
   }
 
@@ -70,12 +71,8 @@ const StartupMemo = () => {
   };
 
   return (
-    <DemoWrapper>
-    <div className="min-h-screen bg-background">
-      <DemoModeBanner />
-      <AcceleratorDemoHeader />
-
-      <main className="max-w-4xl mx-auto px-4 py-8">
+    <AcceleratorDemoLayout>
+      <div className="p-6 max-w-4xl mx-auto">
         {/* Back Button */}
         <Button
           variant="ghost"
@@ -90,31 +87,31 @@ const StartupMemo = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <FileText className="w-6 h-6 text-primary" />
+            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
+              <FileText className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold">{startup.name} Investment Memo</h1>
-              <p className="text-muted-foreground">{startup.tagline}</p>
+              <h1 className="text-xl font-bold">{startup.name} Investment Memo</h1>
+              <p className="text-sm text-muted-foreground">{startup.tagline}</p>
             </div>
           </div>
 
           {/* Hero Statement */}
-          <div className="p-6 bg-primary/5 border border-primary/20 rounded-xl shadow-sm">
-            <p className="text-lg font-medium text-foreground leading-relaxed">
+          <div className="p-5 bg-primary/5 border border-primary/20 rounded-xl">
+            <p className="text-sm font-medium text-foreground leading-relaxed">
               {memoData.heroStatement}
             </p>
           </div>
         </div>
 
         {/* VC Quick Take */}
-        <section className="mb-12">
+        <section className="mb-10">
           <MemoVCQuickTake quickTake={memoData.vcQuickTake} showTeaser={false} />
         </section>
 
         {/* Section Navigation */}
-        <nav className="mb-8 p-4 bg-card border border-border rounded-xl shadow-sm">
-          <h3 className="text-sm font-semibold text-muted-foreground mb-3">Jump to Section</h3>
+        <nav className="mb-8 p-4 rounded-xl bg-card/40 backdrop-blur-xl border border-white/[0.06]">
+          <h3 className="text-xs font-semibold text-muted-foreground mb-3">Jump to Section</h3>
           <div className="flex flex-wrap gap-2">
             {memoData.sections.map((section, index) => {
               const Icon = sectionIcons[section.title] || FileText;
@@ -125,11 +122,11 @@ const StartupMemo = () => {
                   onClick={() => {
                     document.getElementById(`section-${index}`)?.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 hover:bg-muted rounded-lg text-sm transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] rounded-lg text-xs transition-colors"
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-3 h-3" />
                   {section.title}
-                  <span className={cn("text-xs font-bold", getScoreColor(score))}>
+                  <span className={cn("font-bold", getScoreColor(score))}>
                     {score}
                   </span>
                 </button>
@@ -139,7 +136,7 @@ const StartupMemo = () => {
         </nav>
 
         {/* Sections */}
-        <div className="space-y-12">
+        <div className="space-y-10">
           {memoData.sections.map((section, index) => {
             const Icon = sectionIcons[section.title] || FileText;
             const score = sectionScoreMap[section.title];
@@ -153,29 +150,29 @@ const StartupMemo = () => {
                 {/* Section Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-primary" />
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-primary" />
                     </div>
-                    <h2 className="text-xl font-bold">{section.title}</h2>
+                    <h2 className="text-lg font-bold">{section.title}</h2>
                   </div>
-                  <div className={cn("text-2xl font-bold", getScoreColor(score))}>
-                    {score}<span className="text-sm text-muted-foreground">/100</span>
+                  <div className={cn("text-xl font-bold", getScoreColor(score))}>
+                    {score}<span className="text-xs text-muted-foreground">/100</span>
                   </div>
                 </div>
 
                 {/* Section Content */}
-                <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-                  <p className="text-foreground/90 leading-relaxed mb-6">
+                <div className="p-5 rounded-xl bg-card/40 backdrop-blur-xl border border-white/[0.06]">
+                  <p className="text-sm text-foreground/90 leading-relaxed mb-5">
                     {section.narrative}
                   </p>
 
                   {/* Key Points */}
                   <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-3">Key Points</h4>
-                    <ul className="space-y-2">
+                    <h4 className="text-xs font-semibold text-muted-foreground mb-2">Key Points</h4>
+                    <ul className="space-y-1.5">
                       {section.keyPoints.map((point, pointIndex) => (
-                        <li key={pointIndex} className="flex items-start gap-2 text-sm">
-                          <ChevronRight className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                        <li key={pointIndex} className="flex items-start gap-2 text-xs">
+                          <ChevronRight className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
                           <span className="text-foreground/80">{point}</span>
                         </li>
                       ))}
@@ -188,18 +185,18 @@ const StartupMemo = () => {
         </div>
 
         {/* Bottom CTA */}
-        <div className="mt-12 p-6 bg-primary/5 border border-primary/20 rounded-xl text-center shadow-sm">
-          <h3 className="text-lg font-bold mb-2">Want this analysis for your cohort?</h3>
-          <p className="text-muted-foreground mb-4">
-            Get detailed fundability analysis for every startup in your accelerator program.
+        <div className="mt-10 p-5 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 text-center">
+          <h3 className="text-base font-bold mb-2">Want this for your cohort?</h3>
+          <p className="text-xs text-muted-foreground mb-4">
+            Get detailed fundability analysis for every startup in your accelerator.
           </p>
-          <Button onClick={() => navigate("/accelerators")}>
-            Learn More About Accelerator Plans
+          <Button size="sm" onClick={() => navigate("/accelerator/signup")}>
+            Create Your Ecosystem
+            <ArrowRight className="w-3 h-3 ml-2" />
           </Button>
         </div>
-      </main>
-    </div>
-    </DemoWrapper>
+      </div>
+    </AcceleratorDemoLayout>
   );
 };
 

@@ -4,182 +4,258 @@ import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   Users,
-  BarChart3,
+  Briefcase,
   Layers,
-  UserPlus,
+  Mail,
+  BarChart3,
   Settings,
-  ArrowLeft,
   Building2,
+  HelpCircle,
+  BookOpen,
+  ArrowLeft,
   RotateCcw,
-  ChevronLeft,
-  ChevronRight
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { DEMO_ACCELERATOR } from "@/data/acceleratorDemo/acceleratorProfile";
+
+const mainMenuItems = [
+  { title: "Overview", icon: LayoutDashboard, path: "/accelerator-demo", tourId: "tour-overview" },
+  { title: "Portfolio", icon: Briefcase, path: "/accelerator-demo/cohort", tourId: "tour-portfolio" },
+  { title: "Cohorts", icon: Layers, path: null, tourId: "tour-cohorts", disabled: true },
+  { title: "Team", icon: Users, path: null, tourId: "tour-team", disabled: true },
+];
+
+const toolsMenuItems = [
+  { title: "Invites", icon: Mail, path: null, tourId: "tour-invites", disabled: true },
+  { title: "Analytics", icon: BarChart3, path: "/accelerator-demo/analytics", tourId: "tour-analytics" },
+];
 
 interface AcceleratorDemoSidebarProps {
   onRestartTour?: () => void;
 }
 
-const navItems = [
-  {
-    id: "overview",
-    label: "Overview",
-    icon: LayoutDashboard,
-    path: "/accelerator-demo",
-    tourId: "sidebar-overview"
-  },
-  {
-    id: "portfolio",
-    label: "Portfolio",
-    icon: Users,
-    path: "/accelerator-demo/cohort",
-    tourId: "sidebar-portfolio"
-  },
-  {
-    id: "analytics",
-    label: "Analytics",
-    icon: BarChart3,
-    path: "/accelerator-demo/analytics",
-    tourId: "sidebar-analytics"
-  },
-  {
-    id: "cohorts",
-    label: "Cohorts",
-    icon: Layers,
-    path: null, // Disabled in demo
-    tourId: "sidebar-cohorts",
-    disabled: true
-  },
-  {
-    id: "team",
-    label: "Team",
-    icon: UserPlus,
-    path: null,
-    tourId: "sidebar-team",
-    disabled: true
-  },
-  {
-    id: "settings",
-    label: "Settings",
-    icon: Settings,
-    path: null,
-    tourId: "sidebar-settings",
-    disabled: true
-  }
-];
-
 export function AcceleratorDemoSidebar({ onRestartTour }: AcceleratorDemoSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { state, setOpen } = useSidebar();
+  const collapsed = state === "collapsed";
 
-  const currentPath = location.pathname;
+  const handleMouseEnter = () => {
+    if (collapsed) {
+      setOpen(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setOpen(false);
+  };
+
+  const isActive = (path: string | null) => {
+    if (!path) return false;
+    if (path === "/accelerator-demo") {
+      return location.pathname === "/accelerator-demo";
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
 
   return (
-    <motion.aside
-      className={cn(
-        "fixed left-0 top-0 h-full bg-card/60 backdrop-blur-2xl border-r border-border/50 z-40 flex flex-col",
-        isCollapsed ? "w-16" : "w-64"
-      )}
-      initial={{ x: -100, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+    <Sidebar 
+      collapsible="icon" 
+      className="border-r border-white/[0.06] bg-gradient-to-b from-card/60 via-card/40 to-card/60 backdrop-blur-2xl"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      {/* Header */}
-      <div className={cn(
-        "p-4 border-b border-border/50 flex items-center gap-3",
-        isCollapsed && "justify-center"
-      )}>
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0">
-          <Building2 className="w-5 h-5 text-primary-foreground" />
-        </div>
-        {!isCollapsed && (
-          <div className="overflow-hidden">
-            <h2 className="font-semibold text-foreground text-sm truncate">Ugly Baby's Foundry</h2>
-            <p className="text-xs text-muted-foreground">Demo Mode</p>
+      <SidebarContent className="flex flex-col h-full">
+        {/* Accelerator Profile Section */}
+        <div className={`p-4 border-b border-white/[0.06] ${collapsed ? "px-2" : ""}`}>
+          <div className={`flex items-center gap-3 ${!collapsed ? "p-3 rounded-xl bg-white/[0.04] border border-white/[0.04]" : ""}`}>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-semibold text-sm flex-shrink-0">
+              {getInitials(DEMO_ACCELERATOR.name)}
+            </div>
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-sm truncate text-foreground">{DEMO_ACCELERATOR.name}</p>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">Demo</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Collapse toggle */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-card border border-border/50 flex items-center justify-center hover:bg-muted transition-colors"
-      >
-        {isCollapsed ? (
-          <ChevronRight className="w-3 h-3 text-muted-foreground" />
-        ) : (
-          <ChevronLeft className="w-3 h-3 text-muted-foreground" />
-        )}
-      </button>
+        {/* Main Menu */}
+        <SidebarGroup className="mt-2">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium px-4 mb-1">
+            Main
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="px-2">
+            <SidebarMenu>
+              {mainMenuItems.map((item) => (
+                <SidebarMenuItem key={item.title} id={item.tourId}>
+                  <SidebarMenuButton
+                    onClick={() => item.path && navigate(item.path)}
+                    isActive={isActive(item.path)}
+                    tooltip={item.title}
+                    disabled={item.disabled}
+                    className={`group relative rounded-xl transition-all duration-300 ${
+                      isActive(item.path)
+                        ? "bg-primary/10 text-primary shadow-[0_0_20px_rgba(var(--primary),0.1)]" 
+                        : item.disabled
+                          ? "text-muted-foreground/30 cursor-not-allowed"
+                          : "hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
+                    }`}
+                  >
+                    {isActive(item.path) && (
+                      <motion.div
+                        layoutId="demoActiveIndicator"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full"
+                      />
+                    )}
+                    <item.icon className="w-4 h-4" />
+                    <span className="font-medium text-sm flex-1">{item.title}</span>
+                    {item.disabled && !collapsed && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground/50">
+                        Demo
+                      </span>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = item.path === currentPath || 
-            (item.path && currentPath.startsWith(item.path) && item.path !== "/accelerator-demo");
-          
-          return (
-            <button
-              key={item.id}
-              id={item.tourId}
-              onClick={() => item.path && !item.disabled && navigate(item.path)}
-              disabled={item.disabled}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
-                isCollapsed && "justify-center px-2",
-                isActive 
-                  ? "bg-primary/10 text-primary border border-primary/20" 
-                  : item.disabled
-                    ? "text-muted-foreground/40 cursor-not-allowed"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              <Icon className={cn("w-5 h-5 shrink-0", isActive && "text-primary")} />
-              {!isCollapsed && (
-                <>
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {item.disabled && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+        {/* Tools Menu */}
+        <SidebarGroup className="mt-4">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium px-4 mb-1">
+            Tools
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="px-2">
+            <SidebarMenu>
+              {toolsMenuItems.map((item) => (
+                <SidebarMenuItem key={item.title} id={item.tourId}>
+                  <SidebarMenuButton
+                    onClick={() => item.path && navigate(item.path)}
+                    isActive={isActive(item.path)}
+                    tooltip={item.title}
+                    disabled={item.disabled}
+                    className={`group relative rounded-xl transition-all duration-300 ${
+                      isActive(item.path)
+                        ? "bg-primary/10 text-primary shadow-[0_0_20px_rgba(var(--primary),0.1)]" 
+                        : item.disabled
+                          ? "text-muted-foreground/30 cursor-not-allowed"
+                          : "hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
+                    }`}
+                  >
+                    {isActive(item.path) && (
+                      <motion.div
+                        layoutId="demoActiveIndicator"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full"
+                      />
+                    )}
+                    <item.icon className="w-4 h-4" />
+                    <span className="font-medium text-sm flex-1">{item.title}</span>
+                    {item.disabled && !collapsed && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground/50">
+                        Demo
+                      </span>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Guides Menu */}
+        <SidebarGroup className="mt-4">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium px-4 mb-1">
+            Guides
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="px-2">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Product Guide"
+                  disabled
+                  className="group rounded-xl transition-all duration-300 text-muted-foreground/30 cursor-not-allowed"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  <span className="font-medium text-sm flex-1">Product Guide</span>
+                  {!collapsed && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground/50">
                       Demo
                     </span>
                   )}
-                </>
-              )}
-            </button>
-          );
-        })}
-      </nav>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Startup Guide"
+                  disabled
+                  className="group rounded-xl transition-all duration-300 text-muted-foreground/30 cursor-not-allowed"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span className="font-medium text-sm flex-1">Startup Guide</span>
+                  {!collapsed && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground/50">
+                      Demo
+                    </span>
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-      {/* Footer */}
-      <div className="p-3 border-t border-border/50 space-y-2">
-        {onRestartTour && !isCollapsed && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onRestartTour}
-            className="w-full justify-start text-muted-foreground hover:text-foreground"
-          >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Restart Tour
-          </Button>
-        )}
-        
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate("/accelerators")}
-          className={cn(
-            "w-full border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground",
-            isCollapsed && "justify-center px-2"
-          )}
-        >
-          <ArrowLeft className="w-4 h-4 shrink-0" />
-          {!isCollapsed && <span className="ml-2">Back to Landing</span>}
-        </Button>
-      </div>
-    </motion.aside>
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Footer Actions */}
+        <SidebarGroup className="border-t border-white/[0.06] pt-2 pb-2">
+          <SidebarGroupContent className="px-2">
+            <SidebarMenu>
+              {onRestartTour && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={onRestartTour}
+                    tooltip="Restart Tour"
+                    className="group rounded-xl transition-all duration-300 hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    <span className="font-medium text-sm">Restart Tour</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => navigate("/accelerators")}
+                  tooltip="Back to Landing"
+                  className="group rounded-xl transition-all duration-300 hover:bg-primary/10 text-primary hover:text-primary"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="font-medium text-sm">Back to Landing</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
 }
