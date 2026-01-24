@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, Save, Loader2, Trash2, UserPlus } from "lucide-react";
+import { Building2, Save, Loader2, Trash2, UserPlus, ArrowRightLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,18 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AcceleratorClaimStartup } from "./AcceleratorClaimStartup";
+import { AcceleratorSelectDialog } from "@/components/accelerator/AcceleratorSelectDialog";
+import { useAuth } from "@/hooks/useAuth";
+
+interface Accelerator {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  description: string | null;
+  onboarding_completed: boolean | null;
+  created_at: string | null;
+}
 
 interface AcceleratorSettingsProps {
   accelerator: {
@@ -34,6 +46,7 @@ interface AcceleratorSettingsProps {
 
 export function AcceleratorSettings({ accelerator, onUpdate }: AcceleratorSettingsProps) {
   const navigate = useNavigate();
+  const { user, isAdmin } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -42,6 +55,45 @@ export function AcceleratorSettings({ accelerator, onUpdate }: AcceleratorSettin
     description: accelerator.description || "",
     websiteUrl: accelerator.website_url || "",
   });
+  
+  // Ecosystem switcher state (admin only)
+  const [showSwitcherDialog, setShowSwitcherDialog] = useState(false);
+  const [allAccelerators, setAllAccelerators] = useState<Accelerator[]>([]);
+  const [loadingAccelerators, setLoadingAccelerators] = useState(false);
+
+  // Fetch all accelerators when admin opens the switcher
+  const fetchAllAccelerators = async () => {
+    if (!user) return;
+    
+    setLoadingAccelerators(true);
+    try {
+      // Admins can see all accelerators
+      const { data, error } = await supabase
+        .from("accelerators")
+        .select("id, name, slug, logo_url, description, onboarding_completed, created_at")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setAllAccelerators(data || []);
+    } catch (error) {
+      console.error("Error fetching accelerators:", error);
+      toast.error("Failed to load accelerators");
+    } finally {
+      setLoadingAccelerators(false);
+    }
+  };
+
+  const handleOpenSwitcher = () => {
+    fetchAllAccelerators();
+    setShowSwitcherDialog(true);
+  };
+
+  const handleSelectAccelerator = (acc: Accelerator) => {
+    setShowSwitcherDialog(false);
+    if (acc.id !== accelerator.id) {
+      navigate(`/accelerator/dashboard?id=${acc.id}`);
+    }
+  };
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
@@ -102,6 +154,29 @@ export function AcceleratorSettings({ accelerator, onUpdate }: AcceleratorSettin
       </div>
 
       <div className="max-w-2xl space-y-6">
+        {/* Admin: Switch Ecosystem */}
+        {isAdmin && (
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <ArrowRightLeft className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">Switch Ecosystem</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Jump to another accelerator dashboard
+                  </p>
+                </div>
+              </div>
+              <Button onClick={handleOpenSwitcher} variant="outline" className="gap-2">
+                View All
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Profile Card */}
         <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-6">
           <div className="flex items-center gap-4 mb-6 pb-6 border-b border-border/30">
@@ -227,6 +302,15 @@ export function AcceleratorSettings({ accelerator, onUpdate }: AcceleratorSettin
           </AlertDialog>
         </div>
       </div>
+
+      {/* Ecosystem Selection Dialog */}
+      <AcceleratorSelectDialog
+        open={showSwitcherDialog}
+        onOpenChange={setShowSwitcherDialog}
+        accelerators={allAccelerators}
+        onSelect={handleSelectAccelerator}
+        isLoading={loadingAccelerators}
+      />
     </div>
   );
 }
