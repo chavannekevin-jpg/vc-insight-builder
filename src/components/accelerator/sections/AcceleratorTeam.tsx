@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Plus, Shield, Crown, UserMinus, Loader2, Copy, Check, Link2, Sparkles } from "lucide-react";
+import { Users, Plus, Crown, UserMinus, Loader2, Copy, Check, Link2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -12,13 +12,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -50,9 +43,7 @@ interface AcceleratorTeamProps {
 
 const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
   head: { label: "Ecosystem Head", icon: Crown, color: "text-warning" },
-  admin: { label: "Admin", icon: Shield, color: "text-primary" },
-  member: { label: "Member", icon: Users, color: "text-muted-foreground" },
-  mentor: { label: "Mentor", icon: Users, color: "text-success" },
+  member: { label: "Team Member", icon: Users, color: "text-primary" },
 };
 
 export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId }: AcceleratorTeamProps) {
@@ -61,7 +52,6 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId 
   const [isLoading, setIsLoading] = useState(true);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [inviteRole, setInviteRole] = useState("member");
   const [maxUses, setMaxUses] = useState("5");
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [generatedInvite, setGeneratedInvite] = useState<{ code: string; link: string } | null>(null);
@@ -120,7 +110,7 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId 
         .insert({
           accelerator_id: acceleratorId,
           code,
-          role: inviteRole,
+          role: "member",
           inviter_id: currentUserId,
           max_uses: maxUses ? parseInt(maxUses) : null,
         })
@@ -182,7 +172,6 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId 
 
   const resetDialog = () => {
     setIsInviteOpen(false);
-    setInviteRole("member");
     setMaxUses("5");
     setGeneratedInvite(null);
   };
@@ -340,18 +329,10 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId 
           
           {!generatedInvite ? (
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Role for Invited Members</Label>
-                <Select value={inviteRole} onValueChange={setInviteRole}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Admin - Full access</SelectItem>
-                    <SelectItem value="member">Member - View access</SelectItem>
-                    <SelectItem value="mentor">Mentor - Startup access</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                <p className="text-sm text-muted-foreground">
+                  Team members will have the same access as the ecosystem head, allowing them to view and manage all portfolio startups.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label>Max Uses (leave empty for unlimited)</Label>
@@ -429,7 +410,7 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId 
               </div>
               
               <p className="text-xs text-muted-foreground">
-                Share this code or link with your team members. They'll be added as a <strong>{roleLabels[inviteRole]?.label || inviteRole}</strong> when they sign up.
+                Share this code or link with your team members. They'll be added as a <strong>Team Member</strong> when they sign up.
               </p>
               
               <Button variant="outline" className="w-full" onClick={resetDialog}>

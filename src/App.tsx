@@ -133,6 +133,7 @@ const Scoreboard = lazy(() => import("./pages/Scoreboard"));
 const PublicScorecard = lazy(() => import("./pages/PublicScorecard"));
 const AdminAcceleratorInvites = lazy(() => import("./pages/AdminAcceleratorInvites"));
 const AdminAccelerators = lazy(() => import("./pages/AdminAccelerators"));
+const StartupGuide = lazy(() => import("./pages/StartupGuide"));
 
 // Investor Pages
 const InvestorLanding = lazy(() => import("./pages/investor/InvestorLanding"));
@@ -225,6 +226,7 @@ const App = () => (
             <Route path="/accelerator/startup/:id/investors" element={<AcceleratorFundDiscovery />} />
             <Route path="/accelerator/startup/:id/share" element={<AcceleratorShareablePreview />} />
             <Route path="/accelerator/analytics" element={<AcceleratorAnalytics />} />
+            <Route path="/startup-guide" element={<StartupGuide />} />
             {/* Investor Routes */}
             <Route path="/investor" element={<InvestorLanding />} />
             <Route path="/investor/auth" element={<InvestorAuth />} />
