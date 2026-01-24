@@ -175,17 +175,34 @@ export default function AcceleratorStartupDetail() {
         }
 
         // If still no accelerator ID, try to get from user's membership
+        // But prefer the accelerator linked to this company's invite
         if (!acceleratorId && !cohortInfo && user) {
-          const { data: membership } = await supabase
-            .from("accelerator_members")
-            .select("accelerator_id")
-            .eq("user_id", user.id)
-            .not("joined_at", "is", null)
-            .limit(1)
-            .maybeSingle();
+          // First check if the company has an accelerator_invite_id with a linked_accelerator_id
+          if (companyResult.data.accelerator_invite_id) {
+            const { data: inviteData } = await supabase
+              .from("accelerator_invites")
+              .select("linked_accelerator_id")
+              .eq("id", companyResult.data.accelerator_invite_id)
+              .maybeSingle();
+            
+            if (inviteData?.linked_accelerator_id) {
+              setAcceleratorId(inviteData.linked_accelerator_id);
+            }
+          }
+          
+          // Fallback to user's first membership if still no accelerator ID
+          if (!acceleratorId) {
+            const { data: membership } = await supabase
+              .from("accelerator_members")
+              .select("accelerator_id")
+              .eq("user_id", user.id)
+              .not("joined_at", "is", null)
+              .limit(1)
+              .maybeSingle();
 
-          if (membership) {
-            setAcceleratorId(membership.accelerator_id);
+            if (membership) {
+              setAcceleratorId(membership.accelerator_id);
+            }
           }
         }
       } catch (error: any) {
@@ -312,7 +329,7 @@ export default function AcceleratorStartupDetail() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/accelerator")}>
+              <Button variant="ghost" size="sm" onClick={() => navigate(acceleratorId ? `/accelerator/dashboard?id=${acceleratorId}` : "/accelerator")}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>

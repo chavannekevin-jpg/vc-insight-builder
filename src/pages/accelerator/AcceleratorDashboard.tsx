@@ -150,7 +150,8 @@ export default function AcceleratorDashboard() {
   };
 
   const handleViewStartup = (id: string) => {
-    navigate(`/accelerator/startup/${id}`);
+    // Pass the current accelerator ID so the startup detail page knows which accelerator context to use
+    navigate(`/accelerator/startup/${id}?acceleratorId=${accelerator?.id || ''}`);
   };
 
   const renderContent = () => {

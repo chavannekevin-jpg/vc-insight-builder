@@ -105,7 +105,7 @@ export default function AcceleratorStartupPreview() {
                 onClick={() => navigate(`/accelerator/startup/${id}`)}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Overview
+                Back to Startup
               </Button>
               
               <div className="hidden sm:flex items-center gap-3">

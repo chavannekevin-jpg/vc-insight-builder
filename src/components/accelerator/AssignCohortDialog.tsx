@@ -75,7 +75,7 @@ export function AssignCohortDialog({
 
     setIsAssigning(true);
     try {
-      // Find the cohort's invite_id
+      // Find the cohort
       const cohort = cohorts.find(c => c.id === selectedCohortId);
       
       if (!cohort) {
@@ -85,7 +85,7 @@ export function AssignCohortDialog({
 
       let inviteId = cohort.invite_id;
 
-      // If cohort doesn't have an invite_id, create one
+      // If cohort doesn't have an invite_id, create one and link it
       if (!inviteId) {
         // First get the accelerator details
         const { data: acc } = await supabase
@@ -105,7 +105,7 @@ export function AssignCohortDialog({
           .insert({
             accelerator_name: acc.name,
             accelerator_slug: acc.slug,
-            code: `${acc.slug.toUpperCase()}-${cohort.name.replace(/\s+/g, '').toUpperCase().slice(0, 6)}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+            code: `${acc.slug.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)}-${cohort.name.replace(/\s+/g, '').toUpperCase().slice(0, 6)}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
             linked_accelerator_id: acceleratorId,
             cohort_name: cohort.name,
             discount_percent: 0,
@@ -118,10 +118,14 @@ export function AssignCohortDialog({
         inviteId = newInvite.id;
 
         // Update the cohort with the new invite_id
-        await supabase
+        const { error: cohortUpdateError } = await supabase
           .from("accelerator_cohorts")
           .update({ invite_id: inviteId })
           .eq("id", selectedCohortId);
+
+        if (cohortUpdateError) {
+          console.error("Error updating cohort with invite_id:", cohortUpdateError);
+        }
       }
 
       // Update the company's accelerator_invite_id to the cohort's invite
