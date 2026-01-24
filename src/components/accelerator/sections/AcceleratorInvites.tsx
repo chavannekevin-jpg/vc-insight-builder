@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Mail, Plus, Copy, Check, ExternalLink, Trash2, Loader2 } from "lucide-react";
+import { Mail, Plus, Copy, Check, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface Invite {
   id: string;
@@ -34,6 +35,34 @@ interface AcceleratorInvitesProps {
   acceleratorName: string;
   acceleratorSlug: string;
 }
+
+// Premium fluid glass card
+const FluidGlassCard = ({ 
+  children, 
+  className = "",
+  delay = 0,
+}: { 
+  children: React.ReactNode; 
+  className?: string;
+  delay?: number;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+    className={cn(
+      "relative rounded-2xl overflow-hidden",
+      "bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-white/[0.02]",
+      "backdrop-blur-xl border border-white/[0.08]",
+      "shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.05)]",
+      "hover:border-white/[0.12] transition-all duration-500",
+      className
+    )}
+  >
+    <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-transparent pointer-events-none" />
+    <div className="relative z-10">{children}</div>
+  </motion.div>
+);
 
 export function AcceleratorInvites({ acceleratorId, acceleratorName, acceleratorSlug }: AcceleratorInvitesProps) {
   const [invites, setInvites] = useState<Invite[]>([]);
@@ -140,56 +169,72 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="p-6 md:p-8 lg:p-10 max-w-5xl mx-auto space-y-8">
+      {/* Header */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+      >
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Invite Codes</h1>
-          <p className="text-muted-foreground">Create and manage startup invite codes</p>
+          <motion.div 
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <span className="text-xs font-medium text-primary">Invites</span>
+          </motion.div>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Invite Codes</h1>
+          <p className="text-muted-foreground/70 mt-2">Create and manage startup invite codes</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
+        <Button 
+          onClick={() => setIsCreateOpen(true)} 
+          className="gap-2 bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(var(--primary),0.2)]"
+        >
           <Plus className="w-4 h-4" />
           Create Invite
         </Button>
-      </div>
+      </motion.div>
 
       {invites.length === 0 ? (
-        <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-12 text-center">
-          <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="font-semibold text-foreground mb-2">No invite codes yet</h3>
-          <p className="text-muted-foreground mb-4">
+        <FluidGlassCard delay={0.15} className="p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-muted/30 to-muted/10 flex items-center justify-center mx-auto mb-4">
+            <Mail className="w-8 h-8 text-muted-foreground/50" />
+          </div>
+          <h3 className="font-semibold text-lg text-foreground mb-2">No invite codes yet</h3>
+          <p className="text-muted-foreground/70 mb-6 max-w-sm mx-auto">
             Create invite codes for startups to join your accelerator ecosystem.
           </p>
-          <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
+          <Button 
+            onClick={() => setIsCreateOpen(true)} 
+            className="gap-2 bg-primary hover:bg-primary/90"
+          >
             <Plus className="w-4 h-4" />
             Create First Invite
           </Button>
-        </div>
+        </FluidGlassCard>
       ) : (
         <div className="grid gap-4">
           {invites.map((invite, i) => (
-            <motion.div
-              key={invite.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-5"
-            >
+            <FluidGlassCard key={invite.id} delay={0.1 + i * 0.05} className="p-5">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <code className="px-3 py-1 rounded-lg bg-primary/10 text-primary font-mono font-bold">
+                    <code className="px-3 py-1.5 rounded-xl bg-primary/15 text-primary font-mono font-bold border border-primary/20">
                       {invite.code}
                     </code>
                     {invite.is_active ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-success/10 text-success">Active</span>
+                      <span className="text-xs px-2.5 py-1 rounded-lg bg-success/15 text-success border border-success/20">Active</span>
                     ) : (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">Inactive</span>
+                      <span className="text-xs px-2.5 py-1 rounded-lg bg-white/[0.04] text-muted-foreground/60 border border-white/[0.06]">Inactive</span>
                     )}
                     {invite.discount_percent === 100 && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning">Free Access</span>
+                      <span className="text-xs px-2.5 py-1 rounded-lg bg-warning/15 text-warning border border-warning/20">Free Access</span>
                     )}
                   </div>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground/70">
                     {invite.cohort_name && <span>Cohort: {invite.cohort_name}</span>}
                     <span>{invite.uses} / {invite.max_uses || "∞"} uses</span>
                     {invite.discount_percent < 100 && (
@@ -202,7 +247,7 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                     variant="outline"
                     size="sm"
                     onClick={() => copyInviteLink(invite)}
-                    className="gap-2"
+                    className="gap-2 bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.05] hover:border-white/[0.12]"
                   >
                     {copiedId === invite.id ? (
                       <>
@@ -220,26 +265,30 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                     variant="ghost"
                     size="sm"
                     onClick={() => toggleInviteActive(invite.id, invite.is_active)}
+                    className="hover:bg-white/[0.04]"
                   >
                     {invite.is_active ? "Deactivate" : "Activate"}
                   </Button>
                 </div>
               </div>
               {invite.custom_message && (
-                <p className="mt-3 text-sm text-muted-foreground border-t border-border/30 pt-3">
+                <p className="mt-3 text-sm text-muted-foreground/60 border-t border-white/[0.04] pt-3 italic">
                   "{invite.custom_message}"
                 </p>
               )}
-            </motion.div>
+            </FluidGlassCard>
           ))}
         </div>
       )}
 
       {/* Create Invite Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent>
+        <DialogContent className="border-white/[0.08] bg-card/95 backdrop-blur-xl">
           <DialogHeader>
-            <DialogTitle>Create Invite Code</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              Create Invite Code
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -249,6 +298,7 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                 placeholder="e.g., Winter 2024 Batch"
                 value={newInvite.cohortName}
                 onChange={(e) => setNewInvite(prev => ({ ...prev, cohortName: e.target.value }))}
+                className="bg-white/[0.02] border-white/[0.08] focus:border-primary/30"
               />
             </div>
             <div className="space-y-2">
@@ -259,6 +309,7 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                 value={newInvite.customMessage}
                 onChange={(e) => setNewInvite(prev => ({ ...prev, customMessage: e.target.value }))}
                 rows={3}
+                className="bg-white/[0.02] border-white/[0.08] focus:border-primary/30"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -271,6 +322,7 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                   max="100"
                   value={newInvite.discountPercent}
                   onChange={(e) => setNewInvite(prev => ({ ...prev, discountPercent: parseInt(e.target.value) || 0 }))}
+                  className="bg-white/[0.02] border-white/[0.08] focus:border-primary/30"
                 />
               </div>
               <div className="space-y-2">
@@ -282,13 +334,16 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                   placeholder="Unlimited"
                   value={newInvite.maxUses}
                   onChange={(e) => setNewInvite(prev => ({ ...prev, maxUses: e.target.value }))}
+                  className="bg-white/[0.02] border-white/[0.08] focus:border-primary/30"
                 />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreateInvite} disabled={isCreating}>
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="bg-white/[0.02] border-white/[0.08]">
+              Cancel
+            </Button>
+            <Button onClick={handleCreateInvite} disabled={isCreating} className="shadow-[0_0_20px_rgba(var(--primary),0.2)]">
               {isCreating ? "Creating..." : "Create Invite"}
             </Button>
           </DialogFooter>
