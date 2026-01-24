@@ -210,6 +210,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "accelerator_section_recommendations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
         ]
       }
       accelerators: {
@@ -691,6 +698,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "companies_referred_by_company_id_fkey"
+            columns: ["referred_by_company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "companies_referred_by_investor_fkey"
             columns: ["referred_by_investor"]
             isOneToOne: false
@@ -738,6 +752,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "company_models_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
         ]
       }
       dealflow_shares: {
@@ -774,6 +795,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealflow_shares_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
             referencedColumns: ["id"]
           },
           {
@@ -937,6 +965,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "founder_referral_signups_referred_company_id_fkey"
+            columns: ["referred_company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
         ]
       }
       founder_referrals: {
@@ -982,6 +1017,13 @@ export type Database = {
             columns: ["referrer_company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "founder_referrals_referrer_company_id_fkey"
+            columns: ["referrer_company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
             referencedColumns: ["id"]
           },
         ]
@@ -1240,6 +1282,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_dealflow_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
             referencedColumns: ["id"]
           },
           {
@@ -1794,6 +1843,13 @@ export type Database = {
             referencedRelation: "memos"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_memo"
+            columns: ["memo_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_memo_preview"
+            referencedColumns: ["id"]
+          },
         ]
       }
       memo_generation_jobs: {
@@ -1897,6 +1953,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "memo_purchases_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
         ]
       }
       memo_responses: {
@@ -1936,6 +1999,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memo_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
             referencedColumns: ["id"]
           },
         ]
@@ -1982,6 +2052,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "memo_tool_data_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
         ]
       }
       memos: {
@@ -2018,6 +2095,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memos_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
             referencedColumns: ["id"]
           },
         ]
@@ -2198,6 +2282,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "roast_question_history_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
         ]
       }
       sent_emails: {
@@ -2271,6 +2362,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_claim_codes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
             referencedColumns: ["id"]
           },
         ]
@@ -2410,6 +2508,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "waitlist_signups_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "waitlist_signups_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -2420,7 +2525,110 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      shareable_company_preview: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          name: string | null
+          public_score: number | null
+          stage: string | null
+          vc_verdict_json: Json | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          name?: string | null
+          public_score?: number | null
+          stage?: string | null
+          vc_verdict_json?: Json | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          name?: string | null
+          public_score?: number | null
+          stage?: string | null
+          vc_verdict_json?: Json | null
+        }
+        Relationships: []
+      }
+      shareable_memo_preview: {
+        Row: {
+          company_id: string | null
+          created_at: string | null
+          id: string | null
+          structured_content: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memos_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memos_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shareable_memo_responses: {
+        Row: {
+          answer: string | null
+          company_id: string | null
+          question_key: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memo_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memo_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shareable_section_scores: {
+        Row: {
+          ai_generated_data: Json | null
+          company_id: string | null
+          section_name: string | null
+          user_overrides: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memo_tool_data_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memo_tool_data_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_investor_role_with_invite: {

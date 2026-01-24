@@ -76,14 +76,27 @@ export default function AcceleratorShareablePreview() {
       if (!id) return;
 
       try {
-        // Fetch company
-        const { data: companyData, error: companyError } = await supabase
+        // Direct query - the views allow anon access but fall back to regular tables
+        let companyData: Company | null = null;
+        
+        const { data: viewData } = await supabase
           .from("companies")
-          .select("*")
+          .select("id, name, description, category, stage, public_score, created_at, vc_verdict_json")
           .eq("id", id)
-          .single();
+          .maybeSingle();
 
-        if (companyError) throw companyError;
+        if (viewData) {
+          companyData = viewData as unknown as Company;
+          if ((viewData as any).vc_verdict_json) {
+            setVcQuickTake((viewData as any).vc_verdict_json as VCQuickTake);
+          }
+        }
+
+        if (!companyData) {
+          setIsLoading(false);
+          return;
+        }
+        
         setCompany(companyData);
 
         // Fetch memo for vcQuickTake and sections
@@ -98,8 +111,6 @@ export default function AcceleratorShareablePreview() {
         const structuredContent = memoData?.structured_content as any;
         if (structuredContent?.vcQuickTake) {
           setVcQuickTake(structuredContent.vcQuickTake as VCQuickTake);
-        } else if (companyData.vc_verdict_json) {
-          setVcQuickTake(companyData.vc_verdict_json as VCQuickTake);
         }
 
         // Extract traction and business model from structured sections
@@ -127,11 +138,11 @@ export default function AcceleratorShareablePreview() {
           .eq("company_id", id)
           .in("question_key", ["traction", "traction_metrics", "revenue_model", "business_model", "monetization"]);
 
-        if (responses && responses.length > 0 && !memoContent?.traction) {
-          const tractionResp = responses.find(r => 
+        if (responses && responses.length > 0) {
+          const tractionResp = responses.find((r) => 
             r.question_key.toLowerCase().includes("traction")
           );
-          const businessModelResp = responses.find(r => 
+          const businessModelResp = responses.find((r) => 
             r.question_key.toLowerCase().includes("business") || 
             r.question_key.toLowerCase().includes("revenue") ||
             r.question_key.toLowerCase().includes("monetization")
@@ -152,8 +163,8 @@ export default function AcceleratorShareablePreview() {
           .eq("tool_name", "sectionScore");
 
         const scores: Record<string, number> = {};
-        (toolData || []).forEach((tool: any) => {
-          const data = { ...(tool.ai_generated_data || {}), ...(tool.user_overrides || {}) };
+        (toolData || []).forEach((tool) => {
+          const data = { ...(tool.ai_generated_data as any || {}), ...(tool.user_overrides as any || {}) };
           if (data.score) {
             scores[tool.section_name] = data.score;
           }
