@@ -2,19 +2,10 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Mail, Plus, Copy, Check, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { InviteStartupDialog } from "../InviteStartupDialog";
 
 interface Invite {
   id: string;
@@ -73,16 +64,7 @@ const FluidGlassCard = ({
 export function AcceleratorInvites({ acceleratorId, acceleratorName, acceleratorSlug }: AcceleratorInvitesProps) {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  
-  const [newInvite, setNewInvite] = useState({
-    cohortName: "",
-    customMessage: "",
-    discountPercent: 100,
-    maxUses: "",
-  });
 
   useEffect(() => {
     fetchInvites();
@@ -105,43 +87,6 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
     }
   };
 
-  const generateCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-  };
-
-  const handleCreateInvite = async () => {
-    setIsCreating(true);
-    try {
-      const code = generateCode();
-      
-      const { error } = await supabase
-        .from("accelerator_invites")
-        .insert({
-          code,
-          accelerator_name: acceleratorName,
-          accelerator_slug: acceleratorSlug,
-          cohort_name: newInvite.cohortName || null,
-          custom_message: newInvite.customMessage || null,
-          discount_percent: newInvite.discountPercent,
-          max_uses: newInvite.maxUses ? parseInt(newInvite.maxUses) : null,
-          linked_accelerator_id: acceleratorId,
-          is_active: true,
-        });
-
-      if (error) throw error;
-
-      toast.success("Invite code created!");
-      setIsCreateOpen(false);
-      setNewInvite({ cohortName: "", customMessage: "", discountPercent: 100, maxUses: "" });
-      fetchInvites();
-    } catch (error: any) {
-      console.error("Create invite error:", error);
-      toast.error(error.message || "Failed to create invite");
-    } finally {
-      setIsCreating(false);
-    }
-  };
 
   const copyInviteLink = (invite: Invite) => {
     const link = `${window.location.origin}/invite/${invite.code}`;
@@ -195,13 +140,14 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
           <h1 className="text-3xl font-bold text-foreground tracking-tight">Invite Codes</h1>
           <p className="text-muted-foreground/70 mt-2">Create and manage startup invite codes</p>
         </div>
-        <Button 
-          onClick={() => setIsCreateOpen(true)} 
-          className="gap-2 bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(var(--primary),0.2)]"
-        >
-          <Plus className="w-4 h-4" />
-          Create Invite
-        </Button>
+        <InviteStartupDialog accelerator={{ id: acceleratorId, name: acceleratorName, slug: acceleratorSlug }}>
+          <Button 
+            className="gap-2 bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(var(--primary),0.2)]"
+          >
+            <Plus className="w-4 h-4" />
+            Invite Startups
+          </Button>
+        </InviteStartupDialog>
       </motion.div>
 
       {invites.length === 0 ? (
@@ -213,13 +159,14 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
           <p className="text-muted-foreground/70 mb-6 max-w-sm mx-auto">
             Create invite codes for startups to join your accelerator ecosystem.
           </p>
-          <Button 
-            onClick={() => setIsCreateOpen(true)} 
-            className="gap-2 bg-primary hover:bg-primary/90"
-          >
-            <Plus className="w-4 h-4" />
-            Create First Invite
-          </Button>
+          <InviteStartupDialog accelerator={{ id: acceleratorId, name: acceleratorName, slug: acceleratorSlug }}>
+            <Button 
+              className="gap-2 bg-primary hover:bg-primary/90"
+            >
+              <Plus className="w-4 h-4" />
+              Invite Startups
+            </Button>
+          </InviteStartupDialog>
         </FluidGlassCard>
       ) : (
         <div className="grid gap-4">
@@ -289,74 +236,6 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
         </div>
       )}
 
-      {/* Create Invite Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="border-border/50 bg-card/95 backdrop-blur-2xl rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
-              Create Invite Code
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="cohortName">Cohort Name (Optional)</Label>
-              <Input
-                id="cohortName"
-                placeholder="e.g., Winter 2024 Batch"
-                value={newInvite.cohortName}
-                onChange={(e) => setNewInvite(prev => ({ ...prev, cohortName: e.target.value }))}
-                className="bg-muted/30 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="customMessage">Welcome Message (Optional)</Label>
-              <Textarea
-                id="customMessage"
-                placeholder="Welcome to our accelerator program..."
-                value={newInvite.customMessage}
-                onChange={(e) => setNewInvite(prev => ({ ...prev, customMessage: e.target.value }))}
-                rows={3}
-                className="bg-muted/30 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="discountPercent">Discount %</Label>
-                <Input
-                  id="discountPercent"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={newInvite.discountPercent}
-                  onChange={(e) => setNewInvite(prev => ({ ...prev, discountPercent: parseInt(e.target.value) || 0 }))}
-                  className="bg-muted/30 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="maxUses">Max Uses (empty = unlimited)</Label>
-                <Input
-                  id="maxUses"
-                  type="number"
-                  min="1"
-                  placeholder="Unlimited"
-                  value={newInvite.maxUses}
-                  onChange={(e) => setNewInvite(prev => ({ ...prev, maxUses: e.target.value }))}
-                  className="bg-muted/30 border-border/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="bg-muted/20 border-border/50">
-              Cancel
-            </Button>
-            <Button onClick={handleCreateInvite} disabled={isCreating} className="shadow-[0_0_20px_rgba(var(--primary),0.2)]">
-              {isCreating ? "Creating..." : "Create Invite"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
