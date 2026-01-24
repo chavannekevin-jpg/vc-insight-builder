@@ -147,21 +147,21 @@ export function AcceleratorSidebar({
   return (
     <Sidebar 
       collapsible="icon" 
-      className="border-r border-border bg-card"
+      className="border-r border-white/[0.06] bg-gradient-to-b from-card/60 via-card/40 to-card/60 backdrop-blur-2xl"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <SidebarContent className="flex flex-col h-full">
         {/* Accelerator Profile Section */}
-        <div className={`p-4 border-b border-border ${collapsed ? "px-2" : ""}`}>
-          <div className={`flex items-center gap-3 ${!collapsed ? "p-3 rounded-lg bg-muted/50" : ""}`}>
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm flex-shrink-0">
+        <div className={`p-4 border-b border-white/[0.06] ${collapsed ? "px-2" : ""}`}>
+          <div className={`flex items-center gap-3 ${!collapsed ? "p-3 rounded-xl bg-white/[0.04] border border-white/[0.04]" : ""}`}>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-semibold text-sm flex-shrink-0">
               {accelerator?.name ? getInitials(accelerator.name) : <Building2 className="w-5 h-5" />}
             </div>
             {!collapsed && (
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-sm truncate text-foreground">{accelerator?.name || "Accelerator"}</p>
-                <p className="text-xs text-muted-foreground">Ecosystem</p>
+                <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">Ecosystem</p>
               </div>
             )}
           </div>
@@ -180,10 +180,10 @@ export function AcceleratorSidebar({
                     onClick={() => handleNavClick(item.section)}
                     isActive={activeSection === item.section}
                     tooltip={item.title}
-                    className={`group relative rounded-lg transition-colors ${
+                    className={`group relative rounded-xl transition-all duration-300 ${
                       activeSection === item.section 
-                        ? "bg-primary/10 text-primary" 
-                        : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                        ? "bg-primary/10 text-primary shadow-[0_0_20px_rgba(var(--primary),0.1)]" 
+                        : "hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
                     }`}
                   >
                     {activeSection === item.section && (
@@ -214,10 +214,10 @@ export function AcceleratorSidebar({
                     onClick={() => handleNavClick(item.section)}
                     isActive={activeSection === item.section}
                     tooltip={item.title}
-                    className={`group relative rounded-lg transition-colors ${
+                    className={`group relative rounded-xl transition-all duration-300 ${
                       activeSection === item.section 
-                        ? "bg-primary/10 text-primary" 
-                        : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                        ? "bg-primary/10 text-primary shadow-[0_0_20px_rgba(var(--primary),0.1)]" 
+                        : "hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
                     }`}
                   >
                     {activeSection === item.section && (
@@ -243,9 +243,9 @@ export function AcceleratorSidebar({
           <div className="px-4 py-3">
             <InviteStartupDialog accelerator={accelerator}>
               <button
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 hover:bg-primary/15 border border-primary/20 transition-colors group"
+                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gradient-to-r from-primary/15 via-primary/10 to-primary/5 hover:from-primary/20 hover:via-primary/15 hover:to-primary/10 border border-primary/20 hover:border-primary/30 transition-all duration-300 group shadow-[0_0_20px_rgba(var(--primary),0.05)] hover:shadow-[0_0_25px_rgba(var(--primary),0.1)]"
               >
-                <div className="w-8 h-8 rounded-md bg-primary/20 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/25 to-primary/10 flex items-center justify-center">
                   <UserPlus className="w-4 h-4 text-primary" />
                 </div>
                 <span className="text-sm font-medium text-foreground flex-1 text-left">Invite Startups</span>
@@ -255,7 +255,7 @@ export function AcceleratorSidebar({
         )}
 
         {/* Settings & Sign Out */}
-        <SidebarGroup className="border-t border-border pt-2 pb-2">
+        <SidebarGroup className="border-t border-white/[0.06] pt-2 pb-2">
           <SidebarGroupContent className="px-2">
             <SidebarMenu>
               {settingsMenuItems.map((item) => (
@@ -264,10 +264,10 @@ export function AcceleratorSidebar({
                     onClick={() => handleNavClick(item.section)}
                     isActive={activeSection === item.section}
                     tooltip={item.title}
-                    className={`group rounded-lg transition-colors ${
+                    className={`group rounded-xl transition-all duration-300 ${
                       activeSection === item.section 
                         ? "bg-primary/10 text-primary" 
-                        : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                        : "hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
                     }`}
                   >
                     <item.icon className="w-4 h-4" />
@@ -280,7 +280,7 @@ export function AcceleratorSidebar({
                   <SidebarMenuButton
                     onClick={() => navigate("/admin")}
                     tooltip="Admin Panel"
-                    className="group rounded-lg transition-colors hover:bg-amber-500/10 text-amber-600 hover:translate-x-0.5"
+                    className="group rounded-xl transition-all duration-300 hover:bg-warning/10 text-warning hover:translate-x-0.5"
                   >
                     <Shield className="w-4 h-4" />
                     <span className="font-medium text-sm">Admin Panel</span>
@@ -291,7 +291,7 @@ export function AcceleratorSidebar({
                 <SidebarMenuButton
                   onClick={handleSignOut}
                   tooltip="Sign Out"
-                  className="group rounded-lg transition-colors hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                  className="group rounded-xl transition-all duration-300 hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
                 >
                   <LogOut className="w-4 h-4" />
                   <span className="font-medium text-sm">Sign Out</span>
@@ -302,7 +302,7 @@ export function AcceleratorSidebar({
                   <AlertDialogTrigger asChild>
                     <SidebarMenuButton
                       tooltip="Delete Account"
-                      className="group rounded-lg transition-colors hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                      className="group rounded-xl transition-all duration-300 hover:bg-destructive/10 text-muted-foreground/70 hover:text-destructive"
                     >
                       <Trash2 className="w-4 h-4" />
                       <span className="font-medium text-sm">Delete Account</span>

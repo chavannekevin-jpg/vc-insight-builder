@@ -189,18 +189,53 @@ export default function AcceleratorDashboard() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        {/* Subtle premium background */}
-        <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-secondary/[0.01]" />
+      <div className="min-h-screen flex w-full bg-background relative overflow-hidden">
+        {/* Ultra-premium animated background */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          {/* Base gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-background" />
+          
+          {/* Animated mesh orbs */}
+          <motion.div
+            animate={{
+              x: [0, 30, 0],
+              y: [0, -20, 0],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-1/4 -right-1/4 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-primary/8 via-primary/4 to-transparent blur-3xl"
+          />
+          <motion.div
+            animate={{
+              x: [0, -40, 0],
+              y: [0, 30, 0],
+              scale: [1, 1.15, 1],
+            }}
+            transition={{ duration: 25, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            className="absolute top-1/3 -left-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-secondary/6 via-secondary/3 to-transparent blur-3xl"
+          />
+          <motion.div
+            animate={{
+              x: [0, 20, 0],
+              y: [0, -30, 0],
+              scale: [1, 1.08, 1],
+            }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+            className="absolute -bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-tl from-accent/5 via-accent/2 to-transparent blur-3xl"
+          />
+          
+          {/* Subtle grid pattern */}
           <div 
-            className="absolute inset-0 opacity-[0.015]"
+            className="absolute inset-0 opacity-[0.02]"
             style={{
-              backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px),
-                linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
-              backgroundSize: '80px 80px',
+              backgroundImage: `linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px),
+                linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)`,
+              backgroundSize: '60px 60px',
             }}
           />
+          
+          {/* Top light wash */}
+          <div className="absolute top-0 left-0 right-0 h-[400px] bg-gradient-to-b from-primary/[0.02] via-transparent to-transparent" />
         </div>
 
         <AcceleratorSidebar
@@ -210,29 +245,29 @@ export default function AcceleratorDashboard() {
         />
 
         <div className="flex-1 flex flex-col min-w-0 relative z-10">
-          {/* Clean header */}
+          {/* Premium glass header */}
           <motion.header 
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="h-16 border-b border-border/50 flex items-center justify-between px-6 sticky top-0 z-40 bg-background/80 backdrop-blur-xl"
+            className="h-16 border-b border-white/[0.06] flex items-center justify-between px-6 sticky top-0 z-40 bg-card/40 backdrop-blur-2xl"
           >
             <div className="flex items-center gap-4">
-              <SidebarTrigger className="p-2 -ml-2 rounded-lg hover:bg-muted/50 transition-colors">
+              <SidebarTrigger className="p-2 -ml-2 rounded-lg hover:bg-white/[0.04] transition-colors">
                 <Menu className="w-5 h-5 text-muted-foreground" />
               </SidebarTrigger>
-              <div className="h-6 w-px bg-border/50" />
+              <div className="h-6 w-px bg-white/[0.06]" />
               <div>
                 <h1 className="text-sm font-semibold text-foreground">
                   {accelerator?.name}
                 </h1>
-                <p className="text-xs text-muted-foreground">Ecosystem Dashboard</p>
+                <p className="text-xs text-muted-foreground/70">Ecosystem Dashboard</p>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
-              <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors relative">
-                <Bell className="w-5 h-5 text-muted-foreground" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
+              <button className="p-2 rounded-lg hover:bg-white/[0.04] transition-colors relative group">
+                <Bell className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full animate-pulse" />
               </button>
             </div>
           </motion.header>
@@ -240,9 +275,9 @@ export default function AcceleratorDashboard() {
           <main className="flex-1 overflow-auto">
             <motion.div
               key={activeSection}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
               {renderContent()}
             </motion.div>
