@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AcceleratorSidebar } from "@/components/accelerator/AcceleratorSidebar";
 import { AcceleratorOverview } from "@/components/accelerator/sections/AcceleratorOverview";
 import { AcceleratorPortfolio } from "@/components/accelerator/sections/AcceleratorPortfolio";
-import { AcceleratorCohorts } from "@/components/accelerator/sections/AcceleratorCohorts";
+import { AcceleratorCohortsView } from "@/components/accelerator/sections/AcceleratorCohortsView";
 import { AcceleratorTeam } from "@/components/accelerator/sections/AcceleratorTeam";
 import { AcceleratorInvites } from "@/components/accelerator/sections/AcceleratorInvites";
 import { AcceleratorAnalyticsSection } from "@/components/accelerator/sections/AcceleratorAnalyticsSection";
@@ -160,7 +160,7 @@ export default function AcceleratorDashboard() {
       case "portfolio":
         return <AcceleratorPortfolio companies={companies} onViewStartup={handleViewStartup} />;
       case "cohorts":
-        return <AcceleratorCohorts cohorts={cohorts} acceleratorId={accelerator.id} onRefresh={fetchData} />;
+        return <AcceleratorCohortsView cohorts={cohorts} acceleratorId={accelerator.id} onRefresh={fetchData} onViewStartup={handleViewStartup} />;
       case "team":
         return <AcceleratorTeam acceleratorId={accelerator.id} currentUserId={user?.id || ""} />;
       case "invites":
