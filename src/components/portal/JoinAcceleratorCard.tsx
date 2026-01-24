@@ -44,40 +44,97 @@ export function JoinAcceleratorCard({
     setAcceleratorInfo(null);
 
     try {
-      const { data: invite, error: inviteError } = await supabase
+      const codeUpper = code.toUpperCase().trim();
+      
+      // First, try to find an invite code directly
+      const { data: invite } = await supabase
         .from("accelerator_invites")
         .select("id, accelerator_name, accelerator_slug, discount_percent, cohort_name, custom_message, is_active, expires_at, max_uses, uses, linked_accelerator_id")
-        .eq("code", code.toUpperCase().trim())
+        .eq("code", codeUpper)
         .maybeSingle();
 
-      if (inviteError || !invite) {
+      if (invite) {
+        if (!invite.is_active) {
+          setError("This invite code is no longer active.");
+          return;
+        }
+        if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
+          setError("This invite code has expired.");
+          return;
+        }
+        if (invite.max_uses && invite.uses >= invite.max_uses) {
+          setError("This invite code has reached its maximum uses.");
+          return;
+        }
+        setAcceleratorInfo({
+          id: invite.linked_accelerator_id || "",
+          name: invite.accelerator_name,
+          slug: invite.accelerator_slug,
+          discountPercent: invite.discount_percent,
+          cohortName: invite.cohort_name,
+          customMessage: invite.custom_message,
+          inviteId: invite.id,
+        });
+        return;
+      }
+
+      // If no invite found, try to find by accelerator slug
+      const { data: accelerator } = await supabase
+        .from("accelerators")
+        .select("id, name, slug, default_discount_percent, is_active")
+        .eq("slug", codeUpper.toLowerCase())
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (!accelerator) {
         setError("Invalid invite code. Please check and try again.");
         return;
       }
 
-      if (!invite.is_active) {
-        setError("This invite code is no longer active.");
-        return;
-      }
+      // Find or create an invite for this accelerator
+      let { data: existingInvite } = await supabase
+        .from("accelerator_invites")
+        .select("id, accelerator_name, accelerator_slug, discount_percent, cohort_name, custom_message")
+        .eq("linked_accelerator_id", accelerator.id)
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
 
-      if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-        setError("This invite code has expired.");
-        return;
-      }
+      if (!existingInvite) {
+        // Create a new invite for this accelerator
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        const newCode = Array.from({ length: 8 }, () => 
+          chars[Math.floor(Math.random() * chars.length)]
+        ).join("");
 
-      if (invite.max_uses && invite.uses >= invite.max_uses) {
-        setError("This invite code has reached its maximum uses.");
-        return;
+        const { data: newInvite, error: createError } = await supabase
+          .from("accelerator_invites")
+          .insert({
+            code: newCode,
+            accelerator_name: accelerator.name,
+            accelerator_slug: accelerator.slug,
+            linked_accelerator_id: accelerator.id,
+            discount_percent: accelerator.default_discount_percent || 0,
+            is_active: true,
+          })
+          .select("id, accelerator_name, accelerator_slug, discount_percent, cohort_name, custom_message")
+          .single();
+
+        if (createError || !newInvite) {
+          setError("Failed to process. Please try again.");
+          return;
+        }
+        existingInvite = newInvite;
       }
 
       setAcceleratorInfo({
-        id: invite.linked_accelerator_id || "",
-        name: invite.accelerator_name,
-        slug: invite.accelerator_slug,
-        discountPercent: invite.discount_percent,
-        cohortName: invite.cohort_name,
-        customMessage: invite.custom_message,
-        inviteId: invite.id,
+        id: accelerator.id,
+        name: existingInvite.accelerator_name,
+        slug: existingInvite.accelerator_slug,
+        discountPercent: existingInvite.discount_percent,
+        cohortName: existingInvite.cohort_name,
+        customMessage: existingInvite.custom_message,
+        inviteId: existingInvite.id,
       });
     } catch (err: any) {
       console.error("Validation error:", err);
