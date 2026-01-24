@@ -30,7 +30,7 @@ interface AcceleratorOverviewProps {
   onViewStartup: (id: string) => void;
 }
 
-// Premium fluid glass card component
+// Premium auth-style glass card component
 const FluidGlassCard = ({ 
   children, 
   className = "",
@@ -46,22 +46,31 @@ const FluidGlassCard = ({
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-    className={cn(
-      "relative rounded-2xl overflow-hidden",
-      "bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-white/[0.02]",
-      "backdrop-blur-xl border border-white/[0.08]",
-      "shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.05)]",
-      hover && "hover:border-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-500",
-      className
-    )}
+    className={cn("relative group", className)}
   >
-    {/* Inner glow effect */}
-    <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-transparent pointer-events-none" />
-    <div className="relative z-10">{children}</div>
+    {/* Animated border glow on hover */}
+    {hover && (
+      <>
+        <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/40 via-secondary/40 to-primary/40 rounded-3xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/15 via-secondary/15 to-primary/15 rounded-3xl opacity-40" />
+      </>
+    )}
+    
+    {/* Glass card */}
+    <div className="relative bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-border/50 overflow-hidden">
+      {/* Top highlight */}
+      <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      
+      {/* Corner accents */}
+      <div className="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-primary/8 to-transparent rounded-tl-3xl" />
+      <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-secondary/8 to-transparent rounded-br-3xl" />
+      
+      <div className="relative z-10">{children}</div>
+    </div>
   </motion.div>
 );
 
-// Stat card with water-like shimmer
+// Stat card with auth-style glass effect
 const StatCard = ({ 
   label, 
   value, 
@@ -79,25 +88,29 @@ const StatCard = ({
     initial={{ opacity: 0, y: 20, scale: 0.95 }}
     animate={{ opacity: 1, y: 0, scale: 1 }}
     transition={{ delay, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-    className={cn(
-      "group relative rounded-2xl p-5 overflow-hidden cursor-default",
-      "bg-gradient-to-br from-white/[0.06] via-white/[0.03] to-transparent",
-      "backdrop-blur-xl border border-white/[0.06]",
-      "hover:border-white/[0.1] hover:from-white/[0.08] transition-all duration-500"
-    )}
+    className="relative group"
   >
-    {/* Shimmer effect on hover */}
-    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-    </div>
+    {/* Subtle glow on hover */}
+    <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/30 via-secondary/30 to-primary/30 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+    <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-2xl opacity-30" />
     
-    <div className="relative z-10 flex items-start justify-between">
-      <div>
-        <p className="text-3xl font-bold text-foreground tracking-tight">{value}</p>
-        <p className="text-sm text-muted-foreground/70 mt-1.5">{label}</p>
+    <div className="relative bg-card/40 backdrop-blur-2xl rounded-2xl p-5 border border-border/50 overflow-hidden">
+      {/* Top highlight */}
+      <div className="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+      
+      {/* Shimmer effect on hover */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
       </div>
-      <div className={cn("p-2.5 rounded-xl backdrop-blur-sm", accent)}>
-        <Icon className="w-4 h-4" />
+      
+      <div className="relative z-10 flex items-start justify-between">
+        <div>
+          <p className="text-3xl font-bold text-foreground tracking-tight">{value}</p>
+          <p className="text-sm text-muted-foreground/70 mt-1.5">{label}</p>
+        </div>
+        <div className={cn("p-2.5 rounded-xl backdrop-blur-sm", accent)}>
+          <Icon className="w-4 h-4" />
+        </div>
       </div>
     </div>
   </motion.div>
@@ -177,24 +190,24 @@ export function AcceleratorOverview({
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Recent Startups */}
         <FluidGlassCard delay={0.25} className="lg:col-span-2">
-          <div className="flex items-center justify-between p-5 border-b border-white/[0.04]">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
-                <Briefcase className="w-4 h-4 text-primary" />
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
+                  <Briefcase className="w-4 h-4 text-primary" />
+                </div>
+                <h2 className="font-semibold text-foreground">Recent Startups</h2>
               </div>
-              <h2 className="font-semibold text-foreground">Recent Startups</h2>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => onNavigate("portfolio")} 
+                className="text-muted-foreground/70 hover:text-foreground hover:bg-muted/30 -mr-2"
+              >
+                View All <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => onNavigate("portfolio")} 
-              className="text-muted-foreground/70 hover:text-foreground hover:bg-white/[0.04] -mr-2"
-            >
-              View All <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
 
-          <div className="p-2">
             {recentCompanies.length === 0 ? (
               <div className="text-center py-12 px-4">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-muted/30 to-muted/10 flex items-center justify-center mx-auto mb-4">
@@ -205,13 +218,13 @@ export function AcceleratorOverview({
                   variant="outline" 
                   size="sm" 
                   onClick={() => onNavigate("invites")}
-                  className="bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.05] hover:border-white/[0.12]"
+                  className="bg-muted/20 border-border/50 hover:bg-muted/40"
                 >
                   <Zap className="w-4 h-4 mr-2" /> Create Invite Code
                 </Button>
               </div>
             ) : (
-              <div className="divide-y divide-white/[0.04]">
+              <div className="divide-y divide-border/30">
                 {recentCompanies.slice(0, 5).map((company, i) => (
                   <motion.div
                     key={company.id}
@@ -219,7 +232,7 @@ export function AcceleratorOverview({
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 + i * 0.05 }}
                     onClick={() => onViewStartup(company.id)}
-                    className="group flex items-center justify-between p-3 rounded-xl cursor-pointer hover:bg-white/[0.03] transition-all duration-300"
+                    className="group flex items-center justify-between p-3 rounded-xl cursor-pointer hover:bg-muted/30 transition-all duration-300"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="relative flex-shrink-0">
@@ -241,7 +254,7 @@ export function AcceleratorOverview({
                       {company.memo_content_generated ? (
                         <span className={cn("text-lg font-bold", getScoreColor(company.public_score))}>{company.public_score || "—"}</span>
                       ) : (
-                        <span className="text-xs px-2.5 py-1 rounded-lg bg-white/[0.04] text-muted-foreground/60">Pending</span>
+                        <span className="text-xs px-2.5 py-1 rounded-lg bg-muted/40 text-muted-foreground/60">Pending</span>
                       )}
                       <ArrowUpRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
                     </div>
@@ -252,61 +265,63 @@ export function AcceleratorOverview({
           </div>
         </FluidGlassCard>
 
-        {/* Right Column */}
         <div className="space-y-6">
           {/* Quick Actions */}
           <FluidGlassCard delay={0.3}>
-            <div className="flex items-center gap-3 p-5 border-b border-white/[0.04]">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary/15 to-secondary/5 flex items-center justify-center">
-                <Zap className="w-4 h-4 text-secondary" />
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary/15 to-secondary/5 flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-secondary" />
+                </div>
+                <h2 className="font-semibold text-foreground">Quick Actions</h2>
               </div>
-              <h2 className="font-semibold text-foreground">Quick Actions</h2>
-            </div>
-            <div className="p-2">
-              {[
-                { label: "Create Invite Code", icon: Users, section: "invites" },
-                { label: "Manage Team", icon: Users, section: "team" },
-                { label: "View Analytics", icon: TrendingUp, section: "analytics" },
-              ].map((action, i) => (
-                <motion.button 
-                  key={action.label} 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.35 + i * 0.05 }}
-                  onClick={() => onNavigate(action.section)} 
-                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.03] transition-all duration-300 group"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-white/[0.03] flex items-center justify-center group-hover:bg-white/[0.06] transition-colors">
-                    <action.icon className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
-                  </div>
-                  <span className="text-sm font-medium text-muted-foreground/70 group-hover:text-foreground transition-colors">{action.label}</span>
-                  <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground/20 group-hover:text-muted-foreground/50 transition-colors" />
-                </motion.button>
-              ))}
+              <div className="space-y-1">
+                {[
+                  { label: "Create Invite Code", icon: Users, section: "invites" },
+                  { label: "Manage Team", icon: Users, section: "team" },
+                  { label: "View Analytics", icon: TrendingUp, section: "analytics" },
+                ].map((action, i) => (
+                  <motion.button 
+                    key={action.label} 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.35 + i * 0.05 }}
+                    onClick={() => onNavigate(action.section)} 
+                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/30 transition-all duration-300 group"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-muted/30 flex items-center justify-center group-hover:bg-muted/50 transition-colors">
+                      <action.icon className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
+                    </div>
+                    <span className="text-sm font-medium text-muted-foreground/70 group-hover:text-foreground transition-colors">{action.label}</span>
+                    <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground/20 group-hover:text-muted-foreground/50 transition-colors" />
+                  </motion.button>
+                ))}
+              </div>
             </div>
           </FluidGlassCard>
 
-          {/* Focus Areas */}
           {accelerator?.focus_areas && accelerator.focus_areas.length > 0 && (
-            <FluidGlassCard delay={0.35} className="p-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
-                  <Target className="w-4 h-4 text-primary" />
+            <FluidGlassCard delay={0.35}>
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
+                    <Target className="w-4 h-4 text-primary" />
+                  </div>
+                  <h2 className="font-semibold text-foreground">Focus Areas</h2>
                 </div>
-                <h2 className="font-semibold text-foreground">Focus Areas</h2>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {accelerator.focus_areas.map((area, i) => (
-                  <motion.span 
-                    key={area} 
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.4 + i * 0.03 }}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.04] text-muted-foreground/80 border border-white/[0.04]"
-                  >
-                    {area}
-                  </motion.span>
-                ))}
+                <div className="flex flex-wrap gap-2">
+                  {accelerator.focus_areas.map((area, i) => (
+                    <motion.span 
+                      key={area} 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.4 + i * 0.03 }}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium bg-muted/30 text-muted-foreground/80 border border-border/30"
+                    >
+                      {area}
+                    </motion.span>
+                  ))}
+                </div>
               </div>
             </FluidGlassCard>
           )}

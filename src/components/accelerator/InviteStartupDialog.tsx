@@ -224,7 +224,7 @@ export function InviteStartupDialog({ accelerator, children }: InviteStartupDial
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg border-border bg-card">
+      <DialogContent className="sm:max-w-lg border-border/50 bg-card/95 backdrop-blur-2xl rounded-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
@@ -242,8 +242,13 @@ export function InviteStartupDialog({ accelerator, children }: InviteStartupDial
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="p-4 rounded-xl border border-border bg-muted/30 hover:bg-muted/50 transition-colors"
+              className="relative group"
             >
+              {/* Subtle hover glow */}
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="relative p-4 rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl"
+              >
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <method.icon className="w-4 h-4 text-primary" />
@@ -260,6 +265,7 @@ export function InviteStartupDialog({ accelerator, children }: InviteStartupDial
                   </p>
                   {method.action}
                 </div>
+              </div>
               </div>
             </motion.div>
           ))}
