@@ -62,6 +62,44 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
     navigate("/");
   };
 
+  const handleDashboardClick = async () => {
+    // Check user's roles and navigate to the appropriate hub
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigate("/");
+      return;
+    }
+
+    // Check for accelerator membership first
+    const { data: acceleratorMembership } = await supabase
+      .from("accelerator_members")
+      .select("accelerator_id")
+      .eq("user_id", user.id)
+      .not("joined_at", "is", null)
+      .limit(1)
+      .maybeSingle();
+
+    if (acceleratorMembership) {
+      navigate(`/accelerator/dashboard?id=${acceleratorMembership.accelerator_id}`);
+      return;
+    }
+
+    // Check for investor profile
+    const { data: investorProfile } = await supabase
+      .from("investor_profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (investorProfile) {
+      navigate("/investor/dashboard");
+      return;
+    }
+
+    // Default to startup hub
+    navigate("/hub");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -87,7 +125,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                 {title && <h1 className="text-xl font-bold text-foreground">{title}</h1>}
               </div>
               <div className="flex items-center gap-2">
-                <Button onClick={() => navigate("/portal")} variant="ghost" size="sm">
+                <Button onClick={handleDashboardClick} variant="ghost" size="sm">
                   <Home className="w-4 h-4 mr-2" />
                   Dashboard
                 </Button>
