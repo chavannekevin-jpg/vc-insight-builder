@@ -74,7 +74,10 @@ export default function AcceleratorMarketLens() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!id || !isAuthenticated || authLoading) return;
+      if (!id) return;
+      
+      // Don't require authentication for read access - accelerators should be able to view
+      setIsLoading(true);
 
       try {
         // Fetch company
@@ -84,7 +87,13 @@ export default function AcceleratorMarketLens() {
           .eq("id", id)
           .single();
 
-        if (companyError) throw companyError;
+        if (companyError) {
+          console.error("Error fetching company:", companyError);
+          toast.error("Failed to load company data");
+          setIsLoading(false);
+          return;
+        }
+        
         setCompany(companyData);
 
         // Fetch existing briefing
@@ -93,10 +102,14 @@ export default function AcceleratorMarketLens() {
           .select("answer")
           .eq("company_id", id)
           .eq("question_key", "market_lens_briefing")
-          .single();
+          .maybeSingle();
 
         if (briefingData?.answer) {
-          setBriefing(JSON.parse(briefingData.answer));
+          try {
+            setBriefing(JSON.parse(briefingData.answer));
+          } catch (e) {
+            console.error("Failed to parse briefing:", e);
+          }
         }
       } catch (error: any) {
         console.error("Error fetching data:", error);
@@ -107,7 +120,7 @@ export default function AcceleratorMarketLens() {
     };
 
     fetchData();
-  }, [id, isAuthenticated, authLoading]);
+  }, [id]);
 
   const generateBriefing = async () => {
     if (!id) return;
@@ -132,7 +145,7 @@ export default function AcceleratorMarketLens() {
     }
   };
 
-  if (isLoading || authLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">

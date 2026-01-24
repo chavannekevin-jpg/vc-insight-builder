@@ -188,7 +188,7 @@ export function AcceleratorOverview({
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Recent Startups */}
+        {/* Portfolio Startups */}
         <FluidGlassCard delay={0.25} className="lg:col-span-2">
           <div className="p-6">
             <div className="flex items-center justify-between mb-5">
@@ -196,7 +196,10 @@ export function AcceleratorOverview({
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
                   <Briefcase className="w-4 h-4 text-primary" />
                 </div>
-                <h2 className="font-semibold text-foreground">Recent Startups</h2>
+                <div>
+                  <h2 className="font-semibold text-foreground">Portfolio Startups</h2>
+                  <p className="text-xs text-muted-foreground/60">{stats.totalStartups} total</p>
+                </div>
               </div>
               <Button 
                 variant="ghost" 
