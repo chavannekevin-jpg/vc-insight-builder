@@ -1001,6 +1001,34 @@ export default function AdminAccelerators() {
                     Share this with startups to invite them to the ecosystem.
                   </p>
                 </div>
+                
+                {/* Startup Guide Link */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium">Startup Guide (for onboarding startups)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={`${window.location.origin}/startup-guide`}
+                      readOnly
+                      className="text-sm font-mono bg-background"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/startup-guide`);
+                        toast({
+                          title: "Copied!",
+                          description: "Startup guide link copied to clipboard",
+                        });
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Step-by-step guide explaining how startups use the platform.
+                  </p>
+                </div>
               </div>
               
               <Button
