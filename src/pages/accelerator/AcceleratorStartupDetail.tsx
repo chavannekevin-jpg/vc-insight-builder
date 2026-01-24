@@ -40,6 +40,20 @@ interface CohortInfo {
   accelerator_id: string;
 }
 
+type VCQuickTakeItem =
+  | string
+  | {
+      text?: string;
+      category?: string;
+      teaserLine?: string;
+      vcQuote?: string;
+    };
+
+const getVCQuickTakeItemText = (item: VCQuickTakeItem): string => {
+  if (typeof item === "string") return item;
+  return item.teaserLine || item.text || item.vcQuote || "";
+};
+
 const sectionIcons: Record<string, any> = {
   Team: Users,
   Market: Target,
@@ -402,10 +416,10 @@ export default function AcceleratorStartupDetail() {
                       <div>
                         <h4 className="text-sm font-medium text-success mb-2">Strengths</h4>
                         <ul className="space-y-1">
-                          {vcQuickTake.strengths.slice(0, 3).map((s: string, i: number) => (
+                          {vcQuickTake.strengths.slice(0, 3).map((s: VCQuickTakeItem, i: number) => (
                             <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                               <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                              {s}
+                              <span className="line-clamp-2">{getVCQuickTakeItemText(s)}</span>
                             </li>
                           ))}
                         </ul>
@@ -415,10 +429,10 @@ export default function AcceleratorStartupDetail() {
                       <div>
                         <h4 className="text-sm font-medium text-destructive mb-2">Concerns</h4>
                         <ul className="space-y-1">
-                          {vcQuickTake.concerns.slice(0, 3).map((c: string, i: number) => (
+                          {vcQuickTake.concerns.slice(0, 3).map((c: VCQuickTakeItem, i: number) => (
                             <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                               <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-                              {c}
+                              <span className="line-clamp-2">{getVCQuickTakeItemText(c)}</span>
                             </li>
                           ))}
                         </ul>
