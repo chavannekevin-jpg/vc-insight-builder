@@ -16,6 +16,8 @@ import {
   Trash2,
   Loader2,
   Shield,
+  HelpCircle,
+  BookOpen,
 } from "lucide-react";
 import {
   Sidebar,
@@ -42,6 +44,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { InviteStartupDialog } from "./InviteStartupDialog";
+import { AcceleratorProductGuide } from "./AcceleratorProductGuide";
+import { StartupGuideDialog } from "./StartupGuideDialog";
 
 const mainMenuItems = [
   { title: "Overview", icon: LayoutDashboard, section: "overview" },
@@ -81,6 +85,8 @@ export function AcceleratorSidebar({
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [productGuideOpen, setProductGuideOpen] = useState(false);
+  const [startupGuideOpen, setStartupGuideOpen] = useState(false);
 
   // Check if user has admin role
   useEffect(() => {
@@ -235,6 +241,37 @@ export function AcceleratorSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Guides Menu */}
+        <SidebarGroup className="mt-4">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium px-4 mb-1">
+            Guides
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="px-2">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => setProductGuideOpen(true)}
+                  tooltip="Product Guide"
+                  className="group rounded-xl transition-all duration-300 hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  <span className="font-medium text-sm">Product Guide</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => setStartupGuideOpen(true)}
+                  tooltip="Startup Guide"
+                  className="group rounded-xl transition-all duration-300 hover:bg-white/[0.04] text-muted-foreground/70 hover:text-foreground"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span className="font-medium text-sm">Startup Guide</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         {/* Spacer */}
         <div className="flex-1" />
 
@@ -341,6 +378,10 @@ export function AcceleratorSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      
+      {/* Guide Dialogs */}
+      <AcceleratorProductGuide open={productGuideOpen} onOpenChange={setProductGuideOpen} />
+      <StartupGuideDialog open={startupGuideOpen} onOpenChange={setStartupGuideOpen} acceleratorName={accelerator?.name} />
     </Sidebar>
   );
 }
