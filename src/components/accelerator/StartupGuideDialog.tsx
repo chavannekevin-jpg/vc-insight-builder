@@ -1,8 +1,7 @@
 /**
  * StartupGuideDialog - Sharable guide for startups on how to use UglyBaby
  * 
- * Provides a template that accelerators can share with their startups
- * explaining how to use the platform effectively.
+ * Provides a shareable link that accelerators can send to their startups.
  */
 
 import { useState } from "react";
@@ -14,6 +13,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -32,6 +33,8 @@ import {
   Clock,
   Globe,
   BookOpen,
+  Link2,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -118,14 +121,16 @@ Contact your accelerator program manager for personalized guidance and support.
 `;
 
 export function StartupGuideDialog({ open, onOpenChange, acceleratorName }: StartupGuideDialogProps) {
-  const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [activeTab, setActiveTab] = useState("preview");
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(guideContent);
-    setCopied(true);
-    toast.success("Guide copied to clipboard!");
-    setTimeout(() => setCopied(false), 2000);
+  const guideLink = `${window.location.origin}/startup-guide`;
+
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(guideLink);
+    setCopiedLink(true);
+    toast.success("Guide link copied!");
+    setTimeout(() => setCopiedLink(false), 2000);
   };
 
   const steps = [
@@ -290,28 +295,40 @@ export function StartupGuideDialog({ open, onOpenChange, acceleratorName }: Star
           </TabsContent>
         </Tabs>
 
-        {/* Actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
-          <p className="text-xs text-muted-foreground">
-            Copy and share via your preferred channel
-          </p>
-          <Button
-            size="sm"
-            onClick={handleCopy}
-            className="gap-2"
-          >
-            {copied ? (
-              <>
-                <CheckCircle2 className="w-4 h-4" />
-                Copied!
-              </>
-            ) : (
-              <>
+        {/* Share Link Section */}
+        <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3">
+          <div className="flex items-center gap-2">
+            <Link2 className="w-4 h-4 text-primary" />
+            <Label className="font-medium text-foreground">Shareable Link</Label>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              value={guideLink}
+              readOnly
+              className="text-sm font-mono bg-background"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCopyLink}
+            >
+              {copiedLink ? (
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+              ) : (
                 <Copy className="w-4 h-4" />
-                Copy Guide
-              </>
-            )}
-          </Button>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => window.open(guideLink, "_blank")}
+            >
+              <ExternalLink className="w-4 h-4" />
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Share this link with your startups to help them get started.
+          </p>
         </div>
       </DialogContent>
     </Dialog>
