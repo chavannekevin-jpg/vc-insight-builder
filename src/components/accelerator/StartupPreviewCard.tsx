@@ -5,17 +5,20 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface SectionScore {
-  section: string;
-  score: number;
+interface StrengthConcernItem {
+  text?: string;
+  category?: string;
+  teaserLine?: string;
+  vcQuote?: string;
 }
 
 interface VCQuickTake {
   verdict?: string;
-  strengths?: string[];
-  concerns?: string[];
+  strengths?: (string | StrengthConcernItem)[];
+  concerns?: (string | StrengthConcernItem)[];
   readinessLevel?: string;
   rationale?: string;
+  readinessRationale?: string;
 }
 
 interface StartupPreviewCardProps {
@@ -69,18 +72,23 @@ export function StartupPreviewCard({
   };
 
   const getReadinessConfig = (level?: string) => {
-    switch (level?.toLowerCase()) {
-      case "ready":
-      case "funding ready":
-        return { color: "text-success", bg: "bg-success/10", icon: CheckCircle2 };
-      case "getting there":
-      case "almost ready":
-        return { color: "text-primary", bg: "bg-primary/10", icon: TrendingUp };
-      case "needs work":
-        return { color: "text-warning", bg: "bg-warning/10", icon: Clock };
-      default:
-        return { color: "text-destructive", bg: "bg-destructive/10", icon: AlertTriangle };
+    const normalizedLevel = level?.toLowerCase();
+    if (normalizedLevel === "high" || normalizedLevel === "ready" || normalizedLevel === "funding ready") {
+      return { color: "text-success", bg: "bg-success/10", icon: CheckCircle2 };
     }
+    if (normalizedLevel === "medium" || normalizedLevel === "getting there" || normalizedLevel === "almost ready") {
+      return { color: "text-primary", bg: "bg-primary/10", icon: TrendingUp };
+    }
+    if (normalizedLevel === "low" || normalizedLevel === "needs work") {
+      return { color: "text-warning", bg: "bg-warning/10", icon: Clock };
+    }
+    return { color: "text-destructive", bg: "bg-destructive/10", icon: AlertTriangle };
+  };
+
+  // Helper to extract string from strength/concern item
+  const getItemText = (item: string | StrengthConcernItem): string => {
+    if (typeof item === 'string') return item;
+    return item.teaserLine || item.text || '';
   };
 
   const readinessConfig = getReadinessConfig(vcQuickTake?.readinessLevel);
@@ -155,7 +163,7 @@ export function StartupPreviewCard({
                   {vcQuickTake.strengths.slice(0, 3).map((s, i) => (
                     <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                      <span className="line-clamp-2">{s}</span>
+                      <span className="line-clamp-2">{getItemText(s)}</span>
                     </li>
                   ))}
                 </ul>
@@ -168,7 +176,7 @@ export function StartupPreviewCard({
                   {vcQuickTake.concerns.slice(0, 3).map((c, i) => (
                     <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                       <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-                      <span className="line-clamp-2">{c}</span>
+                      <span className="line-clamp-2">{getItemText(c)}</span>
                     </li>
                   ))}
                 </ul>
