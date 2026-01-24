@@ -104,7 +104,7 @@ export default function AcceleratorJoinLanding() {
         // First, find the accelerator by slug
         const { data: accelerator, error: accError } = await supabase
           .from("accelerators")
-          .select("id, name, slug, description, default_discount_percent")
+          .select("id, name, slug, description, default_discount_percent, max_discounted_startups")
           .eq("slug", slug)
           .eq("is_active", true)
           .maybeSingle();
@@ -127,6 +127,32 @@ export default function AcceleratorJoinLanding() {
         }
         
         console.log("Found accelerator:", accelerator.name);
+
+        // Check if discount cap has been reached
+        let effectiveDiscount = accelerator.default_discount_percent || 0;
+        
+        if (accelerator.max_discounted_startups !== null) {
+          // First get all invite IDs for this accelerator
+          const { data: invites } = await supabase
+            .from("accelerator_invites")
+            .select("id")
+            .eq("linked_accelerator_id", accelerator.id);
+          
+          if (invites && invites.length > 0) {
+            const inviteIds = invites.map(i => i.id);
+            
+            // Count companies linked to these invites
+            const { count } = await supabase
+              .from("companies")
+              .select("id", { count: "exact", head: true })
+              .in("accelerator_invite_id", inviteIds);
+            
+            // If cap reached, set discount to 0
+            if (count !== null && count >= accelerator.max_discounted_startups) {
+              effectiveDiscount = 0;
+            }
+          }
+        }
 
         // Look for an existing default invite for this accelerator
         let { data: existingInvite } = await supabase
@@ -151,7 +177,7 @@ export default function AcceleratorJoinLanding() {
               accelerator_name: accelerator.name,
               accelerator_slug: accelerator.slug,
               linked_accelerator_id: accelerator.id,
-              discount_percent: accelerator.default_discount_percent || 0,
+              discount_percent: effectiveDiscount,
               is_active: true,
             })
             .select("id")
@@ -171,7 +197,7 @@ export default function AcceleratorJoinLanding() {
           name: accelerator.name,
           slug: accelerator.slug,
           description: accelerator.description,
-          defaultDiscount: existingInvite?.discount_percent ?? accelerator.default_discount_percent ?? 0,
+          defaultDiscount: effectiveDiscount,
           inviteId: inviteId || null, // Only store valid invite ID, null otherwise
         });
       } catch (error) {

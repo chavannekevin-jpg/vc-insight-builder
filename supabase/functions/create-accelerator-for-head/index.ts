@@ -47,9 +47,14 @@ serve(async (req) => {
     }
     logStep("Admin verified");
 
-    const { acceleratorName, headEmail } = await req.json();
+    const { acceleratorName, headEmail, discountPercent, maxDiscountedStartups } = await req.json();
     if (!acceleratorName) throw new Error("Accelerator name is required");
-    logStep("Request data", { acceleratorName, headEmail });
+    
+    // Default to 100% discount if not specified
+    const discount = discountPercent !== undefined ? discountPercent : 100;
+    const maxStartups = maxDiscountedStartups || null;
+    
+    logStep("Request data", { acceleratorName, headEmail, discount, maxStartups });
 
     // Generate unique slug
     const baseSlug = acceleratorName
@@ -87,6 +92,8 @@ serve(async (req) => {
         stripe_payment_id: "admin_precreated",
         paid_at: new Date().toISOString(),
         pending_head_email: headEmail || null, // Optional email for validation
+        default_discount_percent: discount,
+        max_discounted_startups: maxStartups,
       })
       .select("id")
       .single();

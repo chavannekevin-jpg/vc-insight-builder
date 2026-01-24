@@ -278,6 +278,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           logo_url: string | null
+          max_discounted_startups: number | null
           name: string
           onboarding_completed: boolean | null
           paid_at: string | null
@@ -299,6 +300,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           logo_url?: string | null
+          max_discounted_startups?: number | null
           name: string
           onboarding_completed?: boolean | null
           paid_at?: string | null
@@ -320,6 +322,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           logo_url?: string | null
+          max_discounted_startups?: number | null
           name?: string
           onboarding_completed?: boolean | null
           paid_at?: string | null

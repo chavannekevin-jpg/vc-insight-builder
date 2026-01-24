@@ -55,6 +55,7 @@ interface Accelerator {
   paid_at: string | null;
   stripe_payment_id: string | null;
   default_discount_percent: number;
+  max_discounted_startups: number | null;
   pending_head_email?: string | null;
   cohort_count?: number;
   member_count?: number;
@@ -77,6 +78,8 @@ export default function AdminAccelerators() {
   const [showPreCreateDialog, setShowPreCreateDialog] = useState(false);
   const [preCreateName, setPreCreateName] = useState("");
   const [preCreateEmail, setPreCreateEmail] = useState("");
+  const [preCreateDiscount, setPreCreateDiscount] = useState(100);
+  const [preCreateMaxStartups, setPreCreateMaxStartups] = useState<string>("");
   const [preCreating, setPreCreating] = useState(false);
   const [generatedClaimLink, setGeneratedClaimLink] = useState<string | null>(null);
   
@@ -233,6 +236,8 @@ export default function AdminAccelerators() {
         body: { 
           acceleratorName: preCreateName.trim(),
           headEmail: preCreateEmail.trim() || null,
+          discountPercent: preCreateDiscount,
+          maxDiscountedStartups: preCreateMaxStartups ? parseInt(preCreateMaxStartups) : null,
         },
       });
 
@@ -285,6 +290,8 @@ export default function AdminAccelerators() {
     setShowPreCreateDialog(false);
     setPreCreateName("");
     setPreCreateEmail("");
+    setPreCreateDiscount(100);
+    setPreCreateMaxStartups("");
     setGeneratedClaimLink(null);
   };
 
@@ -723,6 +730,43 @@ export default function AdminAccelerators() {
                 />
                 <p className="text-xs text-muted-foreground">
                   If provided, only this email can claim the ecosystem. Leave empty to allow anyone with the link.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pre-discount">Startup Discount (%)</Label>
+                <Select
+                  value={preCreateDiscount.toString()}
+                  onValueChange={(value) => setPreCreateDiscount(parseInt(value))}
+                >
+                  <SelectTrigger id="pre-discount">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="100">100% (Free)</SelectItem>
+                    <SelectItem value="75">75%</SelectItem>
+                    <SelectItem value="50">50%</SelectItem>
+                    <SelectItem value="25">25%</SelectItem>
+                    <SelectItem value="0">0% (Full price)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Discount applied when startups join via this accelerator's invite link.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pre-max-startups">Max Discounted Startups (optional)</Label>
+                <Input
+                  id="pre-max-startups"
+                  type="number"
+                  min="1"
+                  placeholder="e.g., 20 (leave empty for unlimited)"
+                  value={preCreateMaxStartups}
+                  onChange={(e) => setPreCreateMaxStartups(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  After this limit, new startups must pay the full €100. Leave empty for unlimited discounts.
                 </p>
               </div>
 
