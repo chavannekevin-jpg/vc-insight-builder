@@ -164,7 +164,42 @@ serve(async (req) => {
         .in('company_id', companyIds);
       console.log('[admin-delete-account] Deleted memo_generation_jobs');
 
-      // 11. Get referral IDs before deactivating (for cleanup)
+      // 11. Delete investor_dealflow entries (investors who have this company in their pipeline)
+      await supabaseAdmin
+        .from('investor_dealflow')
+        .delete()
+        .in('company_id', companyIds);
+      console.log('[admin-delete-account] Deleted investor_dealflow');
+
+      // 12. Delete dealflow_shares entries
+      await supabaseAdmin
+        .from('dealflow_shares')
+        .delete()
+        .in('company_id', companyIds);
+      console.log('[admin-delete-account] Deleted dealflow_shares');
+
+      // 13. Delete accelerator_section_recommendations
+      await supabaseAdmin
+        .from('accelerator_section_recommendations')
+        .delete()
+        .in('company_id', companyIds);
+      console.log('[admin-delete-account] Deleted accelerator_section_recommendations');
+
+      // 14. Delete company_models
+      await supabaseAdmin
+        .from('company_models')
+        .delete()
+        .in('company_id', companyIds);
+      console.log('[admin-delete-account] Deleted company_models');
+
+      // 15. Delete startup_claim_codes
+      await supabaseAdmin
+        .from('startup_claim_codes')
+        .delete()
+        .in('company_id', companyIds);
+      console.log('[admin-delete-account] Deleted startup_claim_codes');
+
+      // 16. Get referral IDs before deactivating (for cleanup)
       const { data: referralIds } = await supabaseAdmin
         .from('founder_referrals')
         .select('id')
