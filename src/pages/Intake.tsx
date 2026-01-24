@@ -83,8 +83,28 @@ export default function Intake() {
         return;
       }
 
-      // If we have an accelerator ID but no invite ID, create the invite now
-      let finalInviteId = acceleratorInviteId;
+      // Validate and set the accelerator invite ID
+      let finalInviteId: string | null = null;
+      
+      // First, validate that any existing accelerator_invite_id from sessionStorage actually exists
+      if (acceleratorInviteId) {
+        const { data: existingInvite } = await supabase
+          .from("accelerator_invites")
+          .select("id")
+          .eq("id", acceleratorInviteId)
+          .maybeSingle();
+        
+        if (existingInvite) {
+          finalInviteId = acceleratorInviteId;
+        } else {
+          // Invalid invite ID in session storage - clear it
+          console.warn("Invalid accelerator_invite_id in sessionStorage, clearing it");
+          sessionStorage.removeItem('accelerator_invite_id');
+          setAcceleratorInviteId(null);
+        }
+      }
+      
+      // If we have an accelerator ID but no valid invite ID, create the invite now
       if (!finalInviteId && acceleratorId && acceleratorName && acceleratorSlug) {
         console.log("Creating accelerator invite for authenticated user...");
         const inviteCode = `${acceleratorSlug.toUpperCase().replace(/-/g, "")}-${Date.now().toString(36).toUpperCase()}`;
@@ -220,6 +240,25 @@ export default function Intake() {
         return;
       }
 
+      // Validate accelerator invite ID before using it
+      let validInviteId: string | null = null;
+      if (acceleratorInviteId) {
+        const { data: existingInvite } = await supabase
+          .from("accelerator_invites")
+          .select("id")
+          .eq("id", acceleratorInviteId)
+          .maybeSingle();
+        
+        if (existingInvite) {
+          validInviteId = acceleratorInviteId;
+        } else {
+          // Invalid invite ID - clear it
+          console.warn("Invalid accelerator_invite_id in sessionStorage, clearing it");
+          sessionStorage.removeItem('accelerator_invite_id');
+          setAcceleratorInviteId(null);
+        }
+      }
+
       const { data: newCompany, error: companyError } = await supabase
         .from("companies")
         .insert({
@@ -234,8 +273,8 @@ export default function Intake() {
             referral_code: startupInviteCode,
           }),
           // Add accelerator invite tracking if present
-          ...(acceleratorInviteId && {
-            accelerator_invite_id: acceleratorInviteId,
+          ...(validInviteId && {
+            accelerator_invite_id: validInviteId,
           }),
         })
         .select()
