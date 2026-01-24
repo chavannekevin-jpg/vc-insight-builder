@@ -123,6 +123,7 @@ const RoastYourBaby = lazy(() => import("./pages/RoastYourBaby"));
 const DilutionLab = lazy(() => import("./pages/DilutionLab"));
 const AcceleratorLanding = lazy(() => import("./pages/AcceleratorLanding"));
 const AcceleratorInviteLanding = lazy(() => import("./pages/AcceleratorInviteLanding"));
+const AcceleratorJoinLanding = lazy(() => import("./pages/AcceleratorJoinLanding"));
 const FundDiscovery = lazy(() => import("./pages/FundDiscovery"));
 const MarketLens = lazy(() => import("./pages/MarketLens"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -207,6 +208,7 @@ const App = () => (
             <Route path="/dilution-lab" element={<DilutionLab />} />
             <Route path="/accelerators" element={<AcceleratorLanding />} />
             <Route path="/accelerator/invite" element={<AcceleratorInviteLanding />} />
+            <Route path="/join/:slug" element={<AcceleratorJoinLanding />} />
             {/* Production Accelerator Routes */}
             <Route path="/accelerator/auth" element={<AcceleratorAuth />} />
             <Route path="/accelerator/signup" element={<AcceleratorSignup />} />
