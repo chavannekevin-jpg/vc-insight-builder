@@ -77,6 +77,7 @@ export default function AcceleratorStartupDetail() {
   const [assignCohortOpen, setAssignCohortOpen] = useState(false);
   const [showPreviewCard, setShowPreviewCard] = useState(false);
   const [dashboardReadiness, setDashboardReadiness] = useState<DashboardReadinessResult | null>(null);
+  const [vcQuickTake, setVcQuickTake] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -97,13 +98,31 @@ export default function AcceleratorStartupDetail() {
         setCompany(companyResult.data);
         setDashboardReadiness(readinessResult);
 
-        // Fetch memo tool data
-        const { data: memoData } = await supabase
-          .from("memo_tool_data")
-          .select("section_name, tool_name, ai_generated_data, user_overrides")
-          .eq("company_id", id);
+        // Fetch memo tool data and memo for vcQuickTake
+        const [memoToolResult, memoResult] = await Promise.all([
+          supabase
+            .from("memo_tool_data")
+            .select("section_name, tool_name, ai_generated_data, user_overrides")
+            .eq("company_id", id),
+          supabase
+            .from("memos")
+            .select("structured_content")
+            .eq("company_id", id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        ]);
 
-        setToolData(memoData || []);
+        setToolData(memoToolResult.data || []);
+        
+        // Extract vcQuickTake from memo's structured_content
+        const structuredContent = memoResult.data?.structured_content as any;
+        if (structuredContent?.vcQuickTake) {
+          setVcQuickTake(structuredContent.vcQuickTake);
+        } else {
+          // Fallback to company's vc_verdict_json
+          setVcQuickTake(companyResult.data.vc_verdict_json);
+        }
 
         // If company has an accelerator_invite_id, find the cohort/accelerator
         if (companyResult.data.accelerator_invite_id) {
@@ -212,9 +231,6 @@ export default function AcceleratorStartupDetail() {
       }
     }
   });
-
-  // Extract VC Quick Take
-  const vcQuickTake = company?.vc_verdict_json as any;
 
   if (isLoading || authLoading) {
     return (
