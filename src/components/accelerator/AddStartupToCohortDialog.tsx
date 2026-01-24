@@ -61,9 +61,7 @@ export function AddStartupToCohortDialog({
   const fetchAvailableCompanies = async () => {
     setIsLoading(true);
     try {
-      // Get ALL companies (not just those linked to this accelerator)
-      // This allows adding any startup to the ecosystem
-      // Companies that already have an accelerator_invite_id for a DIFFERENT accelerator will be filtered
+      // Get invites that belong to THIS accelerator
       const { data: invites } = await supabase
         .from("accelerator_invites")
         .select("id")
@@ -71,22 +69,23 @@ export function AddStartupToCohortDialog({
 
       const ourInviteIds = (invites || []).map(inv => inv.id);
 
-      // Get all companies
-      const { data: allCompanies, error } = await supabase
+      if (ourInviteIds.length === 0) {
+        // No invites exist for this accelerator yet
+        setCompanies([]);
+        return;
+      }
+
+      // ONLY get companies that are linked to THIS accelerator's invites
+      // This ensures we only show startups that have received an invite from this accelerator
+      const { data: linkedCompanies, error } = await supabase
         .from("companies")
         .select("id, name, category, stage, accelerator_invite_id, memo_content_generated")
+        .in("accelerator_invite_id", ourInviteIds)
         .order("name");
 
       if (error) throw error;
       
-      // Filter: show companies that either:
-      // 1. Have no accelerator_invite_id (unassigned)
-      // 2. Already belong to THIS accelerator (for reassignment between cohorts)
-      const availableCompanies = (allCompanies || []).filter(c => 
-        !c.accelerator_invite_id || ourInviteIds.includes(c.accelerator_invite_id)
-      );
-      
-      setCompanies(availableCompanies);
+      setCompanies(linkedCompanies || []);
     } catch (error) {
       console.error("Error fetching companies:", error);
       toast.error("Failed to load startups");
