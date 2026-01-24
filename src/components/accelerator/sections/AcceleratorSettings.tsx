@@ -1,9 +1,21 @@
 import { useState } from "react";
-import { Building2, Save, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Building2, Save, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -20,7 +32,10 @@ interface AcceleratorSettingsProps {
 }
 
 export function AcceleratorSettings({ accelerator, onUpdate }: AcceleratorSettingsProps) {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: accelerator.name,
     description: accelerator.description || "",
@@ -53,6 +68,28 @@ export function AcceleratorSettings({ accelerator, onUpdate }: AcceleratorSettin
       toast.error(error.message || "Failed to save settings");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteAccelerator = async () => {
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-accelerator", {
+        body: { acceleratorId: accelerator.id }
+      });
+
+      if (error) throw error;
+
+      toast.success("Accelerator deleted successfully");
+      
+      // Redirect to auth page where they can select another accelerator or see options
+      navigate("/accelerator/auth");
+    } catch (error: any) {
+      console.error("Delete accelerator error:", error);
+      toast.error(error.message || "Failed to delete accelerator");
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -129,11 +166,45 @@ export function AcceleratorSettings({ accelerator, onUpdate }: AcceleratorSettin
         <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-6">
           <h3 className="font-semibold text-destructive mb-2">Danger Zone</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            These actions are irreversible. Please proceed with caution.
+            Deleting this accelerator will remove all cohorts, team members, and invites. 
+            Startups in your portfolio will be unlinked but not deleted.
           </p>
-          <Button variant="outline" className="border-destructive/50 text-destructive hover:bg-destructive/10">
-            Delete Accelerator
-          </Button>
+          
+          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="border-destructive/50 text-destructive hover:bg-destructive/10">
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Accelerator
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete "{accelerator.name}"?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete this accelerator, 
+                  all its cohorts, team members, and invite links. Startups will be unlinked 
+                  but their data will remain intact.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteAccelerator}
+                  disabled={isDeleting}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete Accelerator"
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>
