@@ -71,7 +71,7 @@ function AcceleratorDemoDashboardContent() {
       case "team":
         return <AcceleratorTeam acceleratorId={accelerator.id} acceleratorName={accelerator.name} currentUserId="demo-user" isDemo />;
       case "invites":
-        return <AcceleratorInvites acceleratorId={accelerator.id} acceleratorName={accelerator.name} acceleratorSlug={accelerator.slug} />;
+        return <AcceleratorInvites acceleratorId={accelerator.id} acceleratorName={accelerator.name} acceleratorSlug={accelerator.slug} isDemo />;
       case "analytics":
         return <AcceleratorAnalyticsSection stats={stats} companies={companies} />;
       case "settings":

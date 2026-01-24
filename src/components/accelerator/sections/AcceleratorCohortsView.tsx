@@ -163,14 +163,15 @@ export function AcceleratorCohortsView({
           </div>
 
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setIsCreateOpen(true)}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-300"
+            whileHover={isDemo ? {} : { scale: 1.02 }}
+            whileTap={isDemo ? {} : { scale: 0.98 }}
+            onClick={() => !isDemo && setIsCreateOpen(true)}
+            className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-300 ${isDemo ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{
               background: 'linear-gradient(135deg, hsl(330 100% 65%) 0%, hsl(280 100% 70%) 100%)',
-              boxShadow: '0 0 20px hsl(330 100% 65% / 0.3)',
+              boxShadow: isDemo ? 'none' : '0 0 20px hsl(330 100% 65% / 0.3)',
             }}
+            disabled={isDemo}
           >
             <Plus className="w-4 h-4" />
             New Cohort
@@ -195,8 +196,9 @@ export function AcceleratorCohortsView({
             Create your first cohort to start organizing your startups by batch.
           </p>
           <Button
-            onClick={() => setIsCreateOpen(true)}
-            className="gap-2"
+            onClick={() => !isDemo && setIsCreateOpen(true)}
+            className={`gap-2 ${isDemo ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={isDemo}
             style={{
               background: 'linear-gradient(135deg, hsl(330 100% 65%) 0%, hsl(280 100% 70%) 100%)',
             }}
