@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, Save, Loader2, Trash2 } from "lucide-react";
+import { Building2, Save, Loader2, Trash2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AcceleratorClaimStartup } from "./AcceleratorClaimStartup";
 
 interface AcceleratorSettingsProps {
   accelerator: {
@@ -160,6 +161,25 @@ export function AcceleratorSettings({ accelerator, onUpdate }: AcceleratorSettin
               )}
             </Button>
           </div>
+        </div>
+
+        {/* Startup Management */}
+        <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-6">
+          <div className="flex items-center gap-4 mb-4 pb-4 border-b border-border/30">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <UserPlus className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Claim Startups</h2>
+              <p className="text-sm text-muted-foreground">Add existing startups to your ecosystem using their claim code</p>
+            </div>
+          </div>
+          
+          <AcceleratorClaimStartup 
+            acceleratorId={accelerator.id}
+            acceleratorName={accelerator.name}
+            onClaim={onUpdate}
+          />
         </div>
 
         {/* Danger Zone */}
