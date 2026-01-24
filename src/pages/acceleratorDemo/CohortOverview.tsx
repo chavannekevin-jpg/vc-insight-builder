@@ -1,12 +1,8 @@
 import { useState, useMemo } from "react";
-import { DemoModeBanner } from "@/components/acceleratorDemo/DemoModeBanner";
-import { AcceleratorDemoHeader } from "@/components/acceleratorDemo/AcceleratorDemoHeader";
-import { CohortStatsBar } from "@/components/acceleratorDemo/CohortStatsBar";
-import { StartupCard } from "@/components/acceleratorDemo/StartupCard";
-import { DemoWrapper } from "@/components/acceleratorDemo/DemoWrapper";
-import { DEMO_STARTUPS, DemoStartup } from "@/data/acceleratorDemo/demoStartups";
-import { Search, ArrowUpDown, Grid3X3, List, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { AcceleratorDemoLayout } from "@/components/acceleratorDemo/AcceleratorDemoLayout";
+import { DEMO_STARTUPS, DemoStartup } from "@/data/acceleratorDemo/demoStartups";
+import { Search, ArrowUpDown, Grid3X3, List, FileText, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { safeLower } from "@/lib/stringUtils";
 import { Button } from "@/components/ui/button";
@@ -22,7 +18,30 @@ type SortOption = "score-desc" | "score-asc" | "name" | "progress";
 type FilterStatus = "all" | DemoStartup["status"];
 type ViewMode = "grid" | "list";
 
+const getScoreColor = (score: number) => {
+  if (score >= 75) return "text-emerald-400";
+  if (score >= 60) return "text-primary";
+  if (score >= 45) return "text-amber-400";
+  return "text-rose-400";
+};
+
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case "demo-ready":
+      return <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Ready</span>;
+    case "on-track":
+      return <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">On Track</span>;
+    case "needs-work":
+      return <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Needs Work</span>;
+    case "at-risk":
+      return <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">At Risk</span>;
+    default:
+      return null;
+  }
+};
+
 const CohortOverview = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("score-desc");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
@@ -31,7 +50,6 @@ const CohortOverview = () => {
   const filteredAndSortedStartups = useMemo(() => {
     let result = [...DEMO_STARTUPS];
 
-    // Filter by search
     if (searchQuery) {
       const query = safeLower(searchQuery, "CohortOverview.search");
       result = result.filter(
@@ -42,12 +60,10 @@ const CohortOverview = () => {
       );
     }
 
-    // Filter by status
     if (filterStatus !== "all") {
       result = result.filter((s) => s.status === filterStatus);
     }
 
-    // Sort
     switch (sortBy) {
       case "score-desc":
         result.sort((a, b) => b.fundabilityScore - a.fundabilityScore);
@@ -75,39 +91,28 @@ const CohortOverview = () => {
   ];
 
   return (
-    <DemoWrapper>
-    <div className="min-h-screen bg-background">
-      <DemoModeBanner />
-      <AcceleratorDemoHeader />
-
-      <main className="max-w-7xl mx-auto px-4 py-8">
+    <AcceleratorDemoLayout>
+      <div className="p-6 max-w-7xl mx-auto">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Cohort Overview</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold mb-2">Full Portfolio</h1>
+          <p className="text-sm text-muted-foreground">
             View and manage all {DEMO_STARTUPS.length} startups in your cohort
           </p>
         </div>
 
-        {/* Stats Bar */}
-        <div className="mb-8">
-          <CohortStatsBar />
-        </div>
-
         {/* Filters & Search */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
-          {/* Search */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search startups..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-card/60 border-white/[0.06]"
             />
           </div>
 
-          {/* Status Filter */}
           <div className="flex gap-2 flex-wrap">
             {statusFilters.map((filter) => (
               <Button
@@ -123,7 +128,6 @@ const CohortOverview = () => {
             ))}
           </div>
 
-          {/* Sort & View Controls */}
           <div className="flex gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -133,27 +137,19 @@ const CohortOverview = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setSortBy("score-desc")}>
-                  Score: High to Low
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy("score-asc")}>
-                  Score: Low to High
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy("name")}>
-                  Name: A-Z
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy("progress")}>
-                  Weekly Progress
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("score-desc")}>Score: High to Low</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("score-asc")}>Score: Low to High</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("name")}>Name: A-Z</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("progress")}>Weekly Progress</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <div className="flex border border-border rounded-lg overflow-hidden">
+            <div className="flex border border-white/[0.06] rounded-lg overflow-hidden">
               <button
                 onClick={() => setViewMode("grid")}
                 className={cn(
                   "p-2 transition-colors",
-                  viewMode === "grid" ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                  viewMode === "grid" ? "bg-primary text-primary-foreground" : "hover:bg-white/[0.04]"
                 )}
               >
                 <Grid3X3 className="w-4 h-4" />
@@ -162,7 +158,7 @@ const CohortOverview = () => {
                 onClick={() => setViewMode("list")}
                 className={cn(
                   "p-2 transition-colors",
-                  viewMode === "list" ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                  viewMode === "list" ? "bg-primary text-primary-foreground" : "hover:bg-white/[0.04]"
                 )}
               >
                 <List className="w-4 h-4" />
@@ -172,26 +168,57 @@ const CohortOverview = () => {
         </div>
 
         {/* Results Count */}
-        <div className="text-sm text-muted-foreground mb-4">
+        <div className="text-xs text-muted-foreground mb-4">
           Showing {filteredAndSortedStartups.length} of {DEMO_STARTUPS.length} startups
         </div>
 
         {/* Startups Grid/List */}
         {viewMode === "grid" ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredAndSortedStartups.map((startup) => (
-              <StartupCard key={startup.id} startup={startup} />
+              <div
+                key={startup.id}
+                className="group p-4 rounded-xl bg-card/40 backdrop-blur-xl border border-white/[0.06] hover:border-primary/30 transition-all cursor-pointer"
+                onClick={() => navigate(`/accelerator-demo/startup/${startup.id}`)}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">{startup.name}</h3>
+                  <span className={cn("text-sm font-bold", getScoreColor(startup.fundabilityScore))}>
+                    {startup.fundabilityScore}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{startup.tagline}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground">{startup.category}</span>
+                  {getStatusBadge(startup.status)}
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {filteredAndSortedStartups.map((startup) => (
-              <StartupListItem key={startup.id} startup={startup} />
+              <div
+                key={startup.id}
+                onClick={() => navigate(`/accelerator-demo/startup/${startup.id}`)}
+                className="group p-4 rounded-xl bg-card/40 backdrop-blur-xl border border-white/[0.06] hover:border-primary/30 transition-all cursor-pointer flex items-center gap-4"
+              >
+                <div className={cn("text-xl font-bold w-12 text-center", getScoreColor(startup.fundabilityScore))}>
+                  {startup.fundabilityScore}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="font-semibold group-hover:text-primary transition-colors">{startup.name}</h3>
+                    {getStatusBadge(startup.status)}
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">{startup.tagline}</p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
             ))}
           </div>
         )}
 
-        {/* Empty State */}
         {filteredAndSortedStartups.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No startups match your filters</p>
@@ -208,64 +235,8 @@ const CohortOverview = () => {
             </Button>
           </div>
         )}
-      </main>
-    </div>
-    </DemoWrapper>
-  );
-};
-
-// List view item component
-const StartupListItem = ({ startup }: { startup: DemoStartup }) => {
-  const navigate = useNavigate();
-
-  const getScoreColor = (score: number) => {
-    if (score >= 75) return "text-success";
-    if (score >= 60) return "text-primary";
-    if (score >= 45) return "text-warning";
-    return "text-destructive";
-  };
-
-  const handleMemoClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/accelerator-demo/startup/${startup.id}/memo`);
-  };
-
-  return (
-    <div
-      onClick={() => navigate(`/accelerator-demo/startup/${startup.id}`)}
-      className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:shadow-md hover:border-primary/40 transition-all flex items-center gap-6"
-    >
-      <div className={cn("text-2xl font-bold w-16 text-center", getScoreColor(startup.fundabilityScore))}>
-        {startup.fundabilityScore}
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-3 mb-1">
-          <h3 className="font-semibold text-foreground">{startup.name}</h3>
-          <span className="text-xs px-2 py-0.5 bg-muted rounded-full text-muted-foreground">
-            {startup.category}
-          </span>
-        </div>
-        <p className="text-sm text-muted-foreground truncate">{startup.tagline}</p>
-      </div>
-      <div className="hidden md:flex items-center gap-4">
-        {Object.entries(startup.sectionScores).slice(0, 4).map(([section, score]) => (
-          <div key={section} className="text-center">
-            <div className={cn("text-sm font-medium", getScoreColor(score))}>{score}</div>
-            <div className="text-[10px] text-muted-foreground capitalize">{section.slice(0, 4)}</div>
-          </div>
-        ))}
-      </div>
-      <button
-        onClick={handleMemoClick}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-primary/30 text-primary rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors"
-      >
-        <FileText className="w-3 h-3" />
-        Memo
-      </button>
-      <div className="text-xs text-muted-foreground">
-        {startup.founders.length} founder{startup.founders.length > 1 ? "s" : ""}
-      </div>
-    </div>
+    </AcceleratorDemoLayout>
   );
 };
 
