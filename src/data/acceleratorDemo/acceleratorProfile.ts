@@ -1,8 +1,8 @@
 export const DEMO_ACCELERATOR = {
-  id: "demo-horizon-ventures",
-  name: "Horizon Ventures",
-  batchName: "Batch 7 - Spring 2024",
-  description: "A 12-week pre-seed accelerator focused on B2B SaaS and climate tech",
+  id: "demo-ugly-baby-foundry",
+  name: "Ugly Baby's Foundry",
+  batchName: "Batch 3 - Spring 2025",
+  description: "A 12-week pre-seed accelerator focused on B2B SaaS, FinTech, and Climate Tech startups",
   programManager: {
     name: "Sarah Chen",
     role: "Program Director",
@@ -10,15 +10,16 @@ export const DEMO_ACCELERATOR = {
   },
   cohortSize: 10,
   programLength: "12 weeks",
-  demoDay: "March 15, 2024",
-  currentWeek: 4,
-  focus: ["B2B SaaS", "Climate Tech", "Enterprise AI"],
+  demoDay: "April 15, 2025",
+  currentWeek: 6,
+  focus: ["B2B SaaS", "FinTech", "Climate Tech"],
   stats: {
     totalStartups: 10,
-    avgFundabilityScore: 67,
+    avgFundabilityScore: 70,
     readyForDemoDay: 3,
-    needsWork: 5,
-    atRisk: 2,
+    onTrack: 3,
+    needsWork: 3,
+    atRisk: 1,
   },
 };
 
