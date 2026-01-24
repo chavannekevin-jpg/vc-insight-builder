@@ -186,6 +186,7 @@ export type Database = {
           name: string
           onboarding_completed: boolean | null
           paid_at: string | null
+          pending_head_email: string | null
           program_length_weeks: number | null
           slug: string
           stripe_payment_id: string | null
@@ -206,6 +207,7 @@ export type Database = {
           name: string
           onboarding_completed?: boolean | null
           paid_at?: string | null
+          pending_head_email?: string | null
           program_length_weeks?: number | null
           slug: string
           stripe_payment_id?: string | null
@@ -226,6 +228,7 @@ export type Database = {
           name?: string
           onboarding_completed?: boolean | null
           paid_at?: string | null
+          pending_head_email?: string | null
           program_length_weeks?: number | null
           slug?: string
           stripe_payment_id?: string | null

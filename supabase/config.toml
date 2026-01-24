@@ -134,3 +134,9 @@ verify_jwt = false
 
 [functions.market-lens-generate]
 verify_jwt = false
+
+[functions.create-accelerator-for-head]
+verify_jwt = false
+
+[functions.claim-accelerator-head]
+verify_jwt = false
