@@ -27,6 +27,7 @@ import {
   Users,
   Trophy,
   Telescope,
+  HelpCircle,
 } from "lucide-react";
 import {
   Sidebar,
@@ -553,6 +554,23 @@ export const FounderSidebar = ({
         <SidebarGroup className="mt-auto border-t border-border/10 pt-3 px-2 pb-2 relative z-10 bg-gradient-to-t from-sidebar/90 via-sidebar/60 to-transparent backdrop-blur-md">
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => navigate("/startup-guide")}
+                  className={cn(
+                    "w-full transition-all duration-200 rounded-xl group",
+                    isActive("/startup-guide")
+                      ? "bg-primary/12 text-primary border border-primary/20 shadow-[0_0_24px_hsl(var(--primary)/0.12)]"
+                      : "hover:bg-white/5 dark:hover:bg-white/[0.03] text-muted-foreground hover:text-foreground border border-transparent hover:border-border/10"
+                  )}
+                >
+                  <HelpCircle className={cn(
+                    "w-4 h-4 shrink-0 transition-all duration-200",
+                    isActive("/startup-guide") && "drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)]"
+                  )} />
+                  {!collapsed && <span className="font-medium text-sm">Platform Guide</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={onDeleteAccountClick}
