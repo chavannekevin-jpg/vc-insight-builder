@@ -27,7 +27,10 @@ import {
   Plus,
   RefreshCw,
   Trash2,
-  Loader2
+  Loader2,
+  Ticket,
+  Copy,
+  Check
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -41,6 +44,7 @@ interface Company {
   responses_count: number;
   generations_available: number;
   generations_used: number;
+  referral_code: string | null;
 }
 
 interface Purchase {
@@ -67,8 +71,48 @@ export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserD
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [creditsToAdd, setCreditsToAdd] = useState<Record<string, number>>({});
   const [addingCredits, setAddingCredits] = useState<Record<string, boolean>>({});
+  const [generatingCode, setGeneratingCode] = useState<Record<string, boolean>>({});
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const generateClaimCode = async (companyId: string, companyName: string) => {
+    setGeneratingCode(prev => ({ ...prev, [companyId]: true }));
+    try {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let code = "CLAIM-";
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      const { error } = await supabase
+        .from("startup_claim_codes")
+        .insert({
+          code,
+          company_id: companyId,
+          is_active: true,
+        });
+
+      if (error) throw error;
+
+      navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 3000);
+
+      toast({
+        title: "Claim code generated!",
+        description: `Code ${code} copied to clipboard. Give this to an accelerator to claim ${companyName}.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to generate code",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingCode(prev => ({ ...prev, [companyId]: false }));
+    }
+  };
 
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
@@ -201,6 +245,7 @@ export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserD
           has_premium,
           generations_available,
           generations_used,
+          referral_code,
           memos(id, status)
         `)
         .eq("founder_id", userId)
@@ -227,6 +272,7 @@ export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserD
             responses_count: count || 0,
             generations_available: company.generations_available || 0,
             generations_used: company.generations_used || 0,
+            referral_code: company.referral_code || null,
           };
         })
       );
@@ -402,6 +448,42 @@ export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserD
                       )}
                     </Button>
                   </div>
+                </div>
+                
+                {/* Accelerator Claim Code */}
+                <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                  <div className="flex items-center gap-2">
+                    <Ticket className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      Accelerator Claim Code
+                    </span>
+                    {company.referral_code && (
+                      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                        {company.referral_code}
+                      </code>
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => generateClaimCode(company.id, company.name)}
+                    disabled={generatingCode[company.id]}
+                    className="h-8"
+                  >
+                    {generatingCode[company.id] ? (
+                      <RefreshCw className="w-3 h-3 animate-spin" />
+                    ) : copiedCode ? (
+                      <>
+                        <Check className="w-3 h-3 mr-1 text-success" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 mr-1" />
+                        Generate Code
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             ))}
