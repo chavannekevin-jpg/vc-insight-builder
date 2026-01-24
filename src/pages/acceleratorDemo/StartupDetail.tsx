@@ -94,7 +94,7 @@ const StartupDetail = () => {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <h1 className="text-xl font-bold mb-2">Startup not found</h1>
-            <Button onClick={() => navigate("/accelerator-demo/cohort")}>
+            <Button onClick={() => navigate("/accelerator-demo")}>
               Back to Portfolio
             </Button>
           </div>
@@ -116,11 +116,11 @@ const StartupDetail = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate("/accelerator-demo/cohort")}
+          onClick={() => navigate("/accelerator-demo")}
           className="mb-6 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Portfolio
+          Back to Dashboard
         </Button>
 
         {/* Header */}
@@ -307,14 +307,6 @@ const StartupDetail = () => {
                 >
                   <FileText className="w-4 h-4 mr-2" />
                   View Full Analysis
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start border-white/[0.06]"
-                  onClick={() => navigate("/accelerator-demo/compare")}
-                >
-                  Compare with Others
                 </Button>
               </div>
             </section>

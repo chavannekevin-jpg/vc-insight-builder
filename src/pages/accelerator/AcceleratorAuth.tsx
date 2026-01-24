@@ -44,6 +44,7 @@ export default function AcceleratorAuth() {
   const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [memberName, setMemberName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -165,13 +166,14 @@ export default function AcceleratorAuth() {
   }, [teamInviteCode]);
 
   // Handle team invite after authentication
-  const handleTeamInviteJoin = async (userId: string) => {
+  const handleTeamInviteJoin = async (userId: string, name?: string) => {
     if (!teamInviteCode) return false;
     
     try {
       const { data, error } = await supabase.rpc("add_accelerator_member_with_invite", {
         p_user_id: userId,
         p_invite_code: teamInviteCode,
+        p_member_name: name || memberName || null,
       });
 
       if (error) throw error;
@@ -730,6 +732,20 @@ export default function AcceleratorAuth() {
         </div>
 
         <form onSubmit={handleTeamInviteAuth} className="space-y-5">
+          {isSignUp && (
+            <div className="space-y-2">
+              <Label htmlFor="memberName">Your Name</Label>
+              <Input
+                id="memberName"
+                type="text"
+                placeholder="John Doe"
+                value={memberName}
+                onChange={(e) => setMemberName(e.target.value)}
+                className="bg-background"
+              />
+              <p className="text-xs text-muted-foreground">This will be displayed to your team</p>
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -752,7 +768,7 @@ export default function AcceleratorAuth() {
               className="bg-background"
             />
           </div>
-          <Button type="submit" disabled={isLoading} className="w-full h-12">
+          <Button type="submit" disabled={isLoading || (isSignUp && !memberName.trim())} className="w-full h-12">
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (

@@ -22,6 +22,7 @@ interface TeamMember {
   role: string;
   joined_at: string | null;
   invite_email: string | null;
+  member_name: string | null;
   email?: string;
 }
 
@@ -285,13 +286,13 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId,
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <span className="text-primary font-semibold">
-                        {(member.invite_email || "U").slice(0, 2).toUpperCase()}
+                        {(member.member_name || member.invite_email || "U").slice(0, 2).toUpperCase()}
                       </span>
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-foreground">
-                          {member.invite_email || "Team Member"}
+                          {member.member_name || member.invite_email || "Team Member"}
                         </p>
                         {isCurrentUser && (
                           <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">You</span>
@@ -300,6 +301,9 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId,
                       <div className="flex items-center gap-1.5 text-sm">
                         <roleInfo.icon className={cn("w-3.5 h-3.5", roleInfo.color)} />
                         <span className="text-muted-foreground">{roleInfo.label}</span>
+                        {member.member_name && member.invite_email && (
+                          <span className="text-muted-foreground/60 text-xs">• {member.invite_email}</span>
+                        )}
                       </div>
                     </div>
                   </div>

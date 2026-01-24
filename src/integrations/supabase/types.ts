@@ -136,6 +136,7 @@ export type Database = {
           invited_at: string | null
           invited_by: string | null
           joined_at: string | null
+          member_name: string | null
           role: string | null
           user_id: string
         }
@@ -147,6 +148,7 @@ export type Database = {
           invited_at?: string | null
           invited_by?: string | null
           joined_at?: string | null
+          member_name?: string | null
           role?: string | null
           user_id: string
         }
@@ -158,6 +160,7 @@ export type Database = {
           invited_at?: string | null
           invited_by?: string | null
           joined_at?: string | null
+          member_name?: string | null
           role?: string | null
           user_id?: string
         }
@@ -2681,10 +2684,16 @@ export type Database = {
       }
     }
     Functions: {
-      add_accelerator_member_with_invite: {
-        Args: { p_invite_code: string; p_user_id: string }
-        Returns: Json
-      }
+      add_accelerator_member_with_invite:
+        | { Args: { p_invite_code: string; p_user_id: string }; Returns: Json }
+        | {
+            Args: {
+              p_invite_code: string
+              p_member_name?: string
+              p_user_id: string
+            }
+            Returns: Json
+          }
       add_investor_role_with_invite: {
         Args: { p_invite_code: string; p_user_id: string }
         Returns: Json
