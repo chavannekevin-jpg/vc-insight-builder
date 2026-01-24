@@ -48,6 +48,46 @@ const roleLabels: Record<string, { label: string; icon: any; color: string }> = 
   member: { label: "Team Member", icon: Users, color: "text-primary" },
 };
 
+// Demo team data for read-only demo mode
+const DEMO_TEAM_MEMBERS: TeamMember[] = [
+  {
+    id: "demo-member-1",
+    user_id: "demo-head",
+    role: "head",
+    joined_at: "2024-01-01T00:00:00Z",
+    invite_email: "sarah.chen@uglybaby.vc",
+    member_name: "Sarah Chen",
+  },
+  {
+    id: "demo-member-2",
+    user_id: "demo-partner",
+    role: "member",
+    joined_at: "2024-02-15T00:00:00Z",
+    invite_email: "marcus.rodriguez@uglybaby.vc",
+    member_name: "Marcus Rodriguez",
+  },
+  {
+    id: "demo-member-3",
+    user_id: "demo-analyst",
+    role: "member",
+    joined_at: "2024-06-01T00:00:00Z",
+    invite_email: "priya.patel@uglybaby.vc",
+    member_name: "Priya Patel",
+  },
+];
+
+const DEMO_TEAM_INVITES: TeamInvite[] = [
+  {
+    id: "demo-invite-1",
+    code: "TEAMJOIN24",
+    role: "member",
+    max_uses: 5,
+    uses: 2,
+    is_active: true,
+    created_at: "2024-11-01T00:00:00Z",
+  },
+];
+
 export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId, isDemo = false }: AcceleratorTeamProps) {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [invites, setInvites] = useState<TeamInvite[]>([]);
@@ -59,8 +99,14 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId,
   const [generatedInvite, setGeneratedInvite] = useState<{ code: string; link: string } | null>(null);
 
   useEffect(() => {
-    fetchData();
-  }, [acceleratorId]);
+    if (isDemo) {
+      setMembers(DEMO_TEAM_MEMBERS);
+      setInvites(DEMO_TEAM_INVITES);
+      setIsLoading(false);
+    } else {
+      fetchData();
+    }
+  }, [acceleratorId, isDemo]);
 
   const fetchData = async () => {
     try {
@@ -140,6 +186,10 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId,
   };
 
   const copyInviteLink = (code: string) => {
+    if (isDemo) {
+      toast.info("This is a demo - copying links is disabled");
+      return;
+    }
     const link = `${window.location.origin}/accelerator/auth?code=${code}`;
     navigator.clipboard.writeText(link);
     setCopiedCode(code);
@@ -148,6 +198,11 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId,
   };
 
   const handleDeactivateInvite = async (inviteId: string) => {
+    if (isDemo) {
+      toast.info("This is a demo - deactivating invites is disabled");
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("accelerator_team_invites")
@@ -163,6 +218,10 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId,
   };
 
   const handleRemoveMember = async (memberId: string) => {
+    if (isDemo) {
+      toast.info("This is a demo - removing members is disabled");
+      return;
+    }
     try {
       const { error } = await supabase
         .from("accelerator_members")
@@ -198,7 +257,11 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId,
           <h1 className="text-2xl font-bold text-foreground">Team</h1>
           <p className="text-muted-foreground">Manage your accelerator team members</p>
         </div>
-        <Button onClick={() => setIsInviteOpen(true)} className="gap-2">
+        <Button 
+          onClick={() => setIsInviteOpen(true)} 
+          className={cn("gap-2", isDemo && "opacity-50 cursor-not-allowed")}
+          disabled={isDemo}
+        >
           <Plus className="w-4 h-4" />
           Create Invite Code
         </Button>
@@ -230,7 +293,8 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId,
                       variant="ghost"
                       size="sm"
                       onClick={() => copyInviteLink(invite.code)}
-                      className="gap-1"
+                      className={cn("gap-1", isDemo && "opacity-50 cursor-not-allowed")}
+                      disabled={isDemo}
                     >
                       {copiedCode === invite.code ? (
                         <Check className="w-4 h-4 text-green-500" />
@@ -242,8 +306,12 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId,
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-muted-foreground hover:text-destructive"
+                      className={cn(
+                        "text-muted-foreground",
+                        isDemo ? "opacity-50 cursor-not-allowed" : "hover:text-destructive"
+                      )}
                       onClick={() => handleDeactivateInvite(invite.id)}
+                      disabled={isDemo}
                     >
                       Deactivate
                     </Button>
@@ -264,7 +332,11 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId,
             <p className="text-muted-foreground mb-4">
               Create an invite code and share it with admins, mentors, and team members to join your ecosystem.
             </p>
-            <Button onClick={() => setIsInviteOpen(true)} className="gap-2">
+            <Button 
+              onClick={() => setIsInviteOpen(true)} 
+              className={cn("gap-2", isDemo && "opacity-50 cursor-not-allowed")}
+              disabled={isDemo}
+            >
               <Plus className="w-4 h-4" />
               Create Invite Code
             </Button>
@@ -307,7 +379,7 @@ export function AcceleratorTeam({ acceleratorId, acceleratorName, currentUserId,
                       </div>
                     </div>
                   </div>
-                  {!isCurrentUser && member.role !== "head" && (
+                  {!isCurrentUser && member.role !== "head" && !isDemo && (
                     <Button
                       variant="ghost"
                       size="icon"

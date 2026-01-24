@@ -25,6 +25,7 @@ interface AcceleratorInvitesProps {
   acceleratorId: string;
   acceleratorName: string;
   acceleratorSlug: string;
+  isDemo?: boolean;
 }
 
 // Premium auth-style glass card
@@ -61,14 +62,49 @@ const FluidGlassCard = ({
   </motion.div>
 );
 
-export function AcceleratorInvites({ acceleratorId, acceleratorName, acceleratorSlug }: AcceleratorInvitesProps) {
+// Demo invite data for read-only demo mode
+const DEMO_INVITES = [
+  {
+    id: "demo-invite-1",
+    code: "UGLYBABY2025",
+    accelerator_name: "Ugly Baby's Foundry",
+    cohort_name: "Batch 3 - Spring 2025",
+    custom_message: "Welcome to our flagship cohort! Join 10 exceptional startups on their journey to Demo Day.",
+    discount_percent: 100,
+    uses: 8,
+    max_uses: 15,
+    is_active: true,
+    expires_at: null,
+    created_at: "2024-12-15T10:00:00Z",
+  },
+  {
+    id: "demo-invite-2",
+    code: "MENTORPICK",
+    accelerator_name: "Ugly Baby's Foundry",
+    cohort_name: null,
+    custom_message: "Exclusive invite for mentor-referred startups",
+    discount_percent: 50,
+    uses: 3,
+    max_uses: 10,
+    is_active: true,
+    expires_at: null,
+    created_at: "2024-11-20T14:30:00Z",
+  },
+];
+
+export function AcceleratorInvites({ acceleratorId, acceleratorName, acceleratorSlug, isDemo = false }: AcceleratorInvitesProps) {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchInvites();
-  }, [acceleratorId]);
+    if (isDemo) {
+      setInvites(DEMO_INVITES);
+      setIsLoading(false);
+    } else {
+      fetchInvites();
+    }
+  }, [acceleratorId, isDemo]);
 
   const fetchInvites = async () => {
     try {
@@ -89,6 +125,10 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
 
 
   const copyInviteLink = (invite: Invite) => {
+    if (isDemo) {
+      toast.info("This is a demo - copying links is disabled");
+      return;
+    }
     const link = `${window.location.origin}/invite/${invite.code}`;
     navigator.clipboard.writeText(link);
     setCopiedId(invite.id);
@@ -97,6 +137,11 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
   };
 
   const toggleInviteActive = async (inviteId: string, currentStatus: boolean) => {
+    if (isDemo) {
+      toast.info("This is a demo - modifying invites is disabled");
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("accelerator_invites")
@@ -140,14 +185,24 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
           <h1 className="text-3xl font-bold text-foreground tracking-tight">Invite Codes</h1>
           <p className="text-muted-foreground/70 mt-2">Create and manage startup invite codes</p>
         </div>
-        <InviteStartupDialog accelerator={{ id: acceleratorId, name: acceleratorName, slug: acceleratorSlug }}>
+        {isDemo ? (
           <Button 
-            className="gap-2 bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(var(--primary),0.2)]"
+            className="gap-2 opacity-50 cursor-not-allowed"
+            disabled
           >
             <Plus className="w-4 h-4" />
             Invite Startups
           </Button>
-        </InviteStartupDialog>
+        ) : (
+          <InviteStartupDialog accelerator={{ id: acceleratorId, name: acceleratorName, slug: acceleratorSlug }}>
+            <Button 
+              className="gap-2 bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(var(--primary),0.2)]"
+            >
+              <Plus className="w-4 h-4" />
+              Invite Startups
+            </Button>
+          </InviteStartupDialog>
+        )}
       </motion.div>
 
       {invites.length === 0 ? (
@@ -159,14 +214,24 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
           <p className="text-muted-foreground/70 mb-6 max-w-sm mx-auto">
             Create invite codes for startups to join your accelerator ecosystem.
           </p>
-          <InviteStartupDialog accelerator={{ id: acceleratorId, name: acceleratorName, slug: acceleratorSlug }}>
+          {isDemo ? (
             <Button 
-              className="gap-2 bg-primary hover:bg-primary/90"
+              className="gap-2 opacity-50 cursor-not-allowed"
+              disabled
             >
               <Plus className="w-4 h-4" />
               Invite Startups
             </Button>
-          </InviteStartupDialog>
+          ) : (
+            <InviteStartupDialog accelerator={{ id: acceleratorId, name: acceleratorName, slug: acceleratorSlug }}>
+              <Button 
+                className="gap-2 bg-primary hover:bg-primary/90"
+              >
+                <Plus className="w-4 h-4" />
+                Invite Startups
+              </Button>
+            </InviteStartupDialog>
+          )}
         </FluidGlassCard>
       ) : (
         <div className="grid gap-4">
@@ -201,7 +266,11 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                     variant="outline"
                     size="sm"
                     onClick={() => copyInviteLink(invite)}
-                    className="gap-2 bg-muted/20 border-border/50 hover:bg-muted/40 hover:border-border"
+                    className={cn(
+                      "gap-2 bg-muted/20 border-border/50",
+                      isDemo ? "opacity-50 cursor-not-allowed" : "hover:bg-muted/40 hover:border-border"
+                    )}
+                    disabled={isDemo}
                   >
                     {copiedId === invite.id ? (
                       <>
@@ -219,7 +288,10 @@ export function AcceleratorInvites({ acceleratorId, acceleratorName, accelerator
                     variant="ghost"
                     size="sm"
                     onClick={() => toggleInviteActive(invite.id, invite.is_active)}
-                    className="hover:bg-muted/30"
+                    className={cn(
+                      isDemo ? "opacity-50 cursor-not-allowed" : "hover:bg-muted/30"
+                    )}
+                    disabled={isDemo}
                   >
                     {invite.is_active ? "Deactivate" : "Activate"}
                   </Button>
