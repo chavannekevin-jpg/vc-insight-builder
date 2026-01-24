@@ -11,6 +11,8 @@ import { AcceleratorInvites } from "@/components/accelerator/sections/Accelerato
 import { AcceleratorAnalyticsSection } from "@/components/accelerator/sections/AcceleratorAnalyticsSection";
 import { AcceleratorSettings } from "@/components/accelerator/sections/AcceleratorSettings";
 import { StartupQuickViewModal } from "@/components/accelerator/StartupQuickViewModal";
+import { ProductTourSpotlight } from "@/components/tour/ProductTourSpotlight";
+import { useAcceleratorProductTour } from "@/hooks/useAcceleratorProductTour";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -59,6 +61,9 @@ export default function AcceleratorDashboard() {
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Product tour
+  const tour = useAcceleratorProductTour();
   
   // Modal state for quick startup view
   const [quickViewOpen, setQuickViewOpen] = useState(false);
@@ -264,6 +269,7 @@ export default function AcceleratorDashboard() {
           activeSection={activeSection}
           onSectionChange={setActiveSection}
           accelerator={accelerator}
+          onStartTour={tour.triggerTour}
         />
 
         <div className="flex-1 flex flex-col min-w-0 relative z-10">
@@ -312,6 +318,17 @@ export default function AcceleratorDashboard() {
           onOpenChange={setQuickViewOpen}
           companyId={selectedCompanyId}
           acceleratorId={accelerator?.id}
+        />
+
+        {/* Product Tour Spotlight */}
+        <ProductTourSpotlight
+          isActive={tour.isActive}
+          currentStep={tour.currentStep}
+          currentStepIndex={tour.currentStepIndex}
+          totalSteps={tour.totalSteps}
+          onNext={tour.nextStep}
+          onPrev={tour.prevStep}
+          onSkip={tour.skipTour}
         />
       </div>
     </SidebarProvider>
