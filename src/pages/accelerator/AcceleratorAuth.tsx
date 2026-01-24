@@ -203,45 +203,58 @@ export default function AcceleratorAuth() {
   };
 
   useEffect(() => {
+    let isMounted = true;
+    
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setIsAuthenticated(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
         
-        // If in claim mode and authenticated, try to claim immediately
-        if (claimToken && claimInfo && !claimError) {
-          const claimed = await handleClaimEcosystem(session.user.id);
-          if (claimed) {
-            setCheckingSession(false);
-            return;
+        if (session?.user) {
+          setIsAuthenticated(true);
+          
+          // If in claim mode and authenticated, try to claim immediately
+          if (claimToken && claimInfo && !claimError) {
+            const claimed = await handleClaimEcosystem(session.user.id);
+            if (claimed && isMounted) {
+              setCheckingSession(false);
+              return;
+            }
+          }
+          
+          // Check if user has accelerator role
+          const { data: roleData } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", session.user.id)
+            .eq("role", "accelerator")
+            .maybeSingle();
+
+          if (roleData && isMounted) {
+            await checkAndNavigateToAccelerator(session.user.id);
           }
         }
-        
-        // Check if user has accelerator role
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .eq("role", "accelerator")
-          .maybeSingle();
-
-        if (roleData) {
-          const hasAccelerator = await checkAndNavigateToAccelerator(session.user.id);
-          // If single accelerator, navigation happens inside the function
-          // If multiple, dialog is shown - either way, stop checking
+      } catch (error) {
+        console.error("Session check error:", error);
+      } finally {
+        // ALWAYS set checkingSession to false when done
+        if (isMounted) {
           setCheckingSession(false);
-          return;
         }
       }
-      setCheckingSession(false);
     };
 
     // Only check session after claim info is loaded (or if not in claim mode)
     if (!claimToken || (!loadingClaimInfo && (claimInfo || claimError))) {
       checkSession();
+    } else if (!claimToken) {
+      // If no claim token and not loading, immediately stop checking
+      setCheckingSession(false);
     }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+      
       if (event === "SIGNED_IN" && session?.user) {
         setIsAuthenticated(true);
         
@@ -258,7 +271,7 @@ export default function AcceleratorAuth() {
           .eq("role", "accelerator")
           .maybeSingle();
 
-        if (roleData) {
+        if (roleData && isMounted) {
           await checkAndNavigateToAccelerator(session.user.id);
         }
       } else if (event === "SIGNED_OUT") {
@@ -268,7 +281,10 @@ export default function AcceleratorAuth() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate, claimToken, claimInfo, claimError, loadingClaimInfo]);
 
   // Handle sign up for new ecosystem creation
