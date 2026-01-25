@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Network, ArrowLeft, Lock, Sparkles, Mail, KeyRound } from "lucide-react";
+import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInButton";
 
 const InvestorAuth = () => {
   const navigate = useNavigate();
@@ -547,6 +548,13 @@ const InvestorAuth = () => {
                   {isLoading ? "Loading..." : isSignUp ? "Join the Network" : "Sign In"}
                 </Button>
               </form>
+
+              {/* Google Sign In */}
+              <AuthDivider />
+              <GoogleSignInButton 
+                redirectTo="/investor/dashboard" 
+                disabled={isLoading}
+              />
 
               <div className="relative mt-6 text-center">
                 <button

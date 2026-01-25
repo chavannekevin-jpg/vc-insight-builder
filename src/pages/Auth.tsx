@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Session, User } from "@supabase/supabase-js";
 import { Lock, Sparkles, ArrowLeft, Gift } from "lucide-react";
 import { useStartupReferral } from "@/hooks/useStartupReferral";
+import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInButton";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
@@ -341,15 +342,15 @@ export default function Auth() {
               </div>
             </form>
 
-            {/* Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border/30" />
-              </div>
-            </div>
+            {/* Google Sign In */}
+            <AuthDivider />
+            <GoogleSignInButton 
+              redirectTo={searchParams.get('redirect') || '/hub'} 
+              disabled={loading}
+            />
 
             {/* Toggle auth mode */}
-            <div className="text-center">
+            <div className="text-center mt-6">
               <button
                 onClick={() => setIsSignUp(!isSignUp)}
                 className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300"
