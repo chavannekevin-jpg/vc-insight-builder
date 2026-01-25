@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInButton";
 const features = [
   {
     icon: Users,
@@ -391,6 +392,13 @@ export default function AcceleratorSignup() {
                           </span>
                         )}
                       </Button>
+
+                      {/* Google Sign In */}
+                      <AuthDivider />
+                      <GoogleSignInButton 
+                        redirectTo="/accelerator/signup" 
+                        disabled={isLoading}
+                      />
                     </form>
                   </motion.div>
                 )}
