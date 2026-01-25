@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AcceleratorSelectDialog } from "@/components/accelerator/AcceleratorSelectDialog";
+import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInButton";
 
 type AuthMode = "choose" | "create-auth" | "signin" | "claim" | "team-invite";
 
@@ -354,6 +355,23 @@ export default function AcceleratorAuth() {
         // If in claim mode, claim the ecosystem
         if (claimToken && claimInfo && !claimError) {
           await handleClaimEcosystem(session.user.id);
+          return;
+        }
+        
+        // Check for pending team invite from Google OAuth
+        const pendingTeamInvite = sessionStorage.getItem("pending_accelerator_team_invite");
+        if (pendingTeamInvite) {
+          const pendingMemberName = sessionStorage.getItem("pending_accelerator_member_name");
+          sessionStorage.removeItem("pending_accelerator_team_invite");
+          sessionStorage.removeItem("pending_accelerator_member_name");
+          
+          const joined = await handleTeamInviteJoin(session.user.id, pendingMemberName || undefined);
+          if (joined) return;
+        }
+        
+        // If in team invite mode (via URL), try to join
+        if (teamInviteCode && teamInviteInfo && !teamInviteError) {
+          await handleTeamInviteJoin(session.user.id);
           return;
         }
         
@@ -775,6 +793,22 @@ export default function AcceleratorAuth() {
               isSignUp ? "Create Account & Join" : "Sign In & Join"
             )}
           </Button>
+
+          {/* Google Sign In for Team Invite */}
+          <AuthDivider />
+          <GoogleSignInButton 
+            redirectTo={`/accelerator/auth?code=${teamInviteCode}`}
+            disabled={isLoading}
+            onBeforeSignIn={() => {
+              // Store team invite code and member name for after OAuth
+              if (teamInviteCode) {
+                sessionStorage.setItem("pending_accelerator_team_invite", teamInviteCode);
+                if (memberName.trim()) {
+                  sessionStorage.setItem("pending_accelerator_member_name", memberName.trim());
+                }
+              }
+            }}
+          />
         </form>
       </motion.div>
     );
@@ -935,6 +969,13 @@ export default function AcceleratorAuth() {
                     </span>
                   )}
                 </Button>
+
+                {/* Google Sign In for Claim */}
+                <AuthDivider />
+                <GoogleSignInButton 
+                  redirectTo={`/accelerator/auth?claim=${claimToken}`}
+                  disabled={isLoading}
+                />
               </form>
             </motion.div>
           )}
@@ -1070,6 +1111,13 @@ export default function AcceleratorAuth() {
                     </span>
                   )}
                 </Button>
+
+                {/* Google Sign In for Create */}
+                <AuthDivider />
+                <GoogleSignInButton 
+                  redirectTo="/accelerator/signup"
+                  disabled={isLoading}
+                />
               </form>
 
               <div className="mt-6 pt-6 border-t border-border">
@@ -1136,6 +1184,13 @@ export default function AcceleratorAuth() {
                     </span>
                   )}
                 </Button>
+
+                {/* Google Sign In for Existing Accelerators */}
+                <AuthDivider />
+                <GoogleSignInButton 
+                  redirectTo="/accelerator/auth"
+                  disabled={isLoading}
+                />
               </form>
 
               <div className="mt-6 pt-6 border-t border-border">
