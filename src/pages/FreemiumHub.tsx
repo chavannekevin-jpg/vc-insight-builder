@@ -186,11 +186,18 @@ export default function FreemiumHub() {
     }
   }, [hasPaid, company?.id, memoHasContent, prefetchMemo]);
 
-  // Redirect to auth if not authenticated
+  // Redirect to auth if not authenticated (with grace period for auth state propagation)
   useEffect(() => {
-    if (!authLoading && !isAuthenticated && !adminView) {
-      navigate("/auth");
-    }
+    if (adminView) return;
+    
+    // Add grace period to allow auth state to propagate after login navigation
+    const timer = setTimeout(() => {
+      if (!authLoading && !isAuthenticated) {
+        navigate("/auth");
+      }
+    }, 300);
+    
+    return () => clearTimeout(timer);
   }, [authLoading, isAuthenticated, adminView, navigate]);
 
   // Force refetch company data on mount if coming from intake with fresh company or fresh purchase
