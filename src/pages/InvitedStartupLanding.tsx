@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useStartupReferral } from "@/hooks/useStartupReferral";
 import { useFounderReferral, processFounderReferral } from "@/hooks/useFounderReferral";
+import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInButton";
 
 // Condensed perks for the invited landing page
 const INVITED_PERKS = [
@@ -394,6 +395,20 @@ export default function InvitedStartupLanding() {
                     </p>
                   </div>
                 </form>
+
+                {/* Google Sign-In */}
+                <AuthDivider />
+                <GoogleSignInButton 
+                  redirectTo={window.location.href}
+                  onBeforeSignIn={() => {
+                    // Store referral info before OAuth redirect
+                    if (isFounderReferral && founderReferralCode) {
+                      sessionStorage.setItem('founder_referral_code', founderReferralCode);
+                    } else if (investorInviteCode) {
+                      sessionStorage.setItem('startup_invite_code', investorInviteCode);
+                    }
+                  }}
+                />
 
                 <div className="mt-5 text-center">
                   <button

@@ -24,6 +24,7 @@ import {
   ArrowLeft,
   Building2
 } from "lucide-react";
+import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInButton";
 
 interface AcceleratorInfo {
   id: string;
@@ -562,6 +563,26 @@ export default function AcceleratorJoinLanding() {
                     )}
                   </Button>
                 </form>
+
+                {/* Google Sign-In */}
+                <div className="relative mt-6">
+                  <AuthDivider />
+                  <GoogleSignInButton 
+                    redirectTo={window.location.href}
+                    onBeforeSignIn={() => {
+                      // Store accelerator info before OAuth redirect
+                      if (acceleratorInfo) {
+                        sessionStorage.setItem('accelerator_id', acceleratorInfo.id);
+                        sessionStorage.setItem('accelerator_name', acceleratorInfo.name);
+                        sessionStorage.setItem('accelerator_slug', acceleratorInfo.slug);
+                        sessionStorage.setItem('accelerator_discount_percent', String(acceleratorInfo.defaultDiscount));
+                        if (acceleratorInfo.inviteId) {
+                          sessionStorage.setItem('accelerator_invite_id', acceleratorInfo.inviteId);
+                        }
+                      }
+                    }}
+                  />
+                </div>
 
                 {/* Discount reminder */}
                 {acceleratorInfo.defaultDiscount > 0 && (
