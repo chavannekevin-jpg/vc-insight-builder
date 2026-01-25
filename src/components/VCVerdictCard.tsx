@@ -406,11 +406,59 @@ export const VCVerdictCard = memo(({
               <Building2 className="w-5 h-5 text-success" />
             </div>
             <p className="text-sm font-semibold text-success">
-              We identified {matchingFunds} investors in our network actively looking for companies like yours
+              We identified {matchingFunds} investors in our network actively looking for companies like {companyName}
             </p>
           </div>
         </div>
       )}
+
+      {/* Data Gaps Alert Banner - Detached from card */}
+      {!hasPaid && (() => {
+        // Calculate gaps from responses
+        const criticalCategories = [
+          { key: 'unit_economics', label: 'Unit Economics' },
+          { key: 'traction_proof', label: 'Traction Metrics' },
+          { key: 'competitive_moat', label: 'Competitive Moat' },
+          { key: 'market_size', label: 'Market Sizing' },
+          { key: 'revenue_model', label: 'Revenue Model' },
+          { key: 'team_story', label: 'Team Credentials' },
+          { key: 'vision_ask', label: 'Funding Strategy' },
+        ];
+        
+        const responseMap = Object.fromEntries(
+          responses.map(r => [r.question_key, r.answer])
+        );
+        
+        const gaps = criticalCategories.filter(cat => !responseMap[cat.key]?.trim());
+        
+        if (gaps.length === 0) return null;
+        
+        return (
+          <div className="mb-4 px-6 py-5 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent border border-warning/20 rounded-2xl backdrop-blur-sm">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center flex-shrink-0 border border-warning/30">
+                <AlertTriangle className="w-5 h-5 text-warning" />
+              </div>
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-warning">
+                  We identified {gaps.length} blind spots in {companyName}'s profile
+                </p>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  {gaps.slice(0, 3).map(gap => (
+                    <li key={gap.key}>• VCs will ask about <strong className="text-foreground">{companyName}</strong>'s {gap.label}</li>
+                  ))}
+                  {gaps.length > 3 && (
+                    <li className="text-muted-foreground/70">• ...and {gaps.length - 3} more areas</li>
+                  )}
+                </ul>
+                <p className="text-xs text-muted-foreground">
+                  The audit surfaces what's missing before {companyName} meets investors →
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="relative bg-card/95 backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
         {/* Preview indicator */}
@@ -607,9 +655,7 @@ export const VCVerdictCard = memo(({
               <FileText className="w-4 h-4 mr-2" />
             {hasPaid && generationsAvailable > 0 
               ? "Edit & Regenerate" 
-              : matchingFunds > 0 
-                ? "Build Your VC-Grade Analysis" 
-                : "Unlock the Full 9 Page Analysis"}
+              : `Get ${companyName} Audited`}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
             

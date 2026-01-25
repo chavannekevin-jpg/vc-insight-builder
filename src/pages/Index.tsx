@@ -70,7 +70,7 @@ const Index = () => {
                 onClick={() => navigate('/auth')}
                 className="h-14 px-10 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground rounded-2xl font-bold text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5"
               >
-                Get Your Analysis
+                Get Your VC Audit
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
               
@@ -81,7 +81,7 @@ const Index = () => {
                 className="group h-14 px-8 rounded-2xl border-2 border-border/50 hover:border-amber-500/80 hover:bg-card/80 backdrop-blur-sm transition-all duration-300 hover:shadow-[0_0_20px_hsl(45_100%_50%/0.3)]"
               >
                 <span className="text-foreground group-hover:text-foreground transition-colors">
-                  Explore Demo First
+                  Explore Live Demo
                 </span>
               </Button>
             </div>
