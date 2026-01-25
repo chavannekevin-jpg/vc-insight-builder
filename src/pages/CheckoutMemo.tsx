@@ -19,6 +19,7 @@ export default function CheckoutMemo() {
   const [searchParams] = useSearchParams();
   const companyIdFromUrl = searchParams.get("companyId");
   const [companyId, setCompanyId] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState<string>("");
   
   const [processing, setProcessing] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -139,7 +140,7 @@ export default function CheckoutMemo() {
     // Verify user owns this company AND check premium status + referral info + earned discount
     const { data: company } = await supabase
       .from("companies")
-      .select("founder_id, has_premium, referral_code, referred_by_investor, earned_referral_discount")
+      .select("founder_id, has_premium, referral_code, referred_by_investor, earned_referral_discount, name")
       .eq("id", validCompanyId)
       .maybeSingle();
 
@@ -151,6 +152,11 @@ export default function CheckoutMemo() {
       });
       navigate("/portal");
       return;
+    }
+    
+    // Set company name for personalization
+    if (company.name) {
+      setCompanyName(company.name);
     }
     
     // If user already has premium access (admin-granted), bypass checkout
@@ -460,10 +466,10 @@ export default function CheckoutMemo() {
               textShadow: '0 0 20px hsl(var(--primary) / 0.5), 0 0 40px hsl(var(--primary) / 0.3)'
             }}
           >
-            The Memo VCs Would Write About You
+            The Memo VCs Would Write About {companyName || "Your Startup"}
           </h1>
           <p className="text-lg text-muted-foreground">
-            Every deal gets an internal memo. This is yours—before it costs you the round.
+            Every deal gets an internal memo. This is {companyName || "yours"}—before it costs you the round.
           </p>
         </div>
 
@@ -478,11 +484,11 @@ export default function CheckoutMemo() {
 
           <ul className="space-y-3 py-4">
             {[
-              "The internal memo partners use to pass or pursue",
-              "Every weakness VCs will identify—exposed first",
-              "Deal-killing red flags surfaced before your pitch",
-              "Specific fixes to strengthen your position",
-              "The analysis that decides if you get a second meeting",
+              `The internal memo partners use to pass or pursue ${companyName || "your startup"}`,
+              `Every weakness VCs will identify about ${companyName || "your company"}—exposed first`,
+              `${companyName ? `${companyName}'s` : "Your"} deal-killing red flags surfaced before your pitch`,
+              `Specific fixes to strengthen ${companyName ? `${companyName}'s` : "your"} position`,
+              `The analysis that decides if ${companyName || "you"} gets a second meeting`,
               "Instant generation—know today what VCs will think"
             ].map((feature, idx) => (
               <li key={idx} className="flex items-start gap-3">
