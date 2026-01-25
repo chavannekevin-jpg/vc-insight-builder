@@ -7,18 +7,24 @@ interface GoogleSignInButtonProps {
   redirectTo?: string;
   className?: string;
   disabled?: boolean;
+  /** Called before initiating OAuth - useful for storing context (invite codes, etc.) */
+  onBeforeSignIn?: () => void;
 }
 
 export const GoogleSignInButton = ({ 
   redirectTo = "/hub", 
   className = "",
-  disabled = false 
+  disabled = false,
+  onBeforeSignIn
 }: GoogleSignInButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
+      // Call the callback before initiating OAuth (e.g., to store invite codes)
+      onBeforeSignIn?.();
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {

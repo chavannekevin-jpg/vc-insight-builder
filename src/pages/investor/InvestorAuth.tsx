@@ -59,6 +59,7 @@ const InvestorAuth = () => {
               .maybeSingle();
 
             if (roleData) {
+              // Already has investor role - navigate to appropriate page
               const { data: profile } = await (supabase
                 .from("investor_profiles") as any)
                 .select("onboarding_completed")
@@ -69,6 +70,40 @@ const InvestorAuth = () => {
                 navigate("/investor/dashboard");
               } else {
                 navigate("/investor/onboarding");
+              }
+            } else {
+              // User doesn't have investor role - check for pending invite code (from Google OAuth)
+              const pendingInviteCode = sessionStorage.getItem("pending_investor_invite_code");
+              
+              if (pendingInviteCode) {
+                // Try to add investor role with the stored invite code
+                const roleResult = await addInvestorRoleWithInvite(session.user.id, pendingInviteCode);
+                sessionStorage.removeItem("pending_investor_invite_code");
+                
+                if (roleResult.success) {
+                  sessionStorage.setItem("investor_invite_code", pendingInviteCode.toUpperCase());
+                  toast({
+                    title: "Welcome to the Investor Network!",
+                    description: "Complete your profile to continue.",
+                  });
+                  navigate("/investor/onboarding");
+                } else {
+                  // Invalid invite code after OAuth - sign out and show error
+                  await supabase.auth.signOut();
+                  toast({
+                    title: "Access Denied",
+                    description: "The invite code is invalid or expired. Please try again with a valid code.",
+                    variant: "destructive",
+                  });
+                }
+              } else {
+                // No pending invite code - sign out and show error
+                await supabase.auth.signOut();
+                toast({
+                  title: "Access Denied",
+                  description: "You need a valid invite code to join the investor network.",
+                  variant: "destructive",
+                });
               }
             }
           }, 0);
@@ -552,9 +587,20 @@ const InvestorAuth = () => {
               {/* Google Sign In */}
               <AuthDivider />
               <GoogleSignInButton 
-                redirectTo="/investor/dashboard" 
-                disabled={isLoading}
+                redirectTo="/investor/auth" 
+                disabled={isLoading || (isSignUp && !codeValidation?.valid)}
+                onBeforeSignIn={() => {
+                  // Store invite code before OAuth redirect so we can use it after callback
+                  if (inviteCode && codeValidation?.valid) {
+                    sessionStorage.setItem("pending_investor_invite_code", inviteCode.toUpperCase());
+                  }
+                }}
               />
+              {isSignUp && !codeValidation?.valid && (
+                <p className="text-xs text-center text-muted-foreground mt-2">
+                  Enter a valid invite code above to enable Google Sign-In
+                </p>
+              )}
 
               <div className="relative mt-6 text-center">
                 <button
