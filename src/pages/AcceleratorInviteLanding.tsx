@@ -24,6 +24,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useAcceleratorInvite, incrementAcceleratorInviteUsage } from "@/hooks/useAcceleratorInvite";
+import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInButton";
 
 const ACCELERATOR_PERKS = [
   {
@@ -453,6 +454,20 @@ export default function AcceleratorInviteLanding() {
                     </p>
                   </div>
                 </form>
+
+                {/* Google Sign-In */}
+                <AuthDivider />
+                <GoogleSignInButton 
+                  redirectTo={window.location.href}
+                  onBeforeSignIn={() => {
+                    // Store accelerator invite info before OAuth redirect
+                    if (inviteCode && inviteInfo?.isValid) {
+                      sessionStorage.setItem('accelerator_invite_code', inviteCode);
+                      sessionStorage.setItem('accelerator_invite_id', inviteInfo.id);
+                      sessionStorage.setItem('accelerator_discount_percent', String(inviteInfo.discountPercent));
+                    }
+                  }}
+                />
 
                 {/* Divider */}
                 <div className="relative my-6">
