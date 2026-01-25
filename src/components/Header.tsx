@@ -76,6 +76,10 @@ export const Header = () => {
 
   const handleSignOut = async () => {
     try {
+      // Immediately update local state to prevent UI flicker
+      setIsAuthenticated(false);
+      setIsAdmin(false);
+      
       const { error } = await supabase.auth.signOut();
       // Ignore session_not_found errors - session already invalid
       if (error && error.message !== "Session from session_id claim in JWT does not exist") {
