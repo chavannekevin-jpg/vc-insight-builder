@@ -445,10 +445,10 @@ export const VCVerdictCard = memo(({
                 </p>
                 <ul className="text-xs text-muted-foreground space-y-1">
                   {gaps.slice(0, 3).map(gap => (
-                    <li key={gap.key}>• VCs will ask about <strong className="text-foreground">{companyName}</strong>'s {gap.label}</li>
+                    <li key={gap.key}>• VCs will grill on <strong className="text-foreground">{companyName}</strong>'s {gap.label}</li>
                   ))}
                   {gaps.length > 3 && (
-                    <li className="text-muted-foreground/70">• ...and {gaps.length - 3} more areas</li>
+                    <li className="text-warning/80">• ...and {gaps.length - 3} more blind spots</li>
                   )}
                 </ul>
                 <p className="text-xs text-muted-foreground">
