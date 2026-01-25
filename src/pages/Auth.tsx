@@ -18,6 +18,7 @@ export default function Auth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -67,15 +68,16 @@ export default function Auth() {
     
     checkSession();
 
-    // Set up auth state listener for future changes
+    // Set up auth state listener for future changes (only for external auth like OAuth)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Redirect on sign-in events
-        if (session?.user && event === 'SIGNED_IN') {
+        // Only redirect on sign-in if not already navigating (prevents double navigation)
+        if (session?.user && event === 'SIGNED_IN' && !isNavigating) {
           const redirect = searchParams.get('redirect') || '/hub';
+          setIsNavigating(true);
           navigate(redirect, { replace: true });
         }
       }
@@ -171,6 +173,11 @@ export default function Auth() {
         title: "Welcome back!",
         description: "Redirecting to portal...",
       });
+
+      // Direct navigation after successful login (don't rely on auth listener)
+      const redirect = searchParams.get('redirect') || '/hub';
+      setIsNavigating(true);
+      navigate(redirect, { replace: true });
     } catch (error: any) {
       console.error("Login error:", error);
       toast({
