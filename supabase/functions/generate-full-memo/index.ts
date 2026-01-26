@@ -2700,8 +2700,8 @@ async function generateMemoInBackground(
     // ============================================
     const isFounderEvidenceResponse = (r: any) => {
       const src = (r?.source ?? "manual").toLowerCase();
-      // Expanded: deck_import, deck_confirmed, founder_corrected are all valid founder evidence
-      return ["manual", "deck_import", "deck_confirmed", "founder_corrected", "ai_accepted"].includes(src);
+      // Expanded: deck_import, deck_confirmed, founder_corrected, workshop are all valid founder evidence
+      return ["manual", "deck_import", "deck_confirmed", "founder_corrected", "ai_accepted", "workshop"].includes(src);
     };
 
     const splitResponses = (rows: any[]) => {
