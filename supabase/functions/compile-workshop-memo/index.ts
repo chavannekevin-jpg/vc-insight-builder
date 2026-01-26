@@ -64,7 +64,11 @@ serve(async (req) => {
     if (companyError) throw companyError;
 
     // Build the AI prompt with benchmark examples for each section
-    const sectionsForAI = templates.map((template) => {
+    // Separate user-written sections from the AI-generated investment thesis
+    const userWrittenSections = templates.filter(t => t.section_key !== 'investment_thesis');
+    const investmentThesisTemplate = templates.find(t => t.section_key === 'investment_thesis');
+    
+    const sectionsForAI = userWrittenSections.map((template) => {
       const response = responses?.find((r) => r.section_key === template.section_key);
       return {
         sectionKey: template.section_key,
@@ -85,9 +89,10 @@ COMPANY CONTEXT:
 - Description: ${company.description || "Not provided"}
 
 YOUR TASK:
-Transform each founder's raw input into polished, investor-ready prose. Use the benchmark example as a style guide - match the tone, structure, and level of detail. Enhance with your knowledge where appropriate, but stay faithful to the founder's core message.
+1. Transform each founder's raw input into polished, investor-ready prose. Use the benchmark example as a style guide - match the tone, structure, and level of detail.
+2. IMPORTANT: Generate a compelling "Investment Thesis" section based on ALL the founder's inputs. This section synthesizes everything into 2-3 sentences explaining why an investor should back this company right now.
 
-SECTIONS TO TRANSFORM:
+SECTIONS TO TRANSFORM (from founder input):
 ${sectionsForAI.map((s, i) => `
 ---
 SECTION ${i + 1}: ${s.title}
@@ -104,8 +109,24 @@ ${(s.benchmarkTips as string[])?.join("\n- ") || "- Professional investor langua
 ---
 `).join("\n")}
 
+SECTION TO GENERATE (AI-written based on all above):
+---
+SECTION ${sectionsForAI.length + 1}: Investment Thesis
+Section Key: investment_thesis
+
+This section should be ENTIRELY AI-GENERATED based on the founder inputs above.
+Synthesize all the information into a compelling 2-3 sentence investment thesis that answers: "Why should an investor back this company right now?"
+
+${investmentThesisTemplate?.benchmark_example ? `BENCHMARK EXAMPLE (use as style guide):\n${investmentThesisTemplate.benchmark_example}` : ""}
+
+KEY ELEMENTS TO INCLUDE:
+- Clear value proposition derived from their problem/solution
+- Timing argument based on market dynamics
+- Return potential based on business model and traction
+---
+
 INSTRUCTIONS:
-1. For each section, produce a polished paragraph that:
+1. For each user-written section, produce a polished paragraph that:
    - Maintains the founder's core message and facts
    - Matches the benchmark's professional tone and structure
    - Adds clarity and investor-focused framing
@@ -114,14 +135,20 @@ INSTRUCTIONS:
 
 2. If a section has no founder input, create a brief placeholder noting what information is needed.
 
-3. Return your response as valid JSON in this exact format:
+3. For the Investment Thesis section (sectionKey: "investment_thesis"):
+   - Generate this ENTIRELY based on analyzing all other sections
+   - Create a compelling 2-3 sentence pitch that synthesizes the opportunity
+   - Include: unique value proposition, market timing, and return potential
+
+4. Return your response as valid JSON in this exact format:
 {
   "sections": [
     {
       "sectionKey": "problem",
       "title": "The Problem",
       "enhancedContent": "The polished, investor-ready paragraph..."
-    }
+    },
+    ... (all 8 sections including investment_thesis at the end)
   ],
   "executiveSummary": "A 2-3 sentence executive summary of the entire investment opportunity"
 }
