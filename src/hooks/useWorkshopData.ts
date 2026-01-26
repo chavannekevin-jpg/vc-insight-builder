@@ -12,6 +12,10 @@ export interface WorkshopTemplate {
   benchmark_example: string | null;
   benchmark_tips: string[] | null;
   is_active: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  preseed_evidence_items: any[] | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  discovery_prompts: any[] | null;
 }
 
 export interface WorkshopResponse {
@@ -28,6 +32,17 @@ export interface WorkshopCompletion {
   completed_at: string | null;
   mini_memo_content: string | null;
   mapped_to_profile: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  validation_report: any | null;
+}
+
+export interface ValidationReport {
+  grade: { overall: string; label: string; description: string };
+  dimensions: Array<{ name: string; score: number; label: string; feedback: string }>;
+  strengths: string[];
+  gaps: string[];
+  nextSteps: string[];
+  generatedAt: string;
 }
 
 // Fetch all active workshop templates

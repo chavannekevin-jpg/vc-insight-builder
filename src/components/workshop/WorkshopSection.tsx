@@ -13,6 +13,10 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { WorkshopPainMeter } from "./WorkshopPainMeter";
+import { WorkshopEvidenceChecklist } from "./WorkshopEvidenceChecklist";
+import { WorkshopDiscoveryPrompt } from "./WorkshopDiscoveryPrompt";
+import { WorkshopBlindSpotWarning } from "./WorkshopBlindSpotWarning";
 
 interface WorkshopSectionProps {
   template: WorkshopTemplate;
@@ -55,6 +59,12 @@ export function WorkshopSection({
   const handleChange = (value: string) => {
     setAnswer(value);
     setHasChanges(value !== (response?.answer || ""));
+  };
+
+  const handleAddToResponse = (addition: string) => {
+    const newAnswer = answer + addition;
+    setAnswer(newAnswer);
+    setHasChanges(true);
   };
 
   const handleBlur = async () => {
@@ -114,6 +124,11 @@ export function WorkshopSection({
             </div>
           )}
 
+          {/* Pain Meter - Only for Problem section */}
+          {template.section_key === 'problem' && answer.trim().length > 0 && (
+            <WorkshopPainMeter text={answer} />
+          )}
+
           {/* Answer Textarea */}
           <div className="space-y-2">
             <Textarea
@@ -134,6 +149,31 @@ export function WorkshopSection({
               )}
             </div>
           </div>
+
+          {/* Evidence Checklist - All sections */}
+          {answer.trim().length > 0 && (
+            <WorkshopEvidenceChecklist 
+              text={answer} 
+              sectionKey={template.section_key} 
+            />
+          )}
+
+          {/* Discovery Follow-Up Prompts */}
+          {answer.trim().length > 20 && (
+            <WorkshopDiscoveryPrompt 
+              text={answer} 
+              sectionKey={template.section_key}
+              onAddToResponse={handleAddToResponse}
+            />
+          )}
+
+          {/* Blind Spot Warnings */}
+          {answer.trim().length > 50 && (
+            <WorkshopBlindSpotWarning 
+              text={answer} 
+              sectionKey={template.section_key}
+            />
+          )}
 
           {/* Navigation */}
           <div className="flex items-center justify-between pt-4">
