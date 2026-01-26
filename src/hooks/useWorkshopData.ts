@@ -189,7 +189,7 @@ export const useUpdateWorkshopTemplate = () => {
   });
 };
 
-// Compile workshop into mini-memo (calls edge function)
+// Compile workshop into mini-memo (calls edge function with AI enhancement)
 export const useCompileWorkshopMemo = () => {
   const queryClient = useQueryClient();
   
@@ -202,9 +202,16 @@ export const useCompileWorkshopMemo = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, companyId) => {
+    onSuccess: (data, companyId) => {
       queryClient.invalidateQueries({ queryKey: ["workshop-completion", companyId] });
-      toast({ title: "Mini-memo compiled successfully!" });
+      // Also invalidate memo-responses since they're auto-mapped now
+      queryClient.invalidateQueries({ queryKey: ["memo-responses", companyId] });
+      queryClient.invalidateQueries({ queryKey: ["memoContent", companyId] });
+      
+      const message = data?.mappedToProfile 
+        ? "Mini-memo compiled and synced to your profile!" 
+        : "Mini-memo compiled successfully!";
+      toast({ title: message });
     },
     onError: (error) => {
       console.error("Failed to compile memo:", error);

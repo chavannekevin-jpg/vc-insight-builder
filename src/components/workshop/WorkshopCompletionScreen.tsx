@@ -2,16 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { WorkshopCompletion } from "@/hooks/useWorkshopData";
-import { useMapWorkshopToProfile } from "@/hooks/useWorkshopData";
 import { 
   CheckCircle2, 
   Edit, 
-  Download, 
-  Loader2,
   Sparkles,
   ArrowRight,
+  FileText,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface WorkshopCompletionScreenProps {
   completion: WorkshopCompletion;
@@ -24,24 +22,33 @@ export function WorkshopCompletionScreen({
   companyId,
   onBackToEdit,
 }: WorkshopCompletionScreenProps) {
-  const mapToProfile = useMapWorkshopToProfile();
-
-  const handleSaveToProfile = async () => {
-    await mapToProfile.mutateAsync(companyId);
-  };
+  const navigate = useNavigate();
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Success Header */}
       <div className="text-center mb-8">
-        <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
-          <CheckCircle2 className="w-8 h-8 text-green-500" />
+        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+          <CheckCircle2 className="w-8 h-8 text-primary" />
         </div>
         <h1 className="text-3xl font-bold mb-2">Your Mini-Memo is Ready!</h1>
         <p className="text-muted-foreground max-w-md mx-auto">
-          Your investment memorandum has been compiled based on your workshop responses.
+          Your investment memorandum has been AI-enhanced based on benchmark models and automatically saved to your profile.
         </p>
       </div>
+
+      {/* Auto-mapped notification */}
+      {completion.mapped_to_profile && (
+        <div className="mb-6 p-4 rounded-lg bg-primary/5 border border-primary/20 flex items-start gap-3">
+          <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+          <div>
+            <p className="font-medium text-sm">Automatically synced to your profile</p>
+            <p className="text-sm text-muted-foreground">
+              Your enhanced responses have been mapped to your company profile and will be used to generate your full VC analysis.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Memo Content */}
       <Card className="mb-6 border-primary/20">
@@ -51,11 +58,9 @@ export function WorkshopCompletionScreen({
               <Sparkles className="w-5 h-5 text-primary" />
               Investment Mini-Memorandum
             </CardTitle>
-            {completion.mapped_to_profile && (
-              <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
-                Saved to Profile
-              </Badge>
-            )}
+            <Badge className="bg-primary/10 text-primary border-primary/20">
+              AI-Enhanced
+            </Badge>
           </div>
         </CardHeader>
         <CardContent>
@@ -78,41 +83,21 @@ export function WorkshopCompletionScreen({
           Refine Responses
         </Button>
         
-        {!completion.mapped_to_profile && (
-          <Button
-            onClick={handleSaveToProfile}
-            disabled={mapToProfile.isPending}
-            className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80"
-          >
-            {mapToProfile.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                Save to My Profile
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </Button>
-        )}
+        <Button
+          onClick={() => navigate("/profile")}
+          className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80"
+        >
+          <FileText className="w-4 h-4" />
+          View My Profile
+          <ArrowRight className="w-4 h-4" />
+        </Button>
       </div>
 
       {/* Info Box */}
       <div className="mt-8 p-4 rounded-lg bg-muted/50 border border-border/50 text-center">
         <p className="text-sm text-muted-foreground">
-          {completion.mapped_to_profile ? (
-            <>
-              ✨ Your workshop responses have been saved to your company profile.
-              They'll be used to generate your full VC analysis.
-            </>
-          ) : (
-            <>
-              💡 Click "Save to My Profile" to automatically populate your company profile
-              with your workshop responses.
-            </>
-          )}
+          ✨ Your workshop responses have been enhanced using AI and benchmark models, 
+          then automatically saved to your company profile for your full VC analysis.
         </p>
       </div>
     </div>
