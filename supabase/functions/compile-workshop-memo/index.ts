@@ -18,6 +18,19 @@ const SECTION_MAPPING: Record<string, string> = {
   investment_thesis: "investment_ask",
 };
 
+// Company Profile ("My Profile") uses a different set of question keys.
+// We write both so workshop completion immediately populates the profile.
+const PROFILE_SECTION_MAPPING: Record<string, string> = {
+  problem: "problem_core",
+  solution: "solution_core",
+  market: "target_customer",
+  business_model: "business_model",
+  gtm: "traction_proof",
+  team: "team_story",
+  funding_strategy: "vision_ask",
+  investment_thesis: "vision_ask",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -270,21 +283,58 @@ Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
         source: "workshop",
       }));
 
+    // Also map into the Company Profile question keys so "My Profile" is pre-filled.
+    // If multiple workshop sections map to the same profile key (e.g. vision_ask), concatenate.
+    const profileResponseMap = new Map<string, string>();
+    for (const s of (parsedAI.sections || []) as Array<{ sectionKey: string; enhancedContent: string }>) {
+      const profileKey = PROFILE_SECTION_MAPPING[s.sectionKey];
+      if (!profileKey) continue;
+      const content = (s.enhancedContent || "").trim();
+      if (!content) continue;
+      const prev = profileResponseMap.get(profileKey);
+      profileResponseMap.set(profileKey, prev ? `${prev}\n\n${content}` : content);
+    }
+
+    const profileResponses = Array.from(profileResponseMap.entries()).map(([question_key, answer]) => ({
+      company_id: companyId,
+      question_key,
+      answer,
+      source: "workshop",
+    }));
+
+    let mappedToProfile = false;
+
     if (memoResponses.length > 0) {
       const { error: memoError } = await supabase
         .from("memo_responses")
         .upsert(memoResponses, { onConflict: "company_id,question_key" });
 
       if (memoError) {
-        console.error("Failed to map to memo_responses:", memoError);
+        console.error("Failed to map workshop -> memo_responses:", memoError);
         // Don't throw - memo compilation still succeeded
       } else {
-        // Update mapped_to_profile flag
-        await supabase
-          .from("workshop_completions")
-          .update({ mapped_to_profile: true })
-          .eq("company_id", companyId);
+        mappedToProfile = true;
       }
+    }
+
+    if (profileResponses.length > 0) {
+      const { error: profileError } = await supabase
+        .from("memo_responses")
+        .upsert(profileResponses, { onConflict: "company_id,question_key" });
+
+      if (profileError) {
+        console.error("Failed to map workshop -> profile keys:", profileError);
+      } else {
+        mappedToProfile = true;
+      }
+    }
+
+    if (mappedToProfile) {
+      // Update mapped_to_profile flag
+      await supabase
+        .from("workshop_completions")
+        .update({ mapped_to_profile: true })
+        .eq("company_id", companyId);
     }
 
     return new Response(
@@ -292,7 +342,7 @@ Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
         success: true, 
         miniMemo,
         sectionsEnhanced: parsedAI.sections.length,
-        mappedToProfile: memoResponses.length > 0,
+        mappedToProfile,
         validationReport,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

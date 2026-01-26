@@ -409,6 +409,78 @@ export default function CompanyProfile() {
         .eq("company_id", companies[0].id);
 
       let currentResponses: MemoResponse[] = (memoResponses || []) as MemoResponse[];
+
+      // If the user just completed the Workshop, we may have responses stored under
+      // workshop-specific keys (e.g. problem_description) that don't match the
+      // profile section keys used by this page (e.g. problem_core).
+      // Auto-import those so the Profile isn't empty.
+      const PROFILE_KEYS = [
+        "problem_core",
+        "solution_core",
+        "target_customer",
+        "competitive_moat",
+        "team_story",
+        "business_model",
+        "traction_proof",
+        "vision_ask",
+      ] as const;
+
+      const getAnswer = (key: string) =>
+        currentResponses.find(r => r.question_key === key)?.answer?.trim() || "";
+
+      const hasAnyProfileContent = PROFILE_KEYS.some((k) => getAnswer(k));
+
+      if (!hasAnyProfileContent) {
+        const workshopToProfile: Array<{ from: string; to: (typeof PROFILE_KEYS)[number] }> = [
+          { from: "problem_description", to: "problem_core" },
+          { from: "solution_description", to: "solution_core" },
+          { from: "market_size", to: "target_customer" },
+          { from: "team_background", to: "team_story" },
+          { from: "revenue_model", to: "business_model" },
+          // Closest proxy until we capture explicit traction in the workshop
+          { from: "go_to_market", to: "traction_proof" },
+          // Combine funding plan + investment thesis into Vision & Ask
+          { from: "funding_plan", to: "vision_ask" },
+          { from: "investment_ask", to: "vision_ask" },
+        ];
+
+        const toWrite = new Map<string, string>();
+        for (const { from, to } of workshopToProfile) {
+          if (getAnswer(to)) continue; // never overwrite existing profile content
+          const incoming = getAnswer(from);
+          if (!incoming) continue;
+          const prev = toWrite.get(to);
+          toWrite.set(to, prev ? `${prev}\n\n${incoming}` : incoming);
+        }
+
+        const upserts = Array.from(toWrite.entries()).map(([question_key, answer]) => ({
+          company_id: companies[0].id,
+          question_key,
+          answer,
+          source: "workshop_sync",
+        }));
+
+        if (upserts.length > 0) {
+          const { error } = await supabase
+            .from("memo_responses")
+            .upsert(upserts, { onConflict: "company_id,question_key" });
+
+          if (!error) {
+            // Merge into local state so UI updates instantly.
+            upserts.forEach((u) => {
+              const idx = currentResponses.findIndex(r => r.question_key === u.question_key);
+              const row = { question_key: u.question_key, answer: u.answer, source: u.source } as MemoResponse;
+              if (idx >= 0) currentResponses[idx] = row;
+              else currentResponses.push(row);
+            });
+
+            toast({
+              title: "Profile imported from Workshop",
+              description: "We pre-filled your profile sections using your mini-memo answers.",
+            });
+          }
+        }
+      }
       
       const { data: memo } = await supabase
         .from("memos")
