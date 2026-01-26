@@ -2584,6 +2584,7 @@ export type Database = {
           id: string
           mapped_to_profile: boolean
           mini_memo_content: string | null
+          validation_report: Json | null
         }
         Insert: {
           company_id: string
@@ -2592,6 +2593,7 @@ export type Database = {
           id?: string
           mapped_to_profile?: boolean
           mini_memo_content?: string | null
+          validation_report?: Json | null
         }
         Update: {
           company_id?: string
@@ -2600,6 +2602,7 @@ export type Database = {
           id?: string
           mapped_to_profile?: boolean
           mini_memo_content?: string | null
+          validation_report?: Json | null
         }
         Relationships: [
           {
@@ -2668,9 +2671,11 @@ export type Database = {
           benchmark_example: string | null
           benchmark_tips: Json | null
           created_at: string
+          discovery_prompts: Json | null
           guidance_text: string | null
           id: string
           is_active: boolean
+          preseed_evidence_items: Json | null
           prompt_question: string | null
           section_key: string
           section_title: string
@@ -2681,9 +2686,11 @@ export type Database = {
           benchmark_example?: string | null
           benchmark_tips?: Json | null
           created_at?: string
+          discovery_prompts?: Json | null
           guidance_text?: string | null
           id?: string
           is_active?: boolean
+          preseed_evidence_items?: Json | null
           prompt_question?: string | null
           section_key: string
           section_title: string
@@ -2694,9 +2701,11 @@ export type Database = {
           benchmark_example?: string | null
           benchmark_tips?: Json | null
           created_at?: string
+          discovery_prompts?: Json | null
           guidance_text?: string | null
           id?: string
           is_active?: boolean
+          preseed_evidence_items?: Json | null
           prompt_question?: string | null
           section_key?: string
           section_title?: string

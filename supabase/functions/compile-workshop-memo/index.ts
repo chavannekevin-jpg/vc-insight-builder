@@ -150,8 +150,29 @@ INSTRUCTIONS:
     },
     ... (all 8 sections including investment_thesis at the end)
   ],
-  "executiveSummary": "A 2-3 sentence executive summary of the entire investment opportunity"
+  "executiveSummary": "A 2-3 sentence executive summary of the entire investment opportunity",
+  "validationReport": {
+    "grade": {
+      "overall": "A/B/C/D based on validation evidence strength",
+      "label": "Strong Discovery/Good Progress/Early Discovery/Hypothesis Only",
+      "description": "Brief explanation of the grade"
+    },
+    "dimensions": [
+      { "name": "Problem Clarity", "score": 0-100, "label": "Strong/Good/Weak", "feedback": "specific feedback" },
+      { "name": "Validation Depth", "score": 0-100, "label": "Strong/Good/Weak", "feedback": "specific feedback" },
+      { "name": "Founder-Market Fit", "score": 0-100, "label": "Strong/Good/Weak", "feedback": "specific feedback" }
+    ],
+    "strengths": ["3 specific things the founder articulated well with evidence"],
+    "gaps": ["3 specific areas needing more customer validation"],
+    "nextSteps": ["3 specific validation activities they should do next, e.g. 'Conduct 15 more discovery interviews with [segment]'"]
+  }
 }
+
+GRADING RUBRIC FOR PRE-SEED:
+- A (Strong Discovery): 25+ customer interviews cited, quantified pain, clear founder insight
+- B (Good Progress): 10-25 interviews, some quantification, decent validation signals
+- C (Early Discovery): Some interviews mentioned, problem identified but limited evidence
+- D (Hypothesis Only): No interview evidence, mostly assumptions
 
 Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
 
@@ -220,7 +241,13 @@ Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
       ),
     ].join("\n");
 
-    // Upsert completion record
+    // Build validation report with timestamp
+    const validationReport = parsedAI.validationReport ? {
+      ...parsedAI.validationReport,
+      generatedAt: new Date().toISOString(),
+    } : null;
+
+    // Upsert completion record with validation report
     const { error: upsertError } = await supabase
       .from("workshop_completions")
       .upsert({
@@ -228,6 +255,7 @@ Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
         completed_at: new Date().toISOString(),
         mini_memo_content: miniMemo,
         mapped_to_profile: false,
+        validation_report: validationReport,
       }, { onConflict: "company_id" });
 
     if (upsertError) throw upsertError;
@@ -265,6 +293,7 @@ Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
         miniMemo,
         sectionsEnhanced: parsedAI.sections.length,
         mappedToProfile: memoResponses.length > 0,
+        validationReport,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

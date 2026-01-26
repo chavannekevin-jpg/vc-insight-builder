@@ -1,16 +1,20 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { WorkshopCompletion } from "@/hooks/useWorkshopData";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WorkshopCompletion, ValidationReport } from "@/hooks/useWorkshopData";
 import { 
   CheckCircle2, 
   Edit, 
   Sparkles,
   ArrowRight,
   FileText,
+  ClipboardCheck,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MiniMemoRenderer } from "./MiniMemoRenderer";
+import { WorkshopValidationReport } from "./WorkshopValidationReport";
 
 interface WorkshopCompletionScreenProps {
   completion: WorkshopCompletion;
@@ -24,6 +28,11 @@ export function WorkshopCompletionScreen({
   onBackToEdit,
 }: WorkshopCompletionScreenProps) {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("memo");
+  
+  const hasValidationReport = completion.validation_report && 
+    typeof completion.validation_report === 'object' &&
+    'grade' in completion.validation_report;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -51,21 +60,60 @@ export function WorkshopCompletionScreen({
         </div>
       )}
 
-      {/* Memo Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold">Investment Mini-Memorandum</h2>
-        </div>
-        <Badge className="bg-primary/10 text-primary border-primary/20">
-          AI-Enhanced
-        </Badge>
-      </div>
+      {/* Tabbed Content */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="memo" className="flex items-center gap-2">
+            <FileText className="w-4 h-4" />
+            Mini-Memo
+          </TabsTrigger>
+          <TabsTrigger 
+            value="validation" 
+            className="flex items-center gap-2"
+            disabled={!hasValidationReport}
+          >
+            <ClipboardCheck className="w-4 h-4" />
+            Validation Report
+            {hasValidationReport && (
+              <Badge variant="outline" className="ml-1 text-xs">
+                {(completion.validation_report as ValidationReport).grade.overall}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Memo Content - Now with proper section cards */}
-      <div className="mb-6">
-        <MiniMemoRenderer content={completion.mini_memo_content || ""} />
-      </div>
+        <TabsContent value="memo" className="mt-4">
+          {/* Memo Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-semibold">Investment Mini-Memorandum</h2>
+            </div>
+            <Badge className="bg-primary/10 text-primary border-primary/20">
+              AI-Enhanced
+            </Badge>
+          </div>
+
+          {/* Memo Content */}
+          <MiniMemoRenderer content={completion.mini_memo_content || ""} />
+        </TabsContent>
+
+        <TabsContent value="validation" className="mt-4">
+          {hasValidationReport ? (
+            <WorkshopValidationReport 
+              report={completion.validation_report as ValidationReport} 
+            />
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <ClipboardCheck className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>No validation report available yet.</p>
+              <p className="text-sm mt-1">
+                Complete the workshop to generate your validation report.
+              </p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
