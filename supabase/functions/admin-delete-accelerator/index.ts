@@ -72,40 +72,46 @@ serve(async (req) => {
 
     logStep('Starting accelerator deletion', { acceleratorId });
 
-    // 1. Get all cohorts for this accelerator
-    const { data: cohorts } = await supabaseAdmin
-      .from('accelerator_cohorts')
-      .select('id, invite_id')
-      .eq('accelerator_id', acceleratorId);
-    
-    const cohortIds = cohorts?.map(c => c.id) || [];
-    const inviteIds = cohorts?.filter(c => c.invite_id).map(c => c.invite_id) || [];
-    logStep('Found cohorts', { count: cohortIds.length, inviteIds });
+    // 1. Get ALL accelerator_invites linked to this accelerator (not just cohort ones)
+    const { data: allInvites } = await supabaseAdmin
+      .from('accelerator_invites')
+      .select('id')
+      .eq('linked_accelerator_id', acceleratorId);
 
-    // 2. Unlink companies from accelerator invites (don't delete companies, just unlink)
-    if (inviteIds.length > 0) {
+    const allInviteIds = allInvites?.map(i => i.id) || [];
+    logStep('Found linked invites', { count: allInviteIds.length });
+
+    // 2. Unlink ALL companies from these invites (not just cohort-based ones)
+    if (allInviteIds.length > 0) {
       await supabaseAdmin
         .from('companies')
         .update({ accelerator_invite_id: null })
-        .in('accelerator_invite_id', inviteIds);
-      logStep('Unlinked companies from accelerator invites');
+        .in('accelerator_invite_id', allInviteIds);
+      logStep('Unlinked companies from all accelerator invites');
     }
 
     // 3. Delete accelerator_cohorts
-    if (cohortIds.length > 0) {
+    const { data: cohorts } = await supabaseAdmin
+      .from('accelerator_cohorts')
+      .select('id')
+      .eq('accelerator_id', acceleratorId);
+
+    if (cohorts && cohorts.length > 0) {
       await supabaseAdmin
         .from('accelerator_cohorts')
         .delete()
         .eq('accelerator_id', acceleratorId);
-      logStep('Deleted accelerator_cohorts');
+      logStep('Deleted accelerator_cohorts', { count: cohorts.length });
     }
 
-    // 4. Delete accelerator_invites linked to this accelerator
-    await supabaseAdmin
-      .from('accelerator_invites')
-      .delete()
-      .eq('linked_accelerator_id', acceleratorId);
-    logStep('Deleted linked accelerator_invites');
+    // 4. Delete ALL accelerator_invites linked to this accelerator
+    if (allInviteIds.length > 0) {
+      await supabaseAdmin
+        .from('accelerator_invites')
+        .delete()
+        .eq('linked_accelerator_id', acceleratorId);
+      logStep('Deleted linked accelerator_invites');
+    }
 
     // 5. Delete accelerator_members
     await supabaseAdmin
