@@ -9,12 +9,16 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   X, ExternalLink, Users, Target, AlertTriangle, Lightbulb, TrendingUp,
-  DollarSign, BarChart3, Building2, CheckCircle2, Share2, Loader2, UserPlus
+  DollarSign, BarChart3, Building2, CheckCircle2, Share2, Loader2, UserPlus, FileText, ClipboardCheck
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { MiniMemoRenderer } from "@/components/workshop/MiniMemoRenderer";
+import { WorkshopValidationReport } from "@/components/workshop/WorkshopValidationReport";
+import type { ValidationReport } from "@/hooks/useWorkshopData";
 import { SectionRecommendationModal } from "./SectionRecommendationModal";
 
 interface Company {
@@ -58,6 +62,12 @@ export function StartupQuickViewModal({
   const [company, setCompany] = useState<Company | null>(null);
   const [sectionScores, setSectionScores] = useState<Record<string, number>>({});
   const [vcQuickTake, setVcQuickTake] = useState<any>(null);
+  const [workshopCompletion, setWorkshopCompletion] = useState<{
+    mini_memo_content: string | null;
+    validation_report: ValidationReport | null;
+    completed_at: string | null;
+  } | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSectionForRec, setSelectedSectionForRec] = useState<string | null>(null);
   const [sectionRecModalOpen, setSectionRecModalOpen] = useState(false);
@@ -71,6 +81,8 @@ export function StartupQuickViewModal({
         setCompany(null);
         setSectionScores({});
         setVcQuickTake(null);
+        setWorkshopCompletion(null);
+        setActiveTab("overview");
       }
     };
   }, [open, companyId]);
@@ -80,7 +92,7 @@ export function StartupQuickViewModal({
     setIsLoading(true);
     
     try {
-      const [companyResult, toolDataResult, memoResult] = await Promise.all([
+      const [companyResult, toolDataResult, memoResult, workshopResult] = await Promise.all([
         supabase.from("companies").select("*").eq("id", companyId).single(),
         supabase.from("memo_tool_data")
           .select("section_name, tool_name, ai_generated_data, user_overrides")
@@ -91,6 +103,10 @@ export function StartupQuickViewModal({
           .eq("company_id", companyId)
           .order("created_at", { ascending: false })
           .limit(1)
+          .maybeSingle(),
+        supabase.from("workshop_completions")
+          .select("mini_memo_content, validation_report, completed_at")
+          .eq("company_id", companyId)
           .maybeSingle(),
       ]);
 
@@ -111,6 +127,15 @@ export function StartupQuickViewModal({
         setVcQuickTake(structuredContent.vcQuickTake);
       } else if (companyResult.data.vc_verdict_json) {
         setVcQuickTake(companyResult.data.vc_verdict_json);
+      }
+
+      // Set workshop completion data
+      if (workshopResult.data) {
+        setWorkshopCompletion({
+          mini_memo_content: workshopResult.data.mini_memo_content,
+          validation_report: workshopResult.data.validation_report as unknown as ValidationReport | null,
+          completed_at: workshopResult.data.completed_at,
+        });
       }
     } catch (error) {
       console.error("Error fetching company:", error);
@@ -201,103 +226,157 @@ export function StartupQuickViewModal({
                 </div>
               </div>
 
-              {/* Content */}
+              {/* Tabs */}
               <div className="p-6 space-y-6">
-                {/* Description */}
-                {company.description && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]"
-                  >
-                    <p className="text-muted-foreground leading-relaxed">{company.description}</p>
-                  </motion.div>
-                )}
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className="grid w-full grid-cols-3 bg-white/[0.03] border border-white/[0.06]">
+                    <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
+                      <Target className="w-4 h-4" />
+                      Overview
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="memo" 
+                      className="flex items-center gap-2 data-[state=active]:bg-primary/20"
+                      disabled={!workshopCompletion?.mini_memo_content}
+                    >
+                      <FileText className="w-4 h-4" />
+                      Mini-Memo
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="validation" 
+                      className="flex items-center gap-2 data-[state=active]:bg-primary/20"
+                      disabled={!workshopCompletion?.validation_report}
+                    >
+                      <ClipboardCheck className="w-4 h-4" />
+                      Validation
+                    </TabsTrigger>
+                  </TabsList>
 
-                {/* VC Quick Take */}
-                {vcQuickTake && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="p-5 rounded-xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20"
-                  >
-                    <div className="flex items-center gap-2 mb-3">
-                      <Target className="w-5 h-5 text-primary" />
-                      <h3 className="font-semibold text-foreground">VC Quick Take</h3>
-                    </div>
-                    {verdictText && <p className="text-foreground mb-4">{verdictText}</p>}
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {vcQuickTake.strengths?.length > 0 && (
-                        <div>
-                          <h4 className="text-sm font-medium text-success mb-2">Strengths</h4>
-                          <ul className="space-y-1.5">
-                            {vcQuickTake.strengths.slice(0, 3).map((s: any, i: number) => (
-                              <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                                <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                                <span>{getItemText(s)}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {vcQuickTake.concerns?.length > 0 && (
-                        <div>
-                          <h4 className="text-sm font-medium text-destructive mb-2">Concerns</h4>
-                          <ul className="space-y-1.5">
-                            {vcQuickTake.concerns.slice(0, 3).map((c: any, i: number) => (
-                              <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                                <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-                                <span>{getItemText(c)}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
+                  {/* Overview Tab */}
+                  <TabsContent value="overview" className="space-y-6 mt-6">
+                    {/* Description */}
+                    {company.description && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]"
+                      >
+                        <p className="text-muted-foreground leading-relaxed">{company.description}</p>
+                      </motion.div>
+                    )}
 
-                {/* Section Scores */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <h3 className="font-semibold text-foreground mb-4">Section Breakdown</h3>
-                  <p className="text-xs text-muted-foreground mb-4">Click a section for improvement recommendations</p>
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {sectionOrder.map((section) => {
-                      const score = sectionScores[section];
-                      const Icon = sectionIcons[section] || Target;
-                      return (
-                        <button
-                          key={section}
-                          onClick={() => handleSectionClick(section)}
-                          className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-primary/30 hover:bg-white/[0.04] transition-all text-left"
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <Icon className="w-5 h-5 text-primary" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-medium text-foreground">{section}</span>
-                              <span className={cn("font-bold", getScoreColor(score || null))}>
-                                {score || "—"}
-                              </span>
+                    {/* VC Quick Take */}
+                    {vcQuickTake && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="p-5 rounded-xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20"
+                      >
+                        <div className="flex items-center gap-2 mb-3">
+                          <Target className="w-5 h-5 text-primary" />
+                          <h3 className="font-semibold text-foreground">VC Quick Take</h3>
+                        </div>
+                        {verdictText && <p className="text-foreground mb-4">{verdictText}</p>}
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {vcQuickTake.strengths?.length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-medium text-success mb-2">Strengths</h4>
+                              <ul className="space-y-1.5">
+                                {vcQuickTake.strengths.slice(0, 3).map((s: any, i: number) => (
+                                  <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                                    <span>{getItemText(s)}</span>
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
-                            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className={cn("h-full rounded-full transition-all", getScoreBg(score || null))}
-                                style={{ width: `${score || 0}%` }}
-                              />
+                          )}
+                          {vcQuickTake.concerns?.length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-medium text-destructive mb-2">Concerns</h4>
+                              <ul className="space-y-1.5">
+                                {vcQuickTake.concerns.slice(0, 3).map((c: any, i: number) => (
+                                  <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                                    <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                                    <span>{getItemText(c)}</span>
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </motion.div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Section Scores */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <h3 className="font-semibold text-foreground mb-4">Section Breakdown</h3>
+                      <p className="text-xs text-muted-foreground mb-4">Click a section for improvement recommendations</p>
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        {sectionOrder.map((section) => {
+                          const score = sectionScores[section];
+                          const Icon = sectionIcons[section] || Target;
+                          return (
+                            <button
+                              key={section}
+                              onClick={() => handleSectionClick(section)}
+                              className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-primary/30 hover:bg-white/[0.04] transition-all text-left"
+                            >
+                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <Icon className="w-5 h-5 text-primary" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-sm font-medium text-foreground">{section}</span>
+                                  <span className={cn("font-bold", getScoreColor(score || null))}>
+                                    {score || "—"}
+                                  </span>
+                                </div>
+                                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                                  <div
+                                    className={cn("h-full rounded-full transition-all", getScoreBg(score || null))}
+                                    style={{ width: `${score || 0}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  </TabsContent>
+
+                  {/* Mini-Memo Tab */}
+                  <TabsContent value="memo" className="mt-6">
+                    {workshopCompletion?.mini_memo_content ? (
+                      <MiniMemoRenderer content={workshopCompletion.mini_memo_content} />
+                    ) : (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>No mini-memo available yet.</p>
+                        <p className="text-sm mt-1">The startup needs to complete the workshop first.</p>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  {/* Validation Report Tab */}
+                  <TabsContent value="validation" className="mt-6">
+                    {workshopCompletion?.validation_report ? (
+                      <WorkshopValidationReport report={workshopCompletion.validation_report} />
+                    ) : (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <ClipboardCheck className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>No validation report available yet.</p>
+                        <p className="text-sm mt-1">The startup needs to complete the workshop first.</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
 
                 {/* Quick Actions */}
                 <motion.div

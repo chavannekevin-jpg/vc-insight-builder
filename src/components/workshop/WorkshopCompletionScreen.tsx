@@ -127,7 +127,7 @@ export function WorkshopCompletionScreen({
         </Button>
         
         <Button
-          onClick={() => navigate("/profile")}
+          onClick={() => navigate("/company-profile")}
           className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80"
         >
           <FileText className="w-4 h-4" />
