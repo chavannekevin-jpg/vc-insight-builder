@@ -13,6 +13,7 @@ interface Company {
   founder_id: string;
   generations_available?: number;
   generations_used?: number;
+  accelerator_invite_id?: string | null;
 }
 
 interface CompanyData {
@@ -24,6 +25,7 @@ interface CompanyData {
   totalQuestions: number;
   generationsAvailable: number;
   generationsUsed: number;
+  hasAcceleratorAccess: boolean;
   isLoading: boolean;
 }
 
@@ -159,6 +161,7 @@ export const useCompany = (userId: string | undefined, companyIdOverride?: strin
     totalQuestions: questionData?.total ?? 0,
     generationsAvailable: company?.generations_available ?? 0,
     generationsUsed: company?.generations_used ?? 0,
+    hasAcceleratorAccess: !!company?.accelerator_invite_id,
     isLoading: companyLoading || memoLoading || paymentLoading || questionsLoading,
   };
 };

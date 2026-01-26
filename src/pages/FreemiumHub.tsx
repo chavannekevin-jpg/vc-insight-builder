@@ -116,6 +116,7 @@ export default function FreemiumHub() {
     completedQuestions: cachedCompletedQuestions,
     totalQuestions: cachedTotalQuestions,
     generationsAvailable,
+    hasAcceleratorAccess,
     isLoading: companyLoading 
   } = useCompany(user?.id, companyIdFromParams);
 
@@ -822,6 +823,7 @@ export default function FreemiumHub() {
           hasMemo={memoHasContent}
           companyId={company.id}
           matchingFunds={matchingFunds}
+          hasAcceleratorAccess={hasAcceleratorAccess}
           onResetClick={() => setResetDialogOpen(true)}
           onDeleteAccountClick={() => setDeleteAccountDialogOpen(true)}
           onFundDiscoveryClick={() => setFundDiscoveryModalOpen(true)}
