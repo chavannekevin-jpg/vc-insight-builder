@@ -10,6 +10,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { MiniMemoRenderer } from "./MiniMemoRenderer";
 
 interface WorkshopCompletionScreenProps {
   completion: WorkshopCompletion;
@@ -50,27 +51,21 @@ export function WorkshopCompletionScreen({
         </div>
       )}
 
-      {/* Memo Content */}
-      <Card className="mb-6 border-primary/20">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
-              Investment Mini-Memorandum
-            </CardTitle>
-            <Badge className="bg-primary/10 text-primary border-primary/20">
-              AI-Enhanced
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <div className="whitespace-pre-wrap text-sm leading-relaxed">
-              {completion.mini_memo_content}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Memo Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold">Investment Mini-Memorandum</h2>
+        </div>
+        <Badge className="bg-primary/10 text-primary border-primary/20">
+          AI-Enhanced
+        </Badge>
+      </div>
+
+      {/* Memo Content - Now with proper section cards */}
+      <div className="mb-6">
+        <MiniMemoRenderer content={completion.mini_memo_content || ""} />
+      </div>
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
