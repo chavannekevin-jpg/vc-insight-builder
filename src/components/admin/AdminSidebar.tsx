@@ -17,6 +17,7 @@ import {
   Network,
   Layers,
   Rocket,
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -69,6 +70,10 @@ const templateItems = [
   { title: "Simplified Memo", url: "/admin/templates/simplified-memo", icon: FileText },
 ];
 
+const workshopItems = [
+  { title: "Mini Memorandum", url: "/admin/workshop/mini-memo", icon: FileText },
+];
+
 export function AdminSidebar() {
   const location = useLocation();
   const { state } = useSidebar();
@@ -85,6 +90,9 @@ export function AdminSidebar() {
   );
   const [templatesOpen, setTemplatesOpen] = useState(
     location.pathname.startsWith("/admin/templates")
+  );
+  const [workshopOpen, setWorkshopOpen] = useState(
+    location.pathname.startsWith("/admin/workshop")
   );
 
   const isActive = (url: string, exact?: boolean) => {
@@ -205,6 +213,15 @@ export function AdminSidebar() {
           open={templatesOpen}
           onOpenChange={setTemplatesOpen}
           icon={Layers}
+        />
+
+        {/* Workshop Section */}
+        <CollapsibleSection
+          title="Workshop"
+          items={workshopItems}
+          open={workshopOpen}
+          onOpenChange={setWorkshopOpen}
+          icon={GraduationCap}
         />
       </SidebarContent>
     </Sidebar>

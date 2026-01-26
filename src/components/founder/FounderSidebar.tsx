@@ -28,6 +28,7 @@ import {
   Trophy,
   Telescope,
   HelpCircle,
+  GraduationCap,
 } from "lucide-react";
 import {
   Sidebar,
@@ -57,6 +58,7 @@ interface FounderSidebarProps {
   hasMemo: boolean;
   companyId?: string;
   matchingFunds: number;
+  hasAcceleratorAccess: boolean;
   onResetClick: () => void;
   onDeleteAccountClick: () => void;
   onFundDiscoveryClick: () => void;
@@ -92,6 +94,7 @@ export const FounderSidebar = ({
   hasMemo,
   companyId,
   matchingFunds,
+  hasAcceleratorAccess,
   onResetClick,
   onDeleteAccountClick,
   onFundDiscoveryClick,
@@ -354,6 +357,33 @@ export const FounderSidebar = ({
                 >
                   <Trophy className="w-4 h-4 shrink-0 text-warning drop-shadow-[0_0_6px_hsl(var(--warning)/0.4)]" />
                   {!collapsed && <span className="font-medium">Scoreboard</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              {/* Workshop - accelerator only */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => hasAcceleratorAccess && navigate("/workshop")}
+                  disabled={!hasAcceleratorAccess}
+                  className={cn(
+                    "w-full transition-all duration-200 rounded-xl group",
+                    hasAcceleratorAccess
+                      ? isActive("/workshop")
+                        ? "bg-primary/12 text-primary border border-primary/20 shadow-[0_0_24px_hsl(var(--primary)/0.12),inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+                        : "hover:bg-white/5 dark:hover:bg-white/[0.03] text-muted-foreground hover:text-foreground border border-transparent hover:border-border/10"
+                      : "opacity-50 cursor-not-allowed text-muted-foreground border border-transparent"
+                  )}
+                >
+                  <GraduationCap className={cn(
+                    "w-4 h-4 shrink-0 transition-all duration-200",
+                    hasAcceleratorAccess && isActive("/workshop") && "drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)]"
+                  )} />
+                  {!collapsed && (
+                    <span className="flex items-center gap-2 font-medium">
+                      Workshop
+                      {!hasAcceleratorAccess && <Lock className="w-3 h-3 text-muted-foreground/50" />}
+                    </span>
+                  )}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

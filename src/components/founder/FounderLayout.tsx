@@ -35,6 +35,7 @@ export function FounderLayout({ children }: FounderLayoutProps) {
     company, 
     hasPaid,
     memoHasContent,
+    hasAcceleratorAccess,
     isLoading: companyLoading 
   } = useCompany(user?.id);
 
@@ -137,6 +138,7 @@ export function FounderLayout({ children }: FounderLayoutProps) {
           hasMemo={memoHasContent}
           companyId={company.id}
           matchingFunds={matchingFunds}
+          hasAcceleratorAccess={hasAcceleratorAccess}
           onResetClick={() => setResetDialogOpen(true)}
           onDeleteAccountClick={() => setDeleteAccountDialogOpen(true)}
           onFundDiscoveryClick={() => setFundDiscoveryModalOpen(true)}

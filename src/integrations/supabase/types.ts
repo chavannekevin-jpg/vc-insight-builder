@@ -2576,6 +2576,135 @@ export type Database = {
           },
         ]
       }
+      workshop_completions: {
+        Row: {
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          mapped_to_profile: boolean
+          mini_memo_content: string | null
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          mapped_to_profile?: boolean
+          mini_memo_content?: string | null
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          mapped_to_profile?: boolean
+          mini_memo_content?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_completions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workshop_completions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshop_responses: {
+        Row: {
+          answer: string | null
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          section_key: string
+          updated_at: string
+        }
+        Insert: {
+          answer?: string | null
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          section_key: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string | null
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          section_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workshop_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshop_templates: {
+        Row: {
+          benchmark_example: string | null
+          benchmark_tips: Json | null
+          created_at: string
+          guidance_text: string | null
+          id: string
+          is_active: boolean
+          prompt_question: string | null
+          section_key: string
+          section_title: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          benchmark_example?: string | null
+          benchmark_tips?: Json | null
+          created_at?: string
+          guidance_text?: string | null
+          id?: string
+          is_active?: boolean
+          prompt_question?: string | null
+          section_key: string
+          section_title: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          benchmark_example?: string | null
+          benchmark_tips?: Json | null
+          created_at?: string
+          guidance_text?: string | null
+          id?: string
+          is_active?: boolean
+          prompt_question?: string | null
+          section_key?: string
+          section_title?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       shareable_company_preview: {

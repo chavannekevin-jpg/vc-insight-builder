@@ -133,7 +133,10 @@ const Scoreboard = lazy(() => import("./pages/Scoreboard"));
 const PublicScorecard = lazy(() => import("./pages/PublicScorecard"));
 const AdminAcceleratorInvites = lazy(() => import("./pages/AdminAcceleratorInvites"));
 const AdminAccelerators = lazy(() => import("./pages/AdminAccelerators"));
+const AdminWorkshop = lazy(() => import("./pages/AdminWorkshop"));
+const AdminWorkshopMiniMemo = lazy(() => import("./pages/AdminWorkshopMiniMemo"));
 const StartupGuide = lazy(() => import("./pages/StartupGuide"));
+const Workshop = lazy(() => import("./pages/Workshop"));
 
 // Investor Pages
 const InvestorLanding = lazy(() => import("./pages/investor/InvestorLanding"));
@@ -227,6 +230,7 @@ const App = () => (
             <Route path="/accelerator/startup/:id/share" element={<AcceleratorShareablePreview />} />
             <Route path="/accelerator/analytics" element={<AcceleratorAnalytics />} />
             <Route path="/startup-guide" element={<StartupGuide />} />
+            <Route path="/workshop" element={<Workshop />} />
             {/* Investor Routes */}
             <Route path="/investor" element={<InvestorLanding />} />
             <Route path="/investor/auth" element={<InvestorAuth />} />
@@ -387,6 +391,8 @@ const App = () => (
             <Route path="/admin/investors" element={<AdminInvestors />} />
             <Route path="/admin/accelerator-invites" element={<AdminAcceleratorInvites />} />
             <Route path="/admin/accelerators" element={<AdminAccelerators />} />
+            <Route path="/admin/workshop" element={<AdminWorkshop />} />
+            <Route path="/admin/workshop/mini-memo" element={<AdminWorkshopMiniMemo />} />
             <Route path="/admin/commerce" element={<AdminCommerce />} />
             <Route path="/admin/commerce/discounts" element={<AdminCommerce />} />
             <Route path="/admin/emails" element={<AdminEmails />} />
