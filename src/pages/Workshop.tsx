@@ -34,13 +34,19 @@ export default function Workshop() {
   // Check if company has accelerator access
   const hasAcceleratorAccess = !!(company as any)?.accelerator_invite_id;
 
+  // Filter out investment_thesis - it's AI-generated, not user-written
+  const userEditableTemplates = templates?.filter(t => t.section_key !== 'investment_thesis') || [];
+  
   // Get current response for the active section
-  const currentTemplate = templates?.[currentStep];
+  const currentTemplate = userEditableTemplates?.[currentStep];
   const currentResponse = responses?.find(r => r.section_key === currentTemplate?.section_key);
 
-  // Calculate progress
-  const completedSections = responses?.filter(r => r.completed_at !== null).length || 0;
-  const totalSections = templates?.length || 8;
+  // Calculate progress - only count user-editable sections
+  const userEditableSectionKeys = userEditableTemplates.map(t => t.section_key);
+  const completedSections = responses?.filter(r => 
+    r.completed_at !== null && userEditableSectionKeys.includes(r.section_key)
+  ).length || 0;
+  const totalSections = userEditableTemplates.length || 7;
   const allSectionsComplete = completedSections >= totalSections;
 
   // Check if already completed and has memo
@@ -69,10 +75,10 @@ export default function Workshop() {
   };
 
   const handleNext = () => {
-    if (templates && currentStep < templates.length - 1) {
+    if (userEditableTemplates && currentStep < userEditableTemplates.length - 1) {
       setCurrentStep(currentStep + 1);
     } else if (allSectionsComplete) {
-      // Compile the memo
+      // Compile the memo - AI will generate investment thesis
       handleCompile();
     }
   };
@@ -138,7 +144,7 @@ export default function Workshop() {
         <div className="space-y-6">
           {/* Progress */}
           <WorkshopProgress
-            templates={templates || []}
+            templates={userEditableTemplates}
             responses={responses || []}
             currentStep={currentStep}
             onStepClick={handleStepClick}
