@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { extractAllMetrics, hashInputData, ExtractedMetrics } from '@/lib/metricExtractor';
 
 export interface ProfileEnrichment {
   id: string;
@@ -12,12 +13,14 @@ export interface ProfileEnrichment {
   processed: boolean;
   processed_at: string | null;
   created_at: string;
+  metrics_detected: ExtractedMetrics | null;
 }
 
 interface EnrichmentSyncResult {
   success: boolean;
   synced: number;
   sectionsUpdated: string[];
+  metricsUpdated?: boolean;
   error?: string;
 }
 
@@ -56,7 +59,7 @@ export function useProfileEnrichments(companyId: string | null) {
     fetchPendingEnrichments();
   }, [fetchPendingEnrichments]);
 
-  // Add a new enrichment to the queue
+  // Add a new enrichment to the queue with automatic metric detection
   const addEnrichment = useCallback(async (
     sourceType: string,
     sourceTool: string,
@@ -66,6 +69,30 @@ export function useProfileEnrichments(companyId: string | null) {
     if (!companyId) return false;
 
     try {
+      // Generate hash for deduplication
+      const dataHash = hashInputData(inputData);
+      
+      // Check for duplicate in last hour
+      const { data: existing } = await supabase
+        .from('profile_enrichment_queue')
+        .select('id')
+        .eq('company_id', companyId)
+        .eq('data_hash', dataHash)
+        .eq('processed', false)
+        .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
+        .limit(1);
+      
+      if (existing && existing.length > 0) {
+        console.log('Duplicate enrichment detected, skipping');
+        return true; // Already exists
+      }
+      
+      // Extract metrics from input data
+      const detectedMetrics = extractAllMetrics(inputData);
+      const hasMetrics = Object.keys(detectedMetrics).filter(k => 
+        k !== 'currency' && k !== 'sourceConfidence' && k !== 'calculationNotes'
+      ).length > 0;
+
       const { error } = await supabase
         .from('profile_enrichment_queue')
         .insert({
@@ -73,7 +100,9 @@ export function useProfileEnrichments(companyId: string | null) {
           source_type: sourceType,
           source_tool: sourceTool,
           input_data: inputData,
-          target_section_hint: targetSectionHint || null
+          target_section_hint: targetSectionHint || null,
+          data_hash: dataHash,
+          metrics_detected: hasMetrics ? detectedMetrics : null
         } as any);
 
       if (error) throw error;
@@ -209,6 +238,30 @@ export function useAddEnrichment() {
     }
 
     try {
+      // Generate hash for deduplication
+      const dataHash = hashInputData(inputData);
+      
+      // Check for duplicate in last hour
+      const { data: existing } = await supabase
+        .from('profile_enrichment_queue')
+        .select('id')
+        .eq('company_id', companyId)
+        .eq('data_hash', dataHash)
+        .eq('processed', false)
+        .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
+        .limit(1);
+      
+      if (existing && existing.length > 0) {
+        console.log('Duplicate enrichment detected, skipping');
+        return true;
+      }
+      
+      // Extract metrics from input data
+      const detectedMetrics = extractAllMetrics(inputData);
+      const hasMetrics = Object.keys(detectedMetrics).filter(k => 
+        k !== 'currency' && k !== 'sourceConfidence' && k !== 'calculationNotes'
+      ).length > 0;
+
       const { error } = await supabase
         .from('profile_enrichment_queue')
         .insert({
@@ -216,7 +269,9 @@ export function useAddEnrichment() {
           source_type: sourceType,
           source_tool: sourceTool,
           input_data: inputData,
-          target_section_hint: targetSectionHint || null
+          target_section_hint: targetSectionHint || null,
+          data_hash: dataHash,
+          metrics_detected: hasMetrics ? detectedMetrics : null
         } as any);
 
       if (error) throw error;

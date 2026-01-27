@@ -2190,6 +2190,7 @@ export type Database = {
           data_hash: string | null
           id: string
           input_data: Json
+          metrics_detected: Json | null
           processed: boolean
           processed_at: string | null
           source_tool: string | null
@@ -2202,6 +2203,7 @@ export type Database = {
           data_hash?: string | null
           id?: string
           input_data: Json
+          metrics_detected?: Json | null
           processed?: boolean
           processed_at?: string | null
           source_tool?: string | null
@@ -2214,6 +2216,7 @@ export type Database = {
           data_hash?: string | null
           id?: string
           input_data?: Json
+          metrics_detected?: Json | null
           processed?: boolean
           processed_at?: string | null
           source_tool?: string | null

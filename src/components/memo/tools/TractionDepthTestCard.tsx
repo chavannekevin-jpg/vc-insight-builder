@@ -4,7 +4,7 @@ import { EditableToolCard } from "./EditableToolCard";
 import { TractionDepthTest, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
 import { safeText, safeArray, safeNumber, mergeToolData } from "@/lib/toolDataUtils";
-
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 interface TractionDepthTestCardProps {
   data: EditableTool<TractionDepthTest>;
   onUpdate?: (data: Partial<TractionDepthTest>) => void;
@@ -12,6 +12,7 @@ interface TractionDepthTestCardProps {
 
 export const TractionDepthTestCard = ({ data, onUpdate }: TractionDepthTestCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const { addEnrichment } = useAddEnrichment();
   
   // Early return if data is invalid
   if (!data?.aiGenerated) {
@@ -48,7 +49,22 @@ export const TractionDepthTestCard = ({ data, onUpdate }: TractionDepthTestCardP
       ]}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
+      onSave={() => {
+        if (data.userOverrides) {
+          addEnrichment(
+            'traction_depth',
+            'TractionDepthTestCard',
+            {
+              tractionType,
+              sustainabilityScore,
+              redFlags,
+              positiveSignals
+            },
+            'traction_proof'
+          );
+        }
+        setIsEditing(false);
+      }}
       accentColor="blue"
     >
       {/* Traction Type */}
