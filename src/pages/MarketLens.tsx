@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Telescope, RefreshCw, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { MarketLensExplainer, useMarketLensExplainer } from "@/components/explainers/MarketLensExplainer";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface MarketLensPreferences {
   region: "europe" | "us" | "other";
@@ -62,6 +63,7 @@ export default function MarketLens() {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const { company, hasMemo, hasPaid, isLoading: companyLoading } = useCompany(user?.id);
+  const { addEnrichment } = useAddEnrichment();
   
   const [briefing, setBriefing] = useState<Briefing | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -158,6 +160,24 @@ export default function MarketLens() {
       if (data?.briefing) {
         setBriefing(data.briefing);
         toast.success("Market intelligence briefing generated");
+        
+        // Queue market insights for profile enrichment (Market section)
+        const brief = data.briefing as Briefing;
+        addEnrichment(
+          'market_lens',
+          'MarketLens',
+          {
+            tailwinds: brief.tailwinds?.map(t => t.title + ": " + t.insight).join("; ") || "",
+            headwinds: brief.headwinds?.map(h => h.title + ": " + h.insight).join("; ") || "",
+            fundingLandscape: brief.fundingLandscape?.summary || "",
+            geographicContext: brief.geographicContext?.summary || "",
+            narrativeAlignment: brief.narrativeAlignment?.summary || "",
+            themes: brief.narrativeAlignment?.themes || [],
+            exitPrecedents: brief.exitPrecedents?.map(e => `${e.company}: ${e.outcome}`).join("; ") || "",
+          },
+          'target_customer', // Maps to Market section
+          company?.id // Pass companyId directly
+        );
       }
     } catch (error: any) {
       console.error("Failed to generate briefing:", error);
