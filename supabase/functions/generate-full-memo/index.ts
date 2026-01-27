@@ -2666,23 +2666,26 @@ async function generateMemoInBackground(
                          hasEnhancedQuestions;
       
       if (hasContent) {
-        console.log(`Returning existing memo from cache (${content.sections.length} sections, vcQuickTake: ${hasVCQuickTake})`);
-        return new Response(
-          JSON.stringify({ 
-            structuredContent: existingMemo.structured_content,
-            company: {
-              name: company.name,
-              stage: company.stage,
-              category: company.category,
-              description: company.description
-            },
-            memoId: existingMemo.id,
-            fromCache: true
-          }), 
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
+        console.log(`Found valid cached memo (${content.sections.length} sections, vcQuickTake: ${hasVCQuickTake})`);
+        
+        // CRITICAL FIX: When running as background task via EdgeRuntime.waitUntil(),
+        // we cannot return a Response (it gets ignored). Instead, update job status
+        // and company flags directly so the frontend polling completes successfully.
+        await supabaseClient
+          .from("memo_generation_jobs")
+          .update({ 
+            status: "completed",
+            completed_at: new Date().toISOString()
+          })
+          .eq("id", jobId);
+        
+        await supabaseClient
+          .from("companies")
+          .update({ memo_content_generated: true })
+          .eq("id", companyId);
+        
+        console.log(`Job ${jobId} marked as completed (from cache)`);
+        return; // Exit gracefully - frontend will fetch memo via check-memo-job
       } else {
         console.log(`Existing memo found but incomplete (${content.sections?.length || 0} sections, Investment Thesis: ${hasInvestmentThesis}, vcQuickTake: ${hasVCQuickTake}, enhancedQuestions: ${hasEnhancedQuestions}), regenerating...`);
       }
