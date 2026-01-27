@@ -270,11 +270,27 @@ export default function VCMemorandum() {
   }
 
   // Transform memo content to SimplifiedMemoViewer format
-  const sections: SimplifiedMemoSection[] = (memoContent.memoContent?.sections || []).map((section: any) => ({
-    title: section.title,
-    narrative: section.paragraphs?.map((p: any) => p.text).join(' ') || section.narrative || '',
-    keyPoints: section.keyPoints || [],
-  }));
+  const sections: SimplifiedMemoSection[] = (memoContent.memoContent?.sections || []).map((section: any) => {
+    // Safely extract narrative text - handle both string and object formats
+    let narrativeText = '';
+    if (section.paragraphs?.length) {
+      narrativeText = section.paragraphs.map((p: any) => typeof p === 'string' ? p : p.text).join(' ');
+    } else if (typeof section.narrative === 'string') {
+      narrativeText = section.narrative;
+    } else if (section.narrative && typeof section.narrative === 'object') {
+      // Handle structured narrative object {paragraphs, highlights, keyPoints}
+      const narrativeObj = section.narrative as any;
+      if (narrativeObj.paragraphs?.length) {
+        narrativeText = narrativeObj.paragraphs.map((p: any) => typeof p === 'string' ? p : p.text).join(' ');
+      }
+    }
+    
+    return {
+      title: section.title,
+      narrative: narrativeText,
+      keyPoints: section.keyPoints || [],
+    };
+  });
 
   // Transform section tools
   const sectionTools: Record<string, SectionToolData> = {};
