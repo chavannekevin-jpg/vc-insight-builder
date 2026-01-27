@@ -114,7 +114,8 @@ const parseCurrencyAmount = (text: string): number | null => {
 };
 
 // Extract unit economics from Business Model and Traction sections using pattern matching
-const extractUnitEconomicsFromMemo = (sections: MemoSection[]): Record<string, any> | null => {
+// Returns data in the exact format UnitEconomicsEditor expects (all string values)
+const extractUnitEconomicsFromMemo = (sections: MemoSection[]): Record<string, string> | null => {
   const businessModelSection = sections.find(s => s.title === "Business Model");
   const tractionSection = sections.find(s => s.title === "Traction & Proof Points");
   
@@ -124,37 +125,37 @@ const extractUnitEconomicsFromMemo = (sections: MemoSection[]): Record<string, a
   
   if (!combinedText.trim()) return null;
   
-  const extracted: Record<string, any> = {};
+  // Store raw numeric values first for derived calculations
+  const rawValues: Record<string, number> = {};
   
-  // Extract ARR (Annual Recurring Revenue) - handles "€18K ARR", "ARR: €18K", "€126K CARR"
+  // Extract ARR (Annual Recurring Revenue)
   const arrPatterns = [
-    /[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*ARR(?!\s*\()/i,  // €18K ARR (not CARR)
-    /ARR[:\s]+[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i,        // ARR: €18K
+    /[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*ARR(?!\s*\()/i,
+    /ARR[:\s]+[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i,
   ];
   for (const pattern of arrPatterns) {
     const match = combinedText.match(pattern);
-    if (match && !extracted.arr) {
+    if (match && !rawValues.arr) {
       let arr = parseFloat(match[1].replace(/,/g, ''));
       if (match[2]?.toUpperCase() === 'K') arr *= 1000;
       if (match[2]?.toUpperCase() === 'M') arr *= 1000000;
-      extracted.arr = arr;
+      rawValues.arr = arr;
       break;
     }
   }
   
-  // Extract CARR (Committed ARR)
+  // Extract CARR (Committed ARR) - use as ARR if no ARR found
   const carrPatterns = [
-    /[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*CARR/i,           // €126K CARR
-    /CARR[:\s]+[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i,       // CARR: €126K
-    /committed\s*ARR[:\s]+[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i,
+    /[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*CARR/i,
+    /CARR[:\s]+[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i,
   ];
   for (const pattern of carrPatterns) {
     const match = combinedText.match(pattern);
-    if (match && !extracted.carr) {
+    if (match && !rawValues.arr) {
       let carr = parseFloat(match[1].replace(/,/g, ''));
       if (match[2]?.toUpperCase() === 'K') carr *= 1000;
       if (match[2]?.toUpperCase() === 'M') carr *= 1000000;
-      extracted.carr = carr;
+      rawValues.arr = carr; // Use CARR as ARR if no ARR found
       break;
     }
   }
@@ -166,11 +167,11 @@ const extractUnitEconomicsFromMemo = (sections: MemoSection[]): Record<string, a
   ];
   for (const pattern of mrrPatterns) {
     const match = combinedText.match(pattern);
-    if (match && !extracted.mrr) {
+    if (match && !rawValues.mrr) {
       let mrr = parseFloat(match[1].replace(/,/g, ''));
       if (match[2]?.toUpperCase() === 'K') mrr *= 1000;
       if (match[2]?.toUpperCase() === 'M') mrr *= 1000000;
-      extracted.mrr = mrr;
+      rawValues.mrr = mrr;
       break;
     }
   }
@@ -179,22 +180,21 @@ const extractUnitEconomicsFromMemo = (sections: MemoSection[]): Record<string, a
   const customerMatch = combinedText.match(/(\d+)\s*(?:paying\s+)?customers?/i) ||
                         combinedText.match(/customers?[:\s]*(\d+)/i);
   if (customerMatch) {
-    extracted.customers = parseInt(customerMatch[1]);
+    rawValues.customers = parseInt(customerMatch[1]);
   }
   
   // Extract ACV (Average Contract Value)
   const acvPatterns = [
     /[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*ACV/i,
     /ACV[:\s]+[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i,
-    /average\s*contract\s*value[:\s]+[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i,
   ];
   for (const pattern of acvPatterns) {
     const match = combinedText.match(pattern);
-    if (match && !extracted.acv) {
+    if (match && !rawValues.acv) {
       let acv = parseFloat(match[1].replace(/,/g, ''));
       if (match[2]?.toUpperCase() === 'K') acv *= 1000;
       if (match[2]?.toUpperCase() === 'M') acv *= 1000000;
-      extracted.acv = acv;
+      rawValues.acv = acv;
       break;
     }
   }
@@ -205,7 +205,7 @@ const extractUnitEconomicsFromMemo = (sections: MemoSection[]): Record<string, a
     let ltv = parseFloat(ltvMatch[1].replace(/,/g, ''));
     if (ltvMatch[2]?.toUpperCase() === 'K') ltv *= 1000;
     if (ltvMatch[2]?.toUpperCase() === 'M') ltv *= 1000000;
-    extracted.ltv = ltv;
+    rawValues.ltv = ltv;
   }
   
   // Extract CAC (Customer Acquisition Cost)
@@ -214,50 +214,78 @@ const extractUnitEconomicsFromMemo = (sections: MemoSection[]): Record<string, a
     let cac = parseFloat(cacMatch[1].replace(/,/g, ''));
     if (cacMatch[2]?.toUpperCase() === 'K') cac *= 1000;
     if (cacMatch[2]?.toUpperCase() === 'M') cac *= 1000000;
-    extracted.cac = cac;
+    rawValues.cac = cac;
   }
   
-  // Extract pricing tiers - handle "SME package at €16K setup plus €18K ARR"
-  const smeMatch = combinedText.match(/SME[^€$]*[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*(?:setup|fee)/i) ||
-                   combinedText.match(/SME[^€$]*[€$]\s*[\d,]+[KkMm]?\s*(?:setup|fee)[^€$]*[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*ARR/i);
-  if (smeMatch) {
-    let value = parseFloat(smeMatch[1].replace(/,/g, ''));
-    if (smeMatch[2]?.toUpperCase() === 'K') value *= 1000;
-    if (smeMatch[2]?.toUpperCase() === 'M') value *= 1000000;
-    extracted.pricingSME = value;
-  }
-  
-  const enterpriseMatch = combinedText.match(/Enterprise[^€$]*[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*(?:setup|fee)/i) ||
-                          combinedText.match(/Enterprise[^€$]*[€$]\s*[\d,]+[KkMm]?\s*(?:setup|fee)[^€$]*[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*ARR/i);
-  if (enterpriseMatch) {
-    let value = parseFloat(enterpriseMatch[1].replace(/,/g, ''));
-    if (enterpriseMatch[2]?.toUpperCase() === 'K') value *= 1000;
-    if (enterpriseMatch[2]?.toUpperCase() === 'M') value *= 1000000;
-    extracted.pricingEnterprise = value;
-  }
-  
-  // Extract setup fee - "€16K setup"
-  const setupMatch = combinedText.match(/[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*(?:setup|onboarding)/i);
-  if (setupMatch && !extracted.setupFee) {
-    let value = parseFloat(setupMatch[1].replace(/,/g, ''));
-    if (setupMatch[2]?.toUpperCase() === 'K') value *= 1000;
-    if (setupMatch[2]?.toUpperCase() === 'M') value *= 1000000;
-    extracted.setupFee = value;
-  }
-  
-  // Extract growth rate
+  // Extract growth rate - use key "monthlyGrowth" to match UnitEconomicsEditor
   const growthMatch = combinedText.match(/(\d+(?:\.\d+)?)\s*%\s*(?:growth|MoM|month[- ]over[- ]month)/i);
   if (growthMatch) {
-    extracted.growthRate = parseFloat(growthMatch[1]);
+    rawValues.monthlyGrowth = parseFloat(growthMatch[1]);
   }
   
-  // Extract revenue if not ARR/MRR
-  const revenueMatch = combinedText.match(/(?:revenue|sales)[:\s]*[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i);
-  if (revenueMatch && !extracted.arr && !extracted.mrr) {
-    let revenue = parseFloat(revenueMatch[1].replace(/,/g, ''));
-    if (revenueMatch[2]?.toUpperCase() === 'K') revenue *= 1000;
-    if (revenueMatch[2]?.toUpperCase() === 'M') revenue *= 1000000;
-    extracted.revenue = revenue;
+  // Extract churn rate
+  const churnMatch = combinedText.match(/(\d+(?:\.\d+)?)\s*%\s*(?:monthly\s+)?churn/i) ||
+                     combinedText.match(/churn[:\s]+(\d+(?:\.\d+)?)\s*%/i);
+  if (churnMatch) {
+    rawValues.churnRate = parseFloat(churnMatch[1]);
+  }
+  
+  // Extract gross margin
+  const marginMatch = combinedText.match(/(\d+(?:\.\d+)?)\s*%\s*(?:gross\s+)?margin/i) ||
+                      combinedText.match(/(?:gross\s+)?margin[:\s]+(\d+(?:\.\d+)?)\s*%/i);
+  if (marginMatch) {
+    rawValues.grossMargin = parseFloat(marginMatch[1]);
+  }
+  
+  // Extract burn rate
+  const burnPatterns = [
+    /[€$]\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?\s*(?:monthly\s+)?burn/i,
+    /burn[:\s]+[€$]?\s*([\d,]+(?:\.\d+)?)\s*([KkMm])?/i,
+  ];
+  for (const pattern of burnPatterns) {
+    const match = combinedText.match(pattern);
+    if (match && !rawValues.burnRate) {
+      let burn = parseFloat(match[1].replace(/,/g, ''));
+      if (match[2]?.toUpperCase() === 'K') burn *= 1000;
+      if (match[2]?.toUpperCase() === 'M') burn *= 1000000;
+      rawValues.burnRate = burn;
+      break;
+    }
+  }
+  
+  // Extract runway
+  const runwayMatch = combinedText.match(/(\d+)\s*months?\s*runway/i) ||
+                      combinedText.match(/runway[:\s]+(\d+)\s*months?/i);
+  if (runwayMatch) {
+    rawValues.runway = parseInt(runwayMatch[1]);
+  }
+  
+  // Calculate derived metrics
+  // If we have ARR but no MRR, calculate MRR
+  if (rawValues.arr && !rawValues.mrr) {
+    rawValues.mrr = Math.round(rawValues.arr / 12);
+  }
+  // If we have MRR but no ARR, calculate ARR
+  if (rawValues.mrr && !rawValues.arr) {
+    rawValues.arr = rawValues.mrr * 12;
+  }
+  
+  // Calculate LTV:CAC ratio
+  if (rawValues.ltv && rawValues.cac && rawValues.cac > 0) {
+    rawValues.ltvCacRatio = parseFloat((rawValues.ltv / rawValues.cac).toFixed(1));
+  }
+  
+  // Calculate payback months
+  if (rawValues.cac && rawValues.mrr && rawValues.mrr > 0) {
+    rawValues.paybackMonths = parseFloat((rawValues.cac / rawValues.mrr).toFixed(1));
+  }
+  
+  // Convert all values to strings for UnitEconomicsEditor compatibility
+  const extracted: Record<string, string> = {};
+  for (const [key, value] of Object.entries(rawValues)) {
+    if (value !== undefined && value !== null) {
+      extracted[key] = value.toString();
+    }
   }
   
   return Object.keys(extracted).length > 0 ? extracted : null;
