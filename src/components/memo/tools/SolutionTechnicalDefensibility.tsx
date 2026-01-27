@@ -4,6 +4,7 @@ import { EditableToolCard } from "./EditableToolCard";
 import { TechnicalDefensibility, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
 import { safeText, safeArray, safeNumber, mergeToolData, isValidEditableTool } from "@/lib/toolDataUtils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface SolutionTechnicalDefensibilityProps {
   data: EditableTool<TechnicalDefensibility>;
@@ -18,6 +19,7 @@ export const SolutionTechnicalDefensibility = ({ data, onUpdate }: SolutionTechn
 
   const [isEditing, setIsEditing] = useState(false);
   const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
+  const { addEnrichment } = useAddEnrichment();
 
   const defensibilityScore = safeNumber(currentData?.defensibilityScore, 0);
   const proofPoints = safeArray<string>(currentData?.proofPoints);
@@ -51,7 +53,16 @@ export const SolutionTechnicalDefensibility = ({ data, onUpdate }: SolutionTechn
       ]}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
+      onSave={() => {
+        setIsEditing(false);
+        addEnrichment('technical_defensibility', 'SolutionTechnicalDefensibility', {
+          defensibilityScore,
+          proofPoints,
+          expectedProofs,
+          gaps,
+          vcEvaluation
+        }, 'solution_core');
+      }}
       accentColor="blue"
     >
       {/* Score */}

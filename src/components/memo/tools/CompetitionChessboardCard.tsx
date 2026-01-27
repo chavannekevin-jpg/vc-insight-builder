@@ -4,6 +4,7 @@ import { EditableToolCard } from "./EditableToolCard";
 import { CompetitorChessboard, CompetitorMove, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
 import { safeText, safeArray, mergeToolData, isValidEditableTool } from "@/lib/toolDataUtils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface CompetitionChessboardCardProps {
   data: EditableTool<CompetitorChessboard>;
@@ -12,6 +13,7 @@ interface CompetitionChessboardCardProps {
 
 export const CompetitionChessboardCard = ({ data, onUpdate }: CompetitionChessboardCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const { addEnrichment } = useAddEnrichment();
   
   // Early return if data is invalid - after hooks
   if (!isValidEditableTool<CompetitorChessboard>(data)) {
@@ -47,7 +49,17 @@ export const CompetitionChessboardCard = ({ data, onUpdate }: CompetitionChessbo
       ]}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
+      onSave={() => {
+        setIsEditing(false);
+        addEnrichment('competitor_chessboard', 'CompetitionChessboardCard', {
+          marketDynamics,
+          competitors: competitors.map(c => ({
+            name: safeText(c?.name),
+            position: safeText(c?.currentPosition),
+            threatLevel: safeText(c?.threat24Months)
+          }))
+        }, 'competitive_moat');
+      }}
     >
       {/* Market Dynamics */}
       {marketDynamics && (

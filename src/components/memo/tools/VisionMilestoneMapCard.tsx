@@ -4,6 +4,7 @@ import { EditableToolCard } from "./EditableToolCard";
 import { VCMilestoneMap, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
 import { safeText, safeArray, safeNumber, mergeToolData } from "@/lib/toolDataUtils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface VisionMilestoneMapCardProps {
   data: EditableTool<VCMilestoneMap>;
@@ -12,6 +13,7 @@ interface VisionMilestoneMapCardProps {
 
 export const VisionMilestoneMapCard = ({ data, onUpdate }: VisionMilestoneMapCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const { addEnrichment } = useAddEnrichment();
   
   // Early return if data is invalid
   if (!data?.aiGenerated) {
@@ -34,7 +36,19 @@ export const VisionMilestoneMapCard = ({ data, onUpdate }: VisionMilestoneMapCar
       ]}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
+      onSave={() => {
+        setIsEditing(false);
+        addEnrichment('milestone_map', 'VisionMilestoneMapCard', {
+          milestones: milestones.map(m => ({
+            month: safeNumber(m?.month, 0),
+            milestone: safeText(m?.milestone),
+            metric: safeText(m?.metric),
+            targetValue: safeText(m?.targetValue),
+            currentValue: safeText(m?.currentValue)
+          })),
+          criticalPath
+        }, 'vision_ask');
+      }}
     >
       {/* Timeline */}
       {milestones.length > 0 && (

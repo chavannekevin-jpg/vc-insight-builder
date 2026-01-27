@@ -640,6 +640,7 @@ export type Database = {
       companies: {
         Row: {
           accelerator_invite_id: string | null
+          audit_insights_extracted: boolean | null
           biggest_challenge: string | null
           category: string | null
           created_at: string
@@ -670,6 +671,7 @@ export type Database = {
         }
         Insert: {
           accelerator_invite_id?: string | null
+          audit_insights_extracted?: boolean | null
           biggest_challenge?: string | null
           category?: string | null
           created_at?: string
@@ -700,6 +702,7 @@ export type Database = {
         }
         Update: {
           accelerator_invite_id?: string | null
+          audit_insights_extracted?: boolean | null
           biggest_challenge?: string | null
           category?: string | null
           created_at?: string

@@ -20,12 +20,14 @@ import {
   Sparkles
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 type SignalLevel = "realistic" | "aggressive" | "inflated" | "conservative";
 
 export default function ValuationCalculator() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addEnrichment } = useAddEnrichment();
   
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -206,6 +208,16 @@ export default function ValuationCalculator() {
         });
 
       if (dilutionError) throw dilutionError;
+
+      // Log to enrichment queue for profile accumulation
+      addEnrichment('valuation_calculator', 'ValuationCalculator', {
+        raiseAmount,
+        preMoney,
+        postMoney,
+        actualDilution,
+        signal,
+        valuation: preMoney
+      }, 'vision_ask');
 
       toast({
         title: "Success",

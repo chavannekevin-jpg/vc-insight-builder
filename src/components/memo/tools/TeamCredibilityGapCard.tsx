@@ -4,6 +4,7 @@ import { EditableToolCard } from "./EditableToolCard";
 import { CredibilityGapAnalysis, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
 import { safeText, safeArray, safeNumber, mergeToolData } from "@/lib/toolDataUtils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface TeamCredibilityGapCardProps {
   data: EditableTool<CredibilityGapAnalysis>;
@@ -12,6 +13,7 @@ interface TeamCredibilityGapCardProps {
 
 export const TeamCredibilityGapCard = ({ data, onUpdate }: TeamCredibilityGapCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const { addEnrichment } = useAddEnrichment();
   
   // Early return if data is invalid
   if (!data?.aiGenerated) {
@@ -51,7 +53,19 @@ export const TeamCredibilityGapCard = ({ data, onUpdate }: TeamCredibilityGapCar
       ]}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
+      onSave={() => {
+        setIsEditing(false);
+        addEnrichment('team_credibility', 'TeamCredibilityGapCard', {
+          overallCredibility,
+          currentSkills,
+          expectedSkills,
+          gaps: gaps.map(g => ({
+            skill: safeText(g?.skill),
+            mitigation: safeText(g?.mitigation),
+            severity: safeText(g?.severity)
+          }))
+        }, 'team_story');
+      }}
       accentColor="blue"
     >
       {/* Overall Credibility Score */}

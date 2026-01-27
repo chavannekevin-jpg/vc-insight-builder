@@ -4,6 +4,7 @@ import { EditableToolCard } from "./EditableToolCard";
 import { MarketReadinessIndex, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
 import { safeText, safeNumber, mergeToolData, isValidEditableTool } from "@/lib/toolDataUtils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface MarketReadinessIndexCardProps {
   data: EditableTool<MarketReadinessIndex>;
@@ -17,6 +18,7 @@ export const MarketReadinessIndexCard = ({ data, onUpdate }: MarketReadinessInde
   }
 
   const [isEditing, setIsEditing] = useState(false);
+  const { addEnrichment } = useAddEnrichment();
   const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
 
   const overallScore = safeNumber(currentData?.overallScore, 50);
@@ -54,7 +56,17 @@ export const MarketReadinessIndexCard = ({ data, onUpdate }: MarketReadinessInde
       ]}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
+      onSave={() => {
+        setIsEditing(false);
+        addEnrichment('market_readiness', 'MarketReadinessIndexCard', {
+          overallScore,
+          factors: factors.map(f => ({
+            label: f.label,
+            score: safeNumber(f.data?.score, 0),
+            evidence: safeText(f.data?.evidence)
+          }))
+        }, 'target_customer');
+      }}
       accentColor="blue"
     >
       {/* Overall Score */}

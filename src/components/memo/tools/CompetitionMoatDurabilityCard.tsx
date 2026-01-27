@@ -3,6 +3,7 @@ import { Shield, Clock, TrendingDown, TrendingUp } from "lucide-react";
 import { EditableToolCard } from "./EditableToolCard";
 import { MoatDurability, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface CompetitionMoatDurabilityProps {
   data: EditableTool<MoatDurability>;
@@ -11,6 +12,7 @@ interface CompetitionMoatDurabilityProps {
 
 export const CompetitionMoatDurabilityCard = ({ data, onUpdate }: CompetitionMoatDurabilityProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const { addEnrichment } = useAddEnrichment();
   
   // Handle missing aiGenerated data gracefully
   if (!data?.aiGenerated) {
@@ -48,7 +50,15 @@ export const CompetitionMoatDurabilityCard = ({ data, onUpdate }: CompetitionMoa
       ]}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
+      onSave={() => {
+        setIsEditing(false);
+        addEnrichment('moat_durability', 'CompetitionMoatDurabilityCard', {
+          moatStrength,
+          duration,
+          erosionFactors,
+          reinforcementOpportunities
+        }, 'competitive_moat');
+      }}
       accentColor="amber"
     >
       {/* Strength & Duration */}
