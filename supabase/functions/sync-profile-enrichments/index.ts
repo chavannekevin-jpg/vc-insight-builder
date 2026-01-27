@@ -37,6 +37,8 @@ const SECTION_MAPPING: Record<string, string[]> = {
   'raise_calculator': ['business_model', 'vision_ask'],
   'valuation_calculator': ['vision_ask'],
   'workshop': ['problem_core', 'solution_core', 'target_customer', 'business_model', 'team_story', 'traction_proof', 'vision_ask'],
+  'market_lens': ['target_customer', 'competitive_moat'], // Market insights
+  'audit_insight': [], // Uses target_section_hint
 };
 
 const SECTION_LABELS: Record<string, string> = {

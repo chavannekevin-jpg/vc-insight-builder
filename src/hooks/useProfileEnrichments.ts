@@ -230,9 +230,11 @@ export function useAddEnrichment() {
     sourceType: string,
     sourceTool: string,
     inputData: Record<string, any>,
-    targetSectionHint?: string
+    targetSectionHint?: string,
+    overrideCompanyId?: string // Allow passing companyId directly
   ) => {
-    if (!companyId) {
+    const effectiveCompanyId = overrideCompanyId || companyId;
+    if (!effectiveCompanyId) {
       console.warn('No company ID available for enrichment');
       return false;
     }
@@ -245,7 +247,7 @@ export function useAddEnrichment() {
       const { data: existing } = await supabase
         .from('profile_enrichment_queue')
         .select('id')
-        .eq('company_id', companyId)
+        .eq('company_id', effectiveCompanyId)
         .eq('data_hash', dataHash)
         .eq('processed', false)
         .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
@@ -265,7 +267,7 @@ export function useAddEnrichment() {
       const { error } = await supabase
         .from('profile_enrichment_queue')
         .insert({
-          company_id: companyId,
+          company_id: effectiveCompanyId,
           source_type: sourceType,
           source_tool: sourceTool,
           input_data: inputData,

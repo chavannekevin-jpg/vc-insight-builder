@@ -186,18 +186,25 @@ export default function VentureScaleDiagnostic() {
           description: "Your venture scale diagnostic is ready."
         });
         
-        // Log enrichment for profile sync
+        // Log enrichment for profile sync - include acv as string for unit economics
+        const acvValue = parseFloat(formData.acv);
         addEnrichment(
           'venture_diagnostic',
           'VentureScaleDiagnostic',
           {
-            acv: parseFloat(formData.acv),
+            acv: acvValue,
+            acvFormatted: formData.acv, // Keep string version
             rating: data.result.rating,
             ratingExplanation: data.result.ratingExplanation,
             improvements: data.result.improvements,
-            verdict: data.result.verdict
+            verdict: data.result.verdict,
+            // Explicitly pass metrics for unit economics sync
+            metricsToSync: {
+              acv: acvValue
+            }
           },
-          'business_model'
+          'business_model',
+          companyId || undefined // Pass companyId directly to avoid race condition
         );
       }
     } catch (error: any) {
