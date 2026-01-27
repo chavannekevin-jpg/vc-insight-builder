@@ -1,194 +1,302 @@
 
-# Plan: AI-Powered Profile Accumulation System
 
-## Problem Summary
+# Comprehensive Platform Audit: Profile Accumulation & Smart Metric Extraction
 
-Currently, user inputs across the platform are fragmented:
-- **"My Profile"** (`memo_responses` table) is the canonical source for founder data
-- **Strategic tools** (TAM Calculator, Pain Validator, etc.) save to `memo_tool_data` as "override layers"
-- **"Improve Your Score"** answers are stored in browser localStorage only
-- **Venture Scale Diagnostic** inputs are ephemeral and not persisted
-- **Workshop data** is mapped to profile on completion, but nothing else is
+## Executive Summary
 
-**Result:** When a user fills in data across the platform, it doesn't accumulate in their profile, making regenerated audits miss valuable context.
+After extensive analysis of the startup platform, I've identified **24+ input surfaces** where users can modify information. Of these, only **3 are currently integrated** with the new profile enrichment system. Additionally, the platform lacks **intelligent metric extraction and calculation** - users can say "100k ARR with 2 clients" in any input field, but this data isn't parsed and stored as structured metrics (ARR, ACV, MRR).
+
+This plan addresses both gaps:
+1. **Complete enrichment integration** across all input surfaces
+2. **AI-powered metric intelligence** that extracts, calculates, and stores derived metrics
 
 ---
 
-## Solution Overview
+## Gap Analysis: Input Surfaces
 
-Create a **Profile Enrichment Pipeline** that:
-1. Captures user inputs from all sources
-2. Logs them to a new `profile_enrichment_queue` table
-3. Triggers an AI agent when the user visits "My Profile"
-4. The AI reviews all queued inputs and intelligently merges them into the 8 core profile sections
+### Currently Integrated (3 tools)
+| Component | Integration Status |
+|-----------|-------------------|
+| MarketTAMCalculator | Logs to enrichment queue |
+| ImprovementQuestionCard | Logs to enrichment queue |
+| VentureScaleDiagnostic | Logs to enrichment queue |
+
+### Not Integrated (21+ tools)
+
+**Strategic Analysis Tools (in `/src/components/memo/tools/`):**
+| Component | Current State | Target Section |
+|-----------|--------------|----------------|
+| ProblemEvidenceThreshold | Saves to memo_tool_data only | problem_core |
+| ProblemFounderBlindSpot | Saves to memo_tool_data only | problem_core |
+| SolutionTechnicalDefensibility | Saves to memo_tool_data only | solution_core |
+| SolutionCommoditizationTeardown | Saves to memo_tool_data only | solution_core |
+| SolutionCompetitorBuildAnalysis | Saves to memo_tool_data only | competitive_moat |
+| MarketReadinessIndexCard | Saves to memo_tool_data only | target_customer |
+| MarketVCNarrativeCard | Saves to memo_tool_data only | target_customer |
+| CompetitionChessboardCard | Saves to memo_tool_data only | competitive_moat |
+| CompetitionMoatDurabilityCard | Saves to memo_tool_data only | competitive_moat |
+| BusinessModelStressTestCard | Saves to memo_tool_data only | business_model |
+| TractionDepthTestCard | Saves to memo_tool_data only | traction_proof |
+| TeamCredibilityGapCard | Saves to memo_tool_data only | team_story |
+| VisionMilestoneMapCard | Saves to memo_tool_data only | vision_ask |
+| VisionScenarioPlanningCard | Saves to memo_tool_data only | vision_ask |
+| VisionExitNarrativeCard | Saves to memo_tool_data only | vision_ask |
+
+**Calculator Tools:**
+| Component | Current State | Data Captured |
+|-----------|--------------|---------------|
+| RaiseCalculator | Saves to memo_responses directly | MRR, ARR, burn rate, runway |
+| ValuationCalculator | Saves to memo_responses directly | Valuation, dilution |
+| UnitEconomicsEditor | Saves to memo_responses as unit_economics_json | All structured metrics |
+
+**Workshop:**
+| Component | Current State | Notes |
+|-----------|--------------|-------|
+| WorkshopSection | Maps to profile on completion | Freeform text contains metrics |
 
 ---
 
-## Technical Architecture
+## Gap Analysis: Metric Intelligence
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                     User Input Sources                          │
-├─────────────┬─────────────┬────────────────┬───────────────────┤
-│ TAM Tool    │ Improve     │ Venture Scale  │ Other Strategic   │
-│ Overrides   │ Your Score  │ Diagnostic     │ Tools             │
-└──────┬──────┴──────┬──────┴───────┬────────┴────────┬──────────┘
-       │             │              │                 │
-       └─────────────┴──────────────┴─────────────────┘
-                              │
-                              ▼
-               ┌──────────────────────────────┐
-               │  profile_enrichment_queue    │
-               │  (company_id, source, data)  │
-               └──────────────┬───────────────┘
-                              │
-                              ▼
-               ┌──────────────────────────────┐
-               │   User visits "My Profile"   │
-               │   or clicks "Sync Profile"   │
-               └──────────────┬───────────────┘
-                              │
-                              ▼
-               ┌──────────────────────────────┐
-               │   sync-profile-enrichments   │
-               │   (Edge Function)            │
-               │   - Fetches queued inputs    │
-               │   - AI reviews & synthesizes │
-               │   - Upserts to memo_responses│
-               │   - Marks queue as processed │
-               └──────────────────────────────┘
-```
+### Current Problems
+
+1. **No extraction from freeform text**: When a user writes "We have 100k ARR with 2 enterprise clients", this is stored as plain text. The ACV ($50k) and MRR ($8.3k) are never calculated or stored.
+
+2. **No derived metric calculations**: The system can display metrics but doesn't automatically derive:
+   - MRR from ARR (ARR / 12)
+   - ACV from ARR + customers (ARR / customers)
+   - LTV:CAC ratio from LTV + CAC
+   - Runway from burn rate + cash
+
+3. **Metrics scattered across tables**: Financial data lives in:
+   - `memo_responses` (unit_economics_json)
+   - `memo_tool_data` (TAM calculator ACV values)
+   - Freeform text in profile sections
+   
+4. **No single source of truth**: When TAM Calculator has ACV of $25k but traction section mentions "50k contracts", there's no reconciliation.
+
+### Required Intelligence
+
+The system should:
+1. **Extract metrics** from any text input using regex + AI
+2. **Calculate derived metrics** automatically
+3. **Store to a canonical location** (`unit_economics_json`)
+4. **Display in Financial Metrics Dashboard** on My Profile
 
 ---
 
 ## Implementation Plan
 
-### Phase 1: Database Schema
+### Phase 1: Extend Enrichment Queue for Metrics
 
-Create a new `profile_enrichment_queue` table to capture all user inputs:
+Add a `metrics_detected` JSONB column to track extracted financial data:
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `company_id` | UUID | FK to companies |
-| `source_type` | TEXT | e.g., `tam_calculator`, `improve_score`, `venture_diagnostic` |
-| `source_tool` | TEXT | Specific tool name |
-| `input_data` | JSONB | The user's input (key-value pairs or freeform) |
-| `target_section_hint` | TEXT | Optional hint for which profile section (e.g., `traction_proof`) |
-| `processed` | BOOLEAN | Whether the AI has incorporated this |
-| `processed_at` | TIMESTAMP | When it was processed |
-| `created_at` | TIMESTAMP | When input was captured |
+```sql
+ALTER TABLE profile_enrichment_queue 
+ADD COLUMN metrics_detected JSONB DEFAULT NULL;
+```
 
-RLS policies will allow founders to insert/view their own enrichments.
-
----
-
-### Phase 2: Capture User Inputs
-
-Modify the following components to log inputs to `profile_enrichment_queue`:
-
-1. **Strategic Tool Saves** (`EditableToolCard` children)
-   - `MarketTAMCalculator.tsx` - Log TAM/SAM/SOM values and segment counts
-   - `ProblemEvidenceThreshold.tsx` - Log evidence sources
-   - `BusinessModelStressTestCard.tsx` - Log model parameters
-   - Other 15+ tool components
-
-2. **Improve Your Score** (`ImprovementQuestionCard.tsx`)
-   - When user saves an answer, also insert to enrichment queue with `source_type: 'improve_score'`
-   - Include the question asked and the answer provided
-
-3. **Venture Scale Diagnostic** (`VentureScaleDiagnostic.tsx`)
-   - Log the ACV input and any other user-provided data
-   - Log the AI-generated insights as context
-
-4. **Calculator Tools** (`RaiseCalculator.tsx`, `ValuationCalculator.tsx`)
-   - Already write to `memo_responses` directly - add queue logging for audit trail
-
----
-
-### Phase 3: AI Synthesis Edge Function
-
-Create `supabase/functions/sync-profile-enrichments/index.ts`:
-
-```typescript
-// Pseudocode
-async function syncProfileEnrichments(companyId: string) {
-  // 1. Fetch all unprocessed enrichments for this company
-  const enrichments = await getUnprocessedEnrichments(companyId);
-  if (enrichments.length === 0) return { synced: 0 };
-
-  // 2. Fetch current profile responses
-  const currentProfile = await getCurrentMemoResponses(companyId);
-
-  // 3. Build AI prompt with enrichments grouped by target section
-  const prompt = buildEnrichmentPrompt(enrichments, currentProfile);
-
-  // 4. Call Lovable AI to synthesize updates
-  const aiResponse = await callLovableAI({
-    model: "google/gemini-2.5-flash",
-    prompt: `You are reviewing new information provided by a founder.
-             Merge these inputs into their existing profile sections.
-             Only update sections where new information adds value.
-             Preserve the founder's voice and existing content.
-             Return JSON with section updates.`
-  });
-
-  // 5. Upsert updated sections to memo_responses
-  for (const [sectionKey, newContent] of Object.entries(aiResponse.updates)) {
-    await upsertMemoResponse(companyId, sectionKey, newContent, 'enrichment_sync');
-  }
-
-  // 6. Mark enrichments as processed
-  await markEnrichmentsProcessed(enrichmentIds);
-
-  return { synced: enrichments.length, sectionsUpdated: Object.keys(aiResponse.updates) };
+This will store structured metrics found in each enrichment:
+```json
+{
+  "arr": 100000,
+  "mrr": 8333,
+  "customers": 2,
+  "acv": 50000,
+  "source_confidence": "high",
+  "calculation_notes": "ACV derived from ARR/customers"
 }
 ```
 
-The AI prompt will:
-- Receive all new inputs grouped by their target section
-- See the current profile section content
-- Intelligently merge new data without losing existing content
-- Use the founder's voice and writing style
-- Flag any conflicting information for review
+### Phase 2: Create Metric Extraction Utility
 
----
+Create a shared utility that all input surfaces can use to detect and extract metrics from any text or structured input.
 
-### Phase 4: Frontend Integration
+**New file: `src/lib/metricExtractor.ts`**
 
-1. **"My Profile" Page** (`CompanyProfileEdit.tsx`)
-   - On page load, check for unprocessed enrichments
-   - Show a badge: "5 new insights to sync"
-   - Trigger sync automatically or via button click
-   - Show toast: "Profile updated with 3 new data points from TAM Calculator and Score Improvements"
+```typescript
+interface ExtractedMetrics {
+  arr?: number;
+  mrr?: number;
+  acv?: number;
+  customers?: number;
+  ltv?: number;
+  cac?: number;
+  churnRate?: number;
+  growthRate?: number;
+  burnRate?: number;
+  runway?: number;
+  revenue?: number;
+}
 
-2. **Visual Feedback**
-   - Add an "enrichment pending" indicator on sections with new data
-   - Show "Last synced: 2 hours ago" timestamp
-   - Highlight sections that were recently updated by AI
+// Regex patterns for metric extraction
+const METRIC_PATTERNS = {
+  arr: /(?:ARR|annual recurring revenue)[:\s]*[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:k|K|M|million)?/gi,
+  mrr: /(?:MRR|monthly recurring revenue)[:\s]*[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:k|K)?/gi,
+  acv: /(?:ACV|annual contract value)[:\s]*[\$€£]?([\d,]+(?:\.\d+)?)\s*(?:k|K)?/gi,
+  customers: /(?:(\d+)\s*(?:customers?|clients?|users?|accounts?))/gi,
+  // ... more patterns
+};
 
-3. **Profile Section Cards**
-   - Show provenance: "Updated from Venture Scale Diagnostic on Jan 27"
-   - Allow user to review and edit AI-merged content before saving
+export function extractMetricsFromText(text: string): ExtractedMetrics;
+export function extractMetricsFromStructured(data: Record<string, any>): ExtractedMetrics;
+export function calculateDerivedMetrics(metrics: ExtractedMetrics): ExtractedMetrics;
+export function mergeMetrics(existing: ExtractedMetrics, newMetrics: ExtractedMetrics): ExtractedMetrics;
+```
 
----
+### Phase 3: Update Enrichment Hook with Metric Detection
 
-### Phase 5: Mapping Logic
+Enhance `useAddEnrichment` to automatically detect metrics:
 
-Define how each input type maps to profile sections:
+```typescript
+const addEnrichment = async (
+  sourceType: string,
+  sourceTool: string,
+  inputData: Record<string, any>,
+  targetSectionHint?: string
+) => {
+  // Auto-detect metrics from input data
+  const textContent = typeof inputData === 'string' 
+    ? inputData 
+    : JSON.stringify(inputData);
+  
+  const detectedMetrics = extractMetricsFromText(textContent);
+  const derivedMetrics = calculateDerivedMetrics(detectedMetrics);
+  
+  await supabase.from('profile_enrichment_queue').insert({
+    company_id: companyId,
+    source_type: sourceType,
+    source_tool: sourceTool,
+    input_data: inputData,
+    target_section_hint: targetSectionHint,
+    metrics_detected: Object.keys(derivedMetrics).length > 0 ? derivedMetrics : null
+  });
+};
+```
 
-| Source Tool | Input Type | Target Section(s) |
-|-------------|------------|-------------------|
-| TAM Calculator | Market segments, TAM values | `target_customer` |
-| TAM Calculator | ACV per segment | `business_model` |
-| Venture Scale Diagnostic | ACV input | `business_model` |
-| Venture Scale Diagnostic | Rating/verdict | `traction_proof` context |
-| Pain Validator | Urgency/frequency scores | `problem_core` |
-| Evidence Threshold | Evidence sources | `problem_core` |
-| Business Model Stress Test | Revenue projections | `business_model` |
-| Improve Score (Problem) | User answers | `problem_core` |
-| Improve Score (Team) | User answers | `team_story` |
-| Moat Durability | Competitive moat analysis | `competitive_moat` |
+### Phase 4: Integrate Remaining Tools
+
+Add enrichment logging to all 21 unintegrated tools. Each tool's `onSave` or `onUpdate` handler will call `addEnrichment()`.
+
+**Example for BusinessModelStressTestCard:**
+```typescript
+const handleSave = () => {
+  if (currentData) {
+    onUpdate?.(currentData);
+    
+    // Log enrichment with detected metrics
+    addEnrichment(
+      'business_model_stress_test',
+      'BusinessModelStressTestCard',
+      {
+        overallResilience: currentData.overallResilience,
+        scenarios: currentData.scenarios,
+        // Any revenue/margin data from scenarios
+      },
+      'business_model'
+    );
+  }
+  setIsEditing(false);
+};
+```
+
+### Phase 5: Enhanced AI Sync with Metric Processing
+
+Update `sync-profile-enrichments` edge function to:
+
+1. **Aggregate all detected metrics** from pending enrichments
+2. **Reconcile conflicts** (prioritize more recent, higher confidence)
+3. **Calculate derived metrics**
+4. **Update `unit_economics_json`** in memo_responses
+5. **Synthesize text into profile sections** (existing behavior)
+
+```typescript
+// In sync-profile-enrichments/index.ts
+
+// Step 1: Aggregate metrics from all enrichments
+const allMetrics: ExtractedMetrics[] = [];
+for (const enrichment of enrichments) {
+  if (enrichment.metrics_detected) {
+    allMetrics.push({
+      ...enrichment.metrics_detected,
+      source: enrichment.source_tool,
+      timestamp: enrichment.created_at
+    });
+  }
+}
+
+// Step 2: Reconcile and calculate derived metrics
+const reconciledMetrics = reconcileMetrics(allMetrics);
+const derivedMetrics = calculateDerivedMetrics(reconciledMetrics);
+
+// Step 3: Update unit_economics_json
+if (Object.keys(derivedMetrics).length > 0) {
+  const existingMetrics = await getExistingMetrics(companyId);
+  const mergedMetrics = mergeMetrics(existingMetrics, derivedMetrics);
+  
+  await supabaseClient
+    .from("memo_responses")
+    .upsert({
+      company_id: companyId,
+      question_key: "unit_economics_json",
+      answer: JSON.stringify(mergedMetrics),
+      source: "enrichment_sync"
+    });
+}
+```
+
+### Phase 6: Derived Metric Calculations
+
+The system will automatically calculate:
+
+| If We Have | We Calculate |
+|------------|--------------|
+| ARR | MRR = ARR / 12 |
+| MRR | ARR = MRR × 12 |
+| ARR + Customers | ACV = ARR / Customers |
+| ACV + Customers | ARR = ACV × Customers |
+| LTV + CAC | LTV:CAC Ratio = LTV / CAC |
+| CAC + LTV:CAC | LTV = CAC × Ratio |
+| Burn Rate + Cash | Runway = Cash / Burn Rate |
+| MRR + Churn Rate | LTV = MRR / Churn Rate |
+| CAC + MRR | Payback Months = CAC / MRR |
+
+### Phase 7: Calculator Integration
+
+Update RaiseCalculator and ValuationCalculator to also log enrichments:
+
+```typescript
+// In RaiseCalculator.tsx handleConfirmRaise
+addEnrichment(
+  'raise_calculator',
+  'RaiseCalculator',
+  {
+    monthlyBurn,
+    currentMRR,
+    monthlyMRRGrowth,
+    projectedARR,
+    runway: totalRunway
+  },
+  'business_model'
+);
+```
+
+### Phase 8: Workshop Metric Extraction
+
+When workshop answers are saved, extract any metrics mentioned:
+
+```typescript
+// In WorkshopSection.tsx handleBlur
+const detectedMetrics = extractMetricsFromText(answer);
+if (Object.keys(detectedMetrics).length > 0) {
+  addEnrichment(
+    'workshop',
+    `workshop_${template.section_key}`,
+    { answer, detectedMetrics },
+    template.section_key
+  );
+}
+```
 
 ---
 
@@ -197,48 +305,113 @@ Define how each input type maps to profile sections:
 ### New Files
 | File | Purpose |
 |------|---------|
-| `supabase/functions/sync-profile-enrichments/index.ts` | AI synthesis edge function |
-| `src/hooks/useProfileEnrichments.ts` | Hook to fetch pending enrichments and trigger sync |
-| `src/components/profile/EnrichmentSyncBanner.tsx` | UI component showing pending enrichments |
+| `src/lib/metricExtractor.ts` | Regex + calculation logic for metric extraction |
 
 ### Modified Files
+
+**Database:**
 | File | Change |
 |------|--------|
-| `supabase/migrations/[new]_create_enrichment_queue.sql` | Create `profile_enrichment_queue` table |
-| `src/components/memo/tools/MarketTAMCalculator.tsx` | Add enrichment queue logging on save |
-| `src/components/memo/tools/ProblemEvidenceThreshold.tsx` | Add enrichment queue logging |
-| `src/components/memo/ImprovementQuestionCard.tsx` | Persist to enrichment queue |
-| `src/pages/VentureScaleDiagnostic.tsx` | Log ACV and result to enrichment queue |
-| `src/pages/CompanyProfileEdit.tsx` | Add sync banner and auto-sync trigger |
-| ~15 other tool components | Add enrichment queue logging |
+| Migration | Add `metrics_detected` column to `profile_enrichment_queue` |
+
+**Enrichment System:**
+| File | Change |
+|------|--------|
+| `src/hooks/useProfileEnrichments.ts` | Add metric detection to `addEnrichment()` |
+| `supabase/functions/sync-profile-enrichments/index.ts` | Add metric aggregation, reconciliation, and storage |
+
+**Strategic Tools (15 files):**
+| File | Change |
+|------|--------|
+| `src/components/memo/tools/ProblemEvidenceThreshold.tsx` | Add enrichment logging |
+| `src/components/memo/tools/ProblemFounderBlindSpot.tsx` | Add enrichment logging |
+| `src/components/memo/tools/SolutionTechnicalDefensibility.tsx` | Add enrichment logging |
+| `src/components/memo/tools/SolutionCommoditizationTeardown.tsx` | Add enrichment logging |
+| `src/components/memo/tools/SolutionCompetitorBuildAnalysis.tsx` | Add enrichment logging |
+| `src/components/memo/tools/MarketReadinessIndexCard.tsx` | Add enrichment logging |
+| `src/components/memo/tools/MarketVCNarrativeCard.tsx` | Add enrichment logging |
+| `src/components/memo/tools/CompetitionChessboardCard.tsx` | Add enrichment logging |
+| `src/components/memo/tools/CompetitionMoatDurabilityCard.tsx` | Add enrichment logging |
+| `src/components/memo/tools/BusinessModelStressTestCard.tsx` | Add enrichment logging |
+| `src/components/memo/tools/TractionDepthTestCard.tsx` | Add enrichment logging |
+| `src/components/memo/tools/TeamCredibilityGapCard.tsx` | Add enrichment logging |
+| `src/components/memo/tools/VisionMilestoneMapCard.tsx` | Add enrichment logging |
+| `src/components/memo/tools/VisionScenarioPlanningCard.tsx` | Add enrichment logging |
+| `src/components/memo/tools/VisionExitNarrativeCard.tsx` | Add enrichment logging |
+
+**Calculators:**
+| File | Change |
+|------|--------|
+| `src/pages/RaiseCalculator.tsx` | Add enrichment logging |
+| `src/pages/ValuationCalculator.tsx` | Add enrichment logging |
+
+**Workshop:**
+| File | Change |
+|------|--------|
+| `src/components/workshop/WorkshopSection.tsx` | Add metric extraction on save |
 
 ---
 
 ## User Experience Flow
 
-1. **User fills TAM Calculator** → Numbers saved to `profile_enrichment_queue`
-2. **User answers "Improve Your Score"** → Answers saved to queue
-3. **User runs Venture Scale Diagnostic** → ACV and insights saved to queue
-4. **User visits "My Profile"** → Banner shows "3 new insights available"
-5. **User clicks "Sync to Profile"** → AI merges all inputs intelligently
-6. **Profile sections updated** → Toast shows "Market section updated with TAM data"
-7. **User regenerates audit** → Full VC analysis now includes all the data
+1. **User opens TAM Calculator** → enters 500 SMBs at $10k ACV
+2. **System detects**: ACV = $10,000, Customer Segment = 500
+3. **User visits My Profile** → sees "5 new insights to sync"
+4. **AI Sync runs**:
+   - Merges TAM data into Target Customer section
+   - Extracts ACV ($10k) → calculates if user has ARR, derives customer count
+   - Updates `unit_economics_json` with ACV: 10000
+5. **Financial Metrics Dashboard** now displays ACV alongside other metrics
+6. **User regenerates audit** → all tools use consistent $10k ACV
 
 ---
 
-## Edge Cases Handled
+## Example: Smart Metric Calculation
 
-- **Conflicting data**: AI notes conflicts in a dedicated field for founder review
-- **Duplicate inputs**: Queue is deduplicated by source + data hash
-- **Empty inputs**: Filtered out before AI processing
-- **Large queue**: Processed in batches of 50 enrichments
-- **AI failure**: Graceful fallback, queue items remain unprocessed
+**User inputs in Traction section:**
+> "We closed 2 enterprise deals this quarter for a total of €100k ARR"
+
+**System extracts:**
+- ARR: €100,000
+- Customers: 2
+
+**System calculates:**
+- MRR: €8,333 (ARR / 12)
+- ACV: €50,000 (ARR / Customers)
+
+**Stored in `unit_economics_json`:**
+```json
+{
+  "arr": "100000",
+  "mrr": "8333",
+  "customers": "2",
+  "acv": "50000",
+  "source_confidence": "high",
+  "last_updated": "2026-01-27T12:00:00Z"
+}
+```
+
+**Displayed in Financial Metrics Dashboard:**
+- ARR: €100K
+- MRR: €8.3K
+- ACV: €50K
+- Customers: 2
 
 ---
 
-## Success Metrics
+## Technical Considerations
 
-- Profile completion rate increases after tool usage
-- Regenerated audits contain richer, more accurate data
-- User engagement with profile editing increases
-- Time-to-complete profile decreases
+1. **Conflict Resolution**: When multiple sources provide different values, use:
+   - Most recent timestamp wins
+   - Explicit user input (UnitEconomicsEditor) overrides extracted values
+   - Flag large discrepancies for user review
+
+2. **Currency Handling**: Normalize all values to a base currency (EUR) with exchange rate at extraction time
+
+3. **Confidence Scoring**: Track confidence levels:
+   - `high`: Explicit numeric input (UnitEconomicsEditor, calculators)
+   - `medium`: Extracted from structured tool data (TAM segments)
+   - `low`: Extracted from freeform text via regex
+
+4. **Audit Trail**: Store extraction source and timestamp in the enrichment queue for debugging
+
