@@ -3,6 +3,7 @@ import { DoorOpen, Building2, DollarSign } from "lucide-react";
 import { EditableToolCard } from "./EditableToolCard";
 import { ExitNarrative, EditableTool } from "@/types/memo";
 import { safeText, safeArray, mergeToolData } from "@/lib/toolDataUtils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface VisionExitNarrativeCardProps {
   data: EditableTool<ExitNarrative>;
@@ -11,6 +12,7 @@ interface VisionExitNarrativeCardProps {
 
 export const VisionExitNarrativeCard = ({ data, onUpdate }: VisionExitNarrativeCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const { addEnrichment } = useAddEnrichment();
   
   // Early return if data is invalid
   if (!data?.aiGenerated) {
@@ -35,7 +37,20 @@ export const VisionExitNarrativeCard = ({ data, onUpdate }: VisionExitNarrativeC
       ]}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
+      onSave={() => {
+        setIsEditing(false);
+        addEnrichment('exit_narrative', 'VisionExitNarrativeCard', {
+          potentialAcquirers,
+          strategicValue,
+          comparableExits: comparableExits.map(e => ({
+            company: safeText(e?.company),
+            acquirer: safeText(e?.acquirer),
+            value: safeText(e?.value),
+            multiple: safeText(e?.multiple)
+          })),
+          pathToExit
+        }, 'vision_ask');
+      }}
       accentColor="emerald"
     >
       {/* Potential Acquirers */}

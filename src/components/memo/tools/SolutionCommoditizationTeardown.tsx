@@ -4,6 +4,7 @@ import { EditableToolCard } from "./EditableToolCard";
 import { CommoditizationTeardown, FeatureCommoditization, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
 import { safeText, safeArray, mergeToolData, isValidEditableTool } from "@/lib/toolDataUtils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface SolutionCommoditizationTeardownProps {
   data: EditableTool<CommoditizationTeardown>;
@@ -18,6 +19,7 @@ export const SolutionCommoditizationTeardown = ({ data, onUpdate }: SolutionComm
 
   const [isEditing, setIsEditing] = useState(false);
   const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
+  const { addEnrichment } = useAddEnrichment();
 
   const features = safeArray<FeatureCommoditization>(currentData?.features);
   const overallRisk = safeText(currentData?.overallRisk) || "Medium";
@@ -42,7 +44,18 @@ export const SolutionCommoditizationTeardown = ({ data, onUpdate }: SolutionComm
       ]}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
+      onSave={() => {
+        setIsEditing(false);
+        addEnrichment('commoditization_teardown', 'SolutionCommoditizationTeardown', {
+          overallRisk,
+          features: features.map(f => ({
+            feature: safeText(f?.feature),
+            risk: safeText(f?.commoditizationRisk),
+            timeToClone: safeText(f?.timeToClone),
+            defensibility: safeText(f?.defensibility)
+          }))
+        }, 'solution_core');
+      }}
       accentColor="amber"
     >
       {/* Overall Risk */}

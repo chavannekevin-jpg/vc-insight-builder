@@ -4,6 +4,7 @@ import { EditableToolCard } from "./EditableToolCard";
 import { VCMarketNarrative, EditableTool } from "@/types/memo";
 import { Textarea } from "@/components/ui/textarea";
 import { safeText, mergeToolData, isValidEditableTool } from "@/lib/toolDataUtils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface MarketVCNarrativeCardProps {
   data: EditableTool<VCMarketNarrative>;
@@ -19,6 +20,7 @@ export const MarketVCNarrativeCard = ({ data, onUpdate }: MarketVCNarrativeCardP
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(data.userOverrides || data.aiGenerated);
   const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
+  const { addEnrichment } = useAddEnrichment();
 
   const pitchToIC = safeText(currentData?.pitchToIC);
   const marketTiming = safeText(currentData?.marketTiming);
@@ -27,6 +29,11 @@ export const MarketVCNarrativeCard = ({ data, onUpdate }: MarketVCNarrativeCardP
   const handleSave = () => {
     onUpdate?.(editData);
     setIsEditing(false);
+    addEnrichment('vc_narrative', 'MarketVCNarrativeCard', {
+      pitchToIC,
+      marketTiming,
+      whyNow
+    }, 'target_customer');
   };
 
   return (

@@ -3,6 +3,7 @@ import { EyeOff, AlertCircle } from "lucide-react";
 import { EditableToolCard } from "./EditableToolCard";
 import { FounderBlindSpot, EditableTool } from "@/types/memo";
 import { safeText, safeArray, mergeToolData, isValidEditableTool } from "@/lib/toolDataUtils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface ProblemFounderBlindSpotProps {
   data: EditableTool<FounderBlindSpot>;
@@ -17,6 +18,7 @@ export const ProblemFounderBlindSpot = ({ data, onUpdate }: ProblemFounderBlindS
 
   const [isEditing, setIsEditing] = useState(false);
   const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
+  const { addEnrichment } = useAddEnrichment();
 
   const potentialExaggerations = safeArray<string>(currentData?.potentialExaggerations);
   const misdiagnoses = safeArray<string>(currentData?.misdiagnoses);
@@ -34,7 +36,15 @@ export const ProblemFounderBlindSpot = ({ data, onUpdate }: ProblemFounderBlindS
       ]}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
+      onSave={() => {
+        setIsEditing(false);
+        addEnrichment('founder_blind_spot', 'ProblemFounderBlindSpot', {
+          potentialExaggerations,
+          misdiagnoses,
+          assumptions,
+          commonMistakes
+        }, 'problem_core');
+      }}
       accentColor="amber"
     >
       <div className="space-y-4">

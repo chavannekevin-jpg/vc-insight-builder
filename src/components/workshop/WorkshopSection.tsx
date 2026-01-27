@@ -17,6 +17,7 @@ import { WorkshopPainMeter } from "./WorkshopPainMeter";
 import { WorkshopEvidenceChecklist } from "./WorkshopEvidenceChecklist";
 import { WorkshopDiscoveryPrompt } from "./WorkshopDiscoveryPrompt";
 import { WorkshopBlindSpotWarning } from "./WorkshopBlindSpotWarning";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface WorkshopSectionProps {
   template: WorkshopTemplate;
@@ -49,6 +50,7 @@ export function WorkshopSection({
 }: WorkshopSectionProps) {
   const [answer, setAnswer] = useState(response?.answer || "");
   const [hasChanges, setHasChanges] = useState(false);
+  const { addEnrichment } = useAddEnrichment();
 
   // Update local state when response changes
   useEffect(() => {
@@ -71,6 +73,12 @@ export function WorkshopSection({
     if (hasChanges && answer.trim().length > 0) {
       await onSave(answer);
       setHasChanges(false);
+      // Log to enrichment queue for profile accumulation
+      addEnrichment('workshop', `workshop_${template.section_key}`, {
+        section: template.section_key,
+        sectionTitle: template.section_title,
+        answer: answer
+      }, template.section_key);
     }
   };
 

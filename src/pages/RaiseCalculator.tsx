@@ -22,10 +22,12 @@ import {
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 export default function RaiseCalculator() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addEnrichment } = useAddEnrichment();
   
   // State
   const [companyId, setCompanyId] = useState<string | null>(null);
@@ -308,6 +310,20 @@ export default function RaiseCalculator() {
           console.error(`Error saving ${input.question_key}:`, error);
         }
       }
+
+      // Log to enrichment queue for profile accumulation
+      addEnrichment('raise_calculator', 'RaiseCalculator', {
+        monthlyBurn,
+        currentMRR,
+        monthlyMRRGrowth,
+        arrTarget,
+        recommendedRaise,
+        impliedValuation,
+        totalRunway,
+        projectedARR,
+        projectedMRR,
+        dilution: dilution[0]
+      }, 'business_model');
 
       toast({
         title: "Success",

@@ -4,6 +4,7 @@ import { EditableToolCard } from "./EditableToolCard";
 import { CompetitorBuildAnalysis, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
 import { safeText, safeArray, mergeToolData, isValidEditableTool } from "@/lib/toolDataUtils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface SolutionCompetitorBuildAnalysisProps {
   data: EditableTool<CompetitorBuildAnalysis>;
@@ -12,6 +13,7 @@ interface SolutionCompetitorBuildAnalysisProps {
 
 export const SolutionCompetitorBuildAnalysis = ({ data, onUpdate }: SolutionCompetitorBuildAnalysisProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const { addEnrichment } = useAddEnrichment();
 
   // Early return if data is invalid
   if (!isValidEditableTool<CompetitorBuildAnalysis>(data)) {
@@ -37,7 +39,16 @@ export const SolutionCompetitorBuildAnalysis = ({ data, onUpdate }: SolutionComp
       ]}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
+      onSave={() => {
+        setIsEditing(false);
+        addEnrichment('competitor_build_analysis', 'SolutionCompetitorBuildAnalysis', {
+          couldBeBuilt,
+          estimatedTime,
+          requiredResources,
+          barriers,
+          verdict
+        }, 'competitive_moat');
+      }}
       accentColor="red"
     >
       {/* Main Question */}

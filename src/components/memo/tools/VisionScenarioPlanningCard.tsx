@@ -4,6 +4,7 @@ import { EditableToolCard } from "./EditableToolCard";
 import { ScenarioPlanning, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
 import { safeText, safeNumber, mergeToolData } from "@/lib/toolDataUtils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface VisionScenarioPlanningCardProps {
   data: EditableTool<ScenarioPlanning>;
@@ -12,6 +13,7 @@ interface VisionScenarioPlanningCardProps {
 
 export const VisionScenarioPlanningCard = ({ data, onUpdate }: VisionScenarioPlanningCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const { addEnrichment } = useAddEnrichment();
   
   // Early return if data is invalid
   if (!data?.aiGenerated) {
@@ -44,7 +46,26 @@ export const VisionScenarioPlanningCard = ({ data, onUpdate }: VisionScenarioPla
       ]}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
+      onSave={() => {
+        setIsEditing(false);
+        addEnrichment('scenario_planning', 'VisionScenarioPlanningCard', {
+          bestCase: {
+            probability: safeNumber(bestCase?.probability, 33),
+            description: safeText(bestCase?.description),
+            fundraisingImplication: safeText(bestCase?.fundraisingImplication)
+          },
+          baseCase: {
+            probability: safeNumber(baseCase?.probability, 33),
+            description: safeText(baseCase?.description),
+            fundraisingImplication: safeText(baseCase?.fundraisingImplication)
+          },
+          downside: {
+            probability: safeNumber(downside?.probability, 33),
+            description: safeText(downside?.description),
+            fundraisingImplication: safeText(downside?.fundraisingImplication)
+          }
+        }, 'vision_ask');
+      }}
       accentColor="blue"
     >
       <div className="space-y-3">
