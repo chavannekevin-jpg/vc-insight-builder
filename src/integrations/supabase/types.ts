@@ -2183,6 +2183,60 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_enrichment_queue: {
+        Row: {
+          company_id: string
+          created_at: string
+          data_hash: string | null
+          id: string
+          input_data: Json
+          processed: boolean
+          processed_at: string | null
+          source_tool: string | null
+          source_type: string
+          target_section_hint: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          data_hash?: string | null
+          id?: string
+          input_data: Json
+          processed?: boolean
+          processed_at?: string | null
+          source_tool?: string | null
+          source_type: string
+          target_section_hint?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          data_hash?: string | null
+          id?: string
+          input_data?: Json
+          processed?: boolean
+          processed_at?: string | null
+          source_tool?: string | null
+          source_type?: string
+          target_section_hint?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_enrichment_queue_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_enrichment_queue_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           admin_notified_signup: boolean | null

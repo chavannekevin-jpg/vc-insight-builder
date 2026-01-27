@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
 import { AlertTriangle, Zap, Target, TrendingDown, ArrowRight, Sparkles, Home } from "lucide-react";
 import { ModernCard } from "@/components/ModernCard";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface DiagnosticData {
   acv: string;
@@ -53,6 +54,7 @@ export default function VentureScaleDiagnostic() {
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [result, setResult] = useState<DiagnosticResult | null>(null);
   const [marketContext, setMarketContext] = useState<MarketContext | null>(null);
+  const { addEnrichment } = useAddEnrichment();
   
   const [formData, setFormData] = useState<DiagnosticData>({
     acv: ""
@@ -183,6 +185,20 @@ export default function VentureScaleDiagnostic() {
           title: "Analysis complete",
           description: "Your venture scale diagnostic is ready."
         });
+        
+        // Log enrichment for profile sync
+        addEnrichment(
+          'venture_diagnostic',
+          'VentureScaleDiagnostic',
+          {
+            acv: parseFloat(formData.acv),
+            rating: data.result.rating,
+            ratingExplanation: data.result.ratingExplanation,
+            improvements: data.result.improvements,
+            verdict: data.result.verdict
+          },
+          'business_model'
+        );
       }
     } catch (error: any) {
       console.error("Diagnostic error:", error);
