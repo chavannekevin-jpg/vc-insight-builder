@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FlaskConical, AlertTriangle, TrendingDown } from "lucide-react";
 import { EditableToolCard } from "./EditableToolCard";
 import { ModelStressTest, EditableTool } from "@/types/memo";
 import { cn } from "@/lib/utils";
 import { safeText, safeArray, safeNumber, mergeToolData } from "@/lib/toolDataUtils";
-
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 interface BusinessModelStressTestProps {
   data: EditableTool<ModelStressTest>;
   onUpdate?: (data: Partial<ModelStressTest>) => void;
@@ -12,6 +12,7 @@ interface BusinessModelStressTestProps {
 
 export const BusinessModelStressTestCard = ({ data, onUpdate }: BusinessModelStressTestProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const { addEnrichment } = useAddEnrichment();
   
   // Early return if data is invalid - after hooks
   if (!data?.aiGenerated) {
@@ -48,9 +49,27 @@ export const BusinessModelStressTestCard = ({ data, onUpdate }: BusinessModelStr
         "Consider realistic downside scenarios",
         "Plan mitigations for each scenario"
       ]}
+      onSave={() => {
+        // Log enrichment when user saves changes
+        if (data.userOverrides) {
+          addEnrichment(
+            'business_model_stress_test',
+            'BusinessModelStressTestCard',
+            {
+              overallResilience: currentData.overallResilience,
+              scenarios: scenarios.map(s => ({
+                scenario: s.scenario,
+                impact: s.impact,
+                survivalProbability: s.survivalProbability
+              }))
+            },
+            'business_model'
+          );
+        }
+        setIsEditing(false);
+      }}
       isEditing={isEditing}
       onEditToggle={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
       accentColor="red"
     >
       {/* Overall Resilience */}

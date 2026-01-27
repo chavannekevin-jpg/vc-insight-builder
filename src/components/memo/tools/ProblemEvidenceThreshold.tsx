@@ -5,7 +5,7 @@ import { EvidenceThreshold, EditableTool } from "@/types/memo";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { safeText, safeArray, mergeToolData, isValidEditableTool } from "@/lib/toolDataUtils";
-
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 interface ProblemEvidenceThresholdProps {
   data: EditableTool<EvidenceThreshold>;
   onUpdate?: (data: Partial<EvidenceThreshold>) => void;
@@ -19,6 +19,7 @@ export const ProblemEvidenceThreshold = ({ data, onUpdate }: ProblemEvidenceThre
 
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(data.userOverrides || data.aiGenerated);
+  const { addEnrichment } = useAddEnrichment();
 
   const currentData = mergeToolData(data.aiGenerated, data.userOverrides);
   
@@ -43,6 +44,17 @@ export const ProblemEvidenceThreshold = ({ data, onUpdate }: ProblemEvidenceThre
 
   const handleSave = () => {
     onUpdate?.(editData);
+    addEnrichment(
+      'evidence_threshold',
+      'ProblemEvidenceThreshold',
+      {
+        evidenceGrade,
+        verifiedPain,
+        unverifiedPain,
+        missingEvidence
+      },
+      'problem_core'
+    );
     setIsEditing(false);
   };
 
