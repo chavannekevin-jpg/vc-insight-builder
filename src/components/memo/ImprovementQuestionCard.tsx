@@ -9,6 +9,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface ImprovementQuestion {
   id: string;
@@ -40,12 +41,27 @@ export function ImprovementQuestionCard({
   const [showInput, setShowInput] = useState(false);
   const [localAnswer, setLocalAnswer] = useState(inlineAnswer);
   const [saved, setSaved] = useState(false);
+  const { addEnrichment } = useAddEnrichment();
 
   const handleSaveAnswer = () => {
     if (localAnswer.trim()) {
       onAnswerInline(question.id, localAnswer.trim());
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
+      
+      // Log enrichment for profile sync
+      addEnrichment(
+        'improve_score',
+        `improve_score_${section}`,
+        {
+          question: question.question,
+          answer: localAnswer.trim(),
+          section: section,
+          suggestionTitle: suggestionTitle,
+          impact: impact
+        },
+        section
+      );
     }
   };
 

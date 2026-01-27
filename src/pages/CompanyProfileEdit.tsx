@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CompanyReadinessScore } from "@/components/CompanyReadinessScore";
 import { JoinAcceleratorCard } from "@/components/portal/JoinAcceleratorCard";
+import { EnrichmentSyncBanner } from "@/components/profile/EnrichmentSyncBanner";
+import { useProfileEnrichments } from "@/hooks/useProfileEnrichments";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -42,6 +44,16 @@ export default function CompanyProfileEdit() {
   const [acceleratorName, setAcceleratorName] = useState<string | null>(null);
   const [sectionData, setSectionData] = useState<SectionData>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Profile enrichments hook
+  const { 
+    pendingEnrichments, 
+    pendingCount, 
+    syncing, 
+    lastSyncedAt, 
+    syncEnrichments,
+    fetchPendingEnrichments 
+  } = useProfileEnrichments(companyId || null);
 
   useEffect(() => {
     loadCompanyProfile();
@@ -325,6 +337,19 @@ export default function CompanyProfileEdit() {
               Complete your company profile to streamline memo generation
             </p>
           </div>
+
+          {/* Enrichment Sync Banner */}
+          <EnrichmentSyncBanner
+            pendingCount={pendingCount}
+            pendingEnrichments={pendingEnrichments}
+            syncing={syncing}
+            lastSyncedAt={lastSyncedAt}
+            onSync={async () => {
+              await syncEnrichments();
+              // Reload profile data after sync
+              loadCompanyProfile();
+            }}
+          />
 
           {/* Readiness Score */}
           <Card>

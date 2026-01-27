@@ -5,6 +5,7 @@ import { BottomsUpTAM, TAMSegment, EditableTool } from "@/types/memo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { safeText, safeArray, safeNumber, mergeToolData, isValidEditableTool } from "@/lib/toolDataUtils";
+import { useAddEnrichment } from "@/hooks/useProfileEnrichments";
 
 interface MarketTAMCalculatorProps {
   data: EditableTool<BottomsUpTAM>;
@@ -14,6 +15,7 @@ interface MarketTAMCalculatorProps {
 export const MarketTAMCalculator = ({ data, onUpdate }: MarketTAMCalculatorProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<BottomsUpTAM | null>(null);
+  const { addEnrichment } = useAddEnrichment();
   
   // Initialize editData when data changes
   const aiData = data?.aiGenerated;
@@ -78,7 +80,28 @@ export const MarketTAMCalculator = ({ data, onUpdate }: MarketTAMCalculatorProps
   };
 
   const handleSave = () => {
-    if (localEditData) onUpdate?.(localEditData);
+    if (localEditData) {
+      onUpdate?.(localEditData);
+      
+      // Log enrichment for profile sync
+      addEnrichment(
+        'tam_calculator',
+        'MarketTAMCalculator',
+        {
+          totalTAM: localEditData.totalTAM,
+          sam: localEditData.sam,
+          som: localEditData.som,
+          segments: safeArray<TAMSegment>(localEditData.targetSegments).map(s => ({
+            segment: s.segment,
+            count: s.count,
+            acv: s.acv,
+            tam: s.tam
+          })),
+          methodology: localEditData.methodology
+        },
+        'target_customer'
+      );
+    }
     setIsEditing(false);
   };
 
