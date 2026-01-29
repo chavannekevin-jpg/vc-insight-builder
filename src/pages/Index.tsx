@@ -109,6 +109,9 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Platform Flow Infographic - Second "page" */}
+        <PlatformFlowInfographic />
+
         {/* How It Works Section */}
         <section className="py-20 px-4">
           <div className="max-w-5xl mx-auto">
@@ -200,9 +203,6 @@ const Index = () => {
             </div>
           </div>
         </section>
-
-        {/* Platform Flow Infographic */}
-        <PlatformFlowInfographic />
 
         {/* What You Get Section */}
         <section className="py-20 px-4">
