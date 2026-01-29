@@ -6,7 +6,9 @@ import {
   Telescope,
   Users,
   ArrowRight,
-  Zap
+  FileText,
+  BarChart3,
+  Database
 } from "lucide-react";
 
 const PlatformFlowInfographic = () => {
@@ -116,8 +118,8 @@ const PlatformFlowInfographic = () => {
             variants={itemVariants}
             className="flex-1 relative"
           >
-            {/* Single unified input card with streaming data effect */}
-            <div className="relative p-6 rounded-2xl bg-gradient-to-br from-card/30 to-transparent backdrop-blur-sm border border-border/20">
+            {/* Single unified input card - brighter */}
+            <div className="relative p-6 rounded-2xl bg-gradient-to-br from-card/60 to-card/30 backdrop-blur-sm border border-primary/20">
               {/* Floating data particles inside */}
               <div className="absolute inset-0 overflow-hidden rounded-2xl">
                 {!shouldReduceMotion && [...Array(8)].map((_, i) => (
@@ -131,14 +133,18 @@ const PlatformFlowInfographic = () => {
                 ))}
               </div>
               
-              {/* Simple text labels floating */}
+              {/* Input items with distinct icons */}
               <div className="relative space-y-3">
-                {["Pitch Deck", "Metrics", "Data"].map((label, idx) => (
+                {[
+                  { label: "Pitch Deck", Icon: FileText },
+                  { label: "Metrics", Icon: BarChart3 },
+                  { label: "Data", Icon: Database },
+                ].map((item, idx) => (
                   <motion.div
-                    key={label}
+                    key={item.label}
                     animate={shouldReduceMotion ? {} : {
                       x: [0, 5, 0],
-                      opacity: [0.6, 1, 0.6],
+                      opacity: [0.8, 1, 0.8],
                     }}
                     transition={{
                       duration: 2 + idx * 0.5,
@@ -146,19 +152,19 @@ const PlatformFlowInfographic = () => {
                       repeat: Infinity,
                       ease: "easeInOut" as const,
                     }}
-                    className="flex items-center gap-2 text-sm text-muted-foreground"
+                    className="flex items-center gap-2 text-sm text-foreground/90"
                   >
-                    <Zap className="w-3 h-3 text-primary/60" />
-                    <span>{label}</span>
+                    <item.Icon className="w-4 h-4 text-primary" />
+                    <span>{item.label}</span>
                   </motion.div>
                 ))}
               </div>
               
               {/* Corner accent */}
               <motion.div
-                animate={shouldReduceMotion ? {} : { scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                animate={shouldReduceMotion ? {} : { scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" as const }}
-                className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary/40"
+                className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary/50"
               />
             </div>
           </motion.div>
@@ -350,16 +356,20 @@ const PlatformFlowInfographic = () => {
             variants={itemVariants}
             className="w-full p-4 rounded-xl bg-gradient-to-br from-card/30 to-transparent backdrop-blur-sm border border-border/20"
           >
-            <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-              {["Deck", "Metrics", "Data"].map((label, idx) => (
+            <div className="flex items-center justify-center gap-4 text-sm text-foreground/90">
+              {[
+                { label: "Deck", Icon: FileText },
+                { label: "Metrics", Icon: BarChart3 },
+                { label: "Data", Icon: Database },
+              ].map((item, idx) => (
                 <motion.span
-                  key={label}
-                  animate={shouldReduceMotion ? {} : { opacity: [0.5, 1, 0.5] }}
+                  key={item.label}
+                  animate={shouldReduceMotion ? {} : { opacity: [0.7, 1, 0.7] }}
                   transition={{ duration: 2, delay: idx * 0.3, repeat: Infinity }}
                   className="flex items-center gap-1"
                 >
-                  <Zap className="w-3 h-3 text-primary/60" />
-                  {label}
+                  <item.Icon className="w-3 h-3 text-primary" />
+                  {item.label}
                 </motion.span>
               ))}
             </div>
