@@ -10,15 +10,45 @@ import {
   BarChart3,
   Database
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const PlatformFlowInfographic = () => {
   const shouldReduceMotion = useReducedMotion();
 
   const outputItems = [
-    { icon: FileSearch, label: "Full Audit", desc: "8-Dimension Score", delay: 0 },
-    { icon: Wrench, label: "23+ Tools", desc: "Diagnostic Suite", delay: 0.15 },
-    { icon: Telescope, label: "Market Lens", desc: "Intelligence Brief", delay: 0.3 },
-    { icon: Users, label: "800+ Investors", desc: "Matched Network", delay: 0.45 },
+    { 
+      icon: FileSearch, 
+      label: "Full Audit", 
+      desc: "8-Dimension Score", 
+      delay: 0,
+      tooltip: "Comprehensive analysis across 8 key dimensions: Problem, Solution, Market, Business Model, Traction, Team, Financials, and Ask. Each scored with actionable feedback."
+    },
+    { 
+      icon: Wrench, 
+      label: "23+ Tools", 
+      desc: "Diagnostic Suite", 
+      delay: 0.15,
+      tooltip: "Access strategic tools including TAM Calculator, Unit Economics Analyzer, Competitive Matrix, Valuation Model, Cap Table Simulator, and more."
+    },
+    { 
+      icon: Telescope, 
+      label: "Market Lens", 
+      desc: "Intelligence Brief", 
+      delay: 0.3,
+      tooltip: "Real-time market intelligence with competitor analysis, industry benchmarks, funding trends, and positioning insights tailored to your sector."
+    },
+    { 
+      icon: Users, 
+      label: "800+ Investors", 
+      desc: "Matched Network", 
+      delay: 0.45,
+      tooltip: "AI-matched investor recommendations based on your stage, sector, geography, and raise amount. Direct access to VCs, angels, and family offices."
+    },
   ];
 
   const containerVariants = {
@@ -298,49 +328,57 @@ const PlatformFlowInfographic = () => {
           </motion.div>
 
           {/* OUTPUT SECTION */}
-          <div className="flex-1 flex flex-col gap-3">
-            {outputItems.map((item, idx) => (
-              <motion.div
-                key={item.label}
-                variants={itemVariants}
-                custom={idx}
-                whileHover={{ scale: 1.02, x: 5 }}
-                className="group relative"
-              >
-                <motion.div
-                  animate={shouldReduceMotion ? {} : {
-                    y: [0, -3, 0],
-                  }}
-                  transition={{
-                    duration: 2 + idx * 0.3,
-                    delay: idx * 0.2,
-                    repeat: Infinity,
-                    ease: "easeInOut" as const,
-                  }}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-card/40 backdrop-blur-sm border border-border/30 hover:border-secondary/40 hover:bg-card/60 transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--secondary)/0.2)]"
-                >
-                  <motion.div
-                    animate={shouldReduceMotion ? {} : {
-                      scale: [1, 1.15, 1],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      delay: idx * 0.3,
-                      repeat: Infinity,
-                      ease: "easeInOut" as const,
-                    }}
-                    className="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary/20 to-primary/10 border border-secondary/20 flex items-center justify-center group-hover:scale-110 transition-transform"
-                  >
-                    <item.icon className="w-5 h-5 text-secondary" />
-                  </motion.div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-foreground">{item.label}</span>
-                    <span className="text-[10px] text-muted-foreground">{item.desc}</span>
-                  </div>
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
+          <TooltipProvider delayDuration={100}>
+            <div className="flex-1 flex flex-col gap-3">
+              {outputItems.map((item, idx) => (
+                <Tooltip key={item.label}>
+                  <TooltipTrigger asChild>
+                    <motion.div
+                      variants={itemVariants}
+                      custom={idx}
+                      whileHover={{ scale: 1.02, x: 5 }}
+                      className="group relative cursor-pointer"
+                    >
+                      <motion.div
+                        animate={shouldReduceMotion ? {} : {
+                          y: [0, -3, 0],
+                        }}
+                        transition={{
+                          duration: 2 + idx * 0.3,
+                          delay: idx * 0.2,
+                          repeat: Infinity,
+                          ease: "easeInOut" as const,
+                        }}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-card/40 backdrop-blur-sm border border-border/30 hover:border-secondary/40 hover:bg-card/60 transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--secondary)/0.2)]"
+                      >
+                        <motion.div
+                          animate={shouldReduceMotion ? {} : {
+                            scale: [1, 1.15, 1],
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            delay: idx * 0.3,
+                            repeat: Infinity,
+                            ease: "easeInOut" as const,
+                          }}
+                          className="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary/20 to-primary/10 border border-secondary/20 flex items-center justify-center group-hover:scale-110 transition-transform"
+                        >
+                          <item.icon className="w-5 h-5 text-secondary" />
+                        </motion.div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-foreground">{item.label}</span>
+                          <span className="text-[10px] text-muted-foreground">{item.desc}</span>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="max-w-xs">
+                    <p className="text-sm">{item.tooltip}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          </TooltipProvider>
         </motion.div>
 
         {/* Mobile Layout - Vertical Flow */}
@@ -419,25 +457,33 @@ const PlatformFlowInfographic = () => {
           </motion.div>
 
           {/* Outputs Row - Mobile */}
-          <div className="grid grid-cols-2 gap-3 w-full">
-            {outputItems.map((item, idx) => (
-              <motion.div
-                key={item.label}
-                variants={itemVariants}
-                animate={shouldReduceMotion ? {} : { y: [0, -2, 0] }}
-                transition={{ duration: 2, delay: idx * 0.2, repeat: Infinity }}
-                className="flex items-center gap-2 p-3 rounded-xl bg-card/40 backdrop-blur-sm border border-border/30"
-              >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-primary/10 border border-secondary/20 flex items-center justify-center">
-                  <item.icon className="w-4 h-4 text-secondary" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-medium text-foreground">{item.label}</span>
-                  <span className="text-[9px] text-muted-foreground">{item.desc}</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <TooltipProvider delayDuration={100}>
+            <div className="grid grid-cols-2 gap-3 w-full">
+              {outputItems.map((item, idx) => (
+                <Tooltip key={item.label}>
+                  <TooltipTrigger asChild>
+                    <motion.div
+                      variants={itemVariants}
+                      animate={shouldReduceMotion ? {} : { y: [0, -2, 0] }}
+                      transition={{ duration: 2, delay: idx * 0.2, repeat: Infinity }}
+                      className="flex items-center gap-2 p-3 rounded-xl bg-card/40 backdrop-blur-sm border border-border/30 cursor-pointer"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-primary/10 border border-secondary/20 flex items-center justify-center">
+                        <item.icon className="w-4 h-4 text-secondary" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-medium text-foreground">{item.label}</span>
+                        <span className="text-[9px] text-muted-foreground">{item.desc}</span>
+                      </div>
+                    </motion.div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs">
+                    <p className="text-sm">{item.tooltip}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          </TooltipProvider>
         </motion.div>
       </div>
     </section>
