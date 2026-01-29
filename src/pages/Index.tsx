@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/sections/Footer";
+import PlatformFlowInfographic from "@/components/sections/PlatformFlowInfographic";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   ArrowRight, 
   Zap, 
   Building2, 
@@ -199,6 +200,9 @@ const Index = () => {
             </div>
           </div>
         </section>
+
+        {/* Platform Flow Infographic */}
+        <PlatformFlowInfographic />
 
         {/* What You Get Section */}
         <section className="py-20 px-4">
