@@ -1,27 +1,17 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { 
-  FileText, 
-  BarChart3, 
-  MessageSquare, 
-  Database,
   Brain,
   FileSearch,
   Wrench,
   Telescope,
   Users,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Zap
 } from "lucide-react";
 
 const PlatformFlowInfographic = () => {
   const shouldReduceMotion = useReducedMotion();
-
-  const inputItems = [
-    { icon: FileText, label: "Pitch Deck", delay: 0 },
-    { icon: BarChart3, label: "Metrics", delay: 0.1 },
-    { icon: MessageSquare, label: "Questions", delay: 0.2 },
-    { icon: Database, label: "Data", delay: 0.3 },
-  ];
 
   const outputItems = [
     { icon: FileSearch, label: "Full Audit", desc: "8-Dimension Score", delay: 0 },
@@ -35,8 +25,8 @@ const PlatformFlowInfographic = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: shouldReduceMotion ? 0 : 0.1,
-        delayChildren: 0.2,
+        staggerChildren: shouldReduceMotion ? 0 : 0.08,
+        delayChildren: 0.1,
       },
     },
   };
@@ -49,29 +39,50 @@ const PlatformFlowInfographic = () => {
       scale: 1,
       transition: {
         type: "spring" as const,
-        stiffness: 100,
-        damping: 15,
+        stiffness: 120,
+        damping: 12,
       },
     },
   };
 
-  const floatAnimation = shouldReduceMotion ? undefined : {
-    y: [0, -8, 0],
-    transition: {
-      duration: 3,
-      repeat: Infinity,
-      ease: "easeInOut" as const,
-    },
-  };
+  // Continuous floating particles animation
+  const FloatingParticle = ({ delay, duration, startX, startY }: { delay: number; duration: number; startX: number; startY: number }) => (
+    <motion.div
+      className="absolute w-2 h-2 rounded-full bg-gradient-to-r from-primary/60 to-secondary/40"
+      initial={{ x: startX, y: startY, opacity: 0, scale: 0 }}
+      animate={shouldReduceMotion ? {} : {
+        x: [startX, startX + 150, startX + 300],
+        y: [startY, startY - 20 + Math.random() * 40, startY],
+        opacity: [0, 0.8, 0],
+        scale: [0.5, 1, 0.5],
+      }}
+      transition={{
+        duration,
+        delay,
+        repeat: Infinity,
+        ease: "easeInOut" as const,
+      }}
+    />
+  );
 
-  const pulseAnimation = shouldReduceMotion ? undefined : {
-    scale: [1, 1.05, 1],
-    transition: {
-      duration: 2,
-      repeat: Infinity,
-      ease: "easeInOut" as const,
-    },
-  };
+  // Data stream line animation
+  const DataStream = ({ delay }: { delay: number }) => (
+    <motion.div
+      className="absolute h-px bg-gradient-to-r from-primary/50 via-primary to-primary/50"
+      style={{ width: '60px' }}
+      initial={{ x: -60, opacity: 0 }}
+      animate={shouldReduceMotion ? {} : {
+        x: [-60, 200],
+        opacity: [0, 1, 1, 0],
+      }}
+      transition={{
+        duration: 2,
+        delay,
+        repeat: Infinity,
+        ease: "linear" as const,
+      }}
+    />
+  );
 
   return (
     <section className="py-16 md:py-24 px-4 overflow-hidden">
@@ -81,7 +92,7 @@ const PlatformFlowInfographic = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
           className="text-center mb-12 md:mb-16"
         >
           <h2 className="text-2xl md:text-3xl font-bold mb-3">
@@ -98,44 +109,85 @@ const PlatformFlowInfographic = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
-          className="hidden md:flex items-center justify-between gap-4 lg:gap-8"
+          className="hidden md:flex items-center justify-between gap-6 lg:gap-10"
         >
-          {/* INPUT SECTION */}
-          <div className="flex-1 flex flex-col gap-3">
-            {inputItems.map((item, idx) => (
-              <motion.div
-                key={item.label}
-                variants={itemVariants}
-                animate={floatAnimation}
-                style={{ animationDelay: `${idx * 0.5}s` }}
-                className="group relative"
-              >
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-card/40 backdrop-blur-sm border border-border/30 hover:border-primary/40 hover:bg-card/60 transition-all duration-300">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <item.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{item.label}</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* FLOW ARROWS - Left */}
+          {/* INPUT SECTION - Simplified & Lighter */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-col items-center gap-2"
+            className="flex-1 relative"
           >
+            {/* Single unified input card with streaming data effect */}
+            <div className="relative p-6 rounded-2xl bg-gradient-to-br from-card/30 to-transparent backdrop-blur-sm border border-border/20">
+              {/* Floating data particles inside */}
+              <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                {!shouldReduceMotion && [...Array(8)].map((_, i) => (
+                  <FloatingParticle
+                    key={i}
+                    delay={i * 0.4}
+                    duration={3 + Math.random() * 2}
+                    startX={-20}
+                    startY={20 + (i * 15) % 80}
+                  />
+                ))}
+              </div>
+              
+              {/* Simple text labels floating */}
+              <div className="relative space-y-3">
+                {["Pitch Deck", "Metrics", "Data"].map((label, idx) => (
+                  <motion.div
+                    key={label}
+                    animate={shouldReduceMotion ? {} : {
+                      x: [0, 5, 0],
+                      opacity: [0.6, 1, 0.6],
+                    }}
+                    transition={{
+                      duration: 2 + idx * 0.5,
+                      delay: idx * 0.3,
+                      repeat: Infinity,
+                      ease: "easeInOut" as const,
+                    }}
+                    className="flex items-center gap-2 text-sm text-muted-foreground"
+                  >
+                    <Zap className="w-3 h-3 text-primary/60" />
+                    <span>{label}</span>
+                  </motion.div>
+                ))}
+              </div>
+              
+              {/* Corner accent */}
+              <motion.div
+                animate={shouldReduceMotion ? {} : { scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" as const }}
+                className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary/40"
+              />
+            </div>
+          </motion.div>
+
+          {/* FLOW ARROWS with streaming data */}
+          <motion.div
+            variants={itemVariants}
+            className="relative flex flex-col items-center gap-2 w-24 lg:w-32"
+          >
+            {/* Data streams */}
+            <div className="relative h-8 w-full overflow-hidden">
+              {!shouldReduceMotion && [...Array(4)].map((_, i) => (
+                <div key={i} style={{ top: `${i * 8}px` }} className="absolute left-0">
+                  <DataStream delay={i * 0.5} />
+                </div>
+              ))}
+            </div>
+            
             <motion.div
-              animate={shouldReduceMotion ? undefined : { x: [0, 8, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" as const }}
-              className="flex items-center gap-1"
+              animate={shouldReduceMotion ? {} : { x: [0, 10, 0] }}
+              transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" as const }}
+              className="flex items-center"
             >
-              <div className="w-12 lg:w-20 h-px bg-gradient-to-r from-primary/50 to-primary" />
-              <ArrowRight className="w-5 h-5 text-primary" />
+              <ArrowRight className="w-6 h-6 text-primary" />
             </motion.div>
+            
             <motion.div
-              animate={shouldReduceMotion ? undefined : { opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" as const }}
+              animate={shouldReduceMotion ? {} : { opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" as const }}
               className="flex gap-1"
             >
               {[...Array(3)].map((_, i) => (
@@ -144,77 +196,110 @@ const PlatformFlowInfographic = () => {
             </motion.div>
           </motion.div>
 
-          {/* CENTER HUB */}
+          {/* CENTER HUB - More dynamic */}
           <motion.div
             variants={itemVariants}
             className="relative flex-shrink-0"
           >
-            {/* Outer glow ring */}
-            <motion.div
-              animate={pulseAnimation}
-              className="absolute inset-0 rounded-full bg-primary/20 blur-xl"
-              style={{ transform: "scale(1.5)" }}
-            />
+            {/* Multiple pulsing rings */}
+            {!shouldReduceMotion && [...Array(3)].map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  scale: [1, 1.5 + i * 0.2, 1],
+                  opacity: [0.3, 0, 0.3],
+                }}
+                transition={{
+                  duration: 2 + i * 0.5,
+                  delay: i * 0.4,
+                  repeat: Infinity,
+                  ease: "easeOut" as const,
+                }}
+                className="absolute inset-0 rounded-full border border-primary/30"
+                style={{ transform: `scale(${1.2 + i * 0.15})` }}
+              />
+            ))}
             
             {/* Rotating ring */}
             <motion.div
-              animate={shouldReduceMotion ? undefined : { rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" as const }}
+              animate={shouldReduceMotion ? {} : { rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" as const }}
               className="absolute inset-0 rounded-full border-2 border-dashed border-primary/30"
-              style={{ transform: "scale(1.3)" }}
+              style={{ transform: "scale(1.4)" }}
             />
 
             {/* Main hub */}
-            <div className="relative w-28 h-28 lg:w-36 lg:h-36 rounded-full bg-gradient-to-br from-card/80 via-card/60 to-card/40 backdrop-blur-xl border-2 border-primary/40 flex flex-col items-center justify-center shadow-[0_0_40px_hsl(var(--primary)/0.3)]">
+            <motion.div
+              animate={shouldReduceMotion ? {} : {
+                boxShadow: [
+                  "0 0 30px hsl(var(--primary)/0.3)",
+                  "0 0 60px hsl(var(--primary)/0.5)",
+                  "0 0 30px hsl(var(--primary)/0.3)",
+                ],
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" as const }}
+              className="relative w-28 h-28 lg:w-36 lg:h-36 rounded-full bg-gradient-to-br from-card/80 via-card/60 to-card/40 backdrop-blur-xl border-2 border-primary/40 flex flex-col items-center justify-center"
+            >
               <motion.div
-                animate={pulseAnimation}
+                animate={shouldReduceMotion ? {} : {
+                  scale: [1, 1.1, 1],
+                  rotate: [0, 5, -5, 0],
+                }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" as const }}
               >
                 <Brain className="w-10 h-10 lg:w-12 lg:h-12 text-primary mb-1" />
               </motion.div>
               <span className="text-[10px] lg:text-xs font-bold text-primary uppercase tracking-wider">Analysis</span>
               <span className="text-[9px] lg:text-[10px] text-muted-foreground">Engine</span>
-            </div>
+            </motion.div>
 
-            {/* Floating particles */}
+            {/* Orbiting particles */}
             {!shouldReduceMotion && [...Array(6)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-2 h-2 rounded-full bg-primary/40"
-                style={{
-                  top: `${20 + Math.random() * 60}%`,
-                  left: `${20 + Math.random() * 60}%`,
-                }}
+                className="absolute w-2 h-2 rounded-full bg-primary/50"
                 animate={{
-                  y: [0, -10, 0],
-                  opacity: [0.3, 0.8, 0.3],
-                  scale: [0.8, 1.2, 0.8],
+                  rotate: 360,
                 }}
                 transition={{
-                  duration: 2 + Math.random() * 2,
+                  duration: 4 + i,
                   repeat: Infinity,
-                  delay: i * 0.3,
-                  ease: "easeInOut" as const,
+                  ease: "linear" as const,
+                  delay: i * 0.5,
+                }}
+                style={{
+                  transformOrigin: `${70 + i * 5}px center`,
+                  left: '50%',
+                  top: '50%',
                 }}
               />
             ))}
           </motion.div>
 
-          {/* FLOW ARROWS - Right */}
+          {/* FLOW ARROWS - Right with streaming */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-col items-center gap-2"
+            className="relative flex flex-col items-center gap-2 w-24 lg:w-32"
           >
+            <div className="relative h-8 w-full overflow-hidden">
+              {!shouldReduceMotion && [...Array(4)].map((_, i) => (
+                <div key={i} style={{ top: `${i * 8}px` }} className="absolute left-0">
+                  <DataStream delay={i * 0.5 + 0.25} />
+                </div>
+              ))}
+            </div>
+            
             <motion.div
-              animate={shouldReduceMotion ? undefined : { x: [0, 8, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" as const, delay: 0.5 }}
-              className="flex items-center gap-1"
+              animate={shouldReduceMotion ? {} : { x: [0, 10, 0] }}
+              transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" as const, delay: 0.3 }}
+              className="flex items-center"
             >
-              <div className="w-12 lg:w-20 h-px bg-gradient-to-r from-primary to-secondary/50" />
-              <ArrowRight className="w-5 h-5 text-secondary" />
+              <ArrowRight className="w-6 h-6 text-secondary" />
             </motion.div>
+            
             <motion.div
-              animate={shouldReduceMotion ? undefined : { opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" as const, delay: 0.5 }}
+              animate={shouldReduceMotion ? {} : { opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" as const, delay: 0.3 }}
               className="flex gap-1"
             >
               {[...Array(3)].map((_, i) => (
@@ -230,16 +315,35 @@ const PlatformFlowInfographic = () => {
                 key={item.label}
                 variants={itemVariants}
                 custom={idx}
+                whileHover={{ scale: 1.02, x: 5 }}
                 className="group relative"
               >
                 <motion.div
-                  animate={floatAnimation}
-                  style={{ animationDelay: `${idx * 0.5 + 1}s` }}
+                  animate={shouldReduceMotion ? {} : {
+                    y: [0, -3, 0],
+                  }}
+                  transition={{
+                    duration: 2 + idx * 0.3,
+                    delay: idx * 0.2,
+                    repeat: Infinity,
+                    ease: "easeInOut" as const,
+                  }}
                   className="flex items-center gap-3 p-3 rounded-xl bg-card/40 backdrop-blur-sm border border-border/30 hover:border-secondary/40 hover:bg-card/60 transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--secondary)/0.2)]"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary/20 to-primary/10 border border-secondary/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <motion.div
+                    animate={shouldReduceMotion ? {} : {
+                      rotate: [0, 5, -5, 0],
+                    }}
+                    transition={{
+                      duration: 4,
+                      delay: idx * 0.5,
+                      repeat: Infinity,
+                      ease: "easeInOut" as const,
+                    }}
+                    className="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary/20 to-primary/10 border border-secondary/20 flex items-center justify-center group-hover:scale-110 transition-transform"
+                  >
                     <item.icon className="w-5 h-5 text-secondary" />
-                  </div>
+                  </motion.div>
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-foreground">{item.label}</span>
                     <span className="text-[10px] text-muted-foreground">{item.desc}</span>
@@ -258,27 +362,31 @@ const PlatformFlowInfographic = () => {
           viewport={{ once: true, amount: 0.1 }}
           className="md:hidden flex flex-col items-center gap-4"
         >
-          {/* Inputs Row */}
-          <div className="grid grid-cols-2 gap-3 w-full">
-            {inputItems.map((item) => (
-              <motion.div
-                key={item.label}
-                variants={itemVariants}
-                className="flex items-center gap-2 p-3 rounded-xl bg-card/40 backdrop-blur-sm border border-border/30"
-              >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
-                  <item.icon className="w-4 h-4 text-primary" />
-                </div>
-                <span className="text-xs font-medium text-foreground">{item.label}</span>
-              </motion.div>
-            ))}
-          </div>
+          {/* Simplified Input - Mobile */}
+          <motion.div
+            variants={itemVariants}
+            className="w-full p-4 rounded-xl bg-gradient-to-br from-card/30 to-transparent backdrop-blur-sm border border-border/20"
+          >
+            <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+              {["Deck", "Metrics", "Data"].map((label, idx) => (
+                <motion.span
+                  key={label}
+                  animate={shouldReduceMotion ? {} : { opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, delay: idx * 0.3, repeat: Infinity }}
+                  className="flex items-center gap-1"
+                >
+                  <Zap className="w-3 h-3 text-primary/60" />
+                  {label}
+                </motion.span>
+              ))}
+            </div>
+          </motion.div>
 
           {/* Down Arrow */}
           <motion.div
             variants={itemVariants}
-            animate={shouldReduceMotion ? undefined : { y: [0, 5, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" as const }}
+            animate={shouldReduceMotion ? {} : { y: [0, 5, 0] }}
+            transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" as const }}
             className="flex flex-col items-center py-2"
           >
             <div className="w-px h-8 bg-gradient-to-b from-primary/50 to-primary" />
@@ -291,33 +399,40 @@ const PlatformFlowInfographic = () => {
             className="relative"
           >
             <motion.div
-              animate={pulseAnimation}
-              className="absolute inset-0 rounded-full bg-primary/20 blur-lg"
-              style={{ transform: "scale(1.3)" }}
-            />
-            <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-card/80 via-card/60 to-card/40 backdrop-blur-xl border-2 border-primary/40 flex flex-col items-center justify-center shadow-[0_0_30px_hsl(var(--primary)/0.3)]">
+              animate={shouldReduceMotion ? {} : {
+                boxShadow: [
+                  "0 0 20px hsl(var(--primary)/0.3)",
+                  "0 0 40px hsl(var(--primary)/0.5)",
+                  "0 0 20px hsl(var(--primary)/0.3)",
+                ],
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="relative w-24 h-24 rounded-full bg-gradient-to-br from-card/80 via-card/60 to-card/40 backdrop-blur-xl border-2 border-primary/40 flex flex-col items-center justify-center"
+            >
               <Brain className="w-8 h-8 text-primary mb-1" />
               <span className="text-[9px] font-bold text-primary uppercase tracking-wider">Analysis</span>
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* Down Arrow */}
           <motion.div
             variants={itemVariants}
-            animate={shouldReduceMotion ? undefined : { y: [0, 5, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" as const, delay: 0.5 }}
+            animate={shouldReduceMotion ? {} : { y: [0, 5, 0] }}
+            transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" as const, delay: 0.5 }}
             className="flex flex-col items-center py-2"
           >
             <div className="w-px h-8 bg-gradient-to-b from-primary to-secondary/50" />
             <ArrowRight className="w-5 h-5 text-secondary rotate-90" />
           </motion.div>
 
-          {/* Outputs Row */}
+          {/* Outputs Row - Mobile */}
           <div className="grid grid-cols-2 gap-3 w-full">
-            {outputItems.map((item) => (
+            {outputItems.map((item, idx) => (
               <motion.div
                 key={item.label}
                 variants={itemVariants}
+                animate={shouldReduceMotion ? {} : { y: [0, -2, 0] }}
+                transition={{ duration: 2, delay: idx * 0.2, repeat: Infinity }}
                 className="flex items-center gap-2 p-3 rounded-xl bg-card/40 backdrop-blur-sm border border-border/30"
               >
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-primary/10 border border-secondary/20 flex items-center justify-center">
