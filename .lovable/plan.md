@@ -1,112 +1,175 @@
 
-# Plan: Fix Unit Economics Sync Mismatch
+# Horizontal Platform Flow Infographic Animation
 
-## Problem Identified
+## Overview
+Create a visually stunning, animated infographic that shows the platform's workflow below the "From Profile to Investment-Ready" section. The animation will use framer-motion for smooth, scroll-triggered animations and follow the existing glassmorphism design system.
 
-When a user clicks "Sync from memo" on the My Profile page, the Unit Economics tab is not pre-filled because of two issues:
+## Visual Concept: "The Transformation Pipeline"
 
-1. **Data Type Mismatch**: The extraction function saves numbers, but the editor expects strings
-2. **Key Naming Mismatch**: The extracted keys don't fully align with the editor's expected keys
+A horizontal flow showing data entering the platform, being processed/analyzed, and transforming into investor-ready outputs. The animation will feature:
 
-### Current Data Flow
+1. **Left Side - INPUT:** Floating documents (pitch deck, data, questionnaire answers) flowing into a central processing hub
+2. **Center - PROCESSING:** The UglyBaby platform "brain" analyzing and transforming the input
+3. **Right Side - OUTPUT:** Multiple outputs radiating outward (Audit Report, Tools, Market Lens, Investor Matches)
+
+## Animation Sequence
 
 ```text
-Memo Content → extractUnitEconomicsFromMemo() → JSON saved to DB → UnitEconomicsEditor loads
-                        ↓                              ↓                      ↓
-              Extracts as NUMBERS           Stored as {"arr": 18000}    Expects STRINGS
-              Uses key "growthRate"                                     Uses key "monthlyGrowth"
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                          │
+│   ┌─────────┐      ┌─────────┐      ┌─────────────────────┐      ┌─────────────────┐   │
+│   │  Pitch  │──────│  Data   │──────│                     │──────│   Full Audit    │   │
+│   │  Deck   │      │ Points  │      │                     │      └─────────────────┘   │
+│   └─────────┘      └─────────┘      │     UglyBaby        │      ┌─────────────────┐   │
+│   ┌─────────┐      ┌─────────┐      │     Analysis        │──────│  23+ Tools      │   │
+│   │Questions│──────│ Metrics │──────│     Engine          │      └─────────────────┘   │
+│   └─────────┘      └─────────┘      │                     │      ┌─────────────────┐   │
+│                                      │                     │──────│  Market Lens    │   │
+│                                      └─────────────────────┘      └─────────────────┘   │
+│                                                                   ┌─────────────────┐   │
+│                                                                   │  800+ Investors │   │
+│                                                                   └─────────────────┘   │
+│                                                                                          │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Specific Mismatches Found
+## Animation Phases (Scroll-Triggered)
 
-| Extracted Key | Editor Key | Issue |
-|--------------|------------|-------|
-| `arr`, `mrr`, etc. | Same | Type: number vs string |
-| `growthRate` | `monthlyGrowth` | Key name differs |
-| `acv`, `carr` | (none) | Not shown in editor |
+### Phase 1: Input Gathering (0-30% viewport intersection)
+- Pitch deck icon fades in from left with slight floating animation
+- Data/metric icons appear with staggered delays
+- Question bubbles materialize
+- Subtle particle effects showing data points
 
----
+### Phase 2: Processing (30-60% viewport intersection)
+- Central platform hub pulses with glow effect
+- Connection lines animate from inputs to center
+- "Processing" animation with rotating gears/brain visualization
+- Data streams flowing into the center
 
-## Solution
+### Phase 3: Output Expansion (60-100% viewport intersection)
+- Output cards fan out from center to right
+- Each output (Audit, Tools, Market Lens, Investors) animates in sequence
+- Checkmarks or completion indicators appear
+- Final glow effect on completed outputs
 
-Update the `extractUnitEconomicsFromMemo` function to output data in the exact format the `UnitEconomicsEditor` expects:
+## Technical Implementation
 
-1. **Convert all values to strings** (numbers → `"15000"` format)
-2. **Use the correct key names** that match the editor's interface
-3. **Calculate derived metrics** where possible (e.g., `ltvCacRatio` from `ltv` and `cac`)
+### New Component: `PlatformFlowInfographic.tsx`
 
----
+Location: `src/components/sections/PlatformFlowInfographic.tsx`
 
-## Implementation Details
+**Key Features:**
+- Uses `framer-motion` with `whileInView` for scroll-triggered animations
+- Responsive design: horizontal on desktop, condensed/vertical on mobile
+- SVG-based connection lines with animated `pathLength`
+- Glassmorphism cards matching existing design tokens
+- Optional looping "particles" for continuous visual interest
 
-### File to Modify: `src/pages/CompanyProfile.tsx`
+### Animation Technologies Used
+- `motion.div` from framer-motion for element animations
+- `whileInView` with `viewport={{ once: true, amount: 0.3 }}` for scroll triggers
+- SVG `motion.path` for animated connection lines
+- CSS keyframes for subtle continuous animations (floating, pulsing)
+- Staggered children animations using `staggerChildren` variant
 
-Update the `extractUnitEconomicsFromMemo` function (lines 117-264):
+### Visual Elements
 
-**Before (current):**
-```typescript
-extracted.arr = 18000;  // number
-extracted.growthRate = 15;  // wrong key name
+**Input Icons (Left):**
+- `FileText` - Pitch Deck
+- `BarChart3` - Metrics/Data
+- `MessageSquare` - Questions
+- `Database` - Raw Information
+
+**Center Hub:**
+- Glowing circular/hexagonal container
+- `Brain` or custom logo icon
+- Rotating subtle gradient ring
+- "Processing" pulse effect
+
+**Output Cards (Right):**
+- `FileSearch` - Full Audit Report
+- `Wrench` - 23+ Diagnostic Tools
+- `Telescope` - Market Intelligence
+- `Users` - Investor Network
+
+### Responsive Behavior
+
+**Desktop (md+):**
+- Full horizontal layout with flowing connections
+- Wide canvas with animated SVG paths
+- All phases visible with scroll-triggered reveals
+
+**Mobile:**
+- Condensed vertical/diagonal flow
+- Simplified animations for performance
+- Stacked cards with connecting arrows
+
+## Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/components/sections/PlatformFlowInfographic.tsx` | Main animated infographic component |
+
+## Files to Modify
+
+| File | Change |
+|------|--------|
+| `src/pages/Index.tsx` | Import and place `PlatformFlowInfographic` below "How It Works" section (after line 201) |
+
+## Integration Point
+
+The component will be inserted in `Index.tsx` immediately after the "How It Works" section closes (line 201), before the "What You Get" section begins (line 203):
+
+```tsx
+{/* How It Works Section */}
+<section className="py-20 px-4">
+  {/* ... existing content ... */}
+</section>
+
+{/* NEW: Platform Flow Infographic */}
+<PlatformFlowInfographic />
+
+{/* What You Get Section */}
+<section className="py-20 px-4">
+  {/* ... existing content ... */}
+</section>
 ```
 
-**After (fixed):**
-```typescript
-// Convert to string format matching UnitEconomicsEditor
-extracted.arr = arr.toString();  // string
-extracted.monthlyGrowth = growthRate.toString();  // correct key name
-```
+## Design Specifications
 
-### Changes Required
+**Colors:**
+- Primary: `hsl(var(--primary))` for active elements and glows
+- Secondary: `hsl(var(--secondary))` for accent highlights
+- Card backgrounds: `bg-card/40 backdrop-blur-xl`
+- Borders: `border-border/30` with `hover:border-primary/40`
+- Connection lines: Gradient from `primary/30` to `secondary/30`
 
-1. **Rename key `growthRate` → `monthlyGrowth`** to match editor
+**Shadows:**
+- Active elements: `shadow-[0_0_30px_hsl(var(--primary)/0.3)]`
+- Hover states: `shadow-[0_20px_50px_-12px_hsl(var(--primary)/0.25)]`
 
-2. **Convert all numeric values to strings** at extraction time:
-   ```typescript
-   if (arrValue) extracted.arr = arrValue.toString();
-   if (mrrValue) extracted.mrr = mrrValue.toString();
-   if (customerCount) extracted.customers = customerCount.toString();
-   ```
+**Typography:**
+- Labels: `text-xs font-semibold uppercase tracking-wider`
+- Descriptions: `text-sm text-muted-foreground`
 
-3. **Add derived metric calculations:**
-   - If we have `ltv` and `cac`, calculate `ltvCacRatio = (ltv / cac).toFixed(1)`
-   - If we have `cac` and `mrr`, calculate `paybackMonths = (cac / mrr).toFixed(1)`
-   - If we have `arr` and no `mrr`, calculate `mrr = (arr / 12).toString()`
+## Performance Considerations
 
-4. **Optionally extract additional metrics** the memo might contain:
-   - Churn rate patterns: `"4% monthly churn"`, `"churn: 4%"`
-   - Gross margin patterns: `"75% gross margin"`, `"margin: 75%"`
-   - Burn rate patterns: `"$25K monthly burn"`, `"burn: $25,000"`
-   - Runway patterns: `"18 months runway"`, `"runway: 18 months"`
+- Use `viewport={{ once: true }}` to prevent re-triggering animations
+- Lazy load SVG animations
+- Use `will-change: transform` for smooth GPU-accelerated animations
+- Keep particle count reasonable (max 20-30 floating elements)
+- Mobile: Reduce animation complexity for battery efficiency
+
+## Accessibility
+
+- Respect `prefers-reduced-motion` media query
+- Provide static fallback for users who prefer reduced motion
+- Ensure sufficient color contrast for all text
+- Add appropriate ARIA labels for screen readers
 
 ---
 
 ## Technical Summary
 
-### Root Cause
-The `extractUnitEconomicsFromMemo` function outputs numbers and uses different key names than what `UnitEconomicsEditor` expects (strings with specific keys like `monthlyGrowth` instead of `growthRate`).
-
-### Fix
-Normalize the extraction output to match the editor's `Metrics` interface exactly:
-
-```typescript
-interface Metrics {
-  mrr: string;
-  arr: string;
-  monthlyGrowth: string;  // was: growthRate
-  cac: string;
-  ltv: string;
-  ltvCacRatio: string;    // calculated
-  paybackMonths: string;  // calculated
-  churnRate: string;
-  grossMargin: string;
-  burnRate: string;
-  runway: string;
-  customers: string;
-}
-```
-
-### Files Changed
-- `src/pages/CompanyProfile.tsx` - Update `extractUnitEconomicsFromMemo` function
-
-### Expected Outcome
-After syncing from memo, the Unit Economics tab will show all extracted metrics properly pre-filled in the input fields, and derived metrics (LTV:CAC ratio, payback months) will be auto-calculated.
+This implementation creates a sophisticated, scroll-triggered horizontal infographic that visually demonstrates the platform's value proposition. Using framer-motion's viewport-based animations, the component will reveal the transformation from raw founder inputs to comprehensive investor-ready outputs in an engaging, memorable way that aligns with the premium glassmorphism aesthetic established throughout the platform.
