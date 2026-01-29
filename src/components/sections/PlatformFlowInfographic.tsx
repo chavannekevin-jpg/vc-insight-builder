@@ -6,7 +6,6 @@ import {
   Telescope,
   Users,
   ArrowRight,
-  Sparkles,
   Zap
 } from "lucide-react";
 
@@ -65,22 +64,23 @@ const PlatformFlowInfographic = () => {
     />
   );
 
-  // Data stream line animation
-  const DataStream = ({ delay }: { delay: number }) => (
+  // Flowing bubble between sections
+  const FlowingBubble = ({ delay, y }: { delay: number; y: number }) => (
     <motion.div
-      className="absolute h-px bg-gradient-to-r from-primary/50 via-primary to-primary/50"
-      style={{ width: '60px' }}
-      initial={{ x: -60, opacity: 0 }}
+      className="absolute w-3 h-3 rounded-full bg-gradient-to-br from-primary/70 to-primary/30 shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
+      initial={{ x: 0, opacity: 0, scale: 0.5 }}
       animate={shouldReduceMotion ? {} : {
-        x: [-60, 200],
+        x: [0, 120],
         opacity: [0, 1, 1, 0],
+        scale: [0.5, 1, 0.8, 0.3],
       }}
       transition={{
-        duration: 2,
+        duration: 1.8,
         delay,
         repeat: Infinity,
-        ease: "linear" as const,
+        ease: "easeInOut" as const,
       }}
+      style={{ top: y }}
     />
   );
 
@@ -163,37 +163,28 @@ const PlatformFlowInfographic = () => {
             </div>
           </motion.div>
 
-          {/* FLOW ARROWS with streaming data */}
+          {/* FLOW ARROWS with flowing bubbles */}
           <motion.div
             variants={itemVariants}
-            className="relative flex flex-col items-center gap-2 w-24 lg:w-32"
+            className="relative flex items-center w-32 lg:w-44"
           >
-            {/* Data streams */}
-            <div className="relative h-8 w-full overflow-hidden">
-              {!shouldReduceMotion && [...Array(4)].map((_, i) => (
-                <div key={i} style={{ top: `${i * 8}px` }} className="absolute left-0">
-                  <DataStream delay={i * 0.5} />
-                </div>
+            {/* Flowing bubbles */}
+            <div className="relative h-12 w-full overflow-hidden">
+              {!shouldReduceMotion && [...Array(5)].map((_, i) => (
+                <FlowingBubble key={i} delay={i * 0.4} y={4 + (i % 3) * 14} />
               ))}
             </div>
             
-            <motion.div
-              animate={shouldReduceMotion ? {} : { x: [0, 10, 0] }}
-              transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" as const }}
-              className="flex items-center"
-            >
-              <ArrowRight className="w-6 h-6 text-primary" />
-            </motion.div>
-            
-            <motion.div
-              animate={shouldReduceMotion ? {} : { opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" as const }}
-              className="flex gap-1"
-            >
-              {[...Array(3)].map((_, i) => (
-                <Sparkles key={i} className="w-3 h-3 text-primary/60" />
-              ))}
-            </motion.div>
+            {/* Long arrow line */}
+            <div className="absolute inset-0 flex items-center">
+              <div className="flex-1 h-px bg-gradient-to-r from-primary/30 via-primary/60 to-primary/30" />
+              <motion.div
+                animate={shouldReduceMotion ? {} : { x: [0, 8, 0] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" as const }}
+              >
+                <ArrowRight className="w-6 h-6 text-primary ml-1" />
+              </motion.div>
+            </div>
           </motion.div>
 
           {/* CENTER HUB - More dynamic */}
@@ -276,36 +267,28 @@ const PlatformFlowInfographic = () => {
             ))}
           </motion.div>
 
-          {/* FLOW ARROWS - Right with streaming */}
+          {/* FLOW ARROWS - Right with flowing bubbles */}
           <motion.div
             variants={itemVariants}
-            className="relative flex flex-col items-center gap-2 w-24 lg:w-32"
+            className="relative flex items-center w-32 lg:w-44"
           >
-            <div className="relative h-8 w-full overflow-hidden">
-              {!shouldReduceMotion && [...Array(4)].map((_, i) => (
-                <div key={i} style={{ top: `${i * 8}px` }} className="absolute left-0">
-                  <DataStream delay={i * 0.5 + 0.25} />
-                </div>
+            {/* Flowing bubbles */}
+            <div className="relative h-12 w-full overflow-hidden">
+              {!shouldReduceMotion && [...Array(5)].map((_, i) => (
+                <FlowingBubble key={i} delay={i * 0.4 + 0.2} y={4 + (i % 3) * 14} />
               ))}
             </div>
             
-            <motion.div
-              animate={shouldReduceMotion ? {} : { x: [0, 10, 0] }}
-              transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" as const, delay: 0.3 }}
-              className="flex items-center"
-            >
-              <ArrowRight className="w-6 h-6 text-secondary" />
-            </motion.div>
-            
-            <motion.div
-              animate={shouldReduceMotion ? {} : { opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" as const, delay: 0.3 }}
-              className="flex gap-1"
-            >
-              {[...Array(3)].map((_, i) => (
-                <Sparkles key={i} className="w-3 h-3 text-secondary/60" />
-              ))}
-            </motion.div>
+            {/* Long arrow line */}
+            <div className="absolute inset-0 flex items-center">
+              <div className="flex-1 h-px bg-gradient-to-r from-primary/30 via-secondary/60 to-secondary/30" />
+              <motion.div
+                animate={shouldReduceMotion ? {} : { x: [0, 8, 0] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" as const, delay: 0.2 }}
+              >
+                <ArrowRight className="w-6 h-6 text-secondary ml-1" />
+              </motion.div>
+            </div>
           </motion.div>
 
           {/* OUTPUT SECTION */}
@@ -332,11 +315,11 @@ const PlatformFlowInfographic = () => {
                 >
                   <motion.div
                     animate={shouldReduceMotion ? {} : {
-                      rotate: [0, 5, -5, 0],
+                      scale: [1, 1.15, 1],
                     }}
                     transition={{
-                      duration: 4,
-                      delay: idx * 0.5,
+                      duration: 1.5,
+                      delay: idx * 0.3,
                       repeat: Infinity,
                       ease: "easeInOut" as const,
                     }}
