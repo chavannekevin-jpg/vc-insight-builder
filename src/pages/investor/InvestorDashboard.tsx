@@ -220,7 +220,7 @@ const InvestorDashboard = () => {
       case "dealflow":
         return <DealflowView onUploadDeck={() => setActiveSection("upload")} userId={userId} />;
       case "upload":
-        return <UploadDeckView />;
+        return <UploadDeckView investorId={userId} />;
       case "settings":
         return userId ? (
           <SettingsView
