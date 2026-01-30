@@ -59,33 +59,98 @@ serve(async (req) => {
       `=== ${f.file_name} ===\n${f.extracted_text || "[No content]"}\n`
     ).join("\n\n");
 
-    // Metric alias mapping for better understanding
+    // Comprehensive metric alias mapping for better understanding (50+ metrics)
     const metricAliases = `
-IMPORTANT: Understand these common metric aliases and variations:
-- MRR = Monthly Recurring Revenue = monthly revenue = recurring monthly revenue
-- ARR = Annual Recurring Revenue = annual revenue = yearly recurring revenue = MRR × 12
-- ACV = Annual Contract Value = average contract value = annual deal size
-- LTV = Lifetime Value = Customer Lifetime Value = CLV = CLTV
-- CAC = Customer Acquisition Cost = cost per acquisition = CPA (in some contexts)
-- ARPU = Average Revenue Per User = revenue per user = average revenue per customer
-- NRR = Net Revenue Retention = net dollar retention = NDR
-- GRR = Gross Revenue Retention = gross dollar retention
-- GMV = Gross Merchandise Value = total transaction value
-- Take Rate = commission rate = platform fee percentage
-- Burn Rate = monthly burn = cash burn = monthly cash burn
-- Runway = months of runway = cash runway = time to zero cash
-- Churn = customer churn = churn rate = attrition rate
-- DAU/MAU = Daily Active Users / Monthly Active Users = active users
-- EBITDA = Earnings Before Interest, Taxes, Depreciation, and Amortization
-- Gross Margin = gross profit margin = GP margin
-- Net Margin = net profit margin = profit margin
-- Revenue = sales = turnover = top line
-- Profit = earnings = net income = bottom line
-- Valuation = company valuation = enterprise value (sometimes)
-- Pre-money = pre-money valuation
-- Post-money = post-money valuation
+IMPORTANT: You are a financial analyst expert. Understand these common metric aliases, abbreviations, and variations:
 
-When users ask about any of these metrics, search for ALL variations in the documents.
+=== REVENUE METRICS ===
+- MRR = Monthly Recurring Revenue = monthly revenue = recurring monthly revenue = monthly subscription revenue
+- ARR = Annual Recurring Revenue = annual revenue = yearly recurring revenue = MRR × 12 = annualized revenue
+- ACV = Annual Contract Value = average contract value = annual deal size = contract value
+- TCV = Total Contract Value = total deal value = full contract amount
+- ARPU = Average Revenue Per User = revenue per user = average revenue per customer = ARPC
+- ARPA = Average Revenue Per Account = revenue per account
+- Revenue = sales = turnover = top line = income = gross sales = net sales
+- Bookings = new bookings = new sales = signed contracts = new ARR
+
+=== GROWTH METRICS ===
+- MoM = Month-over-Month = monthly growth = m/m growth
+- YoY = Year-over-Year = annual growth = y/y growth = yearly growth
+- QoQ = Quarter-over-Quarter = quarterly growth = q/q growth
+- CAGR = Compound Annual Growth Rate = compounded growth
+- Growth Rate = growth % = growth percentage = revenue growth
+
+=== RETENTION & CHURN ===
+- NRR = Net Revenue Retention = net dollar retention = NDR = net retention
+- GRR = Gross Revenue Retention = gross dollar retention = gross retention
+- Churn = customer churn = churn rate = attrition rate = turnover rate
+- Logo Churn = customer churn = account churn
+- Revenue Churn = MRR churn = dollar churn
+- Cohort Retention = retention by cohort
+
+=== UNIT ECONOMICS ===
+- LTV = Lifetime Value = Customer Lifetime Value = CLV = CLTV = customer value
+- CAC = Customer Acquisition Cost = cost per acquisition = CPA = acquisition cost = cost to acquire
+- LTV:CAC = LTV to CAC ratio = payback ratio = unit economics ratio
+- Payback Period = CAC payback = months to payback = time to recover CAC
+- Gross Margin = gross profit margin = GP margin = GM = gross profit %
+- Net Margin = net profit margin = profit margin = net profit % = bottom line margin
+- Contribution Margin = CM = variable margin
+
+=== MARKETPLACE/PLATFORM METRICS ===
+- GMV = Gross Merchandise Value = total transaction value = GTV = gross transaction volume
+- Take Rate = commission rate = platform fee = rake = transaction fee %
+- AOV = Average Order Value = average basket size = avg order
+- TPV = Total Payment Volume = payment volume = processed volume
+
+=== ENGAGEMENT METRICS ===
+- DAU = Daily Active Users = daily actives = daily users
+- MAU = Monthly Active Users = monthly actives = monthly users
+- WAU = Weekly Active Users = weekly actives
+- DAU/MAU = stickiness = engagement ratio
+- Sessions = user sessions = visits
+- Time on Site = session duration = engagement time
+
+=== CASH & FINANCIAL HEALTH ===
+- Burn Rate = monthly burn = cash burn = monthly cash burn = net burn
+- Gross Burn = total spend = monthly expenses = operating expenses
+- Net Burn = burn after revenue = net cash consumption
+- Runway = months of runway = cash runway = time to zero cash = months left
+- Cash = cash on hand = cash balance = bank balance = available cash
+- EBITDA = Earnings Before Interest, Taxes, Depreciation, and Amortization = operating earnings
+- EBIT = Earnings Before Interest and Taxes = operating income
+- Free Cash Flow = FCF = cash flow = net cash flow
+- Working Capital = current assets - current liabilities
+
+=== PROFITABILITY ===
+- Profit = earnings = net income = bottom line = net profit
+- Operating Profit = operating income = EBIT
+- Gross Profit = revenue - COGS = GP
+- Net Income = profit after tax = PAT = bottom line
+
+=== VALUATION & FUNDING ===
+- Valuation = company valuation = enterprise value = EV
+- Pre-money = pre-money valuation = pre-val = pre-money val
+- Post-money = post-money valuation = post-val = post-money val
+- Dilution = equity dilution = ownership dilution
+- Cap Table = capitalization table = ownership table
+- Raise = funding round = capital raised = money raised
+
+=== SaaS SPECIFIC ===
+- Seats = licenses = users = subscriptions
+- Expansion Revenue = upsell = cross-sell = expansion MRR
+- Contraction = downgrades = contraction MRR
+- Magic Number = sales efficiency = growth efficiency
+- Rule of 40 = growth + profit margin
+
+=== SALES METRICS ===
+- Pipeline = sales pipeline = deal pipeline = opportunities
+- Win Rate = close rate = conversion rate = deal close rate
+- Sales Cycle = deal cycle = time to close = average deal length
+- Quota Attainment = quota achievement = sales quota
+
+When users ask about any of these metrics, search for ALL variations and synonyms in the documents.
+For metrics in different languages, also check for English equivalents.
 `;
 
     // Build messages
