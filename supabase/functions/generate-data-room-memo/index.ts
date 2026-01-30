@@ -6,6 +6,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function safeJsonParse<T = unknown>(raw: string): T {
+  // Provide a cleaner error than "Unexpected end of JSON input".
+  if (!raw || !raw.trim()) {
+    throw new Error("Empty JSON response");
+  }
+  return JSON.parse(raw) as T;
+}
+
 const MEMO_SCHEMA = {
   type: "object",
   properties: {
@@ -200,7 +208,16 @@ Today's date: ${new Date().toISOString().split('T')[0]}`,
         throw new Error(`AI service error: ${response.status}`);
       }
 
-      const result = await response.json();
+      // Some upstream failures can return 200 with an empty body (rare but happens).
+      // Reading as text first lets us provide a deterministic error.
+      const raw = await response.text();
+      let result: any;
+      try {
+        result = safeJsonParse(raw);
+      } catch (e) {
+        console.error("AI returned invalid JSON (first 800 chars):", (raw || "").slice(0, 800));
+        throw new Error("AI returned an invalid response. Please try again.");
+      }
       const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
       
       if (!toolCall?.function?.arguments) {
