@@ -1,15 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import { 
   ArrowLeft, 
   FileText, 
-  MessageSquare, 
-  BookOpen,
   Loader2,
   CheckCircle2,
   AlertCircle,
@@ -19,11 +16,15 @@ import {
   FileSpreadsheet,
   Image,
   Clock,
-  Zap
+  Zap,
+  X,
+  Upload,
+  FolderOpen,
+  Trash2
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useDataRoom, useDataRoomFiles, useUpdateDataRoomStatus } from "@/hooks/useDataRoom";
+import { useDataRoom, useDataRoomFiles, useUpdateDataRoomStatus, useAddDataRoomFile } from "@/hooks/useDataRoom";
 import { DataRoomMemoView } from "./DataRoomMemoView";
 import { DataRoomChat } from "./DataRoomChat";
 import type { DataRoomMemo, DataRoomFile } from "@/types/dataRoom";
@@ -46,110 +47,92 @@ const FILE_TYPE_CONFIG: Record<string, { icon: typeof FileText; color: string; l
   'image/webp': { icon: Image, color: 'text-blue-500', label: 'WebP' },
 };
 
-function FileStatusCard({ file }: { file: DataRoomFile }) {
+// Mini file card for sidebar
+function MiniFileCard({ 
+  file, 
+  onRemove 
+}: { 
+  file: DataRoomFile; 
+  onRemove?: () => void;
+}) {
   const config = FILE_TYPE_CONFIG[file.file_type] || { icon: FileText, color: 'text-muted-foreground', label: 'File' };
   const Icon = config.icon;
   
-  const getStatusInfo = () => {
+  const getStatusIcon = () => {
     switch (file.extraction_status) {
-      case 'pending':
-        return { 
-          icon: Clock, 
-          color: 'text-muted-foreground', 
-          bg: 'bg-muted/50',
-          label: 'Waiting...',
-          progress: 0 
-        };
-      case 'processing':
-        return { 
-          icon: Loader2, 
-          color: 'text-primary', 
-          bg: 'bg-primary/10',
-          label: 'Extracting...',
-          progress: 50,
-          animate: true 
-        };
-      case 'completed':
-        return { 
-          icon: CheckCircle2, 
-          color: 'text-green-500', 
-          bg: 'bg-green-500/10',
-          label: 'Complete',
-          progress: 100 
-        };
-      case 'error':
-        return { 
-          icon: AlertCircle, 
-          color: 'text-destructive', 
-          bg: 'bg-destructive/10',
-          label: 'Failed',
-          progress: 0 
-        };
-      default:
-        return { 
-          icon: Clock, 
-          color: 'text-muted-foreground', 
-          bg: 'bg-muted/50',
-          label: 'Unknown',
-          progress: 0 
-        };
+      case 'pending': return <Clock className="w-3 h-3 text-muted-foreground" />;
+      case 'processing': return <Loader2 className="w-3 h-3 text-primary animate-spin" />;
+      case 'completed': return <CheckCircle2 className="w-3 h-3 text-green-500" />;
+      case 'error': return <AlertCircle className="w-3 h-3 text-destructive" />;
+      default: return <Clock className="w-3 h-3 text-muted-foreground" />;
     }
   };
 
-  const status = getStatusInfo();
-  const StatusIcon = status.icon;
-
   return (
-    <div className={cn(
-      "rounded-xl border border-border/30 p-4 transition-all duration-300",
-      "bg-gradient-to-br from-card/60 to-card/30 backdrop-blur-sm",
-      file.extraction_status === 'processing' && "ring-2 ring-primary/20"
-    )}>
-      <div className="flex items-start gap-3">
-        <div className={cn(
-          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-          status.bg
-        )}>
-          <Icon className={cn("w-5 h-5", config.color)} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-medium truncate text-sm">{file.file_name}</p>
-          <div className="flex items-center gap-2 mt-1">
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-              {config.label}
-            </Badge>
-            {file.file_size && (
-              <span className="text-xs text-muted-foreground">
-                {(file.file_size / 1024).toFixed(0)} KB
-              </span>
-            )}
-          </div>
-          
-          {/* Status indicator */}
-          <div className="flex items-center gap-2 mt-2">
-            <StatusIcon className={cn(
-              "w-3.5 h-3.5", 
-              status.color,
-              status.animate && "animate-spin"
-            )} />
-            <span className={cn("text-xs font-medium", status.color)}>
-              {status.label}
-            </span>
-          </div>
+    <div className="group flex items-center gap-2 p-2 rounded-lg bg-background/50 hover:bg-background/80 transition-colors">
+      <Icon className={cn("w-4 h-4 shrink-0", config.color)} />
+      <span className="flex-1 text-xs truncate">{file.file_name}</span>
+      {getStatusIcon()}
+      {onRemove && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onRemove(); }}
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
+        >
+          <X className="w-3 h-3 text-destructive" />
+        </button>
+      )}
+    </div>
+  );
+}
 
-          {/* Progress bar for processing */}
-          {file.extraction_status === 'processing' && (
-            <div className="mt-2">
-              <Progress value={50} className="h-1" />
-            </div>
-          )}
-          
-          {/* Extracted text preview */}
-          {file.extraction_status === 'completed' && file.extracted_text && (
-            <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
-              {file.extracted_text.slice(0, 100)}...
-            </p>
-          )}
+// Processing overlay
+function ProcessingOverlay({ 
+  progress, 
+  processingCount, 
+  pendingCount 
+}: { 
+  progress: number;
+  processingCount: number;
+  pendingCount: number;
+}) {
+  return (
+    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="text-center space-y-4 p-8 rounded-2xl bg-card/90 border border-border/30 shadow-2xl max-w-sm">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        </div>
+        <div>
+          <h3 className="font-semibold text-lg">Extracting Documents</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            {processingCount} processing, {pendingCount} pending
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Progress value={progress} className="h-2" />
+          <p className="text-sm font-medium text-primary">{progress}%</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Generating memo overlay
+function GeneratingMemoOverlay({ progress }: { progress: number }) {
+  return (
+    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="text-center space-y-4 p-8 rounded-2xl bg-card/90 border border-border/30 shadow-2xl max-w-sm">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+          <Sparkles className="w-8 h-8 text-primary animate-pulse" />
+        </div>
+        <div>
+          <h3 className="font-semibold text-lg">Generating Due Diligence Memo</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            AI is analyzing all documents...
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Progress value={progress} className="h-2" />
+          <p className="text-sm font-medium text-primary">{progress}%</p>
         </div>
       </div>
     </div>
@@ -165,15 +148,30 @@ export function DataRoomAnalysisView({
   const { data: room, refetch: refetchRoom } = useDataRoom(roomId);
   const { data: files = [], refetch: refetchFiles } = useDataRoomFiles(roomId);
   const updateStatus = useUpdateDataRoomStatus(investorId);
+  const addFileRecord = useAddDataRoomFile(roomId);
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGeneratingMemo, setIsGeneratingMemo] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("files");
   const [memoProgress, setMemoProgress] = useState(0);
+  const [showDocPanel, setShowDocPanel] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Calculate file status
+  const processingFiles = files.filter(f => f.extraction_status === 'processing');
+  const pendingFiles = files.filter(f => f.extraction_status === 'pending');
+  const completedFiles = files.filter(f => f.extraction_status === 'completed');
+  const errorFiles = files.filter(f => f.extraction_status === 'error');
+  const allFilesProcessed = files.length > 0 && files.every(
+    f => f.extraction_status === 'completed' || f.extraction_status === 'error'
+  );
+  const totalFiles = files.length;
+  const processedCount = completedFiles.length + errorFiles.length;
+  const overallProgress = totalFiles > 0 ? Math.round((processedCount / totalFiles) * 100) : 0;
+
+  const memo = room?.summary_json as DataRoomMemo | null;
 
   // Function to auto-save data room analysis to dealflow
   const saveDataRoomToDealflow = async (roomId: string, memo: DataRoomMemo, companyName: string) => {
-    // First, create a deck company record to store the memo
     const { data: deckCompany, error: deckCompanyError } = await supabase
       .from("investor_deck_companies")
       .insert([{
@@ -190,7 +188,6 @@ export function DataRoomAnalysisView({
     if (deckCompanyError) throw deckCompanyError;
     if (!deckCompany?.id) throw new Error("Failed to create deck company");
 
-    // Check if already in dealflow (by deck_company_id)
     const { data: existingDeal } = await supabase
       .from("investor_dealflow")
       .select("id")
@@ -198,12 +195,8 @@ export function DataRoomAnalysisView({
       .eq("deck_company_id", deckCompany.id)
       .single();
 
-    if (existingDeal) {
-      console.log("Deal already exists in dealflow");
-      return;
-    }
+    if (existingDeal) return;
 
-    // Add to dealflow with data_room source
     const { error: dealflowError } = await supabase.from("investor_dealflow").insert({
       investor_id: investorId,
       deck_company_id: deckCompany.id,
@@ -217,30 +210,19 @@ export function DataRoomAnalysisView({
 
   // Poll for file processing status
   useEffect(() => {
-    if (room?.status === 'processing') {
+    if (room?.status === 'processing' || processingFiles.length > 0 || pendingFiles.length > 0) {
       const interval = setInterval(() => {
         refetchFiles();
-      }, 2000); // Poll every 2 seconds for faster updates
+      }, 2000);
       return () => clearInterval(interval);
     }
-  }, [room?.status, refetchFiles]);
+  }, [room?.status, processingFiles.length, pendingFiles.length, refetchFiles]);
 
-  // Check if all files are processed
-  const allFilesProcessed = files.length > 0 && files.every(
-    f => f.extraction_status === 'completed' || f.extraction_status === 'error'
-  );
-  const processingFiles = files.filter(f => f.extraction_status === 'processing');
-  const pendingFiles = files.filter(f => f.extraction_status === 'pending');
-  const completedFiles = files.filter(f => f.extraction_status === 'completed');
-  const errorFiles = files.filter(f => f.extraction_status === 'error');
-
-  // Calculate overall progress
-  const totalFiles = files.length;
-  const processedCount = completedFiles.length + errorFiles.length;
-  const overallProgress = totalFiles > 0 ? Math.round((processedCount / totalFiles) * 100) : 0;
-
-  const processFiles = async () => {
+  // Auto-process files on mount or when new files are added
+  const processFiles = useCallback(async () => {
+    if (isProcessing) return;
     setIsProcessing(true);
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
@@ -262,7 +244,6 @@ export function DataRoomAnalysisView({
         throw new Error(err.error || "Failed to process files");
       }
 
-      toast({ title: "Processing started", description: "Extracting document contents..." });
       refetchFiles();
     } catch (error) {
       toast({
@@ -273,13 +254,22 @@ export function DataRoomAnalysisView({
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [roomId, isProcessing, refetchFiles]);
 
-  const generateMemo = async () => {
+  // Auto-process when there are pending files
+  useEffect(() => {
+    if (pendingFiles.length > 0 && !isProcessing && !isGeneratingMemo) {
+      processFiles();
+    }
+  }, [pendingFiles.length, isProcessing, isGeneratingMemo, processFiles]);
+
+  // Auto-generate memo when all files are processed and no memo exists
+  const generateMemo = useCallback(async () => {
+    if (isGeneratingMemo || memo) return;
+    
     setIsGeneratingMemo(true);
     setMemoProgress(0);
     
-    // Simulate progress while waiting
     const progressInterval = setInterval(() => {
       setMemoProgress(prev => Math.min(prev + 5, 90));
     }, 2000);
@@ -308,7 +298,6 @@ export function DataRoomAnalysisView({
       const data = await response.json();
       setMemoProgress(100);
       
-      // Update room with memo
       await updateStatus.mutateAsync({
         roomId,
         status: 'ready',
@@ -320,12 +309,10 @@ export function DataRoomAnalysisView({
         await saveDataRoomToDealflow(roomId, data.memo, room?.company_name || "Unknown");
       } catch (saveError) {
         console.error("Failed to auto-save to dealflow:", saveError);
-        // Don't fail the whole operation if dealflow save fails
       }
 
       toast({ title: "Analysis complete", description: "Due diligence memo is ready and saved to your dealflow." });
       refetchRoom();
-      setActiveTab("memo");
     } catch (error) {
       toast({
         title: "Analysis failed",
@@ -337,21 +324,101 @@ export function DataRoomAnalysisView({
       setIsGeneratingMemo(false);
       setMemoProgress(0);
     }
+  }, [roomId, isGeneratingMemo, memo, room?.company_name, updateStatus, refetchRoom]);
+
+  // Auto-generate memo when files are processed
+  useEffect(() => {
+    if (allFilesProcessed && completedFiles.length > 0 && !memo && !isGeneratingMemo && !isProcessing) {
+      generateMemo();
+    }
+  }, [allFilesProcessed, completedFiles.length, memo, isGeneratingMemo, isProcessing, generateMemo]);
+
+  // Handle file upload
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = e.target.files;
+    if (!newFiles || newFiles.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      for (const file of Array.from(newFiles)) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${investorId}/${roomId}/${Date.now()}-${file.name}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('data-room-files')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        await addFileRecord.mutateAsync({
+          room_id: roomId,
+          file_name: file.name,
+          file_type: file.type,
+          file_size: file.size,
+          storage_path: fileName,
+          extraction_status: 'pending',
+          extracted_text: null,
+          page_count: null,
+        });
+      }
+
+      toast({ title: "Files uploaded", description: `${newFiles.length} file(s) added to the data room.` });
+      refetchFiles();
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
   };
 
-  // Auto-process files on mount if needed
-  useEffect(() => {
-    if (room?.status === 'processing' && (processingFiles.length > 0 || pendingFiles.length > 0) && !isProcessing) {
-      processFiles();
+  // Handle file removal
+  const handleRemoveFile = async (fileId: string, storagePath: string) => {
+    try {
+      await supabase.storage.from('data-room-files').remove([storagePath]);
+      await supabase.from('investor_data_room_files').delete().eq('id', fileId);
+      refetchFiles();
+      toast({ title: "File removed" });
+    } catch (error) {
+      toast({ title: "Failed to remove file", variant: "destructive" });
     }
-  }, [room?.status]);
+  };
 
-  const memo = room?.summary_json as DataRoomMemo | null;
+  // Regenerate memo
+  const handleRegenerate = async () => {
+    // Clear existing memo first
+    await updateStatus.mutateAsync({
+      roomId,
+      status: 'processing',
+      summaryJson: undefined,
+    });
+    await refetchRoom();
+    // Trigger regeneration
+    setTimeout(() => generateMemo(), 100);
+  };
+
+  // Show processing overlay
+  const showProcessingOverlay = (processingFiles.length > 0 || pendingFiles.length > 0) && !memo;
+  const showMemoOverlay = isGeneratingMemo;
 
   return (
-    <div className="flex flex-col h-full animate-fade-in">
-      {/* Glassmorphism Header */}
-      <div className="p-6 border-b border-border/20 bg-gradient-to-r from-card/60 via-card/40 to-card/30 backdrop-blur-xl">
+    <div className="flex flex-col h-full animate-fade-in relative">
+      {/* Overlays */}
+      {showProcessingOverlay && (
+        <ProcessingOverlay 
+          progress={overallProgress} 
+          processingCount={processingFiles.length}
+          pendingCount={pendingFiles.length}
+        />
+      )}
+      {showMemoOverlay && <GeneratingMemoOverlay progress={memoProgress} />}
+
+      {/* Header */}
+      <div className="shrink-0 p-4 border-b border-border/20 bg-gradient-to-r from-card/80 via-card/60 to-card/40 backdrop-blur-xl">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -361,16 +428,21 @@ export function DataRoomAnalysisView({
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
+          
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold tracking-tight truncate">
+            <h2 className="text-xl font-bold tracking-tight truncate">
               {room?.company_name || "Data Room"}
             </h2>
-            <div className="flex items-center gap-3 mt-2">
-              <Badge variant="outline" className="text-xs gap-1.5 bg-background/50">
-                <FileText className="w-3 h-3" />
+            <div className="flex items-center gap-3 mt-1">
+              <Badge 
+                variant="outline" 
+                className="text-xs gap-1.5 bg-background/50 cursor-pointer hover:bg-background/80"
+                onClick={() => setShowDocPanel(!showDocPanel)}
+              >
+                <FolderOpen className="w-3 h-3" />
                 {files.length} document{files.length !== 1 ? 's' : ''}
               </Badge>
-              {room?.status === 'ready' && memo && (
+              {memo && (
                 <Badge 
                   className={cn(
                     "text-xs gap-1.5",
@@ -386,159 +458,150 @@ export function DataRoomAnalysisView({
               )}
             </div>
           </div>
-          {memo && (
-            <Button 
-              onClick={() => onSaveToDealflow(roomId, memo)} 
-              className="gap-2 rounded-xl shadow-lg"
-            >
-              <Plus className="w-4 h-4" />
-              Add to Dealflow
-            </Button>
-          )}
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2">
+            {memo && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRegenerate}
+                  disabled={isGeneratingMemo}
+                  className="gap-1.5 rounded-xl"
+                >
+                  <RefreshCw className={cn("w-4 h-4", isGeneratingMemo && "animate-spin")} />
+                  <span className="hidden sm:inline">Regenerate</span>
+                </Button>
+                <Button 
+                  onClick={() => onSaveToDealflow(roomId, memo)} 
+                  size="sm"
+                  className="gap-1.5 rounded-xl"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Add to Dealflow</span>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-        <div className="border-b border-border/20 px-4 bg-gradient-to-r from-muted/20 to-transparent">
-          <TabsList className="h-14 bg-transparent gap-1">
-            <TabsTrigger 
-              value="files" 
-              className="gap-2 data-[state=active]:bg-background/80 rounded-lg px-4"
-            >
-              <FileText className="w-4 h-4" />
-              Documents
-              {processingFiles.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">
-                  {processingFiles.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="memo" 
-              className="gap-2 data-[state=active]:bg-background/80 rounded-lg px-4" 
-              disabled={!memo}
-            >
-              <BookOpen className="w-4 h-4" />
-              Memo
-            </TabsTrigger>
-            <TabsTrigger 
-              value="chat" 
-              className="gap-2 data-[state=active]:bg-background/80 rounded-lg px-4" 
-              disabled={completedFiles.length === 0}
-            >
-              <MessageSquare className="w-4 h-4" />
-              Chat
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        {/* Files Tab */}
-        <TabsContent value="files" className="flex-1 overflow-hidden m-0">
-          <ScrollArea className="h-full">
-            <div className="p-6 space-y-6">
-              {/* Processing Status Banner */}
-              {(processingFiles.length > 0 || pendingFiles.length > 0) && (
-                <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 backdrop-blur-sm p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-lg">Extracting Documents</p>
-                      <p className="text-sm text-muted-foreground">
-                        {processingFiles.length} processing, {pendingFiles.length} pending
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-3xl font-bold text-primary">{overallProgress}%</span>
-                    </div>
-                  </div>
-                  <Progress value={overallProgress} className="h-2" />
-                </div>
-              )}
-
-              {/* File Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {files.map((file) => (
-                  <FileStatusCard key={file.id} file={file} />
+      {/* Main content - Split view */}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Document sidebar panel */}
+        <div className={cn(
+          "absolute inset-y-0 left-0 w-72 bg-card/95 backdrop-blur-xl border-r border-border/30 z-40 transform transition-transform duration-300 ease-out",
+          showDocPanel ? "translate-x-0" : "-translate-x-full"
+        )}>
+          <div className="flex flex-col h-full">
+            <div className="p-4 border-b border-border/30">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-sm">Documents</h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => setShowDocPanel(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {/* Upload button */}
+              <label className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-border/50 rounded-xl cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
+                <input
+                  type="file"
+                  multiple
+                  accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.webp"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+                {isUploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Upload className="w-4 h-4" />
+                )}
+                <span className="text-sm font-medium">Add Files</span>
+              </label>
+            </div>
+            
+            <ScrollArea className="flex-1 p-3">
+              <div className="space-y-2">
+                {files.map(file => (
+                  <MiniFileCard
+                    key={file.id}
+                    file={file}
+                    onRemove={() => handleRemoveFile(file.id, file.storage_path)}
+                  />
                 ))}
               </div>
+            </ScrollArea>
 
-              {/* Action Buttons */}
-              {allFilesProcessed && completedFiles.length > 0 && (
-                <div className="pt-4 space-y-4">
-                  <Separator className="bg-border/30" />
-                  
-                  {isGeneratingMemo ? (
-                    <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 p-6">
-                      <div className="flex items-center gap-4 mb-4">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                        <div className="flex-1">
-                          <p className="font-semibold text-lg">Generating Due Diligence Memo</p>
-                          <p className="text-sm text-muted-foreground">
-                            AI is analyzing all documents...
-                          </p>
-                        </div>
-                        <span className="text-2xl font-bold text-primary">{memoProgress}%</span>
-                      </div>
-                      <Progress value={memoProgress} className="h-2" />
-                    </div>
-                  ) : !memo ? (
-                    <Button 
-                      onClick={generateMemo} 
-                      disabled={isGeneratingMemo}
-                      className="w-full gap-3 h-14 text-lg rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20"
-                      size="lg"
-                    >
-                      <Sparkles className="w-5 h-5" />
-                      Generate Due Diligence Memo
-                    </Button>
-                  ) : (
-                    <Button 
-                      onClick={generateMemo} 
-                      disabled={isGeneratingMemo}
-                      variant="outline"
-                      className="w-full gap-2 rounded-xl"
-                    >
-                      <RefreshCw className={cn("w-4 h-4", isGeneratingMemo && "animate-spin")} />
-                      Regenerate Memo
-                    </Button>
-                  )}
-                  
-                  <p className="text-xs text-muted-foreground text-center">
-                    AI will analyze {completedFiles.length} document{completedFiles.length !== 1 ? 's' : ''} and generate a comprehensive investment memo.
-                  </p>
-                </div>
-              )}
+            {/* Reprocess button */}
+            {errorFiles.length > 0 && (
+              <div className="p-4 border-t border-border/30">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={processFiles}
+                  disabled={isProcessing}
+                  className="w-full gap-2"
+                >
+                  <RefreshCw className={cn("w-4 h-4", isProcessing && "animate-spin")} />
+                  Retry Failed ({errorFiles.length})
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
 
-              {errorFiles.length > 0 && (
-                <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5">
-                  <div className="flex items-center gap-3 mb-2">
-                    <AlertCircle className="w-5 h-5 text-destructive" />
-                    <p className="font-semibold text-destructive">
-                      {errorFiles.length} file{errorFiles.length !== 1 ? 's' : ''} failed to process
-                    </p>
-                  </div>
-                  <p className="text-sm text-destructive/80">
-                    These files will be excluded from the analysis. You can still proceed with the remaining documents.
-                  </p>
-                </div>
-              )}
+        {/* Memo + Chat Split View */}
+        {memo ? (
+          <div className="flex-1 flex">
+            {/* Left: Memo */}
+            <div className="w-1/2 border-r border-border/20 overflow-hidden">
+              <DataRoomMemoView memo={memo} />
             </div>
-          </ScrollArea>
-        </TabsContent>
-
-        {/* Memo Tab */}
-        <TabsContent value="memo" className="flex-1 overflow-hidden m-0">
-          {memo && <DataRoomMemoView memo={memo} />}
-        </TabsContent>
-
-        {/* Chat Tab */}
-        <TabsContent value="chat" className="flex-1 overflow-hidden m-0">
-          <DataRoomChat roomId={roomId} files={completedFiles} />
-        </TabsContent>
-      </Tabs>
+            
+            {/* Right: Chat */}
+            <div className="w-1/2 overflow-hidden">
+              <DataRoomChat roomId={roomId} files={completedFiles} />
+            </div>
+          </div>
+        ) : (
+          /* Waiting state when no memo yet */
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="text-center max-w-md">
+              <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-6">
+                <Sparkles className="w-10 h-10 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Preparing Analysis</h3>
+              <p className="text-muted-foreground mb-6">
+                Upload documents and we'll automatically extract and analyze them to generate your due diligence memo.
+              </p>
+              
+              <label className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl cursor-pointer hover:bg-primary/90 transition-colors shadow-lg">
+                <input
+                  type="file"
+                  multiple
+                  accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.webp"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+                {isUploading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Upload className="w-5 h-5" />
+                )}
+                <span className="font-medium">Upload Documents</span>
+              </label>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
