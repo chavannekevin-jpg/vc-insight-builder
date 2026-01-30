@@ -19,6 +19,7 @@ const STATUS_CONFIG = {
 const SOURCE_BADGES = {
   invite: { label: "Invited", icon: Gift, color: "bg-primary/10 text-primary border-primary/30" },
   deck_upload: { label: "Deck", icon: FileUp, color: "bg-blue-500/10 text-blue-500 border-blue-500/30" },
+  data_room: { label: "Data Room", icon: FileText, color: "bg-purple-500/10 text-purple-500 border-purple-500/30" },
   manual: { label: "Manual", icon: FileText, color: "bg-muted text-muted-foreground border-border" },
 };
 

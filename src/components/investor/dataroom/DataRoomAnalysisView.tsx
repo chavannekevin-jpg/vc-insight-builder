@@ -171,6 +171,50 @@ export function DataRoomAnalysisView({
   const [activeTab, setActiveTab] = useState<string>("files");
   const [memoProgress, setMemoProgress] = useState(0);
 
+  // Function to auto-save data room analysis to dealflow
+  const saveDataRoomToDealflow = async (roomId: string, memo: DataRoomMemo, companyName: string) => {
+    // First, create a deck company record to store the memo
+    const { data: deckCompany, error: deckCompanyError } = await supabase
+      .from("investor_deck_companies")
+      .insert([{
+        investor_id: investorId,
+        name: memo.company_name || companyName,
+        stage: "Unknown",
+        description: memo.executive_summary?.slice(0, 500) || null,
+        category: null,
+        memo_json: memo as any,
+      }])
+      .select("id")
+      .single();
+
+    if (deckCompanyError) throw deckCompanyError;
+    if (!deckCompany?.id) throw new Error("Failed to create deck company");
+
+    // Check if already in dealflow (by deck_company_id)
+    const { data: existingDeal } = await supabase
+      .from("investor_dealflow")
+      .select("id")
+      .eq("investor_id", investorId)
+      .eq("deck_company_id", deckCompany.id)
+      .single();
+
+    if (existingDeal) {
+      console.log("Deal already exists in dealflow");
+      return;
+    }
+
+    // Add to dealflow with data_room source
+    const { error: dealflowError } = await supabase.from("investor_dealflow").insert({
+      investor_id: investorId,
+      deck_company_id: deckCompany.id,
+      company_id: null,
+      source: "data_room",
+      status: "reviewing",
+    } as any);
+
+    if (dealflowError) throw dealflowError;
+  };
+
   // Poll for file processing status
   useEffect(() => {
     if (room?.status === 'processing') {
@@ -271,7 +315,15 @@ export function DataRoomAnalysisView({
         summaryJson: data.memo,
       });
 
-      toast({ title: "Analysis complete", description: "Due diligence memo is ready." });
+      // Auto-save to dealflow
+      try {
+        await saveDataRoomToDealflow(roomId, data.memo, room?.company_name || "Unknown");
+      } catch (saveError) {
+        console.error("Failed to auto-save to dealflow:", saveError);
+        // Don't fail the whole operation if dealflow save fails
+      }
+
+      toast({ title: "Analysis complete", description: "Due diligence memo is ready and saved to your dealflow." });
       refetchRoom();
       setActiveTab("memo");
     } catch (error) {

@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export type DealStatus = "reviewing" | "due_diligence" | "term_sheet" | "closed" | "passed";
-export type DealSource = "invite" | "deck_upload" | "manual";
+export type DealSource = "invite" | "deck_upload" | "manual" | "data_room";
 
 export interface DealflowItem {
   id: string;
