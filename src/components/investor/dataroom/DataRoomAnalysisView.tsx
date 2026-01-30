@@ -30,6 +30,28 @@ import { DataRoomChat } from "./DataRoomChat";
 import type { DataRoomMemo, DataRoomFile } from "@/types/dataRoom";
 import { cn } from "@/lib/utils";
 
+async function readErrorMessage(response: Response): Promise<string> {
+  // Never assume the body is valid JSON (edge errors, gateways, etc.)
+  const raw = await response.text().catch(() => "");
+  if (!raw) return `Request failed (${response.status})`;
+  try {
+    const parsed = JSON.parse(raw) as any;
+    return parsed?.error || parsed?.message || raw;
+  } catch {
+    return raw;
+  }
+}
+
+async function safeReadJson<T = any>(response: Response): Promise<T> {
+  const raw = await response.text().catch(() => "");
+  if (!raw) throw new Error("Empty response from server");
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    throw new Error("Server returned an invalid response");
+  }
+}
+
 interface DataRoomAnalysisViewProps {
   roomId: string;
   investorId: string;
@@ -240,11 +262,10 @@ export function DataRoomAnalysisView({
       );
 
       if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || "Failed to process files");
+        throw new Error(await readErrorMessage(response));
       }
 
-      const result = await response.json();
+      const result = await safeReadJson<any>(response);
       console.log("Process result:", result);
       
       // Refetch files to update UI
@@ -307,11 +328,10 @@ export function DataRoomAnalysisView({
       );
 
       if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || "Failed to generate memo");
+        throw new Error(await readErrorMessage(response));
       }
 
-      const data = await response.json();
+      const data = await safeReadJson<any>(response);
       setMemoProgress(100);
       
       await updateStatus.mutateAsync({
