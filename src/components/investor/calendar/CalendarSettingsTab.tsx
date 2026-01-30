@@ -9,7 +9,18 @@ import { format } from "date-fns";
 import {
   useConnectGoogleCalendar,
 } from "@/hooks/useCalendarBooking";
-import { Loader2, Calendar, CheckCircle2, ExternalLink, Trash2, Copy, Check, Link2, Edit2, Plus } from "lucide-react";
+import { Loader2, Calendar, CheckCircle2, ExternalLink, Trash2, Copy, Check, Link2, Edit2, Plus, Unlink, AlertTriangle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import BookingPageCustomization from "./BookingPageCustomization";
@@ -39,6 +50,8 @@ const CalendarSettingsTab = ({ userId }: CalendarSettingsTabProps) => {
   const [newSlug, setNewSlug] = useState("");
   const [isSavingSlug, setIsSavingSlug] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [showDisconnectSuccess, setShowDisconnectSuccess] = useState(false);
 
   const fetchCalendars = async () => {
     setIsLoadingCalendars(true);
@@ -110,7 +123,33 @@ const CalendarSettingsTab = ({ userId }: CalendarSettingsTabProps) => {
     }
   };
 
-  const bookingLink = profileSlug 
+  const handleDisconnectAll = async () => {
+    setIsDisconnecting(true);
+    try {
+      const { error } = await supabase.functions.invoke("disconnect-calendar", {
+        body: { investorId: userId },
+      });
+      
+      if (error) throw error;
+      
+      setLinkedCalendars([]);
+      setShowDisconnectSuccess(true);
+      toast({ 
+        title: "Calendars disconnected",
+        description: "Don't forget to revoke access in your Google Account settings.",
+      });
+    } catch (err: any) {
+      toast({ 
+        title: "Error disconnecting calendars", 
+        description: err.message,
+        variant: "destructive" 
+      });
+    } finally {
+      setIsDisconnecting(false);
+    }
+  };
+
+  const bookingLink = profileSlug
     ? `${window.location.origin}/book/${profileSlug}`
     : `${window.location.origin}/book/${userId}`;
 
@@ -330,6 +369,91 @@ const CalendarSettingsTab = ({ userId }: CalendarSettingsTabProps) => {
 
       {/* Booking Page Customization */}
       <BookingPageCustomization userId={userId} />
+
+      {/* Disconnect All Calendars */}
+      {linkedCalendars.length > 0 && (
+        <Card className="p-6 border-destructive/20">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-lg bg-destructive/10">
+              <Unlink className="h-6 w-6 text-destructive" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium mb-1">Disconnect All Calendars</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Remove all connected calendars. You'll need to re-authorize to connect them again.
+              </p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" disabled={isDisconnecting}>
+                    {isDisconnecting ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Unlink className="h-4 w-4 mr-2" />
+                    )}
+                    Disconnect All Calendars
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
+                      Disconnect All Calendars?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-3">
+                      <p>This will remove all your connected Google Calendars from the system.</p>
+                      <p className="font-medium text-foreground">Important: After disconnecting, you should also:</p>
+                      <ol className="list-decimal list-inside space-y-1 text-sm">
+                        <li>Go to <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" className="text-primary underline">Google Account Permissions</a></li>
+                        <li>Find "UglyBaby" in the list</li>
+                        <li>Click "Remove Access" to fully revoke authorization</li>
+                      </ol>
+                      <p className="text-sm">This ensures the OAuth consent screen will appear when you reconnect.</p>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDisconnectAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Disconnect All
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Post-Disconnect Instructions */}
+      {showDisconnectSuccess && linkedCalendars.length === 0 && (
+        <Card className="p-6 border-primary bg-primary/5">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <CheckCircle2 className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium mb-2">Calendars Disconnected Successfully</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                To complete the process and ensure the OAuth consent screen appears when you reconnect:
+              </p>
+              <ol className="list-decimal list-inside space-y-2 text-sm mb-4">
+                <li>Visit <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" className="text-primary underline font-medium">Google Account Permissions</a></li>
+                <li>Find "UglyBaby" in the list of connected apps</li>
+                <li>Click on it and select "Remove Access"</li>
+                <li>Use an incognito window to reconnect and see the full consent screen</li>
+              </ol>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open("https://myaccount.google.com/permissions", "_blank")}
+                className="gap-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Open Google Permissions
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Tips */}
       <Card className="p-6 bg-muted/50">
