@@ -1289,6 +1289,126 @@ export type Database = {
           },
         ]
       }
+      investor_data_room_files: {
+        Row: {
+          created_at: string
+          extracted_text: string | null
+          extraction_status: string
+          file_name: string
+          file_size: number | null
+          file_type: string
+          id: string
+          page_count: number | null
+          room_id: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          extracted_text?: string | null
+          extraction_status?: string
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          page_count?: number | null
+          room_id: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          extracted_text?: string | null
+          extraction_status?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          page_count?: number | null
+          room_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_data_room_files_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "investor_data_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_data_room_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          room_id: string
+          sources: Json | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          room_id: string
+          sources?: Json | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          room_id?: string
+          sources?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_data_room_messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "investor_data_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_data_rooms: {
+        Row: {
+          company_name: string
+          created_at: string
+          id: string
+          investor_id: string
+          status: string
+          summary_json: Json | null
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          id?: string
+          investor_id: string
+          status?: string
+          summary_json?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          id?: string
+          investor_id?: string
+          status?: string
+          summary_json?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_data_rooms_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investor_dealflow: {
         Row: {
           added_at: string | null
