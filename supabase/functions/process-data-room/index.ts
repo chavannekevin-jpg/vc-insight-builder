@@ -1,6 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Safe base64 encoding that doesn't cause stack overflow
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 0x8000; // 32KB chunks
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
+  }
+  return btoa(binary);
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -56,6 +68,8 @@ serve(async (req) => {
     // Process each file
     for (const file of files || []) {
       try {
+        console.log(`Processing file: ${file.file_name}, type: ${file.file_type}`);
+        
         // Update status to processing
         await supabase
           .from("investor_data_room_files")
@@ -73,10 +87,12 @@ serve(async (req) => {
         let pageCount = 0;
 
         if (file.file_type === "application/pdf") {
-          // Convert PDF to base64 for vision extraction
-          const bytes = await fileData.arrayBuffer();
-          const base64 = btoa(String.fromCharCode(...new Uint8Array(bytes)));
+          // Convert PDF to base64 safely (no stack overflow)
+          const buffer = await fileData.arrayBuffer();
+          const base64 = arrayBufferToBase64(buffer);
           const dataUrl = `data:application/pdf;base64,${base64}`;
+
+          console.log(`PDF size: ${buffer.byteLength} bytes, base64 length: ${base64.length}`);
 
           // Use AI to extract text from PDF
           const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -114,17 +130,76 @@ serve(async (req) => {
 
           const result = await response.json();
           extractedText = result.choices?.[0]?.message?.content || "";
-          pageCount = 1; // Estimate, could be improved
+          pageCount = 1;
 
         } else if (file.file_type.includes("spreadsheet") || file.file_type.includes("excel") || file.file_type === "text/csv") {
-          // For spreadsheets, read as text
-          extractedText = await fileData.text();
+          // For spreadsheets, we need to handle binary files differently
+          if (file.file_type === "text/csv") {
+            extractedText = await fileData.text();
+          } else {
+            // For Excel files, convert to base64 and use AI to describe
+            const buffer = await fileData.arrayBuffer();
+            const base64 = arrayBufferToBase64(buffer);
+            
+            console.log(`Excel file size: ${buffer.byteLength} bytes`);
+            
+            // Excel files can't be directly read as text, so we'll note it
+            extractedText = `[Excel file: ${file.file_name}]\n`;
+            extractedText += `File size: ${file.file_size} bytes\n`;
+            extractedText += `This is a spreadsheet file. For detailed analysis, the AI will interpret the data during memo generation.`;
+            
+            // Try to use AI to extract if file is small enough (< 5MB)
+            if (buffer.byteLength < 5 * 1024 * 1024) {
+              try {
+                const dataUrl = `data:${file.file_type};base64,${base64}`;
+                const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    model: "google/gemini-2.5-flash",
+                    messages: [
+                      {
+                        role: "user",
+                        content: [
+                          {
+                            type: "text",
+                            text: "Extract and describe ALL data from this Excel spreadsheet. Include sheet names, column headers, and key data points. Format numbers and dates clearly. If there are financial figures, list them explicitly.",
+                          },
+                          {
+                            type: "file",
+                            file: { 
+                              filename: file.file_name,
+                              file_data: base64,
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                    max_tokens: 16000,
+                  }),
+                });
+
+                if (response.ok) {
+                  const result = await response.json();
+                  const aiText = result.choices?.[0]?.message?.content;
+                  if (aiText) {
+                    extractedText = aiText;
+                  }
+                }
+              } catch (excelErr) {
+                console.error("Excel AI extraction failed:", excelErr);
+              }
+            }
+          }
           pageCount = 1;
 
         } else if (file.file_type.startsWith("image/")) {
           // Extract text from image
-          const bytes = await fileData.arrayBuffer();
-          const base64 = btoa(String.fromCharCode(...new Uint8Array(bytes)));
+          const buffer = await fileData.arrayBuffer();
+          const base64 = arrayBufferToBase64(buffer);
           const dataUrl = `data:${file.file_type};base64,${base64}`;
 
           const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -169,6 +244,8 @@ serve(async (req) => {
           }
           pageCount = 1;
         }
+
+        console.log(`Extracted ${extractedText.length} characters from ${file.file_name}`);
 
         // Update file with extracted text
         await supabase
