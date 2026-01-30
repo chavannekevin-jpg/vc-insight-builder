@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import * as XLSX from "https://esm.sh/xlsx@0.18.5";
 
 // Safe base64 encoding that doesn't cause stack overflow
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -17,6 +18,98 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Parse Excel file and extract all data as structured text
+function parseExcelToText(buffer: ArrayBuffer, fileName: string): string {
+  try {
+    const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+    let fullText = `=== Excel File: ${fileName} ===\n\n`;
+    
+    for (const sheetName of workbook.SheetNames) {
+      const sheet = workbook.Sheets[sheetName];
+      fullText += `### Sheet: ${sheetName}\n\n`;
+      
+      // Get range of used cells
+      const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+      
+      // Convert to array of arrays for better formatting
+      const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as any[][];
+      
+      if (data.length === 0) {
+        fullText += "(Empty sheet)\n\n";
+        continue;
+      }
+      
+      // Format as a simple table
+      for (let rowIdx = 0; rowIdx < data.length; rowIdx++) {
+        const row = data[rowIdx];
+        if (row.every((cell: any) => cell === '' || cell === null || cell === undefined)) {
+          continue; // Skip empty rows
+        }
+        
+        // Format cells with proper spacing
+        const formattedRow = row.map((cell: any, colIdx: number) => {
+          if (cell === null || cell === undefined || cell === '') return '';
+          // Format numbers nicely
+          if (typeof cell === 'number') {
+            if (Math.abs(cell) >= 1000000) {
+              return `${(cell / 1000000).toFixed(2)}M`;
+            } else if (Math.abs(cell) >= 1000) {
+              return `${(cell / 1000).toFixed(1)}K`;
+            }
+            return cell.toLocaleString();
+          }
+          return String(cell).trim();
+        }).filter((c: string) => c !== '');
+        
+        if (formattedRow.length > 0) {
+          // For first few rows, they're likely headers
+          if (rowIdx === 0) {
+            fullText += `**${formattedRow.join(' | ')}**\n`;
+          } else {
+            fullText += `${formattedRow.join(' | ')}\n`;
+          }
+        }
+      }
+      
+      fullText += "\n";
+    }
+    
+    // Also include raw values for financial analysis
+    fullText += "\n### Raw Data Summary\n\n";
+    for (const sheetName of workbook.SheetNames) {
+      const sheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: null });
+      
+      if (jsonData.length > 0) {
+        fullText += `#### ${sheetName}\n`;
+        // Include first row as reference for column names
+        const keys = Object.keys(jsonData[0] as object);
+        fullText += `Columns: ${keys.join(', ')}\n`;
+        fullText += `Rows: ${jsonData.length}\n`;
+        
+        // Include key financial figures if detected
+        const financialKeywords = ['revenue', 'arr', 'mrr', 'burn', 'runway', 'cac', 'ltv', 'ebitda', 'profit', 'loss', 'expense', 'cost', 'salary', 'total', 'cash', 'balance'];
+        
+        for (const row of jsonData) {
+          const rowObj = row as Record<string, any>;
+          for (const [key, value] of Object.entries(rowObj)) {
+            const keyLower = key.toLowerCase();
+            if (financialKeywords.some(kw => keyLower.includes(kw)) && value !== null && value !== '') {
+              fullText += `- ${key}: ${typeof value === 'number' ? value.toLocaleString() : value}\n`;
+            }
+          }
+        }
+        fullText += "\n";
+      }
+    }
+    
+    return fullText;
+  } catch (error) {
+    console.error("Excel parsing error:", error);
+    return `[Excel file: ${fileName}]\nError parsing file: ${error instanceof Error ? error.message : 'Unknown error'}`;
+  }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -132,68 +225,18 @@ serve(async (req) => {
           extractedText = result.choices?.[0]?.message?.content || "";
           pageCount = 1;
 
-        } else if (file.file_type.includes("spreadsheet") || file.file_type.includes("excel") || file.file_type === "text/csv") {
-          // For spreadsheets, we need to handle binary files differently
-          if (file.file_type === "text/csv") {
-            extractedText = await fileData.text();
-          } else {
-            // For Excel files, convert to base64 and use AI to describe
-            const buffer = await fileData.arrayBuffer();
-            const base64 = arrayBufferToBase64(buffer);
-            
-            console.log(`Excel file size: ${buffer.byteLength} bytes`);
-            
-            // Excel files can't be directly read as text, so we'll note it
-            extractedText = `[Excel file: ${file.file_name}]\n`;
-            extractedText += `File size: ${file.file_size} bytes\n`;
-            extractedText += `This is a spreadsheet file. For detailed analysis, the AI will interpret the data during memo generation.`;
-            
-            // Try to use AI to extract if file is small enough (< 5MB)
-            if (buffer.byteLength < 5 * 1024 * 1024) {
-              try {
-                const dataUrl = `data:${file.file_type};base64,${base64}`;
-                const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${LOVABLE_API_KEY}`,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    model: "google/gemini-2.5-flash",
-                    messages: [
-                      {
-                        role: "user",
-                        content: [
-                          {
-                            type: "text",
-                            text: "Extract and describe ALL data from this Excel spreadsheet. Include sheet names, column headers, and key data points. Format numbers and dates clearly. If there are financial figures, list them explicitly.",
-                          },
-                          {
-                            type: "file",
-                            file: { 
-                              filename: file.file_name,
-                              file_data: base64,
-                            },
-                          },
-                        ],
-                      },
-                    ],
-                    max_tokens: 16000,
-                  }),
-                });
+        } else if (file.file_type.includes("spreadsheet") || file.file_type.includes("excel") || file.file_type.includes("sheet")) {
+          // Parse Excel using xlsx library
+          const buffer = await fileData.arrayBuffer();
+          console.log(`Excel file size: ${buffer.byteLength} bytes`);
+          
+          extractedText = parseExcelToText(buffer, file.file_name);
+          console.log(`Excel extracted ${extractedText.length} characters`);
+          pageCount = 1;
 
-                if (response.ok) {
-                  const result = await response.json();
-                  const aiText = result.choices?.[0]?.message?.content;
-                  if (aiText) {
-                    extractedText = aiText;
-                  }
-                }
-              } catch (excelErr) {
-                console.error("Excel AI extraction failed:", excelErr);
-              }
-            }
-          }
+        } else if (file.file_type === "text/csv") {
+          // CSV files - read as text
+          extractedText = await fileData.text();
           pageCount = 1;
 
         } else if (file.file_type.startsWith("image/")) {
@@ -216,7 +259,7 @@ serve(async (req) => {
                   content: [
                     {
                       type: "text",
-                      text: "Extract and transcribe ALL text visible in this image. Include numbers, labels, and any data shown.",
+                      text: "Extract and transcribe ALL text visible in this image. Include numbers, labels, and any data shown. If this is a chart or table, describe the data in detail.",
                     },
                     {
                       type: "image_url",

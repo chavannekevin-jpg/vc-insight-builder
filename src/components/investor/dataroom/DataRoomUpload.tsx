@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { 
   FolderOpen, 
   Upload, 
@@ -13,13 +14,13 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
-  Sparkles
+  Sparkles,
+  Files
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useCreateDataRoom, useAddDataRoomFile } from "@/hooks/useDataRoom";
+import { useCreateDataRoom } from "@/hooks/useDataRoom";
 import { cn } from "@/lib/utils";
-import type { DataRoomFile } from "@/types/dataRoom";
 
 interface DataRoomUploadProps {
   investorId: string;
@@ -30,18 +31,19 @@ interface DataRoomUploadProps {
 interface QueuedFile {
   file: File;
   id: string;
-  status: 'pending' | 'uploading' | 'processing' | 'completed' | 'error';
+  status: 'pending' | 'uploading' | 'completed' | 'error';
+  progress: number;
   error?: string;
 }
 
 const SUPPORTED_TYPES = {
-  'application/pdf': { icon: FileText, label: 'PDF' },
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': { icon: FileSpreadsheet, label: 'Excel' },
-  'application/vnd.ms-excel': { icon: FileSpreadsheet, label: 'Excel' },
-  'text/csv': { icon: FileSpreadsheet, label: 'CSV' },
-  'image/png': { icon: Image, label: 'Image' },
-  'image/jpeg': { icon: Image, label: 'Image' },
-  'image/webp': { icon: Image, label: 'Image' },
+  'application/pdf': { icon: FileText, label: 'PDF', color: 'text-red-500' },
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': { icon: FileSpreadsheet, label: 'Excel', color: 'text-green-500' },
+  'application/vnd.ms-excel': { icon: FileSpreadsheet, label: 'Excel', color: 'text-green-500' },
+  'text/csv': { icon: FileSpreadsheet, label: 'CSV', color: 'text-green-500' },
+  'image/png': { icon: Image, label: 'Image', color: 'text-blue-500' },
+  'image/jpeg': { icon: Image, label: 'Image', color: 'text-blue-500' },
+  'image/webp': { icon: Image, label: 'Image', color: 'text-blue-500' },
 };
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
@@ -52,9 +54,9 @@ export function DataRoomUpload({ investorId, onBack, onRoomCreated }: DataRoomUp
   const [isDragging, setIsDragging] = useState(false);
   const [queuedFiles, setQueuedFiles] = useState<QueuedFile[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   
   const createRoom = useCreateDataRoom(investorId);
-  const addFile = useAddDataRoomFile(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -105,6 +107,7 @@ export function DataRoomUpload({ investorId, onBack, onRoomCreated }: DataRoomUp
         file,
         id: crypto.randomUUID(),
         status: 'pending',
+        progress: 0,
       });
     }
     
@@ -138,6 +141,7 @@ export function DataRoomUpload({ investorId, onBack, onRoomCreated }: DataRoomUp
     }
 
     setIsCreating(true);
+    setUploadProgress(0);
 
     try {
       // 1. Create the data room
@@ -147,12 +151,14 @@ export function DataRoomUpload({ investorId, onBack, onRoomCreated }: DataRoomUp
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
 
-      // 3. Upload files sequentially
+      const totalFiles = queuedFiles.length;
+
+      // 3. Upload files sequentially with progress
       for (let i = 0; i < queuedFiles.length; i++) {
         const qf = queuedFiles[i];
         
         setQueuedFiles(prev => prev.map(f => 
-          f.id === qf.id ? { ...f, status: 'uploading' } : f
+          f.id === qf.id ? { ...f, status: 'uploading', progress: 0 } : f
         ));
 
         try {
@@ -175,8 +181,10 @@ export function DataRoomUpload({ investorId, onBack, onRoomCreated }: DataRoomUp
           });
 
           setQueuedFiles(prev => prev.map(f => 
-            f.id === qf.id ? { ...f, status: 'completed' } : f
+            f.id === qf.id ? { ...f, status: 'completed', progress: 100 } : f
           ));
+          
+          setUploadProgress(Math.round(((i + 1) / totalFiles) * 100));
         } catch (err) {
           setQueuedFiles(prev => prev.map(f => 
             f.id === qf.id ? { ...f, status: 'error', error: (err as Error).message } : f
@@ -208,39 +216,66 @@ export function DataRoomUpload({ investorId, onBack, onRoomCreated }: DataRoomUp
     return config?.icon || FileText;
   };
 
-  const allCompleted = queuedFiles.length > 0 && queuedFiles.every(f => f.status === 'completed');
-  const hasErrors = queuedFiles.some(f => f.status === 'error');
+  const getFileColor = (type: string) => {
+    const config = SUPPORTED_TYPES[type as keyof typeof SUPPORTED_TYPES];
+    return config?.color || 'text-muted-foreground';
+  };
+
+  const completedCount = queuedFiles.filter(f => f.status === 'completed').length;
+  const errorCount = queuedFiles.filter(f => f.status === 'error').length;
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
-      {/* Header */}
-      <div className="p-5 border-b border-border/30 bg-gradient-to-r from-card/80 to-card/40 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onBack} disabled={isCreating}>
+      {/* Glassmorphism Header */}
+      <div className="p-6 border-b border-border/20 bg-gradient-to-r from-card/60 to-card/30 backdrop-blur-xl">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onBack} 
+            disabled={isCreating}
+            className="rounded-full bg-background/50 hover:bg-background/80"
+          >
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div>
-            <h2 className="text-xl font-bold tracking-tight">Create Data Room</h2>
-            <p className="text-sm text-muted-foreground/80 mt-0.5">
-              Upload documents for comprehensive due diligence analysis.
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+              Create Data Room
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Upload documents for AI-powered due diligence analysis
             </p>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+            <Files className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-primary">
+              {queuedFiles.length} / {MAX_FILES}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-auto p-6">
-        <div className="max-w-2xl mx-auto space-y-6">
-          {/* Company Name */}
-          <div className="space-y-2">
-            <Label htmlFor="company-name">Company Name</Label>
+        <div className="max-w-3xl mx-auto space-y-8">
+          {/* Company Name Card */}
+          <div className="rounded-2xl border border-border/30 bg-card/40 backdrop-blur-xl p-6 shadow-lg">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <Label htmlFor="company-name" className="text-base font-semibold">Company Name</Label>
+                <p className="text-xs text-muted-foreground">Enter the name of the company you're analyzing</p>
+              </div>
+            </div>
             <Input
               id="company-name"
-              placeholder="e.g., Acme Corp"
+              placeholder="e.g., Acme Corp, TechStartup Inc."
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
               disabled={isCreating}
-              className="max-w-sm"
+              className="max-w-md bg-background/50 border-border/50 focus:border-primary/50"
             />
           </div>
 
@@ -250,20 +285,21 @@ export function DataRoomUpload({ investorId, onBack, onRoomCreated }: DataRoomUp
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={cn(
-              "border-2 border-dashed rounded-xl p-8 transition-all duration-200",
+              "rounded-2xl border-2 border-dashed p-10 transition-all duration-300",
+              "bg-gradient-to-br from-card/60 to-muted/20 backdrop-blur-xl",
               isDragging
-                ? "border-primary bg-primary/5 scale-[1.01]"
-                : "border-border hover:border-primary/50 hover:bg-muted/20",
+                ? "border-primary bg-primary/5 scale-[1.01] shadow-lg shadow-primary/10"
+                : "border-border/40 hover:border-primary/40 hover:shadow-md",
               isCreating && "pointer-events-none opacity-50"
             )}
           >
             <div className="flex flex-col items-center text-center">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
-                <FolderOpen className="w-7 h-7 text-primary" />
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent flex items-center justify-center mb-6 shadow-lg">
+                <FolderOpen className="w-10 h-10 text-primary" />
               </div>
-              <h3 className="font-semibold mb-1">Drop files here</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                PDF, Excel, CSV, or images (max {MAX_FILE_SIZE / 1024 / 1024}MB each)
+              <h3 className="text-xl font-semibold mb-2">Drop your files here</h3>
+              <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+                PDF, Excel, CSV, or images • Max {MAX_FILE_SIZE / 1024 / 1024}MB per file
               </p>
               <label>
                 <input
@@ -274,9 +310,9 @@ export function DataRoomUpload({ investorId, onBack, onRoomCreated }: DataRoomUp
                   className="hidden"
                   disabled={isCreating}
                 />
-                <Button asChild variant="outline" size="sm" className="cursor-pointer">
+                <Button asChild variant="outline" size="lg" className="cursor-pointer gap-2 rounded-xl">
                   <span>
-                    <Upload className="w-4 h-4 mr-2" />
+                    <Upload className="w-4 h-4" />
                     Browse Files
                   </span>
                 </Button>
@@ -286,53 +322,84 @@ export function DataRoomUpload({ investorId, onBack, onRoomCreated }: DataRoomUp
 
           {/* File Queue */}
           {queuedFiles.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Documents ({queuedFiles.length})</Label>
+            <div className="rounded-2xl border border-border/30 bg-card/40 backdrop-blur-xl overflow-hidden shadow-lg">
+              <div className="p-4 border-b border-border/20 flex items-center justify-between bg-gradient-to-r from-muted/30 to-transparent">
+                <div className="flex items-center gap-2">
+                  <Files className="w-4 h-4 text-muted-foreground" />
+                  <span className="font-semibold">Documents</span>
+                  <span className="text-sm text-muted-foreground">({queuedFiles.length})</span>
+                </div>
                 {!isCreating && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setQueuedFiles([])}
-                    className="text-muted-foreground"
+                    className="text-muted-foreground hover:text-destructive"
                   >
                     Clear all
                   </Button>
                 )}
               </div>
-              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              <div className="divide-y divide-border/20 max-h-[350px] overflow-y-auto">
                 {queuedFiles.map((qf) => {
                   const Icon = getFileIcon(qf.file.type);
+                  const iconColor = getFileColor(qf.file.type);
                   return (
                     <div
                       key={qf.id}
-                      className="flex items-center gap-3 p-3 rounded-lg border bg-card"
+                      className={cn(
+                        "flex items-center gap-4 p-4 transition-colors",
+                        qf.status === 'completed' && "bg-green-500/5",
+                        qf.status === 'error' && "bg-destructive/5",
+                        qf.status === 'uploading' && "bg-primary/5"
+                      )}
                     >
-                      <Icon className="w-5 h-5 text-muted-foreground shrink-0" />
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                        qf.status === 'completed' ? "bg-green-500/10" :
+                        qf.status === 'error' ? "bg-destructive/10" :
+                        "bg-muted/50"
+                      )}>
+                        <Icon className={cn("w-5 h-5", iconColor)} />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{qf.file.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {(qf.file.size / 1024).toFixed(1)} KB
-                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-muted-foreground">
+                            {(qf.file.size / 1024).toFixed(1)} KB
+                          </span>
+                          {qf.status === 'uploading' && (
+                            <span className="text-xs text-primary">Uploading...</span>
+                          )}
+                          {qf.status === 'completed' && (
+                            <span className="text-xs text-green-600">Ready</span>
+                          )}
+                          {qf.status === 'error' && (
+                            <span className="text-xs text-destructive">Failed</span>
+                          )}
+                        </div>
+                        {qf.status === 'uploading' && (
+                          <Progress value={qf.progress} className="h-1 mt-2" />
+                        )}
                       </div>
                       {qf.status === 'pending' && !isCreating && (
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => removeFile(qf.id)}
-                          className="shrink-0"
+                          className="shrink-0 rounded-full hover:bg-destructive/10 hover:text-destructive"
                         >
                           <X className="w-4 h-4" />
                         </Button>
                       )}
                       {qf.status === 'uploading' && (
-                        <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />
+                        <Loader2 className="w-5 h-5 animate-spin text-primary shrink-0" />
                       )}
                       {qf.status === 'completed' && (
-                        <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                        <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
                       )}
                       {qf.status === 'error' && (
-                        <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
+                        <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
                       )}
                     </div>
                   );
@@ -341,29 +408,39 @@ export function DataRoomUpload({ investorId, onBack, onRoomCreated }: DataRoomUp
             </div>
           )}
 
-          {/* Action Button */}
-          <Button
-            onClick={uploadAndProcess}
-            disabled={!companyName.trim() || queuedFiles.length === 0 || isCreating}
-            className="w-full gap-2"
-            size="lg"
-          >
-            {isCreating ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Creating Data Room...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4" />
-                Create Data Room & Analyse
-              </>
-            )}
-          </Button>
+          {/* Upload Progress */}
+          {isCreating && (
+            <div className="rounded-2xl border border-primary/30 bg-primary/5 backdrop-blur-xl p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <div className="flex-1">
+                  <p className="font-semibold">Creating Data Room...</p>
+                  <p className="text-sm text-muted-foreground">
+                    Uploading {completedCount} of {queuedFiles.length} files
+                  </p>
+                </div>
+                <span className="text-2xl font-bold text-primary">{uploadProgress}%</span>
+              </div>
+              <Progress value={uploadProgress} className="h-2" />
+            </div>
+          )}
 
-          <p className="text-xs text-muted-foreground text-center">
-            Once uploaded, our AI will extract and analyse all documents to generate
-            a comprehensive due diligence memorandum.
+          {/* Action Button */}
+          {!isCreating && (
+            <Button
+              onClick={uploadAndProcess}
+              disabled={!companyName.trim() || queuedFiles.length === 0}
+              className="w-full gap-3 h-14 text-lg rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20"
+              size="lg"
+            >
+              <Sparkles className="w-5 h-5" />
+              Create Data Room & Analyse
+            </Button>
+          )}
+
+          <p className="text-xs text-muted-foreground text-center max-w-md mx-auto">
+            Our AI will extract and analyze all documents to generate a comprehensive 
+            due diligence memorandum with key metrics, red flags, and investment insights.
           </p>
         </div>
       </div>

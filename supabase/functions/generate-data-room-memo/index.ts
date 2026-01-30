@@ -120,24 +120,35 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // Build document context
-    const documentContext = files.map(f => 
-      `=== Document: ${f.file_name} ===\n${f.extracted_text || "[No content extracted]"}\n`
-    ).join("\n\n");
+    // Build document context - truncate very long docs to avoid token limits
+    const MAX_DOC_LENGTH = 30000; // Max chars per document
+    const documentContext = files.map(f => {
+      let content = f.extracted_text || "[No content extracted]";
+      if (content.length > MAX_DOC_LENGTH) {
+        content = content.slice(0, MAX_DOC_LENGTH) + "\n...[Content truncated for length]...";
+      }
+      return `=== Document: ${f.file_name} ===\n${content}\n`;
+    }).join("\n\n");
 
-    // Generate memo using tool calling
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          {
-            role: "system",
-            content: `You are an experienced venture capital analyst conducting due diligence on a startup investment opportunity. You have access to multiple documents from the company's data room.
+    console.log(`Generating memo for ${files.length} documents, total context: ${documentContext.length} chars`);
+
+    // Generate memo using tool calling with timeout handling
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120000); // 2 min timeout
+
+    try {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-pro",
+          messages: [
+            {
+              role: "system",
+              content: `You are an experienced venture capital analyst conducting due diligence on a startup investment opportunity. You have access to multiple documents from the company's data room.
 
 Your task is to analyze all provided documents and generate a comprehensive investment memorandum. Be thorough, critical, and highlight:
 1. Strengths and positive signals
@@ -148,52 +159,84 @@ Your task is to analyze all provided documents and generate a comprehensive inve
 
 Act as a skeptical but fair analyst. Cross-reference claims across documents. Note when numbers don't add up or when claims are unsubstantiated.
 
+IMPORTANT: For financial data from Excel/spreadsheet files, extract specific numbers like ARR, MRR, burn rate, runway, revenue figures, and include them in key_metrics.
+
 Company name: ${room.company_name}
 Today's date: ${new Date().toISOString().split('T')[0]}`,
-          },
-          {
-            role: "user",
-            content: `Analyze these data room documents and generate a comprehensive due diligence memo:\n\n${documentContext}`,
-          },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "generate_investment_memo",
-              description: "Generate a structured investment memorandum based on the analyzed documents",
-              parameters: MEMO_SCHEMA,
             },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "generate_investment_memo" } },
-      }),
-    });
+            {
+              role: "user",
+              content: `Analyze these data room documents and generate a comprehensive due diligence memo:\n\n${documentContext}`,
+            },
+          ],
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "generate_investment_memo",
+                description: "Generate a structured investment memorandum based on the analyzed documents",
+                parameters: MEMO_SCHEMA,
+              },
+            },
+          ],
+          tool_choice: { type: "function", function: { name: "generate_investment_memo" } },
+          max_tokens: 16000,
+        }),
+        signal: controller.signal,
+      });
 
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("AI memo generation error:", err);
-      throw new Error("Failed to generate memo");
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error("AI memo generation error:", errText);
+        
+        if (response.status === 429) {
+          throw new Error("Rate limit exceeded. Please try again in a few minutes.");
+        }
+        if (response.status === 402) {
+          throw new Error("AI credits exhausted. Please add credits.");
+        }
+        throw new Error(`AI service error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
+      
+      if (!toolCall?.function?.arguments) {
+        console.error("Invalid AI response structure:", JSON.stringify(result).slice(0, 500));
+        throw new Error("AI did not return a valid memo structure. Please try again.");
+      }
+
+      let memo;
+      try {
+        memo = JSON.parse(toolCall.function.arguments);
+      } catch (parseErr) {
+        console.error("Failed to parse memo JSON:", parseErr);
+        throw new Error("Failed to parse AI response. Please try again.");
+      }
+
+      // Validate memo has required fields
+      if (!memo.sections || !memo.executive_summary) {
+        throw new Error("Generated memo is incomplete. Please try again.");
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, memo }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } catch (fetchErr) {
+      clearTimeout(timeout);
+      if (fetchErr instanceof Error && fetchErr.name === 'AbortError') {
+        throw new Error("Analysis timed out. Try with fewer or smaller documents.");
+      }
+      throw fetchErr;
     }
-
-    const result = await response.json();
-    const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
-    
-    if (!toolCall?.function?.arguments) {
-      throw new Error("Invalid AI response - no memo generated");
-    }
-
-    const memo = JSON.parse(toolCall.function.arguments);
-
-    return new Response(
-      JSON.stringify({ success: true, memo }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
 
   } catch (error) {
     console.error("Generate memo error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

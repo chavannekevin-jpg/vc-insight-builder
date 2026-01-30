@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Loader2, FileText, Bot, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Send, Loader2, FileText, Bot, User, Sparkles, FileSpreadsheet, Image } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDataRoomMessages, useAddMessage } from "@/hooks/useDataRoom";
-import type { DataRoomFile, DataRoomMessage, DataRoomSource } from "@/types/dataRoom";
+import type { DataRoomFile, DataRoomSource } from "@/types/dataRoom";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 
@@ -17,10 +18,21 @@ interface DataRoomChatProps {
 const SUGGESTED_QUESTIONS = [
   "What are the key financials?",
   "Summarize the business model",
-  "What is the burn rate?",
+  "What is the monthly burn rate?",
   "Who are the founders?",
   "What are the main risks?",
+  "What is the ARR and MRR?",
 ];
+
+const FILE_TYPE_ICONS: Record<string, typeof FileText> = {
+  'application/pdf': FileText,
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': FileSpreadsheet,
+  'application/vnd.ms-excel': FileSpreadsheet,
+  'text/csv': FileSpreadsheet,
+  'image/png': Image,
+  'image/jpeg': Image,
+  'image/webp': Image,
+};
 
 export function DataRoomChat({ roomId, files }: DataRoomChatProps) {
   const { data: messages = [], refetch: refetchMessages } = useDataRoomMessages(roomId);
@@ -181,33 +193,62 @@ export function DataRoomChat({ roomId, files }: DataRoomChatProps) {
   ];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-gradient-to-br from-background to-muted/20">
       {/* Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
         {allMessages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6">
-            <Bot className="w-12 h-12 text-muted-foreground/50 mb-4" />
-            <h3 className="font-semibold mb-2">Chat with your data room</h3>
-            <p className="text-sm text-muted-foreground mb-6 max-w-md">
-              Ask questions about the documents. I'll search through {files.length} file{files.length !== 1 ? 's' : ''} and tell you where I found the information.
+          <div className="h-full flex flex-col items-center justify-center text-center p-8">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent flex items-center justify-center mb-6 shadow-lg">
+              <Bot className="w-10 h-10 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Chat with your Data Room</h3>
+            <p className="text-sm text-muted-foreground mb-8 max-w-md">
+              Ask questions about the documents. I'll search through {files.length} file{files.length !== 1 ? 's' : ''} and cite my sources.
             </p>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {SUGGESTED_QUESTIONS.slice(0, 3).map((q) => (
-                <Button
-                  key={q}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => sendMessage(q)}
-                  disabled={isStreaming}
-                  className="text-xs"
-                >
-                  {q}
-                </Button>
-              ))}
+            
+            {/* File list */}
+            <div className="flex flex-wrap gap-2 justify-center mb-8 max-w-lg">
+              {files.slice(0, 5).map((file) => {
+                const Icon = FILE_TYPE_ICONS[file.file_type] || FileText;
+                return (
+                  <Badge 
+                    key={file.id} 
+                    variant="outline" 
+                    className="text-xs gap-1.5 bg-card/50 backdrop-blur-sm"
+                  >
+                    <Icon className="w-3 h-3" />
+                    {file.file_name.length > 20 ? file.file_name.slice(0, 17) + '...' : file.file_name}
+                  </Badge>
+                );
+              })}
+              {files.length > 5 && (
+                <Badge variant="outline" className="text-xs bg-card/50">
+                  +{files.length - 5} more
+                </Badge>
+              )}
+            </div>
+
+            {/* Suggested questions */}
+            <div className="space-y-3 w-full max-w-md">
+              <p className="text-xs font-medium text-muted-foreground">Suggested questions</p>
+              <div className="grid grid-cols-2 gap-2">
+                {SUGGESTED_QUESTIONS.map((q) => (
+                  <Button
+                    key={q}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => sendMessage(q)}
+                    disabled={isStreaming}
+                    className="text-xs justify-start h-auto py-2 px-3 text-left bg-card/50 hover:bg-card/80 backdrop-blur-sm"
+                  >
+                    {q}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 max-w-3xl mx-auto">
             {allMessages.map((msg) => (
               <div
                 key={msg.id}
@@ -217,17 +258,17 @@ export function DataRoomChat({ roomId, files }: DataRoomChatProps) {
                 )}
               >
                 {msg.role === "assistant" && (
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0 shadow-sm">
                     <Bot className="w-4 h-4 text-primary" />
                   </div>
                 )}
                 
                 <div
                   className={cn(
-                    "max-w-[80%] rounded-lg p-3",
+                    "max-w-[80%] rounded-2xl p-4 shadow-sm",
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                      : "bg-card/80 backdrop-blur-sm border border-border/30"
                   )}
                 >
                   <div className={cn(
@@ -239,15 +280,21 @@ export function DataRoomChat({ roomId, files }: DataRoomChatProps) {
                   
                   {/* Sources */}
                   {msg.sources && msg.sources.length > 0 && (
-                    <div className="mt-3 pt-2 border-t border-border/50 space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground">Sources:</p>
+                    <div className="mt-3 pt-3 border-t border-border/30 space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3" />
+                        Sources
+                      </p>
                       {msg.sources.map((src, i) => (
-                        <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                          <FileText className="w-3 h-3 mt-0.5 shrink-0" />
-                          <div>
-                            <span className="font-medium">{src.file_name}</span>
+                        <div 
+                          key={i} 
+                          className="flex items-start gap-2 text-xs p-2 rounded-lg bg-muted/50"
+                        >
+                          <FileText className="w-3.5 h-3.5 mt-0.5 shrink-0 text-primary" />
+                          <div className="min-w-0">
+                            <span className="font-medium text-foreground">{src.file_name}</span>
                             {src.excerpt && (
-                              <span className="block text-muted-foreground/70 italic truncate max-w-[200px]">
+                              <span className="block text-muted-foreground mt-0.5 line-clamp-2">
                                 "{src.excerpt}"
                               </span>
                             )}
@@ -259,7 +306,7 @@ export function DataRoomChat({ roomId, files }: DataRoomChatProps) {
                 </div>
                 
                 {msg.role === "user" && (
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0 shadow-sm">
                     <User className="w-4 h-4 text-muted-foreground" />
                   </div>
                 )}
@@ -268,11 +315,11 @@ export function DataRoomChat({ roomId, files }: DataRoomChatProps) {
             
             {isStreaming && !streamingContent && (
               <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0 shadow-sm">
                   <Bot className="w-4 h-4 text-primary" />
                 </div>
-                <div className="bg-muted rounded-lg p-3">
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                <div className="bg-card/80 backdrop-blur-sm border border-border/30 rounded-2xl p-4">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
                 </div>
               </div>
             )}
@@ -281,28 +328,28 @@ export function DataRoomChat({ roomId, files }: DataRoomChatProps) {
       </ScrollArea>
 
       {/* Input */}
-      <div className="p-4 border-t bg-card">
-        <div className="flex gap-2">
+      <div className="p-4 border-t border-border/20 bg-card/60 backdrop-blur-xl">
+        <div className="max-w-3xl mx-auto flex gap-3">
           <Textarea
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask a question about the documents..."
+            placeholder="Ask about burn rate, ARR, team, risks, or any other aspect..."
             disabled={isStreaming}
-            className="min-h-[44px] max-h-[120px] resize-none"
+            className="min-h-[50px] max-h-[120px] resize-none bg-background/50 border-border/50 focus:border-primary/50 rounded-xl"
             rows={1}
           />
           <Button
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || isStreaming}
             size="icon"
-            className="shrink-0"
+            className="shrink-0 h-[50px] w-[50px] rounded-xl shadow-lg"
           >
             {isStreaming ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <Send className="w-4 h-4" />
+              <Send className="w-5 h-5" />
             )}
           </Button>
         </div>
