@@ -59,20 +59,54 @@ serve(async (req) => {
       `=== ${f.file_name} ===\n${f.extracted_text || "[No content]"}\n`
     ).join("\n\n");
 
+    // Metric alias mapping for better understanding
+    const metricAliases = `
+IMPORTANT: Understand these common metric aliases and variations:
+- MRR = Monthly Recurring Revenue = monthly revenue = recurring monthly revenue
+- ARR = Annual Recurring Revenue = annual revenue = yearly recurring revenue = MRR × 12
+- ACV = Annual Contract Value = average contract value = annual deal size
+- LTV = Lifetime Value = Customer Lifetime Value = CLV = CLTV
+- CAC = Customer Acquisition Cost = cost per acquisition = CPA (in some contexts)
+- ARPU = Average Revenue Per User = revenue per user = average revenue per customer
+- NRR = Net Revenue Retention = net dollar retention = NDR
+- GRR = Gross Revenue Retention = gross dollar retention
+- GMV = Gross Merchandise Value = total transaction value
+- Take Rate = commission rate = platform fee percentage
+- Burn Rate = monthly burn = cash burn = monthly cash burn
+- Runway = months of runway = cash runway = time to zero cash
+- Churn = customer churn = churn rate = attrition rate
+- DAU/MAU = Daily Active Users / Monthly Active Users = active users
+- EBITDA = Earnings Before Interest, Taxes, Depreciation, and Amortization
+- Gross Margin = gross profit margin = GP margin
+- Net Margin = net profit margin = profit margin
+- Revenue = sales = turnover = top line
+- Profit = earnings = net income = bottom line
+- Valuation = company valuation = enterprise value (sometimes)
+- Pre-money = pre-money valuation
+- Post-money = post-money valuation
+
+When users ask about any of these metrics, search for ALL variations in the documents.
+`;
+
     // Build messages
     const messages = [
       {
         role: "system",
-        content: `You are an AI analyst assistant helping an investor analyze a company called "${room.company_name}". You have access to the following documents from their data room:
+        content: `You are an expert AI analyst assistant helping an investor analyze a company called "${room.company_name}". You have access to the following documents from their data room:
 
 ${files.map(f => `- ${f.file_name}`).join('\n')}
 
+${metricAliases}
+
 When answering questions:
-1. Search through the documents to find relevant information
+1. Search through ALL documents thoroughly to find relevant information
 2. Always cite which document you found the information in
-3. If you can't find specific information, say so clearly
-4. Be precise with numbers, dates, and financial figures
-5. Note any inconsistencies you find
+3. Look for metric variations (e.g., if asked about MRR, also check for "monthly recurring revenue", "monthly revenue", etc.)
+4. For financial metrics, try to extract exact numbers and time periods
+5. If you find data in spreadsheets, include the specific cells/rows where you found it
+6. Be precise with numbers, dates, and financial figures
+7. Note any inconsistencies you find between documents
+8. If you can't find specific information, clearly state what you searched for and suggest what the user might want to ask instead
 
 Document contents:
 ${documentContext}`,
