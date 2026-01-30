@@ -244,8 +244,20 @@ export function DataRoomAnalysisView({
         throw new Error(err.error || "Failed to process files");
       }
 
-      refetchFiles();
+      const result = await response.json();
+      console.log("Process result:", result);
+      
+      // Refetch files to update UI
+      await refetchFiles();
+      
+      // If there are more files to process, schedule another call
+      if (result.remaining > 0) {
+        setTimeout(() => {
+          setIsProcessing(false);
+        }, 500); // Small delay before allowing next batch
+      }
     } catch (error) {
+      console.error("Processing error:", error);
       toast({
         title: "Processing failed",
         description: error instanceof Error ? error.message : "Please try again",
@@ -256,12 +268,16 @@ export function DataRoomAnalysisView({
     }
   }, [roomId, isProcessing, refetchFiles]);
 
-  // Auto-process when there are pending files
+  // Auto-process when there are pending files - trigger repeatedly until done
   useEffect(() => {
-    if (pendingFiles.length > 0 && !isProcessing && !isGeneratingMemo) {
-      processFiles();
+    const hasPendingOrProcessing = pendingFiles.length > 0 || processingFiles.length > 0;
+    if (hasPendingOrProcessing && !isProcessing && !isGeneratingMemo) {
+      const timer = setTimeout(() => {
+        processFiles();
+      }, 1000); // 1 second delay between batches
+      return () => clearTimeout(timer);
     }
-  }, [pendingFiles.length, isProcessing, isGeneratingMemo, processFiles]);
+  }, [pendingFiles.length, processingFiles.length, isProcessing, isGeneratingMemo, processFiles]);
 
   // Auto-generate memo when all files are processed and no memo exists
   const generateMemo = useCallback(async () => {
