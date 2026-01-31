@@ -177,7 +177,7 @@ export function MemoLoadingScreen({
             {analyzing ? "Analyzing Your Data" : "Generating Your Investment Memo"}
           </h2>
           <p className="text-muted-foreground">
-            This typically takes 5-7 minutes
+            This may take up to 15 minutes
           </p>
         </div>
 
