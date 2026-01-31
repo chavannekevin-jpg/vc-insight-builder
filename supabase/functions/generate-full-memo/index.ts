@@ -1334,7 +1334,8 @@ async function generateSectionToolData(
   ctx: ToolGenerationContext,
   apiKey: string,
   supabaseClient: any,
-  companyId: string
+  companyId: string,
+  aiModel: string = "google/gemini-2.5-flash"
 ): Promise<void> {
   const { sectionName, sectionContent, companyName, companyCategory, companyStage, companyDescription, financialMetrics, responses, competitorResearch, marketContext, companyModel, metricFramework } = ctx;
   
@@ -1360,7 +1361,7 @@ async function generateSectionToolData(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: aiModel,
         messages: [
           {
             role: "system",
@@ -2194,8 +2195,13 @@ function extractToolsFromResponse(sectionName: string, toolData: any): Array<{na
 async function generateMemoInBackground(
   companyId: string,
   jobId: string,
-  force: boolean
+  force: boolean,
+  useProModel: boolean = false
 ) {
+  // Select model based on admin flag (Pro for admins, Flash for regular users)
+  const AI_MODEL = useProModel ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
+  console.log(`Using AI model: ${AI_MODEL} (useProModel=${useProModel})`);
+
   const startTime = Date.now();
   console.log(`=== Starting background memo generation for job ${jobId} ===`);
   
@@ -3307,7 +3313,7 @@ ${marketContext ? 'IMPORTANT: Leverage the AI-deduced market intelligence above 
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
+            model: AI_MODEL,
             messages: [
               {
                 role: "system",
@@ -3417,7 +3423,7 @@ You must be objective and critical — highlight weaknesses, risks, and gaps alo
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  model: "google/gemini-2.5-flash",
+                  model: AI_MODEL,
                   messages: [
                     {
                       role: "system",
@@ -3548,7 +3554,8 @@ Return EXACTLY this JSON structure with your content filled in:
         },
         LOVABLE_API_KEY,
         supabaseClient,
-        companyId
+        companyId,
+        AI_MODEL
       );
     }
     
@@ -3680,7 +3687,7 @@ Return ONLY valid JSON with this structure (no markdown, no code blocks):
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
+            model: AI_MODEL,
             messages: [
             {
                 role: "system",
@@ -3844,7 +3851,7 @@ Return ONLY valid JSON with this exact structure:
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: AI_MODEL,
           messages: [
             {
               role: "system",
@@ -4027,7 +4034,7 @@ Return ONLY valid JSON:
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
+            model: AI_MODEL,
             messages: [
               {
                 role: "system",
@@ -4310,7 +4317,7 @@ CRITICAL: Each verdict must be SPECIFIC to ${company.name} and reference actual 
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
+            model: AI_MODEL,
             messages: [
               {
                 role: "system",
@@ -4727,6 +4734,7 @@ serve(async (req) => {
     // Allow demo company regeneration without auth (for admin purposes)
     const isDemoCompany = companyId === DEMO_COMPANY_ID;
     let userId: string | null = null;
+    let isAdminUser = false;
 
     if (!isDemoCompany) {
       const authHeader = req.headers.get("Authorization");
@@ -4774,6 +4782,19 @@ serve(async (req) => {
 
         userId = userData.user.id;
         console.log(`Authenticated user: ${userId}`);
+
+        // Check if user is an admin for Pro model access
+        const { data: adminRole } = await supabaseClient
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .eq("role", "admin")
+          .maybeSingle();
+        
+        if (adminRole) {
+          isAdminUser = true;
+          console.log(`User ${userId} is an admin - will use Pro model for memo generation`);
+        }
 
         // Verify company ownership for non-demo, non-admin companies
         const { data: company, error: companyError } = await supabaseClient
@@ -4865,7 +4886,7 @@ serve(async (req) => {
     // This allows the function to return immediately while processing continues.
     // IMPORTANT: Use the EdgeRuntime global (not globalThis.EdgeRuntime), otherwise
     // the background task may never run and jobs can get stuck in `processing`.
-    EdgeRuntime.waitUntil(generateMemoInBackground(companyId, newJob.id, force));
+    EdgeRuntime.waitUntil(generateMemoInBackground(companyId, newJob.id, force, isAdminUser));
 
     // Return immediately with job ID
     return new Response(
