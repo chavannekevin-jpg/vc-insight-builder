@@ -1335,8 +1335,11 @@ async function generateSectionToolData(
   apiKey: string,
   supabaseClient: any,
   companyId: string,
-  aiModel: string = "google/gemini-2.5-flash"
+  aiModel: string = "google/gemini-2.5-flash",
+  useProModel: boolean = false
 ): Promise<void> {
+  // Dynamic token limits: Pro model gets 2x tokens to accommodate its more verbose output style
+  const getMaxTokens = (baseTokens: number): number => useProModel ? baseTokens * 2 : baseTokens;
   const { sectionName, sectionContent, companyName, companyCategory, companyStage, companyDescription, financialMetrics, responses, competitorResearch, marketContext, companyModel, metricFramework } = ctx;
   
   console.log(`Generating tool data for section: ${sectionName}`);
@@ -1527,7 +1530,7 @@ CRITICAL OUTPUT RULES:
           },
         ],
         temperature: 0.7,
-        max_tokens: 4500,
+        max_tokens: getMaxTokens(4500),
       }),
     }, 2, 1500);
 
@@ -2201,6 +2204,9 @@ async function generateMemoInBackground(
   // Select model based on admin flag (Pro for admins, Flash for regular users)
   const AI_MODEL = useProModel ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
   console.log(`Using AI model: ${AI_MODEL} (useProModel=${useProModel})`);
+  
+  // Dynamic token limits: Pro model gets 2x tokens to accommodate its more verbose output style
+  const getMaxTokens = (baseTokens: number): number => useProModel ? baseTokens * 2 : baseTokens;
 
   const startTime = Date.now();
   console.log(`=== Starting background memo generation for job ${jobId} ===`);
@@ -3354,7 +3360,7 @@ You must be objective and critical — highlight weaknesses, risks, and gaps alo
               },
             ],
             temperature: 0.7,
-            max_tokens: 3000,
+            max_tokens: getMaxTokens(3000),
           }),
         }, 3, 2000); // 3 retries, starting with 2s delay
       } catch (fetchError) {
@@ -3438,7 +3444,7 @@ Return EXACTLY this JSON structure with your content filled in:
                     },
                   ],
                   temperature: 0.3,
-                  max_tokens: 1500,
+                  max_tokens: getMaxTokens(1500),
                 }),
               }, 2, 1000);
 
@@ -3555,7 +3561,8 @@ Return EXACTLY this JSON structure with your content filled in:
         LOVABLE_API_KEY,
         supabaseClient,
         companyId,
-        AI_MODEL
+        AI_MODEL,
+        useProModel
       );
     }
     
@@ -3701,7 +3708,7 @@ This is NOT an advocacy document. Your job is to assess whether this is truly a 
               },
             ],
             temperature: 0.7,
-            max_tokens: 3000,
+            max_tokens: getMaxTokens(3000),
           }),
         }, 3, 2000); // 3 retries, starting with 2s delay
       } catch (fetchError) {
@@ -3863,7 +3870,7 @@ Return ONLY valid JSON with this exact structure:
             },
           ],
           temperature: 0.7,
-          max_tokens: 1500,
+          max_tokens: getMaxTokens(1500),
         }),
       }, 2, 1000);
 
@@ -4046,7 +4053,7 @@ Return ONLY valid JSON:
               },
             ],
             temperature: 0.6,
-            max_tokens: 2000,
+            max_tokens: getMaxTokens(2000),
           }),
         }, 2, 1000);
 
@@ -4329,7 +4336,7 @@ CRITICAL: Each verdict must be SPECIFIC to ${company.name} and reference actual 
               },
             ],
             temperature: 0.7,
-            max_tokens: 2000,
+            max_tokens: getMaxTokens(2000),
           }),
         }, 2, 1000);
 
