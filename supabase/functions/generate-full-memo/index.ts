@@ -1335,11 +1335,8 @@ async function generateSectionToolData(
   apiKey: string,
   supabaseClient: any,
   companyId: string,
-  aiModel: string = "google/gemini-2.5-flash",
-  useProModel: boolean = false
+  aiModel: string = "google/gemini-2.5-flash"
 ): Promise<void> {
-  // Dynamic token limits: Pro model gets 2x tokens to accommodate its more verbose output style
-  const getMaxTokens = (baseTokens: number): number => useProModel ? baseTokens * 2 : baseTokens;
   const { sectionName, sectionContent, companyName, companyCategory, companyStage, companyDescription, financialMetrics, responses, competitorResearch, marketContext, companyModel, metricFramework } = ctx;
   
   console.log(`Generating tool data for section: ${sectionName}`);
@@ -1530,7 +1527,7 @@ CRITICAL OUTPUT RULES:
           },
         ],
         temperature: 0.7,
-        max_tokens: getMaxTokens(4500),
+        max_tokens: 4500,
       }),
     }, 2, 1500);
 
@@ -2198,15 +2195,10 @@ function extractToolsFromResponse(sectionName: string, toolData: any): Array<{na
 async function generateMemoInBackground(
   companyId: string,
   jobId: string,
-  force: boolean,
-  useProModel: boolean = false
+  force: boolean
 ) {
-  // Select model based on admin flag (Pro for admins, Flash for regular users)
-  const AI_MODEL = useProModel ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
-  console.log(`Using AI model: ${AI_MODEL} (useProModel=${useProModel})`);
-  
-  // Dynamic token limits: Pro model gets 2x tokens to accommodate its more verbose output style
-  const getMaxTokens = (baseTokens: number): number => useProModel ? baseTokens * 2 : baseTokens;
+  const AI_MODEL = "google/gemini-2.5-flash";
+  console.log(`Using AI model: ${AI_MODEL}`);
 
   const startTime = Date.now();
   console.log(`=== Starting background memo generation for job ${jobId} ===`);
@@ -3360,7 +3352,7 @@ You must be objective and critical — highlight weaknesses, risks, and gaps alo
               },
             ],
             temperature: 0.7,
-            max_tokens: getMaxTokens(3000),
+            max_tokens: 3000,
           }),
         }, 3, 2000); // 3 retries, starting with 2s delay
       } catch (fetchError) {
@@ -3444,7 +3436,7 @@ Return EXACTLY this JSON structure with your content filled in:
                     },
                   ],
                   temperature: 0.3,
-                  max_tokens: getMaxTokens(1500),
+                  max_tokens: 1500,
                 }),
               }, 2, 1000);
 
@@ -3561,8 +3553,7 @@ Return EXACTLY this JSON structure with your content filled in:
         LOVABLE_API_KEY,
         supabaseClient,
         companyId,
-        AI_MODEL,
-        useProModel
+        AI_MODEL
       );
     }
     
@@ -3708,7 +3699,7 @@ This is NOT an advocacy document. Your job is to assess whether this is truly a 
               },
             ],
             temperature: 0.7,
-            max_tokens: getMaxTokens(3000),
+            max_tokens: 3000,
           }),
         }, 3, 2000); // 3 retries, starting with 2s delay
       } catch (fetchError) {
@@ -3870,7 +3861,7 @@ Return ONLY valid JSON with this exact structure:
             },
           ],
           temperature: 0.7,
-          max_tokens: getMaxTokens(1500),
+          max_tokens: 1500,
         }),
       }, 2, 1000);
 
@@ -4053,7 +4044,7 @@ Return ONLY valid JSON:
               },
             ],
             temperature: 0.6,
-            max_tokens: getMaxTokens(2000),
+            max_tokens: 2000,
           }),
         }, 2, 1000);
 
@@ -4336,7 +4327,7 @@ CRITICAL: Each verdict must be SPECIFIC to ${company.name} and reference actual 
               },
             ],
             temperature: 0.7,
-            max_tokens: getMaxTokens(2000),
+            max_tokens: 2000,
           }),
         }, 2, 1000);
 
@@ -4741,7 +4732,6 @@ serve(async (req) => {
     // Allow demo company regeneration without auth (for admin purposes)
     const isDemoCompany = companyId === DEMO_COMPANY_ID;
     let userId: string | null = null;
-    let isAdminUser = false;
 
     if (!isDemoCompany) {
       const authHeader = req.headers.get("Authorization");
@@ -4790,18 +4780,6 @@ serve(async (req) => {
         userId = userData.user.id;
         console.log(`Authenticated user: ${userId}`);
 
-        // Check if user is an admin for Pro model access
-        const { data: adminRole } = await supabaseClient
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userId)
-          .eq("role", "admin")
-          .maybeSingle();
-        
-        if (adminRole) {
-          isAdminUser = true;
-          console.log(`User ${userId} is an admin - will use Pro model for memo generation`);
-        }
 
         // Verify company ownership for non-demo, non-admin companies
         const { data: company, error: companyError } = await supabaseClient
@@ -4893,7 +4871,7 @@ serve(async (req) => {
     // This allows the function to return immediately while processing continues.
     // IMPORTANT: Use the EdgeRuntime global (not globalThis.EdgeRuntime), otherwise
     // the background task may never run and jobs can get stuck in `processing`.
-    EdgeRuntime.waitUntil(generateMemoInBackground(companyId, newJob.id, force, isAdminUser));
+    EdgeRuntime.waitUntil(generateMemoInBackground(companyId, newJob.id, force));
 
     // Return immediately with job ID
     return new Response(
