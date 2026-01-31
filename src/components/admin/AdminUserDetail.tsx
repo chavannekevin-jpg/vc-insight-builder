@@ -30,7 +30,8 @@ import {
   Loader2,
   Ticket,
   Copy,
-  Check
+  Check,
+  RotateCcw
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -76,6 +77,8 @@ export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserD
   const [claimCodes, setClaimCodes] = useState<Record<string, string | null>>({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [restartDialogOpen, setRestartDialogOpen] = useState(false);
+  const [isRestarting, setIsRestarting] = useState(false);
 
   const generateClaimCode = async (companyId: string, companyName: string) => {
     setGeneratingCode(prev => ({ ...prev, [companyId]: true }));
@@ -115,6 +118,50 @@ export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserD
       });
     } finally {
       setGeneratingCode(prev => ({ ...prev, [companyId]: false }));
+    }
+  };
+
+  const handleRestartStartupAccount = async () => {
+    setIsRestarting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-restart-startup-account', {
+        body: { targetUserId: userId }
+      });
+
+      if (error) {
+        console.error('[AdminUserDetail] Restart error:', error);
+        toast({
+          title: "Failed to restart account",
+          description: error.message || "An error occurred",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data?.success) {
+        toast({
+          title: "Startup account restarted",
+          description: `Deleted ${data.deletedCompanies} companies and ${data.deletedMemos} memos. User will restart from onboarding.`
+        });
+        // Refresh the data
+        fetchUserDetails();
+      } else {
+        toast({
+          title: "Failed to restart account",
+          description: data?.error || "An error occurred",
+          variant: "destructive"
+        });
+      }
+    } catch (error: any) {
+      console.error('[AdminUserDetail] Restart exception:', error);
+      toast({
+        title: "Failed to restart account",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRestarting(false);
+      setRestartDialogOpen(false);
     }
   };
 
@@ -570,6 +617,44 @@ export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserD
         )}
       </div>
 
+      {/* Restart Startup Account Section */}
+      <div className="pt-4 border-t border-warning/20">
+        <div className="p-4 rounded-lg bg-warning/5 border border-warning/20">
+          <h4 className="text-sm font-semibold text-warning mb-2 flex items-center gap-2">
+            <RotateCcw className="w-4 h-4" />
+            Restart Startup Account
+          </h4>
+          <p className="text-sm text-muted-foreground mb-3">
+            Remove all startup/company data for this user, allowing them to restart from the deck upload onboarding. 
+            This does <strong>not</strong> affect investor or accelerator data.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setRestartDialogOpen(true)}
+            disabled={isRestarting || companies.length === 0}
+            className="border-warning text-warning hover:bg-warning/10"
+          >
+            {isRestarting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Restarting...
+              </>
+            ) : (
+              <>
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Restart Account
+              </>
+            )}
+          </Button>
+          {companies.length === 0 && (
+            <p className="text-xs text-muted-foreground mt-2 italic">
+              No companies to delete - user is already at the start.
+            </p>
+          )}
+        </div>
+      </div>
+
       {/* Danger Zone - Delete Account */}
       <div className="pt-4 border-t border-destructive/20">
         <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20">
@@ -600,6 +685,47 @@ export const AdminUserDetail = ({ userId, onCompanyClick, onUserDeleted }: UserD
           </Button>
         </div>
       </div>
+
+      {/* Restart Confirmation Dialog */}
+      <AlertDialog open={restartDialogOpen} onOpenChange={setRestartDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Restart Startup Account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will delete all startup data for <strong>{userEmail}</strong> including:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>{companies.length} company/companies</li>
+                <li>All memos and analyses</li>
+                <li>All workshop responses</li>
+                <li>All tool data and enrichments</li>
+              </ul>
+              <span className="block mt-3 text-muted-foreground">
+                <strong>Preserved:</strong> Investor profiles, accelerator memberships, and user account.
+              </span>
+              <span className="block mt-2 font-semibold text-warning">
+                User will restart from deck upload onboarding on next startup login.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isRestarting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRestartStartupAccount}
+              disabled={isRestarting}
+              className="bg-warning text-warning-foreground hover:bg-warning/90"
+            >
+              {isRestarting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Restarting...
+                </>
+              ) : (
+                "Restart Account"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
