@@ -102,7 +102,7 @@ COMPANY CONTEXT:
 - Description: ${company.description || "Not provided"}
 
 YOUR TASK:
-1. Transform each founder's raw input into polished, investor-ready prose. Use the benchmark example as a style guide - match the tone, structure, and level of detail.
+1. Expand and elaborate each founder's raw input into comprehensive, investor-ready analysis. The benchmark example is your LENGTH AND QUALITY TARGET - your output for each section should be approximately the same length (150-350 words), with the same level of depth, structure, and specificity as the benchmark.
 2. IMPORTANT: Generate a compelling "Investment Thesis" section based on ALL the founder's inputs. This section synthesizes everything into 2-3 sentences explaining why an investor should back this company right now.
 
 SECTIONS TO TRANSFORM (from founder input):
@@ -139,21 +139,28 @@ KEY ELEMENTS TO INCLUDE:
 ---
 
 INSTRUCTIONS:
-1. For each user-written section, produce a polished paragraph that:
+1. For each user-written section, produce a COMPREHENSIVE analysis that:
+   - Matches the BENCHMARK LENGTH (150-350 words, multiple paragraphs)
    - Maintains the founder's core message and facts
-   - Matches the benchmark's professional tone and structure
-   - Adds clarity and investor-focused framing
+   - Replicates the benchmark's structure (e.g., bullet points, numbered lists, multiple sub-sections where appropriate)
+   - Adds professional framing, context, and investor-focused language
    - Includes specific numbers/metrics if the founder provided them
-   - Fills gaps tactfully without inventing false data
+   - Extrapolates reasonable business logic where founder input is sparse
 
-2. If a section has no founder input, create a brief placeholder noting what information is needed.
+2. CRITICAL: If a founder's input is brief, you must EXPAND it to match the benchmark length by:
+   - Adding relevant business context
+   - Structuring with clear sub-sections
+   - Including standard investor considerations for that section
+   - Using professional VC terminology and framing
 
-3. For the Investment Thesis section (sectionKey: "investment_thesis"):
+3. If a section has no founder input, create a detailed placeholder (100+ words) noting what information is needed and why it matters to investors.
+
+4. For the Investment Thesis section (sectionKey: "investment_thesis"):
    - Generate this ENTIRELY based on analyzing all other sections
    - Create a compelling 2-3 sentence pitch that synthesizes the opportunity
    - Include: unique value proposition, market timing, and return potential
 
-4. Return your response as valid JSON in this exact format:
+5. Return your response as valid JSON in this exact format:
 {
   "sections": [
     {
@@ -201,7 +208,7 @@ Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
         messages: [
           {
             role: "system",
-            content: "You are an expert investment memo writer. Transform founder inputs into polished, professional investor communications. Match the style of provided benchmark examples. Always respond with valid JSON only.",
+            content: "You are an expert investment memo writer creating comprehensive VC-grade memorandums. Your outputs must MATCH THE LENGTH AND DEPTH of the provided benchmark examples - typically 150-350 words per section with multiple paragraphs. Brief, summarized outputs are NOT acceptable. Always respond with valid JSON only.",
           },
           {
             role: "user",
@@ -209,7 +216,7 @@ Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
           },
         ],
         temperature: 0.4,
-        max_tokens: 6000,
+        max_tokens: 10000,
       }),
     });
 
