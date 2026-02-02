@@ -18,6 +18,7 @@ import {
   Layers,
   Rocket,
   GraduationCap,
+  QrCode,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -64,6 +65,7 @@ const toolItems = [
   { title: "Knowledge Base", url: "/admin/knowledge-base", icon: BookOpen },
   { title: "Methodology Export", url: "/admin/methodology-export", icon: FileText },
   { title: "Analysis Builder", url: "/admin/analysis-builder", icon: Wrench },
+  { title: "QR Generator", url: "/admin/qr-generator", icon: QrCode },
 ];
 
 const templateItems = [
