@@ -34,7 +34,10 @@ export interface WorkshopCompletion {
   mapped_to_profile: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   validation_report: any | null;
+  regeneration_count: number;
 }
+
+export const MAX_WORKSHOP_REGENERATIONS = 5;
 
 export interface ValidationReport {
   grade: { overall: string; label: string; description: string };

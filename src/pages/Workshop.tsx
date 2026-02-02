@@ -165,6 +165,7 @@ export default function Workshop() {
               isSaving={saveResponse.isPending}
               allComplete={allSectionsComplete}
               isCompiling={compileMemo.isPending}
+              regenerationCount={completion?.regeneration_count ?? 0}
             />
           )}
         </div>

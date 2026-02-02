@@ -2764,6 +2764,7 @@ export type Database = {
           id: string
           mapped_to_profile: boolean
           mini_memo_content: string | null
+          regeneration_count: number
           validation_report: Json | null
         }
         Insert: {
@@ -2773,6 +2774,7 @@ export type Database = {
           id?: string
           mapped_to_profile?: boolean
           mini_memo_content?: string | null
+          regeneration_count?: number
           validation_report?: Json | null
         }
         Update: {
@@ -2782,6 +2784,7 @@ export type Database = {
           id?: string
           mapped_to_profile?: boolean
           mini_memo_content?: string | null
+          regeneration_count?: number
           validation_report?: Json | null
         }
         Relationships: [
