@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { WorkshopTemplate, WorkshopResponse } from "@/hooks/useWorkshopData";
+import { WorkshopTemplate, WorkshopResponse, MAX_WORKSHOP_REGENERATIONS } from "@/hooks/useWorkshopData";
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -32,6 +32,7 @@ interface WorkshopSectionProps {
   isSaving: boolean;
   allComplete: boolean;
   isCompiling: boolean;
+  regenerationCount: number;
 }
 
 export function WorkshopSection({
@@ -47,7 +48,10 @@ export function WorkshopSection({
   isSaving,
   allComplete,
   isCompiling,
+  regenerationCount,
 }: WorkshopSectionProps) {
+  const remainingRegenerations = MAX_WORKSHOP_REGENERATIONS - regenerationCount;
+  const canRegenerate = remainingRegenerations > 0;
   const [answer, setAnswer] = useState(response?.answer || "");
   const [hasChanges, setHasChanges] = useState(false);
   const { addEnrichment } = useAddEnrichment();
@@ -197,9 +201,9 @@ export function WorkshopSection({
             {isLast ? (
               <Button
                 onClick={handleNext}
-                disabled={!allComplete || isCompiling}
+                disabled={!allComplete || isCompiling || !canRegenerate}
                 className={cn(
-                  allComplete && "bg-gradient-to-r from-primary to-primary/80"
+                  allComplete && canRegenerate && "bg-gradient-to-r from-primary to-primary/80"
                 )}
               >
                 {isCompiling ? (
@@ -207,10 +211,15 @@ export function WorkshopSection({
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Compiling...
                   </>
+                ) : !canRegenerate ? (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Limit Reached
+                  </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Compile Mini-Memo
+                    {regenerationCount === 0 ? "Compile Mini-Memo" : "Regenerate"} ({remainingRegenerations} left)
                   </>
                 )}
               </Button>

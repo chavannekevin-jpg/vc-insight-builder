@@ -31,6 +31,8 @@ const PROFILE_SECTION_MAPPING: Record<string, string> = {
   investment_thesis: "vision_ask",
 };
 
+const MAX_REGENERATIONS = 5;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -46,6 +48,21 @@ serve(async (req) => {
     if (!companyId) {
       return new Response(
         JSON.stringify({ error: "companyId is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check regeneration limit
+    const { data: existingCompletion } = await supabase
+      .from("workshop_completions")
+      .select("regeneration_count")
+      .eq("company_id", companyId)
+      .maybeSingle();
+
+    const currentCount = existingCompletion?.regeneration_count ?? 0;
+    if (currentCount >= MAX_REGENERATIONS) {
+      return new Response(
+        JSON.stringify({ error: "Regeneration limit reached (max 5)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -273,7 +290,7 @@ Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
       generatedAt: new Date().toISOString(),
     } : null;
 
-    // Upsert completion record with validation report
+    // Upsert completion record with validation report and increment regeneration count
     const { error: upsertError } = await supabase
       .from("workshop_completions")
       .upsert({
@@ -282,6 +299,7 @@ Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
         mini_memo_content: miniMemo,
         mapped_to_profile: false,
         validation_report: validationReport,
+        regeneration_count: currentCount + 1,
       }, { onConflict: "company_id" });
 
     if (upsertError) throw upsertError;
