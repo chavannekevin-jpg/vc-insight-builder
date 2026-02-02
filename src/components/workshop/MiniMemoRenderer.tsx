@@ -117,7 +117,7 @@ function renderFormattedContent(content: string): React.ReactNode[] {
       const text = cleanText(currentParagraph.join(' '));
       if (text) {
         elements.push(
-          <p key={`p-${elementIndex++}`} className="leading-relaxed">
+          <p key={`p-${elementIndex++}`} className="leading-relaxed text-muted-foreground">
             {text}
           </p>
         );
@@ -130,13 +130,13 @@ function renderFormattedContent(content: string): React.ReactNode[] {
     if (currentList) {
       const ListTag = currentList.type === 'ul' ? 'ul' : 'ol';
       const listClass = currentList.type === 'ul' 
-        ? 'list-disc list-inside space-y-1 ml-2' 
-        : 'list-decimal list-inside space-y-1 ml-2';
+        ? 'list-disc list-inside space-y-2 ml-3 py-2 px-3 bg-muted/30 rounded-lg' 
+        : 'list-decimal list-inside space-y-2 ml-3 py-2 px-3 bg-muted/30 rounded-lg';
       
       elements.push(
         <ListTag key={`list-${elementIndex++}`} className={listClass}>
           {currentList.items.map((item, i) => (
-            <li key={i} className="leading-relaxed">{cleanText(item)}</li>
+            <li key={i} className="leading-relaxed text-muted-foreground">{cleanText(item)}</li>
           ))}
         </ListTag>
       );
@@ -184,7 +184,7 @@ function renderFormattedContent(content: string): React.ReactNode[] {
       flushParagraph();
       flushList();
       elements.push(
-        <p key={`sh-${elementIndex++}`} className="text-foreground mt-3 first:mt-0">
+        <p key={`sh-${elementIndex++}`} className="text-foreground mt-4 mb-1 first:mt-0 border-l-2 border-primary/30 pl-3">
           {cleanText(subheadingMatch[1])}:
         </p>
       );
@@ -254,8 +254,8 @@ export function MiniMemoRenderer({ content }: MiniMemoRendererProps) {
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-2 text-sm text-muted-foreground">
+              <CardContent className="pt-2 pb-5">
+                <div className="space-y-4 text-sm">
                   {renderFormattedContent(section.content)}
                 </div>
               </CardContent>
