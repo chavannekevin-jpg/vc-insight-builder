@@ -120,7 +120,7 @@ COMPANY CONTEXT:
 
 YOUR TASK:
 1. Expand and elaborate each founder's raw input into comprehensive, investor-ready analysis. The benchmark example is your LENGTH AND QUALITY TARGET - your output for each section should be approximately the same length (150-350 words), with the same level of depth, structure, and specificity as the benchmark.
-2. IMPORTANT: Generate a compelling "Investment Thesis" section based on ALL the founder's inputs. This section synthesizes everything into 2-3 sentences explaining why an investor should back this company right now.
+2. IMPORTANT: Generate a compelling "Investment Thesis" section based on ALL the founder's inputs using the special instructions below.
 
 SECTIONS TO TRANSFORM (from founder input):
 ${sectionsForAI.map((s, i) => `
@@ -139,23 +139,55 @@ ${(s.benchmarkTips as string[])?.join("\n- ") || "- Professional investor langua
 ---
 `).join("\n")}
 
-SECTION TO GENERATE (AI-written based on all above):
----
-SECTION ${sectionsForAI.length + 1}: Investment Thesis
-Section Key: investment_thesis
+=== INVESTMENT THESIS GENERATION (CRITICAL - USE THESE INSTRUCTIONS) ===
 
-This section should be ENTIRELY AI-GENERATED based on the founder inputs above.
-Synthesize all the information into a compelling 2-3 sentence investment thesis that answers: "Why should an investor back this company right now?"
+You are a senior early-stage VC writing an investment thesis blurb about this startup.
 
-${investmentThesisTemplate?.benchmark_example ? `BENCHMARK EXAMPLE (use as style guide):\n${investmentThesisTemplate.benchmark_example}` : ""}
+Your job is to take the structured information the founder has entered in previous steps (problem, solution, market, traction, business model, go-to-market, team, risks, etc.) and synthesize it into a short, concrete, investor-grade thesis.
 
-KEY ELEMENTS TO INCLUDE:
-- Clear value proposition derived from their problem/solution
-- Timing argument based on market dynamics
-- Return potential based on business model and traction
----
+OVERALL GOAL:
+Write a tight, opinionated 3-5 paragraph thesis that a real investor could paste into an internal memo to justify why this company is interesting.
+This is NOT marketing copy and NOT a summary of their answers. It is your analytical view, written in plain language.
 
-INSTRUCTIONS:
+STRUCTURE OF THE THESIS (touch most of these in narrative form):
+
+1. THE WORLD & THE PROBLEM
+   - What is changing in the world or in this industry?
+   - Who has the pain, and why is it economically meaningful?
+
+2. THE SOLUTION & WEDGE
+   - How does this startup attack the problem?
+   - What is their wedge or entry point (specific customer segment, workflow, product angle)?
+
+3. THE ENGINE & ADVANTAGE
+   - What makes this approach structurally interesting?
+   - Is there a potential moat (data, workflow, regulation, network, distribution, UX, etc.)?
+   - Why could this become a "system of record", key infrastructure, or irreplaceable habit?
+
+4. EVIDENCE SO FAR
+   - What traction, signals, or early proof-points exist (revenue, users, pilots, partnerships, engagement)?
+   - If no traction yet, what is the most compelling non-traction evidence (founder-market fit, unique access, IP, regulation)?
+
+5. UPSIDE & WHAT NEEDS TO BE TRUE
+   - If this works, what could it become (category leader, platform, multi-product company)?
+   - What key risks or execution questions remain, and what needs to be proven at this stage?
+
+STYLE GUIDELINES:
+- Write in clear, direct, professional English, like a real VC memo
+- Use concrete language, not buzzwords ("They have a credible wedge with X", not "They are poised to disrupt Y with cutting-edge AI")
+- Prioritize mechanics (distribution, behaviour, workflows, economics, switching costs) over vague enthusiasm
+- It's fine to be cautiously positive, but do not oversell. Show both the opportunity and conditions needed
+- If information is missing, do not invent it. De-emphasize and lean on what is known
+
+HANDLING WEAK OR EARLY ANSWERS:
+If the founder's inputs are thin, still produce a thesis, but keep it honest and grounded:
+- Focus more on why the problem is interesting, why this approach could make sense, what the founders understand well
+- Encode risk or uncertainty with phrasing like: "If they can prove…", "The key question is whether…", "The opportunity hinges on…"
+- Never say "this is a bad company" or "not investable"; phrase it as what would need to be true
+
+=== END INVESTMENT THESIS INSTRUCTIONS ===
+
+INSTRUCTIONS FOR OTHER SECTIONS:
 1. For each user-written section, produce a COMPREHENSIVE analysis that:
    - Matches the BENCHMARK LENGTH (150-350 words, multiple paragraphs)
    - Maintains the founder's core message and facts
@@ -176,12 +208,7 @@ INSTRUCTIONS:
    - Including standard investor considerations for that section
    - Using professional VC terminology and framing
 
-3. If a section has no founder input, create a detailed placeholder (100+ words) noting what information is needed and why it matters to investors.
-
-4. For the Investment Thesis section (sectionKey: "investment_thesis"):
-   - Generate this ENTIRELY based on analyzing all other sections
-   - Create a compelling 2-3 sentence pitch that synthesizes the opportunity
-   - Include: unique value proposition, market timing, and return potential
+4. If a section has no founder input, create a detailed placeholder (100+ words) noting what information is needed and why it matters to investors.
 
 5. Return your response as valid JSON in this exact format:
 {
