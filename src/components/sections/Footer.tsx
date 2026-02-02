@@ -13,7 +13,7 @@ export const Footer = memo(() => {
   return (
     <footer className="py-16 px-6 sm:px-8 border-t border-border/50 bg-card/30 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-wrap justify-center gap-8 mb-10">
+        <div className="flex flex-wrap justify-center gap-8 mb-4">
           {links.map((link, index) => (
             <Button
               key={index}
@@ -24,6 +24,15 @@ export const Footer = memo(() => {
               <Link to={link.href}>{link.label}</Link>
             </Button>
           ))}
+        </div>
+        
+        <div className="text-center mb-10">
+          <Link 
+            to="/accelerator-invite"
+            className="text-sm text-muted-foreground hover:text-primary underline underline-offset-4 transition-colors"
+          >
+            Have you been invited by an accelerator?
+          </Link>
         </div>
         
         <div className="text-center space-y-3 max-w-2xl mx-auto">

@@ -424,13 +424,6 @@ const Index = () => {
                   Instant access • No subscription • One payment, full platform
                 </p>
 
-                {/* Accelerator invite link */}
-                <button
-                  onClick={() => navigate('/accelerator-invite')}
-                  className="mt-8 text-sm text-muted-foreground hover:text-primary underline underline-offset-4 transition-colors"
-                >
-                  Have you been invited by an accelerator?
-                </button>
               </div>
             </div>
           </div>
