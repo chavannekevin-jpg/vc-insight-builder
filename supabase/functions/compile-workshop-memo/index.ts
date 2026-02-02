@@ -142,14 +142,20 @@ INSTRUCTIONS:
 1. For each user-written section, produce a COMPREHENSIVE analysis that:
    - Matches the BENCHMARK LENGTH (150-350 words, multiple paragraphs)
    - Maintains the founder's core message and facts
-   - Replicates the benchmark's structure (e.g., bullet points, numbered lists, multiple sub-sections where appropriate)
    - Adds professional framing, context, and investor-focused language
    - Includes specific numbers/metrics if the founder provided them
    - Extrapolates reasonable business logic where founder input is sparse
 
-2. CRITICAL: If a founder's input is brief, you must EXPAND it to match the benchmark length by:
+2. FORMATTING REQUIREMENT (apply to ALL sections):
+   - Start with 1-2 introductory sentences
+   - Then use BULLET POINTS (using "- " prefix) to list key aspects, features, or insights
+   - End with a concluding sentence or paragraph
+   - Every section MUST have at least 3-5 bullet points for scannability
+   - Use blank lines between paragraphs and before/after bullet lists
+
+3. CRITICAL: If a founder's input is brief, you must EXPAND it to match the benchmark length by:
    - Adding relevant business context
-   - Structuring with clear sub-sections
+   - Structuring with clear sub-sections using bullet points
    - Including standard investor considerations for that section
    - Using professional VC terminology and framing
 
