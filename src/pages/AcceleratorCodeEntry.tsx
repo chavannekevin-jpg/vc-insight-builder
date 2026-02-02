@@ -76,7 +76,7 @@ export default function AcceleratorCodeEntry() {
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  placeholder="e.g. KEVIN-S-WORKSHOP"
+                  placeholder="Enter your code"
                   className="h-12 bg-background/50 border-border/50 rounded-xl text-center font-mono text-lg tracking-wider uppercase"
                   autoComplete="off"
                 />
