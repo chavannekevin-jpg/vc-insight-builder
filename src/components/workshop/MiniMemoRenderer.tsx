@@ -80,7 +80,8 @@ function parseMarkdownContent(content: string): { executiveSummary: string | nul
     }
 
     // Add content to current section
-    if (currentSection && line.trim()) {
+    // IMPORTANT: preserve blank lines so paragraph breaks render correctly.
+    if (currentSection) {
       currentSection.content += (currentSection.content ? '\n' : '') + line;
     }
   }
