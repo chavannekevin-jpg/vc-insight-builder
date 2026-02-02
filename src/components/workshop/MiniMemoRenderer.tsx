@@ -93,17 +93,114 @@ function parseMarkdownContent(content: string): { executiveSummary: string | nul
   return { executiveSummary, sections };
 }
 
-function cleanContent(content: string): string {
-  return content
+function cleanText(text: string): string {
+  return text
     // Remove bold markers
     .replace(/\*\*(.+?)\*\*/g, '$1')
     // Remove italic markers
     .replace(/\*(.+?)\*/g, '$1')
     // Remove remaining # headers
     .replace(/^#+\s*/gm, '')
-    // Clean up extra whitespace
-    .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+function renderFormattedContent(content: string): React.ReactNode[] {
+  const elements: React.ReactNode[] = [];
+  const lines = content.split('\n');
+  
+  let currentParagraph: string[] = [];
+  let currentList: { type: 'ul' | 'ol'; items: string[] } | null = null;
+  let elementIndex = 0;
+
+  const flushParagraph = () => {
+    if (currentParagraph.length > 0) {
+      const text = cleanText(currentParagraph.join(' '));
+      if (text) {
+        elements.push(
+          <p key={`p-${elementIndex++}`} className="leading-relaxed">
+            {text}
+          </p>
+        );
+      }
+      currentParagraph = [];
+    }
+  };
+
+  const flushList = () => {
+    if (currentList) {
+      const ListTag = currentList.type === 'ul' ? 'ul' : 'ol';
+      const listClass = currentList.type === 'ul' 
+        ? 'list-disc list-inside space-y-1 ml-2' 
+        : 'list-decimal list-inside space-y-1 ml-2';
+      
+      elements.push(
+        <ListTag key={`list-${elementIndex++}`} className={listClass}>
+          {currentList.items.map((item, i) => (
+            <li key={i} className="leading-relaxed">{cleanText(item)}</li>
+          ))}
+        </ListTag>
+      );
+      currentList = null;
+    }
+  };
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    
+    // Empty line - flush current paragraph
+    if (!trimmedLine) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    // Check for bullet points (- or *)
+    const bulletMatch = trimmedLine.match(/^[-*]\s+(.+)/);
+    if (bulletMatch) {
+      flushParagraph();
+      if (currentList?.type !== 'ul') {
+        flushList();
+        currentList = { type: 'ul', items: [] };
+      }
+      currentList.items.push(bulletMatch[1]);
+      continue;
+    }
+
+    // Check for numbered list (1. 2. etc)
+    const numberedMatch = trimmedLine.match(/^\d+\.\s+(.+)/);
+    if (numberedMatch) {
+      flushParagraph();
+      if (currentList?.type !== 'ol') {
+        flushList();
+        currentList = { type: 'ol', items: [] };
+      }
+      currentList.items.push(numberedMatch[1]);
+      continue;
+    }
+
+    // Check for sub-heading pattern (text ending with colon, typically short)
+    const subheadingMatch = trimmedLine.match(/^(.{5,50}):$/);
+    if (subheadingMatch && !trimmedLine.includes(' - ')) {
+      flushParagraph();
+      flushList();
+      elements.push(
+        <p key={`sh-${elementIndex++}`} className="text-foreground mt-3 first:mt-0">
+          {cleanText(subheadingMatch[1])}:
+        </p>
+      );
+      continue;
+    }
+
+    // Regular text - add to paragraph
+    flushList();
+    currentParagraph.push(trimmedLine);
+  }
+
+  // Flush remaining content
+  flushParagraph();
+  flushList();
+
+  return elements;
 }
 
 export function MiniMemoRenderer({ content }: MiniMemoRendererProps) {
@@ -115,8 +212,8 @@ export function MiniMemoRenderer({ content }: MiniMemoRendererProps) {
       {executiveSummary && (
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="pt-4">
-            <p className="text-sm font-medium text-primary mb-1">Executive Summary</p>
-            <p className="text-sm leading-relaxed">{cleanContent(executiveSummary)}</p>
+            <p className="text-sm text-primary mb-1">Executive Summary</p>
+            <p className="text-sm leading-relaxed">{cleanText(executiveSummary)}</p>
           </CardContent>
         </Card>
       )}
@@ -158,9 +255,9 @@ export function MiniMemoRenderer({ content }: MiniMemoRendererProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                  {cleanContent(section.content)}
-                </p>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  {renderFormattedContent(section.content)}
+                </div>
               </CardContent>
             </Card>
           );
