@@ -210,15 +210,17 @@ INSTRUCTIONS FOR OTHER SECTIONS:
 
 4. If a section has no founder input, create a detailed placeholder (100+ words) noting what information is needed and why it matters to investors.
 
-5. Return your response as valid JSON in this exact format:
+5. Return your response as valid JSON in this exact format. You MUST include ALL 8 sections in order: problem, solution, market, business_model, gtm, team, funding_strategy, investment_thesis:
 {
   "sections": [
-    {
-      "sectionKey": "problem",
-      "title": "The Problem",
-      "enhancedContent": "The polished, investor-ready paragraph..."
-    },
-    ... (all 8 sections including investment_thesis at the end)
+    { "sectionKey": "problem", "title": "The Problem", "enhancedContent": "..." },
+    { "sectionKey": "solution", "title": "The Solution", "enhancedContent": "..." },
+    { "sectionKey": "market", "title": "Market Opportunity", "enhancedContent": "..." },
+    { "sectionKey": "business_model", "title": "Business Model", "enhancedContent": "..." },
+    { "sectionKey": "gtm", "title": "Go-to-Market", "enhancedContent": "..." },
+    { "sectionKey": "team", "title": "Team", "enhancedContent": "..." },
+    { "sectionKey": "funding_strategy", "title": "Funding Strategy", "enhancedContent": "..." },
+    { "sectionKey": "investment_thesis", "title": "Investment Thesis", "enhancedContent": "YOUR 3-5 PARAGRAPH VC-GRADE INVESTMENT THESIS HERE" }
   ],
   "executiveSummary": "A 2-3 sentence executive summary of the entire investment opportunity",
   "validationReport": {
@@ -287,13 +289,20 @@ Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
       parsedAI = JSON.parse(jsonText);
     } catch (parseError) {
       console.error("Failed to parse AI response:", aiContent);
-      // Fallback to simple concatenation if AI fails
+      // Fallback to simple concatenation if AI fails - include investment_thesis placeholder
+      const fallbackSections = sectionsForAI.map((s) => ({
+        sectionKey: s.sectionKey,
+        title: s.title,
+        enhancedContent: s.founderInput || "[Not provided]",
+      }));
+      // Add investment thesis placeholder
+      fallbackSections.push({
+        sectionKey: "investment_thesis",
+        title: "Investment Thesis",
+        enhancedContent: "[Investment thesis generation failed. Please try again.]",
+      });
       parsedAI = {
-        sections: sectionsForAI.map((s) => ({
-          sectionKey: s.sectionKey,
-          title: s.title,
-          enhancedContent: s.founderInput || "[Not provided]",
-        })),
+        sections: fallbackSections,
         executiveSummary: `${company.name} is a ${company.stage} startup in the ${company.category || "technology"} space.`,
       };
     }
