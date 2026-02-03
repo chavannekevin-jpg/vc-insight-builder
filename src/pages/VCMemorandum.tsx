@@ -6,9 +6,10 @@ import type { SectionToolData, AIActionPlan, SimplifiedMemoSection, HolisticVerd
 import { useMemoContent } from "@/hooks/useMemoContent";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, AlertCircle, FileText, Sparkles, Loader2, BookOpen, ChevronRight, Zap } from "lucide-react";
+import { ArrowLeft, AlertCircle, FileText, Sparkles, Loader2, BookOpen, ChevronRight, Zap, Share2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VCMemoExplainerModal, useVCMemoExplainer } from "@/components/memo/VCMemoExplainerModal";
+import { MemoShareDialog } from "@/components/memo/MemoShareDialog";
 import { toast } from "sonner";
 
 /**
@@ -28,6 +29,7 @@ export default function VCMemorandum() {
   const [companyName, setCompanyName] = useState("");
   const [companyDescription, setCompanyDescription] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   
   const { showExplainer, isChecked: explainerChecked, completeExplainer } = useVCMemoExplainer();
   
@@ -374,8 +376,41 @@ export default function VCMemorandum() {
         />
       )}
       
+      {/* Share Dialog */}
+      {companyId && (
+        <MemoShareDialog
+          open={showShareDialog}
+          onOpenChange={setShowShareDialog}
+          companyId={companyId}
+          companyName={companyName}
+        />
+      )}
+      
       {/* Upgraded design wrapper */}
       <div className="min-h-screen bg-background">
+        {/* Sticky Share Header */}
+        <div className="sticky top-0 z-40 border-b border-border/50 bg-card/80 backdrop-blur-sm">
+          <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate(`/analysis?companyId=${companyId}`)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Analysis
+            </Button>
+            <Button 
+              onClick={() => setShowShareDialog(true)}
+              size="sm"
+              className="gap-2"
+            >
+              <Share2 className="h-4 w-4" />
+              Share Memo
+            </Button>
+          </div>
+        </div>
+
         <div className="relative overflow-hidden">
           {/* Background effects */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
@@ -391,8 +426,7 @@ export default function VCMemorandum() {
               sectionTools={sectionTools}
               holisticVerdicts={holisticVerdicts}
               aiActionPlan={aiActionPlan}
-              onBack={() => navigate(`/analysis?companyId=${companyId}`)}
-              showBackButton={true}
+              showBackButton={false}
             />
           </div>
         </div>

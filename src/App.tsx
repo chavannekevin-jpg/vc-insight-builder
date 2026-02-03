@@ -140,6 +140,7 @@ const AdminQRGenerator = lazy(() => import("./pages/AdminQRGenerator"));
 const StartupGuide = lazy(() => import("./pages/StartupGuide"));
 const Workshop = lazy(() => import("./pages/Workshop"));
 const SharedMemoView = lazy(() => import("./pages/SharedMemoView"));
+const SharedSimplifiedMemoView = lazy(() => import("./pages/SharedSimplifiedMemoView"));
 
 // Investor Pages
 const InvestorLanding = lazy(() => import("./pages/investor/InvestorLanding"));
@@ -384,6 +385,7 @@ const App = () => (
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/shared/memo/:token" element={<SharedMemoView />} />
+            <Route path="/shared/simplified-memo/:token" element={<SharedSimplifiedMemoView />} />
             <Route path="/sample-analysis" element={<SampleMemo />} />
             <Route path="/sample-analysis/section" element={<SampleMemoSectionView />} />
             <Route path="/sample-analysis/complete" element={<SampleMemoCompletionScreen />} />

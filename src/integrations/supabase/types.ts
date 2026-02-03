@@ -2194,6 +2194,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_active: boolean | null
+          share_type: string | null
           token: string
           updated_at: string | null
           views: number | null
@@ -2205,6 +2206,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          share_type?: string | null
           token: string
           updated_at?: string | null
           views?: number | null
@@ -2216,6 +2218,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          share_type?: string | null
           token?: string
           updated_at?: string | null
           views?: number | null
@@ -3096,6 +3099,37 @@ export type Database = {
           structured_content: Json | null
           token: string | null
           vc_verdict_json: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memo_share_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memo_share_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shared_simplified_memo_view: {
+        Row: {
+          category: string | null
+          company_id: string | null
+          company_name: string | null
+          description: string | null
+          expires_at: string | null
+          is_active: boolean | null
+          memo_content_generated: boolean | null
+          share_created_at: string | null
+          share_type: string | null
+          stage: string | null
+          token: string | null
         }
         Relationships: [
           {
