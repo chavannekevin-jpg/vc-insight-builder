@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { SimplifiedMemoViewer } from "@/components/templates/SimplifiedMemoViewer";
-import type { SectionToolData, AIActionPlan, SimplifiedMemoSection, HolisticVerdict } from "@/components/templates/SimplifiedMemoViewer";
+import type { SectionToolData, SimplifiedMemoSection, HolisticVerdict } from "@/components/templates/SimplifiedMemoViewer";
 
 interface SharedMemoData {
   token: string;
@@ -239,23 +239,7 @@ export default function SharedSimplifiedMemoView() {
                         memoContent?.vcQuickTake?.readinessRationale ||
                         memoContent?.sections?.[0]?.paragraphs?.[0]?.text || '';
 
-  // Derive action plan from section tools
-  let aiActionPlan: AIActionPlan | undefined;
-  const firstSectionWithPlan = Object.values(sectionTools).find(t => t.actionPlan90Day);
-  if (firstSectionWithPlan?.actionPlan90Day) {
-    aiActionPlan = {
-      summaryLine: 'Focus on key areas identified in your analysis',
-      items: firstSectionWithPlan.actionPlan90Day.milestones.slice(0, 5).map((m, index) => ({
-        id: String(index),
-        category: 'strategy',
-        priority: m.priority === 'high' ? 'critical' as const : 
-                 m.priority === 'medium' ? 'high' as const : 'medium' as const,
-        problem: m.title,
-        impact: 'Address to strengthen investment readiness',
-        howToFix: m.description,
-      })),
-    };
-  }
+  // Note: AI Action Plan and Strategic Analysis tools are excluded from the shared view
 
   return (
     <div className="min-h-screen bg-background">
@@ -303,9 +287,8 @@ export default function SharedSimplifiedMemoView() {
               companyDescription={memoData.description || ""}
               heroStatement={heroStatement}
               sections={sections}
-              sectionTools={sectionTools}
+              sectionTools={{}}
               holisticVerdicts={holisticVerdicts}
-              aiActionPlan={aiActionPlan}
               showBackButton={false}
             />
           </div>
