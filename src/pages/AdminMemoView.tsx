@@ -25,7 +25,8 @@ import { MemoVCScaleCard } from "@/components/memo/MemoVCScaleCard";
 import { MemoExitPathCard } from "@/components/memo/MemoExitPathCard";
 import { DataQualitySummary } from "@/components/memo/DataQualitySummary";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Eye, Shield } from "lucide-react";
+import { ArrowLeft, Eye, Shield, Share2 } from "lucide-react";
+import { AdminMemoShareDialog } from "@/components/admin/AdminMemoShareDialog";
 import { toast } from "@/hooks/use-toast";
 import { MemoStructuredContent, MemoParagraph, EnhancedSectionTools } from "@/types/memo";
 import { safeTitle, sanitizeMemoContent } from "@/lib/stringUtils";
@@ -71,6 +72,7 @@ export default function AdminMemoView() {
   const [sectionTools, setSectionTools] = useState<Record<string, EnhancedSectionTools>>({});
   const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
   const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | null>(null);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const actionPlan = useMemo(() => {
     if (!memoContent?.vcQuickTake) return null;
@@ -300,9 +302,20 @@ export default function AdminMemoView() {
               <ArrowLeft className="w-4 h-4" />
               Back to User Memos
             </Button>
-            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <Eye className="w-4 h-4" />
-              Viewing: {companyInfo.name}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShareDialogOpen(true)}
+                className="gap-2"
+              >
+                <Share2 className="w-4 h-4" />
+                Share
+              </Button>
+              <span className="text-muted-foreground text-sm flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                Viewing: {companyInfo.name}
+              </span>
             </div>
           </div>
         </div>
@@ -652,6 +665,16 @@ export default function AdminMemoView() {
           })}
         </div>
       </div>
+
+      {/* Share Dialog */}
+      {companyId && companyInfo && (
+        <AdminMemoShareDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          companyId={companyId}
+          companyName={companyInfo.name}
+        />
+      )}
     </div>
   );
 }

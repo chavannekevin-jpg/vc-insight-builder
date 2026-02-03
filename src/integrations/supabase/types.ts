@@ -2186,6 +2186,57 @@ export type Database = {
           },
         ]
       }
+      memo_share_links: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          token: string
+          updated_at: string | null
+          views: number | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          token: string
+          updated_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          token?: string
+          updated_at?: string | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memo_share_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memo_share_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memo_tool_data: {
         Row: {
           ai_generated_data: Json | null
@@ -3003,6 +3054,38 @@ export type Database = {
           },
         ]
       }
+      shared_memo_view: {
+        Row: {
+          category: string | null
+          company_id: string | null
+          company_name: string | null
+          description: string | null
+          expires_at: string | null
+          is_active: boolean | null
+          memo_created_at: string | null
+          public_score: number | null
+          stage: string | null
+          structured_content: Json | null
+          token: string | null
+          vc_verdict_json: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memo_share_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memo_share_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_accelerator_member_with_invite:
@@ -3038,6 +3121,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_share_link_views: {
+        Args: { p_token: string }
+        Returns: undefined
       }
       is_accelerator_member: {
         Args: { _accelerator_id: string; _user_id: string }
