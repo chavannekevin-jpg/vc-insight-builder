@@ -3013,6 +3013,16 @@ export type Database = {
           company_id: string | null
           question_key: string | null
         }
+        Insert: {
+          answer?: string | null
+          company_id?: string | null
+          question_key?: string | null
+        }
+        Update: {
+          answer?: string | null
+          company_id?: string | null
+          question_key?: string | null
+        }
         Relationships: [
           {
             foreignKeyName: "memo_responses_company_id_fkey"
@@ -3034,8 +3044,26 @@ export type Database = {
         Row: {
           ai_generated_data: Json | null
           company_id: string | null
+          data_source: string | null
           section_name: string | null
+          tool_name: string | null
           user_overrides: Json | null
+        }
+        Insert: {
+          ai_generated_data?: Json | null
+          company_id?: string | null
+          data_source?: string | null
+          section_name?: string | null
+          tool_name?: string | null
+          user_overrides?: Json | null
+        }
+        Update: {
+          ai_generated_data?: Json | null
+          company_id?: string | null
+          data_source?: string | null
+          section_name?: string | null
+          tool_name?: string | null
+          user_overrides?: Json | null
         }
         Relationships: [
           {
