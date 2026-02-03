@@ -270,33 +270,108 @@ function extractPrimaryMetricValue(
   const pricingText = memoResponses['pricing'] || '';
   const combinedText = `${businessModelText} ${tractionText} ${pricingText}`.toLowerCase();
 
-  // Enterprise ACV ranges (e.g., "$50K-$500K+ ARR", "€100k ACV")
+  // Enterprise ACV ranges with M/k suffix support
+  // Matches: "€500k to €2M", "$100K-$500K ARR", "ranging from €500k to €2M per customer"
   if (businessModelType === 'b2b_enterprise' || businessModelType === 'b2b_mid_market') {
-    const enterpriseRangeMatch = combinedText.match(/[€$£]([\d,]+)\s*k?\s*[-–—to]+\s*[€$£]?([\d,]+)\s*k?\s*\+?\s*(?:arr|acv|per\s*year|annual|contract)/i);
-    if (enterpriseRangeMatch) {
-      const low = parseNumericValue(enterpriseRangeMatch[1]);
-      const high = parseNumericValue(enterpriseRangeMatch[2]);
-      const midpoint = Math.round(Math.sqrt(low * high)); // Geometric mean for skewed distributions
+    console.log('[AnchoredAssumptions] Extracting enterprise ACV from:', combinedText.substring(0, 500));
+    
+    // Enhanced patterns for enterprise pricing with M/k suffix support
+    const enterpriseRangePatterns = [
+      // Pattern 1: Direct range with ARR/ACV suffix - supports M suffix
+      /[€$£]([\d,.]+)\s*([km])?\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])?\s*\+?\s*(?:arr|acv|annual|contract)/i,
       
-      return {
-        value: midpoint,
-        source: 'founder_input',
-        description: `From founder: ${formatCurrencyValue(low, currency)}-${formatCurrencyValue(high, currency)} range (using ${formatCurrencyValue(midpoint, currency)} midpoint)`,
-        confidence: 'high',
-      };
+      // Pattern 2: "ranging from X to Y" with per customer/account
+      /ranging\s+(?:from\s+)?(?:approximately\s+)?[€$£]([\d,.]+)\s*([km])?\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])?/i,
+      
+      // Pattern 3: "ARR per customer" patterns
+      /(?:arr|acv)(?:\s+per\s+(?:customer|account|enterprise))?\s*(?:is|of|:)?\s*[€$£]?([\d,.]+)\s*([km])?\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])?/i,
+      
+      // Pattern 4: "potential ARR...X to Y" or similar enterprise patterns
+      /potential\s+(?:arr|acv)[^€$£]*[€$£]([\d,.]+)\s*([km])?\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])?/i,
+      
+      // Pattern 5: Currency range near ARR/customer keywords (more flexible)
+      /[€$£]([\d,.]+)\s*([km])\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])/i,
+    ];
+    
+    for (const pattern of enterpriseRangePatterns) {
+      const match = combinedText.match(pattern);
+      if (match) {
+        console.log('[AnchoredAssumptions] Enterprise range match:', match[0]);
+        
+        // Extract values and suffixes
+        const lowNumStr = match[1].replace(/,/g, '');
+        const lowSuffix = match[2]?.toLowerCase();
+        const highNumStr = match[3].replace(/,/g, '');
+        const highSuffix = match[4]?.toLowerCase();
+        
+        // Parse with suffix awareness
+        let low = parseFloat(lowNumStr);
+        let high = parseFloat(highNumStr);
+        
+        // Apply multipliers based on suffix
+        if (lowSuffix === 'm') {
+          low = low * 1000000;
+        } else if (lowSuffix === 'k') {
+          low = low * 1000;
+        } else if (low < 1000) {
+          // Small numbers in enterprise context are likely thousands
+          low = low * 1000;
+        }
+        
+        if (highSuffix === 'm') {
+          high = high * 1000000;
+        } else if (highSuffix === 'k') {
+          high = high * 1000;
+        } else if (high < 1000) {
+          high = high * 1000;
+        }
+        
+        // Validate range makes sense for enterprise
+        if (low > 0 && high > 0 && high >= low && low >= 10000) {
+          const midpoint = Math.round(Math.sqrt(low * high)); // Geometric mean
+          
+          console.log('[AnchoredAssumptions] Extracted range:', { low, high, midpoint });
+          
+          return {
+            value: midpoint,
+            source: 'founder_input',
+            description: `From founder: ${formatCurrencyValue(low, currency)}-${formatCurrencyValue(high, currency)} range (using ${formatCurrencyValue(midpoint, currency)} midpoint)`,
+            confidence: 'high',
+          };
+        }
+      }
     }
 
-    // Single ACV value
-    const singleAcvMatch = combinedText.match(/(?:acv|annual\s*contract(?:\s*value)?)[:\s]*[€$£]?([\d,]+)\s*k?/i) ||
-                           combinedText.match(/[€$£]([\d,]+)\s*k?\s*(?:acv|annual\s*contract)/i);
-    if (singleAcvMatch) {
-      const value = parseNumericValue(singleAcvMatch[1]);
-      return {
-        value,
-        source: 'founder_input',
-        description: `From founder: ${formatCurrencyValue(value, currency)} ACV`,
-        confidence: 'high',
-      };
+    // Single ACV/ARR value with M/k suffix support
+    const singleValuePatterns = [
+      /(?:acv|annual\s*contract(?:\s*value)?)[:\s]*[€$£]?([\d,.]+)\s*([km])?/i,
+      /[€$£]([\d,.]+)\s*([km])?\s*(?:acv|annual\s*contract)/i,
+      /[€$£]([\d,.]+)\s*([km])?\s*(?:arr|acv)\s+per\s+(?:customer|account|enterprise)/i,
+    ];
+    
+    for (const pattern of singleValuePatterns) {
+      const match = combinedText.match(pattern);
+      if (match) {
+        let value = parseFloat(match[1].replace(/,/g, ''));
+        const suffix = match[2]?.toLowerCase();
+        
+        if (suffix === 'm') {
+          value = value * 1000000;
+        } else if (suffix === 'k') {
+          value = value * 1000;
+        } else if (value < 1000) {
+          value = value * 1000;
+        }
+        
+        if (value >= 10000) { // Sanity check for enterprise
+          return {
+            value: Math.round(value),
+            source: 'founder_input',
+            description: `From founder: ${formatCurrencyValue(value, currency)} ACV`,
+            confidence: 'high',
+          };
+        }
+      }
     }
   }
 
