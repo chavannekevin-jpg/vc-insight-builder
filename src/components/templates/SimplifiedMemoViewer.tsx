@@ -127,6 +127,82 @@ const getPriorityColor = (priority: string): string => {
   }
 };
 
+/**
+ * Parses narrative text into readable paragraphs with proper spacing.
+ * Splits on double newlines, periods followed by capital letters, or very long sentences.
+ */
+const parseNarrativeText = (text: string): string[] => {
+  if (!text) return [];
+  
+  // First, normalize the text - remove markdown bold/italic markers
+  let normalized = text
+    .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove bold markers
+    .replace(/\*([^*]+)\*/g, '$1')     // Remove italic markers
+    .trim();
+  
+  // Split on double newlines first
+  let paragraphs = normalized.split(/\n\n+/).filter(p => p.trim());
+  
+  // If we only have one paragraph and it's very long, try to split it intelligently
+  if (paragraphs.length === 1 && paragraphs[0].length > 400) {
+    const longText = paragraphs[0];
+    
+    // Try to split on sentence boundaries where a new topic might start
+    // Look for patterns like ". The", ". This", ". However", etc.
+    const sentenceSplitPattern = /(?<=[.!?])\s+(?=[A-Z](?:he|his|hey|here|owever|oreover|dditionally|urthermore|n\s|t\s|s\s))/g;
+    
+    const sentences = longText.split(sentenceSplitPattern);
+    
+    if (sentences.length > 1) {
+      // Group sentences into paragraphs of roughly 2-3 sentences each
+      paragraphs = [];
+      let currentParagraph = '';
+      let sentenceCount = 0;
+      
+      sentences.forEach((sentence, index) => {
+        currentParagraph += (currentParagraph ? ' ' : '') + sentence.trim();
+        sentenceCount++;
+        
+        // Create a new paragraph every 2-3 sentences or if current is getting long
+        if (sentenceCount >= 2 && (currentParagraph.length > 300 || index === sentences.length - 1)) {
+          paragraphs.push(currentParagraph);
+          currentParagraph = '';
+          sentenceCount = 0;
+        }
+      });
+      
+      if (currentParagraph) {
+        paragraphs.push(currentParagraph);
+      }
+    }
+  }
+  
+  // If still just one long paragraph, split by sentences more aggressively
+  if (paragraphs.length === 1 && paragraphs[0].length > 500) {
+    const text = paragraphs[0];
+    const allSentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    
+    paragraphs = [];
+    let currentParagraph = '';
+    
+    allSentences.forEach((sentence, index) => {
+      currentParagraph += sentence;
+      
+      // Create paragraph every 2-3 sentences
+      if ((index + 1) % 3 === 0 || index === allSentences.length - 1) {
+        paragraphs.push(currentParagraph.trim());
+        currentParagraph = '';
+      }
+    });
+    
+    if (currentParagraph) {
+      paragraphs.push(currentParagraph.trim());
+    }
+  }
+  
+  return paragraphs.filter(p => p.trim().length > 0);
+};
+
 // ============================================================================
 // SUB-COMPONENTS
 // ============================================================================
@@ -485,9 +561,13 @@ export function SimplifiedMemoViewer({
             <CardContent className="py-8 px-6">
               <div className="flex items-start gap-4">
                 <div className="text-4xl text-primary/40 font-serif leading-none">"</div>
-                <p className="text-lg font-medium italic text-foreground/90 leading-relaxed flex-1">
-                  {heroStatement}
-                </p>
+                <div className="flex-1 space-y-3">
+                  {parseNarrativeText(heroStatement).map((paragraph, i) => (
+                    <p key={i} className="text-lg font-medium italic text-foreground/90 leading-relaxed">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
                 <div className="text-4xl text-primary/40 font-serif leading-none self-end">"</div>
               </div>
             </CardContent>
@@ -552,21 +632,29 @@ export function SimplifiedMemoViewer({
               </CardHeader>
 
               <CardContent className="pt-6 pb-8">
-                {/* VC Perspective */}
+                {/* VC Perspective - with better text formatting */}
                 {verdict && verdict.stageContext && (
                   <div className="bg-muted/30 backdrop-blur-sm rounded-xl p-5 mb-6 border border-border/30">
-                    <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">
+                    <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
                       VC Perspective
                     </p>
-                    <p className="italic text-foreground/80 leading-relaxed">{verdict.stageContext}</p>
+                    <div className="space-y-3">
+                      {parseNarrativeText(verdict.stageContext).map((paragraph, i) => (
+                        <p key={i} className="italic text-foreground/80 leading-relaxed">{paragraph}</p>
+                      ))}
+                    </div>
                   </div>
                 )}
 
-                {/* Narrative */}
+                {/* Narrative - parsed into readable paragraphs */}
                 {section.narrative && (
-                  <p className="text-muted-foreground leading-relaxed mb-6 text-base">
-                    {section.narrative}
-                  </p>
+                  <div className="space-y-4 mb-6">
+                    {parseNarrativeText(section.narrative).map((paragraph, i) => (
+                      <p key={i} className="text-muted-foreground leading-relaxed text-base">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
                 )}
 
                 {/* Key Points */}
