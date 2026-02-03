@@ -38,7 +38,7 @@ import { MemoMoatScoreCard } from "@/components/memo/MemoMoatScoreCard";
 import { MemoUnitEconomicsCard } from "@/components/memo/MemoUnitEconomicsCard";
 import { MemoTeamList } from "@/components/memo/MemoTeamList";
 import { MemoTeamGapCard } from "@/components/memo/MemoTeamGapCard";
-import { MemoVCScaleCard } from "@/components/memo/MemoVCScaleCard";
+
 import { MemoExitPathCard } from "@/components/memo/MemoExitPathCard";
 import { VCFramingExplainerCard } from "@/components/memo/VCFramingExplainerCard";
 import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptions";
@@ -569,26 +569,6 @@ export default function SharedMemoView() {
                 {/* Market Section Tools */}
                 {isMarketSection && (
                   <div className="space-y-6">
-                    <MemoVCScaleCard 
-                      avgMonthlyRevenue={extractedPricing.avgMonthlyRevenue}
-                      currentCustomers={extractedPricing.currentCustomers}
-                      currentMRR={extractedPricing.currentMRR}
-                      companyName={memoData?.company_name || 'Company'}
-                      category={memoData?.category || 'Technology'}
-                      currency={extractedPricing.currency}
-                      businessModelType={extractedPricing.businessModelType}
-                      ltv={extractedPricing.ltv}
-                      avgDealSize={extractedPricing.avgDealSize}
-                      aumFeePercent={extractedPricing.aumFeePercent}
-                      aumTotal={extractedPricing.aumTotal}
-                      setupFee={extractedPricing.setupFee}
-                      transactionFeePercent={extractedPricing.transactionFeePercent}
-                      avgTransactionValue={extractedPricing.avgTransactionValue}
-                      isB2C={extractedPricing.isB2C}
-                      isTransactionBased={extractedPricing.isTransactionBased}
-                      dataSource={extractedPricing.dataSource}
-                      anchoredAssumptions={anchoredAssumptions || undefined}
-                    />
                     {currentSectionTools?.bottomsUpTAM && (
                       <MarketTAMCalculator data={currentSectionTools.bottomsUpTAM} />
                     )}
