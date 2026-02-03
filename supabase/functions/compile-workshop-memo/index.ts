@@ -122,6 +122,61 @@ YOUR TASK:
 1. Expand and elaborate each founder's raw input into comprehensive, investor-ready analysis. The benchmark example is your LENGTH AND QUALITY TARGET - your output for each section should be approximately the same length (150-350 words), with the same level of depth, structure, and specificity as the benchmark.
 2. IMPORTANT: Generate a compelling "Investment Thesis" section based on ALL the founder's inputs using the special instructions below.
 
+=== SECTION-SPECIFIC GENERATION RULES ===
+
+FOR "PROBLEM" SECTION (section_key: problem):
+Your enhanced content MUST address ALL these elements (infer from context if founder didn't provide):
+
+1. QUANTIFY THE PROBLEM
+   - Include specific numbers: hours wasted, money lost, frequency of occurrence
+   - If founder didn't provide numbers, estimate based on industry context (e.g., "SMEs spend an average of X hours/week...")
+
+2. MAKE THE PAIN TANGIBLE
+   - Include a concrete scenario (can be illustrative) showing how this pain plays out day-to-day
+   - E.g., "Picture a finance manager spending 3 hours every Friday chasing overdue invoices..."
+
+3. WHY IS IT GETTING WORSE?
+   - Identify market trends, regulatory changes, or competitive pressures accelerating the problem
+   - Make this forward-looking and urgent
+
+4. WHO FEELS THE PAIN?
+   - Clearly name the ICP: job title, company size, industry segment
+   - Describe why this specific persona bears the brunt of the problem
+
+5. HOW IS IT SOLVED TODAY?
+   - Describe current workarounds: manual processes, legacy tools, outsourcing
+   - Highlight why these alternatives are inadequate or expensive
+
+6. ECONOMIC COST OF THE PAIN
+   - Estimate the dollar/time cost if founder hasn't quantified it
+   - E.g., "This translates to an estimated $X,000/year in lost productivity for a typical company"
+
+---
+
+FOR "SOLUTION" SECTION (section_key: solution):
+Your enhanced content MUST address ALL these elements (infer from context if founder didn't provide):
+
+1. JUSTIFY THE MARKET NEED
+   - Connect directly to the problem: "Given that [problem], there is clear demand for..."
+   - Explain timing: why this solution makes sense NOW (market readiness, tech enablers, regulatory shifts)
+
+2. KEY FEATURES (list 3-5)
+   - Describe core capabilities with specificity
+   - Link each feature back to a pain point from the Problem section
+
+3. WHY DO WE NEED IT?
+   - Articulate the transformation: what changes for the customer with this solution?
+   - Contrast explicitly with the status quo described in the Problem section
+
+4. ROI / OUTCOME ESTIMATION
+   - If founder hasn't provided ROI, estimate based on industry context:
+     - Time savings (e.g., "reduces X hours to Y minutes")
+     - Cost reduction (e.g., "cuts processing costs by ~Z%")
+     - Efficiency gains (e.g., "improves collection rates from A% to B%")
+   - Be explicit: "Based on typical implementations, customers could expect..."
+
+=== END SECTION-SPECIFIC RULES ===
+
 SECTIONS TO TRANSFORM (from founder input):
 ${sectionsForAI.map((s, i) => `
 ---
@@ -244,7 +299,7 @@ Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
         messages: [
           {
             role: "system",
-            content: "You are an expert investment memo writer creating comprehensive VC-grade memorandums. Your outputs must MATCH THE LENGTH AND DEPTH of the provided benchmark examples - typically 150-350 words per section with multiple paragraphs. Brief, summarized outputs are NOT acceptable. Always respond with valid JSON only.",
+            content: "You are an expert investment memo writer creating comprehensive VC-grade memorandums. Your outputs must MATCH THE LENGTH AND DEPTH of the provided benchmark examples - typically 150-350 words per section with multiple paragraphs. Brief, summarized outputs are NOT acceptable. CRITICAL: When founder input is sparse on quantification, pain scenarios, current alternatives, or ROI, you MUST infer reasonable estimates using industry context and business logic. Never leave these elements blank or vague. Always respond with valid JSON only.",
           },
           {
             role: "user",
