@@ -20,6 +20,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptions";
+import type { AnchoredAssumptions } from "@/lib/anchoredAssumptions";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -83,6 +85,7 @@ export interface SimplifiedMemoViewerProps {
   sectionTools?: Record<string, SectionToolData>;
   holisticVerdicts?: Record<string, HolisticVerdict>;
   aiActionPlan?: AIActionPlan;
+  anchoredAssumptions?: AnchoredAssumptions | null;
   onBack?: () => void;
   showBackButton?: boolean;
 }
@@ -489,6 +492,7 @@ export function SimplifiedMemoViewer({
   sectionTools = {},
   holisticVerdicts = {},
   aiActionPlan,
+  anchoredAssumptions,
   onBack,
   showBackButton = true,
 }: SimplifiedMemoViewerProps) {
@@ -574,6 +578,16 @@ export function SimplifiedMemoViewer({
           </Card>
         )}
       </div>
+
+      {/* Anchored Assumptions - Key Metrics */}
+      {anchoredAssumptions && anchoredAssumptions.primaryMetricValue !== null && (
+        <div className="mb-10">
+          <MemoAnchoredAssumptions 
+            assumptions={anchoredAssumptions}
+            companyName={companyName}
+          />
+        </div>
+      )}
 
       {/* Section Navigation */}
       <SectionNavBar sections={sections} sectionTools={sectionTools} />
