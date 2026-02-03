@@ -1,178 +1,136 @@
 
-# Plan: Full Audit Sharing for External Partners
+# Plan: Fix €5k vs €500k-€2M ACV Extraction for Enterprise Companies
 
-## Overview
-Upgrade the shared memo view so external partners see the **complete investment audit** with all VC tools, section scores, action plans, and analysis — matching what admins see in `AdminMemoView`.
+## Problem Summary
+Kontrol explicitly states their ACV range is **€500k to €2M** per enterprise customer, but the Key Assumptions card shows **€5k** — a **100x error**. This severely undermines the credibility of the investment analysis.
 
----
+## Root Causes Identified
 
-## Current Gap
-
-| Feature | AdminMemoView | SharedMemoView (Current) |
-|---------|---------------|--------------------------|
-| Company header + score | Yes | Yes |
-| VC Quick Take | Yes | Yes |
-| AI Conclusion | Yes | Yes |
-| Section narratives | Yes | Yes |
-| **Section scores** | Yes | No |
-| **Action Plan** | Yes | No |
-| **Pain Validator, Differentiation Matrix** | Yes | No |
-| **TAM Calculator, Moat Scores** | Yes | No |
-| **Team Gap Analysis** | Yes | No |
-| **Unit Economics** | Yes | No |
-| **VC Perspective per section** | Yes | No |
-| **Benchmarks & Case Studies** | Yes | No |
-| **90-Day Plans, VC Investment Logic** | Yes | No |
-| **Lead Investor Requirements** | Yes | No |
-| **Anchored Assumptions** | Yes | No |
-
----
-
-## Solution Architecture
-
-### 1. Expand Database Access for Shared Memos
-
-Create additional shareable views that expose tool data and responses for valid share tokens:
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    shared_memo_view                         │
-│  (existing - company info + memo structured_content)        │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│            shareable_section_scores (NEW)                   │
-│  Exposes memo_tool_data for companies with active links     │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│            shareable_memo_responses (NEW)                   │
-│  Exposes memo_responses for companies with active links     │
-└─────────────────────────────────────────────────────────────┘
+### 1. Regex Pattern Doesn't Match Enterprise Pricing Text
+The current enterprise ACV regex on line 275 of `anchoredAssumptions.ts`:
+```javascript
+/[€$£]([\d,]+)\s*k?\s*[-–—to]+\s*[€$£]?([\d,]+)\s*k?\s*\+?\s*(?:arr|acv|per\s*year|annual|contract)/i
 ```
 
-### 2. Database Migration
+**Fails on Kontrol's text** because:
+- It doesn't support **"M" suffix** (millions) - only handles "k"
+- Requires "arr|acv|per year|annual|contract" **immediately after** the range
+- Kontrol's text: "€500k to €2M...ARR per customer" has "ARR" separated from the range
 
-Create two new views that join against `memo_share_links` to only expose data for companies with active share links:
+### 2. Missing Patterns for Enterprise Pricing
+The regex doesn't handle common enterprise patterns like:
+- "€500k to €2M" (million suffix)
+- "ARR per customer" or "per account"
+- "potential ARR...ranging from"
 
-**shareable_section_scores:**
-- Joins `memo_tool_data` with `memo_share_links`
-- Only returns tool data for companies with active, non-expired share links
-- Exposes: `company_id`, `section_name`, `tool_name`, `ai_generated_data`, `user_overrides`
-
-**shareable_memo_responses:**
-- Joins `memo_responses` with `memo_share_links`
-- Only returns responses for companies with active share links
-- Exposes: `company_id`, `question_key`, `answer`
-
-### 3. Update SharedMemoView Component
-
-Transform from a simple viewer to a full audit display:
-
-**Data Fetching:**
-- Fetch tool data from `shareable_section_scores` view
-- Fetch responses from `shareable_memo_responses` view
-- Process into the same `sectionTools` format used by AdminMemoView
-
-**Rendering:**
-- Import and display all section-specific tool cards:
-  - Problem: PainValidator, EvidenceThreshold, FounderBlindSpot
-  - Solution: DifferentiationCard, TechnicalDefensibility, CommoditizationTeardown
-  - Market: VCScaleCard, TAMCalculator, ReadinessIndex
-  - Competition: MoatScoreCard, CompetitorChessboard, MoatDurability
-  - Team: TeamList, TeamGapCard, CredibilityGapCard
-  - Business: UnitEconomicsCard, ModelStressTest
-  - Traction: MomentumCard, TractionDepthTest
-  - Vision: MilestoneMap, ScenarioPlanning, ExitNarrative, ExitPath
-- Show VC Perspective for each section (analysis, questions, benchmarking)
-- Display Benchmarks, Case Studies, VC Investment Logic, 90-Day Plans
-- Add Anchored Assumptions card at the top
-- Add Action Plan summary
+### 3. Fallback to AI Estimation Uses Wrong Benchmarks
+When extraction fails, the AI estimation uses SMB SaaS benchmarks (~€5k-6k seed stage) instead of enterprise benchmarks (~€100k-200k).
 
 ---
 
-## Technical Implementation
+## Solution: Enhanced Enterprise ACV Extraction
 
-### Step 1: Database Migration
+### File Changes
 
-```sql
--- Create view for shareable section tools/scores
-CREATE OR REPLACE VIEW public.shareable_section_scores
-WITH (security_invoker=on) AS
-SELECT 
-    mtd.company_id,
-    mtd.section_name,
-    mtd.tool_name,
-    mtd.ai_generated_data,
-    mtd.user_overrides,
-    mtd.data_source
-FROM public.memo_tool_data mtd
-WHERE EXISTS (
-    SELECT 1 FROM public.memo_share_links sl
-    WHERE sl.company_id = mtd.company_id
-    AND sl.is_active = true
-    AND (sl.expires_at IS NULL OR sl.expires_at > now())
-);
+**File: `src/lib/anchoredAssumptions.ts`**
 
--- Create view for shareable memo responses
-CREATE OR REPLACE VIEW public.shareable_memo_responses
-WITH (security_invoker=on) AS
-SELECT 
-    mr.company_id,
-    mr.question_key,
-    mr.answer
-FROM public.memo_responses mr
-WHERE EXISTS (
-    SELECT 1 FROM public.memo_share_links sl
-    WHERE sl.company_id = mr.company_id
-    AND sl.is_active = true
-    AND (sl.expires_at IS NULL OR sl.expires_at > now())
-);
+### Step 1: Add Million-Aware Parsing Function
+Create a new helper that handles k/M suffixes properly:
 
--- Grant anon access
-GRANT SELECT ON public.shareable_section_scores TO anon;
-GRANT SELECT ON public.shareable_memo_responses TO anon;
-```
-
-### Step 2: Update SharedMemoView.tsx
-
-**New Imports:**
 ```typescript
-import { MemoActionPlan } from "@/components/memo/MemoActionPlan";
-import { MemoVCQuestions } from "@/components/memo/MemoVCQuestions";
-import { MemoVCReflection } from "@/components/memo/MemoVCReflection";
-import { MemoBenchmarking } from "@/components/memo/MemoBenchmarking";
-import { MemoPainValidatorCard } from "@/components/memo/MemoPainValidatorCard";
-import { MemoDifferentiationCard } from "@/components/memo/MemoDifferentiationCard";
-// ... all other tool imports from AdminMemoView
+function parseEnterpriseValue(str: string, fullMatch: string): number {
+  const clean = str.replace(/,/g, '').toLowerCase();
+  const num = parseFloat(clean);
+  const fullLower = fullMatch.toLowerCase();
+  
+  // Check for millions suffix (M or m, but not MRR/mrr)
+  if (/\d+\s*m(?!rr)/i.test(fullLower)) {
+    return num * 1000000;
+  }
+  // Check for thousands suffix (k)
+  if (/\d+\s*k/i.test(fullLower) || fullLower.includes('k')) {
+    return num * 1000;
+  }
+  // If small number without suffix, likely in thousands for enterprise context
+  if (num < 1000) {
+    return num * 1000;
+  }
+  return num;
+}
 ```
 
-**Data Fetching:**
+### Step 2: Expand Enterprise ACV Range Regex
+Replace the narrow regex with a more flexible pattern:
+
 ```typescript
-// After fetching shared_memo_view data...
-
-// Fetch tool data for this company
-const { data: toolData } = await supabase
-  .from("shareable_section_scores")
-  .select("*")
-  .eq("company_id", data.company_id);
-
-// Fetch responses for anchored assumptions
-const { data: responsesData } = await supabase
-  .from("shareable_memo_responses")
-  .select("*")
-  .eq("company_id", data.company_id);
-
-// Process into sectionTools format (same logic as AdminMemoView)
+// Enterprise ACV ranges with M/k support
+// Matches: "€500k to €2M", "$100K-$500K ARR", "ranging from €500k to €2M per customer"
+const enterpriseRangePatterns = [
+  // Pattern 1: Direct range with ARR/ACV suffix
+  /[€$£]([\d,.]+)\s*([km])?\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])?\s*\+?\s*(?:arr|acv|annual|contract)/i,
+  
+  // Pattern 2: "ranging from X to Y" with per customer/account
+  /ranging\s+(?:from\s+)?(?:approximately\s+)?[€$£]([\d,.]+)\s*([km])?\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])?/i,
+  
+  // Pattern 3: "ARR per customer is X to Y"
+  /(?:arr|acv)(?:\s+per\s+(?:customer|account|enterprise))?\s*(?:is|of|:)?\s*[€$£]?([\d,.]+)\s*([km])?\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])?/i,
+  
+  // Pattern 4: "potential ARR...X to Y"
+  /potential\s+(?:arr|acv)\s+(?:per\s+(?:customer|account))?\s*(?:is|of|:)?\s*(?:substantial,?\s+)?(?:ranging\s+)?(?:from\s+)?(?:approximately\s+)?[€$£]?([\d,.]+)\s*([km])?\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])?/i,
+];
 ```
 
-**Rendering:**
-- Mirror the AdminMemoView section rendering logic
-- Show all tool cards based on section type
-- Display VC Perspective (vcReflection) for each section
-- Include Action Plan at the top
+### Step 3: Extract Values with Suffix Awareness
+Update the extraction logic to:
+1. Try each pattern
+2. Parse numeric values with their k/M suffixes correctly
+3. Calculate geometric mean for ranges
+
+```typescript
+for (const pattern of enterpriseRangePatterns) {
+  const match = combinedText.match(pattern);
+  if (match) {
+    // Extract value and suffix pairs
+    const lowValue = parseFloat(match[1].replace(/,/g, ''));
+    const lowSuffix = match[2]?.toLowerCase();
+    const highValue = parseFloat(match[3].replace(/,/g, ''));
+    const highSuffix = match[4]?.toLowerCase();
+    
+    // Apply multipliers
+    const low = lowSuffix === 'm' ? lowValue * 1000000 
+              : lowSuffix === 'k' ? lowValue * 1000 
+              : lowValue < 1000 ? lowValue * 1000 : lowValue;
+              
+    const high = highSuffix === 'm' ? highValue * 1000000 
+               : highSuffix === 'k' ? highValue * 1000 
+               : highValue < 1000 ? highValue * 1000 : highValue;
+    
+    const midpoint = Math.round(Math.sqrt(low * high));
+    // ... return result
+  }
+}
+```
+
+### Step 4: Add Logging for Debugging
+Add console logging to trace extraction:
+
+```typescript
+console.log('[AnchoredAssumptions] Extracting for', companyDetails?.name, 
+            'businessModel:', businessModelType);
+console.log('[AnchoredAssumptions] Combined text length:', combinedText.length);
+```
+
+---
+
+## Testing Scenarios
+
+| Company Text | Expected Result |
+|--------------|-----------------|
+| "€500k to €2M ARR per customer" | €1M midpoint (geometric mean) |
+| "ranging from approximately €500k to €2M" | €1M midpoint |
+| "$100K-$500K+ ACV" | €223k midpoint |
+| "ACV of €150,000" | €150k |
+| No explicit pricing (fallback) | AI estimation using enterprise benchmarks |
 
 ---
 
@@ -180,34 +138,15 @@ const { data: responsesData } = await supabase
 
 | File | Changes |
 |------|---------|
-| New migration file | Create `shareable_section_scores` and `shareable_memo_responses` views |
-| `src/pages/SharedMemoView.tsx` | Major update: fetch tool data, add all tool card imports, mirror AdminMemoView rendering |
+| `src/lib/anchoredAssumptions.ts` | Update `extractPrimaryMetricValue()` with expanded regex patterns and M-suffix support |
 
 ---
 
-## Security Considerations
+## Expected Outcome
 
-- Views only expose data for companies with **active, non-expired** share links
-- No authentication required (by design - public sharing)
-- Token-based access control remains in place
-- View count tracking continues to work
+For Kontrol, the Key Assumptions card will show:
+- **ACV: €1M/year** (geometric mean of €500k and €2M)
+- **Source: "From founder: €500k-€2M range (using €1M midpoint)"**
+- **Confidence: High**
 
----
-
-## Visual Result
-
-Partners accessing the shared link will see the complete investment audit:
-1. Company header with Fundability Score
-2. Anchored Assumptions (key metrics)
-3. VC Quick Take
-4. Action Plan summary
-5. Each section with:
-   - Section score card
-   - Hero statement + narrative
-   - Section-specific tools (Pain Validator, TAM, Moat, etc.)
-   - VC Perspective (analysis, questions, benchmarking, conclusion)
-   - Benchmarks and Case Studies
-   - VC Investment Logic
-   - 90-Day Action Plan
-   - Lead Investor Requirements
-6. Footer with confidentiality notice
+This accurately reflects the enterprise pricing stated by the founder.
