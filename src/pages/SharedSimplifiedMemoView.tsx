@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { SimplifiedMemoViewer } from "@/components/templates/SimplifiedMemoViewer";
 import type { SectionToolData, SimplifiedMemoSection, HolisticVerdict } from "@/components/templates/SimplifiedMemoViewer";
+import { extractAnchoredAssumptions, detectCurrencyFromResponses, type AnchoredAssumptions } from "@/lib/anchoredAssumptions";
 
 interface SharedMemoData {
   token: string;
@@ -29,6 +30,20 @@ interface SharedMemoData {
   share_created_at: string;
 }
 
+interface CompanyModelData {
+  financial?: {
+    pricing?: {
+      acv?: number | null;
+      acvBand?: 'micro' | 'smb' | 'mid-market' | 'enterprise' | null;
+      model?: string | null;
+    };
+  };
+  customer?: {
+    acvBand?: string | null;
+    icp?: string | null;
+  };
+}
+
 export default function SharedSimplifiedMemoView() {
   const { token } = useParams<{ token: string }>();
   
@@ -37,6 +52,7 @@ export default function SharedSimplifiedMemoView() {
   const [memoContent, setMemoContent] = useState<any>(null);
   const [sectionTools, setSectionTools] = useState<Record<string, SectionToolData>>({});
   const [holisticVerdicts, setHolisticVerdicts] = useState<Record<string, HolisticVerdict>>({});
+  const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -159,7 +175,47 @@ export default function SharedSimplifiedMemoView() {
           setHolisticVerdicts(verdictsMap);
         }
 
-        // 4. Increment view count (fire and forget)
+        // 4. Fetch company model and memo responses for anchored assumptions
+        const [companyModelResult, memoResponsesResult] = await Promise.all([
+          supabase
+            .from("shareable_company_model")
+            .select("model_data")
+            .eq("token", token)
+            .maybeSingle(),
+          supabase
+            .from("shareable_memo_responses")
+            .select("question_key, answer")
+            .eq("token", token)
+        ]);
+
+        // Build memo responses map
+        const responsesMap: Record<string, string> = {};
+        if (memoResponsesResult.data) {
+          memoResponsesResult.data.forEach((r: any) => {
+            if (r.answer) responsesMap[r.question_key] = r.answer;
+          });
+        }
+
+        // Extract anchored assumptions using the same logic as useMemoContent
+        if (Object.keys(responsesMap).length > 0 || companyModelResult.data?.model_data) {
+          const currency = detectCurrencyFromResponses(responsesMap);
+          const companyModelData = companyModelResult.data?.model_data as CompanyModelData | null;
+          
+          const assumptions = extractAnchoredAssumptions(
+            companyModelData,
+            responsesMap,
+            currency,
+            { 
+              category: data.category || undefined, 
+              stage: data.stage, 
+              name: data.company_name 
+            }
+          );
+          
+          setAnchoredAssumptions(assumptions);
+        }
+
+        // 5. Increment view count (fire and forget)
         supabase.rpc("increment_share_link_views", { p_token: token });
 
       } catch (err) {
@@ -289,6 +345,7 @@ export default function SharedSimplifiedMemoView() {
               sections={sections}
               sectionTools={{}}
               holisticVerdicts={holisticVerdicts}
+              anchoredAssumptions={anchoredAssumptions}
               showBackButton={false}
             />
           </div>

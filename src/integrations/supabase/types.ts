@@ -2953,6 +2953,29 @@ export type Database = {
       }
     }
     Views: {
+      shareable_company_model: {
+        Row: {
+          company_id: string | null
+          model_data: Json | null
+          token: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memo_share_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memo_share_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shareable_company_preview: {
         Row: {
           category: string | null
@@ -3015,27 +3038,18 @@ export type Database = {
           answer: string | null
           company_id: string | null
           question_key: string | null
-        }
-        Insert: {
-          answer?: string | null
-          company_id?: string | null
-          question_key?: string | null
-        }
-        Update: {
-          answer?: string | null
-          company_id?: string | null
-          question_key?: string | null
+          token: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "memo_responses_company_id_fkey"
+            foreignKeyName: "memo_share_links_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "memo_responses_company_id_fkey"
+            foreignKeyName: "memo_share_links_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "shareable_company_preview"
