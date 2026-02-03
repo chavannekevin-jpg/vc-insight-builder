@@ -42,6 +42,7 @@ import { MemoVCScaleCard } from "@/components/memo/MemoVCScaleCard";
 import { MemoExitPathCard } from "@/components/memo/MemoExitPathCard";
 import { VCFramingExplainerCard } from "@/components/memo/VCFramingExplainerCard";
 import { MemoAnchoredAssumptions } from "@/components/memo/MemoAnchoredAssumptions";
+import { MemoScoreRadar } from "@/components/memo/MemoScoreRadar";
 
 // VC tool cards
 import {
@@ -100,6 +101,7 @@ export default function SharedMemoView() {
   const [sectionTools, setSectionTools] = useState<Record<string, EnhancedSectionTools>>({});
   const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
   const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | null>(null);
+  const [holisticVerdicts, setHolisticVerdicts] = useState<Record<string, { verdict: string; stageContext?: string }>>({});
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -150,8 +152,24 @@ export default function SharedMemoView() {
 
         if (toolData && toolData.length > 0) {
           const toolsMap: Record<string, EnhancedSectionTools> = {};
+          const verdictsMap: Record<string, { verdict: string; stageContext?: string }> = {};
+          
           toolData.forEach((tool: any) => {
             const sectionName = tool.section_name;
+            
+            // Extract holistic verdicts separately
+            if (tool.tool_name === 'holisticVerdict') {
+              const aiData = tool.ai_generated_data as Record<string, any> || {};
+              const verdictText = aiData.holisticVerdict || aiData.verdict;
+              if (verdictText) {
+                verdictsMap[sectionName] = {
+                  verdict: verdictText,
+                  stageContext: aiData.stageContext
+                };
+              }
+              return;
+            }
+            
             if (!toolsMap[sectionName]) {
               toolsMap[sectionName] = {};
             }
@@ -181,6 +199,7 @@ export default function SharedMemoView() {
             }
           });
           setSectionTools(toolsMap);
+          setHolisticVerdicts(verdictsMap);
         }
 
         // 3. Fetch responses from shareable_memo_responses view
@@ -382,6 +401,24 @@ export default function SharedMemoView() {
             </div>
           </div>
         </motion.div>
+
+        {/* Investment Readiness Scorecard - Score Radar */}
+        {sectionTools && Object.keys(sectionTools).length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.03 }}
+            className="mb-8"
+          >
+            <MemoScoreRadar
+              sectionTools={sectionTools}
+              companyName={memoData.company_name}
+              stage={memoData.stage}
+              category={memoData.category || undefined}
+              holisticVerdicts={holisticVerdicts}
+            />
+          </motion.div>
+        )}
 
         {/* Anchored Assumptions */}
         {anchoredAssumptions && (

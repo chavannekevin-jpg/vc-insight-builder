@@ -24,6 +24,7 @@ import { MemoTeamGapCard } from "@/components/memo/MemoTeamGapCard";
 import { MemoVCScaleCard } from "@/components/memo/MemoVCScaleCard";
 import { MemoExitPathCard } from "@/components/memo/MemoExitPathCard";
 import { DataQualitySummary } from "@/components/memo/DataQualitySummary";
+import { DashboardScorecard, type ARCClassification } from "@/components/memo/DashboardScorecard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Eye, Shield, Share2 } from "lucide-react";
 import { AdminMemoShareDialog } from "@/components/admin/AdminMemoShareDialog";
@@ -72,6 +73,7 @@ export default function AdminMemoView() {
   const [sectionTools, setSectionTools] = useState<Record<string, EnhancedSectionTools>>({});
   const [memoResponses, setMemoResponses] = useState<Record<string, string>>({});
   const [anchoredAssumptions, setAnchoredAssumptions] = useState<AnchoredAssumptions | null>(null);
+  const [arcClassification, setArcClassification] = useState<ARCClassification | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const actionPlan = useMemo(() => {
@@ -233,6 +235,23 @@ export default function AdminMemoView() {
             }
           });
           setSectionTools(toolsMap);
+          
+          // Extract ARC classification from Problem section tools
+          const problemTools = toolsMap['Problem'];
+          if (problemTools) {
+            const arcData = (problemTools as any).arcClassification;
+            if (arcData) {
+              const rawArc = arcData.aiGenerated || arcData;
+              if (rawArc?.type && ['Hair on Fire', 'Hard Fact', 'Future Vision'].includes(rawArc.type)) {
+                setArcClassification({
+                  type: rawArc.type,
+                  reasoning: rawArc.reasoning || '',
+                  implications: rawArc.implications || '',
+                  confidence: rawArc.confidence
+                });
+              }
+            }
+          }
         }
       } catch (error) {
         console.error("Error loading memo:", error);
@@ -323,6 +342,24 @@ export default function AdminMemoView() {
 
       {/* Memo Content */}
       <div className="container mx-auto px-4 py-8 max-w-5xl">
+        {/* Investment Readiness Scorecard - with Score Radar and ARC */}
+        {sectionTools && Object.keys(sectionTools).length > 0 && (
+          <div className="mb-8">
+            <DashboardScorecard
+              sectionTools={sectionTools}
+              companyName={companyInfo.name}
+              companyDescription={companyInfo.description || undefined}
+              stage={companyInfo.stage}
+              category={companyInfo.category || undefined}
+              companyId={companyId!}
+              onNavigate={navigate}
+              memoContent={memoContent}
+              arcClassification={arcClassification}
+              isDemo={true} // Read-only mode for admin view
+            />
+          </div>
+        )}
+
         {/* Anchored Assumptions - Key Metrics Transparency */}
         {anchoredAssumptions && (
           <div className="mb-8">
