@@ -123,6 +123,8 @@ export function JoinAcceleratorCard({
         .select("id, accelerator_name, accelerator_slug, discount_percent, cohort_name, custom_message")
         .eq("linked_accelerator_id", accelerator.id)
         .eq("is_active", true)
+        .is("cohort_name", null)
+        .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
