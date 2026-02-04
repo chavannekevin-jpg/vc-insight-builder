@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Loader2, UserPlus, Search, CheckCircle2 } from "lucide-react";
+import { Loader2, UserPlus, Search, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -45,7 +45,7 @@ export function AddStartupToCohortDialog({
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [selectedCompanyIds, setSelectedCompanyIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export function AddStartupToCohortDialog({
       fetchAvailableCompanies();
     }
     return () => {
-      setSelectedCompanyId(null);
+      setSelectedCompanyIds(new Set());
       setSearchQuery("");
     };
   }, [open, acceleratorId]);
@@ -94,9 +94,29 @@ export function AddStartupToCohortDialog({
     }
   };
 
+  const toggleCompany = (companyId: string) => {
+    setSelectedCompanyIds(prev => {
+      const next = new Set(prev);
+      if (next.has(companyId)) {
+        next.delete(companyId);
+      } else {
+        next.add(companyId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedCompanyIds.size === filteredCompanies.length && filteredCompanies.length > 0) {
+      setSelectedCompanyIds(new Set());
+    } else {
+      setSelectedCompanyIds(new Set(filteredCompanies.map(c => c.id)));
+    }
+  };
+
   const handleAdd = async () => {
-    if (!selectedCompanyId || !cohort) {
-      toast.error("Please select a startup");
+    if (selectedCompanyIds.size === 0 || !cohort) {
+      toast.error("Please select at least one startup");
       return;
     }
 
@@ -140,16 +160,16 @@ export function AddStartupToCohortDialog({
           .eq("id", cohort.id);
       }
 
-      // Update company's accelerator_invite_id
+      // Batch update all selected companies
       const { error: updateError } = await supabase
         .from("companies")
         .update({ accelerator_invite_id: inviteId })
-        .eq("id", selectedCompanyId);
+        .in("id", Array.from(selectedCompanyIds));
 
       if (updateError) throw updateError;
 
-      const selectedCompany = companies.find(c => c.id === selectedCompanyId);
-      toast.success(`${selectedCompany?.name || "Startup"} added to ${cohort.name}`);
+      const count = selectedCompanyIds.size;
+      toast.success(`${count} startup${count > 1 ? 's' : ''} added to ${cohort.name}`);
       onOpenChange(false);
       onAdded();
     } catch (error: any) {
@@ -185,14 +205,26 @@ export function AddStartupToCohortDialog({
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search startups..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 rounded-xl border-white/[0.08] bg-white/[0.04]"
-            />
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search startups..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-11 rounded-xl border-white/[0.08] bg-white/[0.04]"
+              />
+            </div>
+            {filteredCompanies.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleSelectAll}
+                className="text-xs whitespace-nowrap"
+              >
+                {selectedCompanyIds.size === filteredCompanies.length ? "Deselect All" : "Select All"}
+              </Button>
+            )}
           </div>
 
           {isLoading ? (
@@ -209,31 +241,37 @@ export function AddStartupToCohortDialog({
               {filteredCompanies.map((company) => (
                 <button
                   key={company.id}
-                  onClick={() => setSelectedCompanyId(company.id)}
+                  onClick={() => toggleCompany(company.id)}
                   className={cn(
                     "w-full p-4 rounded-xl border text-left transition-all duration-200",
-                    selectedCompanyId === company.id
+                    selectedCompanyIds.has(company.id)
                       ? "border-primary bg-primary/10"
                       : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] hover:bg-white/[0.04]"
                   )}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                        <span className="text-xs font-bold text-foreground">
-                          {company.name.slice(0, 2).toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">{company.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {company.category || "Uncategorized"} • {company.stage}
-                        </p>
-                      </div>
+                  <div className="flex items-center gap-3">
+                    {/* Checkbox indicator */}
+                    <div className={cn(
+                      "w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0",
+                      selectedCompanyIds.has(company.id)
+                        ? "border-primary bg-primary"
+                        : "border-white/20 bg-transparent"
+                    )}>
+                      {selectedCompanyIds.has(company.id) && (
+                        <Check className="w-3 h-3 text-primary-foreground" />
+                      )}
                     </div>
-                    {selectedCompanyId === company.id && (
-                      <CheckCircle2 className="w-5 h-5 text-primary" />
-                    )}
+                    <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+                      <span className="text-xs font-bold text-foreground">
+                        {company.name.slice(0, 2).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground truncate">{company.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {company.category || "Uncategorized"} • {company.stage}
+                      </p>
+                    </div>
                   </div>
                 </button>
               ))}
@@ -241,30 +279,37 @@ export function AddStartupToCohortDialog({
           )}
         </div>
 
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="border-white/[0.08]"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleAdd}
-            disabled={isAdding || !selectedCompanyId}
-            style={{
-              background: 'linear-gradient(135deg, hsl(280 100% 65%) 0%, hsl(330 100% 70%) 100%)',
-            }}
-          >
-            {isAdding ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Adding...
-              </>
-            ) : (
-              "Add to Cohort"
-            )}
-          </Button>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          {selectedCompanyIds.size > 0 && (
+            <span className="text-sm text-muted-foreground mr-auto">
+              {selectedCompanyIds.size} startup{selectedCompanyIds.size > 1 ? 's' : ''} selected
+            </span>
+          )}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="border-white/[0.08]"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAdd}
+              disabled={isAdding || selectedCompanyIds.size === 0}
+              style={{
+                background: 'linear-gradient(135deg, hsl(280 100% 65%) 0%, hsl(330 100% 70%) 100%)',
+              }}
+            >
+              {isAdding ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                `Add${selectedCompanyIds.size > 0 ? ` ${selectedCompanyIds.size}` : ''} to Cohort`
+              )}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
