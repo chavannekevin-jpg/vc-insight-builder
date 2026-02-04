@@ -155,12 +155,13 @@ export default function AcceleratorJoinLanding() {
           }
         }
 
-        // Look for an existing default invite for this accelerator
+        // Look for an existing default invite for this accelerator (generic, no cohort)
         let { data: existingInvite } = await supabase
           .from("accelerator_invites")
           .select("id, code, discount_percent")
           .eq("linked_accelerator_id", accelerator.id)
           .eq("is_active", true)
+          .is("cohort_name", null)
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
