@@ -1,152 +1,258 @@
 
-# Plan: Fix €5k vs €500k-€2M ACV Extraction for Enterprise Companies
 
-## Problem Summary
-Kontrol explicitly states their ACV range is **€500k to €2M** per enterprise customer, but the Key Assumptions card shows **€5k** — a **100x error**. This severely undermines the credibility of the investment analysis.
+# Plan: Multi-Select Companies for Cohort Assignment
 
-## Root Causes Identified
+## Overview
 
-### 1. Regex Pattern Doesn't Match Enterprise Pricing Text
-The current enterprise ACV regex on line 275 of `anchoredAssumptions.ts`:
-```javascript
-/[€$£]([\d,]+)\s*k?\s*[-–—to]+\s*[€$£]?([\d,]+)\s*k?\s*\+?\s*(?:arr|acv|per\s*year|annual|contract)/i
-```
-
-**Fails on Kontrol's text** because:
-- It doesn't support **"M" suffix** (millions) - only handles "k"
-- Requires "arr|acv|per year|annual|contract" **immediately after** the range
-- Kontrol's text: "€500k to €2M...ARR per customer" has "ARR" separated from the range
-
-### 2. Missing Patterns for Enterprise Pricing
-The regex doesn't handle common enterprise patterns like:
-- "€500k to €2M" (million suffix)
-- "ARR per customer" or "per account"
-- "potential ARR...ranging from"
-
-### 3. Fallback to AI Estimation Uses Wrong Benchmarks
-When extraction fails, the AI estimation uses SMB SaaS benchmarks (~€5k-6k seed stage) instead of enterprise benchmarks (~€100k-200k).
+Currently, the `AddStartupToCohortDialog` allows selecting **only one company at a time** (using `selectedCompanyId: string | null`). This plan upgrades the dialog to support **multiple selections** so accelerator managers can assign several startups to a cohort in a single action.
 
 ---
 
-## Solution: Enhanced Enterprise ACV Extraction
+## Current Flow
 
-### File Changes
-
-**File: `src/lib/anchoredAssumptions.ts`**
-
-### Step 1: Add Million-Aware Parsing Function
-Create a new helper that handles k/M suffixes properly:
-
-```typescript
-function parseEnterpriseValue(str: string, fullMatch: string): number {
-  const clean = str.replace(/,/g, '').toLowerCase();
-  const num = parseFloat(clean);
-  const fullLower = fullMatch.toLowerCase();
-  
-  // Check for millions suffix (M or m, but not MRR/mrr)
-  if (/\d+\s*m(?!rr)/i.test(fullLower)) {
-    return num * 1000000;
-  }
-  // Check for thousands suffix (k)
-  if (/\d+\s*k/i.test(fullLower) || fullLower.includes('k')) {
-    return num * 1000;
-  }
-  // If small number without suffix, likely in thousands for enterprise context
-  if (num < 1000) {
-    return num * 1000;
-  }
-  return num;
-}
+```text
+┌─────────────────────────────────────────┐
+│  AddStartupToCohortDialog               │
+│  ─────────────────────────────          │
+│  [Search box]                           │
+│                                         │
+│  ○ Company A    (radio-style select)    │
+│  ● Company B    ← single selection      │
+│  ○ Company C                            │
+│                                         │
+│  [Cancel]  [Add to Cohort]              │
+└─────────────────────────────────────────┘
 ```
 
-### Step 2: Expand Enterprise ACV Range Regex
-Replace the narrow regex with a more flexible pattern:
+## Proposed Flow
 
-```typescript
-// Enterprise ACV ranges with M/k support
-// Matches: "€500k to €2M", "$100K-$500K ARR", "ranging from €500k to €2M per customer"
-const enterpriseRangePatterns = [
-  // Pattern 1: Direct range with ARR/ACV suffix
-  /[€$£]([\d,.]+)\s*([km])?\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])?\s*\+?\s*(?:arr|acv|annual|contract)/i,
-  
-  // Pattern 2: "ranging from X to Y" with per customer/account
-  /ranging\s+(?:from\s+)?(?:approximately\s+)?[€$£]([\d,.]+)\s*([km])?\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])?/i,
-  
-  // Pattern 3: "ARR per customer is X to Y"
-  /(?:arr|acv)(?:\s+per\s+(?:customer|account|enterprise))?\s*(?:is|of|:)?\s*[€$£]?([\d,.]+)\s*([km])?\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])?/i,
-  
-  // Pattern 4: "potential ARR...X to Y"
-  /potential\s+(?:arr|acv)\s+(?:per\s+(?:customer|account))?\s*(?:is|of|:)?\s*(?:substantial,?\s+)?(?:ranging\s+)?(?:from\s+)?(?:approximately\s+)?[€$£]?([\d,.]+)\s*([km])?\s*(?:to|-|–|—)\s*[€$£]?([\d,.]+)\s*([km])?/i,
-];
-```
-
-### Step 3: Extract Values with Suffix Awareness
-Update the extraction logic to:
-1. Try each pattern
-2. Parse numeric values with their k/M suffixes correctly
-3. Calculate geometric mean for ranges
-
-```typescript
-for (const pattern of enterpriseRangePatterns) {
-  const match = combinedText.match(pattern);
-  if (match) {
-    // Extract value and suffix pairs
-    const lowValue = parseFloat(match[1].replace(/,/g, ''));
-    const lowSuffix = match[2]?.toLowerCase();
-    const highValue = parseFloat(match[3].replace(/,/g, ''));
-    const highSuffix = match[4]?.toLowerCase();
-    
-    // Apply multipliers
-    const low = lowSuffix === 'm' ? lowValue * 1000000 
-              : lowSuffix === 'k' ? lowValue * 1000 
-              : lowValue < 1000 ? lowValue * 1000 : lowValue;
-              
-    const high = highSuffix === 'm' ? highValue * 1000000 
-               : highSuffix === 'k' ? highValue * 1000 
-               : highValue < 1000 ? highValue * 1000 : highValue;
-    
-    const midpoint = Math.round(Math.sqrt(low * high));
-    // ... return result
-  }
-}
-```
-
-### Step 4: Add Logging for Debugging
-Add console logging to trace extraction:
-
-```typescript
-console.log('[AnchoredAssumptions] Extracting for', companyDetails?.name, 
-            'businessModel:', businessModelType);
-console.log('[AnchoredAssumptions] Combined text length:', combinedText.length);
+```text
+┌─────────────────────────────────────────┐
+│  Add to Spring 2025                     │
+│  ─────────────────────────────          │
+│  [Search box]        [Select All] btn   │
+│                                         │
+│  ☑ Company A    (checkbox-style)        │
+│  ☑ Company B    ← multi-selection       │
+│  ☐ Company C                            │
+│                                         │
+│  ───────────────────────────────        │
+│  3 startups selected                    │
+│  [Cancel]  [Add 3 to Cohort]            │
+└─────────────────────────────────────────┘
 ```
 
 ---
 
-## Testing Scenarios
+## Implementation Details
 
-| Company Text | Expected Result |
-|--------------|-----------------|
-| "€500k to €2M ARR per customer" | €1M midpoint (geometric mean) |
-| "ranging from approximately €500k to €2M" | €1M midpoint |
-| "$100K-$500K+ ACV" | €223k midpoint |
-| "ACV of €150,000" | €150k |
-| No explicit pricing (fallback) | AI estimation using enterprise benchmarks |
+### File: `src/components/accelerator/AddStartupToCohortDialog.tsx`
+
+### 1. State Changes
+
+Replace single selection with a Set for multi-select:
+
+```typescript
+// Before
+const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+
+// After
+const [selectedCompanyIds, setSelectedCompanyIds] = useState<Set<string>>(new Set());
+```
+
+### 2. Selection Toggle Logic
+
+Add helper functions for toggling individual companies and select/deselect all:
+
+```typescript
+const toggleCompany = (companyId: string) => {
+  setSelectedCompanyIds(prev => {
+    const next = new Set(prev);
+    if (next.has(companyId)) {
+      next.delete(companyId);
+    } else {
+      next.add(companyId);
+    }
+    return next;
+  });
+};
+
+const toggleSelectAll = () => {
+  if (selectedCompanyIds.size === filteredCompanies.length) {
+    setSelectedCompanyIds(new Set());
+  } else {
+    setSelectedCompanyIds(new Set(filteredCompanies.map(c => c.id)));
+  }
+};
+```
+
+### 3. Update Reset on Dialog Open/Close
+
+```typescript
+useEffect(() => {
+  if (open && acceleratorId) {
+    fetchAvailableCompanies();
+  }
+  return () => {
+    setSelectedCompanyIds(new Set());  // Clear all selections
+    setSearchQuery("");
+  };
+}, [open, acceleratorId]);
+```
+
+### 4. Update `handleAdd` for Batch Operations
+
+Modify the submission handler to iterate over all selected companies:
+
+```typescript
+const handleAdd = async () => {
+  if (selectedCompanyIds.size === 0 || !cohort) {
+    toast.error("Please select at least one startup");
+    return;
+  }
+
+  setIsAdding(true);
+  try {
+    let inviteId = cohort.invite_id;
+
+    // Create invite if needed (same logic as before)
+    if (!inviteId) {
+      // ... existing invite creation code ...
+    }
+
+    // Batch update all selected companies
+    const { error: updateError } = await supabase
+      .from("companies")
+      .update({ accelerator_invite_id: inviteId })
+      .in("id", Array.from(selectedCompanyIds));
+
+    if (updateError) throw updateError;
+
+    const count = selectedCompanyIds.size;
+    toast.success(`${count} startup${count > 1 ? 's' : ''} added to ${cohort.name}`);
+    onOpenChange(false);
+    onAdded();
+  } catch (error: any) {
+    console.error("Error adding to cohort:", error);
+    toast.error(error.message || "Failed to add to cohort");
+  } finally {
+    setIsAdding(false);
+  }
+};
+```
+
+### 5. UI Updates
+
+#### a) Add "Select All" Button
+In the header area, add a button to toggle all filtered companies:
+
+```tsx
+<div className="flex items-center justify-between gap-2">
+  <div className="relative flex-1">
+    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+    <Input placeholder="Search startups..." ... />
+  </div>
+  {filteredCompanies.length > 0 && (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={toggleSelectAll}
+      className="text-xs whitespace-nowrap"
+    >
+      {selectedCompanyIds.size === filteredCompanies.length ? "Deselect All" : "Select All"}
+    </Button>
+  )}
+</div>
+```
+
+#### b) Replace Radio-Style with Checkbox-Style
+Update each company row to use a checkbox visual:
+
+```tsx
+<button
+  key={company.id}
+  onClick={() => toggleCompany(company.id)}
+  className={cn(
+    "w-full p-4 rounded-xl border text-left transition-all duration-200",
+    selectedCompanyIds.has(company.id)
+      ? "border-primary bg-primary/10"
+      : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]"
+  )}
+>
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      {/* Checkbox indicator */}
+      <div className={cn(
+        "w-5 h-5 rounded border-2 flex items-center justify-center transition-all",
+        selectedCompanyIds.has(company.id)
+          ? "border-primary bg-primary"
+          : "border-white/20 bg-transparent"
+      )}>
+        {selectedCompanyIds.has(company.id) && (
+          <Check className="w-3 h-3 text-primary-foreground" />
+        )}
+      </div>
+      <div className="w-8 h-8 rounded-lg bg-primary/20 ...">
+        {company.name.slice(0, 2).toUpperCase()}
+      </div>
+      <div>
+        <p className="font-medium">{company.name}</p>
+        <p className="text-xs text-muted-foreground">{company.category} • {company.stage}</p>
+      </div>
+    </div>
+  </div>
+</button>
+```
+
+#### c) Update Footer with Selection Count
+Show how many startups are selected and pluralize the button text:
+
+```tsx
+<DialogFooter className="flex-col sm:flex-row gap-2">
+  {selectedCompanyIds.size > 0 && (
+    <span className="text-sm text-muted-foreground mr-auto">
+      {selectedCompanyIds.size} startup{selectedCompanyIds.size > 1 ? 's' : ''} selected
+    </span>
+  )}
+  <div className="flex gap-2">
+    <Button variant="outline" onClick={() => onOpenChange(false)}>
+      Cancel
+    </Button>
+    <Button
+      onClick={handleAdd}
+      disabled={isAdding || selectedCompanyIds.size === 0}
+      style={{ background: 'linear-gradient(...)' }}
+    >
+      {isAdding ? (
+        <>
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          Adding...
+        </>
+      ) : (
+        `Add ${selectedCompanyIds.size > 0 ? selectedCompanyIds.size : ''} to Cohort`
+      )}
+    </Button>
+  </div>
+</DialogFooter>
+```
 
 ---
 
-## Files to Modify
+## Files Modified
 
 | File | Changes |
 |------|---------|
-| `src/lib/anchoredAssumptions.ts` | Update `extractPrimaryMetricValue()` with expanded regex patterns and M-suffix support |
+| `src/components/accelerator/AddStartupToCohortDialog.tsx` | Convert single-select to multi-select with checkboxes, batch update logic, Select All button, selection count display |
 
 ---
 
-## Expected Outcome
+## Summary
 
-For Kontrol, the Key Assumptions card will show:
-- **ACV: €1M/year** (geometric mean of €500k and €2M)
-- **Source: "From founder: €500k-€2M range (using €1M midpoint)"**
-- **Confidence: High**
+This enhancement converts the "Add Startup to Cohort" dialog from single-select to multi-select by:
 
-This accurately reflects the enterprise pricing stated by the founder.
+1. Changing state from `string | null` to `Set<string>`
+2. Adding a "Select All / Deselect All" toggle button
+3. Replacing the radio-style selection with checkbox indicators
+4. Updating the submit handler to batch-update all selected companies
+5. Showing a selection count and pluralized button text
+
