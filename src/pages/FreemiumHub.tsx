@@ -696,19 +696,32 @@ export default function FreemiumHub() {
   // State for "finalizing" mode when paid but memo not ready yet
   const [isFinalizingAnalysis, setIsFinalizingAnalysis] = useState(false);
   const [finalizingAttempts, setFinalizingAttempts] = useState(0);
+  const [finalizingTimedOut, setFinalizingTimedOut] = useState(false);
   
   // Poll for FULL dashboard readiness when paid but sectionTools not ready
+  // CRITICAL: Only poll if hasMemoData is true (memo row exists).
+  // This prevents infinite "Finalizing" loop for premium users without any memo.
   useEffect(() => {
-    // Only activate if: paid, has company, NOT already loading/regenerating, dashboard not fully ready
     const hasSectionToolsReady = sectionTools && Object.keys(sectionTools).length >= 8;
+    
+    // Exit conditions: not paid, no company, still loading, already regenerating, or dashboard fully ready
     if (!hasPaid || !company?.id || loading || isRegenerating || (memoHasContent && hasSectionToolsReady)) {
       setIsFinalizingAnalysis(false);
       return;
     }
     
-    // User is paid but dashboard isn't fully ready - show finalizing state and poll
-    console.log("[FreemiumHub] Paid user without full dashboard data, starting finalization polling...");
+    // IMPORTANT: Only start polling if a memo exists (hasMemoData).
+    // If premium but no memo, show "Generate analysis" CTA instead of polling forever.
+    if (!hasMemoData) {
+      console.log("[FreemiumHub] Premium user with no memo - will show 'Generate analysis' CTA instead of polling");
+      setIsFinalizingAnalysis(false);
+      return;
+    }
+    
+    // User is paid AND has a memo but dashboard isn't fully ready - show finalizing state and poll
+    console.log("[FreemiumHub] Paid user with memo but incomplete data, starting finalization polling...");
     setIsFinalizingAnalysis(true);
+    setFinalizingTimedOut(false);
     
     let cancelled = false;
     
@@ -753,9 +766,10 @@ export default function FreemiumHub() {
         }
       }
       
-      // Timeout - stop polling but stay on page (user can refresh)
+      // Timeout - stop polling, mark as timed out (user can refresh/retry)
       console.log("[FreemiumHub] Finalization polling timeout");
       setIsFinalizingAnalysis(false);
+      setFinalizingTimedOut(true);
     };
     
     pollForReadiness();
@@ -763,7 +777,7 @@ export default function FreemiumHub() {
     return () => {
       cancelled = true;
     };
-  }, [hasPaid, company?.id, loading, isRegenerating, memoHasContent, sectionTools, queryClient]);
+  }, [hasPaid, hasMemoData, company?.id, loading, isRegenerating, memoHasContent, sectionTools, queryClient]);
 
   // Show regeneration loading screen
   if (isRegenerating) {
@@ -778,29 +792,12 @@ export default function FreemiumHub() {
     );
   }
   
-  // Show "Finalizing Analysis" screen when paid but dashboard data not fully ready
-  // This covers both: no memo content OR memo exists but sectionTools not complete
+  // NOTE: "Finalizing" is now rendered inline in the main content area (not as early-return)
+  // so that sidebar and modals remain accessible. This is handled in the main content section below.
   const hasSectionToolsReady = sectionTools && Object.keys(sectionTools).length >= 8;
-  if (isFinalizingAnalysis && hasPaid && (!memoHasContent || !hasSectionToolsReady)) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4 max-w-md px-6">
-          <Sparkles className="w-16 h-16 text-primary animate-pulse mx-auto" />
-          <h2 className="text-xl font-semibold">Finalizing Your Analysis</h2>
-          <p className="text-muted-foreground">
-            {!memoHasContent 
-              ? "Your investment analysis is being finalized. This usually takes just a moment..."
-              : "Preparing your investment readiness scorecard..."}
-          </p>
-          {finalizingAttempts > 10 && (
-            <p className="text-sm text-muted-foreground/70">
-              Taking longer than expected. Please wait or refresh the page.
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  }
+  
+  // Determine if we're in "premium but no memo" state (needs Generate Analysis CTA)
+  const isPremiumNoMemo = hasPaid && !hasMemoData;
 
   if (loading) {
     return (
@@ -915,8 +912,89 @@ export default function FreemiumHub() {
           <main className="flex-1 px-4 py-6 lg:px-6 lg:py-8 overflow-auto bg-gradient-to-b from-transparent via-muted/5 to-muted/10">
             <div className="max-w-4xl mx-auto space-y-6 lg:space-y-8">
           
-          {/* Main Content based on paid/unpaid status */}
-          {hasPaid && memoGenerated ? (
+          {/* Main Content based on paid/unpaid/memo status */}
+          
+          {/* CASE 1: Finalizing Analysis (inline, non-blocking) */}
+          {isFinalizingAnalysis && hasPaid && hasMemoData && (!memoHasContent || !hasSectionToolsReady) ? (
+            <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-secondary/5 to-transparent">
+              <CardContent className="p-8 text-center space-y-4">
+                <Sparkles className="w-12 h-12 text-primary animate-pulse mx-auto" />
+                <h2 className="text-xl font-semibold">Finalizing Your Analysis</h2>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  {!memoHasContent 
+                    ? "Your investment analysis is being finalized. This usually takes just a moment..."
+                    : "Preparing your investment readiness scorecard..."}
+                </p>
+                {finalizingAttempts > 10 && (
+                  <p className="text-sm text-muted-foreground/70">
+                    Taking longer than expected. Please wait or refresh the page.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          ) : isPremiumNoMemo ? (
+            /* CASE 2: Premium user but no memo generated yet - show "Generate Analysis" CTA */
+            <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-secondary/5 to-transparent overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-60 h-60 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <CardContent className="p-8 relative">
+                <div className="flex flex-col items-center text-center space-y-6 max-w-lg mx-auto">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center">
+                    <Sparkles className="w-8 h-8 text-primary" />
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-serif font-bold">Generate Your Analysis</h2>
+                    <p className="text-muted-foreground">
+                      You have premium access! Generate your comprehensive VC investment memo to unlock the full dashboard with scores, insights, and tools.
+                    </p>
+                  </div>
+                  {generationsAvailable > 0 && (
+                    <p className="text-sm text-primary font-medium">
+                      {generationsAvailable} analysis credit{generationsAvailable > 1 ? 's' : ''} available
+                    </p>
+                  )}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button
+                      size="lg"
+                      className="gradient-primary shadow-glow"
+                      onClick={() => navigate(`/portal?companyId=${company.id}`)}
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Generate My Analysis
+                    </Button>
+                    {hasAcceleratorAccess && (
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={() => navigate(`/workshop?companyId=${company.id}`)}
+                        className="border-primary/50"
+                      >
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        Go to Workshop
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : finalizingTimedOut && hasPaid && hasMemoData ? (
+            /* CASE 3: Finalization timed out - show retry option */
+            <Card className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent">
+              <CardContent className="p-6 text-center space-y-4">
+                <p className="text-muted-foreground">
+                  Your analysis is still being prepared. This can take a few minutes for complex decks.
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => window.location.reload()}
+                  className="border-amber-500/50 hover:bg-amber-500/10"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Refresh Page
+                </Button>
+              </CardContent>
+            </Card>
+          ) : hasPaid && memoGenerated ? (
+            /* CASE 4: Paid user with fully generated memo - show dashboard */
             <div className="space-y-6">
               {/* Investment Readiness Scorecard - with spider graph (always first) */}
               {sectionTools && Object.keys(sectionTools).length > 0 ? (
