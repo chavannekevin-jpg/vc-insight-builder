@@ -924,7 +924,7 @@ export default function FreemiumHub() {
                 <AcceleratorDiscountBanner
                   discountPercent={discountPercent}
                   acceleratorName={acceleratorName}
-                  onGenerate={() => navigate(`/portal?companyId=${company.id}`)}
+                  onGenerate={() => navigate(`/checkout-analysis?companyId=${company.id}`)}
                 />
               )}
           
