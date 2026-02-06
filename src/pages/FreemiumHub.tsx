@@ -29,6 +29,8 @@ import { useCompany } from "@/hooks/useCompany";
 import { usePrefetchMemoContent, useMemoContent, useInvalidateMemoContent } from "@/hooks/useMemoContent";
 import { useVcQuickTake, useSectionTools, useDashboardResponses } from "@/hooks/useDashboardData";
 import { WorkshopNPSModal } from "@/components/workshop/WorkshopNPSModal";
+import { useAcceleratorDiscount } from "@/hooks/useAcceleratorDiscount";
+import { AcceleratorDiscountBanner } from "@/components/AcceleratorDiscountBanner";
 
 // Insider articles for daily rotation
 const insiderArticles = [
@@ -176,6 +178,11 @@ export default function FreemiumHub() {
   
   // Fetch full memo content for section narratives
   const { data: memoContentData } = useMemoContent(hasPaid && memoHasContent ? company?.id : null);
+  
+  // Fetch accelerator discount info for banner
+  const { discountPercent, acceleratorName, hasDiscount } = useAcceleratorDiscount(
+    companyData?.accelerator_invite_id
+  );
 
   // Cached verdict from company data (already cached by useCompany)
   const cachedVerdict = company?.vc_verdict_json || null;
@@ -911,6 +918,15 @@ export default function FreemiumHub() {
           {/* Main Content - Single Column Layout */}
           <main className="flex-1 px-4 py-6 lg:px-6 lg:py-8 overflow-auto bg-gradient-to-b from-transparent via-muted/5 to-muted/10">
             <div className="max-w-4xl mx-auto space-y-6 lg:space-y-8">
+              
+              {/* Accelerator Discount Banner - Show for accelerator users who haven't paid yet */}
+              {hasAcceleratorAccess && hasDiscount && !hasPaid && (
+                <AcceleratorDiscountBanner
+                  discountPercent={discountPercent}
+                  acceleratorName={acceleratorName}
+                  onGenerate={() => navigate(`/portal?companyId=${company.id}`)}
+                />
+              )}
           
           {/* Main Content based on paid/unpaid/memo status */}
           
