@@ -28,6 +28,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/hooks/useCompany";
 import { usePrefetchMemoContent, useMemoContent, useInvalidateMemoContent } from "@/hooks/useMemoContent";
 import { useVcQuickTake, useSectionTools, useDashboardResponses } from "@/hooks/useDashboardData";
+import { WorkshopNPSModal } from "@/components/workshop/WorkshopNPSModal";
 
 // Insider articles for daily rotation
 const insiderArticles = [
@@ -140,6 +141,7 @@ export default function FreemiumHub() {
   const [inviteFounderOpen, setInviteFounderOpen] = useState(false);
   const [scoreboardOpen, setScoreboardOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [npsModalOpen, setNpsModalOpen] = useState(false);
 
   // Dashboard entrance animation
   const { showEntrance, isChecked: entranceChecked, completeEntrance } = useDashboardEntrance();
@@ -243,6 +245,17 @@ export default function FreemiumHub() {
       return () => clearTimeout(timer);
     }
   }, [authLoading, companyLoading, isAuthenticated, companyData, navigate, freshCompany]);
+
+  // Handle ?openNps=true URL parameter for deep-linking
+  useEffect(() => {
+    if (searchParams.get('openNps') === 'true' && hasAcceleratorAccess && company?.id) {
+      setNpsModalOpen(true);
+      // Clear the param to prevent re-opening on refresh
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('openNps');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, hasAcceleratorAccess, company?.id, setSearchParams]);
 
   // Loading timeout recovery - only warn, don't reload aggressively
   useEffect(() => {
@@ -829,6 +842,7 @@ export default function FreemiumHub() {
           onFundDiscoveryClick={() => setFundDiscoveryModalOpen(true)}
           onInviteFounderClick={() => setInviteFounderOpen(true)}
           onScoreboardClick={() => setScoreboardOpen(true)}
+          onNpsClick={() => setNpsModalOpen(true)}
         />
         
         {/* Main Content Area */}
@@ -1146,6 +1160,14 @@ export default function FreemiumHub() {
           companyName={company.name}
           userScore={cachedVerdict?.overallScore || 0}
           currentOptIn={(companyData as any)?.scoreboard_opt_in || false}
+        />
+
+        {/* Workshop NPS Modal */}
+        <WorkshopNPSModal
+          open={npsModalOpen}
+          onOpenChange={setNpsModalOpen}
+          companyId={company.id}
+          acceleratorInviteId={(companyData as any)?.accelerator_invite_id}
         />
       </div>
     </SidebarProvider>

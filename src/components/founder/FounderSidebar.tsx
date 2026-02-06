@@ -29,6 +29,7 @@ import {
   Telescope,
   HelpCircle,
   GraduationCap,
+  MessageSquareHeart,
 } from "lucide-react";
 import {
   Sidebar,
@@ -64,6 +65,7 @@ interface FounderSidebarProps {
   onFundDiscoveryClick: () => void;
   onInviteFounderClick: () => void;
   onScoreboardClick: () => void;
+  onNpsClick?: () => void;
 }
 
 const mainMenuItems = [
@@ -100,6 +102,7 @@ export const FounderSidebar = ({
   onFundDiscoveryClick,
   onInviteFounderClick,
   onScoreboardClick,
+  onNpsClick,
 }: FounderSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -386,6 +389,19 @@ export const FounderSidebar = ({
                   )}
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              
+              {/* Workshop NPS - accelerator only */}
+              {hasAcceleratorAccess && onNpsClick && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={onNpsClick}
+                    className="w-full transition-all duration-200 rounded-xl hover:bg-white/5 dark:hover:bg-white/[0.03] text-muted-foreground hover:text-foreground border border-transparent hover:border-border/10"
+                  >
+                    <MessageSquareHeart className="w-4 h-4 shrink-0 text-secondary drop-shadow-[0_0_6px_hsl(var(--secondary)/0.4)]" />
+                    {!collapsed && <span className="font-medium">Workshop NPS</span>}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

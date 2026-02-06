@@ -2858,6 +2858,76 @@ export type Database = {
           },
         ]
       }
+      workshop_nps_responses: {
+        Row: {
+          accelerator_invite_id: string | null
+          actionable_confidence: number | null
+          additional_feedback: string | null
+          company_id: string
+          created_at: string | null
+          id: string
+          investor_understanding: number | null
+          mentoring_usefulness: number | null
+          mini_memo_usefulness: number | null
+          recommend_lecture: number | null
+          strengths_weaknesses: number | null
+          submitted_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          accelerator_invite_id?: string | null
+          actionable_confidence?: number | null
+          additional_feedback?: string | null
+          company_id: string
+          created_at?: string | null
+          id?: string
+          investor_understanding?: number | null
+          mentoring_usefulness?: number | null
+          mini_memo_usefulness?: number | null
+          recommend_lecture?: number | null
+          strengths_weaknesses?: number | null
+          submitted_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          accelerator_invite_id?: string | null
+          actionable_confidence?: number | null
+          additional_feedback?: string | null
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          investor_understanding?: number | null
+          mentoring_usefulness?: number | null
+          mini_memo_usefulness?: number | null
+          recommend_lecture?: number | null
+          strengths_weaknesses?: number | null
+          submitted_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_nps_responses_accelerator_invite_id_fkey"
+            columns: ["accelerator_invite_id"]
+            isOneToOne: false
+            referencedRelation: "accelerator_invites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workshop_nps_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workshop_nps_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "shareable_company_preview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workshop_responses: {
         Row: {
           answer: string | null

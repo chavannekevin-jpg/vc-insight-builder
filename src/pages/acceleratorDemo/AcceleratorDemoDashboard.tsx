@@ -73,7 +73,7 @@ function AcceleratorDemoDashboardContent() {
       case "invites":
         return <AcceleratorInvites acceleratorId={accelerator.id} acceleratorName={accelerator.name} acceleratorSlug={accelerator.slug} isDemo />;
       case "analytics":
-        return <AcceleratorAnalyticsSection stats={stats} companies={companies} />;
+        return <AcceleratorAnalyticsSection stats={stats} companies={companies} acceleratorId={accelerator.id} />;
       case "settings":
         return <AcceleratorSettings accelerator={accelerator} onUpdate={handleRefresh} isDemo />;
       default:
