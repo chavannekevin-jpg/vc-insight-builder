@@ -949,49 +949,69 @@ export default function FreemiumHub() {
               </CardContent>
             </Card>
           ) : isPremiumNoMemo ? (
-            /* CASE 2: Premium user but no memo generated yet - show "Generate Analysis" CTA */
-            <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-secondary/5 to-transparent overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-60 h-60 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-              <CardContent className="p-8 relative">
-                <div className="flex flex-col items-center text-center space-y-6 max-w-lg mx-auto">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center">
-                    <Sparkles className="w-8 h-8 text-primary" />
-                  </div>
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-serif font-bold">Generate Your Analysis</h2>
-                    <p className="text-muted-foreground">
-                      You have premium access! Generate your comprehensive VC investment memo to unlock the full dashboard with scores, insights, and tools.
-                    </p>
-                  </div>
-                  {generationsAvailable > 0 && (
-                    <p className="text-sm text-primary font-medium">
-                      {generationsAvailable} analysis credit{generationsAvailable > 1 ? 's' : ''} available
-                    </p>
-                  )}
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Button
-                      size="lg"
-                      className="gradient-primary shadow-glow"
-                      onClick={() => navigate(`/portal?companyId=${company.id}`)}
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Generate My Analysis
-                    </Button>
-                    {hasAcceleratorAccess && (
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        onClick={() => navigate(`/workshop?companyId=${company.id}`)}
-                        className="border-primary/50"
-                      >
-                        <BookOpen className="w-4 h-4 mr-2" />
-                        Go to Workshop
-                      </Button>
+            /* CASE 2: Premium user but no memo generated yet - show "Generate Analysis" CTA + VCVerdictCard if cached */
+            <>
+              <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-secondary/5 to-transparent overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-60 h-60 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <CardContent className="p-8 relative">
+                  <div className="flex flex-col items-center text-center space-y-6 max-w-lg mx-auto">
+                    <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center">
+                      <Sparkles className="w-8 h-8 text-primary" />
+                    </div>
+                    <div className="space-y-2">
+                      <h2 className="text-2xl font-serif font-bold">Generate Your Analysis</h2>
+                      <p className="text-muted-foreground">
+                        You have premium access! Generate your comprehensive VC investment memo to unlock the full dashboard with scores, insights, and tools.
+                      </p>
+                    </div>
+                    {generationsAvailable > 0 && (
+                      <p className="text-sm text-primary font-medium">
+                        {generationsAvailable} analysis credit{generationsAvailable > 1 ? 's' : ''} available
+                      </p>
                     )}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button
+                        size="lg"
+                        className="gradient-primary shadow-glow"
+                        onClick={() => navigate(`/portal?companyId=${company.id}`)}
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Generate My Analysis
+                      </Button>
+                      {hasAcceleratorAccess && (
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          onClick={() => navigate(`/workshop?companyId=${company.id}`)}
+                          className="border-primary/50"
+                        >
+                          <BookOpen className="w-4 h-4 mr-2" />
+                          Go to Workshop
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+              
+              {/* Also show VCVerdictCard if they have a cached verdict */}
+              {cachedVerdict && (
+                <VCVerdictCard
+                  companyId={company.id}
+                  companyName={company.name}
+                  companyDescription={company.description}
+                  companyStage={company.stage}
+                  companyCategory={company.category}
+                  responses={responses}
+                  memoGenerated={false}
+                  hasPaid={hasPaid}
+                  deckParsed={deckParsed}
+                  cachedVerdict={cachedVerdict}
+                  onVerdictGenerated={handleVerdictGenerated}
+                  generationsAvailable={generationsAvailable}
+                />
+              )}
+            </>
           ) : finalizingTimedOut && hasPaid && hasMemoData ? (
             /* CASE 3: Finalization timed out - show retry option */
             <Card className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent">
