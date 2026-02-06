@@ -183,7 +183,7 @@ export default function AcceleratorDashboard() {
       case "invites":
         return <AcceleratorInvites acceleratorId={accelerator.id} acceleratorName={accelerator.name} acceleratorSlug={accelerator.slug} />;
       case "analytics":
-        return <AcceleratorAnalyticsSection stats={stats} companies={companies} />;
+        return <AcceleratorAnalyticsSection stats={stats} companies={companies} acceleratorId={accelerator.id} />;
       case "settings":
         return <AcceleratorSettings accelerator={accelerator} onUpdate={fetchData} />;
       default:
