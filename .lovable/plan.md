@@ -1,46 +1,86 @@
 
-# Fix: Route Discount Banner CTA to Checkout (Paywall)
+# Fix: Show VCVerdictCard for Premium Users Before Generation
 
-## Current Behavior
-The "Generate Now" button on the `AcceleratorDiscountBanner` currently navigates to:
+## The Problem
+When a user:
+1. Uploads a deck and gets a free VC verdict preview (stored in `vc_verdict_json`)
+2. Then purchases access (now `hasPaid = true`)
+3. But hasn't generated their full analysis yet (`hasMemoData = false`)
+
+They currently only see the "Generate Your Analysis" card and lose access to their previously-generated verdict preview.
+
+## Root Cause
+The rendering logic in `FreemiumHub.tsx` has exclusive cases:
+
 ```
-/portal?companyId=${company.id}
+CASE 2: isPremiumNoMemo → Show ONLY "Generate Your Analysis" card
+CASE 5 (else): → Show VCVerdictCard
 ```
 
-This takes users to the **questionnaire** (Portal) where they fill out company info - not the paywall.
+When `isPremiumNoMemo` is true, the VCVerdictCard is completely hidden, even if the user has a cached verdict.
 
-## Expected Behavior
-For unpaid users with a discount, clicking "Generate Now" should go to the **checkout page**:
-```
-/checkout-analysis?companyId=${company.id}
-```
+## Solution
+For the `isPremiumNoMemo` state, show **both**:
+1. The "Generate Your Analysis" CTA card (existing)
+2. The VCVerdictCard with their cached verdict (currently hidden)
 
-This is where:
-- The accelerator discount is automatically applied
-- Users see the reduced price (e.g., 50% off = €50)
-- Payment is processed via Stripe
+This way, premium users who haven't generated yet can still see their verdict preview.
 
 ## Implementation
 
 ### File: `src/pages/FreemiumHub.tsx`
 
-Change the `onGenerate` callback from:
+**Current structure (lines ~951-994):**
 ```tsx
-onGenerate={() => navigate(`/portal?companyId=${company.id}`)}
+) : isPremiumNoMemo ? (
+  /* CASE 2: Premium user but no memo generated yet */
+  <Card className="...">
+    {/* Generate Analysis CTA card */}
+  </Card>
+) : finalizingTimedOut ...
 ```
 
-To:
+**Updated structure:**
 ```tsx
-onGenerate={() => navigate(`/checkout-analysis?companyId=${company.id}`)}
+) : isPremiumNoMemo ? (
+  /* CASE 2: Premium user but no memo generated yet */
+  <>
+    <Card className="...">
+      {/* Generate Analysis CTA card - unchanged */}
+    </Card>
+    
+    {/* Also show VCVerdictCard if they have a cached verdict */}
+    {cachedVerdict && (
+      <VCVerdictCard
+        companyId={company.id}
+        companyName={company.name}
+        companyDescription={company.description}
+        companyStage={company.stage}
+        companyCategory={company.category}
+        responses={responses}
+        memoGenerated={false}
+        hasPaid={hasPaid}
+        deckParsed={deckParsed}
+        cachedVerdict={cachedVerdict}
+        onVerdictGenerated={handleVerdictGenerated}
+        generationsAvailable={generationsAvailable}
+      />
+    )}
+  </>
+) : finalizingTimedOut ...
 ```
 
-This single-line change ensures users go to the checkout page where their accelerator discount will be automatically detected and applied.
+## Expected Behavior After Fix
 
-## Why This Works
-The checkout page (`CheckoutMemo.tsx`) already has logic to:
-1. Detect accelerator discounts via `accelerator_invites` table
-2. Automatically apply the discount percentage
-3. Show the reduced price to the user
-4. Handle Stripe payment or 100% free access flow
+| State | What User Sees |
+|-------|---------------|
+| Premium + no memo + has verdict | "Generate Your Analysis" card **+** VCVerdictCard below |
+| Premium + no memo + no verdict | "Generate Your Analysis" card only |
+| Premium + memo generated | Full dashboard scorecard |
+| Not paid | VCVerdictCard (freemium) only |
 
-No changes needed to the checkout page - it already handles accelerator discounts correctly.
+## File Changes Summary
+
+| File | Change |
+|------|--------|
+| `src/pages/FreemiumHub.tsx` | Wrap `isPremiumNoMemo` case in fragment, add VCVerdictCard below CTA |
