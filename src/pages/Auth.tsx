@@ -322,7 +322,8 @@ export default function Auth() {
                 </div>
               </div>
 
-              <div className="pt-3">
+              <div className="pt-3 space-y-3">
+                {/* Primary action button */}
                 <Button
                   type="submit"
                   disabled={loading}
@@ -337,6 +338,18 @@ export default function Auth() {
                   ) : (
                     isSignUp ? "Create Account" : "Sign In"
                   )}
+                </Button>
+                
+                {/* Secondary action button - switches mode */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  disabled={loading}
+                  className="w-full h-12 border-border/60 hover:bg-muted/50 rounded-xl font-medium text-muted-foreground hover:text-foreground transition-all duration-300"
+                >
+                  {isSignUp ? "I already have an account" : "Create a new account"}
                 </Button>
               </div>
 
@@ -356,27 +369,9 @@ export default function Auth() {
               disabled={loading}
             />
 
-            {/* Toggle auth mode */}
-            <div className="text-center mt-6">
-              <button
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300"
-              >
-                {isSignUp
-                  ? <>Already have an account? <span className="font-semibold text-primary">Sign in</span></>
-                  : <>Don't have an account? <span className="font-semibold text-primary">Sign up</span></>}
-              </button>
-            </div>
           </div>
         </div>
 
-        {/* Bottom floating indicator */}
-        <div className="flex justify-center mt-8">
-          <div className="flex gap-1.5">
-            <div className={`w-8 h-1 rounded-full transition-colors duration-300 ${isSignUp ? 'bg-primary' : 'bg-border'}`} />
-            <div className={`w-8 h-1 rounded-full transition-colors duration-300 ${!isSignUp ? 'bg-primary' : 'bg-border'}`} />
-          </div>
-        </div>
       </div>
     </div>
   );
