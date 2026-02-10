@@ -3311,6 +3311,16 @@ export type Database = {
         Args: { invite_code: string }
         Returns: string
       }
+      get_storage_stats: {
+        Args: never
+        Returns: {
+          bucket_id: string
+          bucket_name: string
+          file_count: number
+          total_size_bytes: number
+          total_size_pretty: string
+        }[]
+      }
       has_premium_company: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
