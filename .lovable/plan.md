@@ -1,86 +1,123 @@
 
-# Fix: Show VCVerdictCard for Premium Users Before Generation
 
-## The Problem
-When a user:
-1. Uploads a deck and gets a free VC verdict preview (stored in `vc_verdict_json`)
-2. Then purchases access (now `hasPaid = true`)
-3. But hasn't generated their full analysis yet (`hasMemoData = false`)
+# Admin AI & Cloud Usage Dashboard
 
-They currently only see the "Generate Your Analysis" card and lose access to their previously-generated verdict preview.
+## Overview
+Build a new admin page at `/admin/ai-usage` that tracks every AI call made by edge functions, showing costs, models used, function names, and trends over time. This gives you full visibility into where your cloud spending goes.
 
-## Root Cause
-The rendering logic in `FreemiumHub.tsx` has exclusive cases:
+## Architecture
 
-```
-CASE 2: isPremiumNoMemo → Show ONLY "Generate Your Analysis" card
-CASE 5 (else): → Show VCVerdictCard
-```
+### 1. New Database Table: `ai_usage_logs`
 
-When `isPremiumNoMemo` is true, the VCVerdictCard is completely hidden, even if the user has a cached verdict.
+A logging table that every edge function writes to after each AI call:
 
-## Solution
-For the `isPremiumNoMemo` state, show **both**:
-1. The "Generate Your Analysis" CTA card (existing)
-2. The VCVerdictCard with their cached verdict (currently hidden)
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid (PK) | Auto-generated |
+| created_at | timestamptz | When the call happened |
+| function_name | text | Edge function name (e.g., `parse-pitch-deck`) |
+| model | text | AI model used (e.g., `google/gemini-2.5-pro`) |
+| prompt_tokens | int | Input tokens used |
+| completion_tokens | int | Output tokens used |
+| total_tokens | int | Total tokens |
+| estimated_cost_usd | numeric | Estimated cost based on model pricing |
+| company_id | uuid (nullable) | Which company triggered this |
+| user_id | uuid (nullable) | Which user triggered this |
+| duration_ms | int | How long the AI call took |
+| status | text | `success` or `error` |
+| error_message | text (nullable) | Error details if failed |
+| metadata | jsonb | Any extra context (e.g., number of pages parsed) |
 
-This way, premium users who haven't generated yet can still see their verdict preview.
+RLS: Admin-only read access, service-role insert (edge functions use service role).
 
-## Implementation
+### 2. Shared Logging Helper
 
-### File: `src/pages/FreemiumHub.tsx`
+Create a reusable utility at `supabase/functions/_shared/log-ai-usage.ts` that every edge function can import. It:
+- Wraps the AI fetch call
+- Automatically records tokens from the response (`usage.prompt_tokens`, `usage.completion_tokens`)
+- Estimates cost based on model
+- Inserts a row into `ai_usage_logs`
+- Returns the AI response as normal
 
-**Current structure (lines ~951-994):**
-```tsx
-) : isPremiumNoMemo ? (
-  /* CASE 2: Premium user but no memo generated yet */
-  <Card className="...">
-    {/* Generate Analysis CTA card */}
-  </Card>
-) : finalizingTimedOut ...
-```
+This means each edge function only needs a one-line change to start logging.
 
-**Updated structure:**
-```tsx
-) : isPremiumNoMemo ? (
-  /* CASE 2: Premium user but no memo generated yet */
-  <>
-    <Card className="...">
-      {/* Generate Analysis CTA card - unchanged */}
-    </Card>
-    
-    {/* Also show VCVerdictCard if they have a cached verdict */}
-    {cachedVerdict && (
-      <VCVerdictCard
-        companyId={company.id}
-        companyName={company.name}
-        companyDescription={company.description}
-        companyStage={company.stage}
-        companyCategory={company.category}
-        responses={responses}
-        memoGenerated={false}
-        hasPaid={hasPaid}
-        deckParsed={deckParsed}
-        cachedVerdict={cachedVerdict}
-        onVerdictGenerated={handleVerdictGenerated}
-        generationsAvailable={generationsAvailable}
-      />
-    )}
-  </>
-) : finalizingTimedOut ...
-```
+### 3. Cost Estimation Logic
 
-## Expected Behavior After Fix
+Hardcoded cost-per-token estimates (updated as needed):
 
-| State | What User Sees |
-|-------|---------------|
-| Premium + no memo + has verdict | "Generate Your Analysis" card **+** VCVerdictCard below |
-| Premium + no memo + no verdict | "Generate Your Analysis" card only |
-| Premium + memo generated | Full dashboard scorecard |
-| Not paid | VCVerdictCard (freemium) only |
+| Model | Input (per 1M tokens) | Output (per 1M tokens) |
+|-------|----------------------|------------------------|
+| gemini-2.5-pro | ~$1.25 | ~$10.00 |
+| gemini-2.5-flash | ~$0.15 | ~$0.60 |
+| gemini-2.5-flash-lite | ~$0.075 | ~$0.30 |
+| gemini-3-flash-preview | ~$0.15 | ~$0.60 |
+
+### 4. Admin UI Page: `/admin/ai-usage`
+
+**Top-level Stats Cards:**
+- Total AI calls (today / this week / this month)
+- Total estimated cost (today / this week / this month)
+- Most expensive function
+- Average response time
+
+**Cost Breakdown Chart (Recharts):**
+- Bar chart showing daily cost over the last 30 days
+- Stacked by model or by function (toggle)
+
+**Function Leaderboard Table:**
+- Function name, total calls, total tokens, total estimated cost, avg duration
+- Sortable columns
+- Ranked by cost (highest first)
+
+**Model Usage Pie Chart:**
+- Proportion of calls and cost per model
+
+**Recent Logs Table:**
+- Scrollable table of the last 100 AI calls
+- Columns: Time, Function, Model, Tokens, Cost, Duration, Status, Company, User
+- Filter by function name, model, date range, status
+- Click to expand and see metadata
+
+### 5. Edge Function Updates
+
+Incrementally update the highest-cost functions first to use the logging helper:
+- `parse-pitch-deck` (gemini-2.5-pro -- most expensive)
+- `generate-full-memo`
+- `generate-vc-verdict`
+- `compile-workshop-memo`
+- `generate-data-room-memo`
+- `score-roast-answer` (high frequency)
+- `vc-coach-feedback` (high frequency)
+
+Then all remaining ~28 functions.
+
+### 6. Sidebar Navigation
+
+Add "AI Usage" under the Tools section in `AdminSidebar.tsx` with the `Activity` icon.
 
 ## File Changes Summary
 
 | File | Change |
 |------|--------|
-| `src/pages/FreemiumHub.tsx` | Wrap `isPremiumNoMemo` case in fragment, add VCVerdictCard below CTA |
+| **New migration** | Create `ai_usage_logs` table with RLS |
+| `supabase/functions/_shared/log-ai-usage.ts` | New shared logging helper |
+| `supabase/functions/parse-pitch-deck/index.ts` | Use logging helper |
+| `supabase/functions/generate-full-memo/index.ts` | Use logging helper |
+| `supabase/functions/generate-vc-verdict/index.ts` | Use logging helper |
+| `supabase/functions/compile-workshop-memo/index.ts` | Use logging helper |
+| `supabase/functions/score-roast-answer/index.ts` | Use logging helper |
+| `supabase/functions/vc-coach-feedback/index.ts` | Use logging helper |
+| ~28 more edge functions | Use logging helper |
+| `src/pages/AdminAIUsage.tsx` | New admin page with charts and tables |
+| `src/components/admin/AdminSidebar.tsx` | Add "AI Usage" nav item |
+| `src/App.tsx` | Add route for `/admin/ai-usage` |
+
+## Implementation Order
+
+1. Create database table
+2. Build the shared logging helper
+3. Update top 7 edge functions (highest cost/frequency)
+4. Build the admin UI page with charts
+5. Add sidebar nav and route
+6. Update remaining edge functions
+
