@@ -137,6 +137,7 @@ const AdminAccelerators = lazy(() => import("./pages/AdminAccelerators"));
 const AdminWorkshop = lazy(() => import("./pages/AdminWorkshop"));
 const AdminWorkshopMiniMemo = lazy(() => import("./pages/AdminWorkshopMiniMemo"));
 const AdminQRGenerator = lazy(() => import("./pages/AdminQRGenerator"));
+const AdminAIUsage = lazy(() => import("./pages/AdminAIUsage"));
 const StartupGuide = lazy(() => import("./pages/StartupGuide"));
 const Workshop = lazy(() => import("./pages/Workshop"));
 const SharedMemoView = lazy(() => import("./pages/SharedMemoView"));
@@ -406,6 +407,7 @@ const App = () => (
             <Route path="/admin/knowledge-base" element={<AdminKnowledgeBase />} />
             <Route path="/admin/methodology-export" element={<AdminMethodologyExport />} />
             <Route path="/admin/qr-generator" element={<AdminQRGenerator />} />
+            <Route path="/admin/ai-usage" element={<AdminAIUsage />} />
             <Route path="/admin/templates/simplified-memo" element={<AdminSimplifiedMemo />} />
             <Route path="/admin/analysis-builder" element={<MemoBuilder />} />
             <Route path="/admin/memos/:companyId" element={<AdminMemoView />} />

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { callAIWithLogging } from "../_shared/log-ai-usage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -287,29 +288,32 @@ GRADING RUBRIC FOR PRE-SEED:
 
 Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
 
-    // Call the Lovable AI Gateway
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert investment memo writer creating comprehensive VC-grade memorandums. Your outputs must MATCH THE LENGTH AND DEPTH of the provided benchmark examples - typically 150-350 words per section with multiple paragraphs. Brief, summarized outputs are NOT acceptable. CRITICAL: When founder input is sparse on quantification, pain scenarios, current alternatives, or ROI, you MUST infer reasonable estimates using industry context and business logic. Never leave these elements blank or vague. Always respond with valid JSON only.",
-          },
-          {
-            role: "user",
-            content: aiPrompt,
-          },
-        ],
-        temperature: 0.4,
-        max_tokens: 10000,
+    const model = "google/gemini-2.5-flash";
+    const { response: aiResponse, data: aiData } = await callAIWithLogging(
+      () => fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${lovableApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert investment memo writer creating comprehensive VC-grade memorandums. Your outputs must MATCH THE LENGTH AND DEPTH of the provided benchmark examples - typically 150-350 words per section with multiple paragraphs. Brief, summarized outputs are NOT acceptable. CRITICAL: When founder input is sparse on quantification, pain scenarios, current alternatives, or ROI, you MUST infer reasonable estimates using industry context and business logic. Never leave these elements blank or vague. Always respond with valid JSON only.",
+            },
+            {
+              role: "user",
+              content: aiPrompt,
+            },
+          ],
+          temperature: 0.4,
+          max_tokens: 10000,
+        }),
       }),
-    });
+      { functionName: "compile-workshop-memo", model, companyId }
+    );
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
@@ -317,7 +321,6 @@ Respond ONLY with valid JSON, no markdown code blocks or explanations.`;
       throw new Error(`AI API error: ${aiResponse.status}`);
     }
 
-    const aiData = await aiResponse.json();
     const aiContent = aiData.choices?.[0]?.message?.content || "";
 
     // Parse AI response

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { callAIWithLogging } from "../_shared/log-ai-usage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -145,18 +146,20 @@ serve(async (req) => {
     const timeout = setTimeout(() => controller.abort(), 120000); // 2 min timeout
 
     try {
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            {
-              role: "system",
-              content: `You are an experienced venture capital analyst conducting due diligence on a startup investment opportunity. You have access to multiple documents from the company's data room.
+      const model = "google/gemini-2.5-flash";
+      const { response, data: result } = await callAIWithLogging(
+        () => fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              {
+                role: "system",
+                content: `You are an experienced venture capital analyst conducting due diligence on a startup investment opportunity. You have access to multiple documents from the company's data room.
 
 Your task is to analyze all provided documents and generate a comprehensive investment memorandum. Be thorough, critical, and highlight:
 1. Strengths and positive signals
@@ -171,27 +174,29 @@ IMPORTANT: For financial data from Excel/spreadsheet files, extract specific num
 
 Company name: ${room.company_name}
 Today's date: ${new Date().toISOString().split('T')[0]}`,
-            },
-            {
-              role: "user",
-              content: `Analyze these data room documents and generate a comprehensive due diligence memo:\n\n${documentContext}`,
-            },
-          ],
-          tools: [
-            {
-              type: "function",
-              function: {
-                name: "generate_investment_memo",
-                description: "Generate a structured investment memorandum based on the analyzed documents",
-                parameters: MEMO_SCHEMA,
               },
-            },
-          ],
-          tool_choice: { type: "function", function: { name: "generate_investment_memo" } },
-          max_tokens: 16000,
+              {
+                role: "user",
+                content: `Analyze these data room documents and generate a comprehensive due diligence memo:\n\n${documentContext}`,
+              },
+            ],
+            tools: [
+              {
+                type: "function",
+                function: {
+                  name: "generate_investment_memo",
+                  description: "Generate a structured investment memorandum based on the analyzed documents",
+                  parameters: MEMO_SCHEMA,
+                },
+              },
+            ],
+            tool_choice: { type: "function", function: { name: "generate_investment_memo" } },
+            max_tokens: 16000,
+          }),
+          signal: controller.signal,
         }),
-        signal: controller.signal,
-      });
+        { functionName: "generate-data-room-memo", model, userId: user.id }
+      );
 
       clearTimeout(timeout);
 
@@ -208,16 +213,6 @@ Today's date: ${new Date().toISOString().split('T')[0]}`,
         throw new Error(`AI service error: ${response.status}`);
       }
 
-      // Some upstream failures can return 200 with an empty body (rare but happens).
-      // Reading as text first lets us provide a deterministic error.
-      const raw = await response.text();
-      let result: any;
-      try {
-        result = safeJsonParse(raw);
-      } catch (e) {
-        console.error("AI returned invalid JSON (first 800 chars):", (raw || "").slice(0, 800));
-        throw new Error("AI returned an invalid response. Please try again.");
-      }
       const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
       
       if (!toolCall?.function?.arguments) {

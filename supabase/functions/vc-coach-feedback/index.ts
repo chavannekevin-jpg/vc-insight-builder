@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { callAIWithLogging } from "../_shared/log-ai-usage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,20 +40,24 @@ Use emojis sparingly. Keep feedback under 20 words.`;
 
     const userPrompt = `Question: ${question}\n\nFounder's Answer: ${answer}\n\nProvide encouraging, constructive feedback that suggests how they could enhance this answer with more detail or specifics.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
+    const model = "google/gemini-2.5-flash";
+    const { response, data } = await callAIWithLogging(
+      () => fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+        }),
       }),
-    });
+      { functionName: "vc-coach-feedback", model }
+    );
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -67,15 +72,14 @@ Use emojis sparingly. Keep feedback under 20 words.`;
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      const errorText = `AI gateway error: ${response.status}`;
+      console.error(errorText);
       return new Response(
         JSON.stringify({ error: "AI service unavailable" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const data = await response.json();
     const feedback = data.choices[0].message.content;
 
     return new Response(
