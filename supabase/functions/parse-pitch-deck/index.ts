@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.84.0";
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { callAIWithLogging } from "../_shared/log-ai-usage.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -404,21 +405,34 @@ ${textContent.substring(0, 50000)}`
     const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
     let aiResponse;
+    const model = 'google/gemini-2.5-pro';
     try {
-      aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-pro',
-          messages,
-          response_format: { type: 'json_object' },
-          temperature: 0.3
+      const result = await callAIWithLogging(
+        () => fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages,
+            response_format: { type: 'json_object' },
+            temperature: 0.3
+          }),
+          signal: controller.signal
         }),
-        signal: controller.signal
-      });
+        {
+          functionName: 'parse-pitch-deck',
+          model,
+          userId: userData.user.id,
+          metadata: {
+            mode: hasMultipleImages ? 'multi-image' : 'single-file',
+            imageCount: hasMultipleImages ? imageUrls.length : 1,
+          },
+        }
+      );
+      aiResponse = result.response;
     } catch (fetchError: unknown) {
       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
         console.error('AI request timed out after', AI_TIMEOUT_MS, 'ms');

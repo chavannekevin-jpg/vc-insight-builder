@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { callAIWithLogging } from "../_shared/log-ai-usage.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -195,28 +196,31 @@ Help the founder understand what VCs will question—and motivate them to prepar
 
     console.log('Generating VC verdict for:', companyName, '| Profile:', founderProfileSignals.profile);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
+    const model = 'google/gemini-2.5-flash';
+    const { response, data } = await callAIWithLogging(
+      () => fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+        }),
       }),
-    });
+      { functionName: 'generate-vc-verdict', model }
+    );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
-      throw new Error(`AI API error: ${response.status}`);
+      const errorText = `AI API error: ${response.status}`;
+      console.error(errorText);
+      throw new Error(errorText);
     }
 
-    const data = await response.json();
     const content = data.choices[0]?.message?.content || '';
 
     let verdict;

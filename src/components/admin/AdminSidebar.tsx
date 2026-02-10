@@ -19,6 +19,7 @@ import {
   Rocket,
   GraduationCap,
   QrCode,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -66,6 +67,7 @@ const toolItems = [
   { title: "Methodology Export", url: "/admin/methodology-export", icon: FileText },
   { title: "Analysis Builder", url: "/admin/analysis-builder", icon: Wrench },
   { title: "QR Generator", url: "/admin/qr-generator", icon: QrCode },
+  { title: "AI Usage", url: "/admin/ai-usage", icon: Activity },
 ];
 
 const templateItems = [

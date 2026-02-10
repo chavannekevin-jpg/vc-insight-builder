@@ -338,6 +338,57 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_usage_logs: {
+        Row: {
+          company_id: string | null
+          completion_tokens: number | null
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          estimated_cost_usd: number | null
+          function_name: string
+          id: string
+          metadata: Json | null
+          model: string
+          prompt_tokens: number | null
+          status: string
+          total_tokens: number | null
+          user_id: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          completion_tokens?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          estimated_cost_usd?: number | null
+          function_name: string
+          id?: string
+          metadata?: Json | null
+          model: string
+          prompt_tokens?: number | null
+          status?: string
+          total_tokens?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          completion_tokens?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          estimated_cost_usd?: number | null
+          function_name?: string
+          id?: string
+          metadata?: Json | null
+          model?: string
+          prompt_tokens?: number | null
+          status?: string
+          total_tokens?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       answer_quality_criteria: {
         Row: {
           created_at: string
