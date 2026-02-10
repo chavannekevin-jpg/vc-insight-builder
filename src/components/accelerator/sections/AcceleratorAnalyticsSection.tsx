@@ -100,12 +100,12 @@ export function AcceleratorAnalyticsSection({ stats, companies, acceleratorId }:
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2 bg-muted/30 p-1 rounded-xl">
-          <TabsTrigger value="portfolio" className="rounded-lg gap-2 data-[state=active]:bg-background">
+        <TabsList className="grid w-full max-w-lg grid-cols-2 bg-muted/50 p-1.5 rounded-xl border border-border/50">
+          <TabsTrigger value="portfolio" className="rounded-lg gap-2 py-2.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-md">
             <BarChart3 className="w-4 h-4" />
             Portfolio Insights
           </TabsTrigger>
-          <TabsTrigger value="nps" className="rounded-lg gap-2 data-[state=active]:bg-background">
+          <TabsTrigger value="nps" className="rounded-lg gap-2 py-2.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-md">
             <MessageSquareHeart className="w-4 h-4" />
             NPS Insights
           </TabsTrigger>
