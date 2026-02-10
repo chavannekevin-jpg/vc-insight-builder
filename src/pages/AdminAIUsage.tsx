@@ -5,10 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Activity, DollarSign, Zap, Clock, ChevronDown, ChevronRight, AlertCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Activity, DollarSign, Zap, Clock, ChevronDown, ChevronRight, AlertCircle, Cloud } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { CloudUsageSection } from "@/components/admin/CloudUsageSection";
 import { format, subDays, startOfDay, startOfWeek, startOfMonth } from "date-fns";
 
 const CHART_COLORS = [
@@ -182,9 +184,31 @@ export default function AdminAIUsage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">AI Usage Dashboard</h1>
-            <p className="text-muted-foreground text-sm">Track AI calls, costs, and performance across all functions</p>
+            <h1 className="text-2xl font-bold text-foreground">AI & Cloud Usage</h1>
+            <p className="text-muted-foreground text-sm">Track AI costs, cloud resources, and performance</p>
           </div>
+        </div>
+
+        <Tabs defaultValue="ai" className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2 bg-muted/50 p-1.5 rounded-xl border border-border/50">
+            <TabsTrigger value="ai" className="rounded-lg gap-2 py-2.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-md">
+              <Activity className="w-4 h-4" />
+              AI Usage
+            </TabsTrigger>
+            <TabsTrigger value="cloud" className="rounded-lg gap-2 py-2.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-md">
+              <Cloud className="w-4 h-4" />
+              Cloud Usage
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="cloud" className="mt-6">
+            <CloudUsageSection />
+          </TabsContent>
+
+          <TabsContent value="ai" className="mt-6 space-y-6">
+
+        {/* Time Range Filter */}
+        <div className="flex justify-end">
           <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
             <SelectTrigger className="w-36">
               <SelectValue />
@@ -453,6 +477,8 @@ export default function AdminAIUsage() {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </AdminLayout>
   );
