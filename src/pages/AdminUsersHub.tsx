@@ -63,7 +63,7 @@ interface UserData {
   total_paid: number;
   last_sign_in_at: string | null;
   sign_in_count: number;
-  admin_notified_signup: boolean;
+  
   abandonment_24h_sent: boolean;
 }
 
@@ -148,7 +148,7 @@ const AdminUsersHub = () => {
     try {
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, email, created_at, last_sign_in_at, sign_in_count, admin_notified_signup")
+        .select("id, email, created_at, last_sign_in_at, sign_in_count")
         .order("created_at", { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -209,7 +209,7 @@ const AdminUsersHub = () => {
         total_paid: purchasesMap[profile.id] || 0,
         last_sign_in_at: profile.last_sign_in_at,
         sign_in_count: profile.sign_in_count || 0,
-        admin_notified_signup: profile.admin_notified_signup || false,
+        
         abandonment_24h_sent: abandonmentSentSet.has(profile.id),
       }));
 
@@ -526,13 +526,6 @@ const AdminUsersHub = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1.5">
-                              {/* Admin notification */}
-                              <span 
-                                title={user.admin_notified_signup ? "Admin notified" : "Admin not notified"}
-                                className={user.admin_notified_signup ? "text-green-500" : "text-muted-foreground/40"}
-                              >
-                                🔔
-                              </span>
                               {/* Abandonment email */}
                               {user.total_paid > 0 ? (
                                 <span title="Converted (paid)" className="text-green-500">✅</span>

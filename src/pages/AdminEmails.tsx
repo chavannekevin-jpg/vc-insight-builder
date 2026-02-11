@@ -59,14 +59,12 @@ interface UserWithCompany {
   companyName: string | null;
   createdAt: string;
   hasPaid: boolean;
-  adminNotifiedSignup: boolean;
+  
   abandonment24hSent: boolean;
   abandonment24hSentAt: string | null;
 }
 
 interface AutomationStats {
-  signupNotificationsSent: number;
-  purchaseNotificationsSent: number;
   abandonment24hSent: number;
   abandonment24hPending: number;
   abandonment24hNotEligible: number;
@@ -91,8 +89,6 @@ const AdminEmails = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [users, setUsers] = useState<UserWithCompany[]>([]);
   const [automationStats, setAutomationStats] = useState<AutomationStats>({
-    signupNotificationsSent: 0,
-    purchaseNotificationsSent: 0,
     abandonment24hSent: 0,
     abandonment24hPending: 0,
     abandonment24hNotEligible: 0,
@@ -187,21 +183,18 @@ const AdminEmails = () => {
 
   const fetchUsers = async () => {
     try {
-      // Get profiles with admin_notified_signup field
       const { data: profiles, error } = await supabase
         .from("profiles")
-        .select("id, email, created_at, admin_notified_signup")
+        .select("id, email, created_at")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      // Get purchases with admin_notified field
       const { data: purchases } = await supabase
         .from("memo_purchases")
-        .select("user_id, admin_notified");
+        .select("user_id");
 
       const paidUserIds = new Set(purchases?.map((p) => p.user_id) || []);
-      const purchaseNotifiedCount = purchases?.filter(p => p.admin_notified).length || 0;
 
       // Get sent abandonment emails
       const { data: sentEmails } = await supabase
@@ -230,7 +223,7 @@ const AdminEmails = () => {
             companyName: company?.name || null,
             createdAt: profile.created_at,
             hasPaid: paidUserIds.has(profile.id),
-            adminNotifiedSignup: profile.admin_notified_signup || false,
+            
             abandonment24hSent: abandonment24hMap.has(profile.id),
             abandonment24hSentAt: abandonment24hMap.get(profile.id) || null,
           };
@@ -238,7 +231,7 @@ const AdminEmails = () => {
       );
 
       // Calculate automation stats
-      const signupNotificationsSent = profiles?.filter(p => p.admin_notified_signup).length || 0;
+      
       
       let abandonment24hPending = 0;
       let abandonment24hNotEligible = 0;
@@ -257,8 +250,6 @@ const AdminEmails = () => {
       });
 
       setAutomationStats({
-        signupNotificationsSent,
-        purchaseNotificationsSent: purchaseNotifiedCount,
         abandonment24hSent: abandonment24hMap.size,
         abandonment24hPending,
         abandonment24hNotEligible,
@@ -635,18 +626,6 @@ const AdminEmails = () => {
                   <Bell className="w-4 h-4 text-primary" />
                   Admin Notification Stats
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-muted/50 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">Signup Notifications</p>
-                    <p className="text-lg font-semibold text-foreground">{automationStats.signupNotificationsSent}</p>
-                    <p className="text-xs text-muted-foreground">sent to admin</p>
-                  </div>
-                  <div className="p-3 bg-muted/50 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">Purchase Notifications</p>
-                    <p className="text-lg font-semibold text-foreground">{automationStats.purchaseNotificationsSent}</p>
-                    <p className="text-xs text-muted-foreground">sent to admin</p>
-                  </div>
-                </div>
               </div>
             </ModernCard>
 
@@ -855,19 +834,6 @@ const AdminEmails = () => {
                             )}
                             {/* Email status badges */}
                             <div className="flex flex-wrap gap-1.5 mt-1">
-                              {/* Admin notification status */}
-                              {user.adminNotifiedSignup ? (
-                                <Badge variant="outline" className="text-[10px] py-0.5 bg-green-50 text-green-700 border-green-200">
-                                  <Bell className="w-2.5 h-2.5 mr-1" />
-                                  Admin notified
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline" className="text-[10px] py-0.5 bg-amber-50 text-amber-600 border-amber-200">
-                                  <Timer className="w-2.5 h-2.5 mr-1" />
-                                  Pending notification
-                                </Badge>
-                              )}
-                              
                               {/* Abandonment email status */}
                               {user.hasPaid ? (
                                 <Badge variant="outline" className="text-[10px] py-0.5 bg-green-50 text-green-700 border-green-200">
