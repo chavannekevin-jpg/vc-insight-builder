@@ -1,123 +1,29 @@
 
 
-# Admin AI & Cloud Usage Dashboard
+# Remove Admin Notifications
 
-## Overview
-Build a new admin page at `/admin/ai-usage` that tracks every AI call made by edge functions, showing costs, models used, function names, and trends over time. This gives you full visibility into where your cloud spending goes.
+## What's being removed
+The `send-admin-notifications` edge function and its cron job. This function emails you about new signups and memo purchases every 15 minutes, but it's been failing (broken column reference) and burning through credits unnecessarily.
 
-## Architecture
+## Steps
 
-### 1. New Database Table: `ai_usage_logs`
+### 1. Remove the cron job (database migration)
+Run SQL to unschedule the cron job (job ID 4):
+```sql
+SELECT cron.unschedule('send-admin-notifications');
+```
 
-A logging table that every edge function writes to after each AI call:
+### 2. Delete the edge function
+Remove the `supabase/functions/send-admin-notifications/` directory and delete the deployed function.
 
-| Column | Type | Description |
-|--------|------|-------------|
-| id | uuid (PK) | Auto-generated |
-| created_at | timestamptz | When the call happened |
-| function_name | text | Edge function name (e.g., `parse-pitch-deck`) |
-| model | text | AI model used (e.g., `google/gemini-2.5-pro`) |
-| prompt_tokens | int | Input tokens used |
-| completion_tokens | int | Output tokens used |
-| total_tokens | int | Total tokens |
-| estimated_cost_usd | numeric | Estimated cost based on model pricing |
-| company_id | uuid (nullable) | Which company triggered this |
-| user_id | uuid (nullable) | Which user triggered this |
-| duration_ms | int | How long the AI call took |
-| status | text | `success` or `error` |
-| error_message | text (nullable) | Error details if failed |
-| metadata | jsonb | Any extra context (e.g., number of pages parsed) |
+### 3. Clean up config.toml
+Remove the `[functions.send-admin-notifications]` entry.
 
-RLS: Admin-only read access, service-role insert (edge functions use service role).
+### 4. Clean up UI references
+- In `AdminUsersHub.tsx`: Remove the notification bell icon that shows whether admin was notified about a signup.
+- In `AdminEmails.tsx`: Remove references to `admin_notified_signup` stats (signup notification counts).
 
-### 2. Shared Logging Helper
-
-Create a reusable utility at `supabase/functions/_shared/log-ai-usage.ts` that every edge function can import. It:
-- Wraps the AI fetch call
-- Automatically records tokens from the response (`usage.prompt_tokens`, `usage.completion_tokens`)
-- Estimates cost based on model
-- Inserts a row into `ai_usage_logs`
-- Returns the AI response as normal
-
-This means each edge function only needs a one-line change to start logging.
-
-### 3. Cost Estimation Logic
-
-Hardcoded cost-per-token estimates (updated as needed):
-
-| Model | Input (per 1M tokens) | Output (per 1M tokens) |
-|-------|----------------------|------------------------|
-| gemini-2.5-pro | ~$1.25 | ~$10.00 |
-| gemini-2.5-flash | ~$0.15 | ~$0.60 |
-| gemini-2.5-flash-lite | ~$0.075 | ~$0.30 |
-| gemini-3-flash-preview | ~$0.15 | ~$0.60 |
-
-### 4. Admin UI Page: `/admin/ai-usage`
-
-**Top-level Stats Cards:**
-- Total AI calls (today / this week / this month)
-- Total estimated cost (today / this week / this month)
-- Most expensive function
-- Average response time
-
-**Cost Breakdown Chart (Recharts):**
-- Bar chart showing daily cost over the last 30 days
-- Stacked by model or by function (toggle)
-
-**Function Leaderboard Table:**
-- Function name, total calls, total tokens, total estimated cost, avg duration
-- Sortable columns
-- Ranked by cost (highest first)
-
-**Model Usage Pie Chart:**
-- Proportion of calls and cost per model
-
-**Recent Logs Table:**
-- Scrollable table of the last 100 AI calls
-- Columns: Time, Function, Model, Tokens, Cost, Duration, Status, Company, User
-- Filter by function name, model, date range, status
-- Click to expand and see metadata
-
-### 5. Edge Function Updates
-
-Incrementally update the highest-cost functions first to use the logging helper:
-- `parse-pitch-deck` (gemini-2.5-pro -- most expensive)
-- `generate-full-memo`
-- `generate-vc-verdict`
-- `compile-workshop-memo`
-- `generate-data-room-memo`
-- `score-roast-answer` (high frequency)
-- `vc-coach-feedback` (high frequency)
-
-Then all remaining ~28 functions.
-
-### 6. Sidebar Navigation
-
-Add "AI Usage" under the Tools section in `AdminSidebar.tsx` with the `Activity` icon.
-
-## File Changes Summary
-
-| File | Change |
-|------|--------|
-| **New migration** | Create `ai_usage_logs` table with RLS |
-| `supabase/functions/_shared/log-ai-usage.ts` | New shared logging helper |
-| `supabase/functions/parse-pitch-deck/index.ts` | Use logging helper |
-| `supabase/functions/generate-full-memo/index.ts` | Use logging helper |
-| `supabase/functions/generate-vc-verdict/index.ts` | Use logging helper |
-| `supabase/functions/compile-workshop-memo/index.ts` | Use logging helper |
-| `supabase/functions/score-roast-answer/index.ts` | Use logging helper |
-| `supabase/functions/vc-coach-feedback/index.ts` | Use logging helper |
-| ~28 more edge functions | Use logging helper |
-| `src/pages/AdminAIUsage.tsx` | New admin page with charts and tables |
-| `src/components/admin/AdminSidebar.tsx` | Add "AI Usage" nav item |
-| `src/App.tsx` | Add route for `/admin/ai-usage` |
-
-## Implementation Order
-
-1. Create database table
-2. Build the shared logging helper
-3. Update top 7 edge functions (highest cost/frequency)
-4. Build the admin UI page with charts
-5. Add sidebar nav and route
-6. Update remaining edge functions
+### What's NOT being removed
+- The `admin_notified_signup` column on `profiles` and `admin_notified` column on `memo_purchases` -- these are harmless and removing columns risks data issues. They'll just stop being updated.
+- The `send-abandonment-email` cron job -- that's a separate function (let me know if you want that removed too).
 
