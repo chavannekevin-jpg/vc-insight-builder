@@ -102,10 +102,6 @@ verify_jwt = false
 [functions.admin-impersonate-user]
 verify_jwt = false
 
-[functions.send-abandonment-email]
-verify_jwt = false
-
-
 [functions.parse-contacts-file]
 verify_jwt = false
 
