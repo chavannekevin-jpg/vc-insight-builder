@@ -2,8 +2,10 @@ import { useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
-import { Euro, TrendingDown, Calculator, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Euro, TrendingDown, Calculator, FileText, ExternalLink, Copy } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 const MAX_WEEKLY_PER_PROJECT = 12.5; // 1/3 of 37.5h week
 const MAX_MONTHLY_PER_PROJECT = 50; // 1/3 of ~150h month
@@ -58,9 +60,30 @@ export default function AdminConsultingCalculator() {
   const negotiationSpread = totalListed - totalFloor;
   const weeksNeeded = hours / MAX_WEEKLY_PER_PROJECT;
 
+  const publicUrl = `${window.location.origin}/rate-card`;
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(publicUrl);
+    toast.success("Link copied to clipboard");
+  };
+
   return (
     <AdminLayout title="Consulting Rate Calculator">
       <div className="max-w-4xl mx-auto space-y-8">
+        {/* Share bar */}
+        <div className="flex items-center gap-2 justify-end">
+          <Button variant="outline" size="sm" onClick={copyLink}>
+            <Copy className="h-4 w-4 mr-1" />
+            Copy link
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <a href="/rate-card" target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4 mr-1" />
+              Preview public page
+            </a>
+          </Button>
+        </div>
+
         {/* Slider */}
         <Card>
           <CardHeader>

@@ -72,6 +72,7 @@ const FollowOnCapital = lazy(() => import("./pages/vcbrain/insider/FollowOnCapit
 const OwnershipVsValuation = lazy(() => import("./pages/vcbrain/insider/OwnershipVsValuation"));
 
 const Portal = lazy(() => import("./pages/Portal"));
+const PublicRateCard = lazy(() => import("./pages/PublicRateCard"));
 const Auth = lazy(() => import("./pages/Auth"));
 const About = lazy(() => import("./pages/About"));
 const Product = lazy(() => import("./pages/Product"));
@@ -250,6 +251,7 @@ const App = () => (
             <Route path="/n/:slug" element={<PublicNetworkPage />} />
             <Route path="/n/:slug/city/:cityName" element={<PublicNetworkPage />} />
             <Route path="/n/:slug/contact/:contactId" element={<PublicContactCard />} />
+            <Route path="/rate-card" element={<PublicRateCard />} />
             <Route path="/scoreboard" element={<Scoreboard />} />
             <Route path="/scorecard" element={<PublicScorecard />} />
             {/* Accelerator Demo Routes */}
