@@ -68,6 +68,7 @@ const toolItems = [
   { title: "Analysis Builder", url: "/admin/analysis-builder", icon: Wrench },
   { title: "QR Generator", url: "/admin/qr-generator", icon: QrCode },
   { title: "AI Usage", url: "/admin/ai-usage", icon: Activity },
+  { title: "Consulting Rates", url: "/admin/consulting-calculator", icon: DollarSign },
 ];
 
 const templateItems = [
