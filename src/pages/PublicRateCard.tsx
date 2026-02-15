@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 
 const MAX_WEEKLY_PER_PROJECT = 12.5;
 const MAX_MONTHLY_PER_PROJECT = 50;
+const MARKUP = 1.2;
 
 const ANCHORS: [number, number][] = [
   [1, 250],
@@ -47,7 +48,7 @@ const RATE_TABLE = [1, 2, 4, 8, 12.5, 25, 37.5, 50];
 
 export default function PublicRateCard() {
   const [hours, setHours] = useState(10);
-  const rate = getRate(hours);
+  const rate = getRate(hours) * MARKUP;
   const total = hours * rate;
   const weeksNeeded = hours / MAX_WEEKLY_PER_PROJECT;
   return (
@@ -127,7 +128,7 @@ export default function PublicRateCard() {
                 </thead>
                 <tbody>
                   {RATE_TABLE.map((h) => {
-                    const rate = getRate(h);
+                    const rate = getRate(h) * MARKUP;
                     const weeks = h / MAX_WEEKLY_PER_PROJECT;
                     let duration = `${h}h`;
                     if (h === 12.5) duration = "1 week";
@@ -176,9 +177,9 @@ export default function PublicRateCard() {
                 and preparation overhead. Longer engagements benefit from reduced per-hour pricing as commitment increases:
               </p>
               <ul className="list-disc list-inside mt-2 space-y-1">
-                <li><strong className="text-foreground">Advisory (1–4h):</strong> €{ANCHORS[0][1]}/h — spot consulting, reviews, workshops</li>
-                <li><strong className="text-foreground">Weekly (12.5h):</strong> €{getRate(12.5)}/h — sprint-based or weekly retainer</li>
-                <li><strong className="text-foreground">Monthly (50h):</strong> €{ANCHORS[ANCHORS.length - 1][1]}/h — embedded consulting, ongoing delivery</li>
+                <li><strong className="text-foreground">Advisory (1–4h):</strong> €{ANCHORS[0][1] * MARKUP}/h — spot consulting, reviews, workshops</li>
+                <li><strong className="text-foreground">Weekly (12.5h):</strong> €{getRate(12.5) * MARKUP}/h — sprint-based or weekly retainer</li>
+                <li><strong className="text-foreground">Monthly (50h):</strong> €{ANCHORS[ANCHORS.length - 1][1] * MARKUP}/h — embedded consulting, ongoing delivery</li>
               </ul>
             </div>
 
