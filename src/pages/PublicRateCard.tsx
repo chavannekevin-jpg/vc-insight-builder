@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
 import { Calculator, FileText } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
@@ -33,9 +35,21 @@ function formatEur(n: number): string {
   }).format(n);
 }
 
+function durationLabel(h: number): string {
+  if (h <= 4) return `${h}h`;
+  const weeks = h / MAX_WEEKLY_PER_PROJECT;
+  if (weeks <= 4) return `${h}h (~${weeks.toFixed(1)} weeks)`;
+  const months = h / MAX_MONTHLY_PER_PROJECT;
+  return `${h}h (~${months.toFixed(1)} months)`;
+}
+
 const RATE_TABLE = [1, 2, 4, 8, 12.5, 25, 37.5, 50];
 
 export default function PublicRateCard() {
+  const [hours, setHours] = useState(10);
+  const rate = getRate(hours);
+  const total = hours * rate;
+  const weeksNeeded = hours / MAX_WEEKLY_PER_PROJECT;
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-3xl mx-auto px-6 py-12 space-y-8">
@@ -45,6 +59,52 @@ export default function PublicRateCard() {
         </div>
 
         <Separator />
+
+        {/* Slider */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calculator className="h-5 w-5" />
+              Engagement Size
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <div className="flex justify-between items-baseline">
+                <span className="text-3xl font-bold text-foreground">{durationLabel(hours)}</span>
+                <span className="text-sm text-muted-foreground">
+                  {weeksNeeded.toFixed(1)} weeks
+                </span>
+              </div>
+              <Slider
+                value={[hours]}
+                onValueChange={([v]) => setHours(v)}
+                min={1}
+                max={50}
+                step={0.5}
+                className="py-4"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>1h (advisory)</span>
+                <span>12.5h (1 week)</span>
+                <span>50h (1 month)</span>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Rate</p>
+                <p className="text-2xl font-bold text-foreground">{formatEur(rate)}<span className="text-lg font-normal text-muted-foreground">/h</span></p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold text-foreground">{formatEur(total)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Rate Table */}
         <Card>
