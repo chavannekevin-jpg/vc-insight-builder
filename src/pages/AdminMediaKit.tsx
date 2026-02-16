@@ -8,6 +8,10 @@ import logoLight from "@/assets/logos/uglybaby-logo-light-1.png";
 import logoStacked from "@/assets/logos/uglybaby-logo-stacked-dark.png";
 import logoNeon from "@/assets/logos/uglybaby-logo-neon.png";
 import logoMonogram from "@/assets/logos/uglybaby-logo-monogram.png";
+import textWhiteOnBlack from "@/assets/logos/uglybaby-text-white-on-black.png";
+import textBlackOnWhite from "@/assets/logos/uglybaby-text-black-on-white.png";
+import textCondensed from "@/assets/logos/uglybaby-text-condensed.png";
+import textSerif from "@/assets/logos/uglybaby-text-serif.png";
 
 const logos = [
   { src: logoDark, name: "Primary Dark", desc: "White on black — horizontal layout", file: "uglybaby-logo-dark-1.png" },
@@ -15,6 +19,13 @@ const logos = [
   { src: logoStacked, name: "Stacked Bold", desc: "Stacked layout with gold tagline", file: "uglybaby-logo-stacked-dark.png" },
   { src: logoNeon, name: "Neon Glow", desc: "Neon blue glow on dark navy", file: "uglybaby-logo-neon.png" },
   { src: logoMonogram, name: "UB Monogram", desc: "Monogram mark with tagline", file: "uglybaby-logo-monogram.png" },
+];
+
+const textLogos = [
+  { src: textWhiteOnBlack, name: "Text — White on Black", desc: "Pure text, sans-serif, dark bg", file: "uglybaby-text-white-on-black.png" },
+  { src: textBlackOnWhite, name: "Text — Black on White", desc: "Pure text, sans-serif, light bg", file: "uglybaby-text-black-on-white.png" },
+  { src: textCondensed, name: "Text — Condensed", desc: "One-word condensed with tagline", file: "uglybaby-text-condensed.png" },
+  { src: textSerif, name: "Text — Serif", desc: "Elegant serif with tagline", file: "uglybaby-text-serif.png" },
 ];
 
 const handleDownload = (src: string, filename: string) => {
@@ -34,6 +45,26 @@ export default function AdminMediaKit() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {logos.map((logo) => (
+            <Card key={logo.file} className="overflow-hidden">
+              <div className="aspect-video bg-muted/30 flex items-center justify-center p-6 border-b">
+                <img src={logo.src} alt={logo.name} className="max-h-full max-w-full object-contain" />
+              </div>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">{logo.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">{logo.desc}</p>
+                <Button variant="outline" size="sm" onClick={() => handleDownload(logo.src, logo.file)}>
+                  <Download className="h-4 w-4 mr-1" /> PNG
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <h2 className="text-lg font-semibold pt-4">Pure Text Logos</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {textLogos.map((logo) => (
             <Card key={logo.file} className="overflow-hidden">
               <div className="aspect-video bg-muted/30 flex items-center justify-center p-6 border-b">
                 <img src={logo.src} alt={logo.name} className="max-h-full max-w-full object-contain" />
