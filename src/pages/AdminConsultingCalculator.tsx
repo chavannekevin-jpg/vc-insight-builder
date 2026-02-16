@@ -13,10 +13,10 @@ const MARKUP = 1.2;
 
 // Anchor points: [hours, floorRate]
 const ANCHORS: [number, number][] = [
-  [1, 250],
-  [4, 250],
-  [12.5, 150], // 1 week at 1/3 capacity
-  [50, 100],   // 1 month at 1/3 capacity
+  [1, 333.33],
+  [4, 333.33],
+  [12.5, 200],   // 1 week at 1/3 capacity
+  [50, 133.33],  // 1 month at 1/3 capacity
 ];
 
 function getFloorRate(hours: number): number {

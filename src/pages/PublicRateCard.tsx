@@ -9,10 +9,10 @@ const MAX_MONTHLY_PER_PROJECT = 50;
 const MARKUP = 1.2;
 
 const ANCHORS: [number, number][] = [
-  [1, 250],
-  [4, 250],
-  [12.5, 150],
-  [50, 100],
+  [1, 333.33],
+  [4, 333.33],
+  [12.5, 200],
+  [50, 133.33],
 ];
 
 function getRate(hours: number): number {
