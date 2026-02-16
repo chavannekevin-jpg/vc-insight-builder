@@ -116,7 +116,7 @@ const Index = () => {
               <div className="flex items-center justify-center gap-10 flex-wrap opacity-70">
                 <img src={logoNest} alt="NEST Accelerator" className="h-8 object-contain brightness-0 invert opacity-60 hover:opacity-100 transition-opacity" />
                 <img src={logoPlugAndPlay} alt="Plug and Play" className="h-6 object-contain brightness-0 invert opacity-60 hover:opacity-100 transition-opacity" />
-                <img src={logoCollektiv} alt="Collektiv Club" className="h-12 object-contain brightness-0 invert opacity-60 hover:opacity-100 transition-opacity" />
+                <img src={logoCollektiv} alt="Collektiv Club" className="h-14 object-contain brightness-0 invert opacity-60 hover:opacity-100 transition-opacity" />
               </div>
             </div>
           </div>
