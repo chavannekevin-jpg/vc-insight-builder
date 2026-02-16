@@ -22,6 +22,9 @@ import {
   AlertCircle
 } from "lucide-react";
 import kevinPhoto from "@/assets/profile-photo.jpg";
+import logoNest from "@/assets/logo-nest.png";
+import logoCollektiv from "@/assets/logo-collektiv.png";
+import logoPlugAndPlay from "@/assets/logo-plugandplay.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -105,6 +108,16 @@ const Index = () => {
                   <div className="text-xs text-muted-foreground">{stat.label}</div>
                 </div>
               ))}
+            </div>
+
+            {/* Partner Trust Bar */}
+            <div className="mt-12 pt-8 border-t border-border/20">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-6">Trusted by leading accelerators & investor communities</p>
+              <div className="flex items-center justify-center gap-10 flex-wrap opacity-70">
+                <img src={logoNest} alt="NEST Accelerator" className="h-8 object-contain brightness-0 invert opacity-60 hover:opacity-100 transition-opacity" />
+                <img src={logoPlugAndPlay} alt="Plug and Play" className="h-6 object-contain brightness-0 invert opacity-60 hover:opacity-100 transition-opacity" />
+                <img src={logoCollektiv} alt="Collektiv Club" className="h-8 object-contain brightness-0 invert opacity-60 hover:opacity-100 transition-opacity" />
+              </div>
             </div>
           </div>
         </section>
