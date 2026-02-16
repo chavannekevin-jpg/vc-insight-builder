@@ -69,6 +69,7 @@ const toolItems = [
   { title: "QR Generator", url: "/admin/qr-generator", icon: QrCode },
   { title: "AI Usage", url: "/admin/ai-usage", icon: Activity },
   { title: "Consulting Rates", url: "/admin/consulting-calculator", icon: DollarSign },
+  { title: "Media Kit", url: "/admin/media-kit", icon: FileText },
 ];
 
 const templateItems = [
