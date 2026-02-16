@@ -118,6 +118,9 @@ const Index = () => {
                 <img src={logoPlugAndPlay} alt="Plug and Play" className="h-6 object-contain brightness-0 invert opacity-60 hover:opacity-100 transition-opacity" />
                 <img src={logoCollektiv} alt="Collektiv Club" className="h-14 object-contain brightness-0 invert opacity-60 hover:opacity-100 transition-opacity" />
               </div>
+              <blockquote className="mt-8 max-w-2xl mx-auto text-center">
+                <p className="text-base italic text-muted-foreground leading-relaxed">"Startups need to learn the hard truth of fundraising and this tool gives them access to know-how and feedback they will rarely get from VCs."</p>
+              </blockquote>
             </div>
           </div>
         </section>
