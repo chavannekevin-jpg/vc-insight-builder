@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ModernCard } from "@/components/ModernCard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, Loader2, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useMemoJobRealtime } from "@/hooks/useMemoJobRealtime";
 
 interface CompanyDetail {
   id: string;
@@ -59,22 +60,34 @@ const AdminCompanyDetail = () => {
   const [responses, setResponses] = useState<MemoResponse[]>([]);
   const [latestJob, setLatestJob] = useState<MemoJob | null>(null);
   const [generatingMemo, setGeneratingMemo] = useState(false);
-  const [pollingJob, setPollingJob] = useState(false);
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+
+  // Realtime subscription replaces polling
+  useMemoJobRealtime({
+    jobId: activeJobId,
+    onCompleted: async () => {
+      setGeneratingMemo(false);
+      setActiveJobId(null);
+      await fetchLatestJob();
+      await fetchCompanyData();
+      toast({ title: "Memo Generated", description: "The memo has been successfully generated." });
+    },
+    onFailed: async (errorMessage) => {
+      setGeneratingMemo(false);
+      setActiveJobId(null);
+      await fetchLatestJob();
+      toast({ title: "Generation Failed", description: errorMessage || "Unknown error occurred", variant: "destructive" });
+    },
+    onTimeout: () => {
+      setGeneratingMemo(false);
+      setActiveJobId(null);
+      toast({ title: "Timeout", description: "Generation is taking longer than expected. Please refresh.", variant: "destructive" });
+    },
+  });
 
   useEffect(() => {
     checkAuthAndFetch();
   }, [companyId]);
-
-  // Poll for job status when generating
-  useEffect(() => {
-    if (!pollingJob || !latestJob) return;
-
-    const interval = setInterval(async () => {
-      await fetchLatestJob();
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [pollingJob, latestJob?.id]);
 
   const checkAuthAndFetch = async () => {
     try {
@@ -192,26 +205,10 @@ const AdminCompanyDetail = () => {
         const job = jobs[0];
         setLatestJob(job);
         
-        // Stop polling if job is completed or failed
-        if (job.status === "completed" || job.status === "failed") {
-          setPollingJob(false);
-          setGeneratingMemo(false);
-          
-          // Refresh company data to get updated memo status
-          await fetchCompanyData();
-          
-          if (job.status === "completed") {
-            toast({
-              title: "Memo Generated",
-              description: "The memo has been successfully generated.",
-            });
-          } else if (job.status === "failed") {
-            toast({
-              title: "Generation Failed",
-              description: job.error_message || "Unknown error occurred",
-              variant: "destructive",
-            });
-          }
+        // If a job is still in progress, subscribe via Realtime
+        if (job.status === "pending" || job.status === "processing") {
+          setGeneratingMemo(true);
+          setActiveJobId(job.id);
         }
       }
     } catch (error) {
@@ -250,7 +247,7 @@ const AdminCompanyDetail = () => {
         description: "The memo is being generated in the background. This may take 1-2 minutes.",
       });
 
-      // Start polling for job status
+      // Subscribe to job via Realtime
       setLatestJob({ 
         id: result.jobId, 
         status: "pending", 
@@ -258,7 +255,7 @@ const AdminCompanyDetail = () => {
         completed_at: null,
         error_message: null 
       });
-      setPollingJob(true);
+      setActiveJobId(result.jobId);
     } catch (error) {
       console.error("Error generating memo:", error);
       toast({
@@ -419,10 +416,10 @@ const AdminCompanyDetail = () => {
             <div className="flex gap-2">
               <Button
                 onClick={handleGenerateMemo}
-                disabled={generatingMemo || pollingJob}
+                disabled={generatingMemo}
                 className="gap-2"
               >
-                {generatingMemo || pollingJob ? (
+                {generatingMemo ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Generating...

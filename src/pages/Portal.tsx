@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { Progress } from "@/components/ui/progress";
@@ -25,6 +25,7 @@ import { AIInsightCard } from "@/components/AIInsightCard";
 import { AnswerOptimizerWizard } from "@/components/AnswerOptimizerWizard";
 import { WelcomeDisclaimer } from "@/components/WelcomeDisclaimer";
 import { MemoLoadingScreen } from "@/components/MemoLoadingScreen";
+import { useMemoJobRealtime } from "@/hooks/useMemoJobRealtime";
 
 // Dynamic interfaces for database-driven questions
 interface Section {
@@ -69,7 +70,8 @@ export default function Portal() {
   const [showAIInsight, setShowAIInsight] = useState<string | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const [isGeneratingMemo, setIsGeneratingMemo] = useState(false);
-  
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+
   // Dynamic data from database
   const [sections, setSections] = useState<Section[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -78,6 +80,42 @@ export default function Portal() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
+
+  // Realtime subscription for memo job status (must be after useToast)
+  const handleJobCompleted = useCallback(async () => {
+    console.log("Portal: Job completed via Realtime, checking dashboard readiness...");
+    setActiveJobId(null);
+    
+    const { checkDashboardReadiness } = await import("@/lib/dashboardReadiness");
+    const readiness = await checkDashboardReadiness(companyId);
+    
+    if (readiness.isReady) {
+      handleMemoReady();
+    } else {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      handleMemoReady();
+    }
+  }, [companyId]);
+
+  const handleJobFailed = useCallback((errorMessage: string | null) => {
+    setActiveJobId(null);
+    setIsGeneratingMemo(false);
+    toast({
+      title: "Error",
+      description: errorMessage || "Memo generation failed",
+      variant: "destructive"
+    });
+  }, [toast]);
+
+  useMemoJobRealtime({
+    jobId: activeJobId,
+    onCompleted: handleJobCompleted,
+    onFailed: handleJobFailed,
+    onTimeout: () => {
+      setActiveJobId(null);
+      handleMemoReady();
+    },
+  });
 
   // Build questions grouped by section dynamically
   const questionsBySections = sections.map(section => ({
@@ -160,11 +198,10 @@ export default function Portal() {
       const jobIdParam = searchParams.get('jobId');
       
       if (generatingParam === 'true' && jobIdParam) {
-        console.log("Portal: Detected pre-triggered generation, starting poll for job:", jobIdParam);
+        console.log("Portal: Detected pre-triggered generation, subscribing to job:", jobIdParam);
         setIsGeneratingMemo(true);
-        // Load company data first, then start polling
         await loadCompanyData(session.user.id, preferredCompanyId);
-        pollJobUntilComplete(jobIdParam);
+        setActiveJobId(jobIdParam);
         return;
       }
 
@@ -484,8 +521,8 @@ export default function Portal() {
       const jobId = startData.jobId;
       console.log(`Portal: Memo generation job started: ${jobId}`);
 
-      // Poll for job completion
-      await pollJobUntilComplete(jobId);
+      // Subscribe to job via Realtime
+      setActiveJobId(jobId);
       
     } catch (error: any) {
       console.error("Portal: Error generating memo:", error);
@@ -498,84 +535,7 @@ export default function Portal() {
     }
   };
 
-  const pollJobUntilComplete = useCallback(async (jobId: string) => {
-    const maxAttempts = 120; // 10 minutes max
-    let attempts = 0;
-
-    while (attempts < maxAttempts) {
-      try {
-        const { data: job, error } = await supabase
-          .from("memo_generation_jobs")
-          .select("status, error_message, company_id")
-          .eq("id", jobId)
-          .maybeSingle();
-
-        if (error) {
-          console.error("Portal: Error polling job:", error);
-          attempts++;
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          continue;
-        }
-
-        if (job?.status === "completed") {
-          console.log("Portal: Job marked completed, checking full dashboard readiness...");
-          
-          // Import the readiness checker
-          const { checkDashboardReadiness } = await import("@/lib/dashboardReadiness");
-          
-          // CRITICAL: Wait for FULL dashboard readiness, not just structured_content
-          // This ensures all 8 section scores + vcQuickTake are written before redirect
-          const targetCompanyId = job.company_id || companyId;
-          let dashboardReady = false;
-          let readinessCheckAttempts = 0;
-          const maxReadinessChecks = 40; // Up to ~2 minutes for all tools to write
-          
-          while (!dashboardReady && readinessCheckAttempts < maxReadinessChecks) {
-            const readiness = await checkDashboardReadiness(targetCompanyId);
-            
-            console.log(`Portal: Readiness check ${readinessCheckAttempts + 1}/${maxReadinessChecks}:`, {
-              isReady: readiness.isReady,
-              sectionScores: `${readiness.sectionScoreCount}/8`,
-              missingSections: readiness.missingSections,
-              hasVcQuickTake: readiness.hasVcQuickTake,
-              hasMemoContent: readiness.hasMemoContent
-            });
-            
-            if (readiness.isReady) {
-              console.log("Portal: Dashboard fully ready, redirecting...");
-              dashboardReady = true;
-              handleMemoReady();
-              return;
-            }
-            
-            readinessCheckAttempts++;
-            await new Promise(resolve => setTimeout(resolve, 3000));
-          }
-          
-          // If still not ready after all checks, redirect anyway (Hub will handle gracefully with its own polling)
-          console.log("Portal: Dashboard readiness timeout after max attempts, redirecting to Hub...");
-          handleMemoReady();
-          return;
-        }
-
-        if (job?.status === "failed") {
-          throw new Error(job.error_message || "Memo generation failed");
-        }
-
-        // Still processing, wait and try again
-        attempts++;
-        await new Promise(resolve => setTimeout(resolve, 5000));
-      } catch (error) {
-        console.error("Portal: Polling error:", error);
-        attempts++;
-        await new Promise(resolve => setTimeout(resolve, 5000));
-      }
-    }
-
-    // Timeout - redirect to Hub which will handle gracefully
-    console.log("Portal: Polling timeout, redirecting to Hub...");
-    handleMemoReady();
-  }, [companyId]);
+  // pollJobUntilComplete removed — replaced by useMemoJobRealtime hook
 
   const handleMemoReady = async () => {
     console.log("Portal: Memo ready, invalidating all caches for hub refresh...");
