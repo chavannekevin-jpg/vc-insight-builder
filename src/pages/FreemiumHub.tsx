@@ -31,6 +31,7 @@ import { useVcQuickTake, useSectionTools, useDashboardResponses } from "@/hooks/
 import { WorkshopNPSModal } from "@/components/workshop/WorkshopNPSModal";
 import { useAcceleratorDiscount } from "@/hooks/useAcceleratorDiscount";
 import { AcceleratorDiscountBanner } from "@/components/AcceleratorDiscountBanner";
+import { useMemoJobRealtime } from "@/hooks/useMemoJobRealtime";
 
 // Insider articles for daily rotation
 const insiderArticles = [
@@ -144,12 +145,35 @@ export default function FreemiumHub() {
   const [scoreboardOpen, setScoreboardOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [npsModalOpen, setNpsModalOpen] = useState(false);
+  const [regenJobId, setRegenJobId] = useState<string | null>(null);
 
   // Dashboard entrance animation
   const { showEntrance, isChecked: entranceChecked, completeEntrance } = useDashboardEntrance();
 
   // Cache invalidation for after regeneration
   const invalidateMemoCache = useInvalidateMemoContent();
+
+  // Realtime subscription for regeneration job
+  useMemoJobRealtime({
+    jobId: regenJobId,
+    onCompleted: () => {
+      setRegenJobId(null);
+      handleRegenerationComplete(company?.id || "");
+    },
+    onFailed: (errorMessage) => {
+      setRegenJobId(null);
+      setIsRegenerating(false);
+      toast({
+        title: "Regeneration Failed",
+        description: errorMessage || "Failed to regenerate memo.",
+        variant: "destructive"
+      });
+    },
+    onTimeout: () => {
+      setRegenJobId(null);
+      handleRegenerationComplete(company?.id || "");
+    },
+  });
 
   // Map companyData to Company type for compatibility
   const company: Company | null = companyData ? {
@@ -341,11 +365,9 @@ export default function FreemiumHub() {
         throw new Error("No job ID returned from regeneration");
       }
 
-      const jobId = startData.jobId;
-      console.log(`Hub: Regeneration job started: ${jobId}`);
-
-      // Poll for completion
-      await pollRegenerationJob(jobId, companyIdToRegenerate);
+      console.log(`Hub: Regeneration job started: ${startData.jobId}`);
+      // Subscribe via Realtime instead of polling
+      setRegenJobId(startData.jobId);
       
     } catch (error: any) {
       console.error("Hub: Regeneration error:", error);
@@ -356,49 +378,6 @@ export default function FreemiumHub() {
       });
       setIsRegenerating(false);
     }
-  };
-
-  const pollRegenerationJob = async (jobId: string, companyIdToRegenerate: string) => {
-    const maxAttempts = 120; // 10 minutes max
-    let attempts = 0;
-
-    while (attempts < maxAttempts) {
-      try {
-        const { data: job, error } = await supabase
-          .from("memo_generation_jobs")
-          .select("status, error_message")
-          .eq("id", jobId)
-          .maybeSingle();
-
-        if (error) {
-          console.error("Hub: Error polling job:", error);
-          attempts++;
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          continue;
-        }
-
-        if (job?.status === "completed") {
-          console.log("Hub: Regeneration completed!");
-          handleRegenerationComplete(companyIdToRegenerate);
-          return;
-        }
-
-        if (job?.status === "failed") {
-          throw new Error(job.error_message || "Regeneration failed");
-        }
-
-        attempts++;
-        await new Promise(resolve => setTimeout(resolve, 5000));
-      } catch (error) {
-        console.error("Hub: Polling error:", error);
-        attempts++;
-        await new Promise(resolve => setTimeout(resolve, 5000));
-      }
-    }
-
-    // Timeout - complete anyway and let user see results
-    console.log("Hub: Polling timeout, completing...");
-    handleRegenerationComplete(companyIdToRegenerate);
   };
 
   const handleRegenerationComplete = async (companyIdToRegenerate: string) => {
@@ -705,85 +684,96 @@ export default function FreemiumHub() {
   const [finalizingAttempts, setFinalizingAttempts] = useState(0);
   const [finalizingTimedOut, setFinalizingTimedOut] = useState(false);
   
-  // Poll for FULL dashboard readiness when paid but sectionTools not ready
-  // CRITICAL: Only poll if hasMemoData is true (memo row exists).
-  // This prevents infinite "Finalizing" loop for premium users without any memo.
+  // Listen for memo_generation_jobs completion via Realtime when paid but dashboard not ready
+  // Replaces the old polling loop with a push-based subscription
   useEffect(() => {
-    const hasSectionToolsReady = sectionTools && Object.keys(sectionTools).length >= 8;
+    const hasSectionToolsReadyLocal = sectionTools && Object.keys(sectionTools).length >= 8;
     
-    // Exit conditions: not paid, no company, still loading, already regenerating, or dashboard fully ready
-    if (!hasPaid || !company?.id || loading || isRegenerating || (memoHasContent && hasSectionToolsReady)) {
+    if (!hasPaid || !company?.id || loading || isRegenerating || (memoHasContent && hasSectionToolsReadyLocal)) {
       setIsFinalizingAnalysis(false);
       return;
     }
     
-    // IMPORTANT: Only start polling if a memo exists (hasMemoData).
-    // If premium but no memo, show "Generate analysis" CTA instead of polling forever.
     if (!hasMemoData) {
-      console.log("[FreemiumHub] Premium user with no memo - will show 'Generate analysis' CTA instead of polling");
+      console.log("[FreemiumHub] Premium user with no memo - will show 'Generate analysis' CTA instead");
       setIsFinalizingAnalysis(false);
       return;
     }
     
-    // User is paid AND has a memo but dashboard isn't fully ready - show finalizing state and poll
-    console.log("[FreemiumHub] Paid user with memo but incomplete data, starting finalization polling...");
+    console.log("[FreemiumHub] Paid user with memo but incomplete data, subscribing to Realtime...");
     setIsFinalizingAnalysis(true);
     setFinalizingTimedOut(false);
     
-    let cancelled = false;
-    
-    const pollForReadiness = async () => {
-      // Dynamically import to avoid circular dependencies
+    // Do an initial readiness check
+    const doReadinessCheck = async () => {
       const { checkDashboardReadiness } = await import("@/lib/dashboardReadiness");
-      
-      let attempts = 0;
-      const maxAttempts = 40; // ~2 minutes at 3s intervals
-      
-      while (!cancelled && attempts < maxAttempts) {
-        try {
-          const readiness = await checkDashboardReadiness(company.id);
-          
-          console.log(`[FreemiumHub] Readiness check ${attempts + 1}:`, {
-            isReady: readiness.isReady,
-            sectionScores: `${readiness.sectionScoreCount}/8`,
-            hasVcQuickTake: readiness.hasVcQuickTake,
-            missingSections: readiness.missingSections
-          });
-          
-          if (readiness.isReady) {
-            console.log("[FreemiumHub] Dashboard fully ready, refreshing all data...");
-            // Invalidate all caches with the CORRECT keys
-            await queryClient.invalidateQueries({ queryKey: ["memo", company.id] });
-            await queryClient.invalidateQueries({ queryKey: ["memo-content", company.id] });
-            await queryClient.invalidateQueries({ queryKey: ["sectionTools", company.id] });
-            await queryClient.invalidateQueries({ queryKey: ["vc-quick-take", company.id] });
-            await queryClient.invalidateQueries({ queryKey: ["company"] });
-            await queryClient.invalidateQueries({ queryKey: ["dashboard-responses", company.id] });
-            setIsFinalizingAnalysis(false);
-            return;
-          }
-          
-          attempts++;
-          setFinalizingAttempts(attempts);
-          await new Promise(resolve => setTimeout(resolve, 3000));
-        } catch (error) {
-          console.error("[FreemiumHub] Readiness poll error:", error);
-          attempts++;
-          await new Promise(resolve => setTimeout(resolve, 3000));
-        }
+      const readiness = await checkDashboardReadiness(company.id);
+      if (readiness.isReady) {
+        console.log("[FreemiumHub] Dashboard already ready!");
+        await queryClient.invalidateQueries({ queryKey: ["sectionTools", company.id] });
+        await queryClient.invalidateQueries({ queryKey: ["vc-quick-take", company.id] });
+        await queryClient.invalidateQueries({ queryKey: ["company"] });
+        setIsFinalizingAnalysis(false);
+        return true;
       }
+      return false;
+    };
+    
+    let settled = false;
+    
+    doReadinessCheck().then(ready => {
+      if (ready) { settled = true; return; }
       
-      // Timeout - stop polling, mark as timed out (user can refresh/retry)
-      console.log("[FreemiumHub] Finalization polling timeout");
-      setIsFinalizingAnalysis(false);
-      setFinalizingTimedOut(true);
-    };
+      // Subscribe to job completion events
+      const channel = supabase
+        .channel(`hub-finalize-${company.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "memo_generation_jobs",
+            filter: `company_id=eq.${company.id}`,
+          },
+          async (payload) => {
+            if (settled) return;
+            const status = (payload.new as any)?.status;
+            if (status === "completed") {
+              settled = true;
+              // Give a moment for tool data to be written
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              await queryClient.invalidateQueries({ queryKey: ["memo", company.id] });
+              await queryClient.invalidateQueries({ queryKey: ["memo-content", company.id] });
+              await queryClient.invalidateQueries({ queryKey: ["sectionTools", company.id] });
+              await queryClient.invalidateQueries({ queryKey: ["vc-quick-take", company.id] });
+              await queryClient.invalidateQueries({ queryKey: ["company"] });
+              await queryClient.invalidateQueries({ queryKey: ["dashboard-responses", company.id] });
+              setIsFinalizingAnalysis(false);
+              supabase.removeChannel(channel);
+            }
+          }
+        )
+        .subscribe();
+      
+      // Safety timeout (5 min)
+      const timeout = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          setIsFinalizingAnalysis(false);
+          setFinalizingTimedOut(true);
+          supabase.removeChannel(channel);
+        }
+      }, 5 * 60 * 1000);
+      
+      // Cleanup
+      return () => {
+        settled = true;
+        clearTimeout(timeout);
+        supabase.removeChannel(channel);
+      };
+    });
     
-    pollForReadiness();
-    
-    return () => {
-      cancelled = true;
-    };
+    return () => { settled = true; };
   }, [hasPaid, hasMemoData, company?.id, loading, isRegenerating, memoHasContent, sectionTools, queryClient]);
 
   // Show regeneration loading screen
