@@ -1,52 +1,68 @@
 
-# Consulting Rate Calculator — Admin Tool
 
-## Overview
-A new admin page at `/admin/consulting-calculator` with an interactive slider that lets you visualize your consulting pricing strategy. As you drag the slider (hours per engagement), the per-hour rate decreases along a curve, and the tool shows both the **listed price** (with 20% markup) and the **negotiation floor** (your actual target rate).
+# Cloud Cost Optimization Plan
 
-## Pricing Logic
+## What's Actually Costing You Money
 
-Your base rates (target/floor prices after negotiation):
-- 1-4 hours: EUR 250/h
-- 1 week (~37.5h): EUR 150/h  
-- 1 month (~150h): EUR 100/h
+Your assistant was right on several points. Here's what I found after digging through the code:
 
-Listed prices (base + 20% markup for negotiation room):
-- 1-4 hours: EUR 300/h
-- 1 week: EUR 180/h
-- 1 month: EUR 120/h
+### 1. Zombie Cron Job (Easy Fix, Immediate Savings)
+A cron job is firing **every hour** calling `send-abandonment-email` -- a function you already deleted. Each call results in a 404 error but still counts as an edge function invocation. That's **720 wasted invocations per month**.
 
-The slider will range from **1h to 150h** (1 month). The rate will interpolate smoothly between the anchor points using a curve, so any in-between value shows a logical rate.
+### 2. Aggressive Polling via Edge Functions (Biggest Cost Driver)
+When a memo is generated, the `GeneratedMemo` page calls the `check-memo-job` **edge function** every 5 seconds for up to 100 attempts. Each poll is a full edge function invocation (auth check, 2 DB queries, response). For a typical 5-minute generation, that's **~60 edge function invocations per user per memo**.
 
-**Constraint**: Max 1/3 of weekly time = **12.5h/week** per single project. The tool will flag when a project exceeds this threshold.
+The `Portal` page does the same polling but directly against the database (cheaper), then follows up with up to **40 more DB queries** via `checkDashboardReadiness` at 3-second intervals.
 
-## What you'll see
+### 3. Double Polling on the Hub
+`FreemiumHub` also polls `checkDashboardReadiness` every 5 seconds (up to 60 attempts) whenever a company appears to still be processing. This creates another **~60 DB round-trips** per session.
 
-- **Slider**: Drag from 1h to 150h
-- **Hours label**: Shows selected hours + equivalent in weeks/months
-- **Listed rate card**: The price you quote (with 20% buffer)
-- **Floor rate card**: Your minimum acceptable rate
-- **Total engagement value**: Hours x listed rate
-- **Negotiation range**: The EUR spread between listed and floor
-- **1/3 rule indicator**: Warning if weekly commitment exceeds 12.5h
-- **Summary sentence**: e.g. "For a 20h engagement (~0.5 weeks), quote EUR 228/h (total EUR 4,560). Floor: EUR 190/h (EUR 3,800)."
+---
+
+## The Fix (3 Changes)
+
+### Step 1: Kill the Zombie Cron
+Run a single SQL statement to remove the orphaned cron job that's calling the deleted `send-abandonment-email` function every hour.
+
+### Step 2: Replace Edge Function Polling with Direct DB Polling
+The `GeneratedMemo` page currently calls the `check-memo-job` **edge function** every 5 seconds. The Portal page already polls the database directly (much cheaper -- no edge function invocation cost). We'll update `GeneratedMemo` to do the same: query the `memo_generation_jobs` table directly instead of invoking an edge function, cutting out ~60 edge function calls per memo generation.
+
+### Step 3: Replace DB Polling with Realtime Subscriptions
+Instead of repeatedly querying the database every 3-5 seconds, subscribe to Realtime changes on the `memo_generation_jobs` table. The database pushes updates to the client when the job status changes -- zero polling, zero wasted queries.
+
+This affects:
+- `Portal.tsx` (currently polls DB every 5s)
+- `GeneratedMemo.tsx` (currently polls edge function every 5s)
+- `FreemiumHub.tsx` (currently polls DB every 5s)
+- `AdminCompanyDetail.tsx` (currently polls DB every 3s)
+
+---
 
 ## Technical Details
 
-### New files
-- `src/pages/AdminConsultingCalculator.tsx` — The page component with slider, rate interpolation logic, and display cards. Uses `AdminLayout`, the existing `Slider` component, and `Card` from shadcn.
+### SQL Migration
+- Delete cron job: `SELECT cron.unschedule(2);`
+- Enable Realtime: `ALTER PUBLICATION supabase_realtime ADD TABLE public.memo_generation_jobs;`
 
-### Modified files
-- `src/App.tsx` — Add route: `/admin/consulting-calculator`
-- `src/components/admin/AdminSidebar.tsx` — Add "Consulting Rates" item under the Tools collapsible section, using the `DollarSign` or `Calculator` icon
+### Frontend Changes
 
-### Rate interpolation
-A piecewise linear interpolation between the three anchor points:
-- 1h-4h: EUR 250/h (flat)
-- 4h-37.5h: linear from EUR 250 to EUR 150
-- 37.5h-150h: linear from EUR 150 to EUR 100
+**All 4 files** (`Portal.tsx`, `GeneratedMemo.tsx`, `FreemiumHub.tsx`, `AdminCompanyDetail.tsx`):
+- Replace `setInterval` / `while` polling loops with a Supabase Realtime channel subscription
+- Subscribe to `postgres_changes` on `memo_generation_jobs` filtered by job ID
+- On `status = 'completed'`, run `checkDashboardReadiness` once (instead of polling it 40 times)
+- On `status = 'failed'`, show error
+- Keep a safety timeout (10 min) as fallback
+- Clean up channel subscription on unmount
 
-The 20% markup is applied on top: `listedRate = floorRate * 1.2`
+**`GeneratedMemo.tsx` specifically**: Replace `supabase.functions.invoke('check-memo-job', ...)` with direct DB query as intermediate step, then Realtime.
 
-### No database needed
-This is a pure client-side calculator — no backend storage required.
+### Estimated Savings Per Memo Generation
+
+| Before | After |
+|--------|-------|
+| ~60 edge fn calls (check-memo-job) | 0 edge fn calls |
+| ~40 DB polls (dashboard readiness) | 1 DB query |
+| ~60 DB polls (FreemiumHub readiness) | 0 polls |
+| ~120 DB polls (Portal + Admin) | 0 polls |
+| 720/month zombie cron invocations | 0 |
+
